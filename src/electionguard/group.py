@@ -8,9 +8,10 @@ from typing import Final
 # Constants used by ElectionGuard
 Q: Final[int] = pow(2, 256) - 189
 P: Final[int] = pow(2, 4096) - 69 * Q - 2650872664557734482243044168410288960
-R: Final[int] = (P - 1) * pow(Q, -1, P)
+R: Final[int] = ((P - 1) * pow(Q, -1, P)) % P
 G: Final[int] = pow(2, R, P)
 G_INV: Final[int] = pow(G, -1, P)
+
 
 class ElementModQ(NamedTuple):
     """An element of the smaller `mod q` space, i.e., in [0, Q), where Q is a 256-bit prime."""
@@ -114,7 +115,7 @@ def encrypt(m: ElementModP, nonce: ElementModQ, public_key: ElementModP) -> ElGa
     :param public_key: ElGamal public key.
     :return: A ciphertext tuple.
     """
-    return ElGamalCiphertext(g_pow_q(nonce), mult_mod_p(m, pow_mod_p(public_key, ElementModP(R))))
+    return ElGamalCiphertext(g_pow_q(nonce), mult_mod_p(m, pow_q_mod_p(public_key, nonce)))
 
 
 def decrypt_known_product(c: ElGamalCiphertext, product: ElementModP) -> ElementModP:
