@@ -12,15 +12,22 @@ R: Final[int] = (P - 1) * pow(Q, -1, P)
 G: Final[int] = pow(2, R, P)
 G_INV: Final[int] = pow(G, -1, P)
 
-
 class ElementModQ(NamedTuple):
     """An element of the smaller `mod q` space, i.e., in [0, Q), where Q is a 256-bit prime."""
     elem: int
 
 
+ZERO_MOD_Q: Final[ElementModQ] = ElementModQ(0)
+ONE_MOD_Q: Final[ElementModQ] = ElementModQ(1)
+
+
 class ElementModP(NamedTuple):
     """An element of the larger `mod p` space, i.e., in [0, P), where P is a 4096-bit prime."""
     elem: int
+
+
+ZERO_MOD_P: Final[ElementModP] = ElementModP(0)
+ONE_MOD_P: Final[ElementModP] = ElementModP(1)
 
 
 class ElGamalKeyPair(NamedTuple):
@@ -74,7 +81,7 @@ def pow_q_mod_p(b: ElementModP, q: ElementModQ) -> ElementModP:
     return ElementModP(pow(b.elem, q.elem, P))
 
 
-def mul_mod_p(a: ElementModP, b: ElementModP) -> ElementModP:
+def mult_mod_p(a: ElementModP, b: ElementModP) -> ElementModP:
     """
     Computes a* b mod p.
     :param a: An element in [0,P).
@@ -107,7 +114,7 @@ def encrypt(m: ElementModP, nonce: ElementModQ, public_key: ElementModP) -> ElGa
     :param public_key: ElGamal public key.
     :return: A ciphertext tuple.
     """
-    return ElGamalCiphertext(g_pow_q(nonce), mul_mod_p(m, pow_mod_p(public_key, ElementModP(R))))
+    return ElGamalCiphertext(g_pow_q(nonce), mult_mod_p(m, pow_mod_p(public_key, ElementModP(R))))
 
 
 def decrypt_known_product(c: ElGamalCiphertext, product: ElementModP) -> ElementModP:
@@ -117,7 +124,7 @@ def decrypt_known_product(c: ElGamalCiphertext, product: ElementModP) -> Element
     :param product: The known product (blinding factor).
     :return: An exponentially encoded plaintext message.
     """
-    return mul_mod_p(c.beta, mult_inv_p(product))
+    return mult_mod_p(c.beta, mult_inv_p(product))
 
 
 def decrypt(c: ElGamalCiphertext, secret_key: ElementModQ) -> ElementModP:
