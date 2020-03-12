@@ -2,8 +2,8 @@
 # in the sense that performance may be less than hand-optimized C code, and no guarantees are
 # made about timing or other side-channels.
 
-from typing import NamedTuple
 from typing import Final
+from typing import NamedTuple
 
 # Constants used by ElectionGuard
 Q: Final[int] = pow(2, 256) - 189
@@ -29,28 +29,6 @@ class ElementModP(NamedTuple):
 
 ZERO_MOD_P: Final[ElementModP] = ElementModP(0)
 ONE_MOD_P: Final[ElementModP] = ElementModP(1)
-
-
-class ElGamalKeyPair(NamedTuple):
-    """A tuple of an ElGamal secret key and public key."""
-    secret_key: ElementModQ
-    public_key: ElementModP
-
-
-class ElGamalCiphertext(NamedTuple):
-    """An ElGamal ciphertext."""
-    alpha: ElementModP
-    beta: ElementModP
-
-
-def message_to_element(m: int) -> ElementModP:
-    """
-    Encoding a message (expected to be non-negative and less than Q) suitable for ElGamal encryption
-    and homomorphic addition (in the exponent).
-    """
-    if m < 0 or m >= Q:
-        raise Exception("Message %d out of range" % m)
-    return ElementModP(pow(G, m, P))
 
 
 def mult_inv_p(e: ElementModP) -> ElementModP:
@@ -105,45 +83,3 @@ def g_pow(e: ElementModP) -> ElementModP:
     :param e: An element in [0,P).
     """
     return pow_mod_p(ElementModP(G), e)
-
-
-def encrypt(m: ElementModP, nonce: ElementModQ, public_key: ElementModP) -> ElGamalCiphertext:
-    """
-    Encrypts a message with a given random nonce and an ElGamal public key.
-    :param m: Message to encrypt (e.g., the output of `message_to_element`).
-    :param nonce: Randomly chosen nonce in [0,Q).
-    :param public_key: ElGamal public key.
-    :return: A ciphertext tuple.
-    """
-    return ElGamalCiphertext(g_pow_q(nonce), mult_mod_p(m, pow_q_mod_p(public_key, nonce)))
-
-
-def decrypt_known_product(c: ElGamalCiphertext, product: ElementModP) -> ElementModP:
-    """
-    Decrypts an ElGamal ciphertext with a "known product" (the blinding factor used in the encryption).
-    :param c: The ciphertext tuple.
-    :param product: The known product (blinding factor).
-    :return: An exponentially encoded plaintext message.
-    """
-    return mult_mod_p(c.beta, mult_inv_p(product))
-
-
-def decrypt(c: ElGamalCiphertext, secret_key: ElementModQ) -> ElementModP:
-    """
-    Decrypt an ElGamal ciphertext using a known ElGamal secret key.
-    :param c: The ciphertext tuple.
-    :param secret_key: The corresponding ElGamal secret key.
-    :return: An exponentially encoded plaintext message.
-    """
-    return decrypt_known_product(c, pow_q_mod_p(c.alpha, secret_key))
-
-
-def decrypt_known_nonce(c: ElGamalCiphertext, public_key: ElementModP, nonce: ElementModQ) -> ElementModP:
-    """
-    Decrypt an ElGamal ciphertext using a known nonce and the ElGamal public key.
-    :param c: The ciphertext tuple.
-    :param public_key: The corresponding ElGamal public key.
-    :param nonce: The secret nonce used to create the ciphertext.
-    :return: An exponentially encoded plaintext message.
-    """
-    return decrypt_known_product(c, pow_q_mod_p(public_key, nonce))
