@@ -5,7 +5,7 @@ from hypothesis.strategies import composite, integers
 
 from electionguard.elgamal import ElGamalKeyPair, _message_to_element, encrypt, decrypt, decrypt_known_nonce, \
     elgamal_add
-from electionguard.group import g_pow, ElementModQ, g_pow_q, G, Q, P
+from electionguard.group import ElementModQ, g_pow, G, Q, P
 from tests.test_group import arb_element_mod_q_no_zero, arb_element_mod_q
 
 
@@ -23,7 +23,7 @@ class TestElGamal(unittest.TestCase):
         message = ElementModQ(0)
         nonce = ElementModQ(1)
         secret_key = ElementModQ(2)
-        public_key = g_pow_q(secret_key)
+        public_key = g_pow(secret_key)
         self.assertLess(public_key.elem, P)
 
         keypair = ElGamalKeyPair(secret_key, public_key)
@@ -62,7 +62,7 @@ class TestElGamal(unittest.TestCase):
     def test_elgamal_keypairs_are_sane(self, keypair: ElGamalKeyPair):
         self.assertLess(keypair.public_key.elem, P)
         self.assertLess(keypair.secret_key.elem, G)
-        self.assertEqual(g_pow_q(keypair.secret_key), keypair.public_key)
+        self.assertEqual(g_pow(keypair.secret_key), keypair.public_key)
 
     @given(arb_elgamal_keypair(), integers(0, 100), arb_element_mod_q_no_zero(), integers(0, 100),
            arb_element_mod_q_no_zero())

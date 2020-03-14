@@ -2,8 +2,7 @@
 # in the sense that performance may be less than hand-optimized C code, and no guarantees are
 # made about timing or other side-channels.
 
-from typing import Final
-from typing import NamedTuple
+from typing import Final, Union, NamedTuple
 
 # Constants used by ElectionGuard
 Q: Final[int] = pow(2, 256) - 189
@@ -30,8 +29,10 @@ class ElementModP(NamedTuple):
 ZERO_MOD_P: Final[ElementModP] = ElementModP(0)
 ONE_MOD_P: Final[ElementModP] = ElementModP(1)
 
+ElementModPOrQ = Union[ElementModP, ElementModQ]  # generally useful typedef
 
-def mult_inv_p(e: ElementModP) -> ElementModP:
+
+def mult_inv_p(e: ElementModPOrQ) -> ElementModP:
     """
     Computes the multiplicative inverse mod p.
     :param e:  An element in [1, P).
@@ -41,43 +42,25 @@ def mult_inv_p(e: ElementModP) -> ElementModP:
     return ElementModP(pow(e.elem, -1, P))
 
 
-def pow_mod_p(b: ElementModP, e: ElementModP) -> ElementModP:
+def pow_mod_p(b: ElementModPOrQ, e: ElementModPOrQ) -> ElementModP:
     """
     Computes b^e mod p.
     :param b: An element in [0,P).
     :param e: An element in [0,P).
-    :return:
     """
     return ElementModP(pow(b.elem, e.elem, P))
 
 
-def pow_q_mod_p(b: ElementModP, q: ElementModQ) -> ElementModP:
+def mult_mod_p(a: ElementModPOrQ, b: ElementModPOrQ) -> ElementModP:
     """
-    Computes b^q mod p.
-    :param b: An element in [0,P).
-    :param q: An element in [0,Q).
-    """
-    return ElementModP(pow(b.elem, q.elem, P))
-
-
-def mult_mod_p(a: ElementModP, b: ElementModP) -> ElementModP:
-    """
-    Computes a* b mod p.
+    Computes a * b mod p.
     :param a: An element in [0,P).
     :param b: An element in [0,P).
     """
     return ElementModP((a.elem * b.elem) % P)
 
 
-def g_pow_q(q: ElementModQ) -> ElementModP:
-    """
-    Computes g^q mod p.
-    :param q: An element in [0,Q).
-    """
-    return pow_q_mod_p(ElementModP(G), q)
-
-
-def g_pow(e: ElementModP) -> ElementModP:
+def g_pow(e: ElementModPOrQ) -> ElementModP:
     """
     Computes g^e mod p.
     :param e: An element in [0,P).

@@ -1,14 +1,14 @@
 import unittest
 
-from hypothesis import given, strategies as st
-from hypothesis.strategies import composite
+from hypothesis import given
+from hypothesis.strategies import composite, integers
 
 from electionguard.group import P, Q, ElementModP, ElementModQ, mult_inv_p, ONE_MOD_P, mult_mod_p, ZERO_MOD_P, G, \
-    ONE_MOD_Q, g_pow_q, ZERO_MOD_Q, R, G_INV
+    ONE_MOD_Q, g_pow, ZERO_MOD_Q, R, G_INV
 
 
 @composite
-def arb_element_mod_q(draw, elem=st.integers(min_value=0, max_value=Q - 1)):
+def arb_element_mod_q(draw, elem=integers(min_value=0, max_value=Q - 1)):
     """
     Generates an arbitrary element from [0,Q).
     """
@@ -16,7 +16,7 @@ def arb_element_mod_q(draw, elem=st.integers(min_value=0, max_value=Q - 1)):
 
 
 @composite
-def arb_element_mod_q_no_zero(draw, elem=st.integers(min_value=1, max_value=Q - 1)):
+def arb_element_mod_q_no_zero(draw, elem=integers(min_value=1, max_value=Q - 1)):
     """
     Generates an arbitrary element from [1,Q).
     """
@@ -24,7 +24,7 @@ def arb_element_mod_q_no_zero(draw, elem=st.integers(min_value=1, max_value=Q - 
 
 
 @composite
-def arb_element_mod_p(draw, elem=st.integers(min_value=0, max_value=P - 1)):
+def arb_element_mod_p(draw, elem=integers(min_value=0, max_value=P - 1)):
     """
     Generates an arbitrary element from [0,P).
     """
@@ -32,7 +32,7 @@ def arb_element_mod_p(draw, elem=st.integers(min_value=0, max_value=P - 1)):
 
 
 @composite
-def arb_element_mod_p_no_zero(draw, elem=st.integers(min_value=1, max_value=P - 1)):
+def arb_element_mod_p_no_zero(draw, elem=integers(min_value=1, max_value=P - 1)):
     """
     Generates an arbitrary element from [1,P).
     """
@@ -58,8 +58,8 @@ class TestModularArithmetic(unittest.TestCase):
 
     def test_simple_powers(self):
         gp = ElementModP(G)
-        self.assertEqual(gp, g_pow_q(ONE_MOD_Q))
-        self.assertEqual(ONE_MOD_P, g_pow_q(ZERO_MOD_Q))
+        self.assertEqual(gp, g_pow(ONE_MOD_Q))
+        self.assertEqual(ONE_MOD_P, g_pow(ZERO_MOD_Q))
 
 
 if __name__ == "__main__":
