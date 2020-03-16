@@ -66,3 +66,35 @@ def g_pow(e: ElementModPOrQ) -> ElementModP:
     :param e: An element in [0,P).
     """
     return pow_mod_p(ElementModP(G), e)
+
+
+def validate_p(p: ElementModP) -> None:
+    """
+    Validates that the element is actually within the bounds of [0,P). Raises an `Exception` if it's not.
+    """
+    if p.elem < 0 or p.elem >= P:
+        raise Exception("element out of mod-p range!")
+
+
+def validate_q(q: ElementModQ) -> None:
+    """
+    Validates that the element is actually within the bounds of [0,Q). Raises an `Exception` if it's not.
+    """
+    if q.elem < 0 or q.elem >= Q:
+        raise Exception("element out of mod-q range!")
+
+
+def validate_p_no_zero(p: ElementModP) -> None:
+    """
+    Validates that the element is actually within the bounds of [1,P). Raises an `Exception` if it's not.
+    """
+    if p.elem <= 0 or p.elem >= P:
+        raise Exception("element out of mod-p range!")
+
+
+def validate_q_no_zero(q: ElementModQ) -> None:
+    """
+    Validates that the element is actually within the bounds of [1,Q). Raises an `Exception` if it's not.
+    """
+    if q.elem <= 0 or q.elem >= Q:
+        raise Exception("element out of mod-q range!")

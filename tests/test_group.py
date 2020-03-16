@@ -4,7 +4,7 @@ from hypothesis import given
 from hypothesis.strategies import composite, integers
 
 from electionguard.group import P, Q, ElementModP, ElementModQ, mult_inv_p, ONE_MOD_P, mult_mod_p, ZERO_MOD_P, G, \
-    ONE_MOD_Q, g_pow, ZERO_MOD_Q, R, G_INV
+    ONE_MOD_Q, g_pow, ZERO_MOD_Q, R, G_INV, validate_q, validate_p, validate_p_no_zero, validate_q_no_zero
 
 
 @composite
@@ -60,3 +60,27 @@ class TestModularArithmetic(unittest.TestCase):
         gp = ElementModP(G)
         self.assertEqual(gp, g_pow(ONE_MOD_Q))
         self.assertEqual(ONE_MOD_P, g_pow(ZERO_MOD_Q))
+
+    @given(arb_element_mod_q())
+    def test_validation_q(self, q: ElementModQ):
+        validate_q(q)
+        self.assertRaises(Exception, validate_q, ElementModQ(q.elem + Q))
+        self.assertRaises(Exception, validate_q, ElementModQ(q.elem - Q))
+
+    @given(arb_element_mod_p())
+    def test_validation_p(self, p: ElementModP):
+        validate_p(p)
+        self.assertRaises(Exception, validate_p, ElementModP(p.elem + P))
+        self.assertRaises(Exception, validate_p, ElementModP(p.elem - P))
+
+    @given(arb_element_mod_q_no_zero())
+    def test_validation_q_no_zero(self, q: ElementModQ):
+        validate_q_no_zero(q)
+        self.assertRaises(Exception, validate_q_no_zero, ElementModQ(q.elem + Q))
+        self.assertRaises(Exception, validate_q_no_zero, ElementModQ(q.elem - Q))
+
+    @given(arb_element_mod_p_no_zero())
+    def test_validation_p_no_zero(self, p: ElementModP):
+        validate_p_no_zero(p)
+        self.assertRaises(Exception, validate_p_no_zero, ElementModP(p.elem + P))
+        self.assertRaises(Exception, validate_p_no_zero, ElementModP(p.elem - P))
