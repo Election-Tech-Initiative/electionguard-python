@@ -60,7 +60,3 @@ class TestModularArithmetic(unittest.TestCase):
         gp = ElementModP(G)
         self.assertEqual(gp, g_pow(ONE_MOD_Q))
         self.assertEqual(ONE_MOD_P, g_pow(ZERO_MOD_Q))
-
-
-if __name__ == "__main__":
-    unittest.main()

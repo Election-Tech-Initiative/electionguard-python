@@ -41,7 +41,3 @@ class TestDLog(unittest.TestCase):
         plaintext_again = discrete_log(ciphertext)
 
         self.assertEqual(1, plaintext_again)
-
-
-if __name__ == "__main__":
-    unittest.main()

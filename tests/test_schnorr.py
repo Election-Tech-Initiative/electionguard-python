@@ -35,3 +35,9 @@ class TestSchnorr(unittest.TestCase):
         proof = make_schnorr_proof(keypair, nonce)
         assume(other != keypair.public_key)
         self.assertFalse(valid_schnorr_transcript(proof, other))
+
+    @given(arb_elgamal_keypair(), arb_element_mod_q_no_zero())
+    def test_schnorr_proofs_wants_nonzero_public_key(self, keypair: ElGamalKeyPair, nonce: ElementModQ):
+        proof = make_schnorr_proof(keypair, nonce)
+        # we're just doing this to hit 100% code coverage; should never happen in practice
+        self.assertRaises(Exception, valid_schnorr_transcript, proof, ElementModP(0))
