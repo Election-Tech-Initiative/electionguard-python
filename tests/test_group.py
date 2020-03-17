@@ -4,7 +4,7 @@ from hypothesis import given
 from hypothesis.strategies import composite, integers
 
 from electionguard.group import P, Q, ElementModP, ElementModQ, mult_inv_p, ONE_MOD_P, mult_mod_p, ZERO_MOD_P, G, \
-    ONE_MOD_Q, g_pow, ZERO_MOD_Q, R, G_INV, validate_q, validate_p, validate_p_no_zero, validate_q_no_zero
+    ONE_MOD_Q, g_pow, ZERO_MOD_Q, R, G_INV, in_bounds_q, in_bounds_p, in_bounds_q_no_zero, in_bounds_p_no_zero
 
 
 @composite
@@ -62,25 +62,25 @@ class TestModularArithmetic(unittest.TestCase):
         self.assertEqual(ONE_MOD_P, g_pow(ZERO_MOD_Q))
 
     @given(arb_element_mod_q())
-    def test_validation_q(self, q: ElementModQ):
-        validate_q(q)
-        self.assertRaises(Exception, validate_q, ElementModQ(q.elem + Q))
-        self.assertRaises(Exception, validate_q, ElementModQ(q.elem - Q))
+    def test_in_bounds_q(self, q: ElementModQ):
+        self.assertTrue(in_bounds_q(q))
+        self.assertFalse(in_bounds_q(ElementModQ(q.elem + Q)))
+        self.assertFalse(in_bounds_q(ElementModQ(q.elem - Q)))
 
     @given(arb_element_mod_p())
-    def test_validation_p(self, p: ElementModP):
-        validate_p(p)
-        self.assertRaises(Exception, validate_p, ElementModP(p.elem + P))
-        self.assertRaises(Exception, validate_p, ElementModP(p.elem - P))
+    def test_in_bounds_p(self, p: ElementModP):
+        self.assertTrue(in_bounds_p(p))
+        self.assertFalse(in_bounds_p(ElementModP(p.elem + P)))
+        self.assertFalse(in_bounds_p(ElementModP(p.elem - P)))
 
     @given(arb_element_mod_q_no_zero())
-    def test_validation_q_no_zero(self, q: ElementModQ):
-        validate_q_no_zero(q)
-        self.assertRaises(Exception, validate_q_no_zero, ElementModQ(q.elem + Q))
-        self.assertRaises(Exception, validate_q_no_zero, ElementModQ(q.elem - Q))
+    def test_in_bounds_q_no_zero(self, q: ElementModQ):
+        self.assertTrue(in_bounds_q_no_zero(q))
+        self.assertFalse(in_bounds_q_no_zero(ElementModQ(q.elem + Q)))
+        self.assertFalse(in_bounds_q_no_zero(ElementModQ(q.elem - Q)))
 
     @given(arb_element_mod_p_no_zero())
-    def test_validation_p_no_zero(self, p: ElementModP):
-        validate_p_no_zero(p)
-        self.assertRaises(Exception, validate_p_no_zero, ElementModP(p.elem + P))
-        self.assertRaises(Exception, validate_p_no_zero, ElementModP(p.elem - P))
+    def test_in_bounds_p_no_zero(self, p: ElementModP):
+        self.assertTrue(in_bounds_p_no_zero(p))
+        self.assertFalse(in_bounds_p_no_zero(ElementModP(p.elem + P)))
+        self.assertFalse(in_bounds_p_no_zero(ElementModP(p.elem - P)))

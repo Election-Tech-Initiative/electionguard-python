@@ -68,33 +68,33 @@ def g_pow(e: ElementModPOrQ) -> ElementModP:
     return pow_mod_p(ElementModP(G), e)
 
 
-def validate_p(p: ElementModP) -> None:
+def in_bounds_p(p: ElementModP) -> bool:
     """
-    Validates that the element is actually within the bounds of [0,P). Raises an `Exception` if it's not.
+    Validates that the element is actually within the bounds of [0,P).
+    Returns true if all is good, false if something's wrong.
     """
-    if p.elem < 0 or p.elem >= P:
-        raise Exception("element out of mod-p range!")
+    return 0 <= p.elem < P
 
 
-def validate_q(q: ElementModQ) -> None:
+def in_bounds_q(q: ElementModQ) -> bool:
     """
-    Validates that the element is actually within the bounds of [0,Q). Raises an `Exception` if it's not.
+    Validates that the element is actually within the bounds of [0,Q).
+    Returns true if all is good, false if something's wrong.
     """
-    if q.elem < 0 or q.elem >= Q:
-        raise Exception("element out of mod-q range!")
+    return 0 <= q.elem < Q
 
 
-def validate_p_no_zero(p: ElementModP) -> None:
+def in_bounds_p_no_zero(p: ElementModP) -> bool:
     """
-    Validates that the element is actually within the bounds of [1,P). Raises an `Exception` if it's not.
+    Validates that the element is actually within the bounds of [1,P).
+    Returns true if all is good, false if something's wrong.
     """
-    if p.elem <= 0 or p.elem >= P:
-        raise Exception("element out of mod-p range!")
+    return 0 < p.elem < P
 
 
-def validate_q_no_zero(q: ElementModQ) -> None:
+def in_bounds_q_no_zero(q: ElementModQ) -> bool:
     """
-    Validates that the element is actually within the bounds of [1,Q). Raises an `Exception` if it's not.
+    Validates that the element is actually within the bounds of [1,Q).
+    Returns true if all is good, false if something's wrong.
     """
-    if q.elem <= 0 or q.elem >= Q:
-        raise Exception("element out of mod-q range!")
+    return 0 < q.elem < Q
