@@ -5,7 +5,7 @@ from hypothesis.strategies import composite, integers
 
 from electionguard.elgamal import ElGamalKeyPair, _message_to_element, encrypt, decrypt, decrypt_known_nonce, \
     elgamal_add
-from electionguard.group import ElementModQ, g_pow, G, Q, P
+from electionguard.group import ElementModQ, g_pow, G, Q, P, valid_residue, ZERO_MOD_Q
 from tests.test_group import arb_element_mod_q_no_zero, arb_element_mod_q
 
 
@@ -38,6 +38,10 @@ class TestElGamal(unittest.TestCase):
         plaintext = decrypt(ciphertext, keypair.secret_key)
 
         self.assertEqual(0, plaintext)
+
+    @given(integers(0, 100), arb_elgamal_keypair())
+    def test_elgamal_requires_nonzero_nonce(self, message: int, keypair: ElGamalKeyPair):
+        self.assertRaises(Exception, encrypt, message, ZERO_MOD_Q, keypair.public_key)
 
     @given(integers(0, 100), arb_element_mod_q_no_zero(), arb_elgamal_keypair())
     def test_encryption_decryption_inverses(self, message: int, nonce: ElementModQ, keypair: ElGamalKeyPair):
@@ -74,3 +78,7 @@ class TestElGamal(unittest.TestCase):
         total = decrypt(c_sum, keypair.secret_key)
 
         self.assertEqual(total, m1 + m2)
+
+    @given(arb_elgamal_keypair())
+    def test_elgamal_keys_valid_residue(self, keypair):
+        self.assertTrue(valid_residue(keypair.public_key))

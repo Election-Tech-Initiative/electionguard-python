@@ -1,7 +1,7 @@
 from typing import NamedTuple
 
 from .dlog import discrete_log
-from .group import ElementModQ, ElementModP, Q, G, P, g_pow, mult_mod_p, mult_inv_p, pow_mod_p
+from .group import ElementModQ, ElementModP, Q, G, P, g_pow, mult_mod_p, mult_inv_p, pow_mod_p, ZERO_MOD_Q
 
 
 class ElGamalKeyPair(NamedTuple):
@@ -30,10 +30,13 @@ def encrypt(m: int, nonce: ElementModQ, public_key: ElementModP) -> ElGamalCiphe
     """
     Encrypts a message with a given random nonce and an ElGamal public key.
     :param m: Message to encrypt; must be an integer in [0,Q).
-    :param nonce: Randomly chosen nonce in [0,Q).
+    :param nonce: Randomly chosen nonce in [1,Q).
     :param public_key: ElGamal public key.
     :return: A ciphertext tuple.
     """
+    if nonce == ZERO_MOD_Q:
+        raise Exception("ElGamal encryption requires a non-zero nonce")
+
     return ElGamalCiphertext(g_pow(nonce), mult_mod_p(_message_to_element(m), pow_mod_p(public_key, nonce)))
 
 

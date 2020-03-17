@@ -48,6 +48,13 @@ class TestModularArithmetic(unittest.TestCase):
         inv = mult_inv_p(elem)
         self.assertEqual(mult_mod_p(elem, inv), ONE_MOD_P)
 
+    @given(arb_element_mod_p())
+    def test_mult_identity(self, elem: ElementModP):
+        self.assertEqual(elem, mult_mod_p(elem))
+
+    def test_mult_noargs(self):
+        self.assertEqual(ONE_MOD_P, mult_mod_p())
+
     def test_properties_for_constants(self):
         self.assertNotEqual(G, 1)
         self.assertEqual((R * Q) % P, P - 1)

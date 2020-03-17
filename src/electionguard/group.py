@@ -51,13 +51,15 @@ def pow_mod_p(b: ElementModPOrQ, e: ElementModPOrQ) -> ElementModP:
     return ElementModP(pow(b.elem, e.elem, P))
 
 
-def mult_mod_p(a: ElementModPOrQ, b: ElementModPOrQ) -> ElementModP:
+def mult_mod_p(*elems: ElementModPOrQ) -> ElementModP:
     """
-    Computes a * b mod p.
-    :param a: An element in [0,P).
-    :param b: An element in [0,P).
+    Computes the product, mod p, of all elements.
+    :param elems: Zero or more elements in [0,P).
     """
-    return ElementModP((a.elem * b.elem) % P)
+    product = ONE_MOD_P
+    for x in elems:
+        product = ElementModP((product.elem * x.elem) % P)
+    return product
 
 
 def g_pow(e: ElementModPOrQ) -> ElementModP:
@@ -98,3 +100,13 @@ def in_bounds_q_no_zero(q: ElementModQ) -> bool:
     Returns true if all is good, false if something's wrong.
     """
     return 0 < q.elem < Q
+
+
+def valid_residue(x: ElementModP) -> bool:
+    """
+    Validates that x is in Z^r_p.
+    Returns true if all is good, false if something's wrong.
+    """
+    bounds = 0 <= x.elem < P
+    residue = pow_mod_p(x, ElementModQ(Q)) == ONE_MOD_P
+    return bounds and residue

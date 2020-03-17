@@ -6,15 +6,14 @@ from hashlib import sha256
 #   avoids misinterpretations. But is this the "best" way to go?
 
 
-def hash_two_elems_mod_q(a: ElementModPOrQ, b: ElementModPOrQ) -> ElementModQ:
+def hash_elems(*a: ElementModPOrQ) -> ElementModQ:
     """
-    Given two elements, calculate their hash.
-    :param a: Any element in P or Q
-    :param b: Any element in P or Q
-    :return: A hash of these two elements, concatenated.
+    Given an array of elements, calculate their hash.
+    :param a: An array of elements in P or Q
+    :return: A hash of these elements, concatenated.
     """
     h = sha256()
-    h.update(str(a).encode("utf-8"))
-    h.update(",".encode("utf-8"))
-    h.update(str(b).encode("utf-8"))
+    h.update("|".encode("utf-8"))
+    for x in a:
+        h.update((str(x) + "|").encode("utf-8"))
     return ElementModQ(int.from_bytes(h.digest(), byteorder='big') % Q)
