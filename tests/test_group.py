@@ -75,23 +75,33 @@ class TestModularArithmetic(unittest.TestCase):
     @given(arb_element_mod_q())
     def test_in_bounds_q(self, q: ElementModQ):
         self.assertTrue(in_bounds_q(q))
-        self.assertFalse(in_bounds_q(int_to_q_unchecked(elem_to_int(q) + Q)))
-        self.assertFalse(in_bounds_q(int_to_q_unchecked(elem_to_int(q) - Q)))
+        too_big = elem_to_int(q) + Q
+        too_small = elem_to_int(q) - Q
+        self.assertFalse(in_bounds_q(int_to_q_unchecked(too_big)))
+        self.assertFalse(in_bounds_q(int_to_q_unchecked(too_small)))
+        self.assertRaises(Exception, int_to_q, too_big)
+        self.assertRaises(Exception, int_to_q, too_small)
 
     @given(arb_element_mod_p())
     def test_in_bounds_p(self, p: ElementModP):
         self.assertTrue(in_bounds_p(p))
-        self.assertFalse(in_bounds_p(int_to_p_unchecked(elem_to_int(p) + P)))
-        self.assertFalse(in_bounds_p(int_to_p_unchecked(elem_to_int(p) - P)))
+        too_big = elem_to_int(p) + P
+        too_small = elem_to_int(p) - P
+        self.assertFalse(in_bounds_p(int_to_p_unchecked(too_big)))
+        self.assertFalse(in_bounds_p(int_to_p_unchecked(too_small)))
+        self.assertRaises(Exception, int_to_p, too_big)
+        self.assertRaises(Exception, int_to_p, too_small)
 
     @given(arb_element_mod_q_no_zero())
     def test_in_bounds_q_no_zero(self, q: ElementModQ):
         self.assertTrue(in_bounds_q_no_zero(q))
+        self.assertFalse(in_bounds_q_no_zero(ZERO_MOD_Q))
         self.assertFalse(in_bounds_q_no_zero(int_to_q_unchecked(elem_to_int(q) + Q)))
         self.assertFalse(in_bounds_q_no_zero(int_to_q_unchecked(elem_to_int(q) - Q)))
 
     @given(arb_element_mod_p_no_zero())
     def test_in_bounds_p_no_zero(self, p: ElementModP):
         self.assertTrue(in_bounds_p_no_zero(p))
+        self.assertFalse(in_bounds_p_no_zero(ZERO_MOD_P))
         self.assertFalse(in_bounds_p_no_zero(int_to_p_unchecked(elem_to_int(p) + P)))
         self.assertFalse(in_bounds_p_no_zero(int_to_p_unchecked(elem_to_int(p) - P)))

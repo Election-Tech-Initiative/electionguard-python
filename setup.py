@@ -4,7 +4,6 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 import io
-import re
 from glob import glob
 from os.path import basename
 from os.path import dirname
@@ -15,6 +14,7 @@ from setuptools import find_packages
 from setuptools import setup
 
 # Borrowed from here: https://blog.ionelmc.ro/2014/05/25/python-packaging/
+
 
 def read(*names, **kwargs):
     with io.open(
@@ -76,6 +76,7 @@ setup(
         'hypothesis==5.6.0'
     ],
     install_requires=[
+        'gmpy2==2.1.0b4'
         # eg: 'aspectlib==1.1.1', 'six>=1.7',
     ],
     extras_require={

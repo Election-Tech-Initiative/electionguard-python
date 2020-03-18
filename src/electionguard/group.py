@@ -3,6 +3,7 @@
 # made about timing or other side-channels.
 
 from typing import Final, Union, NamedTuple
+from gmpy2 import mpz, powmod
 
 # Constants used by ElectionGuard
 Q: Final[int] = pow(2, 256) - 189
@@ -14,22 +15,22 @@ G_INV: Final[int] = pow(G, -1, P)
 
 class ElementModQ(NamedTuple):
     """An element of the smaller `mod q` space, i.e., in [0, Q), where Q is a 256-bit prime."""
-    elem: int
+    elem: mpz
 
 
-ZERO_MOD_Q: Final[ElementModQ] = ElementModQ(0)
-ONE_MOD_Q: Final[ElementModQ] = ElementModQ(1)
-TWO_MOD_Q: Final[ElementModQ] = ElementModQ(2)
+ZERO_MOD_Q: Final[ElementModQ] = ElementModQ(mpz(0))
+ONE_MOD_Q: Final[ElementModQ] = ElementModQ(mpz(1))
+TWO_MOD_Q: Final[ElementModQ] = ElementModQ(mpz(2))
 
 
 class ElementModP(NamedTuple):
     """An element of the larger `mod p` space, i.e., in [0, P), where P is a 4096-bit prime."""
-    elem: int
+    elem: mpz
 
 
-ZERO_MOD_P: Final[ElementModP] = ElementModP(0)
-ONE_MOD_P: Final[ElementModP] = ElementModP(1)
-TWO_MOD_P: Final[ElementModP] = ElementModP(2)
+ZERO_MOD_P: Final[ElementModP] = ElementModP(mpz(0))
+ONE_MOD_P: Final[ElementModP] = ElementModP(mpz(1))
+TWO_MOD_P: Final[ElementModP] = ElementModP(mpz(2))
 
 ElementModPOrQ = Union[ElementModP, ElementModQ]  # generally useful typedef
 
@@ -40,7 +41,7 @@ def int_to_q(i: int) -> ElementModQ:
     Raises an exception if it's out of bounds.
     """
     if 0 <= i < Q:
-        return ElementModQ(i)
+        return ElementModQ(mpz(i))
     else:
         raise Exception("given element doesn't fit in Q: " + str(i))
 
@@ -52,7 +53,7 @@ def int_to_q_unchecked(i: int) -> ElementModQ:
     element (i.e., outside of [0,Q)). Useful for tests.
     Don't use anywhere else.
     """
-    return ElementModQ(i)
+    return ElementModQ(mpz(i))
 
 
 def int_to_p(i: int) -> ElementModP:
@@ -61,7 +62,7 @@ def int_to_p(i: int) -> ElementModP:
     Raises an exception if it's out of bounds.
     """
     if 0 <= i < P:
-        return ElementModP(i)
+        return ElementModP(mpz(i))
     else:
         raise Exception("given element doesn't fit in P: " + str(i))
 
@@ -73,7 +74,7 @@ def int_to_p_unchecked(i: int) -> ElementModP:
     element (i.e., outside of [0,P)). Useful for tests.
     Don't use anywhere else.
     """
-    return ElementModP(i)
+    return ElementModP(mpz(i))
 
 
 def elem_to_int(a: ElementModPOrQ) -> int:
@@ -87,7 +88,7 @@ def add_q(*elems: ElementModQ) -> ElementModQ:
     """
     Adds together one or more elements in Q, returns the sum mod Q.
     """
-    t = 0
+    t = mpz(0)
     for e in elems:
         t = (t + e.elem) % Q
 
@@ -122,7 +123,7 @@ def mult_inv_p(e: ElementModPOrQ) -> ElementModP:
     """
     if e.elem == 0:
         raise Exception("No multiplicative inverse for zero")
-    return ElementModP(pow(e.elem, -1, P))
+    return ElementModP(powmod(e.elem, -1, P))
 
 
 def pow_p(b: ElementModPOrQ, e: ElementModPOrQ) -> ElementModP:
@@ -131,7 +132,7 @@ def pow_p(b: ElementModPOrQ, e: ElementModPOrQ) -> ElementModP:
     :param b: An element in [0,P).
     :param e: An element in [0,P).
     """
-    return ElementModP(pow(b.elem, e.elem, P))
+    return ElementModP(powmod(b.elem, e.elem, P))
 
 
 def mult_p(*elems: ElementModPOrQ) -> ElementModP:
@@ -139,10 +140,10 @@ def mult_p(*elems: ElementModPOrQ) -> ElementModP:
     Computes the product, mod p, of all elements.
     :param elems: Zero or more elements in [0,P).
     """
-    product = ONE_MOD_P
+    product = mpz(1)
     for x in elems:
-        product = ElementModP((product.elem * x.elem) % P)
-    return product
+        product = (product * x.elem) % P
+    return ElementModP(product)
 
 
 def g_pow_p(e: ElementModPOrQ) -> ElementModP:
@@ -150,7 +151,7 @@ def g_pow_p(e: ElementModPOrQ) -> ElementModP:
     Computes g^e mod p.
     :param e: An element in [0,P).
     """
-    return pow_p(ElementModP(G), e)
+    return pow_p(ElementModP(mpz(G)), e)
 
 
 def in_bounds_p(p: ElementModP) -> bool:
@@ -191,5 +192,5 @@ def valid_residue(x: ElementModP) -> bool:
     Returns true if all is good, false if something's wrong.
     """
     bounds = 0 <= x.elem < P
-    residue = pow_p(x, ElementModQ(Q)) == ONE_MOD_P
+    residue = pow_p(x, ElementModQ(mpz(Q))) == ONE_MOD_P
     return bounds and residue
