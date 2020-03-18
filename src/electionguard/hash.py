@@ -1,4 +1,4 @@
-from .group import ElementModPOrQ, ElementModQ, Q
+from .group import ElementModPOrQ, ElementModQ, Q, int_to_q
 from hashlib import sha256
 
 # TODO: decide how we want to represent the inputs to the hash functions. For now, converting them to
@@ -16,4 +16,4 @@ def hash_elems(*a: ElementModPOrQ) -> ElementModQ:
     h.update("|".encode("utf-8"))
     for x in a:
         h.update((str(x) + "|").encode("utf-8"))
-    return ElementModQ(int.from_bytes(h.digest(), byteorder='big') % Q)
+    return int_to_q(int.from_bytes(h.digest(), byteorder='big') % Q)

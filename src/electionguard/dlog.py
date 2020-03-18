@@ -3,7 +3,7 @@
 import asyncio
 from typing import Dict
 
-from .group import G, ElementModP, ONE_MOD_P, mult_mod_p
+from .group import G, ElementModP, ONE_MOD_P, mult_p, int_to_p
 
 __dlog_cache: Dict[ElementModP, int] = {ONE_MOD_P: 0}
 __dlog_max_elem = ONE_MOD_P
@@ -39,11 +39,11 @@ async def __discrete_log_internal(e: ElementModP) -> int:
     global __dlog_lock
 
     async with __dlog_lock:
-        g = ElementModP(G)
+        g = int_to_p(G)
 
         while e != __dlog_max_elem:
             __dlog_max_exp = __dlog_max_exp + 1
-            __dlog_max_elem = mult_mod_p(g, __dlog_max_elem)
+            __dlog_max_elem = mult_p(g, __dlog_max_elem)
             __dlog_cache[__dlog_max_elem] = __dlog_max_exp
 
         return __dlog_cache[__dlog_max_elem]

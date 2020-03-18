@@ -2,7 +2,8 @@ import logging
 from typing import NamedTuple
 
 from .elgamal import ElGamalCiphertext
-from .group import ElementModQ, ElementModP, Q, g_pow, mult_mod_p, pow_mod_p, valid_residue, in_bounds_q
+from .group import ElementModQ, ElementModP, g_pow_p, mult_p, pow_p, valid_residue, in_bounds_q, a_minus_b_q, \
+    a_plus_bc_q, add_q, TWO_MOD_P, ONE_MOD_P, ZERO_MOD_P, negate_q
 from .hash import hash_elems
 
 
@@ -30,19 +31,19 @@ def make_chaum_pedersen_zero(message: ElGamalCiphertext, r: ElementModQ, k: Elem
     (alpha, beta) = message
 
     # We need to pick three random numbers in Q. For now, something like CTR-mode encryption.
-    c1 = hash_elems(seed, ElementModP(0))
-    v1 = hash_elems(seed, ElementModP(1))
-    u0 = hash_elems(seed, ElementModP(2))
+    c1 = hash_elems(seed, ZERO_MOD_P)
+    v1 = hash_elems(seed, ONE_MOD_P)
+    u0 = hash_elems(seed, TWO_MOD_P)
 
     # And now, the NIZK computation
-    a0 = g_pow(u0)
-    b0 = pow_mod_p(k, u0)
-    q_minus_c1 = ElementModQ(Q - c1.elem)
-    a1 = mult_mod_p(g_pow(v1), pow_mod_p(alpha, q_minus_c1))
-    b1 = mult_mod_p(pow_mod_p(k, v1), g_pow(c1), pow_mod_p(beta, q_minus_c1))
+    a0 = g_pow_p(u0)
+    b0 = pow_p(k, u0)
+    q_minus_c1 = negate_q(c1)
+    a1 = mult_p(g_pow_p(v1), pow_p(alpha, q_minus_c1))
+    b1 = mult_p(pow_p(k, v1), g_pow_p(c1), pow_p(beta, q_minus_c1))
     c = hash_elems(alpha, beta, a0, b0, a1, b1)
-    c0 = ElementModQ((c.elem - c1.elem) % Q)
-    v0 = ElementModQ((u0.elem + c0.elem * r.elem) % Q)
+    c0 = a_minus_b_q(c, c1)
+    v0 = a_plus_bc_q(u0, c0, r)
 
     return ChaumPedersenProof(message, a0, b0, a1, b1, c0, c1, v0, v1)
 
@@ -59,19 +60,19 @@ def make_chaum_pedersen_one(message: ElGamalCiphertext, r: ElementModQ, k: Eleme
     (alpha, beta) = message
 
     # We need to pick three random numbers in Q. For now, something like CTR-mode encryption.
-    c0 = hash_elems(seed, ElementModP(0))
-    v0 = hash_elems(seed, ElementModP(1))
-    u1 = hash_elems(seed, ElementModP(2))
+    c0 = hash_elems(seed, ZERO_MOD_P)
+    v0 = hash_elems(seed, ONE_MOD_P)
+    u1 = hash_elems(seed, TWO_MOD_P)
 
     # And now, the NIZK computation
-    q_minus_c0 = ElementModQ(Q - c0.elem)
-    a0 = mult_mod_p(g_pow(v0), pow_mod_p(alpha, q_minus_c0))
-    b0 = mult_mod_p(pow_mod_p(k, v0), pow_mod_p(beta, q_minus_c0))
-    a1 = g_pow(u1)
-    b1 = pow_mod_p(k, u1)
+    q_minus_c0 = negate_q(c0)
+    a0 = mult_p(g_pow_p(v0), pow_p(alpha, q_minus_c0))
+    b0 = mult_p(pow_p(k, v0), pow_p(beta, q_minus_c0))
+    a1 = g_pow_p(u1)
+    b1 = pow_p(k, u1)
     c = hash_elems(alpha, beta, a0, b0, a1, b1)
-    c1 = ElementModQ((c.elem - c0.elem) % Q)
-    v1 = ElementModQ((u1.elem + c1.elem * r.elem) % Q)
+    c1 = a_minus_b_q(c, c0)
+    v1 = a_plus_bc_q(u1, c1, r)
 
     return ChaumPedersenProof(message, a0, b0, a1, b1, c0, c1, v0, v1)
 
@@ -95,11 +96,11 @@ def valid_chaum_pedersen(proof: ChaumPedersenProof, k: ElementModP) -> bool:
     in_bounds_v0 = in_bounds_q(v0)
     in_bounds_v1 = in_bounds_q(v1)
     c = hash_elems(alpha, beta, a0, b0, a1, b1)
-    consistent_c = c.elem == (c0.elem + c1.elem) % Q
-    consistent_gv0 = g_pow(v0) == mult_mod_p(a0, pow_mod_p(alpha, c0))
-    consistent_gv1 = g_pow(v1) == mult_mod_p(a1, pow_mod_p(alpha, c1))
-    consistent_kv0 = pow_mod_p(k, v0) == mult_mod_p(b0, pow_mod_p(beta, c0))
-    consistent_gc1kv1 = mult_mod_p(g_pow(c1), pow_mod_p(k, v1)) == mult_mod_p(b1, pow_mod_p(beta, c1))
+    consistent_c = c == add_q(c0, c1)
+    consistent_gv0 = g_pow_p(v0) == mult_p(a0, pow_p(alpha, c0))
+    consistent_gv1 = g_pow_p(v1) == mult_p(a1, pow_p(alpha, c1))
+    consistent_kv0 = pow_p(k, v0) == mult_p(b0, pow_p(beta, c0))
+    consistent_gc1kv1 = mult_p(g_pow_p(c1), pow_p(k, v1)) == mult_p(b1, pow_p(beta, c1))
 
     success = \
         in_bounds_alpha and \

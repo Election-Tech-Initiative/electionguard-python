@@ -1,7 +1,7 @@
 from typing import NamedTuple
 
 from .dlog import discrete_log
-from .group import ElementModQ, ElementModP, Q, G, P, g_pow, mult_mod_p, mult_inv_p, pow_mod_p, ZERO_MOD_Q
+from .group import ElementModQ, ElementModP, Q, G, P, g_pow_p, mult_p, mult_inv_p, pow_p, ZERO_MOD_Q, int_to_p
 
 
 class ElGamalKeyPair(NamedTuple):
@@ -23,7 +23,7 @@ def _message_to_element(m: int) -> ElementModP:
     """
     if m < 0 or m >= Q:
         raise Exception("Message %d out of range" % m)
-    return ElementModP(pow(G, m, P))
+    return int_to_p(pow(G, m, P))
 
 
 def encrypt(m: int, nonce: ElementModQ, public_key: ElementModP) -> ElGamalCiphertext:
@@ -37,7 +37,7 @@ def encrypt(m: int, nonce: ElementModQ, public_key: ElementModP) -> ElGamalCiphe
     if nonce == ZERO_MOD_Q:
         raise Exception("ElGamal encryption requires a non-zero nonce")
 
-    return ElGamalCiphertext(g_pow(nonce), mult_mod_p(_message_to_element(m), pow_mod_p(public_key, nonce)))
+    return ElGamalCiphertext(g_pow_p(nonce), mult_p(_message_to_element(m), pow_p(public_key, nonce)))
 
 
 def decrypt_known_product(c: ElGamalCiphertext, product: ElementModP) -> int:
@@ -47,7 +47,7 @@ def decrypt_known_product(c: ElGamalCiphertext, product: ElementModP) -> int:
     :param product: The known product (blinding factor).
     :return: An exponentially encoded plaintext message.
     """
-    return discrete_log(mult_mod_p(c.beta, mult_inv_p(product)))
+    return discrete_log(mult_p(c.beta, mult_inv_p(product)))
 
 
 def decrypt(c: ElGamalCiphertext, secret_key: ElementModQ) -> int:
@@ -57,7 +57,7 @@ def decrypt(c: ElGamalCiphertext, secret_key: ElementModQ) -> int:
     :param secret_key: The corresponding ElGamal secret key.
     :return: An exponentially encoded plaintext message.
     """
-    return decrypt_known_product(c, pow_mod_p(c.alpha, secret_key))
+    return decrypt_known_product(c, pow_p(c.alpha, secret_key))
 
 
 def decrypt_known_nonce(c: ElGamalCiphertext, public_key: ElementModP, nonce: ElementModQ) -> int:
@@ -68,7 +68,7 @@ def decrypt_known_nonce(c: ElGamalCiphertext, public_key: ElementModP, nonce: El
     :param nonce: The secret nonce used to create the ciphertext.
     :return: An exponentially encoded plaintext message.
     """
-    return decrypt_known_product(c, pow_mod_p(public_key, nonce))
+    return decrypt_known_product(c, pow_p(public_key, nonce))
 
 
 def elgamal_add(c1: ElGamalCiphertext, c2: ElGamalCiphertext) -> ElGamalCiphertext:
@@ -76,4 +76,4 @@ def elgamal_add(c1: ElGamalCiphertext, c2: ElGamalCiphertext) -> ElGamalCipherte
     Homomorphically accumulates two ElGamal ciphertexts by pairwise multiplication. The exponents
     of vote counters will add.
     """
-    return ElGamalCiphertext(mult_mod_p(c1.alpha, c2.alpha), mult_mod_p(c1.beta, c2.beta))
+    return ElGamalCiphertext(mult_p(c1.alpha, c2.alpha), mult_p(c1.beta, c2.beta))

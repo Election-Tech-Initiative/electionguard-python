@@ -2,8 +2,8 @@ import logging
 from typing import NamedTuple
 
 from .elgamal import ElGamalKeyPair
-from .group import ElementModQ, ElementModP, Q, g_pow, mult_mod_p, pow_mod_p, in_bounds_p, in_bounds_q, \
-    valid_residue
+from .group import ElementModQ, ElementModP, g_pow_p, mult_p, pow_p, in_bounds_p, in_bounds_q, \
+    valid_residue, a_plus_bc_q
 from .hash import hash_elems
 
 
@@ -26,7 +26,7 @@ def valid_schnorr_proof(proof: SchnorrProof) -> bool:
     in_bounds_u = in_bounds_q(u)
 
     c = hash_elems(k, h)
-    valid_proof = g_pow(u) == mult_mod_p(h, pow_mod_p(k, c))
+    valid_proof = g_pow_p(u) == mult_p(h, pow_p(k, c))
 
     success = valid_public_key and in_bounds_h and in_bounds_u and valid_proof
     if not success:
@@ -47,8 +47,8 @@ def make_schnorr_proof(keypair: ElGamalKeyPair, r: ElementModQ) -> SchnorrProof:
     """
 
     k = keypair.public_key
-    h = g_pow(r)
+    h = g_pow_p(r)
     c = hash_elems(k, h)
-    u = ElementModQ((r.elem + keypair.secret_key.elem * c.elem) % Q)
+    u = a_plus_bc_q(r, keypair.secret_key, c)
 
     return SchnorrProof(k, h, u)

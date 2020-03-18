@@ -4,7 +4,8 @@ import unittest
 from hypothesis import given, assume
 
 from electionguard.elgamal import ElGamalKeyPair
-from electionguard.group import ElementModQ, g_pow, ElementModP, ZERO_MOD_P, P
+from electionguard.group import ElementModQ, g_pow_p, ElementModP, ZERO_MOD_P, P, int_to_p_unchecked, TWO_MOD_Q, \
+    ONE_MOD_Q
 from electionguard.schnorr import make_schnorr_proof, valid_schnorr_proof, SchnorrProof
 from tests.test_elgamal import arb_elgamal_keypair
 from tests.test_group import arb_element_mod_q, arb_element_mod_p_no_zero, arb_element_mod_p
@@ -20,8 +21,8 @@ class TestSchnorr(unittest.TestCase):
 
     def test_schnorr_proofs_simple(self):
         # doesn't get any simpler than this
-        keypair = ElGamalKeyPair(ElementModQ(2), g_pow(ElementModQ(2)))
-        nonce = ElementModQ(1)
+        keypair = ElGamalKeyPair(TWO_MOD_Q, g_pow_p(TWO_MOD_Q))
+        nonce = ONE_MOD_Q
         proof = make_schnorr_proof(keypair, nonce)
         self.assertTrue(valid_schnorr_proof(proof))
 
@@ -60,6 +61,6 @@ class TestSchnorr(unittest.TestCase):
         proof = make_schnorr_proof(keypair, nonce)
         (k, h, u) = proof
         proof2 = SchnorrProof(ZERO_MOD_P, h, u)
-        proof3 = SchnorrProof(ElementModP(P), h, u)
+        proof3 = SchnorrProof(int_to_p_unchecked(P), h, u)
         self.assertFalse(valid_schnorr_proof(proof2))
         self.assertFalse(valid_schnorr_proof(proof3))

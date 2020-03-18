@@ -7,7 +7,7 @@ from hypothesis import given, settings
 from electionguard.chaum_pedersen import make_chaum_pedersen_zero, valid_chaum_pedersen, make_chaum_pedersen_one, \
     ChaumPedersenProof
 from electionguard.elgamal import ElGamalKeyPair, encrypt
-from electionguard.group import ElementModQ, g_pow
+from electionguard.group import ElementModQ, g_pow_p, TWO_MOD_Q, ONE_MOD_Q
 from tests.test_elgamal import arb_elgamal_keypair
 from tests.test_group import arb_element_mod_q, arb_element_mod_q_no_zero
 
@@ -22,9 +22,9 @@ class TestChaumPedersen(unittest.TestCase):
 
     def test_cp_proofs_simple(self):
         # doesn't get any simpler than this
-        keypair = ElGamalKeyPair(ElementModQ(2), g_pow(ElementModQ(2)))
-        nonce = ElementModQ(1)
-        seed = ElementModQ(2)
+        keypair = ElGamalKeyPair(TWO_MOD_Q, g_pow_p(TWO_MOD_Q))
+        nonce = ONE_MOD_Q
+        seed = TWO_MOD_Q
         message0 = encrypt(0, nonce, keypair.public_key)
         proof0 = make_chaum_pedersen_zero(message0, nonce, keypair.public_key, seed)
         proof0bad = make_chaum_pedersen_one(message0, nonce, keypair.public_key, seed)

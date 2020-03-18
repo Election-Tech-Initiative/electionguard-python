@@ -13,3 +13,12 @@ class TestHash(unittest.TestCase):
         h1 = hash_elems(a, b)
         h2 = hash_elems(a, b)
         self.assertEqual(h1, h2)
+
+    @given(arb_element_mod_q(), arb_element_mod_q())
+    def test_basic_hash_properties(self, a, b):
+        ha = hash_elems(a)
+        hb = hash_elems(b)
+        if a == b:
+            self.assertEqual(ha, hb)
+        if ha != hb:
+            self.assertNotEqual(a, b)

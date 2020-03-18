@@ -19,6 +19,7 @@ class ElementModQ(NamedTuple):
 
 ZERO_MOD_Q: Final[ElementModQ] = ElementModQ(0)
 ONE_MOD_Q: Final[ElementModQ] = ElementModQ(1)
+TWO_MOD_Q: Final[ElementModQ] = ElementModQ(2)
 
 
 class ElementModP(NamedTuple):
@@ -28,8 +29,90 @@ class ElementModP(NamedTuple):
 
 ZERO_MOD_P: Final[ElementModP] = ElementModP(0)
 ONE_MOD_P: Final[ElementModP] = ElementModP(1)
+TWO_MOD_P: Final[ElementModP] = ElementModP(2)
 
 ElementModPOrQ = Union[ElementModP, ElementModQ]  # generally useful typedef
+
+
+def int_to_q(i: int) -> ElementModQ:
+    """
+    Given a Python integer, returns an ElementModQ.
+    Raises an exception if it's out of bounds.
+    """
+    if 0 <= i < Q:
+        return ElementModQ(i)
+    else:
+        raise Exception("given element doesn't fit in Q: " + str(i))
+
+
+def int_to_q_unchecked(i: int) -> ElementModQ:
+    """
+    Given a Python integer, returns an ElementModQ. Allows
+    for the input to be out-of-bounds, and thus creating an invalid
+    element (i.e., outside of [0,Q)). Useful for tests.
+    Don't use anywhere else.
+    """
+    return ElementModQ(i)
+
+
+def int_to_p(i: int) -> ElementModP:
+    """
+    Given a Python integer, returns an ElementModP.
+    Raises an exception if it's out of bounds.
+    """
+    if 0 <= i < P:
+        return ElementModP(i)
+    else:
+        raise Exception("given element doesn't fit in P: " + str(i))
+
+
+def int_to_p_unchecked(i: int) -> ElementModP:
+    """
+    Given a Python integer, returns an ElementModP. Allows
+    for the input to be out-of-bounds, and thus creating an invalid
+    element (i.e., outside of [0,P)). Useful for tests.
+    Don't use anywhere else.
+    """
+    return ElementModP(i)
+
+
+def elem_to_int(a: ElementModPOrQ) -> int:
+    """
+    Given an ElementModP or ElementModP, returns a regular Python integer.
+    """
+    return a.elem
+
+
+def add_q(*elems: ElementModQ) -> ElementModQ:
+    """
+    Adds together one or more elements in Q, returns the sum mod Q.
+    """
+    t = 0
+    for e in elems:
+        t = (t + e.elem) % Q
+
+    return ElementModQ(t)
+
+
+def a_minus_b_q(a: ElementModQ, b: ElementModQ) -> ElementModQ:
+    """
+    Computes (a-b) mod q.
+    """
+    return ElementModQ((a.elem - b.elem) % Q)
+
+
+def negate_q(a: ElementModQ) -> ElementModQ:
+    """
+    Computes (Q - a) mod q.
+    """
+    return ElementModQ(Q - a.elem)
+
+
+def a_plus_bc_q(a: ElementModQ, b: ElementModQ, c: ElementModQ) -> ElementModQ:
+    """
+    Computes (a + b * c) mod q
+    """
+    return ElementModQ((a.elem + b.elem * c.elem) % Q)
 
 
 def mult_inv_p(e: ElementModPOrQ) -> ElementModP:
@@ -42,7 +125,7 @@ def mult_inv_p(e: ElementModPOrQ) -> ElementModP:
     return ElementModP(pow(e.elem, -1, P))
 
 
-def pow_mod_p(b: ElementModPOrQ, e: ElementModPOrQ) -> ElementModP:
+def pow_p(b: ElementModPOrQ, e: ElementModPOrQ) -> ElementModP:
     """
     Computes b^e mod p.
     :param b: An element in [0,P).
@@ -51,7 +134,7 @@ def pow_mod_p(b: ElementModPOrQ, e: ElementModPOrQ) -> ElementModP:
     return ElementModP(pow(b.elem, e.elem, P))
 
 
-def mult_mod_p(*elems: ElementModPOrQ) -> ElementModP:
+def mult_p(*elems: ElementModPOrQ) -> ElementModP:
     """
     Computes the product, mod p, of all elements.
     :param elems: Zero or more elements in [0,P).
@@ -62,12 +145,12 @@ def mult_mod_p(*elems: ElementModPOrQ) -> ElementModP:
     return product
 
 
-def g_pow(e: ElementModPOrQ) -> ElementModP:
+def g_pow_p(e: ElementModPOrQ) -> ElementModP:
     """
     Computes g^e mod p.
     :param e: An element in [0,P).
     """
-    return pow_mod_p(ElementModP(G), e)
+    return pow_p(ElementModP(G), e)
 
 
 def in_bounds_p(p: ElementModP) -> bool:
@@ -108,5 +191,5 @@ def valid_residue(x: ElementModP) -> bool:
     Returns true if all is good, false if something's wrong.
     """
     bounds = 0 <= x.elem < P
-    residue = pow_mod_p(x, ElementModQ(Q)) == ONE_MOD_P
+    residue = pow_p(x, ElementModQ(Q)) == ONE_MOD_P
     return bounds and residue
