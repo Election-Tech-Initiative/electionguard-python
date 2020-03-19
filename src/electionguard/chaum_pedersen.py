@@ -3,8 +3,9 @@ from typing import NamedTuple
 
 from .elgamal import ElGamalCiphertext
 from .group import ElementModQ, ElementModP, g_pow_p, mult_p, pow_p, valid_residue, in_bounds_q, a_minus_b_q, \
-    a_plus_bc_q, add_q, TWO_MOD_P, ONE_MOD_P, ZERO_MOD_P, negate_q
+    a_plus_bc_q, add_q, negate_q
 from .hash import hash_elems
+from .random import RandomIterable
 
 
 class ChaumPedersenProof(NamedTuple):
@@ -30,10 +31,8 @@ def make_chaum_pedersen_zero(message: ElGamalCiphertext, r: ElementModQ, k: Elem
     """
     (alpha, beta) = message
 
-    # We need to pick three random numbers in Q. For now, something like CTR-mode encryption.
-    c1 = hash_elems(seed, ZERO_MOD_P)
-    v1 = hash_elems(seed, ONE_MOD_P)
-    u0 = hash_elems(seed, TWO_MOD_P)
+    # We need to pick three random numbers in Q.
+    (c1, v1, u0) = RandomIterable(seed).take(3)
 
     # And now, the NIZK computation
     a0 = g_pow_p(u0)
@@ -59,10 +58,8 @@ def make_chaum_pedersen_one(message: ElGamalCiphertext, r: ElementModQ, k: Eleme
     """
     (alpha, beta) = message
 
-    # We need to pick three random numbers in Q. For now, something like CTR-mode encryption.
-    c0 = hash_elems(seed, ZERO_MOD_P)
-    v0 = hash_elems(seed, ONE_MOD_P)
-    u1 = hash_elems(seed, TWO_MOD_P)
+    # We need to pick three random numbers in Q.
+    (c0, v0, u1) = RandomIterable(seed).take(3)
 
     # And now, the NIZK computation
     q_minus_c0 = negate_q(c0)
