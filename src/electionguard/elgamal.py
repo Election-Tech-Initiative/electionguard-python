@@ -1,7 +1,8 @@
 from typing import NamedTuple
 
 from .dlog import discrete_log
-from .group import ElementModQ, ElementModP, Q, G, P, g_pow_p, mult_p, mult_inv_p, pow_p, ZERO_MOD_Q, int_to_p
+from .group import ElementModQ, ElementModP, Q, G, P, g_pow_p, mult_p, mult_inv_p, pow_p, ZERO_MOD_Q, int_to_p, \
+    elem_to_int
 
 
 class ElGamalKeyPair(NamedTuple):
@@ -26,10 +27,22 @@ def _message_to_element(m: int) -> ElementModP:
     return int_to_p(pow(G, m, P))
 
 
-def encrypt(m: int, nonce: ElementModQ, public_key: ElementModP) -> ElGamalCiphertext:
+def elgamal_keypair_from_secret(a: ElementModQ) -> ElGamalKeyPair:
+    """
+    Given an ElGamal secret key (typically, a random number in [2,Q)), returns
+    an ElGamal keypair, consisting of the given secret key a and public key g^a.
+    """
+    secret_key_int = elem_to_int(a)
+    if secret_key_int < 2:
+        raise Exception("ElGamal secret key needs to be in [2,Q).")
+
+    return ElGamalKeyPair(a, g_pow_p(a))
+
+
+def elgamal_encrypt(m: int, nonce: ElementModQ, public_key: ElementModP) -> ElGamalCiphertext:
     """
     Encrypts a message with a given random nonce and an ElGamal public key.
-    :param m: Message to encrypt; must be an integer in [0,Q).
+    :param m: Message to elgamal_encrypt; must be an integer in [0,Q).
     :param nonce: Randomly chosen nonce in [1,Q).
     :param public_key: ElGamal public key.
     :return: A ciphertext tuple.
@@ -40,7 +53,7 @@ def encrypt(m: int, nonce: ElementModQ, public_key: ElementModP) -> ElGamalCiphe
     return ElGamalCiphertext(g_pow_p(nonce), mult_p(_message_to_element(m), pow_p(public_key, nonce)))
 
 
-def decrypt_known_product(c: ElGamalCiphertext, product: ElementModP) -> int:
+def elgamal_decrypt_known_product(c: ElGamalCiphertext, product: ElementModP) -> int:
     """
     Decrypts an ElGamal ciphertext with a "known product" (the blinding factor used in the encryption).
     :param c: The ciphertext tuple.
@@ -50,17 +63,17 @@ def decrypt_known_product(c: ElGamalCiphertext, product: ElementModP) -> int:
     return discrete_log(mult_p(c.beta, mult_inv_p(product)))
 
 
-def decrypt(c: ElGamalCiphertext, secret_key: ElementModQ) -> int:
+def elgamal_decrypt(c: ElGamalCiphertext, secret_key: ElementModQ) -> int:
     """
     Decrypt an ElGamal ciphertext using a known ElGamal secret key.
     :param c: The ciphertext tuple.
     :param secret_key: The corresponding ElGamal secret key.
     :return: An exponentially encoded plaintext message.
     """
-    return decrypt_known_product(c, pow_p(c.alpha, secret_key))
+    return elgamal_decrypt_known_product(c, pow_p(c.alpha, secret_key))
 
 
-def decrypt_known_nonce(c: ElGamalCiphertext, public_key: ElementModP, nonce: ElementModQ) -> int:
+def elgamal_decrypt_known_nonce(c: ElGamalCiphertext, public_key: ElementModP, nonce: ElementModQ) -> int:
     """
     Decrypt an ElGamal ciphertext using a known nonce and the ElGamal public key.
     :param c: The ciphertext tuple.
@@ -68,7 +81,7 @@ def decrypt_known_nonce(c: ElGamalCiphertext, public_key: ElementModP, nonce: El
     :param nonce: The secret nonce used to create the ciphertext.
     :return: An exponentially encoded plaintext message.
     """
-    return decrypt_known_product(c, pow_p(public_key, nonce))
+    return elgamal_decrypt_known_product(c, pow_p(public_key, nonce))
 
 
 def elgamal_add(c1: ElGamalCiphertext, c2: ElGamalCiphertext) -> ElGamalCiphertext:

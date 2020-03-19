@@ -3,8 +3,8 @@ import unittest
 
 from hypothesis import given, assume
 
-from electionguard.elgamal import ElGamalKeyPair
-from electionguard.group import ElementModQ, g_pow_p, ElementModP, ZERO_MOD_P, P, int_to_p_unchecked, TWO_MOD_Q, \
+from electionguard.elgamal import ElGamalKeyPair, elgamal_keypair_from_secret
+from electionguard.group import ElementModQ, ElementModP, ZERO_MOD_P, P, int_to_p_unchecked, TWO_MOD_Q, \
     ONE_MOD_Q
 from electionguard.schnorr import make_schnorr_proof, valid_schnorr_proof, SchnorrProof
 from tests.test_elgamal import arb_elgamal_keypair
@@ -21,7 +21,7 @@ class TestSchnorr(unittest.TestCase):
 
     def test_schnorr_proofs_simple(self):
         # doesn't get any simpler than this
-        keypair = ElGamalKeyPair(TWO_MOD_Q, g_pow_p(TWO_MOD_Q))
+        keypair = elgamal_keypair_from_secret(TWO_MOD_Q)
         nonce = ONE_MOD_Q
         proof = make_schnorr_proof(keypair, nonce)
         self.assertTrue(valid_schnorr_proof(proof))
