@@ -1,4 +1,5 @@
 from hashlib import sha256
+from typing import Union
 
 from .group import ElementModPOrQ, ElementModQ, Q, int_to_q
 
@@ -8,10 +9,11 @@ from .group import ElementModPOrQ, ElementModQ, Q, int_to_q
 #   avoids misinterpretations. But is this the "best" way to go?
 
 
-def hash_elems(*a: ElementModPOrQ) -> ElementModQ:
+def hash_elems(*a: Union[ElementModPOrQ, str]) -> ElementModQ:
     """
     Given an array of elements, calculate their hash.
-    :param a: An array of elements in P or Q
+    Allowed types are ElementModP, ElementModQ, and str.
+    :param a: An array of elements.
     :return: A hash of these elements, concatenated.
     """
     h = sha256()

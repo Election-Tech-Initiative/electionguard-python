@@ -5,7 +5,7 @@ from .group import ElementModQ, ElementModP, g_pow_p, mult_p, pow_p, valid_resid
     a_plus_bc_q, add_q, negate_q
 from .hash import hash_elems
 from .logs import log_warning
-from .random import RandomIterable
+from .nonces import Nonces
 
 
 class ChaumPedersenProof(NamedTuple):
@@ -32,7 +32,7 @@ def make_chaum_pedersen_zero(message: ElGamalCiphertext, r: ElementModQ, k: Elem
     (alpha, beta) = message
 
     # We need to pick three random numbers in Q.
-    (c1, v1, u0) = RandomIterable(seed).take(3)
+    c1, v1, u0 = Nonces(seed, "chaum-pedersen-proof")[0:3]
 
     # And now, the NIZK computation
     a0 = g_pow_p(u0)
@@ -59,7 +59,7 @@ def make_chaum_pedersen_one(message: ElGamalCiphertext, r: ElementModQ, k: Eleme
     (alpha, beta) = message
 
     # We need to pick three random numbers in Q.
-    (c0, v0, u1) = RandomIterable(seed).take(3)
+    c0, v0, u1 = Nonces(seed, "chaum-pedersen-proof")[0:3]
 
     # And now, the NIZK computation
     q_minus_c0 = negate_q(c0)

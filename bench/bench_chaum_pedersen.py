@@ -7,7 +7,7 @@ from numpy import average, std
 from electionguard.chaum_pedersen import make_chaum_pedersen_zero, valid_chaum_pedersen
 from electionguard.elgamal import elgamal_keypair_from_secret, ElGamalKeyPair, elgamal_encrypt
 from electionguard.group import ElementModQ, int_to_q
-from electionguard.random import RandomIterable
+from electionguard.nonces import Nonces
 
 
 class BenchInput(NamedTuple):
@@ -16,7 +16,7 @@ class BenchInput(NamedTuple):
     seed: ElementModQ
 
 
-def chaum_pederson_bench(i: BenchInput) -> Tuple[float, float]:
+def chaum_pedersen_bench(i: BenchInput) -> Tuple[float, float]:
     (keypair, r, seed) = i
     ciphertext = elgamal_encrypt(0, r, keypair.public_key)
     start1 = timer()
@@ -30,12 +30,12 @@ def chaum_pederson_bench(i: BenchInput) -> Tuple[float, float]:
 
 
 if __name__ == "__main__":
-    ITERS: int = 100
-    rands = RandomIterable(int_to_q(31337))
-    seeds = rands.take(ITERS)
-    inputs = list(map(lambda a: BenchInput(elgamal_keypair_from_secret(a), rands.next(), rands.next()), seeds))
+    ITERS: int = 1000
+    rands = Nonces(int_to_q(31337))
+    seeds = rands[0:ITERS]
+    inputs = list(map(lambda a: BenchInput(elgamal_keypair_from_secret(a), rands[ITERS], rands[ITERS + 1]), seeds))
     start_all_scalar = timer()
-    timing_data = list(map(lambda i: chaum_pederson_bench(i), inputs))
+    timing_data = list(map(lambda i: chaum_pedersen_bench(i), inputs))
     end_all_scalar = timer()
 
     print("Creating Chaum-Pedersen proofs (%d iterations)" % ITERS)
@@ -54,7 +54,7 @@ if __name__ == "__main__":
     print("Checking parallel speedup, detected %d CPUs" % cpu_count())
     pool = Pool(cpu_count())
     start_all_parallel = timer()
-    timing_data_parallel = pool.map(chaum_pederson_bench, inputs)
+    timing_data_parallel = pool.map(chaum_pedersen_bench, inputs)
     end_all_parallel = timer()
 
     print("Parallel speedup: %.3fx" % ((end_all_scalar - start_all_scalar) / (end_all_parallel - start_all_parallel)))

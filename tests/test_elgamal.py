@@ -1,6 +1,6 @@
 import unittest
-from timeit import default_timer as timer
 from multiprocessing import Pool, cpu_count
+from timeit import default_timer as timer
 
 from hypothesis import given
 from hypothesis.strategies import composite, integers
@@ -11,7 +11,7 @@ from electionguard.elgamal import ElGamalKeyPair, _message_to_element, elgamal_e
 from electionguard.group import ElementModQ, g_pow_p, G, Q, P, valid_residue, ZERO_MOD_Q, TWO_MOD_Q, ONE_MOD_Q, \
     ONE_MOD_P, elem_to_int, int_to_q
 from electionguard.logs import log_info
-from electionguard.random import RandomIterable
+from electionguard.nonces import Nonces
 from tests.test_group import arb_element_mod_q_no_zero, arb_element_mod_q
 
 
@@ -99,7 +99,7 @@ class TestElGamal(unittest.TestCase):
     def test_gmpy2_parallelism_is_safe(self):
         cpus = cpu_count()
         problem_size = 5000
-        secret_keys = RandomIterable(int_to_q(3)).take(problem_size)  # list of 1000 might-as-well-be-random Q's
+        secret_keys = Nonces(int_to_q(3))[0:problem_size]  # list of 1000 might-as-well-be-random Q's
         log_info("testing GMPY2 powmod paralellism safety (cpus = %d, problem_size = %d)", cpus, problem_size)
 
         # compute in parallel
