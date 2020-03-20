@@ -1,10 +1,10 @@
-import logging
 from typing import NamedTuple
 
 from .elgamal import ElGamalCiphertext
 from .group import ElementModQ, ElementModP, g_pow_p, mult_p, pow_p, valid_residue, in_bounds_q, a_minus_b_q, \
     a_plus_bc_q, add_q, negate_q
 from .hash import hash_elems
+from .logs import log_warning
 from .random import RandomIterable
 
 
@@ -81,6 +81,7 @@ def valid_chaum_pedersen(proof: ChaumPedersenProof, k: ElementModP) -> bool:
     :param k: The public key of the election.
     :return: True if everything is consistent. False otherwise.
     """
+
     ((alpha, beta), a0, b0, a1, b1, c0, c1, v0, v1) = proof
     in_bounds_alpha = valid_residue(alpha)
     in_bounds_beta = valid_residue(beta)
@@ -117,7 +118,7 @@ def valid_chaum_pedersen(proof: ChaumPedersenProof, k: ElementModP) -> bool:
         consistent_gc1kv1
 
     if not success:
-        logging.warning("found an invalid Chaum-Pedersen proof: %s" % str({
+        log_warning("found an invalid Chaum-Pedersen proof: %s", str({
             "in_bounds_alpha": in_bounds_alpha,
             "in_bounds_beta": in_bounds_beta,
             "in_bounds_a0": in_bounds_a0,

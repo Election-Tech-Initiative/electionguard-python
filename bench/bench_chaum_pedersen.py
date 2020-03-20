@@ -58,3 +58,4 @@ if __name__ == "__main__":
     end_all_parallel = timer()
 
     print("Parallel speedup: %.3fx" % ((end_all_scalar - start_all_scalar) / (end_all_parallel - start_all_parallel)))
+    pool.close()  # apparently necessary to avoid warnings from the Pool system

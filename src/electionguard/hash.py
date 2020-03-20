@@ -1,5 +1,7 @@
-from .group import ElementModPOrQ, ElementModQ, Q, int_to_q
 from hashlib import sha256
+
+from .group import ElementModPOrQ, ElementModQ, Q, int_to_q
+
 
 # TODO: decide how we want to represent the inputs to the hash functions. For now, converting them to
 #   intermediary text strings generates consistent and predictable solutions. Adding punctuation

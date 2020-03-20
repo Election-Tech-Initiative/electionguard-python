@@ -1,4 +1,6 @@
 import unittest
+from timeit import default_timer as timer
+from multiprocessing import Pool, cpu_count
 
 from hypothesis import given
 from hypothesis.strategies import composite, integers
@@ -7,7 +9,9 @@ from electionguard.elgamal import ElGamalKeyPair, _message_to_element, elgamal_e
     elgamal_decrypt_known_nonce, \
     elgamal_add, elgamal_keypair_from_secret
 from electionguard.group import ElementModQ, g_pow_p, G, Q, P, valid_residue, ZERO_MOD_Q, TWO_MOD_Q, ONE_MOD_Q, \
-    ONE_MOD_P, elem_to_int
+    ONE_MOD_P, elem_to_int, int_to_q
+from electionguard.logs import log_info
+from electionguard.random import RandomIterable
 from tests.test_group import arb_element_mod_q_no_zero, arb_element_mod_q
 
 
@@ -88,3 +92,25 @@ class TestElGamal(unittest.TestCase):
     @given(arb_elgamal_keypair())
     def test_elgamal_keys_valid_residue(self, keypair):
         self.assertTrue(valid_residue(keypair.public_key))
+
+    # Here's an oddball test: checking whether running lots of parallel exponentiations yields the
+    # correct answer. It certainly *should* work, but this verifies that nothing weird is happening
+    # in the GMPY2 library, with it's C code below that.
+    def test_gmpy2_parallelism_is_safe(self):
+        cpus = cpu_count()
+        problem_size = 5000
+        secret_keys = RandomIterable(int_to_q(3)).take(problem_size)  # list of 1000 might-as-well-be-random Q's
+        log_info("testing GMPY2 powmod paralellism safety (cpus = %d, problem_size = %d)", cpus, problem_size)
+
+        # compute in parallel
+        start = timer()
+        p = Pool(cpus)
+        keypairs = p.map(elgamal_keypair_from_secret, secret_keys)
+        end1 = timer()
+
+        # verify scalar
+        for keypair in keypairs:
+            self.assertEqual(keypair.public_key, elgamal_keypair_from_secret(keypair.secret_key).public_key)
+        end2 = timer()
+        p.close()  # apparently necessary to avoid warnings from the Pool system
+        log_info("Parallelism speedup: %.3fx", (end2 - end1) / (end1 - start))

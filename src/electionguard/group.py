@@ -3,6 +3,7 @@
 # made about timing or other side-channels.
 
 from typing import Final, Union, NamedTuple
+
 from gmpy2 import mpz, powmod
 
 # Constants used by ElectionGuard

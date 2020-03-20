@@ -24,6 +24,9 @@ So far, all our tests with seem to pass with 2.1b4, but we can downgrade to 2.0.
 Why go bleeding edge? Multithreading support seems important if/when we want to run EG in parallel,
 which will probably be necessary and useful when computing with large ballot manifests.
 
+We have a very simplistic paralllel test in `test_elgamal.py` (`test_gmpy2_parallelism_is_safe`) to exercise this.
+Whether that reflects the stresses of a real-world deployment is TBD.
+
 ## Python type hints
 GMPY2 has no type hints, nor are any present in [Typeshed](https://github.com/python/typeshed).
 This makes `mypy` unhappy with our code in `group.py`. If you look in `stubs/gmpy2.pyi`, you'll see
