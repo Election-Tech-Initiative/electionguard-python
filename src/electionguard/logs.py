@@ -1,11 +1,11 @@
 import logging
 from typing import Any
 
-# Unified logging for the ElectionGuard core library: we're sending all logging info to
-# a file on disk ("electionguard.log") and we're only sending errors and criticals to the
-# console. When running unit tests, this will go to 'tests/electionguard.log'.
+# Unified logging for the ElectionGuard core library: we're sending all logging info to a file on disk
+# ("electionguard.log") and we're only sending errors and criticals to the console. When normally running
+# unit tests, this will go to 'tests/electionguard.log'. When running Tox, it goes to the project root directory.
 
-# TODO: make this work if we're running ElectionGuard in multiple *processes* at the same time.
+# TODO: Make this work if we're running ElectionGuard in multiple *processes* at the same time.
 
 # Says the Python logging cookbook:
 #     https://docs.python.org/3/howto/logging-cookbook.html#logging-to-a-single-file-from-multiple-processes
@@ -62,8 +62,11 @@ def log_critical(msg: str, *args: Any, **kwargs: Any) -> None:
     __logger.critical(msg, *args, **kwargs)
 
 
+# these should only appear in the log file
 log_debug("ElectionGuard log system starting (testing debug)")
 log_info("ElectionGuard log system starting (testing info)")
 log_warning("ElectionGuard log system starting (testing warning)")
+
+# these should be in the log file and visible on the console
 log_error("ElectionGuard log system starting (testing error)")
 log_critical("ElectionGuard log system starting (testing critical)")

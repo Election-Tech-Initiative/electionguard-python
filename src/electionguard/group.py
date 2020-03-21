@@ -192,6 +192,5 @@ def valid_residue(x: ElementModP) -> bool:
     Validates that x is in Z^r_p.
     Returns true if all is good, false if something's wrong.
     """
-    bounds = 0 <= x.elem < P
     residue = pow_p(x, ElementModQ(mpz(Q))) == ONE_MOD_P
-    return bounds and residue
+    return in_bounds_p(x) and residue
