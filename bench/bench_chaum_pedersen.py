@@ -4,7 +4,7 @@ from typing import Tuple, NamedTuple, Dict
 
 from numpy import average, std
 
-from electionguard.chaum_pedersen import make_chaum_pedersen_zero, valid_chaum_pedersen
+from electionguard.chaum_pedersen import make_disjunctive_chaum_pedersen_zero, valid_disjunctive_chaum_pedersen
 from electionguard.elgamal import elgamal_keypair_from_secret, ElGamalKeyPair, elgamal_encrypt
 from electionguard.group import ElementModQ, int_to_q
 from electionguard.nonces import Nonces
@@ -21,14 +21,14 @@ class BenchInput(NamedTuple):
 def chaum_pedersen_bench(bi: BenchInput) -> Tuple[float, float]:
     """
     Given an input (instance of the BenchInput tuple), constructs and validates
-    a Chaum-Pedersen proof, returning the time (in seconds) to do each operation.
+    a disjunctive Chaum-Pedersen proof, returning the time (in seconds) to do each operation.
     """
     (keypair, r, s) = bi
     ciphertext = elgamal_encrypt(0, r, keypair.public_key)
     start1 = timer()
-    proof = make_chaum_pedersen_zero(ciphertext, r, keypair.public_key, s)
+    proof = make_disjunctive_chaum_pedersen_zero(ciphertext, r, keypair.public_key, s)
     end1 = timer()
-    valid = valid_chaum_pedersen(proof, keypair.public_key)
+    valid = valid_disjunctive_chaum_pedersen(proof, keypair.public_key)
     end2 = timer()
     if not valid:
         raise Exception("Wasn't expecting an invalid proof during a benchmark!")

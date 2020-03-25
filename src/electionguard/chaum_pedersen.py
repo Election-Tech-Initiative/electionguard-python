@@ -8,7 +8,7 @@ from .logs import log_warning
 from .nonces import Nonces
 
 
-class ChaumPedersenProof(NamedTuple):
+class DisjunctiveChaumPedersenProof(NamedTuple):
     message: ElGamalCiphertext
     a0: ElementModP
     b0: ElementModP
@@ -20,10 +20,10 @@ class ChaumPedersenProof(NamedTuple):
     v1: ElementModQ
 
 
-def make_chaum_pedersen_zero(message: ElGamalCiphertext, r: ElementModQ, k: ElementModP,
-                             seed: ElementModQ) -> ChaumPedersenProof:
+def make_disjunctive_chaum_pedersen_zero(message: ElGamalCiphertext, r: ElementModQ, k: ElementModP,
+                                         seed: ElementModQ) -> DisjunctiveChaumPedersenProof:
     """
-    Produces a proof that an encryption of zero is either an encrypted zero or one.
+    Produces a "disjunctive" proof that an encryption of zero is either an encrypted zero or one.
     :param message: An ElGamal ciphertext
     :param r: The nonce used creating the ElGamal ciphertext
     :param k: The ElGamal public key for the election
@@ -44,13 +44,13 @@ def make_chaum_pedersen_zero(message: ElGamalCiphertext, r: ElementModQ, k: Elem
     c0 = a_minus_b_q(c, c1)
     v0 = a_plus_bc_q(u0, c0, r)
 
-    return ChaumPedersenProof(message, a0, b0, a1, b1, c0, c1, v0, v1)
+    return DisjunctiveChaumPedersenProof(message, a0, b0, a1, b1, c0, c1, v0, v1)
 
 
-def make_chaum_pedersen_one(message: ElGamalCiphertext, r: ElementModQ, k: ElementModP,
-                            seed: ElementModQ) -> ChaumPedersenProof:
+def make_disjunctive_chaum_pedersen_one(message: ElGamalCiphertext, r: ElementModQ, k: ElementModP,
+                                        seed: ElementModQ) -> DisjunctiveChaumPedersenProof:
     """
-    Produces a proof that an encryption of one is either an encrypted zero or one.
+    Produces a "disjunctive" proof that an encryption of one is either an encrypted zero or one.
     :param message: An ElGamal ciphertext
     :param r: The nonce used creating the ElGamal ciphertext
     :param k: The ElGamal public key for the election
@@ -71,12 +71,12 @@ def make_chaum_pedersen_one(message: ElGamalCiphertext, r: ElementModQ, k: Eleme
     c1 = a_minus_b_q(c, c0)
     v1 = a_plus_bc_q(u1, c1, r)
 
-    return ChaumPedersenProof(message, a0, b0, a1, b1, c0, c1, v0, v1)
+    return DisjunctiveChaumPedersenProof(message, a0, b0, a1, b1, c0, c1, v0, v1)
 
 
-def valid_chaum_pedersen(proof: ChaumPedersenProof, k: ElementModP) -> bool:
+def valid_disjunctive_chaum_pedersen(proof: DisjunctiveChaumPedersenProof, k: ElementModP) -> bool:
     """
-    Validates a Chaum-Pedersen "zero or one" proof.
+    Validates a Chaum-Pedersen disjunctive "zero or one" proof.
     :param proof: The proof object
     :param k: The public key of the election.
     :return: True if everything is consistent. False otherwise.
