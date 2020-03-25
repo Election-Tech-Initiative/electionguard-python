@@ -2,7 +2,7 @@ from typing import NamedTuple
 
 from .elgamal import ElGamalCiphertext
 from .group import ElementModQ, ElementModP, g_pow_p, mult_p, pow_p, valid_residue, in_bounds_q, a_minus_b_q, \
-    a_plus_bc_q, add_q, negate_q
+    a_plus_bc_q, add_q, negate_q, int_to_q
 from .hash import hash_elems
 from .logs import log_warning
 from .nonces import Nonces
@@ -20,6 +20,15 @@ class DisjunctiveChaumPedersenProof(NamedTuple):
     v1: ElementModQ
 
 
+class ConstantChaumPedersenProof(NamedTuple):
+    message: ElGamalCiphertext
+    a: ElementModP
+    b: ElementModP
+    c: ElementModQ
+    v: ElementModQ
+    constant: int
+
+
 def make_disjunctive_chaum_pedersen_zero(message: ElGamalCiphertext, r: ElementModQ, k: ElementModP,
                                          seed: ElementModQ) -> DisjunctiveChaumPedersenProof:
     """
@@ -27,12 +36,12 @@ def make_disjunctive_chaum_pedersen_zero(message: ElGamalCiphertext, r: ElementM
     :param message: An ElGamal ciphertext
     :param r: The nonce used creating the ElGamal ciphertext
     :param k: The ElGamal public key for the election
-    :param seed: Used to generate other random values here.
+    :param seed: Used to generate other random values here
     """
     (alpha, beta) = message
 
     # We need to pick three random numbers in Q.
-    c1, v1, u0 = Nonces(seed, "chaum-pedersen-proof")[0:3]
+    c1, v1, u0 = Nonces(seed, "disjoint-chaum-pedersen-proof")[0:3]
 
     # And now, the NIZK computation
     a0 = g_pow_p(u0)
@@ -54,12 +63,12 @@ def make_disjunctive_chaum_pedersen_one(message: ElGamalCiphertext, r: ElementMo
     :param message: An ElGamal ciphertext
     :param r: The nonce used creating the ElGamal ciphertext
     :param k: The ElGamal public key for the election
-    :param seed: Used to generate other random values here.
+    :param seed: Used to generate other random values here
     """
     (alpha, beta) = message
 
     # We need to pick three random numbers in Q.
-    c0, v0, u1 = Nonces(seed, "chaum-pedersen-proof")[0:3]
+    c0, v0, u1 = Nonces(seed, "disjoint-chaum-pedersen-proof")[0:3]
 
     # And now, the NIZK computation
     q_minus_c0 = negate_q(c0)
@@ -74,11 +83,33 @@ def make_disjunctive_chaum_pedersen_one(message: ElGamalCiphertext, r: ElementMo
     return DisjunctiveChaumPedersenProof(message, a0, b0, a1, b1, c0, c1, v0, v1)
 
 
+def make_constant_chaum_pedersen(message: ElGamalCiphertext, constant: int, r: ElementModQ, k: ElementModP,
+                                 seed: ElementModQ) -> ConstantChaumPedersenProof:
+    """
+    Produces a proof that a given encryption corresponds to a specific total value.
+    :param message: An ElGamal ciphertext
+    :param constant: The plaintext constant value used to make the ElGamal ciphertext
+    :param r: The aggregate nonce used creating the ElGamal ciphertext
+    :param k: The ElGamal public key for the election
+    :param seed: Used to generate other random values here
+    """
+    (alpha, beta) = message
+
+    # We need to pick three random numbers in Q.
+    u = Nonces(seed, "constant-chaum-pedersen-proof")[0]
+    a = g_pow_p(u)
+    b = pow_p(k, u)
+    c = hash_elems(alpha, beta, a, b)
+    v = a_plus_bc_q(u, c, r)
+
+    return ConstantChaumPedersenProof(message, a, b, c, v, constant)
+
+
 def valid_disjunctive_chaum_pedersen(proof: DisjunctiveChaumPedersenProof, k: ElementModP) -> bool:
     """
-    Validates a Chaum-Pedersen disjunctive "zero or one" proof.
+    Validates a "disjunctive" Chaum-Pedersen (zero or one) proof.
     :param proof: The proof object
-    :param k: The public key of the election.
+    :param k: The public key of the election
     :return: True if everything is consistent. False otherwise.
     """
 
@@ -138,3 +169,52 @@ def valid_disjunctive_chaum_pedersen(proof: DisjunctiveChaumPedersenProof, k: El
             "proof": proof
         }))
     return success
+
+
+def valid_constant_chaum_pedersen(proof: ConstantChaumPedersenProof, k: ElementModP) -> bool:
+    """
+    Validates a "constant" Chaum-Pedersen proof.
+    :param proof: The proof object
+    :param k: The public key of the election
+    :return: True if everything is consistent. False otherwise.
+    """
+
+    ((alpha, beta), a, b, c, v, constant) = proof
+    in_bounds_alpha = valid_residue(alpha)
+    in_bounds_beta = valid_residue(beta)
+    in_bounds_a = valid_residue(a)
+    in_bounds_b = valid_residue(b)
+    in_bounds_c = in_bounds_q(c)
+    in_bounds_v = in_bounds_q(v)
+    sane_constant = 0 <= constant < 1_000_000_000
+    c = hash_elems(alpha, beta, a, b)
+    consistent_gv = g_pow_p(v) == mult_p(a, pow_p(alpha, c))
+    consistent_kv = mult_p(g_pow_p(mult_p(c, int_to_q(constant))), pow_p(k, v)) == mult_p(b, pow_p(beta, c))
+
+    success = \
+        in_bounds_alpha and \
+        in_bounds_beta and \
+        in_bounds_a and \
+        in_bounds_b and \
+        in_bounds_c and \
+        in_bounds_v and \
+        sane_constant and \
+        consistent_gv and \
+        consistent_kv
+
+    if not success:
+        log_warning("found an invalid Chaum-Pedersen proof: %s", str({
+            "in_bounds_alpha": in_bounds_alpha,
+            "in_bounds_beta": in_bounds_beta,
+            "in_bounds_a": in_bounds_a,
+            "in_bounds_b": in_bounds_b,
+            "in_bounds_c": in_bounds_c,
+            "in_bounds_v": in_bounds_v,
+            "sane_constant" : sane_constant,
+            "consistent_gv": consistent_gv,
+            "consistent_kv": consistent_kv,
+            "k": k,
+            "proof": proof
+        }))
+    return success
+
