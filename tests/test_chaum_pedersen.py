@@ -5,9 +5,8 @@ from hypothesis import given, settings, assume
 from hypothesis.strategies import integers
 
 from electionguard.chaum_pedersen import make_disjunctive_chaum_pedersen_zero, is_valid_disjunctive_chaum_pedersen, \
-    make_disjunctive_chaum_pedersen_one, \
-    DisjunctiveChaumPedersenProof, make_constant_chaum_pedersen, is_valid_constant_chaum_pedersen, \
-    make_disjunctive_chaum_pedersen
+    make_disjunctive_chaum_pedersen_one, DisjunctiveChaumPedersenProof, make_constant_chaum_pedersen, \
+    is_valid_constant_chaum_pedersen, make_disjunctive_chaum_pedersen
 from electionguard.elgamal import ElGamalKeyPair, elgamal_encrypt, elgamal_keypair_from_secret
 from electionguard.group import ElementModQ, TWO_MOD_Q, ONE_MOD_Q
 from tests.test_elgamal import arb_elgamal_keypair

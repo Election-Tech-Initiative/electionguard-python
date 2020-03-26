@@ -1,8 +1,8 @@
 from typing import NamedTuple
 
 from .elgamal import ElGamalKeyPair
-from .group import ElementModQ, ElementModP, g_pow_p, mult_p, pow_p, in_bounds_p, in_bounds_q, \
-    valid_residue, a_plus_bc_q
+from .group import ElementModQ, ElementModP, g_pow_p, mult_p, pow_p, in_bounds_p, in_bounds_q, valid_residue, \
+    a_plus_bc_q
 from .hash import hash_elems
 from .logs import log_warning
 

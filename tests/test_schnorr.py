@@ -3,8 +3,7 @@ import unittest
 from hypothesis import given, assume
 
 from electionguard.elgamal import ElGamalKeyPair, elgamal_keypair_from_secret
-from electionguard.group import ElementModQ, ElementModP, ZERO_MOD_P, P, int_to_p_unchecked, TWO_MOD_Q, \
-    ONE_MOD_Q
+from electionguard.group import ElementModQ, ElementModP, ZERO_MOD_P, P, int_to_p_unchecked, TWO_MOD_Q, ONE_MOD_Q
 from electionguard.schnorr import make_schnorr_proof, is_valid_schnorr_proof, SchnorrProof
 from tests.test_elgamal import arb_elgamal_keypair
 from tests.test_group import arb_element_mod_q, arb_element_mod_p_no_zero, arb_element_mod_p

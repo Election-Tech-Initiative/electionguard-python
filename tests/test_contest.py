@@ -2,13 +2,13 @@ import unittest
 from datetime import timedelta
 from random import Random
 
+from hypothesis import HealthCheck
 from hypothesis import given, settings
 from hypothesis.strategies import integers, composite, emails, booleans, lists
-from hypothesis import HealthCheck
 
-from electionguard.contest import ContestDescription, PlaintextVotedContest, Candidate, \
-    encrypt_voted_contest, \
-    is_valid_plaintext_voted_contest, is_valid_encrypted_voted_contest, decrypt_voted_contest, EncryptedVotedContest
+from electionguard.contest import ContestDescription, PlaintextVotedContest, Candidate, encrypt_voted_contest, \
+    is_valid_plaintext_voted_contest, is_valid_encrypted_voted_contest, decrypt_voted_contest, \
+    EncryptedVotedContest
 from electionguard.elgamal import ElGamalKeyPair, elgamal_keypair_from_secret
 from electionguard.group import ElementModQ, ONE_MOD_Q, int_to_q
 from tests.test_elgamal import arb_elgamal_keypair

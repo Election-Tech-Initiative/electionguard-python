@@ -6,8 +6,7 @@ from hypothesis import given
 from hypothesis.strategies import composite, integers
 
 from electionguard.elgamal import ElGamalKeyPair, _message_to_element, elgamal_encrypt, elgamal_decrypt, \
-    elgamal_decrypt_known_nonce, \
-    elgamal_add, elgamal_keypair_from_secret
+    elgamal_decrypt_known_nonce, elgamal_add, elgamal_keypair_from_secret
 from electionguard.group import ElementModQ, g_pow_p, G, Q, P, valid_residue, ZERO_MOD_Q, TWO_MOD_Q, ONE_MOD_Q, \
     ONE_MOD_P, elem_to_int, int_to_q
 from electionguard.logs import log_info

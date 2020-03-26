@@ -1,8 +1,8 @@
 from typing import NamedTuple, List
 
 from electionguard.chaum_pedersen import DisjunctiveChaumPedersenProof, ConstantChaumPedersenProof, \
-    make_constant_chaum_pedersen, \
-    is_valid_disjunctive_chaum_pedersen, is_valid_constant_chaum_pedersen, make_disjunctive_chaum_pedersen
+    make_constant_chaum_pedersen, is_valid_disjunctive_chaum_pedersen, is_valid_constant_chaum_pedersen, \
+    make_disjunctive_chaum_pedersen
 from electionguard.elgamal import ElGamalCiphertext, elgamal_encrypt, elgamal_add, ElGamalKeyPair, elgamal_decrypt
 from electionguard.group import ElementModQ, ElementModP, add_q
 from electionguard.hash import hash_elems
