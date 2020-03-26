@@ -89,6 +89,9 @@ class TestElGamal(unittest.TestCase):
 
         self.assertEqual(total, m1 + m2)
 
+    def test_elgamal_add_requires_args(self):
+        self.assertRaises(Exception, elgamal_add)
+
     @given(arb_elgamal_keypair())
     def test_elgamal_keys_valid_residue(self, keypair):
         self.assertTrue(valid_residue(keypair.public_key))

@@ -28,6 +28,24 @@ class ConstantChaumPedersenProof(NamedTuple):
     v: ElementModQ
     constant: int
 
+def make_disjunctive_chaum_pedersen(message: ElGamalCiphertext, r: ElementModQ, k: ElementModP, seed: ElementModQ, plaintext: int) -> DisjunctiveChaumPedersenProof:
+    """
+    Produce a "disjunctive" proof that an encryption of a given plaintext is either an encrypted zero or one.
+    This is just a front-end helper for `make_disjunctive_chaum_pedersen_zero` and `make_disjunctive_chaum_pedersen_one`.
+    :param message: An ElGamal ciphertext
+    :param r: The nonce used creating the ElGamal ciphertext
+    :param k: The ElGamal public key for the election
+    :param seed: Used to generate other random values here
+    :param plaintext: Zero or one
+    """
+    if plaintext == 0:
+        return make_disjunctive_chaum_pedersen_zero(message, r, k, seed)
+    elif plaintext == 1:
+        return make_disjunctive_chaum_pedersen_one(message, r, k, seed)
+    else:
+        raise Exception("make_disjunctive_chaum_pedersen only supports plaintexts of 0 or 1")
+
+
 
 def make_disjunctive_chaum_pedersen_zero(message: ElGamalCiphertext, r: ElementModQ, k: ElementModP,
                                          seed: ElementModQ) -> DisjunctiveChaumPedersenProof:
@@ -105,7 +123,7 @@ def make_constant_chaum_pedersen(message: ElGamalCiphertext, constant: int, r: E
     return ConstantChaumPedersenProof(message, a, b, c, v, constant)
 
 
-def valid_disjunctive_chaum_pedersen(proof: DisjunctiveChaumPedersenProof, k: ElementModP) -> bool:
+def is_valid_disjunctive_chaum_pedersen(proof: DisjunctiveChaumPedersenProof, k: ElementModP) -> bool:
     """
     Validates a "disjunctive" Chaum-Pedersen (zero or one) proof.
     :param proof: The proof object
@@ -171,7 +189,7 @@ def valid_disjunctive_chaum_pedersen(proof: DisjunctiveChaumPedersenProof, k: El
     return success
 
 
-def valid_constant_chaum_pedersen(proof: ConstantChaumPedersenProof, k: ElementModP) -> bool:
+def is_valid_constant_chaum_pedersen(proof: ConstantChaumPedersenProof, k: ElementModP) -> bool:
     """
     Validates a "constant" Chaum-Pedersen proof.
     :param proof: The proof object
@@ -210,11 +228,10 @@ def valid_constant_chaum_pedersen(proof: ConstantChaumPedersenProof, k: ElementM
             "in_bounds_b": in_bounds_b,
             "in_bounds_c": in_bounds_c,
             "in_bounds_v": in_bounds_v,
-            "sane_constant" : sane_constant,
+            "sane_constant": sane_constant,
             "consistent_gv": consistent_gv,
             "consistent_kv": consistent_kv,
             "k": k,
             "proof": proof
         }))
     return success
-

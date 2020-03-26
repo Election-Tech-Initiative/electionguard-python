@@ -84,9 +84,16 @@ def elgamal_decrypt_known_nonce(c: ElGamalCiphertext, public_key: ElementModP, n
     return elgamal_decrypt_known_product(c, pow_p(public_key, nonce))
 
 
-def elgamal_add(c1: ElGamalCiphertext, c2: ElGamalCiphertext) -> ElGamalCiphertext:
+def elgamal_add(*ciphertexts: ElGamalCiphertext) -> ElGamalCiphertext:
     """
-    Homomorphically accumulates two ElGamal ciphertexts by pairwise multiplication. The exponents
+    Homomorphically accumulates one or more ElGamal ciphertexts by pairwise multiplication. The exponents
     of vote counters will add.
     """
-    return ElGamalCiphertext(mult_p(c1.alpha, c2.alpha), mult_p(c1.beta, c2.beta))
+    if len(ciphertexts) == 0:
+        raise Exception("Must have one or more ciphertexts for elgamal_add")
+
+    result = ciphertexts[0]
+    for c in ciphertexts[1:]:
+        result = ElGamalCiphertext(mult_p(result.alpha, c.alpha), mult_p(result.beta, c.beta))
+
+    return result

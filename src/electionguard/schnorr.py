@@ -13,7 +13,7 @@ class SchnorrProof(NamedTuple):
     u: ElementModQ
 
 
-def valid_schnorr_proof(proof: SchnorrProof) -> bool:
+def is_valid_schnorr_proof(proof: SchnorrProof) -> bool:
     """
     Check validity of the `proof` for proving possession of the private key corresponding
     to `public_key`.
