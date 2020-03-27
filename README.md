@@ -60,7 +60,15 @@ TBD
 
 ## Contributing
 
-This project welcomes contributions and suggestions.  Most contributions require you to agree to a
+This project welcomes contributions and suggestions.  
+
+ElectionGuard-Python tries to use Python3's *type hints* throughout,
+allowing for tools like [mypy](https://mypy.readthedocs.io/en/stable/) to statically check the code for bugs.
+Please do your best to ensure that `mypy` has zero issues with the code. Also, our unit tests leverage
+[hypothesis](https://hypothesis.readthedocs.io/en/stable/) property-based testing to
+vigorously exercise our library. Please write lots of good tests with your PRs.
+
+Most contributions require you to agree to a
 Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us
 the rights to use your contribution. For details, visit https://cla.opensource.microsoft.com.
 
