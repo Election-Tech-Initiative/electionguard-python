@@ -11,7 +11,7 @@ from electionguard.contest import ContestDescription, PlaintextVotedContest, Can
     is_valid_plaintext_voted_contest, is_valid_encrypted_voted_contest, decrypt_voted_contest, \
     EncryptedVotedContest, make_contest_hash
 from electionguard.elgamal import ElGamalKeyPair, elgamal_keypair_from_secret
-from electionguard.group import ElementModQ, ONE_MOD_Q, int_to_q, add_q
+from electionguard.group import ElementModQ, ONE_MOD_Q, int_to_q, add_q, unwrap_optional
 from tests.test_elgamal import arb_elgamal_keypair
 from tests.test_group import arb_element_mod_q_no_zero
 
@@ -147,13 +147,12 @@ class TestContest(unittest.TestCase):
     @settings(deadline=timedelta(milliseconds=2000), suppress_health_check=[HealthCheck.too_slow])
     @given(arb_plaintext_voted_contest_well_formed(), arb_elgamal_keypair(), arb_element_mod_q_no_zero())
     def test_encryption_decryption_inverses(self, cp: Tuple[ContestDescription, PlaintextVotedContest],
-                                            keypair: ElGamalKeyPair,
-                                            nonce: ElementModQ):
+                                            keypair: ElGamalKeyPair, nonce: ElementModQ):
         contest_description, plaintext = cp
         self.assertTrue(is_valid_plaintext_voted_contest(plaintext, contest_description))
 
-        ciphertext = encrypt_voted_contest(plaintext, contest_description, keypair.public_key, nonce)
-        plaintext_again = decrypt_voted_contest(ciphertext, contest_description, keypair)
+        ciphertext = unwrap_optional(encrypt_voted_contest(plaintext, contest_description, keypair.public_key, nonce))
+        plaintext_again = unwrap_optional(decrypt_voted_contest(ciphertext, contest_description, keypair))
 
         self.assertTrue(is_valid_plaintext_voted_contest(plaintext_again, contest_description))
         self.assertEqual(plaintext, plaintext_again)
@@ -161,9 +160,8 @@ class TestContest(unittest.TestCase):
     @settings(deadline=timedelta(milliseconds=2000), suppress_health_check=[HealthCheck.too_slow])
     @given(arb_plaintext_voted_contest_overvote(), arb_elgamal_keypair(), arb_element_mod_q_no_zero())
     def test_overvotes_dont_validate(self, cp: Tuple[ContestDescription, PlaintextVotedContest],
-                                     keypair: ElGamalKeyPair,
-                                     nonce: ElementModQ):
+                                     keypair: ElGamalKeyPair, nonce: ElementModQ):
         contest_description, plaintext = cp
-        ciphertext = encrypt_voted_contest(plaintext, contest_description, keypair.public_key, nonce,
-                                           suppress_validity_check=True)
+        ciphertext = unwrap_optional(encrypt_voted_contest(plaintext, contest_description, keypair.public_key, nonce,
+                                                           suppress_validity_check=True))
         self.assertFalse(is_valid_encrypted_voted_contest(ciphertext, contest_description, keypair.public_key))
