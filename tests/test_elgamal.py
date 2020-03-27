@@ -102,7 +102,7 @@ class TestElGamal(unittest.TestCase):
         cpus = cpu_count()
         problem_size = 5000
         secret_keys = Nonces(int_to_q(3))[0:problem_size]  # list of 1000 might-as-well-be-random Q's
-        log_info("testing GMPY2 powmod paralellism safety (cpus = %d, problem_size = %d)", cpus, problem_size)
+        log_info("testing GMPY2 powmod parallelism safety (cpus = %d, problem_size = %d)", cpus, problem_size)
 
         # compute in parallel
         start = timer()

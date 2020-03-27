@@ -49,6 +49,7 @@ class Nonces(Sequence[ElementModQ]):
         """
         Gets an item from the sequence at any offset. Headers can be included
         to optionally help specify what a nonce is being used for.
+
         :param item: Index into the nonces.
         :param headers:  Optional string headers.
         """

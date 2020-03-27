@@ -13,6 +13,7 @@ def hash_elems(*a: Union[ElementModPOrQ, str]) -> ElementModQ:
     """
     Given an array of elements, calculate their hash.
     Allowed types are ElementModP, ElementModQ, and str.
+
     :param a: An array of elements.
     :return: A hash of these elements, concatenated.
     """

@@ -8,7 +8,7 @@ description: "Add 150 character max description"
 urlFragment: "update-this-to-unique-url-stub"
 ---
 
-# Official Microsoft Sample
+# ElectionGuard-Python
 
 <!-- 
 Guidelines on README format: https://review.docs.microsoft.com/help/onboard/admin/samples/concepts/readme-template?branch=master
@@ -18,7 +18,10 @@ Guidance on onboarding samples to docs.microsoft.com/samples: https://review.doc
 Taxonomies for products and languages: https://review.docs.microsoft.com/new-hope/information-architecture/metadata/taxonomies?branch=master
 -->
 
-Give a short description for your sample here. What does it do and why is it important?
+This repository is a "reference implementation" of ElectionGuard written in Python3. This includes
+both a "verifier" application, useful for validating the results of an ElectionGuard election, as 
+well as a standalone Python library, suitable for building other applications.
+
 
 ## Contents
 
@@ -26,28 +29,34 @@ Outline the file contents of the repository. It helps users navigate the codebas
 
 | File/folder       | Description                                |
 |-------------------|--------------------------------------------|
-| `src`             | Sample source code.                        |
-| `.gitignore`      | Define what to ignore at commit time.      |
-| `CHANGELOG.md`    | List of changes to the sample.             |
-| `CONTRIBUTING.md` | Guidelines for contributing to the sample. |
-| `README.md`       | This README file.                          |
-| `LICENSE`         | The license for the sample.                |
+| `bench`           | Microbenchmarks based on this codebase     |
+| `src/electionguard` | Source code to the ElectionGuard library |
+| `stubs`           | Type annotations for external libraries    |
+| `tests`           | Unit tests to exercise this codebase       |
+| `CONTRIBUTING.md` | Guidelines for contributing                |
+| `README.md`       | This README file                           |
+| `LICENSE`         | The license for ElectionGuard-Python.      |
 
 ## Prerequisites
 
-Outline the required components and tools that a user might need to have on their machine in order to run the sample. This can be anything from frameworks, SDKs, OS versions or IDE releases.
+This code was developed against Python3.8, and is unlikely to work against earlier versions.
+To make the math go faster, we're using [Gmpy2](https://gmpy2.readthedocs.io/en/latest/), which
+has its own installation requirements (native C libraries).
 
 ## Setup
 
-Explain how to prepare the sample once the user clones or downloads the repository. The section should outline every step necessary to install dependencies and set up any settings (for example, API keys and output folders).
+(Say something about `pip` installation commands.)
 
-## Running the sample
+## Running
 
-Outline step-by-step instructions to execute the sample and see its output. Include steps for executing the sample from the IDE, starting specific services in the Azure portal or anything related to the overall launch of the code.
+This project is configured to use [tox](https://tox.readthedocs.io/en/latest/) to run its
+unit tests.
+
+(More here later for any standalone utilities that will appear in this repository.)
 
 ## Key concepts
 
-Provide users with more context on the tools and services used in the sample. Explain some of the code that is being used and how services interact with each other.
+TBD
 
 ## Contributing
 

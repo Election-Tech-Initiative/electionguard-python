@@ -120,6 +120,7 @@ def a_plus_bc_q(a: ElementModQ, b: ElementModQ, c: ElementModQ) -> ElementModQ:
 def mult_inv_p(e: ElementModPOrQ) -> ElementModP:
     """
     Computes the multiplicative inverse mod p.
+
     :param e:  An element in [1, P).
     """
     if e.elem == 0:
@@ -130,6 +131,7 @@ def mult_inv_p(e: ElementModPOrQ) -> ElementModP:
 def pow_p(b: ElementModPOrQ, e: ElementModPOrQ) -> ElementModP:
     """
     Computes b^e mod p.
+
     :param b: An element in [0,P).
     :param e: An element in [0,P).
     """
@@ -139,6 +141,7 @@ def pow_p(b: ElementModPOrQ, e: ElementModPOrQ) -> ElementModP:
 def mult_p(*elems: ElementModPOrQ) -> ElementModP:
     """
     Computes the product, mod p, of all elements.
+
     :param elems: Zero or more elements in [0,P).
     """
     product = mpz(1)
@@ -150,6 +153,7 @@ def mult_p(*elems: ElementModPOrQ) -> ElementModP:
 def g_pow_p(e: ElementModPOrQ) -> ElementModP:
     """
     Computes g^e mod p.
+
     :param e: An element in [0,P).
     """
     return pow_p(ElementModP(mpz(G)), e)

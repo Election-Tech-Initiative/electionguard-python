@@ -17,6 +17,7 @@ def is_valid_schnorr_proof(proof: SchnorrProof) -> bool:
     """
     Check validity of the `proof` for proving possession of the private key corresponding
     to `public_key`.
+
     :return: true if the transcript is valid, false if anything is wrong
     """
 
@@ -42,6 +43,7 @@ def is_valid_schnorr_proof(proof: SchnorrProof) -> bool:
 def make_schnorr_proof(keypair: ElGamalKeyPair, r: ElementModQ) -> SchnorrProof:
     """
     Given an ElGamal keypair and a nonce, generates a proof that the prover knows the secret key without revealing it.
+
     :param keypair: An ElGamal keypair.
     :param r: A random element in [0,Q).
     """

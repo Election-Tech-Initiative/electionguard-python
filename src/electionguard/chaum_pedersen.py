@@ -28,10 +28,14 @@ class ConstantChaumPedersenProof(NamedTuple):
     v: ElementModQ
     constant: int
 
-def make_disjunctive_chaum_pedersen(message: ElGamalCiphertext, r: ElementModQ, k: ElementModP, seed: ElementModQ, plaintext: int) -> DisjunctiveChaumPedersenProof:
+
+def make_disjunctive_chaum_pedersen(message: ElGamalCiphertext, r: ElementModQ, k: ElementModP, seed: ElementModQ,
+                                    plaintext: int) -> DisjunctiveChaumPedersenProof:
     """
     Produce a "disjunctive" proof that an encryption of a given plaintext is either an encrypted zero or one.
-    This is just a front-end helper for `make_disjunctive_chaum_pedersen_zero` and `make_disjunctive_chaum_pedersen_one`.
+    This is just a front-end helper for `make_disjunctive_chaum_pedersen_zero` and
+    `make_disjunctive_chaum_pedersen_one`.
+
     :param message: An ElGamal ciphertext
     :param r: The nonce used creating the ElGamal ciphertext
     :param k: The ElGamal public key for the election
@@ -46,11 +50,11 @@ def make_disjunctive_chaum_pedersen(message: ElGamalCiphertext, r: ElementModQ, 
         raise Exception("make_disjunctive_chaum_pedersen only supports plaintexts of 0 or 1")
 
 
-
 def make_disjunctive_chaum_pedersen_zero(message: ElGamalCiphertext, r: ElementModQ, k: ElementModP,
                                          seed: ElementModQ) -> DisjunctiveChaumPedersenProof:
     """
     Produces a "disjunctive" proof that an encryption of zero is either an encrypted zero or one.
+
     :param message: An ElGamal ciphertext
     :param r: The nonce used creating the ElGamal ciphertext
     :param k: The ElGamal public key for the election
@@ -78,6 +82,7 @@ def make_disjunctive_chaum_pedersen_one(message: ElGamalCiphertext, r: ElementMo
                                         seed: ElementModQ) -> DisjunctiveChaumPedersenProof:
     """
     Produces a "disjunctive" proof that an encryption of one is either an encrypted zero or one.
+
     :param message: An ElGamal ciphertext
     :param r: The nonce used creating the ElGamal ciphertext
     :param k: The ElGamal public key for the election
@@ -105,6 +110,7 @@ def make_constant_chaum_pedersen(message: ElGamalCiphertext, constant: int, r: E
                                  seed: ElementModQ) -> ConstantChaumPedersenProof:
     """
     Produces a proof that a given encryption corresponds to a specific total value.
+
     :param message: An ElGamal ciphertext
     :param constant: The plaintext constant value used to make the ElGamal ciphertext
     :param r: The aggregate nonce used creating the ElGamal ciphertext
@@ -126,6 +132,7 @@ def make_constant_chaum_pedersen(message: ElGamalCiphertext, constant: int, r: E
 def is_valid_disjunctive_chaum_pedersen(proof: DisjunctiveChaumPedersenProof, k: ElementModP) -> bool:
     """
     Validates a "disjunctive" Chaum-Pedersen (zero or one) proof.
+
     :param proof: The proof object
     :param k: The public key of the election
     :return: True if everything is consistent. False otherwise.
@@ -192,6 +199,7 @@ def is_valid_disjunctive_chaum_pedersen(proof: DisjunctiveChaumPedersenProof, k:
 def is_valid_constant_chaum_pedersen(proof: ConstantChaumPedersenProof, k: ElementModP) -> bool:
     """
     Validates a "constant" Chaum-Pedersen proof.
+
     :param proof: The proof object
     :param k: The public key of the election
     :return: True if everything is consistent. False otherwise.

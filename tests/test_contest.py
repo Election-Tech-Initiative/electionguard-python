@@ -1,6 +1,7 @@
 import unittest
 from datetime import timedelta
 from random import Random
+from typing import Tuple
 
 from hypothesis import HealthCheck
 from hypothesis import given, settings
@@ -8,9 +9,9 @@ from hypothesis.strategies import integers, composite, emails, booleans, lists
 
 from electionguard.contest import ContestDescription, PlaintextVotedContest, Candidate, encrypt_voted_contest, \
     is_valid_plaintext_voted_contest, is_valid_encrypted_voted_contest, decrypt_voted_contest, \
-    EncryptedVotedContest
+    EncryptedVotedContest, make_contest_hash
 from electionguard.elgamal import ElGamalKeyPair, elgamal_keypair_from_secret
-from electionguard.group import ElementModQ, ONE_MOD_Q, int_to_q
+from electionguard.group import ElementModQ, ONE_MOD_Q, int_to_q, add_q
 from tests.test_elgamal import arb_elgamal_keypair
 from tests.test_group import arb_element_mod_q_no_zero
 
@@ -70,7 +71,7 @@ def arb_plaintext_voted_contest_well_formed(draw, cds=arb_contest_description(),
     assert len(selections) == contest_description.votes_allowed
 
     r.shuffle(selections)
-    return PlaintextVotedContest(contest_description, selections)
+    return contest_description, PlaintextVotedContest(make_contest_hash(contest_description), selections)
 
 
 @composite
@@ -92,7 +93,7 @@ def arb_plaintext_voted_contest_overvote(draw, cds=arb_contest_description_room_
     assert len(selections) == contest_description.votes_allowed
 
     r.shuffle(selections)
-    return PlaintextVotedContest(contest_description, selections)
+    return contest_description, PlaintextVotedContest(make_contest_hash(contest_description), selections)
 
 
 class TestContest(unittest.TestCase):
@@ -100,14 +101,15 @@ class TestContest(unittest.TestCase):
         keypair = elgamal_keypair_from_secret(int_to_q(2))
         contest = ContestDescription("A", [Candidate("A", False, False, False), Candidate("B", False, False, False)],
                                      "A", "A", "A", "A", 1, 2)
+        contest_hash = make_contest_hash(contest)
         nonce = ONE_MOD_Q
-        plaintext = PlaintextVotedContest(contest, [1, 0])
-        self.assertTrue(is_valid_plaintext_voted_contest(plaintext))
-        ciphertext = encrypt_voted_contest(plaintext, keypair.public_key, nonce)
-        self.assertTrue(is_valid_encrypted_voted_contest(ciphertext, plaintext.contest, keypair.public_key))
+        plaintext = PlaintextVotedContest(contest_hash, [1, 0])
+        self.assertTrue(is_valid_plaintext_voted_contest(plaintext, contest))
+        ciphertext = encrypt_voted_contest(plaintext, contest, keypair.public_key, nonce)
+        self.assertTrue(is_valid_encrypted_voted_contest(ciphertext, contest, keypair.public_key))
 
-        plaintext_again = decrypt_voted_contest(ciphertext, plaintext.contest, keypair)
-        self.assertTrue(is_valid_plaintext_voted_contest(plaintext_again))
+        plaintext_again = decrypt_voted_contest(ciphertext, contest, keypair)
+        self.assertTrue(is_valid_plaintext_voted_contest(plaintext_again, contest))
         self.assertEqual(plaintext, plaintext_again)
 
     def test_error_conditions(self):
@@ -115,45 +117,53 @@ class TestContest(unittest.TestCase):
         contest = ContestDescription("A", [Candidate("A", False, False, False), Candidate("B", False, False, False),
                                            Candidate("C", False, False, False)],
                                      "A", "A", "A", "A", 2, 3)
-        plaintext = PlaintextVotedContest(contest, [2, 0, 0])
-        self.assertFalse(is_valid_plaintext_voted_contest(plaintext))
+        contest_hash = make_contest_hash(contest)
+        plaintext = PlaintextVotedContest(contest_hash, [2, 0, 0])
+        self.assertFalse(is_valid_plaintext_voted_contest(plaintext, contest))
 
-        plaintext = PlaintextVotedContest(contest, [1, 0, 0])
-        self.assertFalse(is_valid_plaintext_voted_contest(plaintext))
+        plaintext = PlaintextVotedContest(contest_hash, [1, 0, 0])
+        self.assertFalse(is_valid_plaintext_voted_contest(plaintext, contest))
 
-        plaintext = PlaintextVotedContest(contest, [1, 1, 1])
-        self.assertFalse(is_valid_plaintext_voted_contest(plaintext))
+        plaintext = PlaintextVotedContest(contest_hash, [1, 1, 1])
+        self.assertFalse(is_valid_plaintext_voted_contest(plaintext, contest))
+
+        plaintext = PlaintextVotedContest(add_q(contest_hash, ONE_MOD_Q), [1, 1, 1])
+        self.assertFalse(is_valid_plaintext_voted_contest(plaintext, contest))
 
         keypair = elgamal_keypair_from_secret(int_to_q(2))
         nonce = ONE_MOD_Q
         self.assertRaises(Exception, encrypt_voted_contest, plaintext, keypair.public_key, nonce)
 
         # now, we're going to mess with the ciphertext
-        plaintext = PlaintextVotedContest(contest, [1, 1, 0])
-        c = encrypt_voted_contest(plaintext, keypair.public_key, nonce)
+        plaintext = PlaintextVotedContest(contest_hash, [1, 1, 0])
+        c = encrypt_voted_contest(plaintext, contest, keypair.public_key, nonce)
         c2 = EncryptedVotedContest(c.contest_hash, c.encrypted_selections[1:], c.zero_or_one_selection_proofs,
                                    c.sum_of_counters_proof)
-        self.assertFalse(is_valid_encrypted_voted_contest(c2, plaintext.contest, keypair.public_key))
+        self.assertFalse(is_valid_encrypted_voted_contest(c2, contest, keypair.public_key))
         c2 = EncryptedVotedContest(c.contest_hash, c.encrypted_selections, c.zero_or_one_selection_proofs[1:],
                                    c.sum_of_counters_proof)
-        self.assertFalse(is_valid_encrypted_voted_contest(c2, plaintext.contest, keypair.public_key))
+        self.assertFalse(is_valid_encrypted_voted_contest(c2, contest, keypair.public_key))
 
     @settings(deadline=timedelta(milliseconds=2000), suppress_health_check=[HealthCheck.too_slow])
     @given(arb_plaintext_voted_contest_well_formed(), arb_elgamal_keypair(), arb_element_mod_q_no_zero())
-    def test_encryption_decryption_inverses(self, plaintext: PlaintextVotedContest, keypair: ElGamalKeyPair,
+    def test_encryption_decryption_inverses(self, cp: Tuple[ContestDescription, PlaintextVotedContest],
+                                            keypair: ElGamalKeyPair,
                                             nonce: ElementModQ):
-        self.assertTrue(is_valid_plaintext_voted_contest(plaintext))
+        contest_description, plaintext = cp
+        self.assertTrue(is_valid_plaintext_voted_contest(plaintext, contest_description))
 
-        ciphertext = encrypt_voted_contest(plaintext, keypair.public_key, nonce)
-        self.assertTrue(is_valid_encrypted_voted_contest(ciphertext, plaintext.contest, keypair.public_key))
+        ciphertext = encrypt_voted_contest(plaintext, contest_description, keypair.public_key, nonce)
+        plaintext_again = decrypt_voted_contest(ciphertext, contest_description, keypair)
 
-        plaintext_again = decrypt_voted_contest(ciphertext, plaintext.contest, keypair)
-        self.assertTrue(is_valid_plaintext_voted_contest(plaintext_again))
+        self.assertTrue(is_valid_plaintext_voted_contest(plaintext_again, contest_description))
         self.assertEqual(plaintext, plaintext_again)
 
     @settings(deadline=timedelta(milliseconds=2000), suppress_health_check=[HealthCheck.too_slow])
     @given(arb_plaintext_voted_contest_overvote(), arb_elgamal_keypair(), arb_element_mod_q_no_zero())
-    def test_overvotes_dont_validate(self, plaintext: PlaintextVotedContest, keypair: ElGamalKeyPair,
+    def test_overvotes_dont_validate(self, cp: Tuple[ContestDescription, PlaintextVotedContest],
+                                     keypair: ElGamalKeyPair,
                                      nonce: ElementModQ):
-        ciphertext = encrypt_voted_contest(plaintext, keypair.public_key, nonce, suppress_validity_check=True)
-        self.assertFalse(is_valid_encrypted_voted_contest(ciphertext, plaintext.contest, keypair.public_key))
+        contest_description, plaintext = cp
+        ciphertext = encrypt_voted_contest(plaintext, contest_description, keypair.public_key, nonce,
+                                           suppress_validity_check=True)
+        self.assertFalse(is_valid_encrypted_voted_contest(ciphertext, contest_description, keypair.public_key))

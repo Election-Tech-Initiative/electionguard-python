@@ -67,8 +67,8 @@ class TestDisjunctiveChaumPedersen(unittest.TestCase):
         message2 = elgamal_encrypt(2, nonce, keypair.public_key)
         proof0 = make_disjunctive_chaum_pedersen_zero(message0, nonce, keypair.public_key, seed)
         proof2 = make_disjunctive_chaum_pedersen_zero(message2, nonce, keypair.public_key, seed)
-        proof_subst = DisjunctiveChaumPedersenProof(proof2.message, proof0.a0, proof0.b0, proof0.a1, proof0.b1, proof0.c0,
-                                                    proof0.c1, proof0.v0, proof0.v1)
+        proof_subst = DisjunctiveChaumPedersenProof(proof2.message, proof0.a0, proof0.b0, proof0.a1, proof0.b1,
+                                                    proof0.c0, proof0.c1, proof0.v0, proof0.v1)
         self.assertFalse(is_valid_disjunctive_chaum_pedersen(proof2, keypair.public_key))
         self.assertFalse(is_valid_disjunctive_chaum_pedersen(proof_subst, keypair.public_key))
 
@@ -96,7 +96,8 @@ class TestConstantChaumPedersen(unittest.TestCase):
 
     @settings(deadline=timedelta(milliseconds=2000))
     @given(arb_elgamal_keypair(), arb_element_mod_q_no_zero(), arb_element_mod_q(), integers(0, 100), integers(0, 100))
-    def test_ccp_proof(self, keypair: ElGamalKeyPair, nonce: ElementModQ, seed: ElementModQ, constant: int, bad_constant: int):
+    def test_ccp_proof(self, keypair: ElGamalKeyPair, nonce: ElementModQ, seed: ElementModQ, constant: int,
+                       bad_constant: int):
         assume(constant != bad_constant)
         message = elgamal_encrypt(constant, nonce, keypair.public_key)
         message_bad = elgamal_encrypt(bad_constant, nonce, keypair.public_key)
@@ -106,4 +107,3 @@ class TestConstantChaumPedersen(unittest.TestCase):
         self.assertTrue(is_valid_constant_chaum_pedersen(proof, keypair.public_key))
         self.assertFalse(is_valid_constant_chaum_pedersen(bad_proof, keypair.public_key))
         self.assertFalse(is_valid_constant_chaum_pedersen(bad_proof2, keypair.public_key))
-
