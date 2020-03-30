@@ -1,6 +1,6 @@
 from typing import Union, Sequence, List, overload
 
-from electionguard.group import ElementModQ, int_to_q, ElementModPOrQ
+from electionguard.group import ElementModQ, ElementModPOrQ
 from electionguard.hash import hash_elems
 
 
@@ -15,6 +15,7 @@ class Nonces(Sequence[ElementModQ]):
     The Nonces class is a Sequence. It can be iterated, or it can be treated as an array
     and indexed. Asking for a nonce is constant time, regardless of the index.
     """
+
     def __init__(self, seed: ElementModQ, *headers: Union[str, ElementModPOrQ]) -> None:
         if len(headers) > 0:
             self.__seed: ElementModQ = hash_elems(seed, *headers)
@@ -55,4 +56,4 @@ class Nonces(Sequence[ElementModQ]):
         """
         if item < 0:
             raise TypeError("Nonces do not support negative indices.")
-        return hash_elems(self.__seed, int_to_q(item), *headers)
+        return hash_elems(self.__seed, item, *headers)

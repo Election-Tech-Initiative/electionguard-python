@@ -1,4 +1,4 @@
-from typing import NamedTuple, List
+from typing import NamedTuple, List, Optional
 
 from electionguard.chaum_pedersen import DisjunctiveChaumPedersenProof, ConstantChaumPedersenProof, \
     make_constant_chaum_pedersen, is_valid_disjunctive_chaum_pedersen, is_valid_constant_chaum_pedersen, \
@@ -97,7 +97,7 @@ def is_valid_plaintext_voted_contest(pvc: PlaintextVotedContest, cd: ContestDesc
 
 
 def encrypt_voted_contest(pvc: PlaintextVotedContest, cd: ContestDescription, elgamal_public_key: ElementModP,
-                          seed: ElementModQ, suppress_validity_check: bool = False) -> EncryptedVotedContest:
+                          seed: ElementModQ, suppress_validity_check: bool = False) -> Optional[EncryptedVotedContest]:
     """
     Given a PlaintextVotedContext and the necessary key material, computes an encrypted
     version of the ballot, including all the necessary proofs.
@@ -107,9 +107,10 @@ def encrypt_voted_contest(pvc: PlaintextVotedContest, cd: ContestDescription, el
     :param elgamal_public_key: Public key for the election
     :param seed: Nonce from which to derive other relevant nonces
     :param suppress_validity_check: If true, suppresses a validity check on the plaintext; only use this for testing!
+    :return an encrypted voted contest, or `None` if the plaintext was invalid
     """
     if not suppress_validity_check and not is_valid_plaintext_voted_contest(pvc, cd):
-        raise Exception("Invalid PlaintextVotedContest")
+        return None
 
     num_slots = len(cd.ballot_selections)
     contest_hash = make_contest_hash(cd)
@@ -123,34 +124,42 @@ def encrypt_voted_contest(pvc: PlaintextVotedContest, cd: ContestDescription, el
 
     for i in range(0, num_slots):
         ciphertexts_i = elgamal_encrypt(pvc.choices[i], elgamal_nonces[i], elgamal_public_key)
-        ciphertexts.append(ciphertexts_i)
-        zp_i = make_disjunctive_chaum_pedersen(ciphertexts_i, elgamal_nonces[i], elgamal_public_key, djcp_nonces[i],
-                                               pvc.choices[i])
-        zero_or_one_selection_proofs.append(zp_i)
+        if ciphertexts_i is None:
+            return None
+        else:
+            ciphertexts.append(ciphertexts_i)
+            zp_i = make_disjunctive_chaum_pedersen(ciphertexts_i, elgamal_nonces[i], elgamal_public_key, djcp_nonces[i],
+                                                   pvc.choices[i])
+            if zp_i is None:
+                return None
+            else:
+                zero_or_one_selection_proofs.append(zp_i)
 
     elgamal_accumulation = elgamal_add(*ciphertexts)
     sum_of_counters_proof = make_constant_chaum_pedersen(elgamal_accumulation, cd.number_elected,
                                                          add_q(*elgamal_nonces), elgamal_public_key, ccp_nonce)
 
-    return EncryptedVotedContest(contest_hash, ciphertexts, zero_or_one_selection_proofs, sum_of_counters_proof)
+    if sum_of_counters_proof is None:
+        return None
+    else:
+        return EncryptedVotedContest(contest_hash, ciphertexts, zero_or_one_selection_proofs, sum_of_counters_proof)
 
 
-def decrypt_voted_contest(evc: EncryptedVotedContest, cd: ContestDescription,
-                          keypair: ElGamalKeyPair, suppress_validity_check: bool = False) -> PlaintextVotedContest:
+def decrypt_voted_contest(evc: EncryptedVotedContest, cd: ContestDescription, keypair: ElGamalKeyPair,
+                          suppress_validity_check: bool = False) -> Optional[PlaintextVotedContest]:
     """
     Given an encrypted contest, the contest description, and the ElGamal keypair which can decrypt it,
-    returns the corresponding plaintext vote. Will raise an exception if any of the proofs in `evc` are
-    invalid. You can suppress this with `suppress_validity_check` and should instead make sure to call
-    `is_valid_encrypted_voted_contest` yourself.
+    returns the corresponding plaintext vote.
 
     :param evc: The encrypted voted contest
     :param cd: The contest description corresponding to `evc`
     :param keypair: Public and secret key for the election
     :param suppress_validity_check: If true, suppresses a validity check on the ciphertext
+    :return a plaintext voted contest, if successful, or `None` if the encrypted voted contest is invalid
     """
 
     if not suppress_validity_check and not is_valid_encrypted_voted_contest(evc, cd, keypair.public_key):
-        raise Exception("Invalid EncryptedVotedContext")
+        return None
 
     contest_hash, encrypted_selections, zero_or_one_selection_proofs, sum_of_counters_proof = evc
 

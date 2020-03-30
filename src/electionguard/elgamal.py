@@ -1,8 +1,9 @@
-from typing import NamedTuple
+from typing import NamedTuple, Optional
 
 from .dlog import discrete_log
-from .group import ElementModQ, ElementModP, Q, G, P, g_pow_p, mult_p, mult_inv_p, pow_p, ZERO_MOD_Q, int_to_p, \
-    elem_to_int
+from .group import ElementModQ, ElementModP, Q, G, P, g_pow_p, mult_p, mult_inv_p, pow_p, ZERO_MOD_Q, elem_to_int, \
+    int_to_p_unchecked, flatmap_optional
+from .logs import log_error
 
 
 class ElGamalKeyPair(NamedTuple):
@@ -17,29 +18,33 @@ class ElGamalCiphertext(NamedTuple):
     beta: ElementModP
 
 
-def _message_to_element(m: int) -> ElementModP:
+def _message_to_element(m: int) -> Optional[ElementModP]:
     """
     Encoding a message (expected to be non-negative, less than Q, and generally much smaller than that)
     suitable for ElGamal encryption and homomorphic addition (in the exponent).
     """
     if m < 0 or m >= Q:
-        raise Exception("Message %d out of range" % m)
-    return int_to_p(pow(G, m, P))
+        log_error("message_to_element out of bounds")
+        return None
+    else:
+        # Safe to use the unchecked version because pow() ensures the result is in range.
+        return int_to_p_unchecked(pow(G, m, P))
 
 
-def elgamal_keypair_from_secret(a: ElementModQ) -> ElGamalKeyPair:
+def elgamal_keypair_from_secret(a: ElementModQ) -> Optional[ElGamalKeyPair]:
     """
     Given an ElGamal secret key (typically, a random number in [2,Q)), returns
     an ElGamal keypair, consisting of the given secret key a and public key g^a.
     """
     secret_key_int = elem_to_int(a)
     if secret_key_int < 2:
-        raise Exception("ElGamal secret key needs to be in [2,Q).")
+        log_error("ElGamal secret key needs to be in [2,Q).")
+        return None
 
     return ElGamalKeyPair(a, g_pow_p(a))
 
 
-def elgamal_encrypt(m: int, nonce: ElementModQ, public_key: ElementModP) -> ElGamalCiphertext:
+def elgamal_encrypt(m: int, nonce: ElementModQ, public_key: ElementModP) -> Optional[ElGamalCiphertext]:
     """
     Encrypts a message with a given random nonce and an ElGamal public key.
 
@@ -49,9 +54,11 @@ def elgamal_encrypt(m: int, nonce: ElementModQ, public_key: ElementModP) -> ElGa
     :return: A ciphertext tuple.
     """
     if nonce == ZERO_MOD_Q:
-        raise Exception("ElGamal encryption requires a non-zero nonce")
+        log_error("ElGamal encryption requires a non-zero nonce")
+        return None
 
-    return ElGamalCiphertext(g_pow_p(nonce), mult_p(_message_to_element(m), pow_p(public_key, nonce)))
+    return flatmap_optional(_message_to_element(m),
+                            lambda e: ElGamalCiphertext(g_pow_p(nonce), mult_p(e, pow_p(public_key, nonce))))
 
 
 def elgamal_decrypt_known_product(c: ElGamalCiphertext, product: ElementModP) -> int:

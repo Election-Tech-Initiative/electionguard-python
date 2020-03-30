@@ -2,7 +2,7 @@ from typing import NamedTuple
 
 from .elgamal import ElGamalCiphertext
 from .group import ElementModQ, ElementModP, g_pow_p, mult_p, pow_p, valid_residue, in_bounds_q, a_minus_b_q, \
-    a_plus_bc_q, add_q, negate_q, int_to_q
+    a_plus_bc_q, add_q, negate_q, int_to_q, ZERO_MOD_Q
 from .hash import hash_elems
 from .logs import log_warning
 from .nonces import Nonces
@@ -47,6 +47,7 @@ def make_disjunctive_chaum_pedersen(message: ElGamalCiphertext, r: ElementModQ, 
     elif plaintext == 1:
         return make_disjunctive_chaum_pedersen_one(message, r, k, seed)
     else:
+        # this exception is okay, because it's only possible if there's a bug in the code, not a data bug
         raise Exception("make_disjunctive_chaum_pedersen only supports plaintexts of 0 or 1")
 
 
@@ -212,10 +213,19 @@ def is_valid_constant_chaum_pedersen(proof: ConstantChaumPedersenProof, k: Eleme
     in_bounds_b = valid_residue(b)
     in_bounds_c = in_bounds_q(c)
     in_bounds_v = in_bounds_q(v)
+    tmp = int_to_q(constant)
+    if tmp is None:
+        constant_q = ZERO_MOD_Q
+        in_bounds_constant = False
+    else:
+        constant_q = tmp
+        in_bounds_constant = True
     sane_constant = 0 <= constant < 1_000_000_000
     c = hash_elems(alpha, beta, a, b)
-    consistent_gv = g_pow_p(v) == mult_p(a, pow_p(alpha, c))
-    consistent_kv = mult_p(g_pow_p(mult_p(c, int_to_q(constant))), pow_p(k, v)) == mult_p(b, pow_p(beta, c))
+    consistent_gv = in_bounds_v and in_bounds_a and in_bounds_alpha and in_bounds_c and \
+                    g_pow_p(v) == mult_p(a, pow_p(alpha, c))
+    consistent_kv = in_bounds_constant and \
+                    mult_p(g_pow_p(mult_p(c, constant_q)), pow_p(k, v)) == mult_p(b, pow_p(beta, c))
 
     success = \
         in_bounds_alpha and \
@@ -224,6 +234,7 @@ def is_valid_constant_chaum_pedersen(proof: ConstantChaumPedersenProof, k: Eleme
         in_bounds_b and \
         in_bounds_c and \
         in_bounds_v and \
+        in_bounds_constant and \
         sane_constant and \
         consistent_gv and \
         consistent_kv
@@ -236,6 +247,7 @@ def is_valid_constant_chaum_pedersen(proof: ConstantChaumPedersenProof, k: Eleme
             "in_bounds_b": in_bounds_b,
             "in_bounds_c": in_bounds_c,
             "in_bounds_v": in_bounds_v,
+            "in_bounds_constant": in_bounds_constant,
             "sane_constant": sane_constant,
             "consistent_gv": consistent_gv,
             "consistent_kv": consistent_kv,

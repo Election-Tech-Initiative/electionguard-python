@@ -79,8 +79,8 @@ class TestModularArithmetic(unittest.TestCase):
         too_small = elem_to_int(q) - Q
         self.assertFalse(in_bounds_q(int_to_q_unchecked(too_big)))
         self.assertFalse(in_bounds_q(int_to_q_unchecked(too_small)))
-        self.assertRaises(Exception, int_to_q, too_big)
-        self.assertRaises(Exception, int_to_q, too_small)
+        self.assertEqual(None, int_to_q(too_big))
+        self.assertEqual(None, int_to_q(too_small))
 
     @given(arb_element_mod_p())
     def test_in_bounds_p(self, p: ElementModP):
@@ -89,8 +89,8 @@ class TestModularArithmetic(unittest.TestCase):
         too_small = elem_to_int(p) - P
         self.assertFalse(in_bounds_p(int_to_p_unchecked(too_big)))
         self.assertFalse(in_bounds_p(int_to_p_unchecked(too_small)))
-        self.assertRaises(Exception, int_to_p, too_big)
-        self.assertRaises(Exception, int_to_p, too_small)
+        self.assertEqual(None, int_to_p(too_big))
+        self.assertEqual(None, int_to_p(too_small))
 
     @given(arb_element_mod_q_no_zero())
     def test_in_bounds_q_no_zero(self, q: ElementModQ):
