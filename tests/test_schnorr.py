@@ -36,8 +36,8 @@ class TestSchnorr(unittest.TestCase):
         proof = make_schnorr_proof(keypair, nonce)
         (k, h, u) = proof
         assume(other != h)
-        proof2 = SchnorrProof(k, other, u)
-        self.assertFalse(is_valid_schnorr_proof(proof2))
+        proof_bad = proof._replace(h=other)
+        self.assertFalse(is_valid_schnorr_proof(proof_bad))
 
     @given(arb_elgamal_keypair(), arb_element_mod_q(), arb_element_mod_p_no_zero())
     def test_schnorr_proofs_invalid_public_key(self, keypair: ElGamalKeyPair, nonce: ElementModQ, other: ElementModP):

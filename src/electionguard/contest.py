@@ -4,7 +4,7 @@ from electionguard.chaum_pedersen import DisjunctiveChaumPedersenProof, Constant
     make_constant_chaum_pedersen, is_valid_disjunctive_chaum_pedersen, is_valid_constant_chaum_pedersen, \
     make_disjunctive_chaum_pedersen
 from electionguard.elgamal import ElGamalCiphertext, elgamal_encrypt, elgamal_add, ElGamalKeyPair, elgamal_decrypt
-from electionguard.group import ElementModQ, ElementModP, add_q
+from electionguard.group import ElementModQ, ElementModP, add_q, flatmap_optional
 from electionguard.hash import hash_elems
 from electionguard.logs import log_warning
 from electionguard.nonces import Nonces
@@ -124,25 +124,21 @@ def encrypt_voted_contest(pvc: PlaintextVotedContest, cd: ContestDescription, el
 
     for i in range(0, num_slots):
         ciphertexts_i = elgamal_encrypt(pvc.choices[i], elgamal_nonces[i], elgamal_public_key)
-        if ciphertexts_i is None:
+        zp_i = flatmap_optional(ciphertexts_i,
+                                lambda c: make_disjunctive_chaum_pedersen(c, elgamal_nonces[i], elgamal_public_key,
+                                                                          djcp_nonces[i], pvc.choices[i]))
+        if ciphertexts_i is None or zp_i is None:
             return None
         else:
             ciphertexts.append(ciphertexts_i)
-            zp_i = make_disjunctive_chaum_pedersen(ciphertexts_i, elgamal_nonces[i], elgamal_public_key, djcp_nonces[i],
-                                                   pvc.choices[i])
-            if zp_i is None:
-                return None
-            else:
-                zero_or_one_selection_proofs.append(zp_i)
+            zero_or_one_selection_proofs.append(zp_i)
 
     elgamal_accumulation = elgamal_add(*ciphertexts)
     sum_of_counters_proof = make_constant_chaum_pedersen(elgamal_accumulation, cd.number_elected,
                                                          add_q(*elgamal_nonces), elgamal_public_key, ccp_nonce)
 
-    if sum_of_counters_proof is None:
-        return None
-    else:
-        return EncryptedVotedContest(contest_hash, ciphertexts, zero_or_one_selection_proofs, sum_of_counters_proof)
+    return flatmap_optional(sum_of_counters_proof,
+                            lambda p: EncryptedVotedContest(contest_hash, ciphertexts, zero_or_one_selection_proofs, p))
 
 
 def decrypt_voted_contest(evc: EncryptedVotedContest, cd: ContestDescription, keypair: ElGamalKeyPair,
@@ -177,7 +173,7 @@ def is_valid_encrypted_voted_contest(evc: EncryptedVotedContest, cd: ContestDesc
 
     contest_hash, encrypted_selections, zero_or_one_selection_proofs, sum_of_counters_proof = evc
 
-    if make_contest_hash(cd) != evc.contest_hash:
+    if make_contest_hash(cd) != contest_hash:
         log_warning("mismatching contest hashes, evc(%s), cd(%s)" % (str(evc), str(cd)))
         return False
 
@@ -189,11 +185,6 @@ def is_valid_encrypted_voted_contest(evc: EncryptedVotedContest, cd: ContestDesc
     if len(zero_or_one_selection_proofs) != num_slots:
         log_warning("expected %d disjunctive Chaum-Pedersen proofs, got %d: %s" %
                     (num_slots, len(zero_or_one_selection_proofs), str(evc)))
-        return False
-
-    if contest_hash != make_contest_hash(cd):
-        log_warning("contest_hash %s doesn't match %s: %s" %
-                    (str(contest_hash), str(make_contest_hash(cd)), str(evc)))
         return False
 
     for i in range(0, num_slots):

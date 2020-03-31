@@ -101,7 +101,7 @@ class TestElGamal(unittest.TestCase):
     # in the GMPY2 library, with it's C code below that.
     def test_gmpy2_parallelism_is_safe(self):
         cpus = cpu_count()
-        problem_size = 5000
+        problem_size = 1000
         secret_keys = Nonces(int_to_q(3))[0:problem_size]  # list of 1000 might-as-well-be-random Q's
         log_info("testing GMPY2 powmod parallelism safety (cpus = %d, problem_size = %d)", cpus, problem_size)
 
