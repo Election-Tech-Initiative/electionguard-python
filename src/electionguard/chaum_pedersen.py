@@ -22,7 +22,6 @@ from .nonces import Nonces
 
 
 class DisjunctiveChaumPedersenProof(NamedTuple):
-    message: ElGamalCiphertext
     a0: ElementModP
     b0: ElementModP
     a1: ElementModP
@@ -34,7 +33,6 @@ class DisjunctiveChaumPedersenProof(NamedTuple):
 
 
 class ConstantChaumPedersenProof(NamedTuple):
-    message: ElGamalCiphertext
     a: ElementModP
     b: ElementModP
     c: ElementModQ
@@ -96,7 +94,7 @@ def make_disjunctive_chaum_pedersen_zero(
     c0 = a_minus_b_q(c, c1)
     v0 = a_plus_bc_q(u0, c0, r)
 
-    return DisjunctiveChaumPedersenProof(message, a0, b0, a1, b1, c0, c1, v0, v1)
+    return DisjunctiveChaumPedersenProof(a0, b0, a1, b1, c0, c1, v0, v1)
 
 
 def make_disjunctive_chaum_pedersen_one(
@@ -125,7 +123,7 @@ def make_disjunctive_chaum_pedersen_one(
     c1 = a_minus_b_q(c, c0)
     v1 = a_plus_bc_q(u1, c1, r)
 
-    return DisjunctiveChaumPedersenProof(message, a0, b0, a1, b1, c0, c1, v0, v1)
+    return DisjunctiveChaumPedersenProof(a0, b0, a1, b1, c0, c1, v0, v1)
 
 
 def make_constant_chaum_pedersen(
@@ -153,21 +151,23 @@ def make_constant_chaum_pedersen(
     c = hash_elems(alpha, beta, a, b)
     v = a_plus_bc_q(u, c, r)
 
-    return ConstantChaumPedersenProof(message, a, b, c, v, constant)
+    return ConstantChaumPedersenProof(a, b, c, v, constant)
 
 
 def is_valid_disjunctive_chaum_pedersen(
-    proof: DisjunctiveChaumPedersenProof, k: ElementModP
+    message: ElGamalCiphertext, proof: DisjunctiveChaumPedersenProof, k: ElementModP
 ) -> bool:
     """
     Validates a "disjunctive" Chaum-Pedersen (zero or one) proof.
 
+    :param message: The ciphertext message
     :param proof: The proof object
     :param k: The public key of the election
     :return: True if everything is consistent. False otherwise.
     """
 
-    ((alpha, beta), a0, b0, a1, b1, c0, c1, v0, v1) = proof
+    (alpha, beta) = message
+    (a0, b0, a1, b1, c0, c1, v0, v1) = proof
     in_bounds_alpha = valid_residue(alpha)
     in_bounds_beta = valid_residue(beta)
     in_bounds_a0 = valid_residue(a0)
@@ -232,17 +232,19 @@ def is_valid_disjunctive_chaum_pedersen(
 
 
 def is_valid_constant_chaum_pedersen(
-    proof: ConstantChaumPedersenProof, k: ElementModP
+    message: ElGamalCiphertext, proof: ConstantChaumPedersenProof, k: ElementModP
 ) -> bool:
     """
     Validates a "constant" Chaum-Pedersen proof.
 
+    :param message: The ciphertext message
     :param proof: The proof object
     :param k: The public key of the election
     :return: True if everything is consistent. False otherwise.
     """
 
-    ((alpha, beta), a, b, c, v, constant) = proof
+    (alpha, beta) = message
+    (a, b, c, v, constant) = proof
     in_bounds_alpha = valid_residue(alpha)
     in_bounds_beta = valid_residue(beta)
     in_bounds_a = valid_residue(a)

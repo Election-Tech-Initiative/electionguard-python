@@ -259,25 +259,17 @@ def is_valid_encrypted_voted_contest(
         return False
 
     for i in range(0, num_slots):
-        if encrypted_selections[i] != zero_or_one_selection_proofs[i].message:
-            log_warning(
-                f"ElGamal ciphertext #{i} doesn't match the Chaum-Pedersen proof: {str(evc)}"
-            )
-            return False
         if not is_valid_disjunctive_chaum_pedersen(
-            zero_or_one_selection_proofs[i], elgamal_public_key
+            encrypted_selections[i], zero_or_one_selection_proofs[i], elgamal_public_key
         ):
             # log warning already happened if this failed
             return False
 
     elgamal_accumulation = elgamal_add(*encrypted_selections)
-    if elgamal_accumulation != evc.sum_of_counters_proof.message:
-        log_warning(
-            f"ElGamal accumulation ciphertext doesn't match the Chaum-Pedersen proof: {str(evc)}"
-        )
-        return False
 
-    if not is_valid_constant_chaum_pedersen(sum_of_counters_proof, elgamal_public_key):
+    if not is_valid_constant_chaum_pedersen(
+        elgamal_accumulation, sum_of_counters_proof, elgamal_public_key
+    ):
         # log warning already happened if this failed
         return False
 

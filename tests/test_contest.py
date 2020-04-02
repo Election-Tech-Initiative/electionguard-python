@@ -17,7 +17,11 @@ from electionguard.contest import (
     decrypt_voted_contest,
     make_contest_hash,
 )
-from electionguard.elgamal import ElGamalKeyPair, elgamal_keypair_from_secret
+from electionguard.elgamal import (
+    ElGamalKeyPair,
+    elgamal_keypair_from_secret,
+    elgamal_add,
+)
 from electionguard.group import (
     ElementModQ,
     ONE_MOD_Q,
@@ -417,11 +421,9 @@ class TestContest(unittest.TestCase):
         )
 
         # and lastly the accumulation proof
-        bad_message = evc.sum_of_counters_proof.message._replace(
-            alpha=mult_p(evc.sum_of_counters_proof.message.alpha, TWO_MOD_P)
-        )
-        bad_accumulation = evc.sum_of_counters_proof._replace(message=bad_message)
-        bad_evc3 = evc._replace(sum_of_counters_proof=bad_accumulation)
+        sum_proof = evc.sum_of_counters_proof
+        bad_sum_proof = sum_proof._replace(constant=sum_proof.constant + 1)
+        bad_evc3 = evc._replace(sum_of_counters_proof=bad_sum_proof)
         self.assertFalse(
             is_valid_encrypted_voted_contest(
                 bad_evc3, contest_description, keypair.public_key
