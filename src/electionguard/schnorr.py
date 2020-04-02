@@ -1,8 +1,17 @@
 from typing import NamedTuple
 
 from .elgamal import ElGamalKeyPair
-from .group import ElementModQ, ElementModP, g_pow_p, mult_p, pow_p, in_bounds_p, in_bounds_q, valid_residue, \
-    a_plus_bc_q
+from .group import (
+    ElementModQ,
+    ElementModP,
+    g_pow_p,
+    mult_p,
+    pow_p,
+    in_bounds_p,
+    in_bounds_q,
+    valid_residue,
+    a_plus_bc_q,
+)
 from .hash import hash_elems
 from .logs import log_warning
 
@@ -31,12 +40,18 @@ def is_valid_schnorr_proof(proof: SchnorrProof) -> bool:
 
     success = valid_public_key and in_bounds_h and in_bounds_u and valid_proof
     if not success:
-        log_warning("found an invalid Schnorr proof: %s", str({
-            "in_bounds_h": in_bounds_h,
-            "in_bounds_u": in_bounds_u,
-            "valid_public_key": valid_public_key,
-            "valid_proof": valid_proof,
-            "proof": proof}))
+        log_warning(
+            "found an invalid Schnorr proof: %s",
+            str(
+                {
+                    "in_bounds_h": in_bounds_h,
+                    "in_bounds_u": in_bounds_u,
+                    "valid_public_key": valid_public_key,
+                    "valid_proof": valid_proof,
+                    "proof": proof,
+                }
+            ),
+        )
     return success
 
 

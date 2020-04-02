@@ -17,7 +17,7 @@ logging.basicConfig(
     filename="electionguard.log",
     level=logging.DEBUG,
     format="%(asctime)s:%(name)s:%(levelname)s:%(message)s",
-    filemode="w"  # erase and overwrite the log file each time
+    filemode="w",  # erase and overwrite the log file each time
 )
 __logger = logging.getLogger("electionguard")
 __ch = logging.StreamHandler()

@@ -1,9 +1,20 @@
 from typing import NamedTuple, List, Optional
 
-from electionguard.chaum_pedersen import DisjunctiveChaumPedersenProof, ConstantChaumPedersenProof, \
-    make_constant_chaum_pedersen, is_valid_disjunctive_chaum_pedersen, is_valid_constant_chaum_pedersen, \
-    make_disjunctive_chaum_pedersen
-from electionguard.elgamal import ElGamalCiphertext, elgamal_encrypt, elgamal_add, ElGamalKeyPair, elgamal_decrypt
+from electionguard.chaum_pedersen import (
+    DisjunctiveChaumPedersenProof,
+    ConstantChaumPedersenProof,
+    make_constant_chaum_pedersen,
+    is_valid_disjunctive_chaum_pedersen,
+    is_valid_constant_chaum_pedersen,
+    make_disjunctive_chaum_pedersen,
+)
+from electionguard.elgamal import (
+    ElGamalCiphertext,
+    elgamal_encrypt,
+    elgamal_add,
+    ElGamalKeyPair,
+    elgamal_decrypt,
+)
 from electionguard.group import ElementModQ, ElementModP, add_q, flatmap_optional
 from electionguard.hash import hash_elems
 from electionguard.logs import log_warning
@@ -50,6 +61,7 @@ class EncryptedVotedContest(NamedTuple):
 #   in EncryptedVotedContest, and we have to sort out how to manage that key, and avoid
 #   leakage of information (so, constant-length ciphertext?).
 
+
 def make_contest_hash(cd: ContestDescription) -> ElementModQ:
     """
     Given a ContestDescription, deterministically derives a "hash" of that contest,
@@ -58,16 +70,27 @@ def make_contest_hash(cd: ContestDescription) -> ElementModQ:
     description match up.
     """
     # We could just use str(cd), but we want this to be easily reproducible outside Python
-    candidate_hashes: List[str] = list(map(lambda s: "%s/%s/%s/%s" % (s.ballot_name,
-                                                                      str(s.is_incumbent),
-                                                                      str(s.is_dummy),
-                                                                      str(s.is_writein)),
-                                           cd.ballot_selections))
-    return hash_elems(cd.abbreviation, cd.ballot_title, cd.ballot_subtitle, cd.electoral_district_id, cd.name,
-                      str(cd.number_elected), str(cd.votes_allowed), *candidate_hashes)
+    candidate_hashes: List[str] = list(
+        map(
+            lambda s: f"({s.ballot_name}/{str(s.is_incumbent)}/{str(s.is_dummy)}/{str(s.is_writein)})",
+            cd.ballot_selections,
+        )
+    )
+    return hash_elems(
+        cd.abbreviation,
+        cd.ballot_title,
+        cd.ballot_subtitle,
+        cd.electoral_district_id,
+        cd.name,
+        str(cd.number_elected),
+        str(cd.votes_allowed),
+        *candidate_hashes,
+    )
 
 
-def is_valid_plaintext_voted_contest(pvc: PlaintextVotedContest, cd: ContestDescription) -> bool:
+def is_valid_plaintext_voted_contest(
+    pvc: PlaintextVotedContest, cd: ContestDescription
+) -> bool:
     """
     Given a PlaintextVotedContest and its corresponding ContestDescription, validates
     that the plaintext well-formed and suitable for encryption. Returns true if good,
@@ -75,29 +98,41 @@ def is_valid_plaintext_voted_contest(pvc: PlaintextVotedContest, cd: ContestDesc
     """
     h = make_contest_hash(cd)
     if h != pvc.contest_hash:
-        log_warning("mismatching contest hash: plaintext(%s), contest description(%s)" % (str(pvc), str(cd)))
+        log_warning(
+            f"mismatching contest hash: plaintext({str(pvc)}), contest description({str(cd)})"
+        )
         return False
 
     total = 0
     for choice in pvc.choices:
         if choice < 0 or choice > 1:
-            log_warning("Currently only supporting choices of 0 or 1: %s" % str(pvc))
+            log_warning(f"Currently only supporting choices of 0 or 1: {str(pvc)}")
             return False
         total += choice
 
     if total != cd.number_elected:
-        log_warning("Sum of choices doesn't match number_elected: %s" % str(pvc))
+        log_warning(f"Sum of choices doesn't match number_elected: {str(pvc)}")
         return False
 
-    if len(pvc.choices) != len(cd.ballot_selections) or len(pvc.choices) != cd.votes_allowed:
-        log_warning("Number of choices in ContestDescription doesn't match PlaintextVotedContest: %s" % str(pvc))
+    if (
+        len(pvc.choices) != len(cd.ballot_selections)
+        or len(pvc.choices) != cd.votes_allowed
+    ):
+        log_warning(
+            f"Number of choices in ContestDescription doesn't match PlaintextVotedContest: {str(pvc)}"
+        )
         return False
 
     return True
 
 
-def encrypt_voted_contest(pvc: PlaintextVotedContest, cd: ContestDescription, elgamal_public_key: ElementModP,
-                          seed: ElementModQ, suppress_validity_check: bool = False) -> Optional[EncryptedVotedContest]:
+def encrypt_voted_contest(
+    pvc: PlaintextVotedContest,
+    cd: ContestDescription,
+    elgamal_public_key: ElementModP,
+    seed: ElementModQ,
+    suppress_validity_check: bool = False,
+) -> Optional[EncryptedVotedContest]:
     """
     Given a PlaintextVotedContext and the necessary key material, computes an encrypted
     version of the ballot, including all the necessary proofs.
@@ -116,17 +151,22 @@ def encrypt_voted_contest(pvc: PlaintextVotedContest, cd: ContestDescription, el
     contest_hash = make_contest_hash(cd)
     nonces = Nonces(seed, contest_hash)
     elgamal_nonces = nonces[0:num_slots]
-    djcp_nonces = nonces[num_slots:num_slots * 2]
+    djcp_nonces = nonces[num_slots : num_slots * 2]
     ccp_nonce = nonces[num_slots * 2]
 
     ciphertexts: List[ElGamalCiphertext] = []
     zero_or_one_selection_proofs: List[DisjunctiveChaumPedersenProof] = []
 
     for i in range(0, num_slots):
-        ciphertexts_i = elgamal_encrypt(pvc.choices[i], elgamal_nonces[i], elgamal_public_key)
-        zp_i = flatmap_optional(ciphertexts_i,
-                                lambda c: make_disjunctive_chaum_pedersen(c, elgamal_nonces[i], elgamal_public_key,
-                                                                          djcp_nonces[i], pvc.choices[i]))
+        ciphertexts_i = elgamal_encrypt(
+            pvc.choices[i], elgamal_nonces[i], elgamal_public_key
+        )
+        zp_i = flatmap_optional(
+            ciphertexts_i,
+            lambda c: make_disjunctive_chaum_pedersen(
+                c, elgamal_nonces[i], elgamal_public_key, djcp_nonces[i], pvc.choices[i]
+            ),
+        )
         if ciphertexts_i is None or zp_i is None:
             return None
         else:
@@ -134,15 +174,28 @@ def encrypt_voted_contest(pvc: PlaintextVotedContest, cd: ContestDescription, el
             zero_or_one_selection_proofs.append(zp_i)
 
     elgamal_accumulation = elgamal_add(*ciphertexts)
-    sum_of_counters_proof = make_constant_chaum_pedersen(elgamal_accumulation, cd.number_elected,
-                                                         add_q(*elgamal_nonces), elgamal_public_key, ccp_nonce)
+    sum_of_counters_proof = make_constant_chaum_pedersen(
+        elgamal_accumulation,
+        cd.number_elected,
+        add_q(*elgamal_nonces),
+        elgamal_public_key,
+        ccp_nonce,
+    )
 
-    return flatmap_optional(sum_of_counters_proof,
-                            lambda p: EncryptedVotedContest(contest_hash, ciphertexts, zero_or_one_selection_proofs, p))
+    return flatmap_optional(
+        sum_of_counters_proof,
+        lambda p: EncryptedVotedContest(
+            contest_hash, ciphertexts, zero_or_one_selection_proofs, p
+        ),
+    )
 
 
-def decrypt_voted_contest(evc: EncryptedVotedContest, cd: ContestDescription, keypair: ElGamalKeyPair,
-                          suppress_validity_check: bool = False) -> Optional[PlaintextVotedContest]:
+def decrypt_voted_contest(
+    evc: EncryptedVotedContest,
+    cd: ContestDescription,
+    keypair: ElGamalKeyPair,
+    suppress_validity_check: bool = False,
+) -> Optional[PlaintextVotedContest]:
     """
     Given an encrypted contest, the contest description, and the ElGamal keypair which can decrypt it,
     returns the corresponding plaintext vote.
@@ -154,50 +207,74 @@ def decrypt_voted_contest(evc: EncryptedVotedContest, cd: ContestDescription, ke
     :return a plaintext voted contest, if successful, or `None` if the encrypted voted contest is invalid
     """
 
-    if not suppress_validity_check and not is_valid_encrypted_voted_contest(evc, cd, keypair.public_key):
+    if not suppress_validity_check and not is_valid_encrypted_voted_contest(
+        evc, cd, keypair.public_key
+    ):
         return None
 
-    contest_hash, encrypted_selections, zero_or_one_selection_proofs, sum_of_counters_proof = evc
+    (
+        contest_hash,
+        encrypted_selections,
+        zero_or_one_selection_proofs,
+        sum_of_counters_proof,
+    ) = evc
 
-    choices: List[int] = list(map(lambda x: elgamal_decrypt(x, keypair.secret_key), encrypted_selections))
+    choices: List[int] = list(
+        map(lambda x: elgamal_decrypt(x, keypair.secret_key), encrypted_selections)
+    )
     return PlaintextVotedContest(contest_hash, choices)
 
 
-def is_valid_encrypted_voted_contest(evc: EncryptedVotedContest, cd: ContestDescription,
-                                     elgamal_public_key: ElementModP) -> bool:
+def is_valid_encrypted_voted_contest(
+    evc: EncryptedVotedContest, cd: ContestDescription, elgamal_public_key: ElementModP
+) -> bool:
     """
     Given an EncryptedVotedContest and the corresponding ContestDescription
     and ElGamal public key, validates all the proofs. Returns
     true if everything is good, false otherwise and logs a warning.
     """
 
-    contest_hash, encrypted_selections, zero_or_one_selection_proofs, sum_of_counters_proof = evc
+    (
+        contest_hash,
+        encrypted_selections,
+        zero_or_one_selection_proofs,
+        sum_of_counters_proof,
+    ) = evc
 
     if make_contest_hash(cd) != contest_hash:
-        log_warning("mismatching contest hashes, evc(%s), cd(%s)" % (str(evc), str(cd)))
+        log_warning(f"mismatching contest hashes, evc({str(evc)}), cd({str(cd)})")
         return False
 
     num_slots = len(cd.ballot_selections)
     if len(encrypted_selections) != num_slots:
-        log_warning("expected %d encrypted ballots, got %d: %s" % (num_slots, len(encrypted_selections), str(evc)))
+        log_warning(
+            f"expected {num_slots} encrypted ballots, got {len(encrypted_selections)}: {str(evc)}"
+        )
         return False
 
     if len(zero_or_one_selection_proofs) != num_slots:
-        log_warning("expected %d disjunctive Chaum-Pedersen proofs, got %d: %s" %
-                    (num_slots, len(zero_or_one_selection_proofs), str(evc)))
+        log_warning(
+            f"expected {num_slots} disjunctive Chaum-Pedersen proofs, got {len(zero_or_one_selection_proofs)}: {str(evc)}"
+        )
         return False
 
     for i in range(0, num_slots):
         if encrypted_selections[i] != zero_or_one_selection_proofs[i].message:
-            log_warning("ElGamal ciphertext #%d doesn't match the Chaum-Pedersen proof: %s" % (i, str(evc)))
+            log_warning(
+                f"ElGamal ciphertext #{i} doesn't match the Chaum-Pedersen proof: {str(evc)}"
+            )
             return False
-        if not is_valid_disjunctive_chaum_pedersen(zero_or_one_selection_proofs[i], elgamal_public_key):
+        if not is_valid_disjunctive_chaum_pedersen(
+            zero_or_one_selection_proofs[i], elgamal_public_key
+        ):
             # log warning already happened if this failed
             return False
 
     elgamal_accumulation = elgamal_add(*encrypted_selections)
     if elgamal_accumulation != evc.sum_of_counters_proof.message:
-        log_warning("ElGamal accumulation ciphertext doesn't match the Chaum-Pedersen proof: %s" % str(evc))
+        log_warning(
+            f"ElGamal accumulation ciphertext doesn't match the Chaum-Pedersen proof: {str(evc)}"
+        )
         return False
 
     if not is_valid_constant_chaum_pedersen(sum_of_counters_proof, elgamal_public_key):

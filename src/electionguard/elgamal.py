@@ -1,19 +1,34 @@
 from typing import NamedTuple, Optional
 
 from .dlog import discrete_log
-from .group import ElementModQ, ElementModP, Q, G, P, g_pow_p, mult_p, mult_inv_p, pow_p, ZERO_MOD_Q, elem_to_int, \
-    int_to_p_unchecked, flatmap_optional
+from .group import (
+    ElementModQ,
+    ElementModP,
+    Q,
+    G,
+    P,
+    g_pow_p,
+    mult_p,
+    mult_inv_p,
+    pow_p,
+    ZERO_MOD_Q,
+    elem_to_int,
+    int_to_p_unchecked,
+    flatmap_optional,
+)
 from .logs import log_error
 
 
 class ElGamalKeyPair(NamedTuple):
     """A tuple of an ElGamal secret key and public key."""
+
     secret_key: ElementModQ
     public_key: ElementModP
 
 
 class ElGamalCiphertext(NamedTuple):
     """An ElGamal ciphertext."""
+
     alpha: ElementModP
     beta: ElementModP
 
@@ -44,7 +59,9 @@ def elgamal_keypair_from_secret(a: ElementModQ) -> Optional[ElGamalKeyPair]:
     return ElGamalKeyPair(a, g_pow_p(a))
 
 
-def elgamal_encrypt(m: int, nonce: ElementModQ, public_key: ElementModP) -> Optional[ElGamalCiphertext]:
+def elgamal_encrypt(
+    m: int, nonce: ElementModQ, public_key: ElementModP
+) -> Optional[ElGamalCiphertext]:
     """
     Encrypts a message with a given random nonce and an ElGamal public key.
 
@@ -57,8 +74,12 @@ def elgamal_encrypt(m: int, nonce: ElementModQ, public_key: ElementModP) -> Opti
         log_error("ElGamal encryption requires a non-zero nonce")
         return None
 
-    return flatmap_optional(_message_to_element(m),
-                            lambda e: ElGamalCiphertext(g_pow_p(nonce), mult_p(e, pow_p(public_key, nonce))))
+    return flatmap_optional(
+        _message_to_element(m),
+        lambda e: ElGamalCiphertext(
+            g_pow_p(nonce), mult_p(e, pow_p(public_key, nonce))
+        ),
+    )
 
 
 def elgamal_decrypt_known_product(c: ElGamalCiphertext, product: ElementModP) -> int:
@@ -83,7 +104,9 @@ def elgamal_decrypt(c: ElGamalCiphertext, secret_key: ElementModQ) -> int:
     return elgamal_decrypt_known_product(c, pow_p(c.alpha, secret_key))
 
 
-def elgamal_decrypt_known_nonce(c: ElGamalCiphertext, public_key: ElementModP, nonce: ElementModQ) -> int:
+def elgamal_decrypt_known_nonce(
+    c: ElGamalCiphertext, public_key: ElementModP, nonce: ElementModQ
+) -> int:
     """
     Decrypt an ElGamal ciphertext using a known nonce and the ElGamal public key.
 
@@ -100,11 +123,12 @@ def elgamal_add(*ciphertexts: ElGamalCiphertext) -> ElGamalCiphertext:
     Homomorphically accumulates one or more ElGamal ciphertexts by pairwise multiplication. The exponents
     of vote counters will add.
     """
-    if len(ciphertexts) == 0:
-        raise Exception("Must have one or more ciphertexts for elgamal_add")
+    assert len(ciphertexts) != 0, "Must have one or more ciphertexts for elgamal_add"
 
     result = ciphertexts[0]
     for c in ciphertexts[1:]:
-        result = ElGamalCiphertext(mult_p(result.alpha, c.alpha), mult_p(result.beta, c.beta))
+        result = ElGamalCiphertext(
+            mult_p(result.alpha, c.alpha), mult_p(result.beta, c.beta)
+        )
 
     return result

@@ -32,7 +32,9 @@ class Nonces(Sequence[ElementModQ]):
     def __getitem__(self, index: slice) -> List[ElementModQ]:
         pass
 
-    def __getitem__(self, index: Union[slice, int]) -> Union[ElementModQ, List[ElementModQ]]:
+    def __getitem__(
+        self, index: Union[slice, int]
+    ) -> Union[ElementModQ, List[ElementModQ]]:
         if isinstance(index, int):
             return self.get_with_headers(index)
         else:

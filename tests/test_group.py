@@ -4,10 +4,36 @@ from typing import Optional
 from hypothesis import given
 from hypothesis.strategies import composite, integers
 
-from electionguard.group import P, Q, ElementModP, ElementModQ, mult_inv_p, ONE_MOD_P, mult_p, ZERO_MOD_P, G, \
-    ONE_MOD_Q, g_pow_p, ZERO_MOD_Q, R, G_INV, in_bounds_q, in_bounds_p, in_bounds_q_no_zero, in_bounds_p_no_zero, \
-    int_to_p, int_to_q, elem_to_int, add_q, int_to_p_unchecked, int_to_q_unchecked, unwrap_optional, match_optional, \
-    get_or_else_optional, flatmap_optional
+from electionguard.group import (
+    P,
+    Q,
+    ElementModP,
+    ElementModQ,
+    mult_inv_p,
+    ONE_MOD_P,
+    mult_p,
+    ZERO_MOD_P,
+    G,
+    ONE_MOD_Q,
+    g_pow_p,
+    ZERO_MOD_Q,
+    R,
+    G_INV,
+    in_bounds_q,
+    in_bounds_p,
+    in_bounds_q_no_zero,
+    in_bounds_p_no_zero,
+    int_to_p,
+    int_to_q,
+    elem_to_int,
+    add_q,
+    int_to_p_unchecked,
+    int_to_q_unchecked,
+    unwrap_optional,
+    match_optional,
+    get_or_else_optional,
+    flatmap_optional,
+)
 
 
 @composite

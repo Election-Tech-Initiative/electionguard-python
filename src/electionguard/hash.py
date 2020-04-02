@@ -28,4 +28,6 @@ def hash_elems(*a: Union[ElementModPOrQ, str, int]) -> ElementModQ:
 
     # Also, we don't need the checked version of int_to_q, because the
     # modulo operation here guarantees that we're in bounds.
-    return int_to_q_unchecked(1 + (int.from_bytes(h.digest(), byteorder='big') % Q_MINUS_ONE))
+    return int_to_q_unchecked(
+        1 + (int.from_bytes(h.digest(), byteorder="big") % Q_MINUS_ONE)
+    )
