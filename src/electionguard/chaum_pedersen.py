@@ -178,8 +178,7 @@ def is_valid_disjunctive_chaum_pedersen(
     in_bounds_c1 = in_bounds_q(c1)
     in_bounds_v0 = in_bounds_q(v0)
     in_bounds_v1 = in_bounds_q(v1)
-    c = hash_elems(alpha, beta, a0, b0, a1, b1)
-    consistent_c = c == add_q(c0, c1)
+    consistent_c = add_q(c0, c1) == hash_elems(alpha, beta, a0, b0, a1, b1)
     consistent_gv0 = g_pow_p(v0) == mult_p(a0, pow_p(alpha, c0))
     consistent_gv1 = g_pow_p(v1) == mult_p(a1, pow_p(alpha, c1))
     consistent_kv0 = pow_p(k, v0) == mult_p(b0, pow_p(beta, c0))
@@ -259,7 +258,7 @@ def is_valid_constant_chaum_pedersen(
         constant_q = tmp
         in_bounds_constant = True
     sane_constant = 0 <= constant < 1_000_000_000
-    c = hash_elems(alpha, beta, a, b)
+    same_c = c == hash_elems(alpha, beta, a, b)
     consistent_gv = (
         in_bounds_v
         and in_bounds_a
@@ -278,6 +277,7 @@ def is_valid_constant_chaum_pedersen(
         and in_bounds_b
         and in_bounds_c
         and in_bounds_v
+        and same_c
         and in_bounds_constant
         and sane_constant
         and consistent_gv
@@ -297,6 +297,7 @@ def is_valid_constant_chaum_pedersen(
                     "in_bounds_v": in_bounds_v,
                     "in_bounds_constant": in_bounds_constant,
                     "sane_constant": sane_constant,
+                    "same_c": same_c,
                     "consistent_gv": consistent_gv,
                     "consistent_kv": consistent_kv,
                     "k": k,
