@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import NamedTuple, List, Optional
 from functools import reduce
 
@@ -104,6 +105,72 @@ class PlaintextVotedContest(NamedTuple):
             return False
 
         return True
+
+    def encrypt(
+        self,
+        cd: ContestDescription,
+        elgamal_public_key: ElementModP,
+        seed: ElementModQ,
+        suppress_validity_check: bool = False,
+    ) -> Optional["EncryptedVotedContest"]:
+        """
+        Given a PlaintextVotedContest and the necessary key material, computes an encrypted
+        version of the ballot, including all the necessary proofs.
+
+        :param cd: The contest description corresponding to this contest
+        :param elgamal_public_key: Public key for the election
+        :param seed: Nonce from which to derive other relevant nonces
+        :param suppress_validity_check: If true, suppresses a validity check on the plaintext; only use this for testing!
+        :return an encrypted voted contest, or `None` if the plaintext was invalid
+        """
+        if not suppress_validity_check and not self.is_valid(cd):
+            return None
+
+        num_slots = len(cd.ballot_selections)
+        contest_hash = cd.crypto_hash()
+        nonces = Nonces(seed, contest_hash)
+        elgamal_nonces = nonces[0:num_slots]
+        djcp_nonces = nonces[num_slots : num_slots * 2]
+        ccp_nonce = nonces[num_slots * 2]
+
+        ciphertexts: List[ElGamalCiphertext] = []
+        zero_or_one_selection_proofs: List[DisjunctiveChaumPedersenProof] = []
+
+        for i in range(0, num_slots):
+            ciphertexts_i = elgamal_encrypt(
+                self.choices[i], elgamal_nonces[i], elgamal_public_key
+            )
+            zp_i = flatmap_optional(
+                ciphertexts_i,
+                lambda c: make_disjunctive_chaum_pedersen(
+                    c,
+                    elgamal_nonces[i],
+                    elgamal_public_key,
+                    djcp_nonces[i],
+                    self.choices[i],
+                ),
+            )
+            if ciphertexts_i is None or zp_i is None:
+                return None
+            else:
+                ciphertexts.append(ciphertexts_i)
+                zero_or_one_selection_proofs.append(zp_i)
+
+        elgamal_accumulation = elgamal_add(*ciphertexts)
+        sum_of_counters_proof = make_constant_chaum_pedersen(
+            elgamal_accumulation,
+            cd.number_elected,
+            add_q(*elgamal_nonces),
+            elgamal_public_key,
+            ccp_nonce,
+        )
+
+        return flatmap_optional(
+            sum_of_counters_proof,
+            lambda p: EncryptedVotedContest(
+                contest_hash, ciphertexts, zero_or_one_selection_proofs, p
+            ),
+        )
 
 
 class EncryptedVotedContest(NamedTuple):
@@ -213,67 +280,3 @@ class EncryptedVotedContest(NamedTuple):
 #   in the Candidate class. We need a place for an encrypted string (symmetric-key?)
 #   in EncryptedVotedContest, and we have to sort out how to manage that key, and avoid
 #   leakage of information (so, constant-length ciphertext?).
-
-
-def encrypt_voted_contest(
-    pvc: PlaintextVotedContest,
-    cd: ContestDescription,
-    elgamal_public_key: ElementModP,
-    seed: ElementModQ,
-    suppress_validity_check: bool = False,
-) -> Optional[EncryptedVotedContest]:
-    """
-    Given a PlaintextVotedContext and the necessary key material, computes an encrypted
-    version of the ballot, including all the necessary proofs.
-
-    :param pvc: The plaintext voted contest
-    :param cd: The contest description corresponding to `pvc`
-    :param elgamal_public_key: Public key for the election
-    :param seed: Nonce from which to derive other relevant nonces
-    :param suppress_validity_check: If true, suppresses a validity check on the plaintext; only use this for testing!
-    :return an encrypted voted contest, or `None` if the plaintext was invalid
-    """
-    if not suppress_validity_check and not pvc.is_valid(cd):
-        return None
-
-    num_slots = len(cd.ballot_selections)
-    contest_hash = cd.crypto_hash()
-    nonces = Nonces(seed, contest_hash)
-    elgamal_nonces = nonces[0:num_slots]
-    djcp_nonces = nonces[num_slots : num_slots * 2]
-    ccp_nonce = nonces[num_slots * 2]
-
-    ciphertexts: List[ElGamalCiphertext] = []
-    zero_or_one_selection_proofs: List[DisjunctiveChaumPedersenProof] = []
-
-    for i in range(0, num_slots):
-        ciphertexts_i = elgamal_encrypt(
-            pvc.choices[i], elgamal_nonces[i], elgamal_public_key
-        )
-        zp_i = flatmap_optional(
-            ciphertexts_i,
-            lambda c: make_disjunctive_chaum_pedersen(
-                c, elgamal_nonces[i], elgamal_public_key, djcp_nonces[i], pvc.choices[i]
-            ),
-        )
-        if ciphertexts_i is None or zp_i is None:
-            return None
-        else:
-            ciphertexts.append(ciphertexts_i)
-            zero_or_one_selection_proofs.append(zp_i)
-
-    elgamal_accumulation = elgamal_add(*ciphertexts)
-    sum_of_counters_proof = make_constant_chaum_pedersen(
-        elgamal_accumulation,
-        cd.number_elected,
-        add_q(*elgamal_nonces),
-        elgamal_public_key,
-        ccp_nonce,
-    )
-
-    return flatmap_optional(
-        sum_of_counters_proof,
-        lambda p: EncryptedVotedContest(
-            contest_hash, ciphertexts, zero_or_one_selection_proofs, p
-        ),
-    )

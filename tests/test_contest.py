@@ -11,7 +11,6 @@ from electionguard.contest import (
     ContestDescription,
     PlaintextVotedContest,
     Candidate,
-    encrypt_voted_contest,
 )
 from electionguard.elgamal import (
     ElGamalKeyPair,
@@ -89,7 +88,7 @@ def arb_contest_description_room_for_overvoting(
     )
 
 
-def contest_description_to_plaintext_voted_context(
+def contest_description_to_plaintext_voted_contest(
     random_seed: int, cds: ContestDescription
 ) -> PlaintextVotedContest:
     """
@@ -123,7 +122,7 @@ def arb_plaintext_voted_contest_well_formed(
 
     return (
         contest_description,
-        contest_description_to_plaintext_voted_context(s, contest_description),
+        contest_description_to_plaintext_voted_contest(s, contest_description),
     )
 
 
@@ -182,7 +181,7 @@ class TestContest(unittest.TestCase):
         plaintext = PlaintextVotedContest(contest_hash, [1, 0])
         self.assertTrue(plaintext.is_valid(contest))
         ciphertext = unwrap_optional(
-            encrypt_voted_contest(plaintext, contest, keypair.public_key, nonce)
+            plaintext.encrypt(contest, keypair.public_key, nonce)
         )
         self.assertTrue(ciphertext.is_valid(contest, keypair.public_key))
 
@@ -235,17 +234,13 @@ class TestContest(unittest.TestCase):
         keypair = elgamal_keypair_from_secret(int_to_q(2))
         nonce = ONE_MOD_Q
         self.assertRaises(
-            Exception, encrypt_voted_contest, valid_plaintext, keypair.public_key, nonce
+            Exception, lambda: valid_plaintext.encrypt(keypair.public_key, nonce)
         )
 
-        self.assertIsNone(
-            encrypt_voted_contest(plaintext_bad1, contest, keypair.public_key, nonce)
-        )
+        self.assertIsNone(plaintext_bad1.encrypt(contest, keypair.public_key, nonce))
 
         # now, we're going to mess with the ciphertext
-        c = unwrap_optional(
-            encrypt_voted_contest(valid_plaintext, contest, keypair.public_key, nonce)
-        )
+        c = unwrap_optional(valid_plaintext.encrypt(contest, keypair.public_key, nonce))
         c2 = c._replace(encrypted_selections=c.encrypted_selections[1:])
         self.assertFalse(c2.is_valid(contest, keypair.public_key))
         self.assertIsNone(c2.decrypt(contest, keypair))
@@ -276,9 +271,7 @@ class TestContest(unittest.TestCase):
         self.assertTrue(plaintext.is_valid(contest_description))
 
         ciphertext = unwrap_optional(
-            encrypt_voted_contest(
-                plaintext, contest_description, keypair.public_key, nonce
-            )
+            plaintext.encrypt(contest_description, keypair.public_key, nonce)
         )
         plaintext_again = unwrap_optional(
             ciphertext.decrypt(contest_description, keypair)
@@ -305,8 +298,7 @@ class TestContest(unittest.TestCase):
     ):
         contest_description, plaintext = cp
         ciphertext = unwrap_optional(
-            encrypt_voted_contest(
-                plaintext,
+            plaintext.encrypt(
                 contest_description,
                 keypair.public_key,
                 nonce,
@@ -333,8 +325,7 @@ class TestContest(unittest.TestCase):
     ):
         contest_description, plaintext = cp
 
-        evc = encrypt_voted_contest(
-            plaintext,
+        evc = plaintext.encrypt(
             contest_description,
             keypair.public_key,
             nonce,
@@ -346,8 +337,7 @@ class TestContest(unittest.TestCase):
         bad_plaintext = plaintext._replace(choices=[s + Q for s in plaintext.choices])
 
         self.assertIsNone(
-            encrypt_voted_contest(
-                bad_plaintext,
+            bad_plaintext.encrypt(
                 contest_description,
                 keypair.public_key,
                 nonce,
@@ -373,8 +363,7 @@ class TestContest(unittest.TestCase):
     ):
         contest_description, plaintext = cp
 
-        evc = encrypt_voted_contest(
-            plaintext,
+        evc = plaintext.encrypt(
             contest_description,
             keypair.public_key,
             nonce,
@@ -422,10 +411,10 @@ class TestContest(unittest.TestCase):
         keypair: ElGamalKeyPair,
     ):
         pvc1 = cp[1]
-        pvc2 = contest_description_to_plaintext_voted_context(seed, cp[0])
+        pvc2 = contest_description_to_plaintext_voted_contest(seed, cp[0])
 
-        evc1 = encrypt_voted_contest(pvc1, cp[0], keypair.public_key, eg_seed)
-        evc2 = encrypt_voted_contest(pvc2, cp[0], keypair.public_key, eg_seed)
+        evc1 = pvc1.encrypt(cp[0], keypair.public_key, eg_seed)
+        evc2 = pvc2.encrypt(cp[0], keypair.public_key, eg_seed)
 
         h1 = evc1.crypto_hash()
         h2 = evc2.crypto_hash()
