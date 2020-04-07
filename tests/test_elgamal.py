@@ -7,7 +7,6 @@ from hypothesis.strategies import composite, integers
 
 from electionguard.elgamal import (
     ElGamalKeyPair,
-    _message_to_element,
     elgamal_encrypt,
     elgamal_add,
     elgamal_keypair_from_secret,
@@ -49,7 +48,7 @@ class TestElGamal(unittest.TestCase):
         public_key = keypair.public_key
 
         self.assertLess(elem_to_int(public_key), P)
-        elem = _message_to_element(0)
+        elem = g_pow_p(ZERO_MOD_Q)
         self.assertEqual(elem, ONE_MOD_P)  # g^0 == 1
 
         ciphertext = unwrap_optional(elgamal_encrypt(0, nonce, keypair.public_key))
@@ -100,9 +99,9 @@ class TestElGamal(unittest.TestCase):
         self.assertEqual(message, plaintext)
 
     @given(arb_element_mod_q())
-    def test_large_values_rejected_by_message_to_element(self, q: ElementModQ):
+    def test_large_values_rejected_by_int_to_q(self, q: ElementModQ):
         oversize = elem_to_int(q) + Q
-        self.assertEqual(None, _message_to_element(oversize))
+        self.assertEqual(None, int_to_q(oversize))
 
     @given(arb_elgamal_keypair())
     def test_elgamal_keypairs_are_sane(self, keypair: ElGamalKeyPair):

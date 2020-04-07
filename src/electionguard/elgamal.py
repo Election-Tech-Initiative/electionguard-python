@@ -4,17 +4,14 @@ from .dlog import discrete_log
 from .group import (
     ElementModQ,
     ElementModP,
-    Q,
-    G,
-    P,
     g_pow_p,
     mult_p,
     mult_inv_p,
     pow_p,
     ZERO_MOD_Q,
     elem_to_int,
-    int_to_p_unchecked,
     flatmap_optional,
+    int_to_q,
 )
 from .logs import log_error
 
@@ -27,7 +24,11 @@ class ElGamalKeyPair(NamedTuple):
 
 
 class ElGamalCiphertext(NamedTuple):
-    """An ElGamal ciphertext."""
+    """
+    An "exponential ElGamal ciphertext" (i.e., with the plaintext in the exponent to allow for
+    homomorphic addition). Create one with `elgamal_encrypt`. Add them with `elgamal_add`.
+    Decrypt using one of the supplied instance methods.
+    """
 
     alpha: ElementModP
     beta: ElementModP
@@ -61,19 +62,6 @@ class ElGamalCiphertext(NamedTuple):
         return self.decrypt_known_product(pow_p(public_key, nonce))
 
 
-def _message_to_element(m: int) -> Optional[ElementModP]:
-    """
-    Encoding a message (expected to be non-negative, less than Q, and generally much smaller than that)
-    suitable for ElGamal encryption and homomorphic addition (in the exponent).
-    """
-    if m < 0 or m >= Q:
-        log_error("message_to_element out of bounds")
-        return None
-    else:
-        # Safe to use the unchecked version because pow() ensures the result is in range.
-        return int_to_p_unchecked(pow(G, m, P))
-
-
 def elgamal_keypair_from_secret(a: ElementModQ) -> Optional[ElGamalKeyPair]:
     """
     Given an ElGamal secret key (typically, a random number in [2,Q)), returns
@@ -103,9 +91,9 @@ def elgamal_encrypt(
         return None
 
     return flatmap_optional(
-        _message_to_element(m),
+        int_to_q(m),
         lambda e: ElGamalCiphertext(
-            g_pow_p(nonce), mult_p(e, pow_p(public_key, nonce))
+            g_pow_p(nonce), mult_p(g_pow_p(e), pow_p(public_key, nonce))
         ),
     )
 
