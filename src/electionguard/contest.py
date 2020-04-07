@@ -1,4 +1,5 @@
 from typing import NamedTuple, List, Optional
+from functools import reduce
 
 from electionguard.chaum_pedersen import (
     DisjunctiveChaumPedersenProof,
@@ -62,6 +63,26 @@ class EncryptedVotedContest(NamedTuple):
 #   leakage of information (so, constant-length ciphertext?).
 
 
+def make_encrypted_voted_contest_hash(evc: EncryptedVotedContest) -> ElementModQ:
+    """
+    Given an EncryptedVotedContest, generates a hash, suitable for rolling up
+    into a hash / tracking code for an entire ballot. Of note, this particular hash only examines
+    the `contest_hash` and `encrypted_selections`, but not the Chaum-Pedersen proofs.
+    This is deliberate, allowing for the possibility of ElectionGuard variants running on
+    much more limited hardware, wherein the Chaum-Pedersen proofs might be computed
+    later on.
+    """
+
+    # Python doesn't have a flatmap operator, so we're first concatenating together
+    # all the ElGamal pairs into a single List[ElementModP], which we can then
+    # just feed into the hash function.
+
+    flattened_votes: List[ElementModP] = reduce(
+        lambda l, e: l + [e.alpha, e.beta], evc.encrypted_selections, []
+    )
+    return hash_elems(evc.contest_hash, *flattened_votes)
+
+
 def make_contest_hash(cd: ContestDescription) -> ElementModQ:
     """
     Given a ContestDescription, deterministically derives a "hash" of that contest,
@@ -69,6 +90,7 @@ def make_contest_hash(cd: ContestDescription) -> ElementModQ:
     either a plaintext or encrypted voted context and its corresponding contest
     description match up.
     """
+
     # We could just use str(cd), but we want this to be easily reproducible outside Python
     candidate_hashes: List[str] = list(
         map(

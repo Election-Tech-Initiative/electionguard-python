@@ -16,6 +16,7 @@ from electionguard.contest import (
     is_valid_encrypted_voted_contest,
     decrypt_voted_contest,
     make_contest_hash,
+    make_encrypted_voted_contest_hash,
 )
 from electionguard.elgamal import (
     ElGamalKeyPair,
@@ -94,29 +95,41 @@ def arb_contest_description_room_for_overvoting(
     )
 
 
-@composite
-def arb_plaintext_voted_contest_well_formed(
-    draw, cds=arb_contest_description(), seed=integers()
-):
+def contest_description_to_plaintext_voted_context(
+    random_seed: int, cds: ContestDescription
+) -> PlaintextVotedContest:
+    """
+    This is used by `arb_plaintext_voted_contest_well_formed` and other generators. Given a contest
+    description and a random seed, produce a well-formed plaintext voted contest.
+    """
     r = Random()
-    r.seed(draw(seed))
-    contest_description: ContestDescription = draw(cds)
+    r.seed(random_seed)
 
     # We're going to create a list of numbers, with the right number of 1's and 0's, then shuffle it based on the seed.
     # Note that we're not generating vote selections with undervotes, because those shouldn't exist at this stage in
     # ElectionGuard. If the voter chooses to undervote, the "dummy" votes should become one, and thus there's no such
     # thing as an undervoted ballot plaintext.
 
-    selections = [1] * contest_description.number_elected + [0] * (
-        contest_description.votes_allowed - contest_description.number_elected
+    selections = [1] * cds.number_elected + [0] * (
+        cds.votes_allowed - cds.number_elected
     )
 
-    assert len(selections) == contest_description.votes_allowed
+    assert len(selections) == cds.votes_allowed
 
     r.shuffle(selections)
+    return PlaintextVotedContest(make_contest_hash(cds), selections)
+
+
+@composite
+def arb_plaintext_voted_contest_well_formed(
+    draw, cds=arb_contest_description(), seed=integers()
+):
+    s = draw(seed)
+    contest_description: ContestDescription = draw(cds)
+
     return (
         contest_description,
-        PlaintextVotedContest(make_contest_hash(contest_description), selections),
+        contest_description_to_plaintext_voted_context(s, contest_description),
     )
 
 
@@ -352,9 +365,7 @@ class TestContest(unittest.TestCase):
         self.assertIsNotNone(evc)
 
         # malformed plaintext with counters out of range should cause elgamal_encrypt to return None
-        bad_plaintext = plaintext._replace(
-            choices=list(map(lambda s: s + Q, plaintext.choices))
-        )
+        bad_plaintext = plaintext._replace(choices=[s + Q for s in plaintext.choices])
 
         self.assertIsNone(
             encrypt_voted_contest(
@@ -429,3 +440,35 @@ class TestContest(unittest.TestCase):
                 bad_evc3, contest_description, keypair.public_key
             )
         )
+
+    @settings(
+        deadline=timedelta(milliseconds=2000),
+        suppress_health_check=[HealthCheck.too_slow],
+        max_examples=30,
+    )
+    @given(
+        arb_plaintext_voted_contest_well_formed(),
+        integers(),
+        arb_element_mod_q_no_zero(),
+        arb_elgamal_keypair(),
+    )
+    def test_encrypted_voted_contest_hash(
+        self,
+        cp: Tuple[ContestDescription, PlaintextVotedContest],
+        seed: int,
+        eg_seed: ElementModQ,
+        keypair: ElGamalKeyPair,
+    ):
+        pvc1 = cp[1]
+        pvc2 = contest_description_to_plaintext_voted_context(seed, cp[0])
+
+        evc1 = encrypt_voted_contest(pvc1, cp[0], keypair.public_key, eg_seed)
+        evc2 = encrypt_voted_contest(pvc2, cp[0], keypair.public_key, eg_seed)
+
+        h1 = make_encrypted_voted_contest_hash(evc1)
+        h2 = make_encrypted_voted_contest_hash(evc2)
+        if pvc1 == pvc2:
+            self.assertEqual(h1, h2)
+
+        if h1 != h2:
+            self.assertNotEqual(pvc1, pvc2)

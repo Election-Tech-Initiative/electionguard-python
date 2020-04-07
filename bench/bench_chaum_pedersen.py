@@ -70,18 +70,18 @@ if __name__ == "__main__":
             )
         )
         start_all_scalar = timer()
-        timing_data = list(map(lambda i: chaum_pedersen_bench(i), inputs))
+        timing_data = [chaum_pedersen_bench(i) for i in inputs]
         end_all_scalar = timer()
 
         print(f"  Creating Chaum-Pedersen proofs ({size} iterations)")
-        avg_proof_scalar = average(list(map(lambda t: t[0], timing_data)))
-        std_proof_scalar = std(list(map(lambda t: t[0], timing_data)))
+        avg_proof_scalar = average([t[0] for t in timing_data])
+        std_proof_scalar = std([t[0] for t in timing_data])
         print(f"    Avg    = {avg_proof_scalar:.6f} sec")
         print(f"    Stddev = {std_proof_scalar:.6f} sec")
 
         print(f"  Validating Chaum-Pedersen proofs ({size} iterations)")
-        avg_verify_scalar = average(list(map(lambda t: t[1], timing_data)))
-        std_verify_scalar = std(list(map(lambda t: t[1], timing_data)))
+        avg_verify_scalar = average([t[1] for t in timing_data])
+        std_verify_scalar = std([t[1] for t in timing_data])
         print(f"    Avg    = {avg_verify_scalar:.6f} sec")
         print(f"    Stddev = {std_verify_scalar:.6f} sec")
 
