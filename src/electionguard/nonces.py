@@ -40,7 +40,7 @@ class Nonces(Sequence[ElementModQ]):
         else:
             if isinstance(index.stop, int):
                 # Handling slices is a pain: https://stackoverflow.com/a/42731787
-                indices = list(range(index.start or 0, index.stop, index.step or 1))
+                indices = range(index.start or 0, index.stop, index.step or 1)
                 return [self[i] for i in indices]
             else:
                 raise TypeError("Cannot take unbounded slice of Nonces")
