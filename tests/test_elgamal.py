@@ -9,8 +9,6 @@ from electionguard.elgamal import (
     ElGamalKeyPair,
     _message_to_element,
     elgamal_encrypt,
-    elgamal_decrypt,
-    elgamal_decrypt_known_nonce,
     elgamal_add,
     elgamal_keypair_from_secret,
 )
@@ -65,7 +63,7 @@ class TestElGamal(unittest.TestCase):
             pow(elem_to_int(public_key), elem_to_int(nonce), P),
         )
 
-        plaintext = elgamal_decrypt(ciphertext, keypair.secret_key)
+        plaintext = ciphertext.decrypt(keypair.secret_key)
 
         self.assertEqual(0, plaintext)
 
@@ -86,7 +84,7 @@ class TestElGamal(unittest.TestCase):
         ciphertext = unwrap_optional(
             elgamal_encrypt(message, nonce, keypair.public_key)
         )
-        plaintext = elgamal_decrypt(ciphertext, keypair.secret_key)
+        plaintext = ciphertext.decrypt(keypair.secret_key)
 
         self.assertEqual(message, plaintext)
 
@@ -97,7 +95,7 @@ class TestElGamal(unittest.TestCase):
         ciphertext = unwrap_optional(
             elgamal_encrypt(message, nonce, keypair.public_key)
         )
-        plaintext = elgamal_decrypt_known_nonce(ciphertext, keypair.public_key, nonce)
+        plaintext = ciphertext.decrypt_known_nonce(keypair.public_key, nonce)
 
         self.assertEqual(message, plaintext)
 
@@ -130,7 +128,7 @@ class TestElGamal(unittest.TestCase):
         c1 = unwrap_optional(elgamal_encrypt(m1, r1, keypair.public_key))
         c2 = unwrap_optional(elgamal_encrypt(m2, r2, keypair.public_key))
         c_sum = elgamal_add(c1, c2)
-        total = elgamal_decrypt(c_sum, keypair.secret_key)
+        total = c_sum.decrypt(keypair.secret_key)
 
         self.assertEqual(total, m1 + m2)
 

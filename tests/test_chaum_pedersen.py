@@ -6,10 +6,8 @@ from hypothesis.strategies import integers
 
 from electionguard.chaum_pedersen import (
     make_disjunctive_chaum_pedersen_zero,
-    is_valid_disjunctive_chaum_pedersen,
     make_disjunctive_chaum_pedersen_one,
     make_constant_chaum_pedersen,
-    is_valid_constant_chaum_pedersen,
     make_disjunctive_chaum_pedersen,
 )
 from electionguard.elgamal import (
@@ -35,12 +33,8 @@ class TestDisjunctiveChaumPedersen(unittest.TestCase):
         proof0bad = make_disjunctive_chaum_pedersen_one(
             message0, nonce, keypair.public_key, seed
         )
-        self.assertTrue(
-            is_valid_disjunctive_chaum_pedersen(message0, proof0, keypair.public_key)
-        )
-        self.assertFalse(
-            is_valid_disjunctive_chaum_pedersen(message0, proof0bad, keypair.public_key)
-        )
+        self.assertTrue(proof0.is_valid(message0, keypair.public_key))
+        self.assertFalse(proof0bad.is_valid(message0, keypair.public_key))
 
         message1 = unwrap_optional(elgamal_encrypt(1, nonce, keypair.public_key))
         proof1 = make_disjunctive_chaum_pedersen_one(
@@ -49,12 +43,8 @@ class TestDisjunctiveChaumPedersen(unittest.TestCase):
         proof1bad = make_disjunctive_chaum_pedersen_zero(
             message1, nonce, keypair.public_key, seed
         )
-        self.assertTrue(
-            is_valid_disjunctive_chaum_pedersen(message1, proof1, keypair.public_key)
-        )
-        self.assertFalse(
-            is_valid_disjunctive_chaum_pedersen(message1, proof1bad, keypair.public_key)
-        )
+        self.assertTrue(proof1.is_valid(message1, keypair.public_key))
+        self.assertFalse(proof1bad.is_valid(message1, keypair.public_key))
 
     def test_djcp_proof_invalid_inputs(self):
         # this is here to push up our coverage
@@ -90,12 +80,8 @@ class TestDisjunctiveChaumPedersen(unittest.TestCase):
         proof_bad = make_disjunctive_chaum_pedersen_one(
             message, nonce, keypair.public_key, seed
         )
-        self.assertTrue(
-            is_valid_disjunctive_chaum_pedersen(message, proof, keypair.public_key)
-        )
-        self.assertFalse(
-            is_valid_disjunctive_chaum_pedersen(message, proof_bad, keypair.public_key)
-        )
+        self.assertTrue(proof.is_valid(message, keypair.public_key))
+        self.assertFalse(proof_bad.is_valid(message, keypair.public_key))
 
     @settings(
         deadline=timedelta(milliseconds=2000),
@@ -113,12 +99,8 @@ class TestDisjunctiveChaumPedersen(unittest.TestCase):
         proof_bad = make_disjunctive_chaum_pedersen_zero(
             message, nonce, keypair.public_key, seed
         )
-        self.assertTrue(
-            is_valid_disjunctive_chaum_pedersen(message, proof, keypair.public_key)
-        )
-        self.assertFalse(
-            is_valid_disjunctive_chaum_pedersen(message, proof_bad, keypair.public_key)
-        )
+        self.assertTrue(proof.is_valid(message, keypair.public_key))
+        self.assertFalse(proof_bad.is_valid(message, keypair.public_key))
 
     @settings(
         deadline=timedelta(milliseconds=2000),
@@ -139,14 +121,8 @@ class TestDisjunctiveChaumPedersen(unittest.TestCase):
             message_bad, nonce, keypair.public_key, seed
         )
 
-        self.assertFalse(
-            is_valid_disjunctive_chaum_pedersen(
-                message_bad, proof_bad, keypair.public_key
-            )
-        )
-        self.assertFalse(
-            is_valid_disjunctive_chaum_pedersen(message_bad, proof, keypair.public_key)
-        )
+        self.assertFalse(proof_bad.is_valid(message_bad, keypair.public_key))
+        self.assertFalse(proof.is_valid(message_bad, keypair.public_key))
 
 
 class TestConstantChaumPedersen(unittest.TestCase):
@@ -161,12 +137,8 @@ class TestConstantChaumPedersen(unittest.TestCase):
         bad_proof = make_constant_chaum_pedersen(
             message, 1, nonce, keypair.public_key, seed
         )
-        self.assertTrue(
-            is_valid_constant_chaum_pedersen(message, proof, keypair.public_key)
-        )
-        self.assertFalse(
-            is_valid_constant_chaum_pedersen(message, bad_proof, keypair.public_key)
-        )
+        self.assertTrue(proof.is_valid(message, keypair.public_key))
+        self.assertFalse(bad_proof.is_valid(message, keypair.public_key))
 
     def test_ccp_proofs_simple_1(self):
         keypair = elgamal_keypair_from_secret(TWO_MOD_Q)
@@ -179,12 +151,8 @@ class TestConstantChaumPedersen(unittest.TestCase):
         bad_proof = make_constant_chaum_pedersen(
             message, 0, nonce, keypair.public_key, seed
         )
-        self.assertTrue(
-            is_valid_constant_chaum_pedersen(message, proof, keypair.public_key)
-        )
-        self.assertFalse(
-            is_valid_constant_chaum_pedersen(message, bad_proof, keypair.public_key)
-        )
+        self.assertTrue(proof.is_valid(message, keypair.public_key))
+        self.assertFalse(bad_proof.is_valid(message, keypair.public_key))
 
     @settings(
         deadline=timedelta(milliseconds=2000),
@@ -219,27 +187,17 @@ class TestConstantChaumPedersen(unittest.TestCase):
         proof = make_constant_chaum_pedersen(
             message, constant, nonce, keypair.public_key, seed
         )
-        self.assertTrue(
-            is_valid_constant_chaum_pedersen(message, proof, keypair.public_key)
-        )
+        self.assertTrue(proof.is_valid(message, keypair.public_key))
 
         proof_bad1 = make_constant_chaum_pedersen(
             message_bad, constant, nonce, keypair.public_key, seed
         )
-        self.assertFalse(
-            is_valid_constant_chaum_pedersen(
-                message_bad, proof_bad1, keypair.public_key
-            )
-        )
+        self.assertFalse(proof_bad1.is_valid(message_bad, keypair.public_key))
 
         proof_bad2 = make_constant_chaum_pedersen(
             message, bad_constant, nonce, keypair.public_key, seed
         )
-        self.assertFalse(
-            is_valid_constant_chaum_pedersen(message, proof_bad2, keypair.public_key)
-        )
+        self.assertFalse(proof_bad2.is_valid(message, keypair.public_key))
 
         proof_bad3 = proof._replace(constant=-1)
-        self.assertFalse(
-            is_valid_constant_chaum_pedersen(message, proof_bad3, keypair.public_key)
-        )
+        self.assertFalse(proof_bad3.is_valid(message, keypair.public_key))

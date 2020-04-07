@@ -32,6 +32,34 @@ class ElGamalCiphertext(NamedTuple):
     alpha: ElementModP
     beta: ElementModP
 
+    def decrypt_known_product(self, product: ElementModP) -> int:
+        """
+        Decrypts an ElGamal ciphertext with a "known product" (the blinding factor used in the encryption).
+
+        :param product: The known product (blinding factor).
+        :return: An exponentially encoded plaintext message.
+        """
+        return discrete_log(mult_p(self.beta, mult_inv_p(product)))
+
+    def decrypt(self, secret_key: ElementModQ) -> int:
+        """
+        Decrypt an ElGamal ciphertext using a known ElGamal secret key.
+
+        :param secret_key: The corresponding ElGamal secret key.
+        :return: An exponentially encoded plaintext message.
+        """
+        return self.decrypt_known_product(pow_p(self.alpha, secret_key))
+
+    def decrypt_known_nonce(self, public_key: ElementModP, nonce: ElementModQ) -> int:
+        """
+        Decrypt an ElGamal ciphertext using a known nonce and the ElGamal public key.
+
+        :param public_key: The corresponding ElGamal public key.
+        :param nonce: The secret nonce used to create the ciphertext.
+        :return: An exponentially encoded plaintext message.
+        """
+        return self.decrypt_known_product(pow_p(public_key, nonce))
+
 
 def _message_to_element(m: int) -> Optional[ElementModP]:
     """
@@ -80,42 +108,6 @@ def elgamal_encrypt(
             g_pow_p(nonce), mult_p(e, pow_p(public_key, nonce))
         ),
     )
-
-
-def elgamal_decrypt_known_product(c: ElGamalCiphertext, product: ElementModP) -> int:
-    """
-    Decrypts an ElGamal ciphertext with a "known product" (the blinding factor used in the encryption).
-
-    :param c: The ciphertext tuple.
-    :param product: The known product (blinding factor).
-    :return: An exponentially encoded plaintext message.
-    """
-    return discrete_log(mult_p(c.beta, mult_inv_p(product)))
-
-
-def elgamal_decrypt(c: ElGamalCiphertext, secret_key: ElementModQ) -> int:
-    """
-    Decrypt an ElGamal ciphertext using a known ElGamal secret key.
-
-    :param c: The ciphertext tuple.
-    :param secret_key: The corresponding ElGamal secret key.
-    :return: An exponentially encoded plaintext message.
-    """
-    return elgamal_decrypt_known_product(c, pow_p(c.alpha, secret_key))
-
-
-def elgamal_decrypt_known_nonce(
-    c: ElGamalCiphertext, public_key: ElementModP, nonce: ElementModQ
-) -> int:
-    """
-    Decrypt an ElGamal ciphertext using a known nonce and the ElGamal public key.
-
-    :param c: The ciphertext tuple.
-    :param public_key: The corresponding ElGamal public key.
-    :param nonce: The secret nonce used to create the ciphertext.
-    :return: An exponentially encoded plaintext message.
-    """
-    return elgamal_decrypt_known_product(c, pow_p(public_key, nonce))
 
 
 def elgamal_add(*ciphertexts: ElGamalCiphertext) -> ElGamalCiphertext:

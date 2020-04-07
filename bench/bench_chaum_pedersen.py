@@ -4,10 +4,8 @@ from typing import Tuple, NamedTuple, Dict
 
 from numpy import average, std
 
-from electionguard.chaum_pedersen import (
-    make_disjunctive_chaum_pedersen_zero,
-    is_valid_disjunctive_chaum_pedersen,
-)
+from electionguard.chaum_pedersen import make_disjunctive_chaum_pedersen_zero
+
 from electionguard.elgamal import (
     elgamal_keypair_from_secret,
     ElGamalKeyPair,
@@ -35,7 +33,7 @@ def chaum_pedersen_bench(bi: BenchInput) -> Tuple[float, float]:
     start1 = timer()
     proof = make_disjunctive_chaum_pedersen_zero(ciphertext, r, keypair.public_key, s)
     end1 = timer()
-    valid = is_valid_disjunctive_chaum_pedersen(ciphertext, proof, keypair.public_key)
+    valid = proof.is_valid(ciphertext, keypair.public_key)
     end2 = timer()
     if not valid:
         raise Exception("Wasn't expecting an invalid proof during a benchmark!")
@@ -61,14 +59,10 @@ if __name__ == "__main__":
     for size in problem_sizes:
         print("Benchmarking on problem size: ", size)
         seeds = rands[0:size]
-        inputs = list(
-            map(
-                lambda a: BenchInput(
-                    elgamal_keypair_from_secret(a), rands[size], rands[size + 1]
-                ),
-                seeds,
-            )
-        )
+        inputs = [
+            BenchInput(elgamal_keypair_from_secret(a), rands[size], rands[size + 1])
+            for a in seeds
+        ]
         start_all_scalar = timer()
         timing_data = [chaum_pedersen_bench(i) for i in inputs]
         end_all_scalar = timer()
