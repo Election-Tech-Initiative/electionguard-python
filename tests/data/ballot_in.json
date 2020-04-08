@@ -1,0 +1,19 @@
+{
+    "objectId": "some-external-id-string-123",
+    "ballotStyle": "jefferson-county",
+    "contests": [
+        {
+            "objectId": "justice-supreme-court",
+            "ballotSelections": [
+                {
+                    "objectId": "john-adams-selection",
+                    "plaintext": "True"
+                },
+                {
+                    "objectId": "write-in-selection",
+                    "plaintext": "Robert Paine"
+                }
+            ]
+        }
+    ]
+}
