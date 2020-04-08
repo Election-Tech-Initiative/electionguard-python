@@ -1,15 +1,27 @@
 from typing import NamedTuple
 
 from .elgamal import ElGamalCiphertext
-from .group import ElementModQ, ElementModP, g_pow_p, mult_p, pow_p, valid_residue, in_bounds_q, a_minus_b_q, \
-    a_plus_bc_q, add_q, negate_q, int_to_q, ZERO_MOD_Q
+from .group import (
+    ElementModQ,
+    ElementModP,
+    g_pow_p,
+    mult_p,
+    pow_p,
+    valid_residue,
+    in_bounds_q,
+    a_minus_b_q,
+    a_plus_bc_q,
+    add_q,
+    negate_q,
+    int_to_q,
+    ZERO_MOD_Q,
+)
 from .hash import hash_elems
 from .logs import log_warning
 from .nonces import Nonces
 
 
 class DisjunctiveChaumPedersenProof(NamedTuple):
-    message: ElGamalCiphertext
     a0: ElementModP
     b0: ElementModP
     a1: ElementModP
@@ -19,18 +31,170 @@ class DisjunctiveChaumPedersenProof(NamedTuple):
     v0: ElementModQ
     v1: ElementModQ
 
+    def is_valid(self, message: ElGamalCiphertext, k: ElementModP) -> bool:
+        """
+        Validates a "disjunctive" Chaum-Pedersen (zero or one) proof.
+
+        :param message: The ciphertext message
+        :param k: The public key of the election
+        :return: True if everything is consistent. False otherwise.
+        """
+
+        (alpha, beta) = message
+        (a0, b0, a1, b1, c0, c1, v0, v1) = self
+        in_bounds_alpha = valid_residue(alpha)
+        in_bounds_beta = valid_residue(beta)
+        in_bounds_a0 = valid_residue(a0)
+        in_bounds_b0 = valid_residue(b0)
+        in_bounds_a1 = valid_residue(a1)
+        in_bounds_b1 = valid_residue(b1)
+        in_bounds_c0 = in_bounds_q(c0)
+        in_bounds_c1 = in_bounds_q(c1)
+        in_bounds_v0 = in_bounds_q(v0)
+        in_bounds_v1 = in_bounds_q(v1)
+        consistent_c = add_q(c0, c1) == hash_elems(alpha, beta, a0, b0, a1, b1)
+        consistent_gv0 = g_pow_p(v0) == mult_p(a0, pow_p(alpha, c0))
+        consistent_gv1 = g_pow_p(v1) == mult_p(a1, pow_p(alpha, c1))
+        consistent_kv0 = pow_p(k, v0) == mult_p(b0, pow_p(beta, c0))
+        consistent_gc1kv1 = mult_p(g_pow_p(c1), pow_p(k, v1)) == mult_p(
+            b1, pow_p(beta, c1)
+        )
+
+        success = (
+            in_bounds_alpha
+            and in_bounds_beta
+            and in_bounds_a0
+            and in_bounds_b0
+            and in_bounds_a1
+            and in_bounds_b1
+            and in_bounds_c0
+            and in_bounds_c1
+            and in_bounds_v0
+            and in_bounds_v1
+            and consistent_c
+            and consistent_gv0
+            and consistent_gv1
+            and consistent_kv0
+            and consistent_gc1kv1
+        )
+
+        if not success:
+            log_warning(
+                "found an invalid Chaum-Pedersen proof: "
+                + str(
+                    {
+                        "in_bounds_alpha": in_bounds_alpha,
+                        "in_bounds_beta": in_bounds_beta,
+                        "in_bounds_a0": in_bounds_a0,
+                        "in_bounds_b0": in_bounds_b0,
+                        "in_bounds_a1": in_bounds_a1,
+                        "in_bounds_b1": in_bounds_b1,
+                        "in_bounds_c0": in_bounds_c0,
+                        "in_bounds_c1": in_bounds_c1,
+                        "in_bounds_v0": in_bounds_v0,
+                        "in_bounds_v1": in_bounds_v1,
+                        "consistent_c": consistent_c,
+                        "consistent_gv0": consistent_gv0,
+                        "consistent_gv1": consistent_gv1,
+                        "consistent_kv0": consistent_kv0,
+                        "consistent_gc1kv1": consistent_gc1kv1,
+                        "k": k,
+                        "proof": self,
+                    }
+                ),
+            )
+        return success
+
 
 class ConstantChaumPedersenProof(NamedTuple):
-    message: ElGamalCiphertext
     a: ElementModP
     b: ElementModP
     c: ElementModQ
     v: ElementModQ
     constant: int
 
+    def is_valid(self, message: ElGamalCiphertext, k: ElementModP) -> bool:
+        """
+        Validates a "constant" Chaum-Pedersen proof.
 
-def make_disjunctive_chaum_pedersen(message: ElGamalCiphertext, r: ElementModQ, k: ElementModP, seed: ElementModQ,
-                                    plaintext: int) -> DisjunctiveChaumPedersenProof:
+        :param message: The ciphertext message
+        :param k: The public key of the election
+        :return: True if everything is consistent. False otherwise.
+        """
+
+        (alpha, beta) = message
+        (a, b, c, v, constant) = self
+        in_bounds_alpha = valid_residue(alpha)
+        in_bounds_beta = valid_residue(beta)
+        in_bounds_a = valid_residue(a)
+        in_bounds_b = valid_residue(b)
+        in_bounds_c = in_bounds_q(c)
+        in_bounds_v = in_bounds_q(v)
+        tmp = int_to_q(constant)
+        if tmp is None:
+            constant_q = ZERO_MOD_Q
+            in_bounds_constant = False
+        else:
+            constant_q = tmp
+            in_bounds_constant = True
+        sane_constant = 0 <= constant < 1_000_000_000
+        same_c = c == hash_elems(alpha, beta, a, b)
+        consistent_gv = (
+            in_bounds_v
+            and in_bounds_a
+            and in_bounds_alpha
+            and in_bounds_c
+            and g_pow_p(v) == mult_p(a, pow_p(alpha, c))
+        )
+        consistent_kv = in_bounds_constant and mult_p(
+            g_pow_p(mult_p(c, constant_q)), pow_p(k, v)
+        ) == mult_p(b, pow_p(beta, c))
+
+        success = (
+            in_bounds_alpha
+            and in_bounds_beta
+            and in_bounds_a
+            and in_bounds_b
+            and in_bounds_c
+            and in_bounds_v
+            and same_c
+            and in_bounds_constant
+            and sane_constant
+            and consistent_gv
+            and consistent_kv
+        )
+
+        if not success:
+            log_warning(
+                "found an invalid Chaum-Pedersen proof: "
+                + str(
+                    {
+                        "in_bounds_alpha": in_bounds_alpha,
+                        "in_bounds_beta": in_bounds_beta,
+                        "in_bounds_a": in_bounds_a,
+                        "in_bounds_b": in_bounds_b,
+                        "in_bounds_c": in_bounds_c,
+                        "in_bounds_v": in_bounds_v,
+                        "in_bounds_constant": in_bounds_constant,
+                        "sane_constant": sane_constant,
+                        "same_c": same_c,
+                        "consistent_gv": consistent_gv,
+                        "consistent_kv": consistent_kv,
+                        "k": k,
+                        "proof": self,
+                    }
+                ),
+            )
+        return success
+
+
+def make_disjunctive_chaum_pedersen(
+    message: ElGamalCiphertext,
+    r: ElementModQ,
+    k: ElementModP,
+    seed: ElementModQ,
+    plaintext: int,
+) -> DisjunctiveChaumPedersenProof:
     """
     Produce a "disjunctive" proof that an encryption of a given plaintext is either an encrypted zero or one.
     This is just a front-end helper for `make_disjunctive_chaum_pedersen_zero` and
@@ -42,17 +206,19 @@ def make_disjunctive_chaum_pedersen(message: ElGamalCiphertext, r: ElementModQ, 
     :param seed: Used to generate other random values here
     :param plaintext: Zero or one
     """
+
+    assert (
+        0 <= plaintext <= 1
+    ), "make_disjunctive_chaum_pedersen only supports plaintexts of 0 or 1"
     if plaintext == 0:
         return make_disjunctive_chaum_pedersen_zero(message, r, k, seed)
-    elif plaintext == 1:
-        return make_disjunctive_chaum_pedersen_one(message, r, k, seed)
     else:
-        # this exception is okay, because it's only possible if there's a bug in the code, not a data bug
-        raise Exception("make_disjunctive_chaum_pedersen only supports plaintexts of 0 or 1")
+        return make_disjunctive_chaum_pedersen_one(message, r, k, seed)
 
 
-def make_disjunctive_chaum_pedersen_zero(message: ElGamalCiphertext, r: ElementModQ, k: ElementModP,
-                                         seed: ElementModQ) -> DisjunctiveChaumPedersenProof:
+def make_disjunctive_chaum_pedersen_zero(
+    message: ElGamalCiphertext, r: ElementModQ, k: ElementModP, seed: ElementModQ
+) -> DisjunctiveChaumPedersenProof:
     """
     Produces a "disjunctive" proof that an encryption of zero is either an encrypted zero or one.
 
@@ -76,11 +242,12 @@ def make_disjunctive_chaum_pedersen_zero(message: ElGamalCiphertext, r: ElementM
     c0 = a_minus_b_q(c, c1)
     v0 = a_plus_bc_q(u0, c0, r)
 
-    return DisjunctiveChaumPedersenProof(message, a0, b0, a1, b1, c0, c1, v0, v1)
+    return DisjunctiveChaumPedersenProof(a0, b0, a1, b1, c0, c1, v0, v1)
 
 
-def make_disjunctive_chaum_pedersen_one(message: ElGamalCiphertext, r: ElementModQ, k: ElementModP,
-                                        seed: ElementModQ) -> DisjunctiveChaumPedersenProof:
+def make_disjunctive_chaum_pedersen_one(
+    message: ElGamalCiphertext, r: ElementModQ, k: ElementModP, seed: ElementModQ
+) -> DisjunctiveChaumPedersenProof:
     """
     Produces a "disjunctive" proof that an encryption of one is either an encrypted zero or one.
 
@@ -104,11 +271,16 @@ def make_disjunctive_chaum_pedersen_one(message: ElGamalCiphertext, r: ElementMo
     c1 = a_minus_b_q(c, c0)
     v1 = a_plus_bc_q(u1, c1, r)
 
-    return DisjunctiveChaumPedersenProof(message, a0, b0, a1, b1, c0, c1, v0, v1)
+    return DisjunctiveChaumPedersenProof(a0, b0, a1, b1, c0, c1, v0, v1)
 
 
-def make_constant_chaum_pedersen(message: ElGamalCiphertext, constant: int, r: ElementModQ, k: ElementModP,
-                                 seed: ElementModQ) -> ConstantChaumPedersenProof:
+def make_constant_chaum_pedersen(
+    message: ElGamalCiphertext,
+    constant: int,
+    r: ElementModQ,
+    k: ElementModP,
+    seed: ElementModQ,
+) -> ConstantChaumPedersenProof:
     """
     Produces a proof that a given encryption corresponds to a specific total value.
 
@@ -127,131 +299,4 @@ def make_constant_chaum_pedersen(message: ElGamalCiphertext, constant: int, r: E
     c = hash_elems(alpha, beta, a, b)
     v = a_plus_bc_q(u, c, r)
 
-    return ConstantChaumPedersenProof(message, a, b, c, v, constant)
-
-
-def is_valid_disjunctive_chaum_pedersen(proof: DisjunctiveChaumPedersenProof, k: ElementModP) -> bool:
-    """
-    Validates a "disjunctive" Chaum-Pedersen (zero or one) proof.
-
-    :param proof: The proof object
-    :param k: The public key of the election
-    :return: True if everything is consistent. False otherwise.
-    """
-
-    ((alpha, beta), a0, b0, a1, b1, c0, c1, v0, v1) = proof
-    in_bounds_alpha = valid_residue(alpha)
-    in_bounds_beta = valid_residue(beta)
-    in_bounds_a0 = valid_residue(a0)
-    in_bounds_b0 = valid_residue(b0)
-    in_bounds_a1 = valid_residue(a1)
-    in_bounds_b1 = valid_residue(b1)
-    in_bounds_c0 = in_bounds_q(c0)
-    in_bounds_c1 = in_bounds_q(c1)
-    in_bounds_v0 = in_bounds_q(v0)
-    in_bounds_v1 = in_bounds_q(v1)
-    c = hash_elems(alpha, beta, a0, b0, a1, b1)
-    consistent_c = c == add_q(c0, c1)
-    consistent_gv0 = g_pow_p(v0) == mult_p(a0, pow_p(alpha, c0))
-    consistent_gv1 = g_pow_p(v1) == mult_p(a1, pow_p(alpha, c1))
-    consistent_kv0 = pow_p(k, v0) == mult_p(b0, pow_p(beta, c0))
-    consistent_gc1kv1 = mult_p(g_pow_p(c1), pow_p(k, v1)) == mult_p(b1, pow_p(beta, c1))
-
-    success = \
-        in_bounds_alpha and \
-        in_bounds_beta and \
-        in_bounds_a0 and \
-        in_bounds_b0 and \
-        in_bounds_a1 and \
-        in_bounds_b1 and \
-        in_bounds_c0 and \
-        in_bounds_c1 and \
-        in_bounds_v0 and \
-        in_bounds_v1 and \
-        consistent_c and \
-        consistent_gv0 and \
-        consistent_gv1 and \
-        consistent_kv0 and \
-        consistent_gc1kv1
-
-    if not success:
-        log_warning("found an invalid Chaum-Pedersen proof: %s", str({
-            "in_bounds_alpha": in_bounds_alpha,
-            "in_bounds_beta": in_bounds_beta,
-            "in_bounds_a0": in_bounds_a0,
-            "in_bounds_b0": in_bounds_b0,
-            "in_bounds_a1": in_bounds_a1,
-            "in_bounds_b1": in_bounds_b1,
-            "in_bounds_c0": in_bounds_c0,
-            "in_bounds_c1": in_bounds_c1,
-            "in_bounds_v0": in_bounds_v0,
-            "in_bounds_v1": in_bounds_v1,
-            "consistent_c": consistent_c,
-            "consistent_gv0": consistent_gv0,
-            "consistent_gv1": consistent_gv1,
-            "consistent_kv0": consistent_kv0,
-            "consistent_gc1kv1": consistent_gc1kv1,
-            "k": k,
-            "proof": proof
-        }))
-    return success
-
-
-def is_valid_constant_chaum_pedersen(proof: ConstantChaumPedersenProof, k: ElementModP) -> bool:
-    """
-    Validates a "constant" Chaum-Pedersen proof.
-
-    :param proof: The proof object
-    :param k: The public key of the election
-    :return: True if everything is consistent. False otherwise.
-    """
-
-    ((alpha, beta), a, b, c, v, constant) = proof
-    in_bounds_alpha = valid_residue(alpha)
-    in_bounds_beta = valid_residue(beta)
-    in_bounds_a = valid_residue(a)
-    in_bounds_b = valid_residue(b)
-    in_bounds_c = in_bounds_q(c)
-    in_bounds_v = in_bounds_q(v)
-    tmp = int_to_q(constant)
-    if tmp is None:
-        constant_q = ZERO_MOD_Q
-        in_bounds_constant = False
-    else:
-        constant_q = tmp
-        in_bounds_constant = True
-    sane_constant = 0 <= constant < 1_000_000_000
-    c = hash_elems(alpha, beta, a, b)
-    consistent_gv = in_bounds_v and in_bounds_a and in_bounds_alpha and in_bounds_c and \
-                    g_pow_p(v) == mult_p(a, pow_p(alpha, c))
-    consistent_kv = in_bounds_constant and \
-                    mult_p(g_pow_p(mult_p(c, constant_q)), pow_p(k, v)) == mult_p(b, pow_p(beta, c))
-
-    success = \
-        in_bounds_alpha and \
-        in_bounds_beta and \
-        in_bounds_a and \
-        in_bounds_b and \
-        in_bounds_c and \
-        in_bounds_v and \
-        in_bounds_constant and \
-        sane_constant and \
-        consistent_gv and \
-        consistent_kv
-
-    if not success:
-        log_warning("found an invalid Chaum-Pedersen proof: %s", str({
-            "in_bounds_alpha": in_bounds_alpha,
-            "in_bounds_beta": in_bounds_beta,
-            "in_bounds_a": in_bounds_a,
-            "in_bounds_b": in_bounds_b,
-            "in_bounds_c": in_bounds_c,
-            "in_bounds_v": in_bounds_v,
-            "in_bounds_constant": in_bounds_constant,
-            "sane_constant": sane_constant,
-            "consistent_gv": consistent_gv,
-            "consistent_kv": consistent_kv,
-            "k": k,
-            "proof": proof
-        }))
-    return success
+    return ConstantChaumPedersenProof(a, b, c, v, constant)

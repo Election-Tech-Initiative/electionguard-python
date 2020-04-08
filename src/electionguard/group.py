@@ -17,6 +17,7 @@ Q_MINUS_ONE: Final[int] = Q - 1
 
 class ElementModQ(NamedTuple):
     """An element of the smaller `mod q` space, i.e., in [0, Q), where Q is a 256-bit prime."""
+
     elem: mpz
 
 
@@ -27,6 +28,7 @@ TWO_MOD_Q: Final[ElementModQ] = ElementModQ(mpz(2))
 
 class ElementModP(NamedTuple):
     """An element of the larger `mod p` space, i.e., in [0, P), where P is a 4096-bit prime."""
+
     elem: mpz
 
 
@@ -127,8 +129,7 @@ def mult_inv_p(e: ElementModPOrQ) -> ElementModP:
 
     :param e:  An element in [1, P).
     """
-    if e.elem == 0:
-        raise Exception("No multiplicative inverse for zero")
+    assert e.elem != 0, "No multiplicative inverse for zero"
     return ElementModP(powmod(e.elem, -1, P))
 
 
@@ -211,8 +212,8 @@ def valid_residue(x: ElementModP) -> bool:
 # Optional[Optional[T]], where you might like to be able to say something analogous to
 # Some[None], as distinct from None.
 #
-T = TypeVar('T')
-U = TypeVar('U')
+T = TypeVar("T")
+U = TypeVar("U")
 
 
 def unwrap_optional(optional: Optional[T]) -> T:
@@ -221,13 +222,13 @@ def unwrap_optional(optional: Optional[T]) -> T:
     Raises an exception if it's actually `None`, otherwise
     returns the internal type.
     """
-    if optional is None:
-        raise Exception('Unwrap called on None')
-    else:
-        return optional
+    assert optional is not None, "Unwrap called on None"
+    return optional
 
 
-def match_optional(optional: Optional[T], none_func: Callable[[], U], some_func: Callable[[T], U]) -> U:
+def match_optional(
+    optional: Optional[T], none_func: Callable[[], U], some_func: Callable[[T], U]
+) -> U:
     """
     General-purpose pattern-matching function to handle `Optional`.
     If it's actually `None`, the `none_func` lambda is called.
@@ -236,7 +237,7 @@ def match_optional(optional: Optional[T], none_func: Callable[[], U], some_func:
     if optional is None:
         return none_func()
     else:
-        return some_func(unwrap_optional(optional))
+        return some_func(optional)
 
 
 def get_or_else_optional(optional: Optional[T], alt_value: T) -> T:

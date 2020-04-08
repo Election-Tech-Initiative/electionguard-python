@@ -32,14 +32,16 @@ class Nonces(Sequence[ElementModQ]):
     def __getitem__(self, index: slice) -> List[ElementModQ]:
         pass
 
-    def __getitem__(self, index: Union[slice, int]) -> Union[ElementModQ, List[ElementModQ]]:
+    def __getitem__(
+        self, index: Union[slice, int]
+    ) -> Union[ElementModQ, List[ElementModQ]]:
         if isinstance(index, int):
             return self.get_with_headers(index)
         else:
             if isinstance(index.stop, int):
                 # Handling slices is a pain: https://stackoverflow.com/a/42731787
-                indices = list(range(index.start or 0, index.stop, index.step or 1))
-                return list(map(lambda i: self[i], indices))
+                indices = range(index.start or 0, index.stop, index.step or 1)
+                return [self[i] for i in indices]
             else:
                 raise TypeError("Cannot take unbounded slice of Nonces")
 

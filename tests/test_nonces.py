@@ -24,7 +24,11 @@ class TestNonces(unittest.TestCase):
         n2 = Nonces(seed)
         self.assertEqual(n1[i], n2[i])
 
-    @given(arb_element_mod_q(), arb_element_mod_q(), integers(min_value=0, max_value=1000000))
+    @given(
+        arb_element_mod_q(),
+        arb_element_mod_q(),
+        integers(min_value=0, max_value=1000000),
+    )
     def test_nonces_seed_matters(self, seed1: ElementModQ, seed2: ElementModQ, i: int):
         assume(seed1 != seed2)
         n1 = Nonces(seed1)

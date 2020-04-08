@@ -22,10 +22,12 @@ def hash_elems(*a: Union[ElementModPOrQ, str, int]) -> ElementModQ:
     for x in a:
         h.update((str(x) + "|").encode("utf-8"))
 
-    # Note: the returned has will range from [1,Q), because zeros are bad
+    # Note: the returned value will range from [1,Q), because zeros are bad
     # for some of the nonces. (g^0 == 1, which would be an unhelpful thing
     # to multiply something with, if you were trying to encrypt it.)
 
     # Also, we don't need the checked version of int_to_q, because the
     # modulo operation here guarantees that we're in bounds.
-    return int_to_q_unchecked(1 + (int.from_bytes(h.digest(), byteorder='big') % Q_MINUS_ONE))
+    return int_to_q_unchecked(
+        1 + (int.from_bytes(h.digest(), byteorder="big") % Q_MINUS_ONE)
+    )

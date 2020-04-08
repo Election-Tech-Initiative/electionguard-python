@@ -4,8 +4,17 @@ from hypothesis import given
 from hypothesis.strategies import integers
 
 from electionguard.dlog import discrete_log
-from electionguard.group import ElementModP, ONE_MOD_P, mult_p, G_INV, g_pow_p, int_to_q, int_to_p_unchecked, \
-    int_to_q_unchecked, unwrap_optional
+from electionguard.group import (
+    ElementModP,
+    ONE_MOD_P,
+    mult_p,
+    G_INV,
+    g_pow_p,
+    int_to_q,
+    int_to_p_unchecked,
+    int_to_q_unchecked,
+    unwrap_optional,
+)
 
 
 # simpler implementation of discrete_log, only meant for comparison testing of the caching version

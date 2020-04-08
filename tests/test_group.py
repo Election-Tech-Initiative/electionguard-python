@@ -1,11 +1,39 @@
 import unittest
+from typing import Optional
 
 from hypothesis import given
 from hypothesis.strategies import composite, integers
 
-from electionguard.group import P, Q, ElementModP, ElementModQ, mult_inv_p, ONE_MOD_P, mult_p, ZERO_MOD_P, G, \
-    ONE_MOD_Q, g_pow_p, ZERO_MOD_Q, R, G_INV, in_bounds_q, in_bounds_p, in_bounds_q_no_zero, in_bounds_p_no_zero, \
-    int_to_p, int_to_q, elem_to_int, add_q, int_to_p_unchecked, int_to_q_unchecked
+from electionguard.group import (
+    P,
+    Q,
+    ElementModP,
+    ElementModQ,
+    mult_inv_p,
+    ONE_MOD_P,
+    mult_p,
+    ZERO_MOD_P,
+    G,
+    ONE_MOD_Q,
+    g_pow_p,
+    ZERO_MOD_Q,
+    R,
+    G_INV,
+    in_bounds_q,
+    in_bounds_p,
+    in_bounds_q_no_zero,
+    in_bounds_p_no_zero,
+    int_to_p,
+    int_to_q,
+    elem_to_int,
+    add_q,
+    int_to_p_unchecked,
+    int_to_q_unchecked,
+    unwrap_optional,
+    match_optional,
+    get_or_else_optional,
+    flatmap_optional,
+)
 
 
 @composite
@@ -105,3 +133,33 @@ class TestModularArithmetic(unittest.TestCase):
         self.assertFalse(in_bounds_p_no_zero(ZERO_MOD_P))
         self.assertFalse(in_bounds_p_no_zero(int_to_p_unchecked(elem_to_int(p) + P)))
         self.assertFalse(in_bounds_p_no_zero(int_to_p_unchecked(elem_to_int(p) - P)))
+
+
+class TestOptionalFunctions(unittest.TestCase):
+    def test_unwrap(self):
+        good: Optional[int] = 3
+        bad: Optional[int] = None
+
+        self.assertEqual(unwrap_optional(good), 3)
+        self.assertRaises(Exception, unwrap_optional, bad)
+
+    def test_match(self):
+        good: Optional[int] = 3
+        bad: Optional[int] = None
+
+        self.assertEqual(5, match_optional(good, lambda: 1, lambda x: x + 2))
+        self.assertEqual(1, match_optional(bad, lambda: 1, lambda x: x + 2))
+
+    def test_get_or_else(self):
+        good: Optional[int] = 3
+        bad: Optional[int] = None
+
+        self.assertEqual(3, get_or_else_optional(good, 5))
+        self.assertEqual(5, get_or_else_optional(bad, 5))
+
+    def test_flatmap(self):
+        good: Optional[int] = 3
+        bad: Optional[int] = None
+
+        self.assertEqual(5, unwrap_optional(flatmap_optional(good, lambda x: x + 2)))
+        self.assertIsNone(flatmap_optional(bad, lambda x: x + 2))
