@@ -1,6 +1,5 @@
 from __future__ import annotations
 from typing import NamedTuple, List, Optional
-from functools import reduce
 
 from electionguard.chaum_pedersen import (
     DisjunctiveChaumPedersenProof,
@@ -43,7 +42,7 @@ class ContestDescription(NamedTuple):
         """
         Given a ContestDescription, deterministically derives a "hash" of that contest,
         suitable for use in ElectionGuard's "base hash" values, and for validating that
-        either a plaintext or encrypted voted context and its corresponding contest
+        either a plaintext or encrypted voted contest and its corresponding contest
         description match up.
         """
 
@@ -66,6 +65,14 @@ class ContestDescription(NamedTuple):
 
 
 class PlaintextVotedContest(NamedTuple):
+    """
+    This class represents a "plaintext" voted contest. That means it has a list of integers
+    representing the state of the voter's selections (typically 1 or 0). It also has a hash
+    of the `ContestDescription`, which helps to keep the two of them linked together.
+    (This hash also defends against attacks where the attacker tries to swap around
+    entries in a ballot.)
+    """
+
     contest_hash: ElementModQ  # derived from a ContestDescription
     choices: List[int]
     # For the choices, 0 = no vote, 1 = vote, 2+ = reserved for RCV and such later on
@@ -120,7 +127,7 @@ class PlaintextVotedContest(NamedTuple):
         :param cd: The contest description corresponding to this contest
         :param elgamal_public_key: Public key for the election
         :param seed: Nonce from which to derive other relevant nonces
-        :param suppress_validity_check: If true, suppresses a validity check on the plaintext; only use this for testing!
+        :param suppress_validity_check: If true, suppress a validity check on the plaintext; only use this for testing!
         :return an encrypted voted contest, or `None` if the plaintext was invalid
         """
         if not suppress_validity_check and not self.is_valid(cd):
@@ -174,6 +181,14 @@ class PlaintextVotedContest(NamedTuple):
 
 
 class EncryptedVotedContest(NamedTuple):
+    """
+    This class represents an "encrypted" version of a `PlaintextVotedContest`, including
+    the ElGamal-encrypted counters, and Chaum-Pedersen proofs. It also has a hash
+    of the `ContestDescription`, which helps to keep the two of them linked together.
+    (This hash also defends against attacks where the attacker tries to swap around
+    entries in a ballot.)
+    """
+
     contest_hash: ElementModQ  # derived from a ContestDescription
     encrypted_selections: List[ElGamalCiphertext]
     zero_or_one_selection_proofs: List[DisjunctiveChaumPedersenProof]
@@ -182,21 +197,15 @@ class EncryptedVotedContest(NamedTuple):
     def crypto_hash(self) -> ElementModQ:
         """
         Given an EncryptedVotedContest, generates a hash, suitable for rolling up
-        into a hash / tracking code for an entire ballot. Of note, this particular hash only examines
+        into a hash / tracking code for an entire ballot. Of note, this particular hash examines
         the `contest_hash` and `encrypted_selections`, but not the Chaum-Pedersen proofs.
         This is deliberate, allowing for the possibility of ElectionGuard variants running on
         much more limited hardware, wherein the Chaum-Pedersen proofs might be computed
         later on.
         """
 
-        # Python doesn't have a flatmap operator, so we're first concatenating together
-        # all the ElGamal pairs into a single List[ElementModP], which we can then
-        # just feed into the hash function.
-
-        flattened_votes: List[ElementModP] = reduce(
-            lambda l, e: l + [e.alpha, e.beta], self.encrypted_selections, []
-        )
-        return hash_elems(self.contest_hash, *flattened_votes)
+        hashed_ciphertexts = [x.crypto_hash() for x in self.encrypted_selections]
+        return hash_elems(self.contest_hash, *hashed_ciphertexts)
 
     def is_valid(self, cd: ContestDescription, elgamal_public_key: ElementModP) -> bool:
         """

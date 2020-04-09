@@ -13,6 +13,7 @@ from .group import (
     flatmap_optional,
     int_to_q,
 )
+from .hash import hash_elems
 from .logs import log_error
 
 
@@ -60,6 +61,12 @@ class ElGamalCiphertext(NamedTuple):
         :return: An exponentially encoded plaintext message.
         """
         return self.decrypt_known_product(pow_p(public_key, nonce))
+
+    def crypto_hash(self) -> ElementModQ:
+        """
+        Computes a cryptographic hash of this ciphertext.
+        """
+        return hash_elems(self.alpha, self.beta)
 
 
 def elgamal_keypair_from_secret(a: ElementModQ) -> Optional[ElGamalKeyPair]:

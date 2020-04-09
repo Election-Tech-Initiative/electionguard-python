@@ -1,7 +1,14 @@
 from hashlib import sha256
 from typing import Union
 
-from .group import ElementModPOrQ, ElementModQ, Q_MINUS_ONE, int_to_q_unchecked
+from .group import (
+    ElementModPOrQ,
+    ElementModQ,
+    Q_MINUS_ONE,
+    int_to_q_unchecked,
+    ElementModP,
+    elem_to_int,
+)
 
 
 # TODO: decide how we want to represent the inputs to the hash functions. For now, converting them to
@@ -11,16 +18,24 @@ from .group import ElementModPOrQ, ElementModQ, Q_MINUS_ONE, int_to_q_unchecked
 
 def hash_elems(*a: Union[ElementModPOrQ, str, int]) -> ElementModQ:
     """
-    Given an array of elements, calculate their hash.
-    Allowed types are ElementModP, ElementModQ, and str.
+    Given one or more elements, calculate their cryptographic hash
+    using SHA256. Allowed element types are `ElementModP`, `ElementModQ`,
+    `str`, or `int`.
 
     :param a: An array of elements.
-    :return: A hash of these elements, concatenated.
+    :return: A cryptographic hash of these elements, concatenated.
     """
     h = sha256()
     h.update("|".encode("utf-8"))
     for x in a:
-        h.update((str(x) + "|").encode("utf-8"))
+        # We could just use str(x) for everything, but then we'd have a resulting string
+        # that's a bit Python-specific, and we'd rather make it easier for other languages
+        # to exactly match this hash function.
+        if isinstance(x, ElementModP) or isinstance(x, ElementModQ):
+            hash_me = str(elem_to_int(x))
+        else:
+            hash_me = str(x)
+        h.update((hash_me + "|").encode("utf-8"))
 
     # Note: the returned value will range from [1,Q), because zeros are bad
     # for some of the nonces. (g^0 == 1, which would be an unhelpful thing
