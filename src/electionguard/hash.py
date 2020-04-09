@@ -7,7 +7,6 @@ from .group import (
     Q_MINUS_ONE,
     int_to_q_unchecked,
     ElementModP,
-    elem_to_int,
 )
 
 
@@ -32,7 +31,7 @@ def hash_elems(*a: Union[ElementModPOrQ, str, int]) -> ElementModQ:
         # that's a bit Python-specific, and we'd rather make it easier for other languages
         # to exactly match this hash function.
         if isinstance(x, ElementModP) or isinstance(x, ElementModQ):
-            hash_me = str(elem_to_int(x))
+            hash_me = str(x.to_int())
         else:
             hash_me = str(x)
         h.update((hash_me + "|").encode("utf-8"))

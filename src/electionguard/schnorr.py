@@ -7,9 +7,6 @@ from .group import (
     g_pow_p,
     mult_p,
     pow_p,
-    in_bounds_p,
-    in_bounds_q,
-    valid_residue,
     a_plus_bc_q,
 )
 from .hash import hash_elems
@@ -30,9 +27,9 @@ class SchnorrProof(NamedTuple):
         """
 
         (k, h, u) = self
-        valid_public_key = valid_residue(k)
-        in_bounds_h = in_bounds_p(h)
-        in_bounds_u = in_bounds_q(u)
+        valid_public_key = k.is_valid_residue()
+        in_bounds_h = h.is_in_bounds()
+        in_bounds_u = u.is_in_bounds()
 
         c = hash_elems(k, h)
         valid_proof = g_pow_p(u) == mult_p(h, pow_p(k, c))
