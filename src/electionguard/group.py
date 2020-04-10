@@ -20,10 +20,26 @@ class ElementModQ(NamedTuple):
 
     elem: mpz
 
+    def to_int(self) -> int:
+        """
+        Converts from the element to a regular integer. This is preferable to directly
+        accessing `elem`, whose representation might change.
+        """
+        return self.elem
 
-ZERO_MOD_Q: Final[ElementModQ] = ElementModQ(mpz(0))
-ONE_MOD_Q: Final[ElementModQ] = ElementModQ(mpz(1))
-TWO_MOD_Q: Final[ElementModQ] = ElementModQ(mpz(2))
+    def is_in_bounds(self) -> bool:
+        """
+        Validates that the element is actually within the bounds of [0,Q).
+        Returns true if all is good, false if something's wrong.
+        """
+        return 0 <= self.elem < Q
+
+    def is_in_bounds_no_zero(self) -> bool:
+        """
+        Validates that the element is actually within the bounds of [1,Q).
+        Returns true if all is good, false if something's wrong.
+        """
+        return 0 < self.elem < Q
 
 
 class ElementModP(NamedTuple):
@@ -31,6 +47,40 @@ class ElementModP(NamedTuple):
 
     elem: mpz
 
+    def to_int(self) -> int:
+        """
+        Converts from the element to a regular integer. This is preferable to directly
+        accessing `elem`, whose representation might change.
+        """
+        return self.elem
+
+    def is_in_bounds(self) -> bool:
+        """
+        Validates that the element is actually within the bounds of [0,P).
+        Returns true if all is good, false if something's wrong.
+        """
+        return 0 <= self.elem < P
+
+    def is_in_bounds_no_zero(self) -> bool:
+        """
+        Validates that the element is actually within the bounds of [1,P).
+        Returns true if all is good, false if something's wrong.
+        """
+        return 0 < self.elem < P
+
+    def is_valid_residue(self) -> bool:
+        """
+        Validates that this element is in Z^r_p.
+        Returns true if all is good, false if something's wrong.
+        """
+        residue = pow_p(self, ElementModQ(mpz(Q))) == ONE_MOD_P
+        return self.is_in_bounds() and residue
+
+
+# Handy constants. Defined once, so we can avoid allocating lots of copies.
+ZERO_MOD_Q: Final[ElementModQ] = ElementModQ(mpz(0))
+ONE_MOD_Q: Final[ElementModQ] = ElementModQ(mpz(1))
+TWO_MOD_Q: Final[ElementModQ] = ElementModQ(mpz(2))
 
 ZERO_MOD_P: Final[ElementModP] = ElementModP(mpz(0))
 ONE_MOD_P: Final[ElementModP] = ElementModP(mpz(1))
@@ -84,13 +134,6 @@ def int_to_p_unchecked(i: int) -> ElementModP:
     return ElementModP(mpz(i))
 
 
-def elem_to_int(a: ElementModPOrQ) -> int:
-    """
-    Given an ElementModP or ElementModP, returns a regular Python integer.
-    """
-    return a.elem
-
-
 def add_q(*elems: ElementModQ) -> ElementModQ:
     """
     Adds together one or more elements in Q, returns the sum mod Q.
@@ -118,7 +161,7 @@ def negate_q(a: ElementModQ) -> ElementModQ:
 
 def a_plus_bc_q(a: ElementModQ, b: ElementModQ, c: ElementModQ) -> ElementModQ:
     """
-    Computes (a + b * c) mod q
+    Computes (a + b * c) mod q.
     """
     return ElementModQ((a.elem + b.elem * c.elem) % Q)
 
@@ -162,47 +205,6 @@ def g_pow_p(e: ElementModPOrQ) -> ElementModP:
     :param e: An element in [0,P).
     """
     return pow_p(ElementModP(mpz(G)), e)
-
-
-def in_bounds_p(p: ElementModP) -> bool:
-    """
-    Validates that the element is actually within the bounds of [0,P).
-    Returns true if all is good, false if something's wrong.
-    """
-    return 0 <= p.elem < P
-
-
-def in_bounds_q(q: ElementModQ) -> bool:
-    """
-    Validates that the element is actually within the bounds of [0,Q).
-    Returns true if all is good, false if something's wrong.
-    """
-    return 0 <= q.elem < Q
-
-
-def in_bounds_p_no_zero(p: ElementModP) -> bool:
-    """
-    Validates that the element is actually within the bounds of [1,P).
-    Returns true if all is good, false if something's wrong.
-    """
-    return 0 < p.elem < P
-
-
-def in_bounds_q_no_zero(q: ElementModQ) -> bool:
-    """
-    Validates that the element is actually within the bounds of [1,Q).
-    Returns true if all is good, false if something's wrong.
-    """
-    return 0 < q.elem < Q
-
-
-def valid_residue(x: ElementModP) -> bool:
-    """
-    Validates that x is in Z^r_p.
-    Returns true if all is good, false if something's wrong.
-    """
-    residue = pow_p(x, ElementModQ(mpz(Q))) == ONE_MOD_P
-    return in_bounds_p(x) and residue
 
 
 #

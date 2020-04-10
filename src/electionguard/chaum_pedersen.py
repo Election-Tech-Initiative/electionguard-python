@@ -7,8 +7,6 @@ from .group import (
     g_pow_p,
     mult_p,
     pow_p,
-    valid_residue,
-    in_bounds_q,
     a_minus_b_q,
     a_plus_bc_q,
     add_q,
@@ -42,16 +40,16 @@ class DisjunctiveChaumPedersenProof(NamedTuple):
 
         (alpha, beta) = message
         (a0, b0, a1, b1, c0, c1, v0, v1) = self
-        in_bounds_alpha = valid_residue(alpha)
-        in_bounds_beta = valid_residue(beta)
-        in_bounds_a0 = valid_residue(a0)
-        in_bounds_b0 = valid_residue(b0)
-        in_bounds_a1 = valid_residue(a1)
-        in_bounds_b1 = valid_residue(b1)
-        in_bounds_c0 = in_bounds_q(c0)
-        in_bounds_c1 = in_bounds_q(c1)
-        in_bounds_v0 = in_bounds_q(v0)
-        in_bounds_v1 = in_bounds_q(v1)
+        in_bounds_alpha = alpha.is_valid_residue()
+        in_bounds_beta = beta.is_valid_residue()
+        in_bounds_a0 = a0.is_valid_residue()
+        in_bounds_b0 = b0.is_valid_residue()
+        in_bounds_a1 = a1.is_valid_residue()
+        in_bounds_b1 = b1.is_valid_residue()
+        in_bounds_c0 = c0.is_in_bounds()
+        in_bounds_c1 = c1.is_in_bounds()
+        in_bounds_v0 = v0.is_in_bounds()
+        in_bounds_v1 = v1.is_in_bounds()
         consistent_c = add_q(c0, c1) == hash_elems(alpha, beta, a0, b0, a1, b1)
         consistent_gv0 = g_pow_p(v0) == mult_p(a0, pow_p(alpha, c0))
         consistent_gv1 = g_pow_p(v1) == mult_p(a1, pow_p(alpha, c1))
@@ -124,12 +122,12 @@ class ConstantChaumPedersenProof(NamedTuple):
 
         (alpha, beta) = message
         (a, b, c, v, constant) = self
-        in_bounds_alpha = valid_residue(alpha)
-        in_bounds_beta = valid_residue(beta)
-        in_bounds_a = valid_residue(a)
-        in_bounds_b = valid_residue(b)
-        in_bounds_c = in_bounds_q(c)
-        in_bounds_v = in_bounds_q(v)
+        in_bounds_alpha = alpha.is_valid_residue()
+        in_bounds_beta = beta.is_valid_residue()
+        in_bounds_a = a.is_valid_residue()
+        in_bounds_b = b.is_valid_residue()
+        in_bounds_c = c.is_in_bounds()
+        in_bounds_v = v.is_in_bounds()
         tmp = int_to_q(constant)
         if tmp is None:
             constant_q = ZERO_MOD_Q

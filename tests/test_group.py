@@ -19,13 +19,8 @@ from electionguard.group import (
     ZERO_MOD_Q,
     R,
     G_INV,
-    in_bounds_q,
-    in_bounds_p,
-    in_bounds_q_no_zero,
-    in_bounds_p_no_zero,
     int_to_p,
     int_to_q,
-    elem_to_int,
     add_q,
     int_to_p_unchecked,
     int_to_q_unchecked,
@@ -102,37 +97,37 @@ class TestModularArithmetic(unittest.TestCase):
 
     @given(arb_element_mod_q())
     def test_in_bounds_q(self, q: ElementModQ):
-        self.assertTrue(in_bounds_q(q))
-        too_big = elem_to_int(q) + Q
-        too_small = elem_to_int(q) - Q
-        self.assertFalse(in_bounds_q(int_to_q_unchecked(too_big)))
-        self.assertFalse(in_bounds_q(int_to_q_unchecked(too_small)))
+        self.assertTrue(q.is_in_bounds())
+        too_big = q.to_int() + Q
+        too_small = q.to_int() - Q
+        self.assertFalse(int_to_q_unchecked(too_big).is_in_bounds())
+        self.assertFalse(int_to_q_unchecked(too_small).is_in_bounds())
         self.assertEqual(None, int_to_q(too_big))
         self.assertEqual(None, int_to_q(too_small))
 
     @given(arb_element_mod_p())
     def test_in_bounds_p(self, p: ElementModP):
-        self.assertTrue(in_bounds_p(p))
-        too_big = elem_to_int(p) + P
-        too_small = elem_to_int(p) - P
-        self.assertFalse(in_bounds_p(int_to_p_unchecked(too_big)))
-        self.assertFalse(in_bounds_p(int_to_p_unchecked(too_small)))
+        self.assertTrue(p.is_in_bounds())
+        too_big = p.to_int() + P
+        too_small = p.to_int() - P
+        self.assertFalse(int_to_p_unchecked(too_big).is_in_bounds())
+        self.assertFalse(int_to_p_unchecked(too_small).is_in_bounds())
         self.assertEqual(None, int_to_p(too_big))
         self.assertEqual(None, int_to_p(too_small))
 
     @given(arb_element_mod_q_no_zero())
     def test_in_bounds_q_no_zero(self, q: ElementModQ):
-        self.assertTrue(in_bounds_q_no_zero(q))
-        self.assertFalse(in_bounds_q_no_zero(ZERO_MOD_Q))
-        self.assertFalse(in_bounds_q_no_zero(int_to_q_unchecked(elem_to_int(q) + Q)))
-        self.assertFalse(in_bounds_q_no_zero(int_to_q_unchecked(elem_to_int(q) - Q)))
+        self.assertTrue(q.is_in_bounds_no_zero())
+        self.assertFalse(ZERO_MOD_Q.is_in_bounds_no_zero())
+        self.assertFalse(int_to_q_unchecked(q.to_int() + Q).is_in_bounds_no_zero())
+        self.assertFalse(int_to_q_unchecked(q.to_int() - Q).is_in_bounds_no_zero())
 
     @given(arb_element_mod_p_no_zero())
     def test_in_bounds_p_no_zero(self, p: ElementModP):
-        self.assertTrue(in_bounds_p_no_zero(p))
-        self.assertFalse(in_bounds_p_no_zero(ZERO_MOD_P))
-        self.assertFalse(in_bounds_p_no_zero(int_to_p_unchecked(elem_to_int(p) + P)))
-        self.assertFalse(in_bounds_p_no_zero(int_to_p_unchecked(elem_to_int(p) - P)))
+        self.assertTrue(p.is_in_bounds_no_zero())
+        self.assertFalse(ZERO_MOD_P.is_in_bounds_no_zero())
+        self.assertFalse(int_to_p_unchecked(p.to_int() + P).is_in_bounds_no_zero())
+        self.assertFalse(int_to_p_unchecked(p.to_int() - P).is_in_bounds_no_zero())
 
 
 class TestOptionalFunctions(unittest.TestCase):

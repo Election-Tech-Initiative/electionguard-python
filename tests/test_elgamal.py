@@ -17,12 +17,10 @@ from electionguard.group import (
     G,
     Q,
     P,
-    valid_residue,
     ZERO_MOD_Q,
     TWO_MOD_Q,
     ONE_MOD_Q,
     ONE_MOD_P,
-    elem_to_int,
     int_to_q,
     unwrap_optional,
 )
@@ -47,19 +45,18 @@ class TestElGamal(unittest.TestCase):
         keypair = elgamal_keypair_from_secret(secret_key)
         public_key = keypair.public_key
 
-        self.assertLess(elem_to_int(public_key), P)
+        self.assertLess(public_key.to_int(), P)
         elem = g_pow_p(ZERO_MOD_Q)
         self.assertEqual(elem, ONE_MOD_P)  # g^0 == 1
 
         ciphertext = unwrap_optional(elgamal_encrypt(0, nonce, keypair.public_key))
-        self.assertEqual(G, elem_to_int(ciphertext.alpha))
+        self.assertEqual(G, ciphertext.alpha.to_int())
         self.assertEqual(
-            pow(elem_to_int(ciphertext.alpha), elem_to_int(secret_key), P),
-            pow(elem_to_int(public_key), elem_to_int(nonce), P),
+            pow(ciphertext.alpha.to_int(), secret_key.to_int(), P),
+            pow(public_key.to_int(), nonce.to_int(), P),
         )
         self.assertEqual(
-            elem_to_int(ciphertext.beta),
-            pow(elem_to_int(public_key), elem_to_int(nonce), P),
+            ciphertext.beta.to_int(), pow(public_key.to_int(), nonce.to_int(), P),
         )
 
         plaintext = ciphertext.decrypt(keypair.secret_key)
@@ -100,13 +97,13 @@ class TestElGamal(unittest.TestCase):
 
     @given(arb_element_mod_q())
     def test_large_values_rejected_by_int_to_q(self, q: ElementModQ):
-        oversize = elem_to_int(q) + Q
+        oversize = q.to_int() + Q
         self.assertEqual(None, int_to_q(oversize))
 
     @given(arb_elgamal_keypair())
     def test_elgamal_keypairs_are_sane(self, keypair: ElGamalKeyPair):
-        self.assertLess(elem_to_int(keypair.public_key), P)
-        self.assertLess(elem_to_int(keypair.secret_key), G)
+        self.assertLess(keypair.public_key.to_int(), P)
+        self.assertLess(keypair.secret_key.to_int(), G)
         self.assertEqual(g_pow_p(keypair.secret_key), keypair.public_key)
 
     @given(
@@ -136,7 +133,7 @@ class TestElGamal(unittest.TestCase):
 
     @given(arb_elgamal_keypair())
     def test_elgamal_keys_valid_residue(self, keypair):
-        self.assertTrue(valid_residue(keypair.public_key))
+        self.assertTrue(keypair.public_key.is_valid_residue())
 
     # Here's an oddball test: checking whether running lots of parallel exponentiations yields the
     # correct answer. It certainly *should* work, but this verifies that nothing weird is happening

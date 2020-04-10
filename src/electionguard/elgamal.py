@@ -9,10 +9,10 @@ from .group import (
     mult_inv_p,
     pow_p,
     ZERO_MOD_Q,
-    elem_to_int,
     flatmap_optional,
     int_to_q,
 )
+from .hash import hash_elems
 from .logs import log_error
 
 
@@ -61,13 +61,19 @@ class ElGamalCiphertext(NamedTuple):
         """
         return self.decrypt_known_product(pow_p(public_key, nonce))
 
+    def crypto_hash(self) -> ElementModQ:
+        """
+        Computes a cryptographic hash of this ciphertext.
+        """
+        return hash_elems(self.alpha, self.beta)
+
 
 def elgamal_keypair_from_secret(a: ElementModQ) -> Optional[ElGamalKeyPair]:
     """
     Given an ElGamal secret key (typically, a random number in [2,Q)), returns
     an ElGamal keypair, consisting of the given secret key a and public key g^a.
     """
-    secret_key_int = elem_to_int(a)
+    secret_key_int = a.to_int()
     if secret_key_int < 2:
         log_error("ElGamal secret key needs to be in [2,Q).")
         return None
