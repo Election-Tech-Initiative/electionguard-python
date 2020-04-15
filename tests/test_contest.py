@@ -1,11 +1,10 @@
 import unittest
 from datetime import timedelta
-from random import Random
 from typing import Tuple
 
 from hypothesis import HealthCheck
 from hypothesis import given, settings
-from hypothesis.strategies import integers, composite, emails, booleans, lists
+from hypothesis.strategies import integers
 
 from electionguard.contest import (
     ContestDescription,
@@ -19,153 +18,25 @@ from electionguard.elgamal import (
 from electionguard.group import (
     ElementModQ,
     ONE_MOD_Q,
-    int_to_q,
     add_q,
     unwrap_optional,
     Q,
     TWO_MOD_P,
     mult_p,
+    int_to_q_unchecked,
 )
-from tests.test_elgamal import arb_elgamal_keypair
-from tests.test_group import arb_element_mod_q_no_zero
-
-
-@composite
-def arb_candidate(draw, strs=emails(), bools=booleans()):
-    # We could use a more general definition of candidate names, including unicode, but arbitrary "email addresses"
-    # are good enough to stress test things without generating unreadable test results.
-    return Candidate(draw(strs), draw(bools), draw(bools), draw(bools))
-
-
-@composite
-def arb_contest_description(draw, strs=emails(), ints=integers(1, 6)):
-    number_elected = draw(ints)
-    votes_allowed = draw(ints)
-
-    # we have to satisfy an invariant that number_elected <= votes_allowed
-    if number_elected > votes_allowed:
-        number_elected = votes_allowed
-
-    ballot_selections = draw(
-        lists(arb_candidate(), min_size=votes_allowed, max_size=votes_allowed)
-    )
-    assert len(ballot_selections) == votes_allowed
-    return ContestDescription(
-        draw(strs),
-        ballot_selections,
-        draw(strs),
-        draw(strs),
-        draw(strs),
-        draw(strs),
-        number_elected,
-        votes_allowed,
-    )
-
-
-@composite
-def arb_contest_description_room_for_overvoting(
-    draw, strs=emails(), ints=integers(2, 6)
-):
-    number_elected = draw(ints)
-    votes_allowed = draw(ints)
-
-    if number_elected >= votes_allowed:
-        number_elected = votes_allowed - 1
-
-    ballot_selections = draw(
-        lists(arb_candidate(), min_size=votes_allowed, max_size=votes_allowed)
-    )
-    assert len(ballot_selections) == votes_allowed
-    return ContestDescription(
-        draw(strs),
-        ballot_selections,
-        draw(strs),
-        draw(strs),
-        draw(strs),
-        draw(strs),
-        number_elected,
-        votes_allowed,
-    )
-
-
-def contest_description_to_plaintext_voted_contest(
-    random_seed: int, cds: ContestDescription
-) -> PlaintextVotedContest:
-    """
-    This is used by `arb_plaintext_voted_contest_well_formed` and other generators. Given a contest
-    description and a random seed, produce a well-formed plaintext voted contest.
-    """
-    r = Random()
-    r.seed(random_seed)
-
-    # We're going to create a list of numbers, with the right number of 1's and 0's, then shuffle it based on the seed.
-    # Note that we're not generating vote selections with undervotes, because those shouldn't exist at this stage in
-    # ElectionGuard. If the voter chooses to undervote, the "dummy" votes should become one, and thus there's no such
-    # thing as an undervoted ballot plaintext.
-
-    selections = [1] * cds.number_elected + [0] * (
-        cds.votes_allowed - cds.number_elected
-    )
-
-    assert len(selections) == cds.votes_allowed
-
-    r.shuffle(selections)
-    return PlaintextVotedContest(cds.crypto_hash(), selections)
-
-
-@composite
-def arb_plaintext_voted_contest_well_formed(
-    draw, cds=arb_contest_description(), seed=integers()
-):
-    s = draw(seed)
-    contest_description: ContestDescription = draw(cds)
-
-    return (
-        contest_description,
-        contest_description_to_plaintext_voted_contest(s, contest_description),
-    )
-
-
-@composite
-def arb_plaintext_voted_contest_overvote(
-    draw,
-    cds=arb_contest_description_room_for_overvoting(),
-    seed=integers(),
-    overvotes=integers(1, 6),
-):
-    r = Random()
-    r.seed(draw(seed))
-    contest_description: ContestDescription = draw(cds)
-    overvote: int = draw(overvotes)
-
-    assert contest_description.number_elected < contest_description.votes_allowed
-
-    if (
-        contest_description.number_elected + overvote
-        > contest_description.votes_allowed
-    ):
-        overvote = (
-            contest_description.votes_allowed - contest_description.number_elected
-        )
-
-    selections = [1] * (contest_description.number_elected + overvote) + [0] * (
-        contest_description.votes_allowed
-        - contest_description.number_elected
-        - overvote
-    )
-
-    assert len(selections) == contest_description.votes_allowed
-
-    r.shuffle(selections)
-    return (
-        contest_description,
-        PlaintextVotedContest(contest_description.crypto_hash(), selections),
-    )
+from electionguardtest.contest import (
+    arb_plaintext_voted_contest_well_formed,
+    arb_plaintext_voted_contest_overvote,
+    contest_description_to_plaintext_voted_contest,
+)
+from electionguardtest.elgamal import arb_elgamal_keypair
+from electionguardtest.group import arb_element_mod_q_no_zero
 
 
 class TestContest(unittest.TestCase):
-    def test_simple_encryption_decryption_inverses(self):
-        keypair = elgamal_keypair_from_secret(int_to_q(2))
+    def test_simple_encryption_decryption_inverses(self) -> None:
+        keypair = unwrap_optional(elgamal_keypair_from_secret(int_to_q_unchecked(2)))
         contest = ContestDescription(
             "A",
             [Candidate("A", False, False, False), Candidate("B", False, False, False)],
@@ -185,11 +56,11 @@ class TestContest(unittest.TestCase):
         )
         self.assertTrue(ciphertext.is_valid(contest, keypair.public_key))
 
-        plaintext_again = ciphertext.decrypt(contest, keypair)
+        plaintext_again = unwrap_optional(ciphertext.decrypt(contest, keypair))
         self.assertTrue(plaintext_again.is_valid(contest))
         self.assertEqual(plaintext, plaintext_again)
 
-    def test_error_conditions(self):
+    def test_error_conditions(self) -> None:
         # try to hit all the error conditions to get higher coverage
         contest = ContestDescription(
             "A",
@@ -231,11 +102,8 @@ class TestContest(unittest.TestCase):
         plaintext_bad6 = valid_plaintext._replace(contest_hash=bad_contest_hash)
         self.assertFalse(plaintext_bad6.is_valid(bad_contest))
 
-        keypair = elgamal_keypair_from_secret(int_to_q(2))
+        keypair = unwrap_optional(elgamal_keypair_from_secret(int_to_q_unchecked(2)))
         nonce = ONE_MOD_Q
-        self.assertRaises(
-            Exception, lambda: valid_plaintext.encrypt(keypair.public_key, nonce)
-        )
 
         self.assertIsNone(plaintext_bad1.encrypt(contest, keypair.public_key, nonce))
 
@@ -266,7 +134,7 @@ class TestContest(unittest.TestCase):
         cp: Tuple[ContestDescription, PlaintextVotedContest],
         keypair: ElGamalKeyPair,
         nonce: ElementModQ,
-    ):
+    ) -> None:
         contest_description, plaintext = cp
         self.assertTrue(plaintext.is_valid(contest_description))
 
@@ -295,7 +163,7 @@ class TestContest(unittest.TestCase):
         cp: Tuple[ContestDescription, PlaintextVotedContest],
         keypair: ElGamalKeyPair,
         nonce: ElementModQ,
-    ):
+    ) -> None:
         contest_description, plaintext = cp
         ciphertext = unwrap_optional(
             plaintext.encrypt(
@@ -322,7 +190,7 @@ class TestContest(unittest.TestCase):
         cp: Tuple[ContestDescription, PlaintextVotedContest],
         keypair: ElGamalKeyPair,
         nonce: ElementModQ,
-    ):
+    ) -> None:
         contest_description, plaintext = cp
 
         evc = plaintext.encrypt(
@@ -360,7 +228,7 @@ class TestContest(unittest.TestCase):
         cp: Tuple[ContestDescription, PlaintextVotedContest],
         keypair: ElGamalKeyPair,
         nonce: ElementModQ,
-    ):
+    ) -> None:
         contest_description, plaintext = cp
 
         evc = plaintext.encrypt(
@@ -370,6 +238,7 @@ class TestContest(unittest.TestCase):
             suppress_validity_check=True,
         )
         self.assertIsNotNone(evc)
+        evc = unwrap_optional(evc)
         self.assertTrue(evc.is_valid(contest_description, keypair.public_key))
 
         # now we tamper with the evc to make sure the verification fails
@@ -409,12 +278,12 @@ class TestContest(unittest.TestCase):
         seed: int,
         eg_seed: ElementModQ,
         keypair: ElGamalKeyPair,
-    ):
+    ) -> None:
         pvc1 = cp[1]
         pvc2 = contest_description_to_plaintext_voted_contest(seed, cp[0])
 
-        evc1 = pvc1.encrypt(cp[0], keypair.public_key, eg_seed)
-        evc2 = pvc2.encrypt(cp[0], keypair.public_key, eg_seed)
+        evc1 = unwrap_optional(pvc1.encrypt(cp[0], keypair.public_key, eg_seed))
+        evc2 = unwrap_optional(pvc2.encrypt(cp[0], keypair.public_key, eg_seed))
 
         h1 = evc1.crypto_hash()
         h2 = evc2.crypto_hash()

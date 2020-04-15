@@ -72,7 +72,7 @@ setup(
         # eg: 'keyword1', 'keyword2', 'keyword3',
     ],
     python_requires=">=3.8",
-    tests_require=["hypothesis==5.6.0"],
+    tests_require=["hypothesis==5.9.0"],
     install_requires=[
         "gmpy2==2.1.0b4",
         "numpy==1.18.2"  # only used for the benchmarks, so maybe doesn't need to be here?

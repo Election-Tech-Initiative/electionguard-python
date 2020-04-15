@@ -3,7 +3,7 @@ from multiprocessing import Pool, cpu_count
 from timeit import default_timer as timer
 
 from hypothesis import given
-from hypothesis.strategies import composite, integers
+from hypothesis.strategies import integers
 
 from electionguard.elgamal import (
     ElGamalKeyPair,
@@ -23,26 +23,19 @@ from electionguard.group import (
     ONE_MOD_P,
     int_to_q,
     unwrap_optional,
+    int_to_q_unchecked,
 )
 from electionguard.logs import log_info
 from electionguard.nonces import Nonces
+from electionguardtest.elgamal import arb_elgamal_keypair
 from tests.test_group import arb_element_mod_q_no_zero, arb_element_mod_q
-
-
-@composite
-def arb_elgamal_keypair(draw, elem=arb_element_mod_q_no_zero()):
-    """
-    Generates an arbitrary ElGamal secret/public keypair.
-    """
-    e = draw(elem)
-    return elgamal_keypair_from_secret(e if e != ONE_MOD_Q else TWO_MOD_Q)
 
 
 class TestElGamal(unittest.TestCase):
     def test_encryption_decryption_simplistic(self):
         nonce = ONE_MOD_Q
         secret_key = TWO_MOD_Q
-        keypair = elgamal_keypair_from_secret(secret_key)
+        keypair = unwrap_optional(elgamal_keypair_from_secret(secret_key))
         public_key = keypair.public_key
 
         self.assertLess(public_key.to_int(), P)
@@ -141,7 +134,7 @@ class TestElGamal(unittest.TestCase):
     def test_gmpy2_parallelism_is_safe(self):
         cpus = cpu_count()
         problem_size = 1000
-        secret_keys = Nonces(int_to_q(3))[
+        secret_keys = Nonces(int_to_q_unchecked(3))[
             0:problem_size
         ]  # list of 1000 might-as-well-be-random Q's
         log_info(

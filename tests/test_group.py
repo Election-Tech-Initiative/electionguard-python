@@ -2,7 +2,6 @@ import unittest
 from typing import Optional
 
 from hypothesis import given
-from hypothesis.strategies import composite, integers
 
 from electionguard.group import (
     P,
@@ -29,38 +28,12 @@ from electionguard.group import (
     get_or_else_optional,
     flatmap_optional,
 )
-
-
-@composite
-def arb_element_mod_q(draw, elem=integers(min_value=0, max_value=Q - 1)):
-    """
-    Generates an arbitrary element from [0,Q).
-    """
-    return int_to_q(draw(elem))
-
-
-@composite
-def arb_element_mod_q_no_zero(draw, elem=integers(min_value=1, max_value=Q - 1)):
-    """
-    Generates an arbitrary element from [1,Q).
-    """
-    return int_to_q(draw(elem))
-
-
-@composite
-def arb_element_mod_p(draw, elem=integers(min_value=0, max_value=P - 1)):
-    """
-    Generates an arbitrary element from [0,P).
-    """
-    return int_to_p(draw(elem))
-
-
-@composite
-def arb_element_mod_p_no_zero(draw, elem=integers(min_value=1, max_value=P - 1)):
-    """
-    Generates an arbitrary element from [1,P).
-    """
-    return int_to_p(draw(elem))
+from electionguardtest.group import (
+    arb_element_mod_p_no_zero,
+    arb_element_mod_p,
+    arb_element_mod_q,
+    arb_element_mod_q_no_zero,
+)
 
 
 class TestModularArithmetic(unittest.TestCase):

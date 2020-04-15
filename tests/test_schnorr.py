@@ -11,6 +11,7 @@ from electionguard.group import (
     int_to_p_unchecked,
     TWO_MOD_Q,
     ONE_MOD_Q,
+    unwrap_optional,
 )
 from electionguard.schnorr import (
     make_schnorr_proof,
@@ -25,15 +26,17 @@ from tests.test_group import (
 
 
 class TestSchnorr(unittest.TestCase):
-    def test_schnorr_proofs_simple(self):
+    def test_schnorr_proofs_simple(self) -> None:
         # doesn't get any simpler than this
-        keypair = elgamal_keypair_from_secret(TWO_MOD_Q)
+        keypair = unwrap_optional(elgamal_keypair_from_secret(TWO_MOD_Q))
         nonce = ONE_MOD_Q
         proof = make_schnorr_proof(keypair, nonce)
         self.assertTrue(proof.is_valid())
 
     @given(arb_elgamal_keypair(), arb_element_mod_q())
-    def test_schnorr_proofs_valid(self, keypair: ElGamalKeyPair, nonce: ElementModQ):
+    def test_schnorr_proofs_valid(
+        self, keypair: ElGamalKeyPair, nonce: ElementModQ
+    ) -> None:
         proof = make_schnorr_proof(keypair, nonce)
         self.assertTrue(proof.is_valid())
 
@@ -41,7 +44,7 @@ class TestSchnorr(unittest.TestCase):
     @given(arb_elgamal_keypair(), arb_element_mod_q(), arb_element_mod_q())
     def test_schnorr_proofs_invalid_u(
         self, keypair: ElGamalKeyPair, nonce: ElementModQ, other: ElementModQ
-    ):
+    ) -> None:
         proof = make_schnorr_proof(keypair, nonce)
         (k, h, u) = proof
         assume(other != u)
@@ -51,7 +54,7 @@ class TestSchnorr(unittest.TestCase):
     @given(arb_elgamal_keypair(), arb_element_mod_q(), arb_element_mod_p())
     def test_schnorr_proofs_invalid_h(
         self, keypair: ElGamalKeyPair, nonce: ElementModQ, other: ElementModP
-    ):
+    ) -> None:
         proof = make_schnorr_proof(keypair, nonce)
         (k, h, u) = proof
         assume(other != h)
@@ -61,7 +64,7 @@ class TestSchnorr(unittest.TestCase):
     @given(arb_elgamal_keypair(), arb_element_mod_q(), arb_element_mod_p_no_zero())
     def test_schnorr_proofs_invalid_public_key(
         self, keypair: ElGamalKeyPair, nonce: ElementModQ, other: ElementModP
-    ):
+    ) -> None:
         proof = make_schnorr_proof(keypair, nonce)
         (k, h, u) = proof
         assume(other != k)
@@ -71,7 +74,7 @@ class TestSchnorr(unittest.TestCase):
     @given(arb_elgamal_keypair(), arb_element_mod_q())
     def test_schnorr_proofs_bounds_checking(
         self, keypair: ElGamalKeyPair, nonce: ElementModQ
-    ):
+    ) -> None:
         proof = make_schnorr_proof(keypair, nonce)
         (k, h, u) = proof
         proof2 = SchnorrProof(ZERO_MOD_P, h, u)
