@@ -16,8 +16,8 @@ from electionguard.elgamal import (
     elgamal_keypair_from_secret,
 )
 from electionguard.group import ElementModQ, TWO_MOD_Q, ONE_MOD_Q, unwrap_optional
-from tests.test_elgamal import arb_elgamal_keypair
-from tests.test_group import arb_element_mod_q, arb_element_mod_q_no_zero
+from electionguardtest.elgamal import arb_elgamal_keypair
+from electionguardtest.group import arb_element_mod_q_no_zero, arb_element_mod_q
 
 
 class TestDisjunctiveChaumPedersen(unittest.TestCase):

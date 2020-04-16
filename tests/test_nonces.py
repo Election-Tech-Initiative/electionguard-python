@@ -4,9 +4,9 @@ from typing import List
 from hypothesis import given, assume
 from hypothesis.strategies import integers
 
-from electionguard.group import ElementModQ, int_to_q
+from electionguard.group import ElementModQ, int_to_q_unchecked
 from electionguard.nonces import Nonces
-from tests.test_group import arb_element_mod_q
+from electionguardtest.group import arb_element_mod_q
 
 
 class TestNonces(unittest.TestCase):
@@ -53,7 +53,7 @@ class TestNonces(unittest.TestCase):
         self.assertEqual(l, l2)
 
     def test_nonces_type_errors(self):
-        n = Nonces(int_to_q(3))
+        n = Nonces(int_to_q_unchecked(3))
         self.assertRaises(TypeError, len, n)
         self.assertRaises(TypeError, lambda: n[1:])
         self.assertRaises(TypeError, lambda: n.get_with_headers(-1))

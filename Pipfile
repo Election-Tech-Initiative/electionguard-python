@@ -11,7 +11,7 @@ pylint = "*"
 mypy = "*"
 
 [packages]
-hypothesis = "==5.6.0"
+hypothesis = "==5.9.0"
 gmpy2 = "==2.1.0b4"
 numpy = '==1.18.2'
 typish = '*'

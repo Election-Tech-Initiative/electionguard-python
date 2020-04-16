@@ -60,17 +60,9 @@ TBD
 
 ## Contributing
 
-This project welcomes contributions and suggestions.  
-
-ElectionGuard-Python tries to use Python3's *type hints* throughout,
-allowing for tools like [Mypy](https://mypy.readthedocs.io/en/stable/) to statically check the code for bugs.
-Also, our unit tests leverage
-[Hypothesis](https://hypothesis.readthedocs.io/en/stable/) property-based testing to
-vigorously exercise our library. Please write lots of good tests with your PRs.
-
-Also, ElectionGuard-Python requires a common Python indentation and variable-naming strategy. We use 
-[Black](https://black.readthedocs.io/en/stable/) to autoformat our code. Our CI testing requires the code
-pass all the unit tests, plus Mypy, Black, and [Pylint](https://www.pylint.org/).
+This project welcomes contributions and suggestions. Before you get started, you should
+read the [engineering notes](ENGINEERING_NOTES.md), which describe the tools, techniques,
+and goals of the code.
 
 Most contributions require you to agree to a
 Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us
