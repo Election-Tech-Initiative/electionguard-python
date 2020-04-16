@@ -144,7 +144,7 @@
     "candidates": [
         {
             "objectId": "benjamin-franklin",
-            "ballot_name": {
+            "ballotName": {
                 "text": [
                     {
                         "value": "Benjamin Franklin",
@@ -156,7 +156,7 @@
         },
         {
             "objectId": "john-adams",
-            "ballot_name": {
+            "ballotName": {
                 "text": [
                     {
                         "value": "John Adams",
@@ -168,7 +168,7 @@
         },
         {
             "objectId": "john-hancock",
-            "ballot_name": {
+            "ballotName": {
                 "text": [
                     {
                         "value": "John Hancock",
@@ -180,7 +180,7 @@
         },
         {
             "objectId": "write-in",
-            "ballot_name": {
+            "ballotName": {
                 "text": [
                     {
                         "value": "Write In Candidate",
@@ -196,7 +196,7 @@
         },
         {
             "objectId": "referendum-michigan-affirmative",
-            "ballot_name": {
+            "ballotName": {
                 "text": [
                     {
                         "value": "The State Should Purchase",
@@ -207,7 +207,7 @@
         },
         {
             "objectId": "referendum-michigan-negative",
-            "ballot_name": {
+            "ballotName": {
                 "text": [
                     {
                         "value": "The State Should Not Purchase",
@@ -398,6 +398,6 @@
     },
     "startDate": "2020-03-01T08:00:00-05:00",
     "endDate": "2020-03-01T20:00:00-05:00",
-    "electionScopeId": "jefferrson-county-primary",
+    "electionScopeId": "jefferson-county-primary",
     "type": "primary"
 }

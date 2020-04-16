@@ -1,12 +1,14 @@
 from dataclasses import dataclass, field
 from enum import Enum, unique
 from datetime import datetime, timezone
-from typing import Optional, List, TypeVar, Generic, Set, Union
+from typing import Optional, List, TypeVar, Generic, Set, Union, Iterable
 
+from .group import ElementModQ, ElementModP
 from .logs import log_warning
 
 from .is_valid import IsValid
 from .serializable import Serializable
+from .hash import CryptoHashable, hashable_element, flatten, hash_elems
 
 @unique
 class ElectionType(Enum):
@@ -68,28 +70,46 @@ class VoteVariationType(Enum):
     unknown = 13
 
 @dataclass
-class AnnotatedString(Serializable):
+class AnnotatedString(Serializable, CryptoHashable):
     """
     """
     annotation: str = field(default="")
     value: str = field(default="")
 
+    def crypto_hash(self) -> ElementModQ:
+        """
+        """
+        return hash_elems(self.annotation, self.value)
+
 @dataclass
-class Language(Serializable):
+class Language(Serializable, CryptoHashable):
     """
     Internationalized Text
     """
     value: str
     language: str = field(default="en")
 
+    def crypto_hash(self) -> ElementModQ:
+        """
+        """
+        return hash_elems(self.value, self.language)
+
 @dataclass
-class InternationalizedText(Serializable):
+class InternationalizedText(Serializable, CryptoHashable):
     """
     """
     text: List[Language] = field(default_factory=lambda: [])
 
+    def crypto_hash(self) -> ElementModQ:
+        """
+        """
+        text_hashes = [
+            t.crypto_hash() for t in self.text
+        ]
+        return hash_elems(*text_hashes)
+
 @dataclass
-class ContactInformation(Serializable):
+class ContactInformation(Serializable, CryptoHashable):
     """
     """
     address_line: Optional[List[str]] = field(default=None)
@@ -97,8 +117,19 @@ class ContactInformation(Serializable):
     phone: Optional[List[AnnotatedString]] = field(default=None)
     name: Optional[str] = field(default=None)
 
+    def crypto_hash(self) -> ElementModQ:
+        """
+        """
+
+        return hash_elems(*flatten(
+            self.name,
+            self.address_line,
+            self.email,
+            self.phone
+        ))
+
 @dataclass
-class GeopoliticalUnit(Serializable):
+class GeopoliticalUnit(Serializable, CryptoHashable):
     """
     """
     object_id: str
@@ -106,8 +137,19 @@ class GeopoliticalUnit(Serializable):
     type: ReportingUnitType
     contact_information: Optional[ContactInformation] = field(default=None)
 
+    def crypto_hash(self) -> ElementModQ:
+        """
+        """
+        return hash_elems(*flatten(
+            self.object_id, 
+            self.name, 
+            str(self.type), 
+            self.contact_information.crypto_hash()
+            )
+        )
+
 @dataclass
-class BallotStyle(Serializable):
+class BallotStyle(Serializable, CryptoHashable):
     """
     """
     object_id: str
@@ -115,25 +157,61 @@ class BallotStyle(Serializable):
     party_ids: Optional[List[str]] = field(default=None)
     image_uri: Optional[str] = field(default=None)
 
+    def crypto_hash(self) -> ElementModQ:
+        """
+        """
+        return hash_elems(*flatten(
+            self.object_id,
+            self.geopolitical_unit_ids,
+            self.party_ids,
+            self.image_uri
+            )
+        )
+
 @dataclass
-class Party(Serializable):
+class Party(Serializable, CryptoHashable):
     """
     """
     object_id: str
     ballot_name: InternationalizedText = field(default=InternationalizedText())
     abbreviation: Optional[str] = field(default=None)
     color: Optional[str] = field(default=None)
-    logoUri: Optional[str] = field(default=None)
+    logo_uri: Optional[str] = field(default=None)
+
+    def crypto_hash(self) -> ElementModQ:
+        """
+        """
+
+        return hash_elems(*flatten(
+            self.object_id, 
+            self.ballot_name.crypto_hash(), 
+            self.abbreviation, 
+            self.color, 
+            self.logo_uri
+            )
+        )
 
 @dataclass
-class Candidate(Serializable):
+class Candidate(Serializable, CryptoHashable):
     """
     Candidate
     """
     object_id: str
     ballot_name: InternationalizedText = field(default=InternationalizedText())
     party_id: Optional[str] = field(default=None)
-    imageUri: Optional[str] = field(default=None)
+    image_uri: Optional[str] = field(default=None)
+
+    def crypto_hash(self) -> ElementModQ:
+        """
+        """
+
+        return hash_elems(*flatten(
+            self.object_id, 
+            self.ballot_name.crypto_hash(), 
+            self.party_id, 
+            self.image_uri
+            )
+        )
 
 @dataclass
 class Selection(Serializable):
@@ -143,30 +221,43 @@ class Selection(Serializable):
     object_id: str
 
 @dataclass
-class ManifestSelection(Selection):
+class SelectionDescription(Selection, CryptoHashable):
     candidate_id: str
     sequence_order: int
+
+    def crypto_hash(self) -> ElementModQ:
+        """
+        """
+
+        return hash_elems(
+            self.object_id, 
+            str(self.sequence_order), 
+            self.candidate_id
+        )
 
 @dataclass
 class Contest(Serializable):
     object_id: str
 
 @dataclass
-class ManifestContest(Contest):
+class ContestDescription(Contest, CryptoHashable):
     """
     """
     electoral_district_id: str
+    sequence_order: int
     vote_variation: VoteVariationType
 
     """
     The number of candidate seats 
     """
     number_elected: int
-    ballot_selections: List[ManifestSelection] = field(default_factory=lambda: [])
-    ballot_title: InternationalizedText = field(default=InternationalizedText())
+    ballot_selections: List[SelectionDescription] = field(default_factory=lambda: [])
+    ballot_title: Optional[InternationalizedText] = field(default=None)
     ballot_subtitle: Optional[InternationalizedText] = field(default=None)
+    # TODO: not optional
     name: Optional[str] = field(default=None)
-    sequence_order: Optional[int] = field(default=None)
+    # TODO: not optional
+    
     
     """
     Indicates the number of individual votes a voter has.
@@ -174,22 +265,44 @@ class ManifestContest(Contest):
     """
     votes_allowed: Optional[int] = field(default=None)
 
+    def crypto_hash(self) -> ElementModQ:
+        """
+        Given a ContestDescription, deterministically derives a "hash" of that contest,
+        suitable for use in ElectionGuard's "base hash" values, and for validating that
+        either a plaintext or encrypted voted context and its corresponding contest
+        description match up.
+        """
+
+        return hash_elems(*flatten(
+            self.object_id, 
+            str(self.sequence_order),
+            self.electoral_district_id, 
+            str(self.vote_variation), 
+            self.ballot_title,
+            self.ballot_subtitle,
+            self.name,
+            str(self.number_elected),
+            str(self.votes_allowed),
+            self.ballot_selections
+            )
+        )
+
 @dataclass
-class CandidateContest(ManifestContest):
+class CandidateContestDescription(ContestDescription):
     """
     """
     primary_party_ids: List[str] = field(default_factory=lambda: [])
 
 @dataclass
-class ReferendumContest(ManifestContest):
+class ReferendumContestDescription(ContestDescription):
     """
     """
     pass
 
-DerivedContestType = Union[CandidateContest, ReferendumContest]
+DerivedContestType = Union[CandidateContestDescription, ReferendumContestDescription]
 
 @dataclass
-class Election(Serializable, IsValid):
+class Election(Serializable, IsValid, CryptoHashable):
     """
     """
     election_scope_id: str
@@ -204,9 +317,64 @@ class Election(Serializable, IsValid):
     name: Optional[InternationalizedText] = field(default=None)
     contact_information: Optional[ContactInformation] = field(default=None)
 
-    crypto_hash: Optional[str] = field(default=None)
-    crypto_extended_hash: Optional[str] = field(default=None)
+    crypto_base_hash: Optional[str] = field(default=None)
+    crypto_extended_base_hash: Optional[str] = field(default=None)
+    elgamal_public_key: Optional[ElementModP] = field(default=None)
 
+    def crypto_hash(self) -> ElementModQ:
+        """
+        Returns a hash of the description components of the election
+        """
+
+        if self.crypto_base_hash is not None:
+            return self.crypto_base_hash
+
+        gp_unit_hashes = [
+            gpunit.crypto_hash() for gpunit in self.geopolitical_units
+        ]
+        party_hashes = [
+            party.crypto_hash() for party in self.parties
+        ]
+        candidate_hashes = [
+            candidate.crypto_hash() for candidate in self.parties
+        ]
+        contest_hashes = [
+            contest.crypto_hash() for contest in self.contests
+        ]
+        ballot_style_hashes = [
+            ballot_style.crypto_hash() for ballot_style in self.ballot_styles
+        ]
+
+        self.crypto_base_hash = hash_elems(*flatten(
+            self.election_scope_id,
+            str(self.type),
+            self.start_date.isoformat(),
+            self.end_date.isoformat(),
+            self.name.crypto_hash(),
+            self.contact_information.crypto_hash(),
+            self.geopolitical_units,
+            self.parties,
+            self.parties,
+            self.contests,
+            self.ballot_styles
+            )
+        )
+
+        return self.crypto_base_hash
+        
+    def crypto_extended_hash(self, elgamal_public_key: ElementModP) -> ElementModQ:
+        """
+        """
+
+        if self.crypto_extended_base_hash is not None:
+            return self.crypto_extended_base_hash
+
+        if self.elgamal_public_key is None:
+            self.elgamal_public_key = elgamal_public_key
+
+        self.crypto_extended_base_hash = hash_elems(self.crypto_hash(), self.elgamal_public_key)
+        return self.crypto_extended_base_hash
+        
     def is_valid(self) -> bool:
         """
         """
@@ -283,7 +451,7 @@ class Election(Serializable, IsValid):
             # validate the number of votes per voter
             contests_have_valid_number_votes_allowed = contests_have_valid_number_votes_allowed \
                 and (contest.votes_allowed is None or contest.number_elected <= contest.votes_allowed)
-            if type(contest) is CandidateContest:    
+            if type(contest) is CandidateContestDescription:    
                 if contest.primary_party_ids is not None:
                     for primary_party_id in contest.primary_party_ids:
                         # validate the party ids
