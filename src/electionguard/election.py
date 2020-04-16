@@ -12,6 +12,10 @@ from .hash import CryptoHashable, hashable_element, flatten, hash_elems
 
 @unique
 class ElectionType(Enum):
+    """
+    enumerations for the `ElectionReport` entity
+    see: https://developers.google.com/elections-data/reference/election-type
+    """
     general = 1
     partisan_primary_closed = 2
     partisan_primary_open = 3
@@ -23,6 +27,10 @@ class ElectionType(Enum):
 
 @unique
 class ReportingUnitType(Enum):
+    """
+    Enumeration for the type of geopolitical unit
+    see: https://developers.google.com/elections-data/reference/reporting-unit-type
+    """
     ballot_batch = 1
     ballot_style_area = 2
     borough = 3
@@ -55,6 +63,10 @@ class ReportingUnitType(Enum):
 
 @unique
 class VoteVariationType(Enum):
+    """
+    Enumeration for contest algorithm or rules in the `Contest` entity
+    see: https://developers.google.com/elections-data/reference/vote-variation
+    """
     one_of_m = 1
     approval = 2
     borda = 3
@@ -72,36 +84,44 @@ class VoteVariationType(Enum):
 @dataclass
 class AnnotatedString(Serializable, CryptoHashable):
     """
+    Use this as a type for character strings.
+    See: https://developers.google.com/elections-data/reference/annotated-string
     """
     annotation: str = field(default="")
     value: str = field(default="")
 
     def crypto_hash(self) -> ElementModQ:
         """
+        A hash representation of the object
         """
         return hash_elems(self.annotation, self.value)
 
 @dataclass
 class Language(Serializable, CryptoHashable):
     """
-    Internationalized Text
+    The ISO-639 language
+    see: https://en.wikipedia.org/wiki/ISO_639
     """
     value: str
     language: str = field(default="en")
 
     def crypto_hash(self) -> ElementModQ:
         """
+        A hash representation of the object
         """
         return hash_elems(self.value, self.language)
 
 @dataclass
 class InternationalizedText(Serializable, CryptoHashable):
     """
+    This data entity is used to represent multi-national text. Use when text on a ballot contains multi-national text.
+    See: https://developers.google.com/elections-data/reference/internationalized-text
     """
     text: List[Language] = field(default_factory=lambda: [])
 
     def crypto_hash(self) -> ElementModQ:
         """
+        A hash representation of the object
         """
         text_hashes = [
             t.crypto_hash() for t in self.text
@@ -111,6 +131,8 @@ class InternationalizedText(Serializable, CryptoHashable):
 @dataclass
 class ContactInformation(Serializable, CryptoHashable):
     """
+    For defining contact information about objects such as persons, boards of authorities, and organizations.
+    See: https://developers.google.com/elections-data/reference/contact-information
     """
     address_line: Optional[List[str]] = field(default=None)
     email: Optional[List[AnnotatedString]] = field(default=None)
@@ -119,8 +141,8 @@ class ContactInformation(Serializable, CryptoHashable):
 
     def crypto_hash(self) -> ElementModQ:
         """
+        A hash representation of the object
         """
-
         return hash_elems(*flatten(
             self.name,
             self.address_line,
@@ -131,6 +153,9 @@ class ContactInformation(Serializable, CryptoHashable):
 @dataclass
 class GeopoliticalUnit(Serializable, CryptoHashable):
     """
+    Use this entity for defining geopolitical units such as cities, districts, jurisdictions, or precincts, 
+    for the purpose of associating contests, offices, vote counts, or other information with the geographies.
+    See: https://developers.google.com/elections-data/reference/gp-unit
     """
     object_id: str
     name: str
@@ -139,6 +164,7 @@ class GeopoliticalUnit(Serializable, CryptoHashable):
 
     def crypto_hash(self) -> ElementModQ:
         """
+        A hash representation of the object
         """
         return hash_elems(*flatten(
             self.object_id, 
@@ -159,6 +185,7 @@ class BallotStyle(Serializable, CryptoHashable):
 
     def crypto_hash(self) -> ElementModQ:
         """
+        A hash representation of the object
         """
         return hash_elems(*flatten(
             self.object_id,
@@ -171,6 +198,8 @@ class BallotStyle(Serializable, CryptoHashable):
 @dataclass
 class Party(Serializable, CryptoHashable):
     """
+    Use this entity to describe a political party that can then be referenced from other entities.
+    See: https://developers.google.com/elections-data/reference/party
     """
     object_id: str
     ballot_name: InternationalizedText = field(default=InternationalizedText())
@@ -180,8 +209,8 @@ class Party(Serializable, CryptoHashable):
 
     def crypto_hash(self) -> ElementModQ:
         """
+        A hash representation of the object
         """
-
         return hash_elems(*flatten(
             self.object_id, 
             self.ballot_name.crypto_hash(), 
@@ -194,7 +223,13 @@ class Party(Serializable, CryptoHashable):
 @dataclass
 class Candidate(Serializable, CryptoHashable):
     """
-    Candidate
+    This entity describes information about a candidate in a contest. 
+    See: https://developers.google.com/elections-data/reference/candidate
+    Note: The ElectionGuard Data Spec deviates from the NIST model in that 
+    selections for any contest type are considered a "candidate".
+    for instance, on a yes-no referendum contest, two `candidate` objects
+    would be included in the model to represent the `affirmative` and `negative`
+    selections for the contest.  See the wiki, readme's, and tests in this repo for more info
     """
     object_id: str
     ballot_name: InternationalizedText = field(default=InternationalizedText())
@@ -216,19 +251,35 @@ class Candidate(Serializable, CryptoHashable):
 @dataclass
 class Selection(Serializable):
     """
-    typed selection object
+    This data entity is for the ballot selections in a contest, 
+    for example linking candidates and parties to their vote counts.
+    See: https://developers.google.com/elections-data/reference/ballot-selection
+    Note: The ElectionGuard Data Spec deviates from the NIST model in that
+    there is no difference for different types of selections.  Additionally,
+    This base dataclass enforces referential integrity between a `SelectionDescription`
+    in an Election Manifest and a `BallotSelection` on a specific ballot.
     """
     object_id: str
 
 @dataclass
 class SelectionDescription(Selection, CryptoHashable):
+    """
+    This data entity is for the ballot selections in a contest, 
+    for example linking candidates and parties to their vote counts.
+    See: https://developers.google.com/elections-data/reference/ballot-selection
+    Note: The ElectionGuard Data Spec deviates from the NIST model in that
+    `sequence_order` is a required field since it is used for ordering selections 
+    in a contest to ensure various encryption primitives are deterministic.
+    For a given election, the sequence of selections displayed to a user may be different
+    however that information is not captured by default when encrypting a specific ballot.
+    """
     candidate_id: str
     sequence_order: int
 
     def crypto_hash(self) -> ElementModQ:
         """
+        A hash representation of the object
         """
-
         return hash_elems(
             self.object_id, 
             str(self.sequence_order), 
@@ -237,32 +288,45 @@ class SelectionDescription(Selection, CryptoHashable):
 
 @dataclass
 class Contest(Serializable):
+    """
+    Use this data entity for describing a contest and linking the contest 
+    to the associated candidates and parties.
+    See: https://developers.google.com/elections-data/reference/contest
+    Note: The ElectionGuard Data Spec deviates from the NIST model in that
+    this base dataclass enforces referential integrity between a `ContestDescription`
+    in an Election Manifest and a `BallotContest` on a specific ballot.
+    """
     object_id: str
 
 @dataclass
 class ContestDescription(Contest, CryptoHashable):
     """
+    Use this data entity for describing a contest and linking the contest 
+    to the associated candidates and parties.
+    See: https://developers.google.com/elections-data/reference/contest
+    Note: The ElectionGuard Data Spec deviates from the NIST model in that
+    `sequence_order` is a required field since it is used for ordering selections 
+    in a contest to ensure various encryption primitives are deterministic.
+    For a given election, the sequence of contests displayed to a user may be different
+    however that information is not captured by default when encrypting a specific ballot.
     """
     electoral_district_id: str
     sequence_order: int
     vote_variation: VoteVariationType
 
-    """
-    The number of candidate seats 
-    """
+    # Number of candidates that are elected in the contest ("n" of n-of-m).
+    # Note: a referendum is considered a specific case of 1-of-m in ElectionGuard
     number_elected: int
     ballot_selections: List[SelectionDescription] = field(default_factory=lambda: [])
     ballot_title: Optional[InternationalizedText] = field(default=None)
     ballot_subtitle: Optional[InternationalizedText] = field(default=None)
+
     # TODO: not optional
     name: Optional[str] = field(default=None)
+    
+    # Maximum number of votes/write-ins per voter in this contest.
+    # If no value is present, this value is assumed to equal `number_elected`
     # TODO: not optional
-    
-    
-    """
-    Indicates the number of individual votes a voter has.
-    If no value is present, assumed to be number elected
-    """
     votes_allowed: Optional[int] = field(default=None)
 
     def crypto_hash(self) -> ElementModQ:
@@ -272,7 +336,6 @@ class ContestDescription(Contest, CryptoHashable):
         either a plaintext or encrypted voted context and its corresponding contest
         description match up.
         """
-
         return hash_elems(*flatten(
             self.object_id, 
             str(self.sequence_order),
@@ -290,12 +353,20 @@ class ContestDescription(Contest, CryptoHashable):
 @dataclass
 class CandidateContestDescription(ContestDescription):
     """
+    Use this entity to describe a contest that involves selecting one or more candidates.
+    See: https://developers.google.com/elections-data/reference/contest
+    Note: The ElectionGuard Data Spec deviates from the NIST model in that
+    this subclass is used purely for convenience 
     """
     primary_party_ids: List[str] = field(default_factory=lambda: [])
 
 @dataclass
 class ReferendumContestDescription(ContestDescription):
     """
+    Use this entity to describe a contest that involves selecting exactly one 'candidate'.
+    See: https://developers.google.com/elections-data/reference/contest
+    Note: The ElectionGuard Data Spec deviates from the NIST model in that
+    this subclass is used purely for convenience
     """
     pass
 
@@ -304,6 +375,14 @@ DerivedContestType = Union[CandidateContestDescription, ReferendumContestDescrip
 @dataclass
 class Election(Serializable, IsValid, CryptoHashable):
     """
+    Use this entity for defining the status of the election and associated 
+    information such as candidates, contests, and vote counts.
+    See: https://developers.google.com/elections-data/reference/election
+    Note: The ElectionGuard Data Spec deviates from the NIST model in that
+    this object includes optional fields that are populated in the course of encrypting an election
+    Specifically, `crypto_base_hash`, `crypto_extended_base_hash` and `elgamal_public_key`
+    are populated with election-specific information necessary for encrypting the election.
+    Refer to the [Electionguard Specification](https://github.com/microsoft/electionguard) for more information
     """
     election_scope_id: str
     type: ElectionType
@@ -317,6 +396,7 @@ class Election(Serializable, IsValid, CryptoHashable):
     name: Optional[InternationalizedText] = field(default=None)
     contact_information: Optional[ContactInformation] = field(default=None)
 
+    # ElectionGuard Fields
     crypto_base_hash: Optional[str] = field(default=None)
     crypto_extended_base_hash: Optional[str] = field(default=None)
     elgamal_public_key: Optional[ElementModP] = field(default=None)
