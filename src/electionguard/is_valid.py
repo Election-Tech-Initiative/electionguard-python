@@ -17,5 +17,5 @@ class IsValidEncryption(Protocol):
     """
     """
     @abstractmethod
-    def is_valid(self, seed_hash: ElementModQ, elgamal_public_key: ElementModP) -> bool:
+    def is_valid_encryption(self, seed_hash: ElementModQ, elgamal_public_key: ElementModP) -> bool:
         ...

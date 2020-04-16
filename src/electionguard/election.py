@@ -144,7 +144,7 @@ class GeopoliticalUnit(Serializable, CryptoHashable):
             self.object_id, 
             self.name, 
             str(self.type), 
-            self.contact_information.crypto_hash()
+            self.contact_information
             )
         )
 
@@ -350,8 +350,8 @@ class Election(Serializable, IsValid, CryptoHashable):
             str(self.type),
             self.start_date.isoformat(),
             self.end_date.isoformat(),
-            self.name.crypto_hash(),
-            self.contact_information.crypto_hash(),
+            self.name,
+            self.contact_information,
             self.geopolitical_units,
             self.parties,
             self.parties,

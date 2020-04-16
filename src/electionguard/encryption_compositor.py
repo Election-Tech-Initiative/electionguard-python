@@ -17,7 +17,6 @@ class EncryptionCompositor(object):
     pass
 
 def selection_from(description: SelectionDescription, is_placeholder: bool = False, is_affirmative: bool = False) -> BallotSelection:
-    log_warning(f"making selection_from: {description.object_id} {is_placeholder} {is_affirmative}")
     return BallotSelection(description.object_id, is_placeholder, str(is_affirmative))
 
 def placeholder_selection_description_from(description: ContestDescription, sequence_order: int) -> SelectionDescription:
@@ -91,7 +90,7 @@ def encrypt_selection(
 
     encrypted_selection.nonce = selection_nonce
 
-    if encrypted_selection.is_valid(selection_description.crypto_hash(), elgamal_public_key):
+    if encrypted_selection.is_valid_encryption(selection_description.crypto_hash(), elgamal_public_key):
         return encrypted_selection
     else:
         log_warning(f"mismatching selection proof for selection {encrypted_selection.object_id}")
@@ -156,7 +155,6 @@ def encrypt_contest(
 
     # Add a placeholder selection for each possible seat in the contest
     for i in range(contest_description.number_elected):
-        log_warning(f"selection count: {selection_count} elected: {contest_description.number_elected}")
         # for undervotes, select the placeholder value as true for each available seat
         # note this pattern is used since DisjuctiveChaumPedersen expects a 0 or 1
         # so each seat can only have a maximum value of 1
@@ -203,7 +201,7 @@ def encrypt_contest(
     encrypted_contest.nonce = contest_nonce
 
     # Verify the proof
-    if encrypted_contest.is_valid(contest_description.crypto_hash(), elgamal_public_key):
+    if encrypted_contest.is_valid_encryption(contest_description.crypto_hash(), elgamal_public_key):
         return encrypted_contest
     else:
         log_warning(f"mismatching contest proof for contest {encrypted_contest.object_id}")
@@ -212,8 +210,7 @@ def encrypt_contest(
 def encrypt_ballot(
     ballot: Ballot, 
     election_metadata: Election, 
-    elgamal_public_key: ElementModP, 
-    seed: ElementModQ) -> Optional[Ballot]:
+    elgamal_public_key: ElementModP) -> Optional[Ballot]:
 
     # TODO: Verify Input
 
@@ -222,8 +219,8 @@ def encrypt_ballot(
     hashed_ballot_nonce = hash_elems(election_hash, ballot.object_id, random_master_nonce)
 
     # Determine the relevant range of contests for this ballot style
-    styles = list(filter(lambda i: i.object_id is ballot.ballot_style, election_metadata.ballot_styles))
-    gp_unit_ids = [style.geopolitical_unit_id for style in styles]
+    style = list(filter(lambda i: i.object_id is ballot.ballot_style, election_metadata.ballot_styles))[0]
+    gp_unit_ids = [gp_unit_id for gp_unit_id in style.geopolitical_unit_ids]
 
     encrypted_contests: List[BallotContest] = list()
 
@@ -248,20 +245,20 @@ def encrypt_ballot(
                 )
             encrypted_contests.append(encrypted_contest)
 
-    encrypted_vallot = Ballot(
+    encrypted_ballot = Ballot(
             ballot.object_id, ballot.ballot_style, encrypted_contests)
 
-    encrypted_vallot.nonce = random_master_nonce
+    encrypted_ballot.nonce = random_master_nonce
 
     # TODO: verify the ballot is now well-formed & valid
 
     # Generate the Hash
-    encrypted_vallot.crypto_hash_with(hashed_ballot_nonce)
+    encrypted_ballot.crypto_hash_with(election_hash)
 
     # TODO: Generate Tracking code
-    tracking_code = "abc123"
+    encrypted_ballot.tracking_id = "abc123"
     
-    if any(encrypted_contests): 
-        return 
+    if encrypted_ballot.is_valid_encryption(election_hash, elgamal_public_key): 
+        return encrypted_ballot
     else: 
         return None

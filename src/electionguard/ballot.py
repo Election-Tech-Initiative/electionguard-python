@@ -50,7 +50,7 @@ class BallotSelection(Selection, IsValid, IsValidEncryption, CryptoHashCheckable
             and self.selection_hash is not None \
             and self.proof is not None
 
-    def is_valid(self, seed_hash: ElementModQ, elgamal_public_key: ElementModP) -> bool:
+    def is_valid_encryption(self, seed_hash: ElementModQ, elgamal_public_key: ElementModP) -> bool:
         """
         Given an encrypted BallotSelection, validates the encryption state against a specific seed hash and public key.
         Calling this function expects that the object is in a well-formed encrypted state
@@ -61,26 +61,26 @@ class BallotSelection(Selection, IsValid, IsValidEncryption, CryptoHashCheckable
         """
         if self.is_plaintext_state():
             log_warning(
-                f"mismatching selection state: expected(encrypted), actual(plaintext)"
+                f"mismatching selection state: {self.object_id} expected(encrypted), actual(plaintext)"
             )
             return False
 
         if not self.is_encrypted_state():
             log_warning(
-                f"mismatching selection state: expected(encrypted), actual(invalid)"
+                f"mismatching selection state: {self.object_id} expected(encrypted), actual(invalid)"
             )
             return False
 
         if seed_hash != self.selection_hash:
             log_warning(
-                f"mismatching selection hash: expected({str(seed_hash)}), actual({str(self.selection_hash)})"
+                f"mismatching selection hash: {self.object_id} expected({str(seed_hash)}), actual({str(self.selection_hash)})"
             )
             return False
 
         recalculated_crypto_hash = self.crypto_hash_with(seed_hash)
         if self.crypto_hash is not recalculated_crypto_hash:
             log_warning(
-                f"mismatching crypto hash: expected({str(recalculated_crypto_hash)}), actual({str(self.crypto_hash)})"
+                f"mismatching crypto hash: {self.object_id} expected({str(recalculated_crypto_hash)}), actual({str(self.crypto_hash)})"
             )
             return False
 
@@ -100,7 +100,7 @@ class BallotSelection(Selection, IsValid, IsValidEncryption, CryptoHashCheckable
 
         if self.message is None:
             log_warning(
-                f"mismatching message state: expected(encrypted), actual(invalid)"
+                f"mismatching message state: {self.object_id} expected(encrypted), actual(invalid)"
             )
             return ZERO_MOD_Q
 
@@ -154,9 +154,9 @@ class BallotContest(Contest, IsValid, CryptoHashCheckable):
         if self.contest_hash is None:
             self.contest_hash = seed_hash
 
-        if len(self.ballot_selections) is 0:
+        if len(self.ballot_selections) == 0:
             log_warning(
-                f"mismatching ballot_selections state: expected(some), actual(none)"
+                f"mismatching ballot_selections state: {self.object_id} expected(some), actual(none)"
             )
             return ZERO_MOD_Q
 
@@ -165,7 +165,7 @@ class BallotContest(Contest, IsValid, CryptoHashCheckable):
         self.crypto_hash = hash_elems(self.contest_hash, *selection_hashes)
         return self.crypto_hash
 
-    def is_valid(self, seed_hash: ElementModQ, elgamal_public_key: ElementModP) -> bool:
+    def is_valid_encryption(self, seed_hash: ElementModQ, elgamal_public_key: ElementModP) -> bool:
         """
         Given an encrypted BallotContest, validates the encryption state against a specific seed hash and public key
         by verifying the accumulated sum of selections match the proof.
@@ -177,19 +177,19 @@ class BallotContest(Contest, IsValid, CryptoHashCheckable):
         """
         if self.is_plaintext_state():
             log_warning(
-                f"mismatching contest state: expected(encrypted), actual(plaintext)"
+                f"mismatching contest state: {self.object_id} expected(encrypted), actual(plaintext)"
             )
             return False
 
         if not self.is_encrypted_state():
             log_warning(
-                f"mismatching contest state: expected(encrypted), actual(invalid)"
+                f"mismatching contest state: {self.object_id} expected(encrypted), actual(invalid)"
             )
             return False
 
         if seed_hash != self.contest_hash:
             log_warning(
-                f"mismatching contest hash: expected({str(seed_hash)}), actual({str(self.contest_hash)})"
+                f"mismatching contest hash: {self.object_id} expected({str(seed_hash)}), actual({str(self.contest_hash)})"
             )
             return False
 
@@ -240,13 +240,43 @@ class Ballot(Serializable, IsValid, CryptoHashCheckable):
         if self.ballot_hash is None:
             self.ballot_hash = seed_hash
 
-        if len(self.ballot_selections) is 0:
+        if len(self.contests) == 0:
             log_warning(
-                f"mismatching ballot_selections state: expected(some), actual(none)"
+                f"mismatching contests state: {self.object_id} expected(some), actual(none)"
             )
             return ZERO_MOD_Q
 
-        selection_hashes = [selection.crypto_hash for selection in self.ballot_selections]
+        contest_hashes = [contest.crypto_hash for contest in self.contests]
 
-        self.crypto_hash = hash_elems(self.selection_hash, *selection_hashes)
+        self.crypto_hash = hash_elems(self.ballot_hash, *contest_hashes)
         return self.crypto_hash
+        
+    def is_valid_encryption(self, seed_hash: ElementModQ, elgamal_public_key: ElementModP) -> bool:
+
+        """
+        """
+
+        if seed_hash != self.ballot_hash:
+            log_warning(
+                f"mismatching ballot hash: {self.object_id} expected({str(seed_hash)}), actual({str(self.ballot_hash)})"
+            )
+            return False
+
+        valid_proofs: List[bool] = list()
+
+        for contest in self.contests:
+            for selection in contest.ballot_selections:
+                valid_proofs.append(
+                    selection.is_valid_encryption(
+                        selection.selection_hash, 
+                        elgamal_public_key
+                    )
+                )
+            valid_proofs.append(
+                contest.is_valid_encryption(
+                    contest.contest_hash, 
+                    elgamal_public_key
+                )
+            )
+        return all(valid_proofs)
+
