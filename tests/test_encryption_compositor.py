@@ -48,12 +48,6 @@ from secrets import randbelow
 class TestEncryptionCompositor(unittest.TestCase):
 
     def get_fake_election(self) -> Election:
-        """
-        Election(election_scope_id: str, 
-        type: ElectionType, start_date: datetime, end_date: datetime, 
-        geopolitical_units: List[GeopoliticalUnit], parties: List[Party], 
-        candidates: List[Candidate], contests: List[DerivedContestType], ballot_styles: List[BallotStyle]
-        """
 
         fake_ballot_style = BallotStyle("some-ballot-style-id")
         fake_ballot_style.geopolitical_unit_ids = [
@@ -121,21 +115,24 @@ class TestEncryptionCompositor(unittest.TestCase):
         return fake_ballot
 
     def test_encrypt_selection_succeeds(self):
+
+        # Arrange
         keypair = elgamal_keypair_from_secret(int_to_q(2))
         nonce = randbelow(Q)
         metadata = SelectionDescription("some-selection-object-id", "some-candidate-id", 1)
         hash_context = metadata.crypto_hash()
 
+        # Act
         subject = selection_from(metadata)
         result = encrypt_selection(subject, metadata, keypair.public_key, nonce)
 
+        # Assert
         self.assertIsNotNone(result)
         self.assertTrue(result.is_valid_encryption(hash_context, keypair.public_key))
 
-    # def test_decrypt_selection_succeeds(self):
-    #     pass
-
     def test_encrypt_contest_referendum_succeeds(self):
+
+        # Arrange
         keypair = elgamal_keypair_from_secret(int_to_q(2))
         nonce = randbelow(Q)
         metadata = ContestDescription("some-contest-object-id", "some-electoral-district-id", 0, VoteVariationType.one_of_m, 1)
@@ -146,20 +143,26 @@ class TestEncryptionCompositor(unittest.TestCase):
         metadata.votes_allowed = 1
         hash_context = metadata.crypto_hash()
 
+        # Act
         subject = contest_from(metadata)
         result = encrypt_contest(subject, metadata, keypair.public_key, nonce)
 
+        # Assert
         self.assertIsNotNone(result)
         self.assertTrue(result.is_valid_encryption(hash_context, keypair.public_key))
 
     def test_encrypt_ballot_simple_succeeds(self):
+
+        # Arrange
         keypair = elgamal_keypair_from_secret(int_to_q(2))
         metadata = self.get_fake_election()
         hash_context = metadata.crypto_extended_hash(keypair.public_key)
 
+        # Act
         subject = self.get_fake_ballot()
         result = encrypt_ballot(subject, metadata, keypair.public_key)
 
+        # Assert
         self.assertIsNotNone(result)
         self.assertTrue(result.is_valid_encryption(hash_context, keypair.public_key))
 

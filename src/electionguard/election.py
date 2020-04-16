@@ -3,7 +3,13 @@ from enum import Enum, unique
 from datetime import datetime, timezone
 from typing import Optional, List, TypeVar, Generic, Set, Union, Iterable
 
-from .group import ElementModQ, ElementModP
+from .group import (
+    Q,
+    P,
+    G,
+    ElementModQ, 
+    ElementModP
+    )
 from .logs import log_warning
 
 from .is_valid import IsValid
@@ -238,11 +244,11 @@ class Candidate(Serializable, CryptoHashable):
 
     def crypto_hash(self) -> ElementModQ:
         """
+        A hash representation of the object
         """
-
         return hash_elems(*flatten(
             self.object_id, 
-            self.ballot_name.crypto_hash(), 
+            self.ballot_name, 
             self.party_id, 
             self.image_uri
             )
@@ -397,17 +403,27 @@ class Election(Serializable, IsValid, CryptoHashable):
     contact_information: Optional[ContactInformation] = field(default=None)
 
     # ElectionGuard Fields
-    crypto_base_hash: Optional[str] = field(default=None)
-    crypto_extended_base_hash: Optional[str] = field(default=None)
+    number_trustees: int = field(default=1)
+    threshold_trustees: int = field(default=1)
+
+    crypto_hash: Optional[ElementModQ] = field(default=None)
+
+    # the `base hash code (Q)` in the [ElectionGuard Spec](https://github.com/microsoft/electionguard/wiki)
+    crypto_base_hash: Optional[ElementModQ] = field(default=None)
+
+    # the `extended base hash code (Q')` in the [ElectionGuard Spec](https://github.com/microsoft/electionguard/wiki)
+    crypto_extended_base_hash: Optional[ElementModQ] = field(default=None)
+
+    # the `joint public key (K)` in the [ElectionGuard Spec](https://github.com/microsoft/electionguard/wiki)
     elgamal_public_key: Optional[ElementModP] = field(default=None)
 
     def crypto_hash(self) -> ElementModQ:
         """
-        Returns a hash of the description components of the election
+        Returns a hash of the metadata components of the election
         """
 
-        if self.crypto_base_hash is not None:
-            return self.crypto_base_hash
+        if self.crypto_hash is not None:
+            return self.crypto_hash
 
         gp_unit_hashes = [
             gpunit.crypto_hash() for gpunit in self.geopolitical_units
@@ -425,7 +441,7 @@ class Election(Serializable, IsValid, CryptoHashable):
             ballot_style.crypto_hash() for ballot_style in self.ballot_styles
         ]
 
-        self.crypto_base_hash = hash_elems(*flatten(
+        self.crypto_hash = hash_elems(*flatten(
             self.election_scope_id,
             str(self.type),
             self.start_date.isoformat(),
@@ -440,10 +456,35 @@ class Election(Serializable, IsValid, CryptoHashable):
             )
         )
 
+        return self.crypto_hash
+
+    def crypto_base_hash(self) -> ElementModQ:
+        """
+        The metadata of this object are hashed together with the 
+        - prime modulus (𝑝), 
+        - subgroup order (𝑞), 
+        - generator (𝑔), 
+        - number of trustees (𝑛), 
+        - decryption threshold value (𝑘), 
+        to form a base hash code (𝑄) which will be incorporated 
+        into every subsequent hash computation in the election.
+        """
+
+        if self.crypto_base_hash is not None:
+            return self.crypto_base_hash
+
+        self.crypto_base_hash = hash_elems(
+            P, Q, G, self.number_trustees, self.threshold_trustees, self.crypto_hash()
+        )
+
         return self.crypto_base_hash
         
     def crypto_extended_hash(self, elgamal_public_key: ElementModP) -> ElementModQ:
         """
+        Once the baseline parameters have been produced and confirmed, 
+        all of the public trustee commitments 𝐾𝑖,𝑗 are hashed together 
+        with the base hash 𝑄 to form an extended base hash 𝑄' that will 
+        form the basis of subsequent hash computations.
         """
 
         if self.crypto_extended_base_hash is not None:
@@ -452,7 +493,7 @@ class Election(Serializable, IsValid, CryptoHashable):
         if self.elgamal_public_key is None:
             self.elgamal_public_key = elgamal_public_key
 
-        self.crypto_extended_base_hash = hash_elems(self.crypto_hash(), self.elgamal_public_key)
+        self.crypto_extended_base_hash = hash_elems(self.crypto_base_hash(self), self.elgamal_public_key)
         return self.crypto_extended_base_hash
         
     def is_valid(self) -> bool:

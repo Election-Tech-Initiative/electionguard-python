@@ -17,17 +17,37 @@ class EncryptionCompositor(object):
     pass
 
 def selection_from(description: SelectionDescription, is_placeholder: bool = False, is_affirmative: bool = False) -> BallotSelection:
+    """
+    Construct a `BallotSelection` from a specific `SelectionDescription`.
+    This function is useful for filling selections when a voter undervotes a ballot.
+    It is also used to create placeholder representations when generating the `ConstantChaumPedersenProof`
+
+    :param description: The `SelectionDescription` which provides the relevant `object_id`
+    :param is_placeholder: Mark this selection as a placeholder value
+    :param is_affirmative: Mark this selection as `yes`
+    :return: A BallotSelection
+    """
     return BallotSelection(description.object_id, is_placeholder, str(is_affirmative))
 
 def placeholder_selection_description_from(description: ContestDescription, sequence_order: int) -> SelectionDescription:
     """
     Generates a placeholder selection description that is unique so it can be hashed
+
+    :param description: The `ContestDescription` from which to derive the `object_id`
+    :param sequence_order: an integer unique to the contest identifying this selection's place in the contest
+    :return: a SelectionDescription
     """
     placeholder = f"{description.object_id}-{sequence_order}"
     return SelectionDescription(placeholder, placeholder, sequence_order)
 
 def contest_from(description: ContestDescription) -> BallotContest:
+    """
+    Construct a `BallotContest` from a specific `ContestDescription` with all false fields.
+    This function is useful for filling contests and selections when a voter undervotes a ballot.
 
+    :param description: The `ContestDescription` used to derive the well-formed `BallotContest`
+    :return: a `BallotContest`
+    """
     selections: List[BallotSelection] = list()
 
     for selection_description in description.ballot_selections:
@@ -40,8 +60,13 @@ def contest_from(description: ContestDescription) -> BallotContest:
 
 def plaintext_representation(from_string: str) -> int:
     """
-    represent a Truthy string as 1, or if the string is Falsy 0
+    represent a Truthy string as 1, or if the string is Falsy, 0
+    See: https://docs.python.org/3/distutils/apiref.html#distutils.util.strtobool
+
+    :param from_string: a string representing "true" or "false"
+    :return: an integer 0 or 1, or throw
     """
+
     # TODO: Support integer votes greater than 1 for cases such as cumulative voting
 
     as_bool = False
@@ -57,7 +82,20 @@ def encrypt_selection(
     selection: BallotSelection, 
     selection_description: SelectionDescription, 
     elgamal_public_key: ElementModP, 
-    seed: ElementModQ, is_placeholder: bool = False) -> Optional[BallotSelection]:
+    seed: ElementModQ, 
+    is_placeholder: bool = False, 
+    should_verify_proofs = True) -> Optional[BallotSelection]:
+    """
+    Encrypt a specific `BallotSelection` in the context of a specific `BallotContest`
+
+    :param selection: the selection in the valid input form
+    :param selection_description: the `SelectionDescription` from the `ContestDescription` which defines this selection's structure
+    :param elgamal_public_key: the public key (k) used to encrypt the ballot
+    :param seed: an `ElementModQ` used as a header to seed the `Nonce` generated for this selection.
+                 this value can be (or derived from) the BallotContest nonce, but no relationship is required
+    :param is_placeholder: specify if this selection is a placeholder selection (default False)
+    :param should_verify_proofs: specify if the proofs should be verified prior to returning (default True)
+    """
 
     # TODO: Validate Input
 
@@ -72,7 +110,7 @@ def encrypt_selection(
         elgamal_public_key
     )
 
-    # Generate the hash
+    # Generate the hash of the encrypted data
     encrypted_selection.crypto_hash_with(selection_description.crypto_hash())
 
     # Generate the Proof
@@ -88,8 +126,13 @@ def encrypt_selection(
         )
     )
 
+    # assign the nonce used to the return object
     encrypted_selection.nonce = selection_nonce
 
+    if not should_verify_proofs:
+        return encrypted_selection
+
+    # verify the selection.
     if encrypted_selection.is_valid_encryption(selection_description.crypto_hash(), elgamal_public_key):
         return encrypted_selection
     else:
@@ -100,7 +143,24 @@ def encrypt_contest(
     contest: BallotContest, 
     contest_description: ContestDescription, 
     elgamal_public_key: ElementModP, 
-    seed: ElementModQ) -> Optional[BallotContest]:
+    seed: ElementModQ,
+    should_verify_proofs = True) -> Optional[BallotContest]:
+
+    """
+    Encrypt a specific `BallotContest` in the context of a specific `Ballot`.
+
+    This method accepts a contest representation that only includes `True` selections.
+    It will fill missing selections for a contest with `False` values, and generate `placeholder`
+    selections to represent the number of seats available for a given contest.  By adding `placeholder`
+    votes
+
+    :param contest: the contest in the valid input form
+    :param contest_description: the `ContestDescription` from the `ContestDescription` which defines this contest's structure
+    :param elgamal_public_key: the public key (k) used to encrypt the ballot
+    :param seed: an `ElementModQ` used as a header to seed the `Nonce` generated for this contest.
+                 this value can be (or derived from) the Ballot nonce, but no relationship is required
+    :param should_verify_proofs: specify if the proofs should be verified prior to returning (default True)
+    """
 
     # TODO: Validate Input
 
@@ -139,7 +199,6 @@ def encrypt_contest(
         if not has_selection:
         # No selection was made for this possible value
         # so we explicitly set it to false
-
             encrypted_selection = encrypt_selection(
                 selection_from(description), 
                 description, 
@@ -157,7 +216,7 @@ def encrypt_contest(
     for i in range(contest_description.number_elected):
         # for undervotes, select the placeholder value as true for each available seat
         # note this pattern is used since DisjuctiveChaumPedersen expects a 0 or 1
-        # so each seat can only have a maximum value of 1
+        # so each seat can only have a maximum value of 1 in the current implementation
         select_placeholder = False
         if selection_count < contest_description.number_elected:
             
@@ -177,13 +236,14 @@ def encrypt_contest(
                 )
         encrypted_selections.append(encrypted_selection)
 
-    # TODO: support other cases such as cumulative voting
+    # TODO: support other cases such as cumulative voting (individual selections being an encryption of > 1)
     if selection_count < contest_description.votes_allowed:
         log_warning("mismatching selection count: only n-of-m style elections are currently supported")
         pass
 
-    # Generate the hash
     encrypted_contest = BallotContest(contest.object_id, encrypted_selections)
+
+    # Generate the hash of the encryption
     encrypted_contest.crypto_hash_with(contest_description.crypto_hash())
 
     # homomorphic add the encrypted representations together
@@ -200,6 +260,9 @@ def encrypt_contest(
     )
     encrypted_contest.nonce = contest_nonce
 
+    if not should_verify_proofs:
+        return encrypted_contest
+
     # Verify the proof
     if encrypted_contest.is_valid_encryption(contest_description.crypto_hash(), elgamal_public_key):
         return encrypted_contest
@@ -210,9 +273,30 @@ def encrypt_contest(
 def encrypt_ballot(
     ballot: Ballot, 
     election_metadata: Election, 
-    elgamal_public_key: ElementModP) -> Optional[Ballot]:
+    elgamal_public_key: ElementModP,
+    should_verify_proofs = True) -> Optional[Ballot]:
+    """
+    Encrypt a specific `Ballot` in the context of a specific `Election`.
+
+    This method accepts a ballot representation that only includes `True` selections.
+    It will fill missing selections for a contest with `False` values, and generate `placeholder`
+    selections to represent the number of seats available for a given contest.  By adding `placeholder`
+    votes
+
+    This method also allows for ballots to exclude passing contests for which the voter made no selections.
+    It will fill missing contests with `False` selections and generate `placeholder` selections that are marked `True`
+
+    :param ballot: the ballot in the valid input form
+    :param election_metadata: the `Election` which defines this ballot's structure
+    :param elgamal_public_key: the public key (k) used to encrypt the ballot
+    :param seed: an `ElementModQ` used as a header to seed the `Nonce` generated for this contest.
+                 this value can be (or derived from) the Ballot nonce, but no relationship is required
+    :param should_verify_proofs: specify if the proofs should be verified prior to returning (default True)
+    """
 
     # TODO: Verify Input
+
+    election_metadata.type
 
     election_hash = election_metadata.crypto_extended_hash(elgamal_public_key)
     random_master_nonce = randbelow(Q)
@@ -245,6 +329,7 @@ def encrypt_ballot(
                 )
             encrypted_contests.append(encrypted_contest)
 
+    # Create the return object
     encrypted_ballot = Ballot(
             ballot.object_id, ballot.ballot_style, encrypted_contests)
 
@@ -252,12 +337,16 @@ def encrypt_ballot(
 
     # TODO: verify the ballot is now well-formed & valid
 
-    # Generate the Hash
+    # Generate the Hash of the encryption
     encrypted_ballot.crypto_hash_with(election_hash)
 
     # TODO: Generate Tracking code
     encrypted_ballot.tracking_id = "abc123"
+
+    if not should_verify_proofs:
+        return encrypted_ballot
     
+    # Verify the proofs
     if encrypted_ballot.is_valid_encryption(election_hash, elgamal_public_key): 
         return encrypted_ballot
     else: 

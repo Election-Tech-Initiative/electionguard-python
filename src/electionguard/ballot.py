@@ -13,26 +13,60 @@ from .logs import log_warning
 
 @dataclass
 class BallotSelection(Selection, IsValid, IsValidEncryption, CryptoHashCheckable):
+    """
+    A BallotSelection represents an individual selection on a ballt.
+
+    This class accepts a `plaintext` string field which has no constraints 
+    in the ElectionGuard Data Specitification, but is constrained logically 
+    in the application to resolve to `True` or `False`.  This implies the Data
+    Specification supports passing cleartext values for writeins, but these values
+    are discarded by the current implementation when encrypting.
+
+    When a selection is encrypted, the state should be mutated such that the
+    `plaintext` value is destroyed and the `message`, `crypto_hash`, `nonce`, and
+    `proof` fields are populated.
+
+    A consumer of this object has the option to discard the `nonce` or discard the `proof`,
+    or keep both values.  By discarding the `nonce`, the encrypted representation and proofs
+    cannot be regenerated.  By keeping the `nonce`, an external system can regenerate the proofs
+    on demand.  This is useful for storage or memory constrained systems. 
+    """
+
+    # determines if this is a placeholder selection
     is_placeholder_selection: Optional[bool] = field(default=None)
+
+    # the plaintext representation of the selection (usually `True` or `False`)
     plaintext: Optional[str] = field(default=None)
+
+    # The encrypted representation of the plaintext field
     message: Optional[ElGamalCiphertext] = field(default=None)
-    # The SelectionDescription hash not convinced we need to cache this given it can be regenerated
+
+    # The SelectionDescription hash 
+    # TODO: determine if caching this value is necessary given it can be regenerated
     selection_hash: Optional[ElementModQ] = field(default=None)
-    # 
+
+    # The hash of the encrypted values
     crypto_hash: Optional[ElementModQ] = field(default=None)
+
+    # The nonce used to generate the encryption
+    # this value is sensitive & should be treated as a secret
     nonce: Optional[ElementModQ] = field(default=None)
+
+    # the proof that demonstrates the selection is an encryption of 0 or 1,
+    # and was encrypted using the `nonce`
     proof: Optional[DisjunctiveChaumPedersenProof] = field(default=None)
 
     def is_valid(self) -> bool:
         """
-        Given a BallotSelection returns true if the data conforms to `is_plaintext_state` or `is_encrypted_state`
+        Given a BallotSelection returns true if the data conforms to 
+        `is_plaintext_state` or `is_encrypted_state`
         """
 
         return self.is_plaintext_state() or self.is_encrypted_state()
 
     def is_plaintext_state(self) -> bool:
         """
-        Given a BallotSelection returns true if the state is plaintext
+        Given a BallotSelection returns true if the state is encrypted
         """
         return self.plaintext is not None \
             and self.message is None \
@@ -109,38 +143,70 @@ class BallotSelection(Selection, IsValid, IsValidEncryption, CryptoHashCheckable
 
 @dataclass
 class BallotContest(Contest, IsValid, CryptoHashCheckable):
+    """
+    A BallotContest represents the selections made by a voter for a specific ContestDescription
+
+    This class is stateful with respect to it's child values (BallotSelections) and can be in
+    `plaintext` or `encrypted` state.
+
+    BallotContest can also be a partial or a complete representation of a contest dataset.  Specifically,
+    a partial representation must include at a minimum the "affirmative" selections of a contest.
+    A complete representation of a ballot must include both affirmative and negative selections of
+    the contest, AND the placeholder selections necessary to satisfy the ConstantChaumPedersen proof.
+
+    Typically partial contests are passed into Electionguard, while complete contests are passed
+    from ElectionGuard.
+    """
+
+    # collection of ballot selections
     ballot_selections: List[BallotSelection] = field(default_factory=lambda: [])
+
     # Hash from contestDescription
     contest_hash: Optional[ElementModQ] = field(default=None)
+
+    # Hash of the encrypted values
     crypto_hash: Optional[ElementModQ] = field(default=None)
+
+    # the nonce used to generate the encryption
+    # this value is sensitive & should be treated as a secret
     nonce: Optional[ElementModQ] = field(default=None)
+
+    # the proof demonstrates the sum of the selections does not exceed the maximum
+    # available selections for the contest, and that the proof was generated with the nonce
     proof: Optional[ConstantChaumPedersenProof] = field(default=None)
 
     def is_valid(self) -> bool:
-
+        """
+        Given a BallotContest returns true if the data conforms to 
+        `is_plaintext_state` or `is_encrypted_state`
+        """
         selections_valid: List[bool] = list()
         for selection in self.ballot_selections:
             selections_valid.append(selection.is_valid())
 
         # TODO: verify hash if not None
         # TODO: verify proof if not None
-        return all(selections_valid)
+        return self.is_plaintext_state() or self.is_encrypted_state()
 
     def is_plaintext_state(self) -> bool:
-
-        selections_plaintext: List[bool] = list()
+        """
+        Given a BallotContest returns true if the state is plaintext
+        """
+        children_valid: List[bool] = list()
         for selection in self.ballot_selections:
-            selections_plaintext.append(selection.is_plaintext_state())
+            children_valid.append(selection.is_plaintext_state())
 
-        return all(selections_plaintext) and self.crypto_hash is None and self.proof is None
+        return all(children_valid) and self.crypto_hash is None and self.proof is None
 
     def is_encrypted_state(self) -> bool:
-
-        selections_encrypted: List[bool] = list()
+        """
+        Given a BallotContest returns true if the state is encrypted
+        """
+        children_valid: List[bool] = list()
         for selection in self.ballot_selections:
-            selections_encrypted.append(selection.is_encrypted_state())
+            children_valid.append(selection.is_encrypted_state())
         
-        return all(selections_encrypted) and self.crypto_hash is not None and self.proof is not None
+        return all(children_valid) and self.crypto_hash is not None and self.proof is not None
 
     def crypto_hash_with(self, seed_hash: ElementModQ) -> ElementModQ:
         """
@@ -173,7 +239,7 @@ class BallotContest(Contest, IsValid, CryptoHashCheckable):
         with the `ballot_selections` populated with valid encrypted ballot selections,
         the ElementModQ `contest_hash`, the ElementModQ `crypto_hash`, and the ConstantChaumPedersenProof all populated. 
         Specifically, the seed hash in this context is the hash of the ContestDescription, 
-        or whatever `ElementModQ` was used to populate the `selection_hash` field.
+        or whatever `ElementModQ` was used to populate the `contest_hash` field.
         """
         if self.is_plaintext_state():
             log_warning(
@@ -202,31 +268,64 @@ class BallotContest(Contest, IsValid, CryptoHashCheckable):
 @dataclass
 class Ballot(Serializable, IsValid, CryptoHashCheckable):
     """
+    A Ballot represents a voters selections for a given ballot and ballot style
+
+    This class is stateful with respect to it's child values (BallotContest's) and can be in
+    `plaintext` or `encrypted` state.
+
+    When a ballot is in it's complete, encrypted state, the `nonce` is the master nonce
+    from which all other nonces can be derived to encrypt the ballot.  Allong with the `nonce`
+    fields on `Ballotcontest` and `BallotSelection`, this value is sensitive
+    
     """
+
+    # A unique Ballot ID that is relevant to the external system
     object_id: str
+
+    # The `object_id` of the `BallotStyl` in the `Election` Manifest
     ballot_style: str
+
+    # The list of contests for this ballot
     contests: List[BallotContest]
+
+    # The hash of the election metadata
     ballot_hash: Optional[ElementModQ] = field(default=None)
+
+    # the hash of the encrypted ballot representation
     crypto_hash: Optional[ElementModQ] = field(default=None)
+
+    # the unique ballot tracking id for this ballot
     tracking_id: Optional[str] = field(default=None)
 
+    # the nonce used to encrypt this ballot
+    # this value is sensitive & should be treated as a secret
     nonce: Optional[ElementModQ] = field(default=None)
+
+    def is_plaintext_state(self) -> bool:
+
+        children_valid: List[bool] = list()
+        for contest in self.contests:
+            children_valid.append(contest.is_plaintext_state())
+
+        return self.tracking_id is None \
+            and self.nonce is None \
+            and all(children_valid)
+
+    def is_encrypted_state(self) -> bool:
+        children_valid: List[bool] = list()
+        for contest in self.contests:
+            children_valid.append(contest.is_encrypted_state())
+
+        return self.tracking_id is not None \
+            and self.crypto_hash is not None \
+            and all(children_valid)
 
     def is_valid(self) -> bool:
         """
         """
-        contests_valid: List[bool] = list()
-        for contest in self.contests:
-            contests_valid.append(contest.is_valid())
-
-        is_valid_in_state = self.tracking_id is None \
-            and self.crypto_hash is None
-
-        is_valid_out_state = self.tracking_id is not None \
-            and self.crypto_hash is not None
 
         # TODO: verify hash if not None
-        return (is_valid_in_state or is_valid_out_state) and all(contests_valid)
+        return self.is_plaintext_state() or self.is_encrypted_state()
 
     def crypto_hash_with(self, seed_hash: ElementModQ) -> ElementModQ:
         """
@@ -252,8 +351,14 @@ class Ballot(Serializable, IsValid, CryptoHashCheckable):
         return self.crypto_hash
         
     def is_valid_encryption(self, seed_hash: ElementModQ, elgamal_public_key: ElementModP) -> bool:
-
         """
+        Given an encrypted Ballot, validates the encryption state against a specific seed hash and public key
+        by verifying the states of this ballot's children (BallotContest's and BallotSelection's).
+        Calling this function expects that the object is in a well-formed encrypted state
+        with the `contests` populated with valid encrypted ballot selections,
+        and the ElementModQ `ballot_hash` also populated.
+        Specifically, the seed hash in this context is the hash of the Election Manifest, 
+        or whatever `ElementModQ` was used to populate the `ballot_hash` field.
         """
 
         if seed_hash != self.ballot_hash:
