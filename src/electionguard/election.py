@@ -22,6 +22,7 @@ class ElectionType(Enum):
     enumerations for the `ElectionReport` entity
     see: https://developers.google.com/elections-data/reference/election-type
     """
+    unknown = 0
     general = 1
     partisan_primary_closed = 2
     partisan_primary_open = 3
@@ -29,7 +30,6 @@ class ElectionType(Enum):
     runoff = 5
     special = 6
     other = 7
-    unknown = 8
 
 @unique
 class ReportingUnitType(Enum):
@@ -37,6 +37,7 @@ class ReportingUnitType(Enum):
     Enumeration for the type of geopolitical unit
     see: https://developers.google.com/elections-data/reference/reporting-unit-type
     """
+    unknown = 0
     ballot_batch = 1
     ballot_style_area = 2
     borough = 3
@@ -65,7 +66,6 @@ class ReportingUnitType(Enum):
     ward = 26
     water = 27
     other = 28
-    unknown = 29
 
 @unique
 class VoteVariationType(Enum):
@@ -73,6 +73,7 @@ class VoteVariationType(Enum):
     Enumeration for contest algorithm or rules in the `Contest` entity
     see: https://developers.google.com/elections-data/reference/vote-variation
     """
+    unknown = 0
     one_of_m = 1
     approval = 2
     borda = 3
@@ -84,8 +85,7 @@ class VoteVariationType(Enum):
     range = 9
     rcv = 10
     super_majority = 11
-    other = 12
-    unknown = 13
+    other = 12 
 
 @dataclass
 class AnnotatedString(Serializable, CryptoHashable):
