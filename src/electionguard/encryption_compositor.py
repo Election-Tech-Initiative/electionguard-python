@@ -78,6 +78,9 @@ def plaintext_representation(from_string: str) -> int:
     as_int = int(as_bool)
     return as_int
 
+
+
+
 def encrypt_selection(
     selection: BallotSelection, 
     selection_description: SelectionDescription, 
@@ -90,7 +93,7 @@ def encrypt_selection(
 
     :param selection: the selection in the valid input form
     :param selection_description: the `SelectionDescription` from the `ContestDescription` which defines this selection's structure
-    :param elgamal_public_key: the public key (k) used to encrypt the ballot
+    :param elgamal_public_key: the public key (K) used to encrypt the ballot
     :param seed: an `ElementModQ` used as a header to seed the `Nonce` generated for this selection.
                  this value can be (or derived from) the BallotContest nonce, but no relationship is required
     :param is_placeholder: specify if this selection is a placeholder selection (default False)

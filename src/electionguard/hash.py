@@ -12,11 +12,11 @@ from .group import (
 
 @runtime_checkable
 class CryptoHashable(Protocol):
-    """
-    """
-
     @abstractmethod
     def crypto_hash(self) -> ElementModQ:
+        """
+        Generates a hash given the fields on the implementing instance.
+        """
         ...
 
 @runtime_checkable
@@ -24,7 +24,7 @@ class CryptoHashCheckable(Protocol):
     @abstractmethod
     def crypto_hash_with(self, seed_hash: Optional[ElementModQ] = None) -> ElementModQ:
         """
-        Generates a hash with a given seed that can be cehckable later against the seed and class metadata
+        Generates a hash with a given seed that can be checked later against the seed and class metadata.
         """
         ...
 
@@ -68,6 +68,8 @@ def hash_elems(*a: Union[ElementModPOrQ, str, int]) -> ElementModQ:
 
 def hashable_element(item: T) -> T:
     """
+    if the item is `CryptoHashable` then unwrap the hash using the `crypto_hash` function
+    :return: the unwrapped element
     """
     if isinstance(item, CryptoHashable):
         return item.crypto_hash()
@@ -76,6 +78,10 @@ def hashable_element(item: T) -> T:
 
 def flatten(*args: Union[T, Optional[T], Optional[List[T]]]) -> Optional[List[T]]:
     """
+    Flatten some arguments of mixed types into a single optional collection.  
+    Supports optional parameters.
+    :param *args: args conforming to T
+    :return: a flat optional list of all of the elements passed in.
     """
     arguments: List[T] = []
     for item in args:
