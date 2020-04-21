@@ -6,7 +6,8 @@ from electionguard.encryption_compositor import (
     encrypt_ballot,
     encrypt_contest,
     encrypt_selection,
-    selection_from
+    selection_from,
+    EncryptionCompositor
 )
 
 from electionguard.ballot import (
@@ -113,6 +114,28 @@ class TestEncryptionCompositor(unittest.TestCase):
 
         # Act
         result = encrypt_ballot(subject, metadata, encryption_context)
+
+        # Assert
+        self.assertIsNotNone(result)
+        self.assertTrue(result.is_valid_encryption(encryption_context.crypto_extended_base_hash, keypair.public_key))
+
+    def test_encrypt_ballot_with_stateful_composer_succeeds(self):
+
+        # Arrange
+        keypair = elgamal_keypair_from_secret(int_to_q(2))
+        generator = ElectionFactory()
+        metadata = generator.get_fake_election()
+        encryption_context = CyphertextElection(1, 1, metadata.crypto_hash())
+        
+        encryption_context.set_crypto_context(keypair.public_key)
+
+        data = generator.get_fake_ballot(metadata)
+        self.assertTrue(data.is_valid(metadata.ballot_styles[0].object_id))
+
+        subject = EncryptionCompositor(metadata, encryption_context)
+
+        # Act
+        result = subject.encrypt(data)
 
         # Assert
         self.assertIsNotNone(result)

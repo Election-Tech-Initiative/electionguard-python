@@ -1,9 +1,8 @@
 from typing import Optional, List
-from distutils import util
 
 from .chaum_pedersen import make_constant_chaum_pedersen, make_disjunctive_chaum_pedersen
-from .elgamal import elgamal_add, elgamal_encrypt
-from .group import add_q, Q, ElementModP, ElementModQ, flatmap_optional
+from .elgamal import elgamal_encrypt
+from .group import Q, ElementModP, ElementModQ, flatmap_optional
 from .hash import hash_elems
 from .logs import log_warning
 from .nonces import Nonces
@@ -20,8 +19,25 @@ from .election import CyphertextElection, Election, ContestDescription, Selectio
 from secrets import randbelow
 
 class EncryptionCompositor(object):
+    """
+    EncryptionCompositor is an object for caching election and encryption state.
 
-    pass
+    It composes Elections and Ballots.
+    """
+
+    _metadata: Election
+    _encryption: CyphertextElection
+
+    def __init__(self, election_metadata: Election, encryption_context: CyphertextElection):
+        self._metadata = election_metadata
+        self._encryption = encryption_context
+
+    def encrypt(self, ballot: PlaintextBallot) -> Optional[CyphertextBallot]:
+        """
+        Encrypt the specified ballot using the cached election context.
+        """
+        return encrypt_ballot(ballot, self._metadata, self._encryption)
+    
 
 def selection_from(description: SelectionDescription, is_placeholder: bool = False, is_affirmative: bool = False) -> PlaintextBallotSelection:
     """

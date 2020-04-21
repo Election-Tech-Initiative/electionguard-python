@@ -4,7 +4,7 @@ from typing import Optional, List
 
 from .serializable import Serializable
 from .group import add_q, ElementModP, ElementModQ, ZERO_MOD_Q
-from .hash import CryptoHashCheckable, hashable_element, flatten, hash_elems
+from .hash import CryptoHashCheckable, hash_elems
 from .is_valid import IsValid, IsValidEncryption
 from .chaum_pedersen import ConstantChaumPedersenProof, DisjunctiveChaumPedersenProof
 from .elgamal import ElGamalCiphertext, elgamal_add
@@ -47,7 +47,7 @@ class PlaintextBallotSelection(Selection, IsValid):
         and that the plaintext string can resolve to a valid representation
         """
 
-        if self.object_id is not expected_object_id:
+        if self.object_id != expected_object_id:
             log_warning(f"invalid object_id: expected({expected_object_id}) actual({self.object_id})")
             return False
 
@@ -194,7 +194,7 @@ class PlaintextBallotContest(Contest, IsValid):
         Note: because this class supports partial representations, undervotes are considered a valid state.
         """
 
-        if self.object_id is not expected_object_id:
+        if self.object_id != expected_object_id:
             log_warning(f"invalid object_id: expected({expected_object_id}) actual({self.object_id})")
             return False
 
