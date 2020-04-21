@@ -444,7 +444,7 @@ class Election(Serializable, IsValid, CryptoHashable):
         """
         Get a ballot style for a specified ballot_style_id
         """
-        style = list(filter(lambda i: i.object_id is ballot_style_id, self.ballot_styles))[0]
+        style = list(filter(lambda i: i.object_id == ballot_style_id, self.ballot_styles))[0]
         return style
         
     def is_valid(self) -> bool:

@@ -1,6 +1,6 @@
 {
     "objectId": "some-external-id-string-123",
-    "ballotStyle": "jefferson-county",
+    "ballotStyle": "jefferson-county-ballot-style",
     "contests": [
         {
             "objectId": "justice-supreme-court",

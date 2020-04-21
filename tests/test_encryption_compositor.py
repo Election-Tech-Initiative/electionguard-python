@@ -46,6 +46,7 @@ from electionguard.group import (
     mult_p,
 )
 
+from electionguardtest.ballot_factory import BallotFactory
 from electionguardtest.election_factory import ElectionFactory
 
 from secrets import randbelow
@@ -120,16 +121,35 @@ class TestEncryptionCompositor(unittest.TestCase):
         self.assertTrue(result.is_valid_encryption(encryption_context.crypto_extended_base_hash, keypair.public_key))
 
     def test_encrypt_ballot_with_stateful_composer_succeeds(self):
-
         # Arrange
         keypair = elgamal_keypair_from_secret(int_to_q(2))
         generator = ElectionFactory()
         metadata = generator.get_fake_election()
         encryption_context = CyphertextElection(1, 1, metadata.crypto_hash())
-        
         encryption_context.set_crypto_context(keypair.public_key)
 
         data = generator.get_fake_ballot(metadata)
+        self.assertTrue(data.is_valid(metadata.ballot_styles[0].object_id))
+
+        subject = EncryptionCompositor(metadata, encryption_context)
+
+        # Act
+        result = subject.encrypt(data)
+
+        # Assert
+        self.assertIsNotNone(result)
+        self.assertTrue(result.is_valid_encryption(encryption_context.crypto_extended_base_hash, keypair.public_key))
+
+    def test_encrypt_simple_ballot_from_files_succeds(self):
+        # Arrange
+        keypair = elgamal_keypair_from_secret(int_to_q(2))
+        election_generator = ElectionFactory()
+        ballot_generator = BallotFactory()
+        metadata = election_generator.get_simple_election_from_file()
+        encryption_context = CyphertextElection(1, 1, metadata.crypto_hash())
+        encryption_context.set_crypto_context(keypair.public_key)
+
+        data = ballot_generator.get_simple_ballot_from_file()
         self.assertTrue(data.is_valid(metadata.ballot_styles[0].object_id))
 
         subject = EncryptionCompositor(metadata, encryption_context)

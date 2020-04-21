@@ -28,7 +28,7 @@ class TestBallot(unittest.TestCase):
         # Assert
         self.assertIsNotNone(subject.object_id)
         self.assertEqual(subject.object_id, 'some-external-id-string-123')
-        self.assertTrue(subject.is_valid("jefferson-county"))
+        self.assertTrue(subject.is_valid("jefferson-county-ballot-style"))
 
     @settings(
         deadline=timedelta(milliseconds=2000),
