@@ -1,4 +1,5 @@
 from datetime import datetime
+import os
 from random import Random
 from secrets import randbelow
 from typing import TypeVar, Callable, Tuple
@@ -61,6 +62,21 @@ from electionguard.group import (
 _T = TypeVar("_T")
 _DrawType = Callable[[SearchStrategy[_T]], _T]
 
+here = os.path.abspath(os.path.dirname(__file__))
+
+class BallotFactory(object):
+    simple_ballot_filename = 'ballot_in_simple.json'
+
+    def get_simple_ballot_from_file(self) -> PlaintextBallot:
+        return self._get_ballot_from_file(self.simple_ballot_filename)
+
+    def _get_ballot_from_file(self, filename: str) -> PlaintextBallot:
+        with open(os.path.join(here, 'data', filename), 'r') as subject:
+            data = subject.read()
+            target = PlaintextBallot.from_json(data)
+
+        return target
+
 @composite
 def get_selection_well_formed(
     draw: _DrawType, uuids=uuids(), bools=booleans(), text=text()) -> Tuple[str, PlaintextBallotSelection]:
@@ -82,3 +98,10 @@ def get_selection_poorly_formed(
         extra_data = draw(text)
     object_id = f"selection-{draw(uuids)}"
     return (object_id, PlaintextBallotSelection(object_id, f"{draw(text)}", f"{draw(bools)}", extra_data))
+
+# @composite
+# def get_contest_well_formed(
+#     draw: _DrawType, uuids=uuids(), bools=booleans(), ints=integers(1,10), text=text(), selections=get_selection_well_formed()
+#     ) -> Tuple[str, PlaintextBallotContest]:
+#     pass
+

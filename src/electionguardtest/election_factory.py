@@ -1,4 +1,5 @@
 from datetime import datetime
+import os
 from random import Random
 from secrets import randbelow
 from typing import TypeVar, Callable, Tuple
@@ -20,6 +21,7 @@ from electionguard.ballot import (
 
 from electionguard.election import (
     BallotStyle,
+    CyphertextElection,
     Election,
     ElectionType,
     GeopoliticalUnit,
@@ -58,7 +60,14 @@ from electionguard.group import (
 _T = TypeVar("_T")
 _DrawType = Callable[[SearchStrategy[_T]], _T]
 
+here = os.path.abspath(os.path.dirname(__file__))
+
 class ElectionFactory(object):
+
+    simple_election_manifest_file_name = 'election_manifest_simple.json'
+
+    def get_simple_election_from_file(self) -> Election:
+        return self._get_election_from_file(self.simple_election_manifest_file_name)
 
     def get_fake_election(self) -> Election:
         """
@@ -116,6 +125,9 @@ class ElectionFactory(object):
 
         return fake_election
 
+    def get_fake_cyphertext_election(self) -> CyphertextElection:
+        pass
+
     def get_fake_ballot(self, election: Election = None) -> PlaintextBallot:
         """
         Get a single Fake Ballot object that is manually constructed with default vaules
@@ -133,6 +145,11 @@ class ElectionFactory(object):
 
         return fake_ballot
 
-    #def generate_candidate(draw: _DrawType, strs=emails(), bools=booleans()) -> Candidate:
+    def _get_election_from_file(self, filename: str) -> Election:
+        with open(os.path.join(here, 'data', filename), 'r') as subject:
+            data = subject.read()
+            target = Election.from_json(data)
+
+        return target
 
     

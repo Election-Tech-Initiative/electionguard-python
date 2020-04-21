@@ -15,28 +15,19 @@ from electionguard.ballot import (
 
 import electionguardtest.ballot_factory as GENERATOR
 
-here = os.path.abspath(os.path.dirname(__file__))
 
 class TestBallot(unittest.TestCase):
 
-    ballot_in_file_name = 'ballot_in.json'
-    
-    def test_election_can_deserialize(self):
-
-        with open(os.path.join(here, 'data', self.ballot_in_file_name), 'r') as subject:
-            data = subject.read()
-            target = PlaintextBallot.from_json(data)
-        
-        # print out the object if stdout is connected
-        print(target)
-
-        self.assertIsNotNone(target.object_id)
-        self.assertEqual(target.object_id, 'some-external-id-string-123')
-
-
     def test_ballot_is_valid(self):
-        subject = self.__get_ballot_from_file(self.ballot_in_file_name)
+        # Arrange
+        factory = GENERATOR.BallotFactory()
 
+        # Act
+        subject = factory.get_simple_ballot_from_file()
+        
+        # Assert
+        self.assertIsNotNone(subject.object_id)
+        self.assertEqual(subject.object_id, 'some-external-id-string-123')
         self.assertTrue(subject.is_valid("jefferson-county"))
 
     @settings(
@@ -79,14 +70,6 @@ class TestBallot(unittest.TestCase):
         # Assert
         self.assertFalse(is_valid)
         self.assertTrue(as_int >= 0 and as_int <= 1)
-
-
-    def __get_ballot_from_file(self, filename: str) -> PlaintextBallot:
-        with open(os.path.join(here, 'data', filename), 'r') as subject:
-            data = subject.read()
-            target = PlaintextBallot.from_json(data)
-
-        return target
 
 if __name__ == '__main__':
     unittest.main()
