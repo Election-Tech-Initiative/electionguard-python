@@ -11,7 +11,8 @@
                 },
                 {
                     "objectId": "write-in-selection",
-                    "plaintext": "Robert Paine"
+                    "plaintext": "True",
+                    "extraData": "some writein value"
                 }
             ]
         }

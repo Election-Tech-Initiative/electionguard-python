@@ -11,7 +11,7 @@ class Serializable(Generic[T]):
         """
         :return: the json representation of this object
         """
-        return dumps(self.__dict__, strip_privates=True)
+        return dumps(self, strip_privates=True, strip_nulls=True, key_transformer=KEY_TRANSFORMER_SNAKECASE)
 
     @classmethod
     def from_json(cls, data: str) -> T:

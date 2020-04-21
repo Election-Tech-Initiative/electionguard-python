@@ -288,7 +288,7 @@ class SelectionDescription(Selection, CryptoHashable):
         """
         return hash_elems(
             self.object_id, 
-            str(self.sequence_order), 
+            self.sequence_order, 
             self.candidate_id
         )
 
@@ -323,17 +323,16 @@ class ContestDescription(Contest, CryptoHashable):
     # Number of candidates that are elected in the contest ("n" of n-of-m).
     # Note: a referendum is considered a specific case of 1-of-m in ElectionGuard
     number_elected: int
+
+    # Maximum number of votes/write-ins per voter in this contest.
+    votes_allowed: int
+
     ballot_selections: List[SelectionDescription] = field(default_factory=lambda: [])
     ballot_title: Optional[InternationalizedText] = field(default=None)
     ballot_subtitle: Optional[InternationalizedText] = field(default=None)
 
     # TODO: not optional
     name: Optional[str] = field(default=None)
-    
-    # Maximum number of votes/write-ins per voter in this contest.
-    # If no value is present, this value is assumed to equal `number_elected`
-    # TODO: not optional
-    votes_allowed: Optional[int] = field(default=None)
 
     def crypto_hash(self) -> ElementModQ:
         """
@@ -344,14 +343,14 @@ class ContestDescription(Contest, CryptoHashable):
         """
         return hash_elems(*flatten(
             self.object_id, 
-            str(self.sequence_order),
+            self.sequence_order,
             self.electoral_district_id, 
             str(self.vote_variation), 
             self.ballot_title,
             self.ballot_subtitle,
             self.name,
-            str(self.number_elected),
-            str(self.votes_allowed),
+            self.number_elected,
+            self.votes_allowed,
             self.ballot_selections
             )
         )
@@ -384,11 +383,6 @@ class Election(Serializable, IsValid, CryptoHashable):
     Use this entity for defining the status of the election and associated 
     information such as candidates, contests, and vote counts.
     See: https://developers.google.com/elections-data/reference/election
-    Note: The ElectionGuard Data Spec deviates from the NIST model in that
-    this object includes optional fields that are populated in the course of encrypting an election
-    Specifically, `crypto_base_hash`, `crypto_extended_base_hash` and `elgamal_public_key`
-    are populated with election-specific information necessary for encrypting the election.
-    Refer to the [Electionguard Specification](https://github.com/microsoft/electionguard) for more information
     """
     election_scope_id: str
     type: ElectionType
@@ -402,28 +396,16 @@ class Election(Serializable, IsValid, CryptoHashable):
     name: Optional[InternationalizedText] = field(default=None)
     contact_information: Optional[ContactInformation] = field(default=None)
 
-    # ElectionGuard Fields
-    number_trustees: int = field(default=1)
-    threshold_trustees: int = field(default=1)
-
-    crypto_hash: Optional[ElementModQ] = field(default=None)
-
-    # the `base hash code (Q)` in the [ElectionGuard Spec](https://github.com/microsoft/electionguard/wiki)
-    crypto_base_hash: Optional[ElementModQ] = field(default=None)
-
-    # the `extended base hash code (Q')` in the [ElectionGuard Spec](https://github.com/microsoft/electionguard/wiki)
-    crypto_extended_base_hash: Optional[ElementModQ] = field(default=None)
-
-    # the `joint public key (K)` in the [ElectionGuard Spec](https://github.com/microsoft/electionguard/wiki)
-    elgamal_public_key: Optional[ElementModP] = field(default=None)
+    # The cached hash of the election metadata
+    _description_hash: Optional[ElementModQ] = field(default=None)
 
     def crypto_hash(self) -> ElementModQ:
         """
         Returns a hash of the metadata components of the election
         """
 
-        if self.crypto_hash is not None:
-            return self.crypto_hash
+        if self._description_hash is not None:
+            return self._description_hash
 
         gp_unit_hashes = [
             gpunit.crypto_hash() for gpunit in self.geopolitical_units
@@ -441,7 +423,7 @@ class Election(Serializable, IsValid, CryptoHashable):
             ballot_style.crypto_hash() for ballot_style in self.ballot_styles
         ]
 
-        self.crypto_hash = hash_elems(*flatten(
+        self._description_hash = hash_elems(*flatten(
             self.election_scope_id,
             str(self.type),
             self.start_date.isoformat(),
@@ -456,48 +438,18 @@ class Election(Serializable, IsValid, CryptoHashable):
             )
         )
 
-        return self.crypto_hash
+        return self._description_hash
 
-    def crypto_base_hash(self) -> ElementModQ:
+    def get_ballot_style(self, ballot_style_id: str) -> BallotStyle:
         """
-        The metadata of this object are hashed together with the 
-        - prime modulus (𝑝), 
-        - subgroup order (𝑞), 
-        - generator (𝑔), 
-        - number of trustees (𝑛), 
-        - decryption threshold value (𝑘), 
-        to form a base hash code (𝑄) which will be incorporated 
-        into every subsequent hash computation in the election.
+        Get a ballot style for a specified ballot_style_id
         """
-
-        if self.crypto_base_hash is not None:
-            return self.crypto_base_hash
-
-        self.crypto_base_hash = hash_elems(
-            P, Q, G, self.number_trustees, self.threshold_trustees, self.crypto_hash()
-        )
-
-        return self.crypto_base_hash
-        
-    def crypto_extended_hash(self, elgamal_public_key: ElementModP) -> ElementModQ:
-        """
-        Once the baseline parameters have been produced and confirmed, 
-        all of the public trustee commitments 𝐾𝑖,𝑗 are hashed together 
-        with the base hash 𝑄 to form an extended base hash 𝑄' that will 
-        form the basis of subsequent hash computations.
-        """
-
-        if self.crypto_extended_base_hash is not None:
-            return self.crypto_extended_base_hash
-
-        if self.elgamal_public_key is None:
-            self.elgamal_public_key = elgamal_public_key
-
-        self.crypto_extended_base_hash = hash_elems(self.crypto_base_hash(self), self.elgamal_public_key)
-        return self.crypto_extended_base_hash
+        style = list(filter(lambda i: i.object_id is ballot_style_id, self.ballot_styles))[0]
+        return style
         
     def is_valid(self) -> bool:
         """
+        Verifies the dataset to ensure it is well-formed
         """
         gp_unit_ids: Set[str] = set()
         ballot_style_ids: Set[str] = set()
@@ -638,3 +590,67 @@ class Election(Serializable, IsValid, CryptoHashable):
                     "contest_selections_have_valid_candidate_ids": contest_selections_have_valid_candidate_ids
                     }))
         return success
+
+@dataclass
+class CyphertextElection(Serializable): #TODO: IsValid, CryptoHashcheckable
+    """
+    CyphertextElection is the ElectionGuard representation of a specific election
+    Note: The ElectionGuard Data Spec deviates from the NIST model in that
+    this object includes fields that are populated in the course of encrypting an election
+    Specifically, `crypto_base_hash`, `crypto_extended_base_hash` and `elgamal_public_key`
+    are populated with election-specific information necessary for encrypting the election.
+    Refer to the [Electionguard Specification](https://github.com/microsoft/electionguard) for more information
+    """
+
+    number_trustees: int
+    threshold_trustees: int
+
+    # The hash of the election metadata
+    description_hash: ElementModQ
+
+    # the `base hash code (Q)` in the [ElectionGuard Spec](https://github.com/microsoft/electionguard/wiki)
+    crypto_base_hash: ElementModQ = field(init=False)
+
+    # the `extended base hash code (Q')` in the [ElectionGuard Spec](https://github.com/microsoft/electionguard/wiki)
+    crypto_extended_base_hash: Optional[ElementModQ] = field(default=None)
+
+    # the `joint public key (K)` in the [ElectionGuard Spec](https://github.com/microsoft/electionguard/wiki)
+    elgamal_public_key: Optional[ElementModP] = field(default=None)
+
+    def __post_init__(self):
+        self.crypto_base_hash = self._crypto_base_hash(self.description_hash)
+
+    def _crypto_base_hash(self, seed_hash: ElementModQ) -> ElementModQ:
+        """
+        The metadata of this object are hashed together with the 
+        - prime modulus (𝑝), 
+        - subgroup order (𝑞), 
+        - generator (𝑔), 
+        - number of trustees (𝑛), 
+        - decryption threshold value (𝑘), 
+        to form a base hash code (𝑄) which will be incorporated 
+        into every subsequent hash computation in the election.
+        """
+
+        return hash_elems(
+            P, Q, G, self.number_trustees, self.threshold_trustees, seed_hash
+        )
+
+    def set_crypto_context(self, elgamal_public_key: ElementModP) -> ElementModQ:
+        """
+        Once the baseline parameters have been produced and confirmed, 
+        all of the public trustee commitments 𝐾𝑖,𝑗 are hashed together 
+        with the base hash 𝑄 to form an extended base hash 𝑄' that will 
+        form the basis of subsequent hash computations.
+        """
+
+        if self.elgamal_public_key is None:
+            self.elgamal_public_key = elgamal_public_key
+
+        if self.crypto_extended_base_hash is not None and elgamal_public_key == self.elgamal_public_key:
+            return self.crypto_extended_base_hash
+
+        self.elgamal_public_key = elgamal_public_key
+
+        self.crypto_extended_base_hash = hash_elems(self.crypto_base_hash, self.elgamal_public_key)
+        return self.crypto_extended_base_hash

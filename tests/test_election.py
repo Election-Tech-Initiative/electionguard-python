@@ -1,7 +1,6 @@
 import unittest
 
 import os
-import jsons
 
 from electionguard.election import Election
 
@@ -14,12 +13,22 @@ class TestElection(unittest.TestCase):
     def test_election_can_deserialize(self):
 
         subject = self.__get_election_from_file(self.election_manifest_file_name)
-        
-        # print out the object if stdout is connected
-        print(subject)
 
         self.assertIsNotNone(subject.election_scope_id)
-        self.assertEquals(subject.election_scope_id, 'jefferson-county-primary')
+        self.assertEqual(subject.election_scope_id, 'jefferson-county-primary')
+
+    def test_election_can_serialize(self):
+
+        subject = self.__get_election_from_file(self.election_manifest_file_name)
+
+        intermediate = subject.to_json()
+
+        print(intermediate)
+
+        result = Election.from_json(intermediate)
+        
+        self.assertIsNotNone(result.election_scope_id)
+        self.assertEqual(result.election_scope_id, 'jefferson-county-primary')
 
     def test_election_is_valid(self):
         subject = self.__get_election_from_file(self.election_manifest_file_name)
@@ -30,7 +39,7 @@ class TestElection(unittest.TestCase):
         subject1 = self.__get_election_from_file(self.election_manifest_file_name)
         subject2 = self.__get_election_from_file(self.election_manifest_file_name)
 
-        self.assertEquals(subject1.crypto_hash(), subject2.crypto_hash())
+        self.assertEqual(subject1.crypto_hash(), subject2.crypto_hash())
 
 
     def __get_election_from_file(self, filename: str) -> Election:

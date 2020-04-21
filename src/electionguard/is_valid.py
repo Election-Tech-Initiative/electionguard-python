@@ -2,7 +2,6 @@ from typing import Protocol, runtime_checkable
 from abc import abstractmethod
 
 from .group import ElementModP, ElementModQ
-from .hash import CryptoHashable
 
 @runtime_checkable
 class IsValid(Protocol):
