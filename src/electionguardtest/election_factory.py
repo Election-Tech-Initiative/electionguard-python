@@ -1,8 +1,9 @@
 from datetime import datetime
+import math
 import os
 from random import Random
 from secrets import randbelow
-from typing import TypeVar, Callable, Tuple
+from typing import TypeVar, Callable, Optional, Tuple
 
 from hypothesis.strategies import (
     composite,
@@ -10,6 +11,8 @@ from hypothesis.strategies import (
     booleans,
     integers,
     lists,
+    text,
+    uuids,
     SearchStrategy,
 )
 
@@ -128,6 +131,7 @@ class ElectionFactory(object):
     def get_fake_cyphertext_election(self) -> CyphertextElection:
         pass
 
+    # TODO: Move to ballot Factory
     def get_fake_ballot(self, election: Election = None) -> PlaintextBallot:
         """
         Get a single Fake Ballot object that is manually constructed with default vaules
@@ -152,4 +156,63 @@ class ElectionFactory(object):
 
         return target
 
-    
+@composite
+def get_selection_description_well_formed(
+    draw: _DrawType, 
+    ints=integers(1,20), 
+    emails=emails(), 
+    candidate_id: Optional[str] = None,
+    sequence_order: Optional[int] = None) -> Tuple[str, SelectionDescription]:
+    if candidate_id is None:
+        candidate_id = draw(emails)
+
+    object_id = f"{candidate_id}-selection"
+
+    if sequence_order is None:
+        sequence_order = draw(ints)
+
+    return (object_id, SelectionDescription(object_id, candidate_id, sequence_order))
+
+@composite
+def get_contest_description_well_formed(
+    draw: _DrawType, 
+    ints=integers(1,20), 
+    text=text(), 
+    emails=emails(), 
+    selections=get_selection_description_well_formed(), 
+    sequence_order: Optional[int] = None,
+    electoral_district_id: Optional[str] = None) -> Tuple[str, ContestDescription]:
+    object_id = f"{draw(emails)}-contest"
+
+    if sequence_order is None:
+        sequence_order = draw(ints)
+
+    if electoral_district_id is None:
+        electoral_district_id = f"{draw(emails)}-gp-unit"
+
+    first_int = draw(ints)
+    second_int = draw(ints)
+
+    # TODO: support more votes than seats for other VoteVariationType options
+    number_elected = min(first_int, second_int)
+    votes_allowed = number_elected
+
+    selection_descriptions: list[SelectionDescription] = list()
+    for i in range(max(first_int, second_int)):
+        selection: Tuple[str, SelectionDescription] = draw(selections)
+        _,selection_description = selection
+        selection_description.sequence_order = i
+        selection_descriptions.append(selection_description)
+
+    return (
+        object_id, 
+        ContestDescription(
+            object_id, 
+            electoral_district_id, 
+            sequence_order, 
+            VoteVariationType.n_of_m, 
+            number_elected, 
+            votes_allowed,
+            selection_descriptions
+        )
+    )

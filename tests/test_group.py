@@ -102,6 +102,11 @@ class TestModularArithmetic(unittest.TestCase):
         self.assertFalse(int_to_p_unchecked(p.to_int() + P).is_in_bounds_no_zero())
         self.assertFalse(int_to_p_unchecked(p.to_int() - P).is_in_bounds_no_zero())
 
+    @given(arb_element_mod_q())
+    def test_large_values_rejected_by_int_to_q(self, q: ElementModQ):
+        oversize = q.to_int() + Q
+        self.assertEqual(None, int_to_q(oversize))
+
 
 class TestOptionalFunctions(unittest.TestCase):
     def test_unwrap(self):

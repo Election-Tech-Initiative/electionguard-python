@@ -1,5 +1,11 @@
 import unittest
-from datetime import datetime
+from copy import deepcopy
+from datetime import timedelta
+from typing import Tuple
+
+from hypothesis import HealthCheck
+from hypothesis import given, settings
+from hypothesis.strategies import integers
 
 from electionguard.encryption_compositor import (
     contest_from,
@@ -36,6 +42,7 @@ from electionguard.elgamal import (
     elgamal_keypair_from_secret,
 )
 from electionguard.group import (
+    ElementModP,
     ElementModQ,
     ONE_MOD_Q,
     int_to_q,
@@ -46,14 +53,20 @@ from electionguard.group import (
     mult_p,
 )
 
-from electionguardtest.ballot_factory import BallotFactory
-from electionguardtest.election_factory import ElectionFactory
+from electionguardtest.elgamal import arb_elgamal_keypair
+from electionguardtest.group import arb_element_mod_q_no_zero
+
+import electionguardtest.ballot_factory as BallotFactory
+import electionguardtest.election_factory as ElectionFactory
 
 from secrets import randbelow
 
+election_factory = ElectionFactory.ElectionFactory()
+ballot_factory = BallotFactory.BallotFactory()
+
 class TestEncryptionCompositor(unittest.TestCase):
 
-    def test_encrypt_selection_succeeds(self):
+    def test_encrypt_simple_selection_succeeds(self):
 
         # Arrange
         keypair = elgamal_keypair_from_secret(int_to_q(2))
@@ -72,8 +85,77 @@ class TestEncryptionCompositor(unittest.TestCase):
         self.assertIsNotNone(result.message)
         self.assertTrue(result.is_valid_encryption(hash_context, keypair.public_key))
 
-    def test_encrypt_contest_referendum_succeeds(self):
+    @settings(
+        deadline=timedelta(milliseconds=2000),
+        suppress_health_check=[HealthCheck.too_slow],
+        max_examples=10,
+    )
+    @given(
+        ElectionFactory.get_selection_description_well_formed(),
+        arb_elgamal_keypair(),
+        arb_element_mod_q_no_zero(),
+    )
+    def test_encrypt_selection_valid_input_succeeds(
+        self,
+        selection_description: Tuple[str, SelectionDescription], 
+        keypair: ElGamalKeyPair,
+        seed: ElementModQ):
 
+        # Arrange
+        _, description = selection_description
+        subject = ballot_factory.get_random_selection_from(description)
+
+        # Act
+        result = encrypt_selection(subject, description, keypair.public_key, seed)
+
+        # Assert
+        self.assertIsNotNone(result)
+        self.assertIsNotNone(result.message)
+        self.assertTrue(result.is_valid_encryption(description.crypto_hash(), keypair.public_key))
+
+    @settings(
+        deadline=timedelta(milliseconds=2000),
+        suppress_health_check=[HealthCheck.too_slow],
+        max_examples=10,
+    )
+    @given(
+        ElectionFactory.get_selection_description_well_formed(),
+        arb_elgamal_keypair(),
+        arb_element_mod_q_no_zero(),
+    )
+    def test_encrypt_selection_valid_input_tampered_encryption_fails(
+        self,
+        selection_description: Tuple[str, SelectionDescription], 
+        keypair: ElGamalKeyPair,
+        seed: ElementModQ):
+
+        # Arrange
+        _, description = selection_description
+        subject = ballot_factory.get_random_selection_from(description)
+
+        # Act
+        result = encrypt_selection(subject, description, keypair.public_key, seed, should_verify_proofs=False)
+        self.assertTrue(result.is_valid_encryption(description.crypto_hash(), keypair.public_key))
+
+        # tamper with the encryption
+        malformed_encryption = deepcopy(result)
+        malformed_message = malformed_encryption.message._replace(
+            alpha=mult_p(result.message.alpha, TWO_MOD_P)
+        )
+        malformed_encryption.message = malformed_message
+
+        # tamper with the proof
+        malformed_proof = deepcopy(result)
+        malformed_disjunctive = malformed_proof.proof._replace(
+            a0=mult_p(result.proof.a0, TWO_MOD_P)
+        )
+        malformed_proof.proof = malformed_disjunctive
+
+        # Assert
+        self.assertFalse(malformed_encryption.is_valid_encryption(description.crypto_hash(), keypair.public_key))
+        self.assertFalse(malformed_proof.is_valid_encryption(description.crypto_hash(), keypair.public_key))
+
+    def test_encrypt_simple_contest_referendum_succeeds(self):
         # Arrange
         keypair = elgamal_keypair_from_secret(int_to_q(2))
         nonce = randbelow(Q)
@@ -100,17 +182,117 @@ class TestEncryptionCompositor(unittest.TestCase):
         self.assertIsNotNone(result)
         self.assertTrue(result.is_valid_encryption(hash_context, keypair.public_key))
 
+    @settings(
+        deadline=timedelta(milliseconds=2000),
+        suppress_health_check=[HealthCheck.too_slow],
+        max_examples=10,
+    )
+    @given(
+        ElectionFactory.get_contest_description_well_formed(),
+        arb_elgamal_keypair(),
+        arb_element_mod_q_no_zero(),
+    )
+    def test_encrypt_contest_valid_input_succeeds(
+        self, 
+        contest_description: ContestDescription,
+        keypair: ElGamalKeyPair,
+        seed: ElementModQ):
+        
+        # Arrange
+        _, description = contest_description
+        subject = ballot_factory.get_random_contest_from(description)
+
+        # Act
+        result = encrypt_contest(subject, description, keypair.public_key, seed)
+
+        # Assert
+        self.assertIsNotNone(result)
+        self.assertTrue(result.is_valid_encryption(description.crypto_hash(), keypair.public_key))
+
+        # The encrypted contest should include an entry for each possible selection
+        # and placeholders for each seat
+        expected_entries = len(description.ballot_selections) + description.number_elected
+        self.assertEqual(len(result.ballot_selections), expected_entries)
+
+    @settings(
+        deadline=timedelta(milliseconds=2000),
+        suppress_health_check=[HealthCheck.too_slow],
+        max_examples=10,
+    )
+    @given(
+        ElectionFactory.get_contest_description_well_formed(),
+        arb_elgamal_keypair(),
+        arb_element_mod_q_no_zero(),
+    )
+    def test_encrypt_contest_valid_input_tampered_proof_succeeds(
+        self, 
+        contest_description: ContestDescription,
+        keypair: ElGamalKeyPair,
+        seed: ElementModQ):
+        
+        # Arrange
+        _, description = contest_description
+        subject = ballot_factory.get_random_contest_from(description)
+
+        # Act
+        result = encrypt_contest(subject, description, keypair.public_key, seed)
+        self.assertTrue(result.is_valid_encryption(description.crypto_hash(), keypair.public_key))
+
+        # tamper with the proof
+        malformed_proof = deepcopy(result)
+        malformed_disjunctive = malformed_proof.proof._replace(
+            a=mult_p(result.proof.a, TWO_MOD_P)
+        )
+        malformed_proof.proof = malformed_disjunctive
+
+        # Assert
+        self.assertFalse(malformed_proof.is_valid_encryption(description.crypto_hash(), keypair.public_key))
+        
+    @settings(
+        deadline=timedelta(milliseconds=2000),
+        suppress_health_check=[HealthCheck.too_slow],
+        max_examples=10,
+    )
+    @given(
+        ElectionFactory.get_contest_description_well_formed(),
+        arb_elgamal_keypair(),
+        arb_element_mod_q_no_zero(),
+        integers(1, 6)
+    )
+    def test_encrypt_contest_overvote_fails(
+        self, 
+        contest_description: ContestDescription,
+        keypair: ElGamalKeyPair,
+        seed: ElementModQ, 
+        overvotes: int
+    ):
+        # Arrange
+        _, description = contest_description
+        subject = ballot_factory.get_random_contest_from(description)
+
+        highest_sequence = max(*[selection.sequence_order for selection in description.ballot_selections], 1)
+
+        for i in range(overvotes):
+            extra = ballot_factory.get_random_selection_from(description.ballot_selections[0])
+            extra.sequence_order = highest_sequence + i + 1
+            subject.ballot_selections.append(extra)
+
+        # Act
+        result = encrypt_contest(subject, description, keypair.public_key, seed)
+
+        # Assert
+        self.assertIsNone(result)
+
     def test_encrypt_ballot_simple_succeeds(self):
 
         # Arrange
         keypair = elgamal_keypair_from_secret(int_to_q(2))
-        generator = ElectionFactory()
-        metadata = generator.get_fake_election()
+        metadata = election_factory.get_fake_election()
         encryption_context = CyphertextElection(1, 1, metadata.crypto_hash())
         
         encryption_context.set_crypto_context(keypair.public_key)
 
-        subject = generator.get_fake_ballot(metadata)
+        subject = election_factory.get_fake_ballot(metadata)
         self.assertTrue(subject.is_valid(metadata.ballot_styles[0].object_id))
 
         # Act
@@ -120,15 +302,20 @@ class TestEncryptionCompositor(unittest.TestCase):
         self.assertIsNotNone(result)
         self.assertTrue(result.is_valid_encryption(encryption_context.crypto_extended_base_hash, keypair.public_key))
 
+    def test_encrypt_ballot_valid_input_succeeds(self):
+        pass
+
+    def test_encrypt_ballot_invalid_input_fails(self):
+        pass
+
     def test_encrypt_ballot_with_stateful_composer_succeeds(self):
         # Arrange
         keypair = elgamal_keypair_from_secret(int_to_q(2))
-        generator = ElectionFactory()
-        metadata = generator.get_fake_election()
+        metadata = election_factory.get_fake_election()
         encryption_context = CyphertextElection(1, 1, metadata.crypto_hash())
         encryption_context.set_crypto_context(keypair.public_key)
 
-        data = generator.get_fake_ballot(metadata)
+        data = election_factory.get_fake_ballot(metadata)
         self.assertTrue(data.is_valid(metadata.ballot_styles[0].object_id))
 
         subject = EncryptionCompositor(metadata, encryption_context)
@@ -140,16 +327,14 @@ class TestEncryptionCompositor(unittest.TestCase):
         self.assertIsNotNone(result)
         self.assertTrue(result.is_valid_encryption(encryption_context.crypto_extended_base_hash, keypair.public_key))
 
-    def test_encrypt_simple_ballot_from_files_succeds(self):
+    def test_encrypt_simple_ballot_from_files_succeeds(self):
         # Arrange
         keypair = elgamal_keypair_from_secret(int_to_q(2))
-        election_generator = ElectionFactory()
-        ballot_generator = BallotFactory()
-        metadata = election_generator.get_simple_election_from_file()
+        metadata = election_factory.get_simple_election_from_file()
         encryption_context = CyphertextElection(1, 1, metadata.crypto_hash())
         encryption_context.set_crypto_context(keypair.public_key)
 
-        data = ballot_generator.get_simple_ballot_from_file()
+        data = ballot_factory.get_simple_ballot_from_file()
         self.assertTrue(data.is_valid(metadata.ballot_styles[0].object_id))
 
         subject = EncryptionCompositor(metadata, encryption_context)
@@ -160,3 +345,6 @@ class TestEncryptionCompositor(unittest.TestCase):
         # Assert
         self.assertIsNotNone(result)
         self.assertTrue(result.is_valid_encryption(encryption_context.crypto_extended_base_hash, keypair.public_key))
+
+    def test_encrypt_ballot_with_derivative_nonces_regenerates_valid_proofs(self):
+        pass

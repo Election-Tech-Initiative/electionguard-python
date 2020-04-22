@@ -1,4 +1,5 @@
 from __future__ import annotations
+from deprecated import deprecated
 from typing import NamedTuple, List, Optional
 
 from electionguard.chaum_pedersen import (
@@ -18,7 +19,7 @@ from electionguard.hash import hash_elems
 from electionguard.logs import log_warning
 from electionguard.nonces import Nonces
 
-
+@deprecated
 class Candidate(NamedTuple):
     # Related to: https://developers.google.com/elections-data/reference/candidate
     ballot_name: str
@@ -26,7 +27,7 @@ class Candidate(NamedTuple):
     is_dummy: bool  # ElectionGuard dummy candidates
     is_writein: bool
 
-
+@deprecated
 class ContestDescription(NamedTuple):
     # Related to: https://developers.google.com/elections-data/reference/contest
     abbreviation: str
@@ -63,7 +64,7 @@ class ContestDescription(NamedTuple):
             *candidate_hashes,
         )
 
-
+@deprecated
 class PlaintextVotedContest(NamedTuple):
     """
     This class represents a "plaintext" voted contest. That means it has a list of integers

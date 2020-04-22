@@ -7,20 +7,18 @@ from datetime import timedelta
 from hypothesis import HealthCheck
 from hypothesis import given, settings
 
-
 from electionguard.ballot import (
     PlaintextBallot,
     PlaintextBallotSelection
 )
 
-import electionguardtest.ballot_factory as GENERATOR
-
+import electionguardtest.ballot_factory as BallotFactory
 
 class TestBallot(unittest.TestCase):
 
     def test_ballot_is_valid(self):
         # Arrange
-        factory = GENERATOR.BallotFactory()
+        factory = BallotFactory.BallotFactory()
 
         # Act
         subject = factory.get_simple_ballot_from_file()
@@ -36,7 +34,7 @@ class TestBallot(unittest.TestCase):
         max_examples=10,
     )
     @given(
-        GENERATOR.get_selection_well_formed()
+        BallotFactory.get_selection_well_formed()
     )
     def test_plaintext_ballot_selection_is_valid(self, subject: Tuple[str, PlaintextBallotSelection]):
         # Arrange
@@ -56,7 +54,7 @@ class TestBallot(unittest.TestCase):
         max_examples=10,
     )
     @given(
-        GENERATOR.get_selection_poorly_formed()
+        BallotFactory.get_selection_poorly_formed()
     )
     def test_plaintext_ballot_selection_is_invalid(self, subject: Tuple[str, PlaintextBallotSelection]):
         # Arrange

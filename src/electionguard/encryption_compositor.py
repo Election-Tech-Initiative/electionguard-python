@@ -141,6 +141,7 @@ def encrypt_selection(
         )
     )
 
+    # optionally, skip the verification step
     if not should_verify_proofs:
         return encrypted_selection
 
@@ -245,7 +246,7 @@ def encrypt_contest(
         placeholder_description = placeholder_selection_description_from(
             contest_description, 
             highest_sequence_order + i
-            )
+        )
 
         encrypted_selection = encrypt_selection(
                     selection_from(
@@ -272,10 +273,6 @@ def encrypt_contest(
     )
 
     encrypted_contest.nonce = contest_nonce
-
-    # homomorphic add the encrypted representations together
-    #elgamal_accumulation = elgamal_add(*[selection.message for selection in encrypted_selections])
-    #aggregate_nonce = add_q(*[selection.nonce for selection in encrypted_selections])
 
     # Generate and Verify Proof
     encrypted_contest.proof = make_constant_chaum_pedersen(
@@ -314,7 +311,7 @@ def encrypt_ballot(
 
     :param ballot: the ballot in the valid input form
     :param election_metadata: the `Election` which defines this ballot's structure
-    :param elgamal_public_key: the public key (k) used to encrypt the ballot
+    :param elgamal_public_key: the public key (K) used to encrypt the ballot
     :param seed: an `ElementModQ` used as a header to seed the `Nonce` generated for this contest.
                  this value can be (or derived from) the Ballot nonce, but no relationship is required
     :param should_verify_proofs: specify if the proofs should be verified prior to returning (default True)
@@ -329,9 +326,11 @@ def encrypt_ballot(
         log_warning(f"malformed input ballot: {ballot}")
         return None
 
-    # Generate a random master nonce to use for the nonce's on the
+    # Generate a random master nonce to use for the contest and selection nonce's on the ballot
     random_master_nonce = randbelow(Q)
-    hashed_ballot_nonce = hash_elems(encryption_context.crypto_extended_base_hash, ballot.object_id, random_master_nonce)
+    hashed_ballot_nonce = hash_elems(
+        encryption_context.crypto_extended_base_hash, ballot.object_id, random_master_nonce
+    )
 
     encrypted_contests: List[CyphertextBallotContest] = list()
 

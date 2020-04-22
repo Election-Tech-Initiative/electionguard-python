@@ -1,8 +1,8 @@
 from datetime import datetime
 import os
-from random import Random
+from random import randint
 from secrets import randbelow
-from typing import TypeVar, Callable, Tuple
+from typing import TypeVar, Callable, List, Tuple
 
 from hypothesis.strategies import (
     composite,
@@ -67,6 +67,29 @@ here = os.path.abspath(os.path.dirname(__file__))
 class BallotFactory(object):
     simple_ballot_filename = 'ballot_in_simple.json'
 
+    def get_random_selection_from(self, description: SelectionDescription, is_placeholder = False):
+        selected = bool(randint(0,1)) 
+        return selection_from(description, is_placeholder, selected)
+
+    def get_random_contest_from(self, description: ContestDescription):
+        
+        selections: List[PlaintextBallotSelection] = list()
+
+        voted = 0
+
+        for selection_description in description.ballot_selections:
+            selection = self.get_random_selection_from(selection_description)
+            voted += selection.to_int()
+            if voted <= description.number_elected:
+                selections.append(selection)
+            else:
+                selections.append(selection_from(selection_description))
+
+        return PlaintextBallotContest(
+            description.object_id,
+            selections
+        )
+
     def get_simple_ballot_from_file(self) -> PlaintextBallot:
         return self._get_ballot_from_file(self.simple_ballot_filename)
 
@@ -74,7 +97,6 @@ class BallotFactory(object):
         with open(os.path.join(here, 'data', filename), 'r') as subject:
             data = subject.read()
             target = PlaintextBallot.from_json(data)
-
         return target
 
 @composite

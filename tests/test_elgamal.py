@@ -32,7 +32,7 @@ from tests.test_group import arb_element_mod_q_no_zero, arb_element_mod_q
 
 
 class TestElGamal(unittest.TestCase):
-    def test_encryption_decryption_simplistic(self):
+    def test_simple_elgamal_encryption_decryption(self):
         nonce = ONE_MOD_Q
         secret_key = TWO_MOD_Q
         keypair = unwrap_optional(elgamal_keypair_from_secret(secret_key))
@@ -57,17 +57,17 @@ class TestElGamal(unittest.TestCase):
         self.assertEqual(0, plaintext)
 
     @given(integers(0, 100), arb_elgamal_keypair())
-    def test_elgamal_requires_nonzero_nonce(
+    def test_elgamal_encrypt_requires_nonzero_nonce(
         self, message: int, keypair: ElGamalKeyPair
     ):
         self.assertEqual(None, elgamal_encrypt(message, ZERO_MOD_Q, keypair.public_key))
 
-    def test_elgamal_requires_secret_key_greater_than_one(self):
+    def test_elgamal_keypair_from_secret_requires_key_greater_than_one(self):
         self.assertEqual(None, elgamal_keypair_from_secret(ZERO_MOD_Q))
         self.assertEqual(None, elgamal_keypair_from_secret(ONE_MOD_Q))
 
     @given(integers(0, 100), arb_element_mod_q_no_zero(), arb_elgamal_keypair())
-    def test_encryption_decryption_inverses(
+    def test_elgamal_encryption_decryption_inverses(
         self, message: int, nonce: ElementModQ, keypair: ElGamalKeyPair
     ):
         ciphertext = unwrap_optional(
@@ -78,7 +78,7 @@ class TestElGamal(unittest.TestCase):
         self.assertEqual(message, plaintext)
 
     @given(integers(0, 100), arb_element_mod_q_no_zero(), arb_elgamal_keypair())
-    def test_encryption_decryption_inverses2(
+    def test_elgamal_encryption_decryption_with_known_nonce_inverses(
         self, message: int, nonce: ElementModQ, keypair: ElGamalKeyPair
     ):
         ciphertext = unwrap_optional(
@@ -88,13 +88,8 @@ class TestElGamal(unittest.TestCase):
 
         self.assertEqual(message, plaintext)
 
-    @given(arb_element_mod_q())
-    def test_large_values_rejected_by_int_to_q(self, q: ElementModQ):
-        oversize = q.to_int() + Q
-        self.assertEqual(None, int_to_q(oversize))
-
     @given(arb_elgamal_keypair())
-    def test_elgamal_keypairs_are_sane(self, keypair: ElGamalKeyPair):
+    def test_elgamal_generated_keypairs_are_within_range(self, keypair: ElGamalKeyPair):
         self.assertLess(keypair.public_key.to_int(), P)
         self.assertLess(keypair.secret_key.to_int(), G)
         self.assertEqual(g_pow_p(keypair.secret_key), keypair.public_key)
@@ -106,7 +101,7 @@ class TestElGamal(unittest.TestCase):
         integers(0, 100),
         arb_element_mod_q_no_zero(),
     )
-    def test_elgamal_homomorphic_accumulation(
+    def test_elgamal_add_homomorphic_accumulation_decrypts_successfully(
         self,
         keypair: ElGamalKeyPair,
         m1: int,
@@ -125,7 +120,7 @@ class TestElGamal(unittest.TestCase):
         self.assertRaises(Exception, elgamal_add)
 
     @given(arb_elgamal_keypair())
-    def test_elgamal_keys_valid_residue(self, keypair):
+    def test_elgamal_keypair_produces_valid_residue(self, keypair):
         self.assertTrue(keypair.public_key.is_valid_residue())
 
     # Here's an oddball test: checking whether running lots of parallel exponentiations yields the
