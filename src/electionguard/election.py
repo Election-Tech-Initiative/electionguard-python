@@ -331,7 +331,7 @@ class ContestDescription(Contest, CryptoHashable):
     ballot_title: Optional[InternationalizedText] = field(default=None)
     ballot_subtitle: Optional[InternationalizedText] = field(default=None)
 
-    # TODO: not optional
+    # TODO: make this field not optional?
     name: Optional[str] = field(default=None)
 
     def crypto_hash(self) -> ElementModQ:
@@ -446,6 +446,13 @@ class Election(Serializable, IsValid, CryptoHashable):
         """
         style = list(filter(lambda i: i.object_id == ballot_style_id, self.ballot_styles))[0]
         return style
+
+    def get_contests_for(self, ballot_style_id: str) -> List[ContestDescription]:
+        style = self.get_ballot_style(ballot_style_id)
+        gp_unit_ids = [gp_unit_id for gp_unit_id in style.geopolitical_unit_ids]
+        contests = list(filter(lambda i: i.electoral_district_id in gp_unit_ids, self.contests))
+        return contests
+
         
     def is_valid(self) -> bool:
         """

@@ -50,6 +50,7 @@ from electionguard.encryption_compositor import (
 )
 
 from electionguard.group import (
+    ElementModP,
     ElementModQ,
     ONE_MOD_Q,
     int_to_q,
@@ -128,10 +129,14 @@ class ElectionFactory(object):
 
         return fake_election
 
-    def get_fake_cyphertext_election(self) -> CyphertextElection:
-        pass
+    def get_fake_cyphertext_election(self, description_hash: ElementModQ, elgamal_public_key: Optional[ElementModP] = None) -> CyphertextElection:
+        election = CyphertextElection(1, 1, description_hash)
 
-    # TODO: Move to ballot Factory
+        if elgamal_public_key is not None:
+            election.set_crypto_context(elgamal_public_key)
+        return election
+
+    # TODO: Move to ballot Factory?
     def get_fake_ballot(self, election: Election = None) -> PlaintextBallot:
         """
         Get a single Fake Ballot object that is manually constructed with default vaules

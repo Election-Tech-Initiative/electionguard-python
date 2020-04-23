@@ -38,7 +38,6 @@ class EncryptionCompositor(object):
         """
         return encrypt_ballot(ballot, self._metadata, self._encryption)
     
-
 def selection_from(description: SelectionDescription, is_placeholder: bool = False, is_affirmative: bool = False) -> PlaintextBallotSelection:
     """
     Construct a `BallotSelection` from a specific `SelectionDescription`.
@@ -132,8 +131,8 @@ def encrypt_selection(
     # TODO: move the proof generation blocks into the object itself?
     encrypted_selection.proof = flatmap_optional(
         encrypted_selection.message,
-        lambda c: make_disjunctive_chaum_pedersen(
-            c,
+        lambda elgamal_cyphertext: make_disjunctive_chaum_pedersen(
+            elgamal_cyphertext,
             selection_nonce,
             elgamal_public_key,
             next(iter(nonce_sequence)),
@@ -319,7 +318,6 @@ def encrypt_ballot(
 
     # Determine the relevant range of contests for this ballot style
     style = election_metadata.get_ballot_style(ballot.ballot_style)
-    gp_unit_ids = [gp_unit_id for gp_unit_id in style.geopolitical_unit_ids]
 
     # Validate Input
     if not ballot.is_valid(style.object_id):
@@ -335,7 +333,7 @@ def encrypt_ballot(
     encrypted_contests: List[CyphertextBallotContest] = list()
 
     # only iterate on contests for this specific ballot style
-    for description in filter(lambda i: i.electoral_district_id in gp_unit_ids, election_metadata.contests):
+    for description in election_metadata.get_contests_for(ballot.ballot_style):
         for contest in ballot.contests:
             # encrypt it as specified
             if contest.object_id is description.object_id:
@@ -363,8 +361,6 @@ def encrypt_ballot(
             encrypted_contests)
 
     encrypted_ballot.nonce = random_master_nonce
-
-    # TODO: verify the ballot is now well-formed & valid
 
     # TODO: Generate Tracking code
     encrypted_ballot.tracking_id = "abc123"

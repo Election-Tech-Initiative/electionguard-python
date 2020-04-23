@@ -1,7 +1,7 @@
 import unittest
 from copy import deepcopy
 from datetime import timedelta
-from typing import Tuple
+from typing import List, Tuple
 
 from hypothesis import HealthCheck
 from hypothesis import given, settings
@@ -37,16 +37,24 @@ from electionguard.election import (
     VoteVariationType
 )
 
+from electionguard.chaum_pedersen import (
+    make_constant_chaum_pedersen,
+    make_disjunctive_chaum_pedersen
+)
+
 from electionguard.elgamal import (
     ElGamalKeyPair,
     elgamal_keypair_from_secret,
+    elgamal_add,
 )
 from electionguard.group import (
     ElementModP,
     ElementModQ,
     ONE_MOD_Q,
+    TWO_MOD_Q,
     int_to_q,
     add_q,
+    flatmap_optional,
     unwrap_optional,
     Q,
     TWO_MOD_P,
@@ -305,9 +313,6 @@ class TestEncryptionCompositor(unittest.TestCase):
     def test_encrypt_ballot_valid_input_succeeds(self):
         pass
 
-    def test_encrypt_ballot_invalid_input_fails(self):
-        pass
-
     def test_encrypt_ballot_with_stateful_composer_succeeds(self):
         # Arrange
         keypair = elgamal_keypair_from_secret(int_to_q(2))
@@ -346,5 +351,69 @@ class TestEncryptionCompositor(unittest.TestCase):
         self.assertIsNotNone(result)
         self.assertTrue(result.is_valid_encryption(encryption_context.crypto_extended_base_hash, keypair.public_key))
 
-    def test_encrypt_ballot_with_derivative_nonces_regenerates_valid_proofs(self):
-        pass
+    @settings(
+        deadline=timedelta(milliseconds=2000),
+        suppress_health_check=[HealthCheck.too_slow],
+        max_examples=10,
+    )
+    @given(
+        arb_elgamal_keypair()
+    )
+    def test_encrypt_ballot_with_derivative_nonces_regenerates_valid_proofs(self, keypair: ElGamalKeyPair):
+        """
+        This test verifies that we can regenerate the contest and selection proofs from the cached nonce values
+        """
+
+        # TODO: Hypothesis test instead
+
+        # Arrange
+        metadata = election_factory.get_simple_election_from_file()
+        encryption_context = election_factory.get_fake_cyphertext_election(metadata.crypto_hash(), keypair.public_key)
+
+        data = ballot_factory.get_simple_ballot_from_file()
+        self.assertTrue(data.is_valid(metadata.ballot_styles[0].object_id))
+
+        subject = EncryptionCompositor(metadata, encryption_context)
+
+        # Act
+        result = subject.encrypt(data)
+        self.assertTrue(result.is_valid_encryption(encryption_context.crypto_extended_base_hash, keypair.public_key))
+
+        # Assert
+        for contest in result.contests:
+            # Find the contest description
+            contest_description = list(filter(lambda i: i.object_id == contest.object_id, metadata.contests))[0]
+
+            # Homomorpically accumulate the selection encryptions
+            elgamal_accumulation = elgamal_add(*[selection.message for selection in contest.ballot_selections])
+            # accumulate the selection nonce's
+            aggregate_nonce = add_q(*[selection.nonce for selection in contest.ballot_selections])
+
+            regenerated_constant = make_constant_chaum_pedersen(
+                elgamal_accumulation,
+                contest_description.number_elected,
+                aggregate_nonce,
+                keypair.public_key,
+                add_q(contest.nonce, TWO_MOD_Q),
+            )
+
+            self.assertTrue(regenerated_constant.is_valid(elgamal_accumulation, keypair.public_key))
+
+            for selection in contest.ballot_selections:
+                # Since we know the nonce, we can decrypt the plaintext
+                representation = selection.message.decrypt_known_nonce(keypair.public_key, selection.nonce)
+
+                # one could also decrypt with the secret key:
+                #representation = selection.message.decrypt(keypair.secret_key)
+
+                regenerated_disjuctive = make_disjunctive_chaum_pedersen(
+                    selection.message,
+                    selection.nonce,
+                    keypair.public_key,
+                    add_q(selection.nonce, TWO_MOD_Q),
+                    representation,
+                )
+
+                self.assertTrue(regenerated_disjuctive.is_valid(selection.message, keypair.public_key))
+
+        

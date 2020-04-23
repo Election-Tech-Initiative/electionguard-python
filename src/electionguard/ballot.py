@@ -332,7 +332,7 @@ class PlaintextBallot(Serializable, IsValid):
     # A unique Ballot ID that is relevant to the external system
     object_id: str
 
-    # The `object_id` of the `BallotStyl` in the `Election` Manifest
+    # The `object_id` of the `BallotStyle` in the `Election` Manifest
     ballot_style: str
 
     # The list of contests for this ballot
@@ -343,8 +343,6 @@ class PlaintextBallot(Serializable, IsValid):
         if self.ballot_style != expected_ballot_style_id:
             log_warning(f"invalid ballot_style: for: {self.object_id} expected({expected_ballot_style_id}) actual({self.ballot_style})")
             return False
-
-        # TODO: Check count of contests?
 
         return True
 
