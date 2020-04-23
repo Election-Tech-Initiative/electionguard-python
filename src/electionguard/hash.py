@@ -30,11 +30,6 @@ class CryptoHashCheckable(Protocol):
 
 T = TypeVar("T", CryptoHashable, ElementModPOrQ, str, int)
 
-# TODO: decide how we want to represent the inputs to the hash functions. For now, converting them to
-#   intermediary text strings generates consistent and predictable solutions. Adding punctuation
-#   avoids misinterpretations. But is this the "best" way to go?
-
-
 def hash_elems(*a: Union[ElementModPOrQ, str, int]) -> ElementModQ:
     """
     Given one or more elements, calculate their cryptographic hash
