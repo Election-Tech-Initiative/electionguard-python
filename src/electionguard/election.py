@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
+from datetime import datetime
 from enum import Enum, unique
-from datetime import datetime, timezone
-from typing import Optional, List, TypeVar, Generic, Set, Union, Iterable
+from typing import List, Optional, Set, Union
 
 from .group import (
     Q,
@@ -10,11 +10,10 @@ from .group import (
     ElementModQ, 
     ElementModP
     )
-from .logs import log_warning
-
+from .hash import CryptoHashable, flatten, hash_elems
 from .is_valid import IsValid
+from .logs import log_warning
 from .serializable import Serializable
-from .hash import CryptoHashable, hashable_element, flatten, hash_elems
 
 @unique
 class ElectionType(Enum):

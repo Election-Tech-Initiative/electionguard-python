@@ -1,11 +1,6 @@
 from typing import Optional, List
+from secrets import randbelow
 
-from .chaum_pedersen import make_constant_chaum_pedersen, make_disjunctive_chaum_pedersen
-from .elgamal import elgamal_encrypt
-from .group import Q, ElementModP, ElementModQ, flatmap_optional
-from .hash import hash_elems
-from .logs import log_warning
-from .nonces import Nonces
 from .ballot import (
     CyphertextBallot,
     CyphertextBallotContest,
@@ -14,9 +9,13 @@ from .ballot import (
     PlaintextBallotContest, 
     PlaintextBallotSelection,
 )
+from .chaum_pedersen import make_constant_chaum_pedersen, make_disjunctive_chaum_pedersen
 from .election import CyphertextElection, Election, ContestDescription, SelectionDescription
-
-from secrets import randbelow
+from .elgamal import elgamal_encrypt
+from .group import Q, ElementModP, ElementModQ, flatmap_optional
+from .hash import hash_elems
+from .logs import log_warning
+from .nonces import Nonces
 
 class EncryptionCompositor(object):
     """

@@ -2,15 +2,14 @@ from dataclasses import dataclass, field
 from distutils import util
 from typing import Optional, List
 
-from .serializable import Serializable
+from .chaum_pedersen import ConstantChaumPedersenProof, DisjunctiveChaumPedersenProof
+from .election import Contest, Selection
+from .elgamal import ElGamalCiphertext, elgamal_add
 from .group import add_q, ElementModP, ElementModQ, ZERO_MOD_Q
 from .hash import CryptoHashCheckable, hash_elems
 from .is_valid import IsValid, IsValidEncryption
-from .chaum_pedersen import ConstantChaumPedersenProof, DisjunctiveChaumPedersenProof
-from .elgamal import ElGamalCiphertext, elgamal_add
-
-from .election import Contest, Selection
 from .logs import log_warning
+from .serializable import Serializable
 
 @dataclass
 class PlaintextBallotSelection(Selection, IsValid):

@@ -1,7 +1,7 @@
 import unittest
 from copy import deepcopy
 from datetime import timedelta
-from typing import List, Tuple
+from typing import Tuple
 
 from hypothesis import HealthCheck
 from hypothesis import given, settings
@@ -16,24 +16,10 @@ from electionguard.encrypt import (
     EncryptionCompositor
 )
 
-from electionguard.ballot import (
-    PlaintextBallot,
-    PlaintextBallotContest,
-    PlaintextBallotSelection,
-    CyphertextBallotSelection
-)
-
 from electionguard.election import (
-    BallotStyle,
     CyphertextElection,
-    Election,
-    ElectionType,
-    GeopoliticalUnit,
-    Candidate,
-    Party,
     ContestDescription,
     SelectionDescription,
-    ReportingUnitType,
     VoteVariationType
 )
 
@@ -48,14 +34,10 @@ from electionguard.elgamal import (
     elgamal_add,
 )
 from electionguard.group import (
-    ElementModP,
     ElementModQ,
-    ONE_MOD_Q,
     TWO_MOD_Q,
     int_to_q,
     add_q,
-    flatmap_optional,
-    unwrap_optional,
     Q,
     TWO_MOD_P,
     mult_p,
