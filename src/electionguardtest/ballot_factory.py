@@ -1,7 +1,5 @@
-from datetime import datetime
 import os
 from random import randint
-from secrets import randbelow
 from typing import TypeVar, Callable, List, Tuple
 
 from hypothesis.strategies import (
@@ -40,7 +38,7 @@ from electionguard.elgamal import (
     elgamal_keypair_from_secret,
 )
 
-from electionguard.encryption_compositor import (
+from electionguard.encrypt import (
     contest_from,
     encrypt_ballot,
     encrypt_contest,
@@ -80,9 +78,12 @@ class BallotFactory(object):
         for selection_description in description.ballot_selections:
             selection = self.get_random_selection_from(selection_description)
             voted += selection.to_int()
-            if voted <= description.number_elected:
+            # Possibly append the true selection, indicating an undervote
+            if voted <= description.number_elected and bool(randint(0,1)) == 1:
                 selections.append(selection)
-            else:
+            # Possibly append the false selections as well, indicating some choices
+            # may be explicitly false
+            elif bool(randint(0,1)) == 1:
                 selections.append(selection_from(selection_description))
 
         return PlaintextBallotContest(
@@ -120,10 +121,3 @@ def get_selection_poorly_formed(
         extra_data = draw(text)
     object_id = f"selection-{draw(uuids)}"
     return (object_id, PlaintextBallotSelection(object_id, f"{draw(text)}", f"{draw(bools)}", extra_data))
-
-# @composite
-# def get_contest_well_formed(
-#     draw: _DrawType, uuids=uuids(), bools=booleans(), ints=integers(1,10), text=text(), selections=get_selection_well_formed()
-#     ) -> Tuple[str, PlaintextBallotContest]:
-#     pass
-

@@ -7,7 +7,7 @@ from hypothesis import HealthCheck
 from hypothesis import given, settings
 from hypothesis.strategies import integers
 
-from electionguard.encryption_compositor import (
+from electionguard.encrypt import (
     contest_from,
     encrypt_ballot,
     encrypt_contest,
@@ -72,7 +72,7 @@ from secrets import randbelow
 election_factory = ElectionFactory.ElectionFactory()
 ballot_factory = BallotFactory.BallotFactory()
 
-class TestEncryptionCompositor(unittest.TestCase):
+class TestEncrypt(unittest.TestCase):
 
     def test_encrypt_simple_selection_succeeds(self):
 

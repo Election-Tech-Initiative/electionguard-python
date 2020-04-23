@@ -41,7 +41,7 @@ from electionguard.elgamal import (
     elgamal_keypair_from_secret,
 )
 
-from electionguard.encryption_compositor import (
+from electionguard.encrypt import (
     contest_from,
     encrypt_ballot,
     encrypt_contest,
