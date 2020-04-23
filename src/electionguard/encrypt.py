@@ -295,6 +295,7 @@ def encrypt_ballot(
     ballot: PlaintextBallot, 
     election_metadata: Election,
     encryption_context: CyphertextElection,
+    nonce: Optional[int] = None,
     should_verify_proofs = True) -> Optional[CyphertextBallot]:
     """
     Encrypt a specific `Ballot` in the context of a specific `CyphertextElection`.
@@ -324,7 +325,12 @@ def encrypt_ballot(
         return None
 
     # Generate a random master nonce to use for the contest and selection nonce's on the ballot
-    random_master_nonce = randbelow(Q)
+    if nonce is None:
+        random_master_nonce = randbelow(Q)
+    else:
+        random_master_nonce = nonce
+
+    # Include a representation of the election and the external Id in the nonce's used on the ballot
     hashed_ballot_nonce = hash_elems(
         encryption_context.crypto_extended_base_hash, ballot.object_id, random_master_nonce
     )

@@ -292,9 +292,6 @@ class TestEncrypt(unittest.TestCase):
         self.assertIsNotNone(result)
         self.assertTrue(result.is_valid_encryption(encryption_context.crypto_extended_base_hash, keypair.public_key))
 
-    def test_encrypt_ballot_valid_input_succeeds(self):
-        pass
-
     def test_encrypt_ballot_with_stateful_composer_succeeds(self):
         # Arrange
         keypair = elgamal_keypair_from_secret(int_to_q(2))
