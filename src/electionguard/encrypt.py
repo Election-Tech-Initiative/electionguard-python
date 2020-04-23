@@ -311,8 +311,8 @@ def encrypt_ballot(
     :param ballot: the ballot in the valid input form
     :param election_metadata: the `Election` which defines this ballot's structure
     :param elgamal_public_key: the public key (K) used to encrypt the ballot
-    :param seed: an `ElementModQ` used as a header to seed the `Nonce` generated for this contest.
-                 this value can be (or derived from) the Ballot nonce, but no relationship is required
+    :param nonce: an optional `int` used to seed the `Nonce` generated for this contest.
+                 if this value is not provided, the secret generating mechanism of the OS provides its own
     :param should_verify_proofs: specify if the proofs should be verified prior to returning (default True)
     """
 
