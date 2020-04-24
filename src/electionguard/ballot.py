@@ -7,12 +7,11 @@ from .election import Contest, Selection
 from .elgamal import ElGamalCiphertext, elgamal_add
 from .group import add_q, ElementModP, ElementModQ, ZERO_MOD_Q
 from .hash import CryptoHashCheckable, hash_elems
-from .is_valid import IsValid, IsValidEncryption
 from .logs import log_warning
 from .serializable import Serializable
 
 @dataclass
-class PlaintextBallotSelection(Selection, IsValid):
+class PlaintextBallotSelection(Selection):
     """
     A BallotSelection represents an individual selection on a ballot.
 
@@ -78,7 +77,7 @@ class PlaintextBallotSelection(Selection, IsValid):
         return as_int
 
 @dataclass
-class CyphertextBallotSelection(Contest, IsValidEncryption, CryptoHashCheckable):
+class CyphertextBallotSelection(Contest, CryptoHashCheckable):
     """
     A CyphertextBallotSelection represents an individual encrypted selection on a ballot.
 
@@ -151,6 +150,12 @@ class CyphertextBallotSelection(Contest, IsValidEncryption, CryptoHashCheckable)
             )
             return False
 
+        if self.proof is None:
+            log_warning(
+                f"no proof exists for: {self.object_id}"
+            )
+            return False
+
         return self.proof.is_valid(self.message, elgamal_public_key)
 
     def crypto_hash_with(self, seed_hash: ElementModQ) -> ElementModQ:
@@ -168,7 +173,7 @@ class CyphertextBallotSelection(Contest, IsValidEncryption, CryptoHashCheckable)
         return hash_elems(seed_hash, self.message.crypto_hash())
 
 @dataclass
-class PlaintextBallotContest(Contest, IsValid):
+class PlaintextBallotContest(Contest):
     """
     A PlaintextBallotContest represents the selections made by a voter for a specific ContestDescription
 
@@ -223,7 +228,7 @@ class PlaintextBallotContest(Contest, IsValid):
         return True
 
 @dataclass
-class CyphertextBallotContest(Contest, IsValidEncryption, CryptoHashCheckable):
+class CyphertextBallotContest(Contest, CryptoHashCheckable):
     """
     A CyphertextBallotContest represents the selections made by a voter for a specific ContestDescription
 
@@ -318,12 +323,18 @@ class CyphertextBallotContest(Contest, IsValidEncryption, CryptoHashCheckable):
 
         # NOTE: this check does not verify the proofs of the individual selections by design.
 
+        if self.proof is None:
+            log_warning(
+                f"no proof exists for: {self.object_id}"
+            )
+            return False
+
         # Verify the sum of the selections matches the proof
         elgamal_accumulation = self.elgamal_accumulate()
         return self.proof.is_valid(elgamal_accumulation, elgamal_public_key)
 
 @dataclass
-class PlaintextBallot(Serializable, IsValid):
+class PlaintextBallot(Serializable):
     """
     A PlaintextBallot represents a voters selections for a given ballot and ballot style
     """
@@ -346,7 +357,7 @@ class PlaintextBallot(Serializable, IsValid):
         return True
 
 @dataclass
-class CyphertextBallot(Serializable, IsValid, CryptoHashCheckable):
+class CyphertextBallot(Serializable, CryptoHashCheckable):
     """
     A CyphertextBallot represents a voters encrypted selections for a given ballot and ballot style
 
@@ -450,4 +461,3 @@ class CyphertextBallot(Serializable, IsValid, CryptoHashCheckable):
                 )
             )
         return all(valid_proofs)
-

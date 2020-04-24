@@ -42,11 +42,11 @@ class ElementModQ(NamedTuple):
         return 0 < self.elem < Q
 
     # overload != (not equal to) operator
-    def __ne__(self, other):
+    def __ne__(self, other) -> bool:
         return self.elem != other.elem
 
     # overload == (equal to) operator
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         return self.elem == other.elem
 
 

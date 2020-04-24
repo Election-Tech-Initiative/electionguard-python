@@ -12,7 +12,7 @@ from .ballot import (
 from .chaum_pedersen import make_constant_chaum_pedersen, make_disjunctive_chaum_pedersen
 from .election import CyphertextElection, Election, ContestDescription, SelectionDescription
 from .elgamal import elgamal_encrypt
-from .group import Q, ElementModP, ElementModQ, flatmap_optional
+from .group import Q, ElementModP, ElementModQ, int_to_q, flatmap_optional, unwrap_optional
 from .hash import hash_elems
 from .logs import log_warning
 from .nonces import Nonces
@@ -85,7 +85,7 @@ def encrypt_selection(
     elgamal_public_key: ElementModP, 
     seed: ElementModQ, 
     is_placeholder: bool = False, 
-    should_verify_proofs = True) -> Optional[CyphertextBallotSelection]:
+    should_verify_proofs: bool = True) -> Optional[CyphertextBallotSelection]:
     """
     Encrypt a specific `BallotSelection` in the context of a specific `BallotContest`
 
@@ -155,7 +155,7 @@ def encrypt_contest(
     contest_description: ContestDescription, 
     elgamal_public_key: ElementModP, 
     seed: ElementModQ,
-    should_verify_proofs = True) -> Optional[CyphertextBallotContest]:
+    should_verify_proofs: bool = True) -> Optional[CyphertextBallotContest]:
 
     """
     Encrypt a specific `BallotContest` in the context of a specific `Ballot`.
@@ -224,7 +224,7 @@ def encrypt_contest(
                 elgamal_public_key, 
                 contest_nonce
             )
-        encrypted_selections.append(encrypted_selection)
+        encrypted_selections.append(unwrap_optional(encrypted_selection))
 
     # Handle Placeholder selections
     # TODO: would be better to homomorphically add the encrypted selections together
@@ -256,7 +256,7 @@ def encrypt_contest(
                     elgamal_public_key, 
                     contest_nonce
                 )
-        encrypted_selections.append(encrypted_selection)
+        encrypted_selections.append(unwrap_optional(encrypted_selection))
 
     # TODO: support other cases such as cumulative voting (individual selections being an encryption of > 1)
     if selection_count < contest_description.votes_allowed:
@@ -296,7 +296,7 @@ def encrypt_ballot(
     election_metadata: Election,
     encryption_context: CyphertextElection,
     nonce: Optional[int] = None,
-    should_verify_proofs = True) -> Optional[CyphertextBallot]:
+    should_verify_proofs: bool = True) -> Optional[CyphertextBallot]:
     """
     Encrypt a specific `Ballot` in the context of a specific `CyphertextElection`.
 
@@ -365,7 +365,7 @@ def encrypt_ballot(
             encryption_context.crypto_extended_base_hash,
             encrypted_contests)
 
-    encrypted_ballot.nonce = random_master_nonce
+    encrypted_ballot.nonce = int_to_q(random_master_nonce)
 
     # TODO: Generate Tracking code
     encrypted_ballot.tracking_id = "abc123"

@@ -8,10 +8,9 @@ from .group import (
     P,
     G,
     ElementModQ, 
-    ElementModP
+    ElementModP,
     )
 from .hash import CryptoHashable, flatten, hash_elems
-from .is_valid import IsValid
 from .logs import log_warning
 from .serializable import Serializable
 
@@ -172,7 +171,7 @@ class GeopoliticalUnit(Serializable, CryptoHashable):
         A hash representation of the object
         """
         return hash_elems(*flatten(
-            self.object_id, 
+            self.object_id,
             self.name, 
             str(self.type), 
             self.contact_information
@@ -377,7 +376,7 @@ class ReferendumContestDescription(ContestDescription):
 DerivedContestType = Union[CandidateContestDescription, ReferendumContestDescription]
 
 @dataclass
-class Election(Serializable, IsValid, CryptoHashable):
+class Election(Serializable, CryptoHashable):
     """
     Use this entity for defining the status of the election and associated 
     information such as candidates, contests, and vote counts.
@@ -446,8 +445,10 @@ class Election(Serializable, IsValid, CryptoHashable):
         style = list(filter(lambda i: i.object_id == ballot_style_id, self.ballot_styles))[0]
         return style
 
-    def get_contests_for(self, ballot_style_id: str) -> List[ContestDescription]:
+    def get_contests_for(self, ballot_style_id: str) -> List[DerivedContestType]:
         style = self.get_ballot_style(ballot_style_id)
+        if style.geopolitical_unit_ids is None:
+            return list()
         gp_unit_ids = [gp_unit_id for gp_unit_id in style.geopolitical_unit_ids]
         contests = list(filter(lambda i: i.electoral_district_id in gp_unit_ids, self.contests))
         return contests
@@ -478,6 +479,9 @@ class Election(Serializable, IsValid, CryptoHashable):
         for style in self.ballot_styles:
             if style.object_id not in ballot_style_ids:
                 ballot_style_ids.add(style.object_id)
+            if style.geopolitical_unit_ids is None:
+                ballot_styles_have_valid_gp_unit_ids = False
+                break
             # validate associated gp unit ids
             for gp_unit_id in style.geopolitical_unit_ids:
                 ballot_styles_have_valid_gp_unit_ids = ballot_styles_have_valid_gp_unit_ids \
@@ -518,15 +522,19 @@ class Election(Serializable, IsValid, CryptoHashable):
         for contest in self.contests:
             if contest.object_id not in contest_ids:
                 contest_ids.add(contest.object_id)
+
             # validate the sequence order
             if contest.sequence_order not in contest_sequence_ids:
                 contest_sequence_ids.add(contest.sequence_order)
+
             # validate the associated gp unit id
             contests_have_valid_electoral_district_id = contests_have_valid_electoral_district_id \
                 and contest.electoral_district_id in gp_unit_ids
+
             # validate the number elected (seats)
             contests_have_valid_number_elected = contests_have_valid_number_elected \
                 and contest.number_elected < len(contest.ballot_selections)
+
             # validate the number of votes per voter
             contests_have_valid_number_votes_allowed = contests_have_valid_number_votes_allowed \
                 and (contest.votes_allowed is None or contest.number_elected <= contest.votes_allowed)
@@ -598,7 +606,7 @@ class Election(Serializable, IsValid, CryptoHashable):
         return success
 
 @dataclass
-class CyphertextElection(Serializable): #TODO: IsValid, CryptoHashcheckable
+class CyphertextElection(Serializable): #TODO: CryptoHashcheckable
     """
     CyphertextElection is the ElectionGuard representation of a specific election
     Note: The ElectionGuard Data Spec deviates from the NIST model in that
