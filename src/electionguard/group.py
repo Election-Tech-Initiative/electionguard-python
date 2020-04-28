@@ -41,6 +41,14 @@ class ElementModQ(NamedTuple):
         """
         return 0 < self.elem < Q
 
+    # overload != (not equal to) operator
+    def __ne__(self, other) -> bool:
+        return self.elem != other.elem
+
+    # overload == (equal to) operator
+    def __eq__(self, other) -> bool:
+        return self.elem == other.elem
+
 
 class ElementModP(NamedTuple):
     """An element of the larger `mod p` space, i.e., in [0, P), where P is a 4096-bit prime."""

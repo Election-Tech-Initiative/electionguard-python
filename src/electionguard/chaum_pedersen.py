@@ -78,7 +78,7 @@ class DisjunctiveChaumPedersenProof(NamedTuple):
 
         if not success:
             log_warning(
-                "found an invalid Chaum-Pedersen proof: "
+                "found an invalid Disjunctive Chaum-Pedersen proof: "
                 + str(
                     {
                         "in_bounds_alpha": in_bounds_alpha,
@@ -164,7 +164,7 @@ class ConstantChaumPedersenProof(NamedTuple):
 
         if not success:
             log_warning(
-                "found an invalid Chaum-Pedersen proof: "
+                "found an invalid Constant Chaum-Pedersen proof: "
                 + str(
                     {
                         "in_bounds_alpha": in_bounds_alpha,

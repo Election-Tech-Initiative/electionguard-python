@@ -18,14 +18,12 @@ from electionguard.hash import hash_elems
 from electionguard.logs import log_warning
 from electionguard.nonces import Nonces
 
-
 class Candidate(NamedTuple):
     # Related to: https://developers.google.com/elections-data/reference/candidate
     ballot_name: str
     is_incumbent: bool
     is_dummy: bool  # ElectionGuard dummy candidates
     is_writein: bool
-
 
 class ContestDescription(NamedTuple):
     # Related to: https://developers.google.com/elections-data/reference/contest
@@ -62,7 +60,6 @@ class ContestDescription(NamedTuple):
             str(self.votes_allowed),
             *candidate_hashes,
         )
-
 
 class PlaintextVotedContest(NamedTuple):
     """

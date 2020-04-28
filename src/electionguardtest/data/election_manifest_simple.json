@@ -1,0 +1,403 @@
+{
+    "geopoliticalUnits": [
+        {
+            "objectId": "jefferson-county",
+            "name": "Jefferson County",
+            "type": "county",
+            "contactInformation": {
+                "addressLine": [
+                    "1234 Samuel Adams Way",
+                    "Jefferson, Hamilton 999999"
+                ],
+                "name": "Jefferson County Clerk",
+                "email": [
+                    {
+                        "annotation": "inquiries",
+                        "value": "inquiries@jefferson.hamilton.state.gov"
+                    }
+                ],
+                "phone": [
+                    {
+                        "annotation": "domestic",
+                        "value": "123-456-7890"
+                    }
+                ]
+            }
+        },
+        {
+            "objectId": "harrison-township",
+            "name": "Harrison Township",
+            "type": "township",
+            "contactInformation": {
+                "addressLine": [
+                    "1234 Thorton Drive",
+                    "Harrison, Hamilton 999999"
+                ],
+                "name": "Harrison Town Hall",
+                "email": [
+                    {
+                        "annotation": "inquiries",
+                        "value": "inquiries@harrison.hamilton.state.gov"
+                    }
+                ],
+                "phone": [
+                    {
+                        "annotation": "domestic",
+                        "value": "123-456-7890"
+                    }
+                ]
+            }
+        },
+        {
+            "objectId": "harrison-township-precinct-east",
+            "name": "Harrison Township Precinct",
+            "type": "township",
+            "contactInformation": {
+                "addressLine": [
+                    "1234 Thorton Drive",
+                    "Harrison, Hamilton 999999"
+                ],
+                "name": "Harrison Town Hall",
+                "email": [
+                    {
+                        "annotation": "inquiries",
+                        "value": "inquiries@harrison.hamilton.state.gov"
+                    }
+                ],
+                "phone": [
+                    {
+                        "annotation": "domestic",
+                        "value": "123-456-7890"
+                    }
+                ]
+            }
+        },
+        {
+            "objectId": "rutledge-elementary",
+            "name": "Rutledge Elementary School district",
+            "type": "school",
+            "contactInformation": {
+                "addressLine": [
+                    "1234 Wolcott Parkway",
+                    "Harrison, Hamilton 999999"
+                ],
+                "name": "Rutledge Elementary School",
+                "email": [
+                    {
+                        "annotation": "inquiries",
+                        "value": "inquiries@harrison.hamilton.state.gov"
+                    }
+                ],
+                "phone": [
+                    {
+                        "annotation": "domestic",
+                        "value": "123-456-7890"
+                    }
+                ]
+            }
+        }
+    ],
+    "parties":[
+        {
+            "objectId": "whig",
+            "abbreviation": "WHI",
+            "color": "AAAAAA",
+            "logoUri": "http://some/path/to/whig.svg",
+            "name": {
+                "text": [
+                    {
+                        "value": "Whig Party",
+                        "language": "en"
+                    }
+                ]
+            }
+        },
+        {
+            "objectId": "federalist",
+            "abbreviation": "FED",
+            "color": "CCCCCC",
+            "logoUri": "http://some/path/to/federalist.svg",
+            "name": {
+                "text": [
+                    {
+                        "value": "Federalist Party",
+                        "language": "en"
+                    }
+                ]
+            }
+        },
+        {
+            "objectId": "democratic-republican",
+            "abbreviation": "DEMREP",
+            "color": "EEEEEE",
+            "logoUri": "http://some/path/to/democratic-repulbican.svg",
+            "name": {
+                "text": [
+                    {
+                        "value": "Democratic Republican Party",
+                        "language": "en"
+                    }
+                ]
+            }
+        }
+    ],
+    "candidates": [
+        {
+            "objectId": "benjamin-franklin",
+            "ballotName": {
+                "text": [
+                    {
+                        "value": "Benjamin Franklin",
+                        "language": "en"
+                    }
+                ]
+            },
+            "partyId": "whig"
+        },
+        {
+            "objectId": "john-adams",
+            "ballotName": {
+                "text": [
+                    {
+                        "value": "John Adams",
+                        "language": "en"
+                    }
+                ]
+            },
+            "partyId": "federalist"
+        },
+        {
+            "objectId": "john-hancock",
+            "ballotName": {
+                "text": [
+                    {
+                        "value": "John Hancock",
+                        "language": "en"
+                    }
+                ]
+            },
+            "partyId": "democratic-republican"
+        },
+        {
+            "objectId": "write-in",
+            "ballotName": {
+                "text": [
+                    {
+                        "value": "Write In Candidate",
+                        "language": "en"
+                    },
+                    {
+                        "value": "Escribir en la candidata",
+                        "language": "es"
+                    }
+                ]
+            },
+            "isWriteIn": true
+        },
+        {
+            "objectId": "referendum-michigan-affirmative",
+            "ballotName": {
+                "text": [
+                    {
+                        "value": "The State Should Purchase",
+                        "language": "en"
+                    }
+                ]
+            }
+        },
+        {
+            "objectId": "referendum-michigan-negative",
+            "ballotName": {
+                "text": [
+                    {
+                        "value": "The State Should Not Purchase",
+                        "language": "en"
+                    }
+                ]
+            }
+        }
+    ],
+    "contests": [
+        {
+            "@type": "CandidateContest",
+            "objectId": "justice-supreme-court",
+            "sequenceOrder": 0,
+            "ballotSelections": [
+                {
+                    "objectId": "john-adams-selection",
+                    "sequenceOrder": 0,
+                    "candidateId": "john-adams"
+                },
+                {
+                    "objectId": "benjamin-franklin-selection",
+                    "sequenceOrder": 1,
+                    "candidateId": "benjamin-franklin"
+                },
+                {
+                    "objectId": "john-hancock-selection",
+                    "sequenceOrder": 2,
+                    "candidateId": "john-hancock"
+                },
+                {
+                    "objectId": "write-in-selection",
+                    "sequenceOrder": 3,
+                    "candidateId": "write-in"
+                }
+            ],
+            "ballotTitle": {
+                "text": [
+                    {
+                        "value": "Justice of the Supreme Court",
+                        "language": "en"
+                    },
+                    {
+                        "value": "Juez de la corte suprema",
+                        "language": "es"
+                    }
+                ]
+            },
+            "ballotSubtitle": {
+                "text": [
+                    {
+                        "value": "Pick one",
+                        "language": "en"
+                    },
+                    {
+                        "value": "Uno",
+                        "language": "es"
+                    }
+                ]
+            },
+            "voteVariation": "n_of_m",
+            "electoralDistrictId": "jefferson-county",
+            "name": "Justice of the Supreme Court",
+            "primaryPartyIds": [
+                "whig",
+                "federalist"
+            ],
+            "numberElected": 2,
+            "votesAllowed": 2
+        },
+        {
+            "@type": "ReferendumContest",
+            "objectId": "referendum-michigan",
+            "sequenceOrder": 1,
+            "ballotSelections": [
+                {
+                    "objectId": "referendum-michigan-affirmative-selection",
+                    "sequenceOrder": 0,
+                    "candidateId": "referendum-michigan-affirmative"
+                },
+                {
+                    "objectId": "referendum-michigan-negative-selection",
+                    "sequenceOrder": 1,
+                    "candidateId": "referendum-michigan-negative"
+                }
+            ],
+            "ballotTitle": {
+                "text": [
+                    {
+                        "value": "The Michigan Question",
+                        "language": "en"
+                    },
+                    {
+                        "value": "Juez de la corte suprema",
+                        "language": "es"
+                    }
+                ]
+            },
+            "ballotSubtitle": {
+                "text": [
+                    {
+                        "value": "asymmetrical affogato authentic sriracha literally messenger bag pour-over butcher. Activated charcoal poke tofu heirloom art party celiac, kinfolk drinking vinegar air plant hexagon asymmetrical keytar four dollar toast viral.",
+                        "language": "en"
+                    },
+                    {
+                        "value": "Uno",
+                        "language": "es"
+                    }
+                ]
+            },
+            "voteVariation": "one_of_m",
+            "electoralDistrictId": "harrison-township",
+            "name": "The Michigan Question",
+            "numberElected": 1,
+            "votesAllowed": 1
+        }
+    ],
+    "ballotStyles": [
+        {
+            "objectId": "jefferson-county-ballot-style",
+            "geopoliticalUnitIds": [
+                "jefferson-county"
+            ]
+        },
+        {
+            "objectId": "harrison-township-ballot-style",
+            "geopoliticalUnitIds": [
+                "jefferson-county",
+                "harrison-township"
+            ]
+        },
+        {
+            "objectId": "harrison-township-precinct-east-ballot-style",
+            "geopoliticalUnitIds": [
+                "jefferson-county",
+                "harrison-township",
+                "harrison-township-precinct-east",
+                "rutledge-elementary"
+            ]
+        },
+        {
+            "objectId": "rutledge-elementary-ballot-style",
+            "geopoliticalUnitIds": [
+                "jefferson-county",
+                "harrison-township",
+                "rutledge-elementary"
+            ]
+        }
+    ],
+    "name": {
+        "text": [
+            {
+                "value": "Jefferson County Spring Primary",
+                "language": "en"
+            },
+            {
+                "value": "Primaria de primavera del condado de Jefferson",
+                "language": "es"
+            }
+        ]
+    },
+    "contactInformation": {
+        "addressLine": [
+            "1234 Paul Revere Run",
+            "Jefferson, Hamilton 999999"
+        ],
+        "name": "Hamilton State Election Commission",
+        "email": [
+            {
+                "annotation": "press",
+                "value": "inquiries@hamilton.state.gov"
+            },
+            {
+                "annotation": "federal",
+                "value": "commissioner@hamilton.state.gov"
+            }
+        ],
+        "phone": [
+            {
+                "annotation": "domestic",
+                "value": "123-456-7890"
+            },
+            {
+                "annotation": "international",
+                "value": "+1-123-456-7890"
+            }
+        ]
+    },
+    "startDate": "2020-03-01T08:00:00-05:00",
+    "endDate": "2020-03-01T20:00:00-05:00",
+    "electionScopeId": "jefferson-county-primary",
+    "type": "primary"
+}

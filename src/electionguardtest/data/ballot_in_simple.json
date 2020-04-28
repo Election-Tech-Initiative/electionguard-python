@@ -1,0 +1,20 @@
+{
+    "objectId": "some-external-id-string-123",
+    "ballotStyle": "jefferson-county-ballot-style",
+    "contests": [
+        {
+            "objectId": "justice-supreme-court",
+            "ballotSelections": [
+                {
+                    "objectId": "john-adams-selection",
+                    "plaintext": "True"
+                },
+                {
+                    "objectId": "write-in-selection",
+                    "plaintext": "True",
+                    "extraData": "some writein value"
+                }
+            ]
+        }
+    ]
+}

@@ -1,5 +1,6 @@
 from hashlib import sha256
-from typing import Union
+from typing import Iterable, List, Union, Optional, Protocol, runtime_checkable, TypeVar
+from abc import abstractmethod
 
 from .group import (
     ElementModPOrQ,
@@ -9,11 +10,25 @@ from .group import (
     ElementModP,
 )
 
+@runtime_checkable
+class CryptoHashable(Protocol):
+    @abstractmethod
+    def crypto_hash(self) -> ElementModQ:
+        """
+        Generates a hash given the fields on the implementing instance.
+        """
+        ...
 
-# TODO: decide how we want to represent the inputs to the hash functions. For now, converting them to
-#   intermediary text strings generates consistent and predictable solutions. Adding punctuation
-#   avoids misinterpretations. But is this the "best" way to go?
+@runtime_checkable
+class CryptoHashCheckable(Protocol):
+    @abstractmethod
+    def crypto_hash_with(self, seed_hash: Optional[ElementModQ] = None) -> ElementModQ:
+        """
+        Generates a hash with a given seed that can be checked later against the seed and class metadata.
+        """
+        ...
 
+T = TypeVar("T", CryptoHashable, ElementModPOrQ, str, int)
 
 def hash_elems(*a: Union[ElementModPOrQ, str, int]) -> ElementModQ:
     """
@@ -45,3 +60,33 @@ def hash_elems(*a: Union[ElementModPOrQ, str, int]) -> ElementModQ:
     return int_to_q_unchecked(
         1 + (int.from_bytes(h.digest(), byteorder="big") % Q_MINUS_ONE)
     )
+
+def hashable_element(item: T) -> T:
+    """
+    if the item is `CryptoHashable` then unwrap the hash using the `crypto_hash` function
+    :return: the unwrapped element
+    """
+    if isinstance(item, CryptoHashable):
+        return item.crypto_hash()
+    else:
+        return item
+
+def flatten(*args: Union[T, Optional[T], Optional[List[T]]]) -> Optional[List[T]]:
+    """
+    Flatten some arguments of mixed types into a single optional collection.  
+    Supports optional parameters.
+    :param *args: args conforming to T
+    :return: a flat optional list of all of the elements passed in.
+    """
+    arguments: List[T] = []
+    for item in args:
+        if item:
+            if isinstance(item, Iterable):
+                for sub_item in item:
+                    arguments.append(hashable_element(sub_item))
+            else:
+                arguments.append(hashable_element(item))
+    if any(arguments):
+        return arguments 
+    else:
+        return None
