@@ -8,7 +8,8 @@
     "visualstudioexptteam.vscodeintellicode",
     "magicstack.magicpython",
     "hbenl.vscode-test-explorer",
-    "littlefoxteam.vscode-python-test-adapter"
+    "littlefoxteam.vscode-python-test-adapter",
+    "cschleiden.vscode-github-actions"
   ],
   // List of extensions recommended by VS Code that should not be recommended for users of this workspace.
   "unwantedRecommendations": []
