@@ -4,18 +4,23 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
+black = "*"
 coverage = "*"
+docutils = "*"
+mypy = "*"
+pylint = "*"
 pytest = "*"
 pytest-cov = "*"
-pylint = "*"
-mypy = "*"
 
 [packages]
-hypothesis = "==5.9.0"
 gmpy2 = "==2.1.0b4"
+hypothesis = "==5.9.0"
 numpy = '==1.18.2'
 typish = '*'
 jsons = '==1.1.2'
 
 [requires]
 python_version = "3.8"
+
+[pipenv]
+allow_prereleases = true
