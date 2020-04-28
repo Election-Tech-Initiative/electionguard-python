@@ -65,14 +65,14 @@ class PlaintextBallotSelection(Selection):
         :return: an integer 0 or 1 for valid data, or 0 if the data is malformed
         """
 
-        # TODO: Support integer votes greater than 1 for cases such as cumulative voting
-
         as_bool = False
         try:
             as_bool = util.strtobool(self.plaintext.lower())
         except ValueError:
             log_warning(f"to_int could not convert plaintext: {self.plaintext.lower()} to bool")
 
+        # TODO: If the boolean coercion above fails, support integer votes 
+        # greater than 1 for cases such as cumulative voting
         as_int = int(as_bool)
         return as_int
 
@@ -390,16 +390,6 @@ class CyphertextBallot(Serializable, CryptoHashCheckable):
 
     def __post_init__(self):
         self.crypto_hash = self.crypto_hash_with(self.description_hash)
-
-    def is_valid(self) -> bool:
-        """
-        """
-        children_valid: List[bool] = list()
-        for contest in self.contests:
-            children_valid.append(contest.is_valid())
-
-        return self.tracking_id is not None \
-            and all(children_valid)
 
     def crypto_hash_with(self, seed_hash: ElementModQ) -> ElementModQ:
         """
