@@ -14,8 +14,8 @@ NAME = "electionguard"
 VERSION = "0.1.0"
 LICENSE = "MIT"
 DESCRIPTION = "ElectionGuard: Support for e2e verified elections."
-AUTHOR = "Dan S. Wallach"
-AUTHOR_EMAIL = "dwallach@gmail.com"
+AUTHOR = "Microsoft Corporation"
+AUTHOR_EMAIL = "electionguard@microsoft.com"
 URL = "https://github.com/microsoft/electionguard-python"
 PROJECT_URLS = {
     "Changelog": "https://github.com/microsoft/electionguard-python/blob/master/CHANGELOG.rst",
@@ -23,11 +23,12 @@ PROJECT_URLS = {
 }
 CLASSIFIERS = [
     # http://pypi.python.org/pypi?%3Aaction=list_classifiers
-    "Development Status :: 5 - Production/Stable",
+    "Development Status :: 3 - Alpha",  # TODO Update when Stable
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: BSD License",
+    "License :: OSI Approved :: MIT License",
     "Operating System :: Unix",
     "Operating System :: POSIX",
+    "Operating System :: MacOS",
     "Operating System :: Microsoft :: Windows",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3.8",
