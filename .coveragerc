@@ -1,0 +1,7 @@
+# .coveragerc to control coverage.py
+[run]
+branch = True
+source = src/electionguard
+
+[html]
+directory = coverage_html_report
