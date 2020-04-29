@@ -10,7 +10,6 @@ docutils = "*"
 mypy = "*"
 pylint = "*"
 pytest = "*"
-pytest-cov = "*"
 
 [packages]
 gmpy2 = "==2.1.0b4"
