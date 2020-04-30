@@ -1,6 +1,6 @@
 import unittest
 
-from electionguard.election import Election
+from electionguard.election import Election, InternalElectionDescription
 
 import electionguardtest.election_factory as GENERATOR
 
@@ -38,6 +38,20 @@ class TestElection(unittest.TestCase):
 
         # Assert
         self.assertEqual(subject1.crypto_hash(), subject2.crypto_hash())
+
+    def test_election_from_file_generates_consistent_internal_description_contest_hashes(self):
+        # Arrange
+        comparator = factory.get_simple_election_from_file()
+        subject = InternalElectionDescription(comparator)
+
+        self.assertEqual(len(comparator.contests), len(subject.contests))
+
+        for expected in comparator.contests:
+            for actual in subject.contests:
+                if expected.object_id == actual.object_id:
+                    self.assertEqual(expected.crypto_hash(), actual.crypto_hash())
+
+
 
 if __name__ == '__main__':
     unittest.main()

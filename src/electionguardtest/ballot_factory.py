@@ -20,17 +20,8 @@ from electionguard.ballot import (
 )
 
 from electionguard.election import (
-    BallotStyle,
-    CyphertextElection,
-    Election,
-    ElectionType,
-    GeopoliticalUnit,
-    Candidate,
-    Party,
     ContestDescription,
-    SelectionDescription,
-    ReportingUnitType,
-    VoteVariationType
+    SelectionDescription
 )
 
 from electionguard.elgamal import (
