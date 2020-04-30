@@ -1,11 +1,9 @@
 ---
 page_type: sample
 languages:
-  - csharp
-products:
-  - dotnet
-description: "Add 150 character max description"
-urlFragment: "update-this-to-unique-url-stub"
+  - python
+description: "ElectionGuard: Support for e2e verified elections."
+urlFragment: "https://github.com/microsoft/electionguard-python"
 ---
 
 # ElectionGuard-Python
