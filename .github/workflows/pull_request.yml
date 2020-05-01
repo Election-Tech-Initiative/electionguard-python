@@ -29,6 +29,8 @@ jobs:
         run: pipenv install --dev
       - name: Change Directory
         run: cd ${{ github.workspace }}
+      - name: Install package
+        run: pipenv run python -m pip install -e .
       - name: Check linting with Pylint
         run: pipenv run pylint .
       - name: Check formatting with Black
@@ -40,8 +42,6 @@ jobs:
       - name: Check static typing with mypy
         continue-on-error: true #TODO Remove mypy check bypass
         run: pipenv run mypy bench src stubs tests setup.py
-      - name: Install package
-        run: pipenv run python -m pip install -e .
       - name: Test package import
         run: pipenv run python -c 'import electionguard; print(electionguard.__package__ + " imported")'
       - name: Run tests and check coverage
@@ -73,6 +73,8 @@ jobs:
         run: pipenv install --dev
       - name: Change Directory
         run: cd ${{ github.workspace }}
+      - name: Install package
+        run: pipenv run python -m pip install -e .
       - name: Check linting with Pylint
         run: pipenv run pylint .
       - name: Check formatting with Black
@@ -84,8 +86,6 @@ jobs:
       - name: Check static typing with mypy
         continue-on-error: true #TODO Remove mypy check bypass
         run: pipenv run mypy bench src stubs tests setup.py
-      - name: Install package
-        run: pipenv run python -m pip install -e .
       - name: Test package import
         run: pipenv run python -c 'import electionguard; print(electionguard.__package__ + " imported")'
       - name: Run tests and check coverage
@@ -98,3 +98,39 @@ jobs:
         run: |
           pip install tox tox-gh-actions
           tox
+  windows_check:
+    name: Windows Check
+    runs-on: windows-latest
+    env: 
+      PIP_FIND_LINKS: "packages/gmpy2-2.0.8-cp38-cp38-win_amd64.whl"
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Install pipenv
+        run: pip install pipenv
+      - name: Install dev dependencies
+        run: pipenv install --dev
+      - name: Change Directory
+        run: cd ${{ github.workspace }}
+      - name: Install package
+        run: pipenv run python -m pip install -e .
+      - name: Check linting with Pylint
+        run: pipenv run pylint .
+      - name: Check formatting with Black
+        continue-on-error: true #TODO Remove black check bypass
+        run: pipenv run black --check .
+      - name: Check package metadata
+        continue-on-error: true #TODO Remove package metadata check bypass
+        run: pipenv run python setup.py check --strict --metadata --restructuredtext
+      - name: Check static typing with mypy
+        continue-on-error: true #TODO Remove mypy check bypass
+        run: pipenv run mypy bench src stubs tests setup.py
+      - name: Test package import
+        run: pipenv run python -c "import electionguard; print(electionguard.__package__ + ' imported');"
+      - name: Run tests
+        continue-on-error: true #TODO Remove Window tests bypass
+        run: pipenv run pytest -x
