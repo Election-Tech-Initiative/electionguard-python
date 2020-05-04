@@ -8,8 +8,9 @@ from .ballot import (
     PlaintextBallot, 
     PlaintextBallotContest, 
     PlaintextBallotSelection,
+    hashed_ballot_nonce
 )
-from .chaum_pedersen import make_disjunctive_chaum_pedersen
+
 from .election import (
     CyphertextElection, 
     InternalElectionDescription, 
@@ -18,8 +19,7 @@ from .election import (
     SelectionDescription
 )
 from .elgamal import elgamal_encrypt
-from .group import Q, ElementModP, ElementModQ, int_to_q, flatmap_optional, unwrap_optional
-from .hash import hash_elems
+from .group import Q, ElementModP, ElementModQ, int_to_q, unwrap_optional
 from .logs import log_warning
 from .nonces import Nonces
 
@@ -109,6 +109,8 @@ def encrypt_selection(
         elgamal_public_key
     )
 
+    chaum_pedersen_nonce = next(iter(nonce_sequence))
+
     # Create the return object
     encrypted_selection = CyphertextBallotSelection(
         selection.object_id, 
@@ -116,7 +118,7 @@ def encrypt_selection(
         unwrap_optional(elgamal_encryption),
         selection_nonce,
         elgamal_public_key,
-        next(iter(nonce_sequence)),
+        chaum_pedersen_nonce,
         selection_representation,
         is_placeholder
     )
@@ -240,6 +242,8 @@ def encrypt_contest(
         log_warning("mismatching selection count: only n-of-m style elections are currently supported")
         pass
 
+    chaum_pedersen_nonce = next(iter(nonce_sequence))
+
     # Create the return object
     encrypted_contest = CyphertextBallotContest(
         contest.object_id, 
@@ -247,7 +251,7 @@ def encrypt_contest(
         encrypted_selections,
         contest_nonce,
         elgamal_public_key,
-        next(iter(nonce_sequence)),
+        chaum_pedersen_nonce,
         contest_description.number_elected
     )
 
@@ -296,12 +300,13 @@ def encrypt_ballot(
 
     # Generate a random master nonce to use for the contest and selection nonce's on the ballot
     if nonce is None:
-        random_master_nonce = randbelow(Q)
+        random_master_nonce = unwrap_optional(int_to_q(randbelow(Q)))
     else:
-        random_master_nonce = nonce
+        random_master_nonce = unwrap_optional(int_to_q(nonce))
 
-    # Include a representation of the election and the external Id in the nonce's used on the ballot
-    hashed_ballot_nonce = hash_elems(
+    # Include a representation of the election and the external Id in the nonce's used
+    # to derive other nonce values on the ballot
+    nonce_seed = hashed_ballot_nonce(
         encryption_context.crypto_extended_base_hash, ballot.object_id, random_master_nonce
     )
 
@@ -316,7 +321,7 @@ def encrypt_ballot(
                     contest, 
                     description, 
                     encryption_context.elgamal_public_key, 
-                    hashed_ballot_nonce
+                    nonce_seed
                 )
             else:
             # the contest was not voted on this ballot,
@@ -325,7 +330,7 @@ def encrypt_ballot(
                     contest_from(description),
                     description,
                     encryption_context.elgamal_public_key,
-                    hashed_ballot_nonce
+                    nonce_seed
                 )
             encrypted_contests.append(unwrap_optional(encrypted_contest))
 
@@ -335,7 +340,7 @@ def encrypt_ballot(
             ballot.ballot_style, 
             encryption_context.crypto_extended_base_hash,
             encrypted_contests,
-            unwrap_optional(int_to_q(random_master_nonce))
+            random_master_nonce
         )
 
     if not should_verify_proofs:

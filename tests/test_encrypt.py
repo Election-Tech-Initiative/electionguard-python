@@ -17,7 +17,6 @@ from electionguard.encrypt import (
 )
 
 from electionguard.election import (
-    CyphertextElection,
     ContestDescription,
     ContestDescriptionWithPlaceholders,
     SelectionDescription,

@@ -13,7 +13,6 @@ from .group import add_q, ElementModP, ElementModQ, ZERO_MOD_Q
 from .hash import CryptoHashCheckable, hash_elems
 from .logs import log_warning
 from .object_base import ObjectBase
-from .serializable import Serializable
 
 @dataclass
 class PlaintextBallotSelection(ObjectBase):
@@ -425,6 +424,16 @@ class CyphertextBallot(ObjectBase, CryptoHashCheckable):
         # TODO: Generate Tracking code
         self.tracking_id = "abc123"
 
+    @property
+    def hashed_ballot_nonce(self) -> ElementModQ:
+        """
+        :return: a hash value derivedd from the description hash, the object id, and the nonce value
+                suitable for deriving other nonce values on the ballot
+        """
+        return hashed_ballot_nonce(
+            self.description_hash, self.object_id, self.nonce
+        )
+
     def crypto_hash_with(self, seed_hash: ElementModQ) -> ElementModQ:
         """
         Given an encrypted Ballot, generates a hash, suitable for rolling up
@@ -485,3 +494,12 @@ class CyphertextBallot(ObjectBase, CryptoHashCheckable):
                 )
             )
         return all(valid_proofs)
+
+def hashed_ballot_nonce(extended_base_hash: ElementModQ, ballot_object_id: str, random_master_nonce: ElementModQ) -> ElementModQ:
+    """
+    :return: a hash value derivedd from the description hash, the object id, and the nonce value
+            suitable for deriving other nonce values on the ballot
+    """
+    return hash_elems(
+            extended_base_hash, ballot_object_id, random_master_nonce
+        )
