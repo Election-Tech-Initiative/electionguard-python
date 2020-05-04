@@ -177,22 +177,17 @@ def encrypt_contest(
     encrypted_selections: List[CyphertextBallotSelection] = list()
 
     selection_count = 0
-    highest_sequence_order = 0
     
     # Generate the encrypted selections
     for description in contest_description.ballot_selections:
         has_selection = False
-
-        # track the higest sequence order
-        if description.sequence_order > highest_sequence_order: 
-            highest_sequence_order = description.sequence_order
 
         # iterate over the actual selections for each contest description
         # and apply the selected value if it exists.  If it does not, an explicit
         # false is entered instead and the selection_count is not incremented
         # this allows consumers to only pass in the relevant selections made by a voter
         for selection in contest.ballot_selections:
-            if selection.object_id is description.object_id:
+            if selection.object_id == description.object_id:
                 # track the selection count so we can append the
                 # appropriate number of true placeholder votes
                 has_selection = True
@@ -316,12 +311,13 @@ def encrypt_ballot(
     for description in election_metadata.get_contests_for(ballot.ballot_style):
         for contest in ballot.contests:
             # encrypt it as specified
-            if contest.object_id is description.object_id:
+            if contest.object_id == description.object_id:
                 encrypted_contest = encrypt_contest(
                     contest, 
                     description, 
                     encryption_context.elgamal_public_key, 
-                    hashed_ballot_nonce)
+                    hashed_ballot_nonce
+                )
             else:
             # the contest was not voted on this ballot,
             # but we still need to encrypt selections for it
@@ -338,12 +334,9 @@ def encrypt_ballot(
             ballot.object_id, 
             ballot.ballot_style, 
             encryption_context.crypto_extended_base_hash,
-            encrypted_contests)
-
-    encrypted_ballot.nonce = int_to_q(random_master_nonce)
-
-    # TODO: Generate Tracking code
-    encrypted_ballot.tracking_id = "abc123"
+            encrypted_contests,
+            unwrap_optional(int_to_q(random_master_nonce))
+        )
 
     if not should_verify_proofs:
         return encrypted_ballot

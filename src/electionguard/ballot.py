@@ -413,18 +413,21 @@ class CyphertextBallot(Serializable, CryptoHashCheckable):
     # The list of contests for this ballot
     contests: List[CyphertextBallotContest]
 
+    # the nonce used to encrypt this ballot
+    # this value is sensitive & should be treated as a secret
+    nonce: ElementModQ
+
     # the hash of the encrypted ballot representation
     crypto_hash: ElementModQ = field(init=False)
 
-    # the nonce used to encrypt this ballot
-    # this value is sensitive & should be treated as a secret
-    nonce: Optional[ElementModQ] = field(default=None)
-
     # the unique ballot tracking id for this ballot
-    tracking_id: Optional[str] = field(default=None)
+    tracking_id: str = field(init=False)
 
     def __post_init__(self) -> None:
         self.crypto_hash = self.crypto_hash_with(self.description_hash)
+
+        # TODO: Generate Tracking code
+        self.tracking_id = "abc123"
 
     def crypto_hash_with(self, seed_hash: ElementModQ) -> ElementModQ:
         """

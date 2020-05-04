@@ -303,7 +303,6 @@ class Contest(Serializable):
     """
     object_id: str
 
-# TODO: Freeze all
 @dataclass 
 class ContestDescription(Contest, CryptoHashable):
     """
@@ -398,6 +397,19 @@ class ContestDescriptionWithPlaceholders(ContestDescription):
 
     def is_valid(self) -> bool:
         return len(self.placeholder_selections) == self.number_elected
+
+    def selection_for(self, selection_id: str) -> Optional[SelectionDescription]:
+        matching_selections = list(filter(lambda i: i.object_id == selection_id, self.ballot_selections))
+
+        if any(matching_selections):
+            return matching_selections[0]
+
+        matching_palceholders = list(filter(lambda i: i.object_id == selection_id, self.placeholder_selections))
+
+        if any(matching_palceholders):
+            return matching_palceholders[0]
+        else:
+            return None
 
 @dataclass # TODO: Frozen
 class ElectionDescription(Serializable, CryptoHashable):
@@ -635,6 +647,15 @@ class InternalElectionDescription(object):
         object.__setattr__(self, 'geopolitical_units', description.geopolitical_units)
         object.__setattr__(self, 'ballot_styles', description.ballot_styles)
         object.__setattr__(self, 'contests', self._generate_contests_with_placeholders(description))
+
+    def contest_for(self, contest_id: str) -> Optional[ContestDescriptionWithPlaceholders]:
+        matching_contests = list(filter(lambda i: i.object_id == contest_id, self.contests))
+
+        if any(matching_contests):
+            return matching_contests[0]
+        else:
+            return None
+
 
     def get_ballot_style(self, ballot_style_id: str) -> BallotStyle:
         """

@@ -341,6 +341,7 @@ class TestEncrypt(unittest.TestCase):
 
         # Assert
         self.assertIsNotNone(result)
+        self.assertEqual(data.object_id, result.object_id)
         self.assertTrue(result.is_valid_encryption(encryption_context.crypto_extended_base_hash, keypair.public_key))
 
     @settings(

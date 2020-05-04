@@ -61,7 +61,10 @@ class BallotFactory(object):
         return selection_from(description, is_placeholder, selected)
 
     def get_random_contest_from(self, description: ContestDescription):
-        
+        """
+        Get a randomly filled contest for the given description that 
+        may be undervoted and may include explicitly false votes
+        """
         selections: List[PlaintextBallotSelection] = list()
 
         voted = 0
