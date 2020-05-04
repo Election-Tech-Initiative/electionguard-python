@@ -8,15 +8,15 @@ from .chaum_pedersen import (
     make_constant_chaum_pedersen, 
     make_disjunctive_chaum_pedersen
 )
-from .election import Contest, Selection
 from .elgamal import ElGamalCiphertext, elgamal_add
 from .group import add_q, ElementModP, ElementModQ, ZERO_MOD_Q
 from .hash import CryptoHashCheckable, hash_elems
 from .logs import log_warning
+from .object_base import ObjectBase
 from .serializable import Serializable
 
 @dataclass
-class PlaintextBallotSelection(Selection):
+class PlaintextBallotSelection(ObjectBase):
     """
     A BallotSelection represents an individual selection on a ballot.
 
@@ -82,7 +82,7 @@ class PlaintextBallotSelection(Selection):
         return as_int
 
 @dataclass
-class CyphertextBallotSelection(Contest, CryptoHashCheckable):
+class CyphertextBallotSelection(ObjectBase, CryptoHashCheckable):
     """
     A CyphertextBallotSelection represents an individual encrypted selection on a ballot.
 
@@ -192,7 +192,7 @@ class CyphertextBallotSelection(Contest, CryptoHashCheckable):
         return hash_elems(seed_hash, self.message.crypto_hash())
 
 @dataclass
-class PlaintextBallotContest(Contest):
+class PlaintextBallotContest(ObjectBase):
     """
     A PlaintextBallotContest represents the selections made by a voter for a specific ContestDescription
 
@@ -247,7 +247,7 @@ class PlaintextBallotContest(Contest):
         return True
 
 @dataclass
-class CyphertextBallotContest(Contest, CryptoHashCheckable):
+class CyphertextBallotContest(ObjectBase, CryptoHashCheckable):
     """
     A CyphertextBallotContest represents the selections made by a voter for a specific ContestDescription
 
@@ -369,13 +369,11 @@ class CyphertextBallotContest(Contest, CryptoHashCheckable):
         return self.proof.is_valid(elgamal_accumulation, elgamal_public_key)
 
 @dataclass
-class PlaintextBallot(Serializable):
+class PlaintextBallot(ObjectBase):
     """
     A PlaintextBallot represents a voters selections for a given ballot and ballot style
+    :field object_id: A unique Ballot ID that is relevant to the external system
     """
-
-    # A unique Ballot ID that is relevant to the external system
-    object_id: str
 
     # The `object_id` of the `BallotStyle` in the `Election` Manifest
     ballot_style: str
@@ -392,17 +390,15 @@ class PlaintextBallot(Serializable):
         return True
 
 @dataclass
-class CyphertextBallot(Serializable, CryptoHashCheckable):
+class CyphertextBallot(ObjectBase, CryptoHashCheckable):
     """
     A CyphertextBallot represents a voters encrypted selections for a given ballot and ballot style
 
     When a ballot is in it's complete, encrypted state, the `nonce` is the master nonce
     from which all other nonces can be derived to encrypt the ballot.  Allong with the `nonce`
     fields on `Ballotcontest` and `BallotSelection`, this value is sensitive.
+     :field object_id: A unique Ballot ID that is relevant to the external system
     """
-
-    # A unique Ballot ID that is relevant to the external system
-    object_id: str
 
     # The `object_id` of the `BallotStyl` in the `Election` Manifest
     ballot_style: str

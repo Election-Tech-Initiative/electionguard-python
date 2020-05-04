@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field, InitVar
 from datetime import datetime
 from enum import Enum, unique
-from typing import cast, List, Optional, Tuple, Set, Union
+from typing import cast, List, Optional, Set, Union
 
 from .group import (
     Q,
@@ -13,6 +13,7 @@ from .group import (
     )
 from .hash import CryptoHashable, flatten, hash_elems
 from .logs import log_warning
+from .object_base import ObjectBase
 from .serializable import Serializable
 
 @unique
@@ -156,13 +157,12 @@ class ContactInformation(Serializable, CryptoHashable):
         ))
 
 @dataclass
-class GeopoliticalUnit(Serializable, CryptoHashable):
+class GeopoliticalUnit(ObjectBase, CryptoHashable):
     """
     Use this entity for defining geopolitical units such as cities, districts, jurisdictions, or precincts, 
     for the purpose of associating contests, offices, vote counts, or other information with the geographies.
     See: https://developers.google.com/elections-data/reference/gp-unit
     """
-    object_id: str
     name: str
     type: ReportingUnitType
     contact_information: Optional[ContactInformation] = field(default=None)
@@ -180,10 +180,9 @@ class GeopoliticalUnit(Serializable, CryptoHashable):
         )
 
 @dataclass
-class BallotStyle(Serializable, CryptoHashable):
+class BallotStyle(ObjectBase, CryptoHashable):
     """
     """
-    object_id: str
     geopolitical_unit_ids: Optional[List[str]] = field(default=None)
     party_ids: Optional[List[str]] = field(default=None)
     image_uri: Optional[str] = field(default=None)
@@ -201,12 +200,11 @@ class BallotStyle(Serializable, CryptoHashable):
         )
 
 @dataclass
-class Party(Serializable, CryptoHashable):
+class Party(ObjectBase, CryptoHashable):
     """
     Use this entity to describe a political party that can then be referenced from other entities.
     See: https://developers.google.com/elections-data/reference/party
     """
-    object_id: str
     ballot_name: InternationalizedText = field(default=InternationalizedText())
     abbreviation: Optional[str] = field(default=None)
     color: Optional[str] = field(default=None)
@@ -226,7 +224,7 @@ class Party(Serializable, CryptoHashable):
         )
 
 @dataclass
-class Candidate(Serializable, CryptoHashable):
+class Candidate(ObjectBase, CryptoHashable):
     """
     This entity describes information about a candidate in a contest. 
     See: https://developers.google.com/elections-data/reference/candidate
@@ -236,7 +234,6 @@ class Candidate(Serializable, CryptoHashable):
     would be included in the model to represent the `affirmative` and `negative`
     selections for the contest.  See the wiki, readme's, and tests in this repo for more info
     """
-    object_id: str
     ballot_name: InternationalizedText = field(default=InternationalizedText())
     party_id: Optional[str] = field(default=None)
     image_uri: Optional[str] = field(default=None)
@@ -253,26 +250,16 @@ class Candidate(Serializable, CryptoHashable):
             )
         )
 
-@dataclass
-class Selection(Serializable):
-    """
-    This data entity is for the ballot selections in a contest, 
-    for example linking candidates and parties to their vote counts.
-    See: https://developers.google.com/elections-data/reference/ballot-selection
-    Note: The ElectionGuard Data Spec deviates from the NIST model in that
-    there is no difference for different types of selections.  Additionally,
-    This base dataclass enforces referential integrity between a `SelectionDescription`
-    in an Election Manifest and a `BallotSelection` on a specific ballot.
-    """
-    object_id: str
 
 @dataclass
-class SelectionDescription(Selection, CryptoHashable):
+class SelectionDescription(ObjectBase, CryptoHashable):
     """
     This data entity is for the ballot selections in a contest, 
     for example linking candidates and parties to their vote counts.
     See: https://developers.google.com/elections-data/reference/ballot-selection
     Note: The ElectionGuard Data Spec deviates from the NIST model in that
+    there is no difference for different types of selections. 
+    The ElectionGuard Data Spec deviates from the NIST model in that
     `sequence_order` is a required field since it is used for ordering selections 
     in a contest to ensure various encryption primitives are deterministic.
     For a given election, the sequence of selections displayed to a user may be different
@@ -290,21 +277,9 @@ class SelectionDescription(Selection, CryptoHashable):
             self.sequence_order, 
             self.candidate_id
         )
-    
-@dataclass
-class Contest(Serializable):
-    """
-    Use this data entity for describing a contest and linking the contest 
-    to the associated candidates and parties.
-    See: https://developers.google.com/elections-data/reference/contest
-    Note: The ElectionGuard Data Spec deviates from the NIST model in that
-    this base dataclass enforces referential integrity between a `ContestDescription`
-    in an Election Manifest and a `BallotContest` on a specific ballot.
-    """
-    object_id: str
 
 @dataclass 
-class ContestDescription(Contest, CryptoHashable):
+class ContestDescription(ObjectBase, CryptoHashable):
     """
     Use this data entity for describing a contest and linking the contest 
     to the associated candidates and parties.
@@ -411,7 +386,7 @@ class ContestDescriptionWithPlaceholders(ContestDescription):
         else:
             return None
 
-@dataclass # TODO: Frozen
+@dataclass
 class ElectionDescription(Serializable, CryptoHashable):
     """
     Use this entity for defining the structure of the election and associated 
