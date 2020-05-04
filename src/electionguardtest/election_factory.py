@@ -26,7 +26,7 @@ from electionguard.election import (
     BallotStyle,
     CyphertextElection,
     ElectionGuardElectionBuilder,
-    Election,
+    ElectionDescription,
     ElectionType,
     InternalElectionDescription,
     generate_placeholder_selections_from,
@@ -75,10 +75,10 @@ class ElectionFactory(object):
 
     simple_election_manifest_file_name = 'election_manifest_simple.json'
 
-    def get_simple_election_from_file(self) -> Election:
+    def get_simple_election_from_file(self) -> ElectionDescription:
         return self._get_election_from_file(self.simple_election_manifest_file_name)
 
-    def get_fake_election(self) -> Election:
+    def get_fake_election(self) -> ElectionDescription:
         """
         Get a single Fake Election object that is manually constructed with default values
         """
@@ -122,7 +122,7 @@ class ElectionFactory(object):
             fake_candidate_ballot_selections
         )
 
-        fake_election = Election(
+        fake_election = ElectionDescription(
             election_scope_id = "some-scope-id",
             type = ElectionType.unknown,
             start_date = datetime.now(),
@@ -155,7 +155,7 @@ class ElectionFactory(object):
         return fake_election
 
     def get_fake_cyphertext_election(
-        self, description: Election, elgamal_public_key: ElementModP) -> Tuple[InternalElectionDescription, CyphertextElection]:
+        self, description: ElectionDescription, elgamal_public_key: ElementModP) -> Tuple[InternalElectionDescription, CyphertextElection]:
         builder = ElectionGuardElectionBuilder(
             number_trustees=1,
             threshold_trustees=1,
@@ -166,7 +166,7 @@ class ElectionFactory(object):
         return (metadata, election)
 
     # TODO: Move to ballot Factory?
-    def get_fake_ballot(self, election: Election = None) -> PlaintextBallot:
+    def get_fake_ballot(self, election: ElectionDescription = None) -> PlaintextBallot:
         """
         Get a single Fake Ballot object that is manually constructed with default vaules
         """
@@ -183,10 +183,10 @@ class ElectionFactory(object):
 
         return fake_ballot
 
-    def _get_election_from_file(self, filename: str) -> Election:
+    def _get_election_from_file(self, filename: str) -> ElectionDescription:
         with open(os.path.join(here, 'data', filename), 'r') as subject:
             data = subject.read()
-            target = Election.from_json(data)
+            target = ElectionDescription.from_json(data)
 
         return target
 

@@ -12,7 +12,7 @@ from .ballot import (
 from .chaum_pedersen import make_constant_chaum_pedersen, make_disjunctive_chaum_pedersen
 from .election import (
     CyphertextElection, 
-    Election, 
+    ElectionDescription, 
     InternalElectionDescription, 
     ContestDescription, 
     ContestDescriptionWithPlaceholders, 

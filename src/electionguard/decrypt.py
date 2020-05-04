@@ -9,7 +9,7 @@ from .ballot import (
     PlaintextBallotSelection,
 )
 
-from .election import CyphertextElection, Election, ContestDescription, SelectionDescription
+from .election import CyphertextElection, ElectionDescription, ContestDescription, SelectionDescription
 
 from .elgamal import ElGamalCiphertext
 from .group import Q, ElementModP, ElementModQ
@@ -26,7 +26,7 @@ def decrypt_selection_with_secret(
 
     plaintext = selection.message.decrypt(secret_key)
 
-    # TODO: handle decryption of the extradata field ifg needed
+    # TODO: handle decryption of the extradata field if needed
 
     return PlaintextBallotSelection(selection.object_id, f"{bool(plaintext)}", selection.is_placeholder_selection)
 
@@ -43,6 +43,6 @@ def decrypt_selection_with_nonce(
 
     plaintext = selection.message.decrypt_known_nonce(public_key, nonce)
 
-    # TODO: handle decryption of the extradata field ifg needed
+    # TODO: handle decryption of the extradata field if needed
 
     return PlaintextBallotSelection(selection.object_id, f"{bool(plaintext)}", selection.is_placeholder_selection)

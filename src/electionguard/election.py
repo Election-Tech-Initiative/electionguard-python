@@ -305,7 +305,8 @@ class Contest(Serializable):
     """
     object_id: str
 
-@dataclass
+# TODO: Freeze all
+@dataclass 
 class ContestDescription(Contest, CryptoHashable):
     """
     Use this data entity for describing a contest and linking the contest 
@@ -417,7 +418,7 @@ class ContestDescriptionWithPlaceholders(ContestDescription):
         return len(self.placeholder_selections) == self.number_elected
 
 @dataclass # TODO: Frozen
-class Election(Serializable, CryptoHashable):
+class ElectionDescription(Serializable, CryptoHashable):
     """
     Use this entity for defining the structure of the election and associated 
     information such as candidates, contests, and vote counts.  This class is
@@ -637,7 +638,7 @@ class InternalElectionDescription(object):
     the components that ElectionGuard uses for conducting an election.  The key component is the
     `contests` collection, which applices placeholder selections to the `ElectionDescription` contests
     """
-    description: InitVar[Election] = None
+    description: InitVar[ElectionDescription] = None
 
     geopolitical_units: List[GeopoliticalUnit] = field(init=False)
 
@@ -647,7 +648,7 @@ class InternalElectionDescription(object):
 
     description_hash: ElementModQ = field(init=False)
 
-    def __post_init__(self, description: Election) -> None:
+    def __post_init__(self, description: ElectionDescription) -> None:
         object.__setattr__(self, 'description_hash', description.crypto_hash())
         object.__setattr__(self, 'geopolitical_units', description.geopolitical_units)
         object.__setattr__(self, 'ballot_styles', description.ballot_styles)
@@ -657,7 +658,6 @@ class InternalElectionDescription(object):
         """
         Get a ballot style for a specified ballot_style_id
         """
-        #style = [ballot_style for ballot_style in self.ballot_styles if ballot_style.object_id is ballot_style_id]
         style = list(filter(lambda i: i.object_id == ballot_style_id, self.ballot_styles))[0]
         return style
 
@@ -669,7 +669,7 @@ class InternalElectionDescription(object):
         contests = list(filter(lambda i: i.electoral_district_id in gp_unit_ids, self.contests))
         return contests
 
-    def _generate_contests_with_placeholders(self, description: Election) -> List[ContestDescriptionWithPlaceholders]:
+    def _generate_contests_with_placeholders(self, description: ElectionDescription) -> List[ContestDescriptionWithPlaceholders]:
         """
         for each contest, append the `number_elected` number 
         of placeholder selections to the end of the contest collection
@@ -748,7 +748,7 @@ class ElectionGuardElectionBuilder(object):
     number_trustees: int
     threshold_trustees: int
 
-    description: Election
+    description: ElectionDescription
 
     internal_description: InternalElectionDescription = field(init=False)
 
