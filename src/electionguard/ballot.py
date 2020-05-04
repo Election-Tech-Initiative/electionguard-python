@@ -130,7 +130,7 @@ class CyphertextBallotSelection(ObjectBase, CryptoHashCheckable):
 
     # the proof that demonstrates the selection is an encryption of 0 or 1,
     # and was encrypted using the `nonce`
-    proof: DisjunctiveChaumPedersenProof = field(init=False)
+    proof: Optional[DisjunctiveChaumPedersenProof] = field(init=False, default=None)
 
     def __post_init__(self, elgamal_public_key: ElementModP, proof_seed: ElementModQ, selection_representation: int) -> None:
         object.__setattr__(self, 'crypto_hash', self.crypto_hash_with(self.description_hash))
@@ -283,7 +283,7 @@ class CyphertextBallotContest(ObjectBase, CryptoHashCheckable):
 
     # the proof demonstrates the sum of the selections does not exceed the maximum
     # available selections for the contest, and that the proof was generated with the nonce
-    proof: ConstantChaumPedersenProof = field(init=False)
+    proof: Optional[ConstantChaumPedersenProof] = field(init=False)
 
     def __post_init__(self, elgamal_public_key: ElementModP, proof_seed: ElementModQ, number_elected: int) -> None:
         object.__setattr__(self, 'crypto_hash',self.crypto_hash_with(self.description_hash))

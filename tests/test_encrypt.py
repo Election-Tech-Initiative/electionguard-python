@@ -75,6 +75,33 @@ class TestEncrypt(unittest.TestCase):
         self.assertIsNotNone(result.message)
         self.assertTrue(result.is_valid_encryption(hash_context, keypair.public_key))
 
+    def test_encrypt_simple_selection_malformed_data_fails(self):
+
+        # Arrange
+        keypair = elgamal_keypair_from_secret(int_to_q(2))
+        nonce = randbelow(Q)
+        metadata = SelectionDescription("some-selection-object-id", "some-candidate-id", 1)
+        hash_context = metadata.crypto_hash()
+
+        subject = selection_from(metadata)
+        self.assertTrue(subject.is_valid(metadata.object_id))
+
+        # Act
+        result = encrypt_selection(subject, metadata, keypair.public_key, nonce)
+
+        # tamper with the description_hash
+        malformed_description_hash = deepcopy(result)
+        malformed_description_hash.description_hash = TWO_MOD_Q
+
+        # remove the proof
+        missing_proof = deepcopy(result)
+        missing_proof.proof = None
+
+
+        # Assert
+        self.assertFalse(malformed_description_hash.is_valid_encryption(hash_context, keypair.public_key))
+        self.assertFalse(missing_proof.is_valid_encryption(hash_context, keypair.public_key))
+
     @settings(
         deadline=timedelta(milliseconds=2000),
         suppress_health_check=[HealthCheck.too_slow],
@@ -250,8 +277,13 @@ class TestEncrypt(unittest.TestCase):
         )
         malformed_proof.proof = malformed_disjunctive
 
+        # remove the proof
+        missing_proof = deepcopy(result)
+        missing_proof.proof = None
+
         # Assert
         self.assertFalse(malformed_proof.is_valid_encryption(description.crypto_hash(), keypair.public_key))
+        self.assertFalse(missing_proof.is_valid_encryption(description.crypto_hash(), keypair.public_key))
         
     @settings(
         deadline=timedelta(milliseconds=2000),

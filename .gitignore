@@ -130,3 +130,9 @@ dmypy.json
 
 # PyCharm
 .idea/
+
+coverage/
+
+cov.xml
+
+.DS_Store

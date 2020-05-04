@@ -1,4 +1,5 @@
 import unittest
+from copy import deepcopy
 from datetime import timedelta
 from typing import Tuple
 
@@ -30,7 +31,9 @@ from electionguard.elgamal import (
 )
 
 from electionguard.group import (
-    ElementModQ
+    ElementModQ,
+    TWO_MOD_P,
+    mult_p,
 )
 
 from electionguardtest.elgamal import arb_elgamal_keypair
@@ -76,6 +79,67 @@ class TestDecrypt(unittest.TestCase):
         self.assertEqual(data.plaintext, result_from_key.plaintext)
         self.assertEqual(data.plaintext, result_from_nonce.plaintext)
         self.assertEqual(data.plaintext, result_from_nonce_seed.plaintext)
+
+    @settings(
+        deadline=timedelta(milliseconds=2000),
+        suppress_health_check=[HealthCheck.too_slow],
+        max_examples=10,
+    )
+    @given(
+        ElectionFactory.get_selection_description_well_formed(),
+        arb_elgamal_keypair(),
+        arb_element_mod_q_no_zero(),
+    )
+    def test_decrypt_selection_valid_input_tampered_fails(self,
+        selection_description: Tuple[str, SelectionDescription], 
+        keypair: ElGamalKeyPair,
+        seed: ElementModQ):
+
+        # Arrange
+        _, description = selection_description
+        data = ballot_factory.get_random_selection_from(description)
+
+        # Act
+        subject = encrypt_selection(data, description, keypair.public_key, seed)
+
+        # tamper with the encryption
+        malformed_encryption = deepcopy(subject)
+        malformed_message = malformed_encryption.message._replace(
+            alpha=mult_p(subject.message.alpha, TWO_MOD_P)
+        )
+        malformed_encryption.message = malformed_message
+
+        # tamper with the proof
+        malformed_proof = deepcopy(subject)
+        malformed_disjunctive = malformed_proof.proof._replace(
+            a0=mult_p(subject.proof.a0, TWO_MOD_P)
+        )
+        malformed_proof.proof = malformed_disjunctive
+
+
+        result_from_key_malformed_encryption = decrypt_selection_with_secret(
+            malformed_encryption, description, keypair.public_key, keypair.secret_key
+        )
+
+        result_from_key_malformed_proof = decrypt_selection_with_secret(
+            malformed_proof, description, keypair.public_key, keypair.secret_key
+        )
+
+        result_from_nonce_malformed_encryption = decrypt_selection_with_nonce(
+            malformed_encryption, description, keypair.public_key
+        )
+        result_from_nonce_malformed_proof = decrypt_selection_with_nonce(
+            malformed_proof, description, keypair.public_key
+        )
+
+        # Assert
+        self.assertIsNone(result_from_key_malformed_encryption)
+        self.assertIsNone(result_from_key_malformed_proof)
+        self.assertIsNone(result_from_nonce_malformed_encryption)
+        # self.assertIsNone(result_from_nonce_malformed_proof)
+        # self.assertEqual(data.plaintext, result_from_key.plaintext)
+        # self.assertEqual(data.plaintext, result_from_nonce.plaintext)
+        # self.assertEqual(data.plaintext, result_from_nonce_seed.plaintext)
     
     @settings(
         deadline=timedelta(milliseconds=2000),
