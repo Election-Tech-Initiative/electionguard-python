@@ -1,26 +1,17 @@
 from __future__ import annotations
-from dataclasses import dataclass, field, InitVar
-from typing import cast, List, Optional, Tuple, Set, Union
+from dataclasses import dataclass, field
+from typing import Optional, Tuple
 
 from .election import (
     CyphertextElection, 
     ElectionDescription, 
-    InternalElectionDescription, 
-    ContestDescription, 
-    ContestDescriptionWithPlaceholders, 
-    SelectionDescription
+    InternalElectionDescription
 )
 
 from .group import (
-    Q,
-    P,
-    G,
-    ElementModQ, 
     ElementModP,
     unwrap_optional
     )
-
-from .logs import log_warning
 
 @dataclass
 class ElectionGuardElectionBuilder(object):
@@ -61,4 +52,3 @@ class ElectionGuardElectionBuilder(object):
                 self.description.crypto_hash()
             )
         )
-        

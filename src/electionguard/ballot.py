@@ -1,8 +1,13 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, InitVar
 from distutils import util
 from typing import Optional, List
 
-from .chaum_pedersen import ConstantChaumPedersenProof, DisjunctiveChaumPedersenProof
+from .chaum_pedersen import (
+    ConstantChaumPedersenProof, 
+    DisjunctiveChaumPedersenProof, 
+    make_constant_chaum_pedersen, 
+    make_disjunctive_chaum_pedersen
+)
 from .election import Contest, Selection
 from .elgamal import ElGamalCiphertext, elgamal_add
 from .group import add_q, ElementModP, ElementModQ, ZERO_MOD_Q
@@ -108,22 +113,36 @@ class CyphertextBallotSelection(Contest, CryptoHashCheckable):
     # The encrypted representation of the plaintext field
     message: ElGamalCiphertext
 
-    # determines if this is a placeholder selection
-    is_placeholder_selection: bool = field(default=False)
-
     # The nonce used to generate the encryption
     # this value is sensitive & should be treated as a secret
-    nonce: Optional[ElementModQ] = field(default=None)
+    nonce: ElementModQ
+
+    elgamal_public_key: InitVar[ElementModP]
+
+    proof_seed: InitVar[ElementModQ]
+
+    selection_representation: InitVar[int]
+
+    # determines if this is a placeholder selection
+    is_placeholder_selection: bool = field(default=False)
 
     # The hash of the encrypted values
     crypto_hash: ElementModQ = field(init=False)
 
     # the proof that demonstrates the selection is an encryption of 0 or 1,
     # and was encrypted using the `nonce`
-    proof: Optional[DisjunctiveChaumPedersenProof] = field(default=None)
+    proof: DisjunctiveChaumPedersenProof = field(init=False)
 
-    def __post_init__(self):
-        self.crypto_hash = self.crypto_hash_with(self.description_hash)
+    def __post_init__(self, elgamal_public_key: ElementModP, proof_seed: ElementModQ, selection_representation: int) -> None:
+        object.__setattr__(self, 'crypto_hash', self.crypto_hash_with(self.description_hash))
+        object.__setattr__(self, 'proof', make_disjunctive_chaum_pedersen(
+                self.message,
+                self.nonce,
+                elgamal_public_key,
+                proof_seed,
+                selection_representation,
+            )
+        )
 
     def is_valid_encryption(self, seed_hash: ElementModQ, elgamal_public_key: ElementModP) -> bool:
         """
@@ -250,19 +269,35 @@ class CyphertextBallotContest(Contest, CryptoHashCheckable):
     # collection of ballot selections
     ballot_selections: List[CyphertextBallotSelection]
 
+    # the nonce used to generate the encryption
+    # this value is sensitive & should be treated as a secret
+    nonce: ElementModQ
+
+    elgamal_public_key: InitVar[ElementModP]
+
+    proof_seed: InitVar[ElementModQ]
+
+    number_elected: InitVar[int]
+
     # Hash of the encrypted values
     crypto_hash: ElementModQ = field(init=False)
 
-    # the nonce used to generate the encryption
-    # this value is sensitive & should be treated as a secret
-    nonce: Optional[ElementModQ] = field(default=None)
-
     # the proof demonstrates the sum of the selections does not exceed the maximum
     # available selections for the contest, and that the proof was generated with the nonce
-    proof: Optional[ConstantChaumPedersenProof] = field(default=None)
+    proof: ConstantChaumPedersenProof = field(init=False)
 
-    def __post_init__(self):
-        self.crypto_hash = self.crypto_hash_with(self.description_hash)
+    def __post_init__(self, elgamal_public_key: ElementModP, proof_seed: ElementModQ, number_elected: int) -> None:
+        object.__setattr__(self, 'crypto_hash',self.crypto_hash_with(self.description_hash))
+
+        # Generate the proof when the object is created
+        object.__setattr__(self, 'proof', make_constant_chaum_pedersen(
+                message=self.elgamal_accumulate(),
+                constant=number_elected,
+                r=self.aggregate_nonce(),
+                k=elgamal_public_key,
+                seed=proof_seed
+            )
+        )
 
     def aggregate_nonce(self) -> ElementModQ:
         """
@@ -388,7 +423,7 @@ class CyphertextBallot(Serializable, CryptoHashCheckable):
     # the unique ballot tracking id for this ballot
     tracking_id: Optional[str] = field(default=None)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self.crypto_hash = self.crypto_hash_with(self.description_hash)
 
     def crypto_hash_with(self, seed_hash: ElementModQ) -> ElementModQ:

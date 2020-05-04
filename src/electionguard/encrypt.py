@@ -1,4 +1,4 @@
-from typing import Optional, List, Union
+from typing import Optional, List
 from secrets import randbelow
 
 from .ballot import (
@@ -9,10 +9,9 @@ from .ballot import (
     PlaintextBallotContest, 
     PlaintextBallotSelection,
 )
-from .chaum_pedersen import make_constant_chaum_pedersen, make_disjunctive_chaum_pedersen
+from .chaum_pedersen import make_disjunctive_chaum_pedersen
 from .election import (
     CyphertextElection, 
-    ElectionDescription, 
     InternalElectionDescription, 
     ContestDescription, 
     ContestDescriptionWithPlaceholders, 
@@ -115,24 +114,11 @@ def encrypt_selection(
         selection.object_id, 
         selection_description.crypto_hash(),
         unwrap_optional(elgamal_encryption),
-        is_placeholder,
-        selection_nonce
-    )
-
-    # Assign the nonce
-    encrypted_selection.nonce = selection_nonce
-
-    # Generate the Proof
-    # TODO: move the proof generation blocks into the object itself?
-    encrypted_selection.proof = flatmap_optional(
-        encrypted_selection.message,
-        lambda elgamal_cyphertext: make_disjunctive_chaum_pedersen(
-            elgamal_cyphertext,
-            selection_nonce,
-            elgamal_public_key,
-            next(iter(nonce_sequence)),
-            selection_representation,
-        )
+        selection_nonce,
+        elgamal_public_key,
+        next(iter(nonce_sequence)),
+        selection_representation,
+        is_placeholder
     )
 
     # optionally, skip the verification step
@@ -263,18 +249,11 @@ def encrypt_contest(
     encrypted_contest = CyphertextBallotContest(
         contest.object_id, 
         contest_description.crypto_hash(), 
-        encrypted_selections
-    )
-
-    encrypted_contest.nonce = contest_nonce
-
-    # Generate and Verify Proof
-    encrypted_contest.proof = make_constant_chaum_pedersen(
-        message=encrypted_contest.elgamal_accumulate(),
-        constant=contest_description.number_elected,
-        r=encrypted_contest.aggregate_nonce(),
-        k=elgamal_public_key,
-        seed=next(iter(nonce_sequence)),
+        encrypted_selections,
+        contest_nonce,
+        elgamal_public_key,
+        next(iter(nonce_sequence)),
+        contest_description.number_elected
     )
 
     if not should_verify_proofs:
