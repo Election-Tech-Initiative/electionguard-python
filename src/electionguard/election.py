@@ -1,5 +1,3 @@
-from __future__ import annotations
-from copy import deepcopy
 from dataclasses import dataclass, field, InitVar
 from datetime import datetime
 from enum import Enum, unique
@@ -394,22 +392,6 @@ class ContestDescriptionWithPlaceholders(ContestDescription):
     # Placeholders are used when generating a contest's `ConstantChaumPedersenProof`
     # to verify that the selection total on the ballot sums to the total number of expected selections
     placeholder_selections: List[SelectionDescription] = field(default_factory=lambda: [])
-
-    @classmethod
-    def copy_from(cls, description: ContestDescription, placeholders: List[SelectionDescription]) -> ContestDescriptionWithPlaceholders:
-        return ContestDescriptionWithPlaceholders(
-                    object_id=description.object_id,
-                    electoral_district_id=description.electoral_district_id,
-                    sequence_order=description.sequence_order,
-                    vote_variation=description.vote_variation,
-                    number_elected=description.number_elected,
-                    votes_allowed=description.votes_allowed,
-                    name=description.name,
-                    ballot_selections=description.ballot_selections,
-                    ballot_title=description.ballot_title,
-                    ballot_subtitle=description.ballot_subtitle,
-                    placeholder_selections=placeholders
-        )
                 
     def get_all_ballot_selections(self) -> List[SelectionDescription]:
         return self.ballot_selections + self.placeholder_selections
@@ -678,7 +660,7 @@ class InternalElectionDescription(object):
         for contest in description.contests:
             placeholder_selections = generate_placeholder_selections_from(contest, contest.number_elected)
             contests.append(
-                ContestDescriptionWithPlaceholders.copy_from(contest, placeholder_selections)
+                contest_description_with_placeholders_from(contest, placeholder_selections)
             )
 
         return contests
@@ -739,44 +721,19 @@ class CyphertextElection(Serializable): #TODO: CryptoHashcheckable
 
         return hash_elems(self.crypto_base_hash, elgamal_public_key)
 
-@dataclass
-class ElectionGuardElectionBuilder(object):
-    """
-    `ElectionGuardElectionBuilder` is a stateful builder object that constructs `CyphertextElection` objects
-    following the initialization process that ElectionGuard Expects.
-    """
-    number_trustees: int
-    threshold_trustees: int
-
-    description: ElectionDescription
-
-    internal_description: InternalElectionDescription = field(init=False)
-
-    elgamal_public_key: Optional[ElementModP] = field(default=None)
-
-    def __post_init__(self) -> None:
-        self.internal_description = InternalElectionDescription(self.description)
-
-    def set_public_key(self, elgamal_public_key: ElementModP) -> ElectionGuardElectionBuilder:
-        self.elgamal_public_key = elgamal_public_key
-        return self
-
-    def build(self) -> Optional[Tuple[InternalElectionDescription, CyphertextElection]]:
-
-        if not self.description.is_valid():
-            return None
-
-        if self.elgamal_public_key is None:
-            return None
-        
-        return (
-            self.internal_description,
-            CyphertextElection(
-                self.number_trustees, 
-                self.threshold_trustees, 
-                unwrap_optional(self.elgamal_public_key), 
-                self.description.crypto_hash()
-            )
+def contest_description_with_placeholders_from(description: ContestDescription, placeholders: List[SelectionDescription]) -> ContestDescriptionWithPlaceholders:
+    return ContestDescriptionWithPlaceholders(
+        object_id=description.object_id,
+        electoral_district_id=description.electoral_district_id,
+        sequence_order=description.sequence_order,
+        vote_variation=description.vote_variation,
+        number_elected=description.number_elected,
+        votes_allowed=description.votes_allowed,
+        name=description.name,
+        ballot_selections=description.ballot_selections,
+        ballot_title=description.ballot_title,
+        ballot_subtitle=description.ballot_subtitle,
+        placeholder_selections=placeholders
         )
 
 def generate_placeholder_selection_from(contest: ContestDescription, use_sequence_id: Optional[int] = None) -> Optional[SelectionDescription]:

@@ -24,7 +24,7 @@ class TestElection(unittest.TestCase):
         intermediate = subject.to_json()
 
         # Act
-        result = Election.from_json(intermediate)
+        result = ElectionDescription.from_json(intermediate)
         
         # Assert
         self.assertIsNotNone(result.election_scope_id)

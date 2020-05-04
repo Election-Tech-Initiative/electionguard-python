@@ -25,7 +25,6 @@ from electionguard.ballot import (
 from electionguard.election import (
     BallotStyle,
     CyphertextElection,
-    ElectionGuardElectionBuilder,
     ElectionDescription,
     ElectionType,
     InternalElectionDescription,
@@ -37,8 +36,11 @@ from electionguard.election import (
     ContestDescriptionWithPlaceholders,
     SelectionDescription,
     ReportingUnitType,
-    VoteVariationType
+    VoteVariationType,
+    contest_description_with_placeholders_from
 )
+
+from electionguard.election_builder import ElectionGuardElectionBuilder
 
 from electionguard.elgamal import (
     ElGamalKeyPair,
@@ -253,5 +255,6 @@ def get_contest_description_well_formed(
 
     return (
         object_id, 
-        ContestDescriptionWithPlaceholders.copy_from(contest_description, placeholder_selections)
+        contest_description_with_placeholders_from(contest_description, placeholder_selections)
     )
+    
