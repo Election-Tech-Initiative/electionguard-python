@@ -15,6 +15,11 @@ from .logs import log_warning
 from .object_base import ObjectBase
 
 @dataclass
+class ExtendedData(object):
+    value: str
+    length: int
+
+@dataclass
 class PlaintextBallotSelection(ObjectBase):
     """
     A BallotSelection represents an individual selection on a ballot.
@@ -40,8 +45,8 @@ class PlaintextBallotSelection(ObjectBase):
     # determines if this is a placeholder selection
     is_placeholder_selection: bool = field(default=False)
 
-    # an optional field of arbitrary data
-    extra_data: Optional[str] = field(default=None)
+    # an optional field of arbitrary data, such as the value of a write-in candidate
+    extended_data: Optional[ExtendedData] = field(default=None)
 
     def is_valid(self, expected_object_id: str) -> bool:
         """
@@ -131,6 +136,9 @@ class CyphertextBallotSelection(ObjectBase, CryptoHashCheckable):
     # the proof that demonstrates the selection is an encryption of 0 or 1,
     # and was encrypted using the `nonce`
     proof: Optional[DisjunctiveChaumPedersenProof] = field(init=False, default=None)
+
+    # encrypted representation of the extended_data field
+    exnteded_data: Optional[ElGamalCiphertext] = field(default=None)
 
     def __post_init__(self, elgamal_public_key: ElementModP, proof_seed: ElementModQ, selection_representation: int) -> None:
         object.__setattr__(self, 'crypto_hash', self.crypto_hash_with(self.description_hash))

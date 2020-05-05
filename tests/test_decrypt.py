@@ -136,10 +136,7 @@ class TestDecrypt(unittest.TestCase):
         self.assertIsNone(result_from_key_malformed_encryption)
         self.assertIsNone(result_from_key_malformed_proof)
         self.assertIsNone(result_from_nonce_malformed_encryption)
-        # self.assertIsNone(result_from_nonce_malformed_proof)
-        # self.assertEqual(data.plaintext, result_from_key.plaintext)
-        # self.assertEqual(data.plaintext, result_from_nonce.plaintext)
-        # self.assertEqual(data.plaintext, result_from_nonce_seed.plaintext)
+        self.assertIsNone(result_from_nonce_malformed_proof)
     
     @settings(
         deadline=timedelta(milliseconds=2000),
