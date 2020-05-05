@@ -4,8 +4,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 from glob import glob
-from os.path import basename
-from os.path import splitext
+from os.path import basename, splitext
 
 from setuptools import find_packages
 from setuptools import setup
@@ -57,5 +56,5 @@ setup(
     classifiers=CLASSIFIERS,
     project_urls=PROJECT_URLS,
     python_requires=">=3.8",
-    install_requires=["gmpy2==2.1.0b4"],
+    install_requires=["gmpy2>=2.0.8"]
 )
