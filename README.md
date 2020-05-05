@@ -63,19 +63,38 @@ pipenv install --dev
 pipenv run python -m pip install -e .
 ```
 
+### Windows
+
+Use supplied precompiled **gmpy2** package with the `--find-links` or `-f` option. 
+
+**32-bit:** 
+```
+pipenv run pip install -f packages/gmpy2-2.0.8-cp38-cp38-win32.whl -e .
+```
+
+**64-bit:** 
+```
+pipenv run pip install -f packages/gmpy2-2.0.8-cp38-cp38-win_amd64 -e .
+```
+
 ## Running
 
 ### Option 1: Run test command
 
-`pipenv run python -m pytest /tests`
+```
+pipenv run python -m pytest /tests
+```
 
 ### Option 2: Run tests in VS Code
 
 Install recommended test explorer extensions and run unit tests through tool.
 
+**Windows:** Be sure to select the [virtual environment Python interpreter](https://docs.microsoft.com/en-us/visualstudio/python/installing-python-interpreters). 
+
 ### Option 3: Run tox
 
 This project is configured to use [tox](https://tox.readthedocs.io/en/latest/) to run its unit tests.
+
 
 ## Key concepts
 
