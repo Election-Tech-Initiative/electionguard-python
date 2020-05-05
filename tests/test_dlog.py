@@ -13,8 +13,8 @@ from electionguard.group import (
     int_to_q,
     int_to_p_unchecked,
     int_to_q_unchecked,
-    unwrap_optional,
 )
+from electionguard.utils import unwrap_optional
 
 
 # simpler implementation of discrete_log, only meant for comparison testing of the caching version

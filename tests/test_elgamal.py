@@ -15,20 +15,18 @@ from electionguard.group import (
     ElementModQ,
     g_pow_p,
     G,
-    Q,
     P,
     ZERO_MOD_Q,
     TWO_MOD_Q,
     ONE_MOD_Q,
     ONE_MOD_P,
-    int_to_q,
-    unwrap_optional,
     int_to_q_unchecked,
 )
 from electionguard.logs import log_info
 from electionguard.nonces import Nonces
+from electionguard.utils import unwrap_optional
 from electionguardtest.elgamal import arb_elgamal_keypair
-from tests.test_group import arb_element_mod_q_no_zero, arb_element_mod_q
+from tests.test_group import arb_element_mod_q_no_zero
 
 
 class TestElGamal(unittest.TestCase):

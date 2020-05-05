@@ -1,8 +1,5 @@
 from datetime import datetime
-import math
 import os
-from random import Random
-from secrets import randbelow
 from typing import TypeVar, Callable, Optional, Tuple
 
 from hypothesis.strategies import (
@@ -17,9 +14,7 @@ from hypothesis.strategies import (
 )
 
 from electionguard.ballot import (
-    PlaintextBallot,
-    PlaintextBallotContest,
-    PlaintextBallotSelection
+    PlaintextBallot
 )
 
 from electionguard.election import (
@@ -33,7 +28,6 @@ from electionguard.election import (
     Candidate,
     Party,
     ContestDescription,
-    ContestDescriptionWithPlaceholders,
     SelectionDescription,
     ReportingUnitType,
     VoteVariationType,
@@ -42,31 +36,14 @@ from electionguard.election import (
 
 from electionguard.election_builder import ElectionGuardElectionBuilder
 
-from electionguard.elgamal import (
-    ElGamalKeyPair,
-    elgamal_keypair_from_secret,
-)
-
 from electionguard.encrypt import (
-    contest_from,
-    encrypt_ballot,
-    encrypt_contest,
-    encrypt_selection,
-    selection_from
+    contest_from
 )
 
 from electionguard.group import (
-    ElementModP,
-    ElementModQ,
-    ONE_MOD_Q,
-    int_to_q,
-    add_q,
-    unwrap_optional,
-    Q,
-    TWO_MOD_P,
-    mult_p,
-    unwrap_optional
+    ElementModP
 )
+from electionguard.utils import unwrap_optional
 
 _T = TypeVar("_T")
 _DrawType = Callable[[SearchStrategy[_T]], _T]
@@ -257,4 +234,3 @@ def get_contest_description_well_formed(
         object_id, 
         contest_description_with_placeholders_from(contest_description, placeholder_selections)
     )
-    

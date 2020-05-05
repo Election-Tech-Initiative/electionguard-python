@@ -8,13 +8,13 @@ from .group import (
     P,
     G,
     ElementModQ, 
-    ElementModP,
-    unwrap_optional
-    )
+    ElementModP
+)
 from .hash import CryptoHashable, flatten, hash_elems
 from .logs import log_warning
 from .object_base import ObjectBase
 from .serializable import Serializable
+from .utils import unwrap_optional
 
 @unique
 class ElectionType(Enum):

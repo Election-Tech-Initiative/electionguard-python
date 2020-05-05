@@ -19,9 +19,10 @@ from .election import (
     SelectionDescription
 )
 from .elgamal import elgamal_encrypt
-from .group import Q, ElementModP, ElementModQ, int_to_q, unwrap_optional
+from .group import Q, ElementModP, ElementModQ, int_to_q
 from .logs import log_warning
 from .nonces import Nonces
+from .utils import unwrap_optional
 
 class EncryptionCompositor(object):
     """

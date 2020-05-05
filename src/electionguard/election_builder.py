@@ -8,10 +8,8 @@ from .election import (
     InternalElectionDescription
 )
 
-from .group import (
-    ElementModP,
-    unwrap_optional
-    )
+from .group import ElementModP
+from .utils import unwrap_optional
 
 @dataclass
 class ElectionGuardElectionBuilder(object):

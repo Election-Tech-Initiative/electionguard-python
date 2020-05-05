@@ -16,9 +16,10 @@ from .election import (
     SelectionDescription
 )
 
-from .group import ElementModP, ElementModQ, unwrap_optional
+from .group import ElementModP, ElementModQ
 from .logs import log_warning
 from .nonces import Nonces
+from .utils import unwrap_optional
 
 def decrypt_selection_with_secret(
     selection: CyphertextBallotSelection, 

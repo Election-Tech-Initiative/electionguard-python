@@ -23,16 +23,18 @@ from electionguard.group import (
     add_q,
     int_to_p_unchecked,
     int_to_q_unchecked,
-    unwrap_optional,
-    match_optional,
-    get_or_else_optional,
-    flatmap_optional,
 )
 from electionguardtest.group import (
     arb_element_mod_p_no_zero,
     arb_element_mod_p,
     arb_element_mod_q,
     arb_element_mod_q_no_zero,
+)
+from electionguard.utils import (
+    flatmap_optional, 
+    get_or_else_optional, 
+    match_optional, 
+    unwrap_optional
 )
 
 
