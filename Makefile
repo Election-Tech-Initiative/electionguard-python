@@ -81,4 +81,16 @@ coverage:
 	@echo ✅ COVERAGE
 	pipenv run coverage run -m pytest
 	pipenv run coverage report --fail-under=$(CODE_COVERAGE)
+
+coverage-html:
+	@make coverage
+	pipenv run coverage html -d coverage
+	@make coverage-erase
+
+coverage-xml:
+	@make coverage
+	pipenv run coverage xml
+	@make coverage-erase
+
+coverage-erase:
 	@pipenv run coverage erase
