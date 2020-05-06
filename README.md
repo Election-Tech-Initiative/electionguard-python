@@ -49,6 +49,14 @@ has its own [installation requirements (native C libraries)](https://gmpy2.readt
 
 [pipenv](https://github.com/pypa/pipenv) is used to configure the environment. Installation instructions can be found [here](https://github.com/pypa/pipenv#installation).
 
+### make (optional)
+
+**make** is used to simplify the commands and GitHub Actions. This is built in for MacOS and Linux, but Windows installation instructions can be found [here](http://gnuwin32.sourceforge.net/packages/make.htm).
+
+## Quick Start
+
+Using **make**, the entire workflow can be run with one command: `make`
+
 ## Setup
 
 **1. Initialize dev environment**
@@ -57,22 +65,43 @@ has its own [installation requirements (native C libraries)](https://gmpy2.readt
 pipenv install --dev
 ```
 
+OR
+
+```
+make environment
+```
+
 **2. Install `electionguard` module in edit mode**
 
 ```
 pipenv run python -m pip install -e .
 ```
 
-### Windows
+OR
 
-Use supplied precompiled **gmpy2** package with the `--find-links` or `-f` option. 
+```
+make install
+```
 
-**32-bit:** 
+### Windows without Make
+
+Use supplied precompiled **gmpy2** package with the `--find-links` or `-f` option.
+
+**Note:** The 32 vs 64 bit is based on your installed python version NOT your system.
+This code snippet will read `true` for 64 bit.
+
+```
+python -c 'from sys import maxsize; print(maxsize > 2**32)
+```
+
+**32-bit:**
+
 ```
 pipenv run pip install -f packages/gmpy2-2.0.8-cp38-cp38-win32.whl -e .
 ```
 
-**64-bit:** 
+**64-bit:**
+
 ```
 pipenv run pip install -f packages/gmpy2-2.0.8-cp38-cp38-win_amd64 -e .
 ```
@@ -85,16 +114,29 @@ pipenv run pip install -f packages/gmpy2-2.0.8-cp38-cp38-win_amd64 -e .
 pipenv run python -m pytest /tests
 ```
 
+OR
+
+```
+make test
+```
+
 ### Option 2: Run tests in VS Code
 
 Install recommended test explorer extensions and run unit tests through tool.
 
-**Windows:** Be sure to select the [virtual environment Python interpreter](https://docs.microsoft.com/en-us/visualstudio/python/installing-python-interpreters). 
+### Option 3: Code Coverage
 
-### Option 3: Run tox
+```
+pipenv run coverage report
+```
 
-This project is configured to use [tox](https://tox.readthedocs.io/en/latest/) to run its unit tests.
+OR
 
+```
+make coverage
+```
+
+**Windows:** Be sure to select the [virtual environment Python interpreter](https://docs.microsoft.com/en-us/visualstudio/python/installing-python-interpreters).
 
 ## Key concepts
 
