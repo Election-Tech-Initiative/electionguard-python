@@ -270,7 +270,7 @@ def encrypt_ballot(
     ballot: PlaintextBallot, 
     election_metadata: InternalElectionDescription,
     encryption_context: CyphertextElection,
-    nonce: Optional[int] = None,
+    nonce: Optional[ElementModQ] = None,
     should_verify_proofs: bool = True) -> Optional[CyphertextBallot]:
     """
     Encrypt a specific `Ballot` in the context of a specific `CyphertextElection`.
@@ -303,7 +303,7 @@ def encrypt_ballot(
     if nonce is None:
         random_master_nonce = unwrap_optional(int_to_q(randbelow(Q)))
     else:
-        random_master_nonce = unwrap_optional(int_to_q(nonce))
+        random_master_nonce = unwrap_optional(nonce)
 
     # Include a representation of the election and the external Id in the nonce's used
     # to derive other nonce values on the ballot

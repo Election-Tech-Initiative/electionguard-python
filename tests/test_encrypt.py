@@ -326,6 +326,7 @@ class TestEncrypt(unittest.TestCase):
         keypair = elgamal_keypair_from_secret(int_to_q(2))
         election = election_factory.get_fake_election()
         metadata, encryption_context = election_factory.get_fake_cyphertext_election(election, keypair.public_key)
+        nonce_seed = TWO_MOD_Q
 
         # TODO: Ballot Factory
         subject = election_factory.get_fake_ballot(metadata)
@@ -333,10 +334,13 @@ class TestEncrypt(unittest.TestCase):
 
         # Act
         result = encrypt_ballot(subject, metadata, encryption_context)
+        result_from_seed = encrypt_ballot(subject, metadata, encryption_context, nonce_seed)
 
         # Assert
         self.assertIsNotNone(result)
+        self.assertIsNotNone(result_from_seed)
         self.assertTrue(result.is_valid_encryption(encryption_context.crypto_extended_base_hash, keypair.public_key))
+        self.assertTrue(result_from_seed.is_valid_encryption(encryption_context.crypto_extended_base_hash, keypair.public_key))
 
     def test_encrypt_ballot_with_stateful_composer_succeeds(self):
         # Arrange
