@@ -34,7 +34,7 @@ from electionguard.election import (
     contest_description_with_placeholders_from
 )
 
-from electionguard.election_builder import ElectionGuardElectionBuilder
+from electionguard.election_builder import ElectionBuilder
 
 from electionguard.encrypt import (
     contest_from
@@ -135,7 +135,7 @@ class ElectionFactory(object):
 
     def get_fake_cyphertext_election(
         self, description: ElectionDescription, elgamal_public_key: ElementModP) -> Tuple[InternalElectionDescription, CyphertextElection]:
-        builder = ElectionGuardElectionBuilder(
+        builder = ElectionBuilder(
             number_trustees=1,
             threshold_trustees=1,
             description=description

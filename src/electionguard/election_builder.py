@@ -12,9 +12,9 @@ from .group import ElementModP
 from .utils import unwrap_optional
 
 @dataclass
-class ElectionGuardElectionBuilder(object):
+class ElectionBuilder(object):
     """
-    `ElectionGuardElectionBuilder` is a stateful builder object that constructs `CyphertextElection` objects
+    `ElectionBuilder` is a stateful builder object that constructs `CyphertextElection` objects
     following the initialization process that ElectionGuard Expects.
     """
     number_trustees: int
@@ -29,7 +29,7 @@ class ElectionGuardElectionBuilder(object):
     def __post_init__(self) -> None:
         self.internal_description = InternalElectionDescription(self.description)
 
-    def set_public_key(self, elgamal_public_key: ElementModP) -> ElectionGuardElectionBuilder:
+    def set_public_key(self, elgamal_public_key: ElementModP) -> ElectionBuilder:
         self.elgamal_public_key = elgamal_public_key
         return self
 
