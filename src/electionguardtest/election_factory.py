@@ -73,13 +73,16 @@ class ElectionFactory(object):
             SelectionDescription("some-object-id-negative", "some-candidate-id-2", 1)
         ]
 
+        sequence_order = 0
+        number_elected = 1
+        votes_allowed = 1
         fake_referendum_contest = ContestDescription(
             "some-referendum-contest-object-id", 
             "some-geopoltical-unit-id", 
-            0, 
+            sequence_order, 
             VoteVariationType.one_of_m, 
-            1, 
-            1,
+            number_elected, 
+            votes_allowed,
             "some-referendum-contest-name",
             fake_referendum_ballot_selections
         )
@@ -90,13 +93,16 @@ class ElectionFactory(object):
             SelectionDescription("some-object-id-candidate-3", "some-candidate-id-3", 2)
         ]
 
+        sequence_order_2 = 1
+        number_elected_2 = 2
+        votes_allowed_2 = 2
         fake_candidate_contest = ContestDescription(
             "some-candidate-contest-object-id", 
             "some-geopoltical-unit-id", 
-            1, 
+            sequence_order_2, 
             VoteVariationType.one_of_m, 
-            2, 
-            2,
+            number_elected_2, 
+            votes_allowed_2,
             "some-candidate-contest-name",
             fake_candidate_ballot_selections
         )
