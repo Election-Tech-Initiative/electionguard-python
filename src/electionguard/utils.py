@@ -1,0 +1,49 @@
+from typing import Callable, Optional, TypeVar
+
+T = TypeVar("T")
+U = TypeVar("U")
+
+def unwrap_optional(optional: Optional[T]) -> T:
+    """
+    General-purpose unwrapping function to handle `Optional`.
+    Raises an exception if it's actually `None`, otherwise
+    returns the internal type.
+    """
+    assert optional is not None, "Unwrap called on None"
+    return optional
+
+
+def match_optional(
+    optional: Optional[T], none_func: Callable[[], U], some_func: Callable[[T], U]
+) -> U:
+    """
+    General-purpose pattern-matching function to handle `Optional`.
+    If it's actually `None`, the `none_func` lambda is called.
+    Otherwise, the `some_func` lambda is called with the value.
+    """
+    if optional is None:
+        return none_func()
+    else:
+        return some_func(optional)
+
+
+def get_or_else_optional(optional: Optional[T], alt_value: T) -> T:
+    """
+    General-purpose getter for `Optional`. If it's `None`, returns the `alt_value`.
+    Otherwise, returns the contents.
+    """
+    if optional is None:
+        return alt_value
+    else:
+        return optional
+
+
+def flatmap_optional(optional: Optional[T], mapper: Callable[[T], U]) -> Optional[U]:
+    """
+    General-purpose flatmapping on `Optional`. If it's `None`, returns `None` as well,
+    otherwise returns the lambda applied to the contents.
+    """
+    if optional is None:
+        return None
+    else:
+        return mapper(optional)

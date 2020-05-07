@@ -11,12 +11,12 @@ from electionguard.group import (
     int_to_p_unchecked,
     TWO_MOD_Q,
     ONE_MOD_Q,
-    unwrap_optional,
 )
 from electionguard.schnorr import (
     make_schnorr_proof,
     SchnorrProof,
 )
+from electionguard.utils import unwrap_optional
 from tests.test_elgamal import arb_elgamal_keypair
 from tests.test_group import (
     arb_element_mod_q,

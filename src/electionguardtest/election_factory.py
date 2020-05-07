@@ -1,8 +1,5 @@
 from datetime import datetime
-import math
 import os
-from random import Random
-from secrets import randbelow
 from typing import TypeVar, Callable, Optional, Tuple
 
 from hypothesis.strategies import (
@@ -17,49 +14,36 @@ from hypothesis.strategies import (
 )
 
 from electionguard.ballot import (
-    PlaintextBallot,
-    PlaintextBallotContest,
-    PlaintextBallotSelection
+    PlaintextBallot
 )
 
 from electionguard.election import (
     BallotStyle,
     CyphertextElection,
-    Election,
+    ElectionDescription,
     ElectionType,
+    InternalElectionDescription,
+    generate_placeholder_selections_from,
     GeopoliticalUnit,
     Candidate,
     Party,
     ContestDescription,
     SelectionDescription,
     ReportingUnitType,
-    VoteVariationType
+    VoteVariationType,
+    contest_description_with_placeholders_from
 )
 
-from electionguard.elgamal import (
-    ElGamalKeyPair,
-    elgamal_keypair_from_secret,
-)
+from electionguard.election_builder import ElectionBuilder
 
 from electionguard.encrypt import (
-    contest_from,
-    encrypt_ballot,
-    encrypt_contest,
-    encrypt_selection,
-    selection_from
+    contest_from
 )
 
 from electionguard.group import (
-    ElementModP,
-    ElementModQ,
-    ONE_MOD_Q,
-    int_to_q,
-    add_q,
-    unwrap_optional,
-    Q,
-    TWO_MOD_P,
-    mult_p,
+    ElementModP
 )
+from electionguard.utils import unwrap_optional
 
 _T = TypeVar("_T")
 _DrawType = Callable[[SearchStrategy[_T]], _T]
@@ -70,10 +54,10 @@ class ElectionFactory(object):
 
     simple_election_manifest_file_name = 'election_manifest_simple.json'
 
-    def get_simple_election_from_file(self) -> Election:
+    def get_simple_election_from_file(self) -> ElectionDescription:
         return self._get_election_from_file(self.simple_election_manifest_file_name)
 
-    def get_fake_election(self) -> Election:
+    def get_fake_election(self) -> ElectionDescription:
         """
         Get a single Fake Election object that is manually constructed with default values
         """
@@ -83,31 +67,57 @@ class ElectionFactory(object):
             "some-geopoltical-unit-id"
         ]
 
-        fake_referendum_contest = ContestDescription(
-            "some-referendum-contest-object-id", "some-geopoltical-unit-id", 0, VoteVariationType.one_of_m, 1, 1)
-        fake_referendum_contest.ballot_selections = [
+        fake_referendum_ballot_selections = [
             # Referendum selections are simply a special case of `candidate` in the object model
             SelectionDescription("some-object-id-affirmative", "some-candidate-id-1", 0),
-            SelectionDescription("some-object-id-negative", "some-candidate-id-2", 1),
+            SelectionDescription("some-object-id-negative", "some-candidate-id-2", 1)
         ]
-        fake_referendum_contest.votes_allowed = 1
 
-        fake_candidate_contest = ContestDescription(
-            "some-candidate-contest-object-id", "some-geopoltical-unit-id", 1, VoteVariationType.one_of_m, 2, 2)
-        fake_candidate_contest.ballot_selections = [
+        sequence_order = 0
+        number_elected = 1
+        votes_allowed = 1
+        fake_referendum_contest = ContestDescription(
+            "some-referendum-contest-object-id", 
+            "some-geopoltical-unit-id", 
+            sequence_order, 
+            VoteVariationType.one_of_m, 
+            number_elected, 
+            votes_allowed,
+            "some-referendum-contest-name",
+            fake_referendum_ballot_selections
+        )
+
+        fake_candidate_ballot_selections = [
             SelectionDescription("some-object-id-candidate-1", "some-candidate-id-1", 0),
             SelectionDescription("some-object-id-candidate-2", "some-candidate-id-2", 1),
             SelectionDescription("some-object-id-candidate-3", "some-candidate-id-3", 2)
         ]
-        fake_candidate_contest.votes_allowed = 2
 
-        fake_election = Election(
+        sequence_order_2 = 1
+        number_elected_2 = 2
+        votes_allowed_2 = 2
+        fake_candidate_contest = ContestDescription(
+            "some-candidate-contest-object-id", 
+            "some-geopoltical-unit-id", 
+            sequence_order_2, 
+            VoteVariationType.one_of_m, 
+            number_elected_2, 
+            votes_allowed_2,
+            "some-candidate-contest-name",
+            fake_candidate_ballot_selections
+        )
+
+        fake_election = ElectionDescription(
             election_scope_id = "some-scope-id",
             type = ElectionType.unknown,
             start_date = datetime.now(),
             end_date = datetime.now(),
             geopolitical_units = [
-                GeopoliticalUnit("some-geopoltical-unit-id", "some-gp-unit-name", ReportingUnitType.unknown)
+                GeopoliticalUnit(
+                    "some-geopoltical-unit-id", 
+                    "some-gp-unit-name", 
+                    ReportingUnitType.unknown
+                )
             ],
             parties = [
                 Party("some-party-id-1"),
@@ -129,15 +139,19 @@ class ElectionFactory(object):
 
         return fake_election
 
-    def get_fake_cyphertext_election(self, description_hash: ElementModQ, elgamal_public_key: Optional[ElementModP] = None) -> CyphertextElection:
-        election = CyphertextElection(1, 1, description_hash)
-
-        if elgamal_public_key is not None:
-            election.set_crypto_context(elgamal_public_key)
-        return election
+    def get_fake_cyphertext_election(
+        self, description: ElectionDescription, elgamal_public_key: ElementModP) -> Tuple[InternalElectionDescription, CyphertextElection]:
+        builder = ElectionBuilder(
+            number_trustees=1,
+            threshold_trustees=1,
+            description=description
+        )
+        builder.set_public_key(elgamal_public_key)
+        metadata, election = unwrap_optional(builder.build())
+        return (metadata, election)
 
     # TODO: Move to ballot Factory?
-    def get_fake_ballot(self, election: Election = None) -> PlaintextBallot:
+    def get_fake_ballot(self, election: ElectionDescription = None) -> PlaintextBallot:
         """
         Get a single Fake Ballot object that is manually constructed with default vaules
         """
@@ -154,10 +168,10 @@ class ElectionFactory(object):
 
         return fake_ballot
 
-    def _get_election_from_file(self, filename: str) -> Election:
+    def _get_election_from_file(self, filename: str) -> ElectionDescription:
         with open(os.path.join(here, 'data', filename), 'r') as subject:
             data = subject.read()
-            target = Election.from_json(data)
+            target = ElectionDescription.from_json(data)
 
         return target
 
@@ -209,15 +223,20 @@ def get_contest_description_well_formed(
         selection_description.sequence_order = i
         selection_descriptions.append(selection_description)
 
-    return (
-        object_id, 
-        ContestDescription(
+    contest_description = ContestDescription(
             object_id, 
             electoral_district_id, 
             sequence_order, 
             VoteVariationType.n_of_m, 
             number_elected, 
             votes_allowed,
+            draw(text),
             selection_descriptions
         )
+
+    placeholder_selections = generate_placeholder_selections_from(contest_description, number_elected)
+
+    return (
+        object_id, 
+        contest_description_with_placeholders_from(contest_description, placeholder_selections)
     )

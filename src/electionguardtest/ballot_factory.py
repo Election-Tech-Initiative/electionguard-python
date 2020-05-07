@@ -20,41 +20,12 @@ from electionguard.ballot import (
 )
 
 from electionguard.election import (
-    BallotStyle,
-    CyphertextElection,
-    Election,
-    ElectionType,
-    GeopoliticalUnit,
-    Candidate,
-    Party,
     ContestDescription,
-    SelectionDescription,
-    ReportingUnitType,
-    VoteVariationType
-)
-
-from electionguard.elgamal import (
-    ElGamalKeyPair,
-    elgamal_keypair_from_secret,
+    SelectionDescription
 )
 
 from electionguard.encrypt import (
-    contest_from,
-    encrypt_ballot,
-    encrypt_contest,
-    encrypt_selection,
     selection_from
-)
-
-from electionguard.group import (
-    ElementModQ,
-    ONE_MOD_Q,
-    int_to_q,
-    add_q,
-    unwrap_optional,
-    Q,
-    TWO_MOD_P,
-    mult_p,
 )
 
 _T = TypeVar("_T")
@@ -70,7 +41,10 @@ class BallotFactory(object):
         return selection_from(description, is_placeholder, selected)
 
     def get_random_contest_from(self, description: ContestDescription):
-        
+        """
+        Get a randomly filled contest for the given description that 
+        may be undervoted and may include explicitly false votes
+        """
         selections: List[PlaintextBallotSelection] = list()
 
         voted = 0

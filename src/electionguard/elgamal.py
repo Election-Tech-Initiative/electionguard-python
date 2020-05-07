@@ -9,11 +9,11 @@ from .group import (
     mult_inv_p,
     pow_p,
     ZERO_MOD_Q,
-    flatmap_optional,
     int_to_q,
 )
 from .hash import hash_elems
 from .logs import log_error
+from .utils import flatmap_optional
 
 
 class ElGamalKeyPair(NamedTuple):
