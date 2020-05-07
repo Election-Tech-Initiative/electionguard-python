@@ -12,7 +12,7 @@ from .elgamal import ElGamalCiphertext, elgamal_add
 from .group import add_q, ElementModP, ElementModQ, ZERO_MOD_Q
 from .hash import CryptoHashCheckable, hash_elems
 from .logs import log_warning
-from .object_base import ObjectBase
+from .election_object_base import ElectionObjectBase
 
 @dataclass
 class ExtendedData(object):
@@ -20,7 +20,7 @@ class ExtendedData(object):
     length: int
 
 @dataclass
-class PlaintextBallotSelection(ObjectBase):
+class PlaintextBallotSelection(ElectionObjectBase):
     """
     A BallotSelection represents an individual selection on a ballot.
 
@@ -86,7 +86,7 @@ class PlaintextBallotSelection(ObjectBase):
         return as_int
 
 @dataclass
-class CyphertextBallotSelection(ObjectBase, CryptoHashCheckable):
+class CyphertextBallotSelection(ElectionObjectBase, CryptoHashCheckable):
     """
     A CyphertextBallotSelection represents an individual encrypted selection on a ballot.
 
@@ -201,7 +201,7 @@ class CyphertextBallotSelection(ObjectBase, CryptoHashCheckable):
         return hash_elems(seed_hash, self.message.crypto_hash())
 
 @dataclass
-class PlaintextBallotContest(ObjectBase):
+class PlaintextBallotContest(ElectionObjectBase):
     """
     A PlaintextBallotContest represents the selections made by a voter for a specific ContestDescription
 
@@ -256,7 +256,7 @@ class PlaintextBallotContest(ObjectBase):
         return True
 
 @dataclass
-class CyphertextBallotContest(ObjectBase, CryptoHashCheckable):
+class CyphertextBallotContest(ElectionObjectBase, CryptoHashCheckable):
     """
     A CyphertextBallotContest represents the selections made by a voter for a specific ContestDescription
 
@@ -389,7 +389,7 @@ class CyphertextBallotContest(ObjectBase, CryptoHashCheckable):
         return self.proof.is_valid(elgamal_accumulation, elgamal_public_key)
 
 @dataclass
-class PlaintextBallot(ObjectBase):
+class PlaintextBallot(ElectionObjectBase):
     """
     A PlaintextBallot represents a voters selections for a given ballot and ballot style
     :field object_id: A unique Ballot ID that is relevant to the external system
@@ -410,7 +410,7 @@ class PlaintextBallot(ObjectBase):
         return True
 
 @dataclass
-class CyphertextBallot(ObjectBase, CryptoHashCheckable):
+class CyphertextBallot(ElectionObjectBase, CryptoHashCheckable):
     """
     A CyphertextBallot represents a voters encrypted selections for a given ballot and ballot style
 

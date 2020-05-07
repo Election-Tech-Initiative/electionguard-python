@@ -12,7 +12,7 @@ from .group import (
 )
 from .hash import CryptoHashable, flatten, hash_elems
 from .logs import log_warning
-from .object_base import ObjectBase
+from .election_object_base import ElectionObjectBase
 from .serializable import Serializable
 from .utils import unwrap_optional
 
@@ -157,7 +157,7 @@ class ContactInformation(Serializable, CryptoHashable):
         ))
 
 @dataclass
-class GeopoliticalUnit(ObjectBase, CryptoHashable):
+class GeopoliticalUnit(ElectionObjectBase, CryptoHashable):
     """
     Use this entity for defining geopolitical units such as cities, districts, jurisdictions, or precincts, 
     for the purpose of associating contests, offices, vote counts, or other information with the geographies.
@@ -180,7 +180,7 @@ class GeopoliticalUnit(ObjectBase, CryptoHashable):
         )
 
 @dataclass
-class BallotStyle(ObjectBase, CryptoHashable):
+class BallotStyle(ElectionObjectBase, CryptoHashable):
     """
     """
     geopolitical_unit_ids: Optional[List[str]] = field(default=None)
@@ -200,7 +200,7 @@ class BallotStyle(ObjectBase, CryptoHashable):
         )
 
 @dataclass
-class Party(ObjectBase, CryptoHashable):
+class Party(ElectionObjectBase, CryptoHashable):
     """
     Use this entity to describe a political party that can then be referenced from other entities.
     See: https://developers.google.com/elections-data/reference/party
@@ -224,7 +224,7 @@ class Party(ObjectBase, CryptoHashable):
         )
 
 @dataclass
-class Candidate(ObjectBase, CryptoHashable):
+class Candidate(ElectionObjectBase, CryptoHashable):
     """
     This entity describes information about a candidate in a contest. 
     See: https://developers.google.com/elections-data/reference/candidate
@@ -252,7 +252,7 @@ class Candidate(ObjectBase, CryptoHashable):
 
 
 @dataclass
-class SelectionDescription(ObjectBase, CryptoHashable):
+class SelectionDescription(ElectionObjectBase, CryptoHashable):
     """
     This data entity is for the ballot selections in a contest, 
     for example linking candidates and parties to their vote counts.
@@ -279,7 +279,7 @@ class SelectionDescription(ObjectBase, CryptoHashable):
         )
 
 @dataclass 
-class ContestDescription(ObjectBase, CryptoHashable):
+class ContestDescription(ElectionObjectBase, CryptoHashable):
     """
     Use this data entity for describing a contest and linking the contest 
     to the associated candidates and parties.
