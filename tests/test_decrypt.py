@@ -314,3 +314,37 @@ class TestDecrypt(unittest.TestCase):
                 self.assertTrue(key_selection.is_valid(selection_description.object_id))
                 self.assertTrue(nonce_selection.is_valid(selection_description.object_id))
                 self.assertTrue(seed_selection.is_valid(selection_description.object_id))
+
+    @settings(
+        deadline=timedelta(milliseconds=2000),
+        suppress_health_check=[HealthCheck.too_slow],
+        max_examples=1,
+    )
+    @given(
+        arb_elgamal_keypair()
+    )
+    def test_decrypt_ballot_valid_input_missing_nonce_fails(self, keypair: ElGamalKeyPair):
+
+        # Arrange
+        election = election_factory.get_simple_election_from_file()
+        metadata, encryption_context = election_factory.get_fake_cyphertext_election(election, keypair.public_key)
+
+        data = ballot_factory.get_simple_ballot_from_file()
+        operator = EncryptionCompositor(metadata, encryption_context)
+
+        # Act
+        subject = operator.encrypt(data)
+        subject.nonce = None
+
+        missing_nonce_value = None
+
+        result_from_nonce = decrypt_ballot_with_nonce(
+            subject, metadata, encryption_context.crypto_extended_base_hash, keypair.public_key
+        )
+        result_from_nonce_seed = decrypt_ballot_with_nonce(
+            subject, metadata, encryption_context.crypto_extended_base_hash, keypair.public_key, missing_nonce_value
+        )
+
+        # Assert
+        self.assertIsNone(result_from_nonce)
+        self.assertIsNone(result_from_nonce_seed)

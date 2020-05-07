@@ -116,12 +116,12 @@ def encrypt_selection(
     encrypted_selection = CyphertextBallotSelection(
         selection.object_id, 
         selection_description.crypto_hash(),
-        unwrap_optional(elgamal_encryption),
-        selection_nonce,
+        unwrap_optional(elgamal_encryption),    
         elgamal_public_key,
         chaum_pedersen_nonce,
         selection_representation,
-        is_placeholder
+        is_placeholder,
+        selection_nonce
     )
 
     # optionally, skip the verification step
@@ -250,10 +250,10 @@ def encrypt_contest(
         contest.object_id, 
         contest_description.crypto_hash(), 
         encrypted_selections,
-        contest_nonce,
         elgamal_public_key,
         chaum_pedersen_nonce,
-        contest_description.number_elected
+        contest_description.number_elected,
+        contest_nonce
     )
 
     if not should_verify_proofs:

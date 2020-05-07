@@ -72,6 +72,10 @@ def decrypt_selection_with_nonce(
         nonce_sequence = Nonces(description.crypto_hash(), nonce_seed)
         nonce = nonce_sequence[description.sequence_order]
 
+    if nonce is None:
+        log_warning(f"missing nonce value.  decrypt could not dewrive a nonce value for selection {selection.object_id}")
+        return None
+
     plaintext = selection.message.decrypt_known_nonce(public_key, nonce)
 
     # TODO: handle decryption of the extradata field if needed
@@ -139,6 +143,10 @@ def decrypt_contest_with_nonce(
     else:
         nonce_sequence = Nonces(description.crypto_hash(), nonce_seed)
         nonce_seed = nonce_sequence[description.sequence_order]
+
+    if nonce_seed is None:
+        log_warning(f"missing nonce_seed value.  decrypt could not dewrive a nonce value for contest {contest.object_id}")
+        return None
     
     plaintext_selections: List[PlaintextBallotSelection] = list()
     for selection in contest.ballot_selections:
@@ -225,6 +233,10 @@ def decrypt_ballot_with_nonce(
         nonce_seed = hashed_ballot_nonce(
             extended_base_hash, ballot.object_id, nonce
         )
+
+    if nonce_seed is None:
+        log_warning(f"missing nonce_seed value.  decrypt could not dewrive a nonce value for ballot {ballot.object_id}")
+        return None
 
     plaintext_contests: List[PlaintextBallotContest] = list()
 
