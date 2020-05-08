@@ -45,6 +45,7 @@ install-linux:
 
 install-windows:
 	@echo 🏁 WINDOWS INSTALL
+	pipenv run pip install wheel
 # install module with local gmpy2 package
 	@echo IS_64_BIT
 ifeq ($(IS_64_BIT), True)
