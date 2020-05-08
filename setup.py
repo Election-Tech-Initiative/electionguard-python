@@ -35,15 +35,11 @@ CLASSIFIERS = [
     "Topic :: Utilities",
 ]
 
-with open("README.md", "r") as fh:
-    LONG_DESCRIPTION = fh.read()
-
 setup(
     name=NAME,
     version=VERSION,
     license=LICENSE,
     description=DESCRIPTION,
-    long_description=LONG_DESCRIPTION,
     long_description_content_type="text/markdown",
     author=AUTHOR,
     author_email=AUTHOR_EMAIL,
@@ -56,5 +52,5 @@ setup(
     classifiers=CLASSIFIERS,
     project_urls=PROJECT_URLS,
     python_requires=">=3.8",
-    install_requires=["gmpy2>=2.0.8"]
+    install_requires=["gmpy2>=2.0.8"],
 )
