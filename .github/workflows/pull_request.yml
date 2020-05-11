@@ -58,6 +58,8 @@ jobs:
         uses: actions/setup-python@v1
         with:
           python-version: ${{ env.PYTHON_VERSION }}
+      - name: Pip Upgrade
+        run: python -m pip install -U pip
       - name: Change Directory
         run: cd ${{ github.workspace }}
       - name: Setup Environment
