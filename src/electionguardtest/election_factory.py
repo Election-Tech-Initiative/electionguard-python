@@ -29,7 +29,9 @@ from electionguard.election import (
     SelectionDescription,
     ReportingUnitType,
     VoteVariationType,
-    contest_description_with_placeholders_from, CandidateContestDescription, ReferendumContestDescription,
+    contest_description_with_placeholders_from,
+    CandidateContestDescription,
+    ReferendumContestDescription,
 )
 
 from electionguard.election_builder import ElectionBuilder

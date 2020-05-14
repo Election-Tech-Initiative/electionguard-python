@@ -21,8 +21,12 @@ from electionguard.decrypt import (
     decrypt_ballot_with_secret,
 )
 
-from electionguard.election import ContestDescription, SelectionDescription, generate_placeholder_selections_from, \
-    contest_description_with_placeholders_from
+from electionguard.election import (
+    ContestDescription,
+    SelectionDescription,
+    generate_placeholder_selections_from,
+    contest_description_with_placeholders_from,
+)
 
 from electionguard.elgamal import ElGamalKeyPair
 
@@ -165,12 +169,21 @@ class TestDecrypt(unittest.TestCase):
         data = ballot_factory.get_random_contest_from(description)
 
         placeholders = generate_placeholder_selections_from(description)
-        description_with_placeholders = contest_description_with_placeholders_from(description, placeholders)
+        description_with_placeholders = contest_description_with_placeholders_from(
+            description, placeholders
+        )
 
         # Act
-        subject = encrypt_contest(data, description_with_placeholders, keypair.public_key, seed)
+        subject = encrypt_contest(
+            data, description_with_placeholders, keypair.public_key, seed
+        )
+        self.assertIsNotNone(subject)
+
         result_from_key = decrypt_contest_with_secret(
-            subject, description_with_placeholders, keypair.public_key, keypair.secret_key
+            subject,
+            description_with_placeholders,
+            keypair.public_key,
+            keypair.secret_key,
         )
         result_from_nonce = decrypt_contest_with_nonce(
             subject, description_with_placeholders, keypair.public_key
