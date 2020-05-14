@@ -29,7 +29,7 @@ from electionguard.election import (
     SelectionDescription,
     ReportingUnitType,
     VoteVariationType,
-    contest_description_with_placeholders_from,
+    contest_description_with_placeholders_from, CandidateContestDescription, ReferendumContestDescription,
 )
 
 from electionguard.election_builder import ElectionBuilder
@@ -71,7 +71,7 @@ class ElectionFactory(object):
         sequence_order = 0
         number_elected = 1
         votes_allowed = 1
-        fake_referendum_contest = ContestDescription(
+        fake_referendum_contest = ReferendumContestDescription(
             "some-referendum-contest-object-id",
             "some-geopoltical-unit-id",
             sequence_order,
@@ -97,7 +97,7 @@ class ElectionFactory(object):
         sequence_order_2 = 1
         number_elected_2 = 2
         votes_allowed_2 = 2
-        fake_candidate_contest = ContestDescription(
+        fake_candidate_contest = CandidateContestDescription(
             "some-candidate-contest-object-id",
             "some-geopoltical-unit-id",
             sequence_order_2,
