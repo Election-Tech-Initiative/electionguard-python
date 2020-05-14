@@ -369,7 +369,7 @@ class CyphertextBallotContest(ElectionObjectBase, CryptoHashCheckable):
 
         return add_q(*selection_nonces)
 
-    def crypto_hash_with(self, seed_hash: Optional[ElementModQ] = None) -> ElementModQ:
+    def crypto_hash_with(self, seed_hash: ElementModQ) -> ElementModQ:
         """
         Given an encrypted BallotContest, generates a hash, suitable for rolling up
         into a hash / tracking code for an entire ballot. Of note, this particular hash examines
@@ -380,9 +380,6 @@ class CyphertextBallotContest(ElectionObjectBase, CryptoHashCheckable):
 
         In most cases, the seed_hash is the description_hash
         """
-
-        if seed_hash is None:
-            seed_hash = self.description_hash
 
         if len(self.ballot_selections) == 0:
             log_warning(

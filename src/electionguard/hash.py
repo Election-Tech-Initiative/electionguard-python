@@ -33,7 +33,7 @@ class CryptoHashable(Protocol):
 @runtime_checkable
 class CryptoHashCheckable(Protocol):
     @abstractmethod
-    def crypto_hash_with(self, seed_hash: Optional[ElementModQ] = None) -> ElementModQ:
+    def crypto_hash_with(self, seed_hash: ElementModQ) -> ElementModQ:
         """
         Generates a hash with a given seed that can be checked later against the seed and class metadata.
         """
