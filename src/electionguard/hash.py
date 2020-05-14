@@ -66,9 +66,15 @@ def hash_elems(*a: CRYPTO_HASHABLE_ALL) -> ElementModQ:
         # that's a bit Python-specific, and we'd rather make it easier for other languages
         # to exactly match this hash function.
         if x is None:
-            hash_me = "null"  # use the same string as it might occur in JSON
-        elif isinstance(x, Sequence):
-            hash_me = str(hash_elems(*x))
+            # None is a Python-specific thing, but we want to use the more JSON-ish "null"
+            hash_me = "null"
+
+        elif isinstance(x, list):
+            # Lists are a bit funny. We don't just want to flatten the lists prior to hashing,
+            # because then different list structures with the same values will hash to be the
+            # same. Our solution? Recursively hash the list.
+            hash_me = str(hash_elems(*x).to_int())
+
         elif isinstance(x, ElementModP) or isinstance(x, ElementModQ):
             hash_me = str(x.to_int())
         elif isinstance(x, CryptoHashable):
