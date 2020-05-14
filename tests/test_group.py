@@ -31,11 +31,33 @@ from electionguardtest.group import (
     arb_element_mod_q_no_zero,
 )
 from electionguard.utils import (
-    flatmap_optional, 
-    get_or_else_optional, 
-    match_optional, 
-    unwrap_optional
+    flatmap_optional,
+    get_or_else_optional,
+    match_optional,
+    unwrap_optional,
 )
+
+
+class TestEquality(unittest.TestCase):
+    @given(arb_element_mod_q(), arb_element_mod_q())
+    def testPsNotEqualToQs(self, q: ElementModQ, q2: ElementModQ):
+        p = int_to_p_unchecked(q.to_int())
+        p2 = int_to_p_unchecked(q2.to_int())
+
+        # same value should imply they're equal
+        self.assertEqual(p, q)
+        self.assertEqual(q, p)
+
+        if q.to_int() != q2.to_int():
+            # these are genuinely different numbers
+            self.assertNotEqual(q, q2)
+            self.assertNotEqual(p, p2)
+            self.assertNotEqual(q, p2)
+            self.assertNotEqual(p, q2)
+
+        # of course, we're going to make sure that a number is equal to itself
+        self.assertEqual(p, p)
+        self.assertEqual(q, q)
 
 
 class TestModularArithmetic(unittest.TestCase):

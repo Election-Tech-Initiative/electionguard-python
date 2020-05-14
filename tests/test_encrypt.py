@@ -13,19 +13,19 @@ from electionguard.encrypt import (
     encrypt_contest,
     encrypt_selection,
     selection_from,
-    EncryptionCompositor
+    EncryptionCompositor,
 )
 
 from electionguard.election import (
     ContestDescription,
     ContestDescriptionWithPlaceholders,
     SelectionDescription,
-    VoteVariationType
+    VoteVariationType,
 )
 
 from electionguard.chaum_pedersen import (
     make_constant_chaum_pedersen,
-    make_disjunctive_chaum_pedersen
+    make_disjunctive_chaum_pedersen,
 )
 
 from electionguard.elgamal import (
@@ -54,14 +54,16 @@ from secrets import randbelow
 election_factory = ElectionFactory.ElectionFactory()
 ballot_factory = BallotFactory.BallotFactory()
 
-class TestEncrypt(unittest.TestCase):
 
+class TestEncrypt(unittest.TestCase):
     def test_encrypt_simple_selection_succeeds(self):
 
         # Arrange
         keypair = elgamal_keypair_from_secret(int_to_q(2))
         nonce = randbelow(Q)
-        metadata = SelectionDescription("some-selection-object-id", "some-candidate-id", 1)
+        metadata = SelectionDescription(
+            "some-selection-object-id", "some-candidate-id", 1
+        )
         hash_context = metadata.crypto_hash()
 
         subject = selection_from(metadata)
@@ -80,7 +82,9 @@ class TestEncrypt(unittest.TestCase):
         # Arrange
         keypair = elgamal_keypair_from_secret(int_to_q(2))
         nonce = randbelow(Q)
-        metadata = SelectionDescription("some-selection-object-id", "some-candidate-id", 1)
+        metadata = SelectionDescription(
+            "some-selection-object-id", "some-candidate-id", 1
+        )
         hash_context = metadata.crypto_hash()
 
         subject = selection_from(metadata)
@@ -97,10 +101,15 @@ class TestEncrypt(unittest.TestCase):
         missing_proof = deepcopy(result)
         missing_proof.proof = None
 
-
         # Assert
-        self.assertFalse(malformed_description_hash.is_valid_encryption(hash_context, keypair.public_key))
-        self.assertFalse(missing_proof.is_valid_encryption(hash_context, keypair.public_key))
+        self.assertFalse(
+            malformed_description_hash.is_valid_encryption(
+                hash_context, keypair.public_key
+            )
+        )
+        self.assertFalse(
+            missing_proof.is_valid_encryption(hash_context, keypair.public_key)
+        )
 
     @settings(
         deadline=timedelta(milliseconds=2000),
@@ -114,9 +123,10 @@ class TestEncrypt(unittest.TestCase):
     )
     def test_encrypt_selection_valid_input_succeeds(
         self,
-        selection_description: Tuple[str, SelectionDescription], 
+        selection_description: Tuple[str, SelectionDescription],
         keypair: ElGamalKeyPair,
-        seed: ElementModQ):
+        seed: ElementModQ,
+    ):
 
         # Arrange
         _, description = selection_description
@@ -128,7 +138,9 @@ class TestEncrypt(unittest.TestCase):
         # Assert
         self.assertIsNotNone(result)
         self.assertIsNotNone(result.message)
-        self.assertTrue(result.is_valid_encryption(description.crypto_hash(), keypair.public_key))
+        self.assertTrue(
+            result.is_valid_encryption(description.crypto_hash(), keypair.public_key)
+        )
 
     @settings(
         deadline=timedelta(milliseconds=2000),
@@ -142,17 +154,22 @@ class TestEncrypt(unittest.TestCase):
     )
     def test_encrypt_selection_valid_input_tampered_encryption_fails(
         self,
-        selection_description: Tuple[str, SelectionDescription], 
+        selection_description: Tuple[str, SelectionDescription],
         keypair: ElGamalKeyPair,
-        seed: ElementModQ):
+        seed: ElementModQ,
+    ):
 
         # Arrange
         _, description = selection_description
         subject = ballot_factory.get_random_selection_from(description)
 
         # Act
-        result = encrypt_selection(subject, description, keypair.public_key, seed, should_verify_proofs=False)
-        self.assertTrue(result.is_valid_encryption(description.crypto_hash(), keypair.public_key))
+        result = encrypt_selection(
+            subject, description, keypair.public_key, seed, should_verify_proofs=False
+        )
+        self.assertTrue(
+            result.is_valid_encryption(description.crypto_hash(), keypair.public_key)
+        )
 
         # tamper with the encryption
         malformed_encryption = deepcopy(result)
@@ -169,43 +186,58 @@ class TestEncrypt(unittest.TestCase):
         malformed_proof.proof = malformed_disjunctive
 
         # Assert
-        self.assertFalse(malformed_encryption.is_valid_encryption(description.crypto_hash(), keypair.public_key))
-        self.assertFalse(malformed_proof.is_valid_encryption(description.crypto_hash(), keypair.public_key))
+        self.assertFalse(
+            malformed_encryption.is_valid_encryption(
+                description.crypto_hash(), keypair.public_key
+            )
+        )
+        self.assertFalse(
+            malformed_proof.is_valid_encryption(
+                description.crypto_hash(), keypair.public_key
+            )
+        )
 
     def test_encrypt_simple_contest_referendum_succeeds(self):
         # Arrange
         keypair = elgamal_keypair_from_secret(int_to_q(2))
         nonce = randbelow(Q)
         ballot_selections = [
-            SelectionDescription("some-object-id-affirmative", "some-candidate-id-affirmative", 0),
-            SelectionDescription("some-object-id-negative", "some-candidate-id-negative", 1),
-            
+            SelectionDescription(
+                "some-object-id-affirmative", "some-candidate-id-affirmative", 0
+            ),
+            SelectionDescription(
+                "some-object-id-negative", "some-candidate-id-negative", 1
+            ),
         ]
         placeholder_selections = [
-            SelectionDescription("some-object-id-placeholder", "some-candidate-id-placeholder", 2)
+            SelectionDescription(
+                "some-object-id-placeholder", "some-candidate-id-placeholder", 2
+            )
         ]
         metadata = ContestDescriptionWithPlaceholders(
-            "some-contest-object-id", 
-            "some-electoral-district-id", 
-            0, 
-            VoteVariationType.one_of_m, 
-            1, 
+            "some-contest-object-id",
+            "some-electoral-district-id",
+            0,
+            VoteVariationType.one_of_m,
+            1,
             1,
             "some-referendum-contest-name",
             ballot_selections,
             None,
             None,
-            placeholder_selections
+            placeholder_selections,
         )
         hash_context = metadata.crypto_hash()
 
         subject = contest_from(metadata)
-        self.assertTrue(subject.is_valid(
-            metadata.object_id,
-            len(metadata.ballot_selections),
-            metadata.number_elected,
-            metadata.votes_allowed
-        ))
+        self.assertTrue(
+            subject.is_valid(
+                metadata.object_id,
+                len(metadata.ballot_selections),
+                metadata.number_elected,
+                metadata.votes_allowed,
+            )
+        )
 
         # Act
         result = encrypt_contest(subject, metadata, keypair.public_key, nonce)
@@ -225,11 +257,12 @@ class TestEncrypt(unittest.TestCase):
         arb_element_mod_q_no_zero(),
     )
     def test_encrypt_contest_valid_input_succeeds(
-        self, 
+        self,
         contest_description: ContestDescription,
         keypair: ElGamalKeyPair,
-        nonce_seed: ElementModQ):
-        
+        nonce_seed: ElementModQ,
+    ):
+
         # Arrange
         _, description = contest_description
         subject = ballot_factory.get_random_contest_from(description)
@@ -239,11 +272,15 @@ class TestEncrypt(unittest.TestCase):
 
         # Assert
         self.assertIsNotNone(result)
-        self.assertTrue(result.is_valid_encryption(description.crypto_hash(), keypair.public_key))
+        self.assertTrue(
+            result.is_valid_encryption(description.crypto_hash(), keypair.public_key)
+        )
 
         # The encrypted contest should include an entry for each possible selection
         # and placeholders for each seat
-        expected_entries = len(description.ballot_selections) + description.number_elected
+        expected_entries = (
+            len(description.ballot_selections) + description.number_elected
+        )
         self.assertEqual(len(result.ballot_selections), expected_entries)
 
     @settings(
@@ -257,18 +294,21 @@ class TestEncrypt(unittest.TestCase):
         arb_element_mod_q_no_zero(),
     )
     def test_encrypt_contest_valid_input_tampered_proof_fails(
-        self, 
+        self,
         contest_description: ContestDescription,
         keypair: ElGamalKeyPair,
-        nonce_seed: ElementModQ):
-        
+        nonce_seed: ElementModQ,
+    ):
+
         # Arrange
         _, description = contest_description
         subject = ballot_factory.get_random_contest_from(description)
 
         # Act
         result = encrypt_contest(subject, description, keypair.public_key, nonce_seed)
-        self.assertTrue(result.is_valid_encryption(description.crypto_hash(), keypair.public_key))
+        self.assertTrue(
+            result.is_valid_encryption(description.crypto_hash(), keypair.public_key)
+        )
 
         # tamper with the proof
         malformed_proof = deepcopy(result)
@@ -282,9 +322,17 @@ class TestEncrypt(unittest.TestCase):
         missing_proof.proof = None
 
         # Assert
-        self.assertFalse(malformed_proof.is_valid_encryption(description.crypto_hash(), keypair.public_key))
-        self.assertFalse(missing_proof.is_valid_encryption(description.crypto_hash(), keypair.public_key))
-        
+        self.assertFalse(
+            malformed_proof.is_valid_encryption(
+                description.crypto_hash(), keypair.public_key
+            )
+        )
+        self.assertFalse(
+            missing_proof.is_valid_encryption(
+                description.crypto_hash(), keypair.public_key
+            )
+        )
+
     @settings(
         deadline=timedelta(milliseconds=2000),
         suppress_health_check=[HealthCheck.too_slow],
@@ -294,23 +342,28 @@ class TestEncrypt(unittest.TestCase):
         ElectionFactory.get_contest_description_well_formed(),
         arb_elgamal_keypair(),
         arb_element_mod_q_no_zero(),
-        integers(1, 6)
+        integers(1, 6),
     )
     def test_encrypt_contest_overvote_fails(
-        self, 
+        self,
         contest_description: ContestDescription,
         keypair: ElGamalKeyPair,
-        seed: ElementModQ, 
-        overvotes: int
+        seed: ElementModQ,
+        overvotes: int,
     ):
         # Arrange
         _, description = contest_description
         subject = ballot_factory.get_random_contest_from(description)
 
-        highest_sequence = max(*[selection.sequence_order for selection in description.ballot_selections], 1)
+        highest_sequence = max(
+            *[selection.sequence_order for selection in description.ballot_selections],
+            1,
+        )
 
         for i in range(overvotes):
-            extra = ballot_factory.get_random_selection_from(description.ballot_selections[0])
+            extra = ballot_factory.get_random_selection_from(
+                description.ballot_selections[0]
+            )
             extra.sequence_order = highest_sequence + i + 1
             subject.ballot_selections.append(extra)
 
@@ -325,7 +378,9 @@ class TestEncrypt(unittest.TestCase):
         # Arrange
         keypair = elgamal_keypair_from_secret(int_to_q(2))
         election = election_factory.get_fake_election()
-        metadata, encryption_context = election_factory.get_fake_cyphertext_election(election, keypair.public_key)
+        metadata, encryption_context = election_factory.get_fake_cyphertext_election(
+            election, keypair.public_key
+        )
         nonce_seed = TWO_MOD_Q
 
         # TODO: Ballot Factory
@@ -334,19 +389,31 @@ class TestEncrypt(unittest.TestCase):
 
         # Act
         result = encrypt_ballot(subject, metadata, encryption_context)
-        result_from_seed = encrypt_ballot(subject, metadata, encryption_context, nonce_seed)
+        result_from_seed = encrypt_ballot(
+            subject, metadata, encryption_context, nonce_seed
+        )
 
         # Assert
         self.assertIsNotNone(result)
         self.assertIsNotNone(result_from_seed)
-        self.assertTrue(result.is_valid_encryption(encryption_context.crypto_extended_base_hash, keypair.public_key))
-        self.assertTrue(result_from_seed.is_valid_encryption(encryption_context.crypto_extended_base_hash, keypair.public_key))
+        self.assertTrue(
+            result.is_valid_encryption(
+                encryption_context.crypto_extended_base_hash, keypair.public_key
+            )
+        )
+        self.assertTrue(
+            result_from_seed.is_valid_encryption(
+                encryption_context.crypto_extended_base_hash, keypair.public_key
+            )
+        )
 
     def test_encrypt_ballot_with_stateful_composer_succeeds(self):
         # Arrange
         keypair = elgamal_keypair_from_secret(int_to_q(2))
         election = election_factory.get_fake_election()
-        metadata, encryption_context = election_factory.get_fake_cyphertext_election(election, keypair.public_key)
+        metadata, encryption_context = election_factory.get_fake_cyphertext_election(
+            election, keypair.public_key
+        )
 
         data = election_factory.get_fake_ballot(metadata)
         self.assertTrue(data.is_valid(metadata.ballot_styles[0].object_id))
@@ -358,13 +425,19 @@ class TestEncrypt(unittest.TestCase):
 
         # Assert
         self.assertIsNotNone(result)
-        self.assertTrue(result.is_valid_encryption(encryption_context.crypto_extended_base_hash, keypair.public_key))
+        self.assertTrue(
+            result.is_valid_encryption(
+                encryption_context.crypto_extended_base_hash, keypair.public_key
+            )
+        )
 
     def test_encrypt_simple_ballot_from_files_succeeds(self):
         # Arrange
         keypair = elgamal_keypair_from_secret(int_to_q(2))
         election = election_factory.get_simple_election_from_file()
-        metadata, encryption_context = election_factory.get_fake_cyphertext_election(election, keypair.public_key)
+        metadata, encryption_context = election_factory.get_fake_cyphertext_election(
+            election, keypair.public_key
+        )
 
         data = ballot_factory.get_simple_ballot_from_file()
         self.assertTrue(data.is_valid(metadata.ballot_styles[0].object_id))
@@ -377,17 +450,21 @@ class TestEncrypt(unittest.TestCase):
         # Assert
         self.assertIsNotNone(result)
         self.assertEqual(data.object_id, result.object_id)
-        self.assertTrue(result.is_valid_encryption(encryption_context.crypto_extended_base_hash, keypair.public_key))
+        self.assertTrue(
+            result.is_valid_encryption(
+                encryption_context.crypto_extended_base_hash, keypair.public_key
+            )
+        )
 
     @settings(
         deadline=timedelta(milliseconds=2000),
         suppress_health_check=[HealthCheck.too_slow],
         max_examples=10,
     )
-    @given(
-        arb_elgamal_keypair()
-    )
-    def test_encrypt_ballot_with_derivative_nonces_regenerates_valid_proofs(self, keypair: ElGamalKeyPair):
+    @given(arb_elgamal_keypair())
+    def test_encrypt_ballot_with_derivative_nonces_regenerates_valid_proofs(
+        self, keypair: ElGamalKeyPair
+    ):
         """
         This test verifies that we can regenerate the contest and selection proofs from the cached nonce values
         """
@@ -396,7 +473,9 @@ class TestEncrypt(unittest.TestCase):
 
         # Arrange
         election = election_factory.get_simple_election_from_file()
-        metadata, encryption_context = election_factory.get_fake_cyphertext_election(election, keypair.public_key)
+        metadata, encryption_context = election_factory.get_fake_cyphertext_election(
+            election, keypair.public_key
+        )
 
         data = ballot_factory.get_simple_ballot_from_file()
         self.assertTrue(data.is_valid(metadata.ballot_styles[0].object_id))
@@ -405,17 +484,27 @@ class TestEncrypt(unittest.TestCase):
 
         # Act
         result = subject.encrypt(data)
-        self.assertTrue(result.is_valid_encryption(encryption_context.crypto_extended_base_hash, keypair.public_key))
+        self.assertTrue(
+            result.is_valid_encryption(
+                encryption_context.crypto_extended_base_hash, keypair.public_key
+            )
+        )
 
         # Assert
         for contest in result.contests:
             # Find the contest description
-            contest_description = list(filter(lambda i: i.object_id == contest.object_id, metadata.contests))[0]
+            contest_description = list(
+                filter(lambda i: i.object_id == contest.object_id, metadata.contests)
+            )[0]
 
             # Homomorpically accumulate the selection encryptions
-            elgamal_accumulation = elgamal_add(*[selection.message for selection in contest.ballot_selections])
+            elgamal_accumulation = elgamal_add(
+                *[selection.message for selection in contest.ballot_selections]
+            )
             # accumulate the selection nonce's
-            aggregate_nonce = add_q(*[selection.nonce for selection in contest.ballot_selections])
+            aggregate_nonce = add_q(
+                *[selection.nonce for selection in contest.ballot_selections]
+            )
 
             regenerated_constant = make_constant_chaum_pedersen(
                 elgamal_accumulation,
@@ -425,14 +514,18 @@ class TestEncrypt(unittest.TestCase):
                 add_q(contest.nonce, TWO_MOD_Q),
             )
 
-            self.assertTrue(regenerated_constant.is_valid(elgamal_accumulation, keypair.public_key))
+            self.assertTrue(
+                regenerated_constant.is_valid(elgamal_accumulation, keypair.public_key)
+            )
 
             for selection in contest.ballot_selections:
                 # Since we know the nonce, we can decrypt the plaintext
-                representation = selection.message.decrypt_known_nonce(keypair.public_key, selection.nonce)
+                representation = selection.message.decrypt_known_nonce(
+                    keypair.public_key, selection.nonce
+                )
 
                 # one could also decrypt with the secret key:
-                #representation = selection.message.decrypt(keypair.secret_key)
+                # representation = selection.message.decrypt(keypair.secret_key)
 
                 regenerated_disjuctive = make_disjunctive_chaum_pedersen(
                     selection.message,
@@ -442,4 +535,8 @@ class TestEncrypt(unittest.TestCase):
                     representation,
                 )
 
-                self.assertTrue(regenerated_disjuctive.is_valid(selection.message, keypair.public_key))
+                self.assertTrue(
+                    regenerated_disjuctive.is_valid(
+                        selection.message, keypair.public_key
+                    )
+                )

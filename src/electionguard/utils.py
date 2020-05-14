@@ -3,6 +3,7 @@ from typing import Callable, Optional, TypeVar
 T = TypeVar("T")
 U = TypeVar("U")
 
+
 def unwrap_optional(optional: Optional[T]) -> T:
     """
     General-purpose unwrapping function to handle `Optional`.
