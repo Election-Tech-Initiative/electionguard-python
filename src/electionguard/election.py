@@ -135,8 +135,7 @@ class InternationalizedText(Serializable, CryptoHashable):
         """
         A hash representation of the object
         """
-        text_hashes = [t.crypto_hash() for t in self.text]
-        return hash_elems(*text_hashes)
+        return hash_elems(self.text)
 
 
 @dataclass
@@ -426,13 +425,13 @@ class ElectionDescription(Serializable, CryptoHashable):
         Returns a hash of the metadata components of the election
         """
 
-        gp_unit_hashes = [gpunit.crypto_hash() for gpunit in self.geopolitical_units]
-        party_hashes = [party.crypto_hash() for party in self.parties]
-        candidate_hashes = [candidate.crypto_hash() for candidate in self.parties]
-        contest_hashes = [contest.crypto_hash() for contest in self.contests]
-        ballot_style_hashes = [
-            ballot_style.crypto_hash() for ballot_style in self.ballot_styles
-        ]
+        # gp_unit_hashes = [gpunit.crypto_hash() for gpunit in self.geopolitical_units]
+        # party_hashes = [party.crypto_hash() for party in self.parties]
+        # candidate_hashes = [candidate.crypto_hash() for candidate in self.parties]
+        # contest_hashes = [contest.crypto_hash() for contest in self.contests]
+        # ballot_style_hashes = [
+        #     ballot_style.crypto_hash() for ballot_style in self.ballot_styles
+        # ]
 
         return hash_elems(
             self.election_scope_id,
@@ -713,6 +712,7 @@ class InternalElectionDescription(object):
         return contests
 
 
+# TODO: "frozen data class cannot inherit from non-frozen one and vice versa"
 @dataclass(frozen=True)
 class CyphertextElection(Serializable):  # TODO: CryptoHashcheckable
     """
