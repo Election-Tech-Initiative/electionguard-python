@@ -1,6 +1,7 @@
 import unittest
 from copy import deepcopy
 from datetime import timedelta
+from random import Random
 from typing import Tuple
 
 from hypothesis import HealthCheck
@@ -120,17 +121,20 @@ class TestEncrypt(unittest.TestCase):
         ElectionFactory.get_selection_description_well_formed(),
         arb_elgamal_keypair(),
         arb_element_mod_q_no_zero(),
+        integers()
     )
     def test_encrypt_selection_valid_input_succeeds(
         self,
         selection_description: Tuple[str, SelectionDescription],
         keypair: ElGamalKeyPair,
         seed: ElementModQ,
+        random_seed: int
     ):
 
         # Arrange
         _, description = selection_description
-        subject = ballot_factory.get_random_selection_from(description)
+        random = Random(random_seed)
+        subject = ballot_factory.get_random_selection_from(description, random)
 
         # Act
         result = encrypt_selection(subject, description, keypair.public_key, seed)
@@ -151,17 +155,20 @@ class TestEncrypt(unittest.TestCase):
         ElectionFactory.get_selection_description_well_formed(),
         arb_elgamal_keypair(),
         arb_element_mod_q_no_zero(),
+        integers()
     )
     def test_encrypt_selection_valid_input_tampered_encryption_fails(
         self,
         selection_description: Tuple[str, SelectionDescription],
         keypair: ElGamalKeyPair,
         seed: ElementModQ,
+        random_seed: int
     ):
 
         # Arrange
         _, description = selection_description
-        subject = ballot_factory.get_random_selection_from(description)
+        random = Random(random_seed)
+        subject = ballot_factory.get_random_selection_from(description, random)
 
         # Act
         result = encrypt_selection(
@@ -255,17 +262,20 @@ class TestEncrypt(unittest.TestCase):
         ElectionFactory.get_contest_description_well_formed(),
         arb_elgamal_keypair(),
         arb_element_mod_q_no_zero(),
+        integers()
     )
     def test_encrypt_contest_valid_input_succeeds(
         self,
         contest_description: ContestDescription,
         keypair: ElGamalKeyPair,
         nonce_seed: ElementModQ,
+        random_seed: int
     ):
 
         # Arrange
         _, description = contest_description
-        subject = ballot_factory.get_random_contest_from(description)
+        random = Random(random_seed)
+        subject = ballot_factory.get_random_contest_from(description, random)
 
         # Act
         result = encrypt_contest(subject, description, keypair.public_key, nonce_seed)
@@ -292,17 +302,20 @@ class TestEncrypt(unittest.TestCase):
         ElectionFactory.get_contest_description_well_formed(),
         arb_elgamal_keypair(),
         arb_element_mod_q_no_zero(),
+        integers()
     )
     def test_encrypt_contest_valid_input_tampered_proof_fails(
         self,
         contest_description: ContestDescription,
         keypair: ElGamalKeyPair,
         nonce_seed: ElementModQ,
+        random_seed: int
     ):
 
         # Arrange
         _, description = contest_description
-        subject = ballot_factory.get_random_contest_from(description)
+        random = Random(random_seed)
+        subject = ballot_factory.get_random_contest_from(description, random)
 
         # Act
         result = encrypt_contest(subject, description, keypair.public_key, nonce_seed)
@@ -343,6 +356,7 @@ class TestEncrypt(unittest.TestCase):
         arb_elgamal_keypair(),
         arb_element_mod_q_no_zero(),
         integers(1, 6),
+        integers()
     )
     def test_encrypt_contest_overvote_fails(
         self,
@@ -350,10 +364,12 @@ class TestEncrypt(unittest.TestCase):
         keypair: ElGamalKeyPair,
         seed: ElementModQ,
         overvotes: int,
+        random_seed: int
     ):
         # Arrange
         _, description = contest_description
-        subject = ballot_factory.get_random_contest_from(description)
+        random = Random(random_seed)
+        subject = ballot_factory.get_random_contest_from(description, random)
 
         highest_sequence = max(
             *[selection.sequence_order for selection in description.ballot_selections],
@@ -362,7 +378,7 @@ class TestEncrypt(unittest.TestCase):
 
         for i in range(overvotes):
             extra = ballot_factory.get_random_selection_from(
-                description.ballot_selections[0]
+                description.ballot_selections[0], random
             )
             extra.sequence_order = highest_sequence + i + 1
             subject.ballot_selections.append(extra)

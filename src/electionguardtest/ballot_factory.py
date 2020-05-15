@@ -1,5 +1,5 @@
 import os
-from random import randint, Random
+from random import Random
 from typing import TypeVar, Callable, List, Tuple, Optional
 
 from hypothesis.strategies import (
@@ -35,18 +35,18 @@ class BallotFactory(object):
     def get_random_selection_from(
         self,
         description: SelectionDescription,
+        random_source: Random,
         is_placeholder=False,
-        random_source: Optional[Random] = None,
     ):
         selected = (
             bool(random_source.randint(0, 1))
             if random_source is not None
-            else bool(randint(0, 1))
+            else bool(random_source.randint(0, 1))
         )
         return selection_from(description, is_placeholder, selected)
 
     def get_random_contest_from(
-        self, description: ContestDescription, random_seed: Optional[int] = None
+        self, description: ContestDescription, random: Random
     ):
         """
         Get a randomly filled contest for the given description that 
@@ -58,10 +58,8 @@ class BallotFactory(object):
 
         voted = 0
 
-        random = Random(random_seed) if random_seed is not None else Random()
-
         for selection_description in description.ballot_selections:
-            selection = self.get_random_selection_from(selection_description)
+            selection = self.get_random_selection_from(selection_description, random)
             voted += selection.to_int()
             # Possibly append the true selection, indicating an undervote
             if voted <= description.number_elected and bool(random.randint(0, 1)) == 1:

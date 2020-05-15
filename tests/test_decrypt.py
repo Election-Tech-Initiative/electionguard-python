@@ -1,6 +1,7 @@
 import unittest
 from copy import deepcopy
 from datetime import timedelta
+from random import Random
 from typing import Tuple
 
 from hypothesis import HealthCheck
@@ -61,17 +62,20 @@ class TestDecrypt(unittest.TestCase):
         ElectionFactory.get_selection_description_well_formed(),
         arb_elgamal_keypair(),
         arb_element_mod_q_no_zero(),
+        integers()
     )
     def test_decrypt_selection_valid_input_succeeds(
         self,
         selection_description: Tuple[str, SelectionDescription],
         keypair: ElGamalKeyPair,
         seed: ElementModQ,
+        random_seed: int
     ):
 
         # Arrange
+        random = Random(random_seed)
         _, description = selection_description
-        data = ballot_factory.get_random_selection_from(description)
+        data = ballot_factory.get_random_selection_from(description, random)
 
         # Act
         subject = encrypt_selection(data, description, keypair.public_key, seed)
@@ -104,17 +108,20 @@ class TestDecrypt(unittest.TestCase):
         ElectionFactory.get_selection_description_well_formed(),
         arb_elgamal_keypair(),
         arb_element_mod_q_no_zero(),
+        integers()
     )
     def test_decrypt_selection_valid_input_tampered_fails(
         self,
         selection_description: Tuple[str, SelectionDescription],
         keypair: ElGamalKeyPair,
         seed: ElementModQ,
+        random_seed: int
     ):
 
         # Arrange
         _, description = selection_description
-        data = ballot_factory.get_random_selection_from(description)
+        random = Random(random_seed)
+        data = ballot_factory.get_random_selection_from(description, random)
 
         # Act
         subject = encrypt_selection(data, description, keypair.public_key, seed)
@@ -163,17 +170,20 @@ class TestDecrypt(unittest.TestCase):
         ElectionFactory.get_contest_description_well_formed(),
         arb_elgamal_keypair(),
         arb_element_mod_q_no_zero(),
+        integers()
     )
     def test_decrypt_contest_valid_input_succeeds(
         self,
         contest_description: Tuple[str, ContestDescription],
         keypair: ElGamalKeyPair,
         seed: ElementModQ,
+        random_seed: int
     ):
 
         # Arrange
         _, description = contest_description
-        data = ballot_factory.get_random_contest_from(description)
+        random = Random(random_seed)
+        data = ballot_factory.get_random_contest_from(description, random)
 
         placeholders = generate_placeholder_selections_from(description)
         description_with_placeholders = contest_description_with_placeholders_from(
@@ -512,8 +522,6 @@ class TestDecrypt(unittest.TestCase):
         # this tries to simplify and reproduce a failure that occurred in
         # test_decrypt_contest_valid_input_succeeds
 
-        random_seed = 0
-
         description = ContestDescriptionWithPlaceholders(
             object_id="0@A.com-contest",
             electoral_district_id="0@A.com-gp-unit",
@@ -550,7 +558,7 @@ class TestDecrypt(unittest.TestCase):
 
         ####################
         data = ballot_factory.get_random_contest_from(
-            description, random_seed=random_seed
+            description, Random(0)
         )
 
         placeholders = generate_placeholder_selections_from(description)
@@ -604,7 +612,7 @@ class TestDecrypt(unittest.TestCase):
 
         ####################
         data = ballot_factory.get_random_contest_from(
-            description, random_seed=random_seed
+            description, Random(0)
         )
 
         placeholders = generate_placeholder_selections_from(description)

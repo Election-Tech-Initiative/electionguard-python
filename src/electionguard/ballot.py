@@ -241,7 +241,7 @@ class PlaintextBallotContest(ElectionObjectBase):
     def is_valid(
         self,
         expected_object_id: str,
-        expected_number_slections: int,
+        expected_number_selections: int,
         expected_number_elected: int,
         votes_allowed: int,
     ) -> bool:
@@ -257,9 +257,9 @@ class PlaintextBallotContest(ElectionObjectBase):
             )
             return False
 
-        if len(self.ballot_selections) > expected_number_slections:
+        if len(self.ballot_selections) > expected_number_selections:
             log_warning(
-                f"invalid number_slections: expected({expected_number_slections}) actual({len(self.ballot_selections)})"
+                f"invalid number_selections: expected({expected_number_selections}) actual({len(self.ballot_selections)})"
             )
             return False
 
@@ -267,7 +267,6 @@ class PlaintextBallotContest(ElectionObjectBase):
         votes = 0
 
         # Verify the selections are well-formed
-        children_valid: List[bool] = list()
         for selection in self.ballot_selections:
             selection_count = selection.to_int()
             votes += selection_count
