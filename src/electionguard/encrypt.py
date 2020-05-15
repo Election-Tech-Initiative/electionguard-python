@@ -282,9 +282,13 @@ def encrypt_contest(
     )
 
     if elgamal_private_key_debug is not None:
-        log_debug(f"Decrypted selections (should be {contest_description.number_elected} of {contest_description.votes_allowed}):")
+        log_debug(
+            f"Decrypted selections (should be {contest_description.number_elected} of {contest_description.votes_allowed}):"
+        )
         for s in encrypted_selections:
-            log_debug(f"ObjectID: {s.object_id}, decrypted: {s.message.decrypt(elgamal_private_key_debug)}")
+            log_debug(
+                f"ObjectID: {s.object_id}, decrypted: {s.message.decrypt(elgamal_private_key_debug)}"
+            )
 
     assert encrypted_contest is not None
     assert encrypted_contest.proof is not None

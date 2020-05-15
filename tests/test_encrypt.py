@@ -121,14 +121,14 @@ class TestEncrypt(unittest.TestCase):
         ElectionFactory.get_selection_description_well_formed(),
         arb_elgamal_keypair(),
         arb_element_mod_q_no_zero(),
-        integers()
+        integers(),
     )
     def test_encrypt_selection_valid_input_succeeds(
         self,
         selection_description: Tuple[str, SelectionDescription],
         keypair: ElGamalKeyPair,
         seed: ElementModQ,
-        random_seed: int
+        random_seed: int,
     ):
 
         # Arrange
@@ -155,14 +155,14 @@ class TestEncrypt(unittest.TestCase):
         ElectionFactory.get_selection_description_well_formed(),
         arb_elgamal_keypair(),
         arb_element_mod_q_no_zero(),
-        integers()
+        integers(),
     )
     def test_encrypt_selection_valid_input_tampered_encryption_fails(
         self,
         selection_description: Tuple[str, SelectionDescription],
         keypair: ElGamalKeyPair,
         seed: ElementModQ,
-        random_seed: int
+        random_seed: int,
     ):
 
         # Arrange
@@ -262,14 +262,14 @@ class TestEncrypt(unittest.TestCase):
         ElectionFactory.get_contest_description_well_formed(),
         arb_elgamal_keypair(),
         arb_element_mod_q_no_zero(),
-        integers()
+        integers(),
     )
     def test_encrypt_contest_valid_input_succeeds(
         self,
         contest_description: ContestDescription,
         keypair: ElGamalKeyPair,
         nonce_seed: ElementModQ,
-        random_seed: int
+        random_seed: int,
     ):
 
         # Arrange
@@ -302,14 +302,14 @@ class TestEncrypt(unittest.TestCase):
         ElectionFactory.get_contest_description_well_formed(),
         arb_elgamal_keypair(),
         arb_element_mod_q_no_zero(),
-        integers()
+        integers(),
     )
     def test_encrypt_contest_valid_input_tampered_proof_fails(
         self,
         contest_description: ContestDescription,
         keypair: ElGamalKeyPair,
         nonce_seed: ElementModQ,
-        random_seed: int
+        random_seed: int,
     ):
 
         # Arrange
@@ -356,7 +356,7 @@ class TestEncrypt(unittest.TestCase):
         arb_elgamal_keypair(),
         arb_element_mod_q_no_zero(),
         integers(1, 6),
-        integers()
+        integers(),
     )
     def test_encrypt_contest_overvote_fails(
         self,
@@ -364,7 +364,7 @@ class TestEncrypt(unittest.TestCase):
         keypair: ElGamalKeyPair,
         seed: ElementModQ,
         overvotes: int,
-        random_seed: int
+        random_seed: int,
     ):
         # Arrange
         _, description = contest_description

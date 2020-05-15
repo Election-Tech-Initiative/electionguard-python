@@ -62,14 +62,14 @@ class TestDecrypt(unittest.TestCase):
         ElectionFactory.get_selection_description_well_formed(),
         arb_elgamal_keypair(),
         arb_element_mod_q_no_zero(),
-        integers()
+        integers(),
     )
     def test_decrypt_selection_valid_input_succeeds(
         self,
         selection_description: Tuple[str, SelectionDescription],
         keypair: ElGamalKeyPair,
         seed: ElementModQ,
-        random_seed: int
+        random_seed: int,
     ):
 
         # Arrange
@@ -108,14 +108,14 @@ class TestDecrypt(unittest.TestCase):
         ElectionFactory.get_selection_description_well_formed(),
         arb_elgamal_keypair(),
         arb_element_mod_q_no_zero(),
-        integers()
+        integers(),
     )
     def test_decrypt_selection_valid_input_tampered_fails(
         self,
         selection_description: Tuple[str, SelectionDescription],
         keypair: ElGamalKeyPair,
         seed: ElementModQ,
-        random_seed: int
+        random_seed: int,
     ):
 
         # Arrange
@@ -170,14 +170,14 @@ class TestDecrypt(unittest.TestCase):
         ElectionFactory.get_contest_description_well_formed(),
         arb_elgamal_keypair(),
         arb_element_mod_q_no_zero(),
-        integers()
+        integers(),
     )
     def test_decrypt_contest_valid_input_succeeds(
         self,
         contest_description: Tuple[str, ContestDescription],
         keypair: ElGamalKeyPair,
         seed: ElementModQ,
-        random_seed: int
+        random_seed: int,
     ):
 
         # Arrange
@@ -213,8 +213,6 @@ class TestDecrypt(unittest.TestCase):
         self.assertIsNotNone(result_from_key)
         self.assertIsNotNone(result_from_nonce)
         self.assertIsNotNone(result_from_nonce_seed)
-
-        print("Encrypted and decrypted contest successfully")
 
         # The decrypted contest should include an entry for each possible selection
         # and placeholders for each seat
@@ -265,9 +263,6 @@ class TestDecrypt(unittest.TestCase):
         self.assertEqual(description.number_elected, key_selected)
 
         # Assert each selection is valid
-        print(
-            f"len(description.ballot_selections) = {len(description.ballot_selections)}"
-        )
         for selection_description in description.ballot_selections:
 
             key_selection = [
@@ -557,9 +552,7 @@ class TestDecrypt(unittest.TestCase):
         seed = ONE_MOD_Q
 
         ####################
-        data = ballot_factory.get_random_contest_from(
-            description, Random(0)
-        )
+        data = ballot_factory.get_random_contest_from(description, Random(0))
 
         placeholders = generate_placeholder_selections_from(description)
         description_with_placeholders = contest_description_with_placeholders_from(
@@ -568,7 +561,12 @@ class TestDecrypt(unittest.TestCase):
 
         # Act
         subject = encrypt_contest(
-            data, description_with_placeholders, keypair.public_key, seed, should_verify_proofs=True, elgamal_private_key_debug=keypair.secret_key
+            data,
+            description_with_placeholders,
+            keypair.public_key,
+            seed,
+            should_verify_proofs=True,
+            elgamal_private_key_debug=keypair.secret_key,
         )
         self.assertIsNotNone(subject)
 
@@ -611,9 +609,7 @@ class TestDecrypt(unittest.TestCase):
         seed = ONE_MOD_Q
 
         ####################
-        data = ballot_factory.get_random_contest_from(
-            description, Random(0)
-        )
+        data = ballot_factory.get_random_contest_from(description, Random(0))
 
         placeholders = generate_placeholder_selections_from(description)
         description_with_placeholders = contest_description_with_placeholders_from(
@@ -622,6 +618,11 @@ class TestDecrypt(unittest.TestCase):
 
         # Act
         subject = encrypt_contest(
-            data, description_with_placeholders, keypair.public_key, seed, should_verify_proofs=True, elgamal_private_key_debug=keypair.secret_key
+            data,
+            description_with_placeholders,
+            keypair.public_key,
+            seed,
+            should_verify_proofs=True,
+            elgamal_private_key_debug=keypair.secret_key,
         )
         self.assertIsNotNone(subject)

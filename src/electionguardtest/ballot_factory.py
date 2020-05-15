@@ -93,9 +93,7 @@ def get_selection_well_formed(
     object_id = f"selection-{draw(uuids)}"
     return (
         object_id,
-        PlaintextBallotSelection(
-            object_id, f"{draw(bools)}", draw(bools), extra_data
-        ),
+        PlaintextBallotSelection(object_id, f"{draw(bools)}", draw(bools), extra_data),
     )
 
 
@@ -111,7 +109,5 @@ def get_selection_poorly_formed(
     object_id = f"selection-{draw(uuids)}"
     return (
         object_id,
-        PlaintextBallotSelection(
-            object_id, f"{draw(text)}", draw(bools), extra_data
-        ),
+        PlaintextBallotSelection(object_id, f"{draw(text)}", draw(bools), extra_data),
     )
