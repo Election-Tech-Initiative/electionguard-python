@@ -37,7 +37,7 @@ class BallotFactory(object):
         description: SelectionDescription,
         random_source: Random,
         is_placeholder=False,
-    ):
+    ) -> PlaintextBallotSelection:
         selected = (
             bool(random_source.randint(0, 1))
             if random_source is not None
@@ -47,7 +47,7 @@ class BallotFactory(object):
 
     def get_random_contest_from(
         self, description: ContestDescription, random: Random
-    ):
+    ) -> PlaintextBallotContest:
         """
         Get a randomly filled contest for the given description that 
         may be undervoted and may include explicitly false votes.
@@ -94,7 +94,7 @@ def get_selection_well_formed(
     return (
         object_id,
         PlaintextBallotSelection(
-            object_id, f"{draw(bools)}", f"{draw(bools)}", extra_data
+            object_id, f"{draw(bools)}", draw(bools), extra_data
         ),
     )
 
@@ -112,6 +112,6 @@ def get_selection_poorly_formed(
     return (
         object_id,
         PlaintextBallotSelection(
-            object_id, f"{draw(text)}", f"{draw(bools)}", extra_data
+            object_id, f"{draw(text)}", draw(bools), extra_data
         ),
     )
