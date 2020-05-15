@@ -1,15 +1,12 @@
 from datetime import datetime
 import os
-from typing import TypeVar, Callable, Optional, Tuple
+from typing import TypeVar, Callable, Optional, Tuple, List
 
 from hypothesis.strategies import (
     composite,
     emails,
-    booleans,
     integers,
-    lists,
     text,
-    uuids,
     SearchStrategy,
 )
 
@@ -142,7 +139,7 @@ class ElectionFactory(object):
         )
         builder.set_public_key(elgamal_public_key)
         metadata, election = unwrap_optional(builder.build())
-        return (metadata, election)
+        return metadata, election
 
     # TODO: Move to ballot Factory?
     def get_fake_ballot(self, election: ElectionDescription = None) -> PlaintextBallot:
@@ -212,7 +209,7 @@ def get_contest_description_well_formed(
     number_elected = min(first_int, second_int)
     votes_allowed = number_elected
 
-    selection_descriptions: list[SelectionDescription] = list()
+    selection_descriptions: List[SelectionDescription] = list()
     for i in range(max(first_int, second_int)):
         selection: Tuple[str, SelectionDescription] = draw(selections)
         _, selection_description = selection

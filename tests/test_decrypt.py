@@ -5,6 +5,7 @@ from typing import Tuple
 
 from hypothesis import HealthCheck
 from hypothesis import given, settings
+from hypothesis.strategies import integers
 
 from electionguard.encrypt import (
     encrypt_contest,
@@ -26,14 +27,18 @@ from electionguard.election import (
     SelectionDescription,
     generate_placeholder_selections_from,
     contest_description_with_placeholders_from,
+    ContestDescriptionWithPlaceholders,
+    VoteVariationType,
 )
 
-from electionguard.elgamal import ElGamalKeyPair
+from electionguard.elgamal import ElGamalKeyPair, elgamal_keypair_from_secret
 
 from electionguard.group import (
     ElementModQ,
     TWO_MOD_P,
     mult_p,
+    TWO_MOD_Q,
+    ONE_MOD_Q,
 )
 
 from electionguardtest.elgamal import arb_elgamal_keypair
@@ -70,6 +75,8 @@ class TestDecrypt(unittest.TestCase):
 
         # Act
         subject = encrypt_selection(data, description, keypair.public_key, seed)
+        self.assertIsNotNone(subject)
+
         result_from_key = decrypt_selection_with_secret(
             subject, description, keypair.public_key, keypair.secret_key
         )
@@ -197,6 +204,8 @@ class TestDecrypt(unittest.TestCase):
         self.assertIsNotNone(result_from_nonce)
         self.assertIsNotNone(result_from_nonce_seed)
 
+        print("Encrypted and decrypted contest successfully")
+
         # The decrypted contest should include an entry for each possible selection
         # and placeholders for each seat
         expected_entries = (
@@ -246,6 +255,9 @@ class TestDecrypt(unittest.TestCase):
         self.assertEqual(description.number_elected, key_selected)
 
         # Assert each selection is valid
+        print(
+            f"len(description.ballot_selections) = {len(description.ballot_selections)}"
+        )
         for selection_description in description.ballot_selections:
 
             key_selection = [
@@ -315,6 +327,8 @@ class TestDecrypt(unittest.TestCase):
 
         # Act
         subject = operator.encrypt(data)
+        self.assertIsNotNone(subject)
+
         result_from_key = decrypt_ballot_with_secret(
             subject,
             metadata,
@@ -471,6 +485,7 @@ class TestDecrypt(unittest.TestCase):
 
         # Act
         subject = operator.encrypt(data)
+        self.assertIsNotNone(subject)
         subject.nonce = None
 
         missing_nonce_value = None
@@ -492,3 +507,113 @@ class TestDecrypt(unittest.TestCase):
         # Assert
         self.assertIsNone(result_from_nonce)
         self.assertIsNone(result_from_nonce_seed)
+
+    def test_encrypt_contest_simple1(self):
+        # this tries to simplify and reproduce a failure that occurred in
+        # test_decrypt_contest_valid_input_succeeds
+
+        random_seed = 0
+
+        description = ContestDescriptionWithPlaceholders(
+            object_id="0@A.com-contest",
+            electoral_district_id="0@A.com-gp-unit",
+            sequence_order=1,
+            vote_variation=VoteVariationType.n_of_m,
+            number_elected=1,
+            votes_allowed=1,
+            name="",
+            ballot_selections=[
+                SelectionDescription(
+                    object_id="0@A.com-selection",
+                    candidate_id="0@A.com",
+                    sequence_order=0,
+                ),
+                SelectionDescription(
+                    object_id="0@A.com-selection",
+                    candidate_id="0@A.com",
+                    sequence_order=1,
+                ),
+            ],
+            ballot_title=None,
+            ballot_subtitle=None,
+            placeholder_selections=[
+                SelectionDescription(
+                    object_id="0@A.com-contest-2-placeholder",
+                    candidate_id="0@A.com-contest-2-candidate",
+                    sequence_order=2,
+                )
+            ],
+        )
+
+        keypair = elgamal_keypair_from_secret(TWO_MOD_Q)
+        seed = ONE_MOD_Q
+
+        ####################
+        data = ballot_factory.get_random_contest_from(
+            description, random_seed=random_seed
+        )
+
+        placeholders = generate_placeholder_selections_from(description)
+        description_with_placeholders = contest_description_with_placeholders_from(
+            description, placeholders
+        )
+
+        # Act
+        subject = encrypt_contest(
+            data, description_with_placeholders, keypair.public_key, seed
+        )
+        self.assertIsNotNone(subject)
+
+    def test_encrypt_contest_simple2(self):
+        # Note the absence of ballot_title or ballot_subtitle, otherwise the same as _simple1
+
+        random_seed = 0
+
+        description = ContestDescriptionWithPlaceholders(
+            object_id="0@A.com-contest",
+            electoral_district_id="0@A.com-gp-unit",
+            sequence_order=1,
+            vote_variation=VoteVariationType.n_of_m,
+            number_elected=1,
+            votes_allowed=1,
+            name="",
+            ballot_selections=[
+                SelectionDescription(
+                    object_id="0@A.com-selection",
+                    candidate_id="0@A.com",
+                    sequence_order=0,
+                ),
+                SelectionDescription(
+                    object_id="0@A.com-selection",
+                    candidate_id="0@A.com",
+                    sequence_order=1,
+                ),
+            ],
+            # Note the absence of ballot_title or ballot_subtitle
+            placeholder_selections=[
+                SelectionDescription(
+                    object_id="0@A.com-contest-2-placeholder",
+                    candidate_id="0@A.com-contest-2-candidate",
+                    sequence_order=2,
+                )
+            ],
+        )
+
+        keypair = elgamal_keypair_from_secret(TWO_MOD_Q)
+        seed = ONE_MOD_Q
+
+        ####################
+        data = ballot_factory.get_random_contest_from(
+            description, random_seed=random_seed
+        )
+
+        placeholders = generate_placeholder_selections_from(description)
+        description_with_placeholders = contest_description_with_placeholders_from(
+            description, placeholders
+        )
+
+        # Act
+        subject = encrypt_contest(
+            data, description_with_placeholders, keypair.public_key, seed
+        )
+        self.assertIsNotNone(subject)

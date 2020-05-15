@@ -829,6 +829,7 @@ def generate_placeholder_selections_from(
     """
         Generates the specified number of placeholder selections in ascending sequence order from the max selection sequence orderf
 
+        :param contest: ContestDescription for input
         :param count: optionally specify a number of placeholders to generate
         :return: a collection of `SelectionDescription` objects, which may be empty
         """

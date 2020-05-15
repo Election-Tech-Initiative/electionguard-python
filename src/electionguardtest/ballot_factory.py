@@ -1,6 +1,6 @@
 import os
-from random import randint
-from typing import TypeVar, Callable, List, Tuple
+from random import randint, Random
+from typing import TypeVar, Callable, List, Tuple, Optional
 
 from hypothesis.strategies import (
     composite,
@@ -33,29 +33,42 @@ class BallotFactory(object):
     simple_ballot_filename = "ballot_in_simple.json"
 
     def get_random_selection_from(
-        self, description: SelectionDescription, is_placeholder=False
+        self,
+        description: SelectionDescription,
+        is_placeholder=False,
+        random_source: Optional[Random] = None,
     ):
-        selected = bool(randint(0, 1))
+        selected = (
+            bool(random_source.randint(0, 1))
+            if random_source is not None
+            else bool(randint(0, 1))
+        )
         return selection_from(description, is_placeholder, selected)
 
-    def get_random_contest_from(self, description: ContestDescription):
+    def get_random_contest_from(
+        self, description: ContestDescription, random_seed: Optional[int] = None
+    ):
         """
         Get a randomly filled contest for the given description that 
-        may be undervoted and may include explicitly false votes
+        may be undervoted and may include explicitly false votes.
+        For testing purposes, the optional field "random_seed" may
+        be provided to make this function deterministic.
         """
         selections: List[PlaintextBallotSelection] = list()
 
         voted = 0
 
+        random = Random(random_seed) if random_seed is not None else Random()
+
         for selection_description in description.ballot_selections:
             selection = self.get_random_selection_from(selection_description)
             voted += selection.to_int()
             # Possibly append the true selection, indicating an undervote
-            if voted <= description.number_elected and bool(randint(0, 1)) == 1:
+            if voted <= description.number_elected and bool(random.randint(0, 1)) == 1:
                 selections.append(selection)
             # Possibly append the false selections as well, indicating some choices
             # may be explicitly false
-            elif bool(randint(0, 1)) == 1:
+            elif bool(random.randint(0, 1)) == 1:
                 selections.append(selection_from(selection_description))
 
         return PlaintextBallotContest(description.object_id, selections)
