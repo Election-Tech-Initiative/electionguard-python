@@ -14,7 +14,7 @@ from electionguard.ballot import PlaintextBallot
 
 from electionguard.election import (
     BallotStyle,
-    CyphertextElection,
+    CiphertextElection,
     ElectionDescription,
     ElectionType,
     InternalElectionDescription,
@@ -131,9 +131,9 @@ class ElectionFactory(object):
 
         return fake_election
 
-    def get_fake_cyphertext_election(
+    def get_fake_ciphertext_election(
         self, description: ElectionDescription, elgamal_public_key: ElementModP
-    ) -> Tuple[InternalElectionDescription, CyphertextElection]:
+    ) -> Tuple[InternalElectionDescription, CiphertextElection]:
         builder = ElectionBuilder(
             number_trustees=1, threshold_trustees=1, description=description
         )

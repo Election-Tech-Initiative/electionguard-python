@@ -378,7 +378,7 @@ class TestEncrypt(unittest.TestCase):
         # Arrange
         keypair = elgamal_keypair_from_secret(int_to_q(2))
         election = election_factory.get_fake_election()
-        metadata, encryption_context = election_factory.get_fake_cyphertext_election(
+        metadata, encryption_context = election_factory.get_fake_ciphertext_election(
             election, keypair.public_key
         )
         nonce_seed = TWO_MOD_Q
@@ -412,7 +412,7 @@ class TestEncrypt(unittest.TestCase):
         # Arrange
         keypair = elgamal_keypair_from_secret(int_to_q(2))
         election = election_factory.get_fake_election()
-        metadata, encryption_context = election_factory.get_fake_cyphertext_election(
+        metadata, encryption_context = election_factory.get_fake_ciphertext_election(
             election, keypair.public_key
         )
 
@@ -437,7 +437,7 @@ class TestEncrypt(unittest.TestCase):
         # Arrange
         keypair = elgamal_keypair_from_secret(int_to_q(2))
         election = election_factory.get_simple_election_from_file()
-        metadata, encryption_context = election_factory.get_fake_cyphertext_election(
+        metadata, encryption_context = election_factory.get_fake_ciphertext_election(
             election, keypair.public_key
         )
 
@@ -475,7 +475,7 @@ class TestEncrypt(unittest.TestCase):
 
         # Arrange
         election = election_factory.get_simple_election_from_file()
-        metadata, encryption_context = election_factory.get_fake_cyphertext_election(
+        metadata, encryption_context = election_factory.get_fake_ciphertext_election(
             election, keypair.public_key
         )
 

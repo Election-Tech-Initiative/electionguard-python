@@ -93,9 +93,9 @@ class PlaintextBallotSelection(ElectionObjectBase):
 
 
 @dataclass
-class CyphertextBallotSelection(ElectionObjectBase, CryptoHashCheckable):
+class CiphertextBallotSelection(ElectionObjectBase, CryptoHashCheckable):
     """
-    A CyphertextBallotSelection represents an individual encrypted selection on a ballot.
+    A CiphertextBallotSelection represents an individual encrypted selection on a ballot.
 
     This class accepts a `description_hash` and a `message` as required parameters
     in its constructor.
@@ -145,7 +145,7 @@ class CyphertextBallotSelection(ElectionObjectBase, CryptoHashCheckable):
     proof: Optional[DisjunctiveChaumPedersenProof] = field(init=False, default=None)
 
     # encrypted representation of the extended_data field
-    exnteded_data: Optional[ElGamalCiphertext] = field(default=None)
+    extended_data: Optional[ElGamalCiphertext] = field(default=None)
 
     def __post_init__(
         self,
@@ -227,7 +227,7 @@ class PlaintextBallotContest(ElectionObjectBase):
     a partial representation must include at a minimum the "affirmative" selections of a contest.
     A complete representation of a ballot must include both affirmative and negative selections of
     the contest, AND the placeholder selections necessary to satisfy the ConstantChaumPedersen proof 
-    in the CyphertextBallotContest.
+    in the CiphertextBallotContest.
 
     Typically partial contests are passed into Electionguard for memory constrained systems, 
     while complete contests are passed into ElectionGuard when running encryption on an existing dataset.
@@ -288,17 +288,17 @@ class PlaintextBallotContest(ElectionObjectBase):
 
 
 @dataclass
-class CyphertextBallotContest(ElectionObjectBase, CryptoHashCheckable):
+class CiphertextBallotContest(ElectionObjectBase, CryptoHashCheckable):
     """
-    A CyphertextBallotContest represents the selections made by a voter for a specific ContestDescription
+    A CiphertextBallotContest represents the selections made by a voter for a specific ContestDescription
 
-    CyphertextBallotContest can only be a complete representation of a contest dataset.  While
-    PlaintextBallotContest supports a partial representation, a CyphertextBallotContest includes all data
+    CiphertextBallotContest can only be a complete representation of a contest dataset.  While
+    PlaintextBallotContest supports a partial representation, a CiphertextBallotContest includes all data
     necessary for a verifier to verify the contest.  Specifically, it includes both explicit affirmative 
     and negative selections of the contest, as well as the placeholder selections that satisfy
     the ConstantChaumPedersen proof.
 
-    Similar to `CyphertextBallotSelection` the consuming application can choose to discard or keep both
+    Similar to `CiphertextBallotSelection` the consuming application can choose to discard or keep both
     the `nonce` and the `proof` in some circumstances.  For deterministic nonce's derived from the 
     master nonce, both values can be regenerated.  If the `nonce` for this contest is completely random,
     then it is required in order to regenerate the proof.
@@ -308,7 +308,7 @@ class CyphertextBallotContest(ElectionObjectBase, CryptoHashCheckable):
     description_hash: ElementModQ
 
     # collection of ballot selections
-    ballot_selections: List[CyphertextBallotSelection]
+    ballot_selections: List[CiphertextBallotSelection]
 
     elgamal_public_key: InitVar[ElementModP]
 
@@ -460,9 +460,9 @@ class PlaintextBallot(ElectionObjectBase):
 
 
 @dataclass
-class CyphertextBallot(ElectionObjectBase, CryptoHashCheckable):
+class CiphertextBallot(ElectionObjectBase, CryptoHashCheckable):
     """
-    A CyphertextBallot represents a voters encrypted selections for a given ballot and ballot style
+    A CiphertextBallot represents a voters encrypted selections for a given ballot and ballot style
 
     When a ballot is in it's complete, encrypted state, the `nonce` is the master nonce
     from which all other nonces can be derived to encrypt the ballot.  Allong with the `nonce`
@@ -477,7 +477,7 @@ class CyphertextBallot(ElectionObjectBase, CryptoHashCheckable):
     description_hash: ElementModQ
 
     # The list of contests for this ballot
-    contests: List[CyphertextBallotContest]
+    contests: List[CiphertextBallotContest]
 
     # the hash of the encrypted ballot representation
     crypto_hash: ElementModQ = field(init=False)

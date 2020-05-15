@@ -65,14 +65,16 @@ def hash_elems(*a: CRYPTO_HASHABLE_ALL) -> ElementModQ:
         # We could just use str(x) for everything, but then we'd have a resulting string
         # that's a bit Python-specific, and we'd rather make it easier for other languages
         # to exactly match this hash function.
-        if x is None:
-            # None is a Python-specific thing, but we want to use the more JSON-ish "null"
+
+        if not x:
+            # This case captures empty lists and None, nicely guaranteeing that we don't
+            # need to do a recursive call if the list is empty. So we need a string to
+            # feed in for both of these cases. "None" would be a Python-specific thing,
+            # so we'll go with the more JSON-ish "null".
             hash_me = "null"
 
         elif isinstance(x, list):
-            # Lists are a bit funny. We don't just want to flatten the lists prior to hashing,
-            # because then different list structures with the same values will hash to be the
-            # same. Our solution? Recursively hash the list.
+            # The simplest way to deal with lists is to crunch them recursively.
             hash_me = str(hash_elems(*x).to_int())
 
         elif isinstance(x, ElementModP) or isinstance(x, ElementModQ):

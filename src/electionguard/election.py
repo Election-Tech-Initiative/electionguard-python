@@ -714,9 +714,9 @@ class InternalElectionDescription(object):
 
 # TODO: "frozen data class cannot inherit from non-frozen one and vice versa"
 @dataclass(frozen=True)
-class CyphertextElection(Serializable):  # TODO: CryptoHashcheckable
+class CiphertextElection(Serializable):  # TODO: CryptoHashcheckable
     """
-    `CyphertextElection` is the ElectionGuard representation of a specific election
+    `CiphertextElection` is the ElectionGuard representation of a specific election
     Note: The ElectionGuard Data Spec deviates from the NIST model in that
     this object includes fields that are populated in the course of encrypting an election
     Specifically, `crypto_base_hash`, `crypto_extended_base_hash` and `elgamal_public_key`

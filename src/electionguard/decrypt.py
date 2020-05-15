@@ -1,9 +1,9 @@
 from typing import Optional, List
 
 from .ballot import (
-    CyphertextBallot,
-    CyphertextBallotContest,
-    CyphertextBallotSelection,
+    CiphertextBallot,
+    CiphertextBallotContest,
+    CiphertextBallotSelection,
     PlaintextBallot,
     PlaintextBallotContest,
     PlaintextBallotSelection,
@@ -23,14 +23,14 @@ from .utils import unwrap_optional
 
 
 def decrypt_selection_with_secret(
-    selection: CyphertextBallotSelection,
+    selection: CiphertextBallotSelection,
     description: SelectionDescription,
     public_key: ElementModP,
     secret_key: ElementModQ,
     suppress_validity_check: bool = False,
 ) -> Optional[PlaintextBallotSelection]:
     """
-    Decrypt the specified `CyphertextBallotSelection` within the context of the specified selection.
+    Decrypt the specified `CiphertextBallotSelection` within the context of the specified selection.
 
     :param selection: the selection to decrypt
     :param description: the qualified selection metadata
@@ -54,14 +54,14 @@ def decrypt_selection_with_secret(
 
 
 def decrypt_selection_with_nonce(
-    selection: CyphertextBallotSelection,
+    selection: CiphertextBallotSelection,
     description: SelectionDescription,
     public_key: ElementModP,
     nonce_seed: Optional[ElementModQ] = None,
     suppress_validity_check: bool = False,
 ) -> Optional[PlaintextBallotSelection]:
     """
-    Decrypt the specified `CyphertextBallotSelection` within the context of the specified selection.
+    Decrypt the specified `CiphertextBallotSelection` within the context of the specified selection.
 
     :param contest: the contest to decrypt
     :param description: the qualified selection metadata that may be a placeholder selection
@@ -98,14 +98,14 @@ def decrypt_selection_with_nonce(
 
 
 def decrypt_contest_with_secret(
-    contest: CyphertextBallotContest,
+    contest: CiphertextBallotContest,
     description: ContestDescriptionWithPlaceholders,
     public_key: ElementModP,
     secret_key: ElementModQ,
     suppress_validity_check: bool = False,
 ) -> Optional[PlaintextBallotContest]:
     """
-    Decrypt the specified `CyphertextBallotContest` within the context of the specified contest.
+    Decrypt the specified `CiphertextBallotContest` within the context of the specified contest.
 
     :param contest: the contest to decrypt
     :param description: the qualified contest metadata that includes placeholder selections
@@ -140,14 +140,14 @@ def decrypt_contest_with_secret(
 
 
 def decrypt_contest_with_nonce(
-    contest: CyphertextBallotContest,
+    contest: CiphertextBallotContest,
     description: ContestDescriptionWithPlaceholders,
     public_key: ElementModP,
     nonce_seed: Optional[ElementModQ] = None,
     suppress_validity_check: bool = False,
 ) -> Optional[PlaintextBallotContest]:
     """
-    Decrypt the specified `CyphertextBallotContest` within the context of the specified contest.
+    Decrypt the specified `CiphertextBallotContest` within the context of the specified contest.
 
     :param contest: the contest to decrypt
     :param description: the qualified contest metadata that includes placeholder selections
@@ -195,7 +195,7 @@ def decrypt_contest_with_nonce(
 
 
 def decrypt_ballot_with_secret(
-    ballot: CyphertextBallot,
+    ballot: CiphertextBallot,
     election_metadata: InternalElectionDescription,
     extended_base_hash: ElementModQ,
     public_key: ElementModP,
@@ -203,7 +203,7 @@ def decrypt_ballot_with_secret(
     suppress_validity_check: bool = False,
 ) -> Optional[PlaintextBallot]:
     """
-    Decrypt the specified `CyphertextBallot` within the context of the specified election.
+    Decrypt the specified `CiphertextBallot` within the context of the specified election.
 
     :param ballot: the ballot to decrypt
     :param election_metadata: the qualified election metadata that includes placeholder selections
@@ -240,7 +240,7 @@ def decrypt_ballot_with_secret(
 
 
 def decrypt_ballot_with_nonce(
-    ballot: CyphertextBallot,
+    ballot: CiphertextBallot,
     election_metadata: InternalElectionDescription,
     extended_base_hash: ElementModQ,
     public_key: ElementModP,
@@ -248,7 +248,7 @@ def decrypt_ballot_with_nonce(
     suppress_validity_check: bool = False,
 ) -> Optional[PlaintextBallot]:
     """
-    Decrypt the specified `CyphertextBallot` within the context of the specified election.
+    Decrypt the specified `CiphertextBallot` within the context of the specified election.
 
     :param ballot: the ballot to decrypt
     :param election_metadata: the qualified election metadata that includes placeholder selections

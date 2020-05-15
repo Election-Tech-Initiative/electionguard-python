@@ -318,7 +318,7 @@ class TestDecrypt(unittest.TestCase):
 
         # Arrange
         election = election_factory.get_simple_election_from_file()
-        metadata, encryption_context = election_factory.get_fake_cyphertext_election(
+        metadata, encryption_context = election_factory.get_fake_ciphertext_election(
             election, keypair.public_key
         )
 
@@ -476,7 +476,7 @@ class TestDecrypt(unittest.TestCase):
 
         # Arrange
         election = election_factory.get_simple_election_from_file()
-        metadata, encryption_context = election_factory.get_fake_cyphertext_election(
+        metadata, encryption_context = election_factory.get_fake_ciphertext_election(
             election, keypair.public_key
         )
 
@@ -560,7 +560,7 @@ class TestDecrypt(unittest.TestCase):
 
         # Act
         subject = encrypt_contest(
-            data, description_with_placeholders, keypair.public_key, seed
+            data, description_with_placeholders, keypair.public_key, seed, should_verify_proofs=True, elgamal_private_key_debug=keypair.secret_key
         )
         self.assertIsNotNone(subject)
 
@@ -614,6 +614,6 @@ class TestDecrypt(unittest.TestCase):
 
         # Act
         subject = encrypt_contest(
-            data, description_with_placeholders, keypair.public_key, seed
+            data, description_with_placeholders, keypair.public_key, seed, should_verify_proofs=True, elgamal_private_key_debug=keypair.secret_key
         )
         self.assertIsNotNone(subject)
