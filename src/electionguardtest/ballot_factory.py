@@ -22,6 +22,7 @@ from electionguard.ballot import (
 from electionguard.election import ContestDescription, SelectionDescription
 
 from electionguard.encrypt import selection_from
+from electionguardtest.election_factory import get_contest_description_well_formed
 
 _T = TypeVar("_T")
 _DrawType = Callable[[SearchStrategy[_T]], _T]
@@ -38,11 +39,8 @@ class BallotFactory(object):
         random_source: Random,
         is_placeholder=False,
     ) -> PlaintextBallotSelection:
-        selected = (
-            bool(random_source.randint(0, 1))
-            if random_source is not None
-            else bool(random_source.randint(0, 1))
-        )
+
+        selected = bool(random_source.randint(0, 1))
         return selection_from(description, is_placeholder, selected)
 
     def get_random_contest_from(
@@ -51,9 +49,10 @@ class BallotFactory(object):
         """
         Get a randomly filled contest for the given description that 
         may be undervoted and may include explicitly false votes.
-        For testing purposes, the optional field "random_seed" may
-        be provided to make this function deterministic.
+        Since this is only used for testing, the random number generator
+        (`random`) must be provided to make this function deterministic.
         """
+
         selections: List[PlaintextBallotSelection] = list()
 
         voted = 0
@@ -111,3 +110,10 @@ def get_selection_poorly_formed(
         object_id,
         PlaintextBallotSelection(object_id, f"{draw(text)}", draw(bools), extra_data),
     )
+
+
+@composite
+def get_well_formed_contest_and_ballot(
+    draw: _DrawType, desc=get_contest_description_well_formed(), random_seed=integers()
+) -> Tuple[ContestDescription, PlaintextBallotContest]:
+    (object_id, contest_description_with_placeholders) = draw(desc)

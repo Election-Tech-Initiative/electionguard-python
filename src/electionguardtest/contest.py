@@ -10,7 +10,14 @@ from hypothesis.strategies import (
     SearchStrategy,
 )
 
-from electionguard.contest import Candidate, ContestDescription, PlaintextVotedContest
+from electionguard.election import Candidate, ContestDescription
+from electionguard.encrypt import (
+    PlaintextBallotContest,
+    PlaintextBallotSelection,
+    PlaintextBallot,
+    SelectionDescription,
+    ContestDescriptionWithPlaceholders,
+)
 
 _T = TypeVar("_T")
 _DrawType = Callable[[SearchStrategy[_T]], _T]
