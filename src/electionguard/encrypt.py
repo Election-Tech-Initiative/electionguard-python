@@ -8,7 +8,6 @@ from .ballot import (
     PlaintextBallot,
     PlaintextBallotContest,
     PlaintextBallotSelection,
-    hashed_ballot_nonce,
 )
 
 from .election import (
@@ -20,6 +19,7 @@ from .election import (
 )
 from .elgamal import elgamal_encrypt
 from .group import Q, ElementModP, ElementModQ, int_to_q
+from .hash import hash_elems
 from .logs import log_warning, log_debug
 from .nonces import Nonces
 from .utils import unwrap_optional
@@ -48,6 +48,11 @@ class EncryptionCompositor(object):
         Encrypt the specified ballot using the cached election context.
         """
         return encrypt_ballot(ballot, self._metadata, self._encryption)
+
+
+# TODO: most of the functions here could be represented as methods on their corresponding classes,
+#   although I like having all of the encryption-related stuff in one place. For now, I'm going to
+#   go add helper methods on those classes that just call these.
 
 
 def selection_from(
@@ -350,7 +355,7 @@ def encrypt_ballot(
 
     # Include a representation of the election and the external Id in the nonce's used
     # to derive other nonce values on the ballot
-    nonce_seed = hashed_ballot_nonce(
+    nonce_seed = hash_elems(
         encryption_context.crypto_extended_base_hash,
         ballot.object_id,
         random_master_nonce,

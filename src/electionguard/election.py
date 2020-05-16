@@ -3,6 +3,8 @@ from datetime import datetime
 from enum import Enum, unique
 from typing import cast, List, Optional, Set, Union
 
+from .ballot import PlaintextBallotSelection, PlaintextBallotContest
+from .encrypt import selection_from, contest_from
 from .group import Q, P, G, ElementModQ, ElementModP
 from .hash import CryptoHashable, hash_elems
 from .logs import log_warning
@@ -66,6 +68,7 @@ class ReportingUnitType(Enum):
     other = 28
 
 
+# TODO: should one_of_m exist at all here, or should that just be n_of_m where n=1?
 @unique
 class VoteVariationType(Enum):
     """
@@ -178,6 +181,10 @@ class GeopoliticalUnit(ElectionObjectBase, CryptoHashable):
         )
 
 
+# TODO: In normal parlance, a "ballot style" is one of many variants on a ballot, but that's not at all
+#   what's going on here, where it's just metadata that we otherwise will tend to ignore. We need to
+#   double-check how we're supposed to represent the idea that we have many different precincts, some
+#   of which have overlapping contests and others don't.
 @dataclass
 class BallotStyle(ElectionObjectBase, CryptoHashable):
     """
@@ -242,6 +249,25 @@ class Candidate(ElectionObjectBase, CryptoHashable):
     party_id: Optional[str] = field(default=None)
     image_uri: Optional[str] = field(default=None)
 
+    def get_candidate_id(self) -> str:
+        """
+        Given a `Candidate`, returns a "candidate ID", which is used in other ElectionGuard structures.
+        """
+        # TODO: this seems like a total hack for getting a candidate id. What's better?
+        return f"{self.ballot_name.text[0].value} / {self.party_id}"
+
+    def to_selection_description(self, sequence_order: int) -> "SelectionDescription":
+        """
+        Given a `Candidate` and its position in a list of candidates, returns an equivalent
+        `SelectionDescription`.
+        """
+        # TODO: should we have a deterministic mapping from candidate object-ids to SelectionDescription
+        #  object-ids? Currently just prepending "c-", but that's a hack. For that matter, should there
+        #  be a relationship between the candidate id and the object id?
+        return SelectionDescription(
+            f"c-{self.object_id}", self.get_candidate_id(), sequence_order
+        )
+
     def crypto_hash(self) -> ElementModQ:
         """
         A hash representation of the object
@@ -281,6 +307,14 @@ class SelectionDescription(ElectionObjectBase, CryptoHashable):
         A hash representation of the object
         """
         return hash_elems(self.object_id, self.sequence_order, self.candidate_id)
+
+    def to_plaintext_ballot(
+        self, is_placeholder: bool = False, is_affirmative: bool = False
+    ) -> PlaintextBallotSelection:
+        """
+        This method is a convenience wrapper around `selection_from`.
+        """
+        return selection_from(self, is_placeholder, is_affirmative)
 
 
 @dataclass
@@ -328,6 +362,12 @@ class ContestDescription(ElectionObjectBase, CryptoHashable):
     # Subtitle of the contest as it appears on the ballot.
     ballot_subtitle: Optional[InternationalizedText] = field(default=None)
 
+    def to_plaintext_ballot_context(self) -> PlaintextBallotContest:
+        """
+        This method is a convenience wrapper around `contest_from`.
+        """
+        return contest_from(self)
+
     def crypto_hash(self) -> ElementModQ:
         """
         Given a ContestDescription, deterministically derives a "hash" of that contest,
@@ -365,6 +405,8 @@ class CandidateContestDescription(ContestDescription):
     primary_party_ids: List[str] = field(default_factory=lambda: [])
 
 
+# TODO: for a referendum, are we still using "Candidates" (presumably with no party) to
+#   build the SelectionDescription values, or something else?
 @dataclass
 class ReferendumContestDescription(ContestDescription):
     """
@@ -384,11 +426,12 @@ DerivedContestType = Union[CandidateContestDescription, ReferendumContestDescrip
 @dataclass
 class ContestDescriptionWithPlaceholders(ContestDescription):
     """
-    ContestDescriptionWithPlaceholders is a `ContestDescription` with ElectionGuard `placeholder_selections`
+    ContestDescriptionWithPlaceholders is a `ContestDescription` with ElectionGuard `placeholder_selections`.
+    (The ElectionGuard spec requires for n-of-m elections that there be *exactly* n counters that are one
+    with the rest zero, so if a voter deliberately undervotes, one or more of the placeholder counters will
+    become one. This allows the `ConstantChaumPedersenProof` to verify correctly for undervoted contests.)
     """
 
-    # Placeholders are used when generating a contest's `ConstantChaumPedersenProof`
-    # to verify that the selection total on the ballot sums to the total number of expected selections
     placeholder_selections: List[SelectionDescription] = field(
         default_factory=lambda: []
     )
@@ -407,12 +450,12 @@ class ContestDescriptionWithPlaceholders(ContestDescription):
         if any(matching_selections):
             return matching_selections[0]
 
-        matching_palceholders = list(
+        matching_placeholders = list(
             filter(lambda i: i.object_id == selection_id, self.placeholder_selections)
         )
 
-        if any(matching_palceholders):
-            return matching_palceholders[0]
+        if any(matching_placeholders):
+            return matching_placeholders[0]
         else:
             return None
 

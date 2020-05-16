@@ -7,7 +7,6 @@ from .ballot import (
     PlaintextBallot,
     PlaintextBallotContest,
     PlaintextBallotSelection,
-    hashed_ballot_nonce,
 )
 
 from .election import (
@@ -17,6 +16,7 @@ from .election import (
 )
 
 from .group import ElementModP, ElementModQ
+from .hash import hash_elems
 from .logs import log_warning
 from .nonces import Nonces
 from .utils import unwrap_optional
@@ -268,11 +268,11 @@ def decrypt_ballot_with_nonce(
     if nonce is None:
         nonce_seed = ballot.hashed_ballot_nonce
     else:
-        nonce_seed = hashed_ballot_nonce(extended_base_hash, ballot.object_id, nonce)
+        nonce_seed = hash_elems(extended_base_hash, ballot.object_id, nonce)
 
     if nonce_seed is None:
         log_warning(
-            f"missing nonce_seed value.  decrypt could not dewrive a nonce value for ballot {ballot.object_id}"
+            f"missing nonce_seed value. decrypt could not derive a nonce value for ballot {ballot.object_id}"
         )
         return None
 
