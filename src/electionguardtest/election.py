@@ -224,7 +224,7 @@ def arb_candidate(draw: _DrawType, party_list: Optional[List[Party]]):
     """
     bools = booleans()
     if party_list:
-        party = party_list[draw(integers(0, len(party_list)))]
+        party = party_list[draw(integers(0, len(party_list) - 1))]
         pid = party.get_party_id()
     else:
         pid = None
@@ -239,7 +239,11 @@ def arb_candidate(draw: _DrawType, party_list: Optional[List[Party]]):
 
 @composite
 def arb_candidate_contest_description(
-    draw: _DrawType, sequence_order: int, party_list: List[Party]
+    draw: _DrawType,
+    sequence_order: int,
+    party_list: List[Party],
+    n: Optional[int] = None,
+    m: Optional[int] = None,
 ):
     """
     Generates a tuple: a list of candidates and a corresponding `CandidateContestDescription`.
@@ -248,10 +252,16 @@ def arb_candidate_contest_description(
         This is where you put the sequence number, starting at zero.
     :param party_list: A list of `Party` objects; each candidate's party is drawn at random from this list.
         See `arb_candidate` for details on this assignment.
+    :param n: optional integer, specifying a particular value for n in this n-of-m contest, otherwise
+        it's varied by Hypothesis.
+    :param m: optional integer, specifying a particular value for m in this n-of-m contest, otherwise
+        it's varied by Hypothesis.
     """
 
-    n = draw(integers(1, 3))
-    m = n + draw(integers(0, 3))  # for an n-of-m election
+    if n is None:
+        n = draw(integers(1, 3))
+    if m is None:
+        m = n + draw(integers(0, 3))  # for an n-of-m election
 
     parties = draw(arb_party_list(m))
     party_ids = [p.get_party_id() for p in parties]
@@ -279,6 +289,23 @@ def arb_candidate_contest_description(
             ballot_subtitle=draw(arb_internationalized_text()),
             primary_party_ids=party_ids,
         ),
+    )
+
+
+@composite
+def arb_contest_description_room_for_overvoting(
+    draw: _DrawType, sequence_order: int, party_list: List[Party]
+):
+    """
+    Similar to `arb_contest_description`, but guarantees that for the n-of-m contest that n < m,
+    therefore it's possible to construct an "overvoted" plaintext, which should then fail subsequent tests.
+    """
+    n = draw(integers(1, 3))
+    m = n + draw(integers(1, 3))
+    return draw(
+        arb_candidate_contest_description(
+            sequence_order=sequence_order, party_list=party_list, n=n, m=m
+        )
     )
 
 
@@ -327,9 +354,9 @@ def arb_contest_description(
         See `arb_candidate` for details on this assignment.
     """
     if draw(booleans()):
-        return arb_referendum_contest_description(sequence_order)
+        return draw(arb_referendum_contest_description(sequence_order))
     else:
-        return arb_candidate_contest_description(sequence_order, party_list)
+        return draw(arb_candidate_contest_description(sequence_order, party_list))
 
 
 @composite
@@ -349,13 +376,16 @@ def arb_election_description(
     parties: List[Party] = draw(arb_party_list(num_parties))
     num_contests: int = draw(integers(1, 4))  # keep this small so tests run faster
     contest_tuples: List[Tuple[List[Candidate], DerivedContestType]] = [
-        draw(arb_contest_description(i, parties) for i in range(0, num_contests))
+        draw(arb_contest_description(i, parties)) for i in range(0, num_contests)
     ]
+    # contest_tuples: List[Tuple[List[Candidate], DerivedContestType]] = []
+    # for i in range(0, num_contests):
+    #     contest_tuples.append(draw(arb_contest_description(i, parties)))
     assert len(contest_tuples) > 0
 
-    # Why list(set(...))? To remove duplicates.
-    # Otherwise, we're just extracting all the lists of candidates and concatenating them together.
-    candidates = list(set(reduce(lambda a, b: a + b, [c[0] for c in contest_tuples])))
+    # TODO: there may be duplicates in the candidate list. Do we care? If so, we'd have to make
+    #   the type hashable, such that we could convert to a set. Good enough left alone for now.
+    candidates = reduce(lambda a, b: a + b, [c[0] for c in contest_tuples])
     contests = [c[1] for c in contest_tuples]
 
     # TODO: ElectionDescription has a *list* of ballot styles. It's wildly unclear what that's supposed
@@ -365,7 +395,7 @@ def arb_election_description(
     geo_units = [draw(arb_geopolitical_unit())]
 
     start_date = draw(datetimes())
-    end_date = start_date + 1
+    end_date = start_date  # maybe later on we'll do something smarter with the dates
 
     return ElectionDescription(
         election_scope_id=draw(arb_language()),

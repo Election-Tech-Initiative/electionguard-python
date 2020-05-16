@@ -3,12 +3,10 @@ from datetime import datetime
 from enum import Enum, unique
 from typing import cast, List, Optional, Set, Union
 
-from .ballot import PlaintextBallotSelection, PlaintextBallotContest
-from .encrypt import selection_from, contest_from
+from .election_object_base import ElectionObjectBase
 from .group import Q, P, G, ElementModQ, ElementModP
 from .hash import CryptoHashable, hash_elems
 from .logs import log_warning
-from .election_object_base import ElectionObjectBase
 from .serializable import Serializable
 from .utils import unwrap_optional
 
@@ -308,14 +306,6 @@ class SelectionDescription(ElectionObjectBase, CryptoHashable):
         """
         return hash_elems(self.object_id, self.sequence_order, self.candidate_id)
 
-    def to_plaintext_ballot(
-        self, is_placeholder: bool = False, is_affirmative: bool = False
-    ) -> PlaintextBallotSelection:
-        """
-        This method is a convenience wrapper around `selection_from`.
-        """
-        return selection_from(self, is_placeholder, is_affirmative)
-
 
 @dataclass
 class ContestDescription(ElectionObjectBase, CryptoHashable):
@@ -361,12 +351,6 @@ class ContestDescription(ElectionObjectBase, CryptoHashable):
 
     # Subtitle of the contest as it appears on the ballot.
     ballot_subtitle: Optional[InternationalizedText] = field(default=None)
-
-    def to_plaintext_ballot_context(self) -> PlaintextBallotContest:
-        """
-        This method is a convenience wrapper around `contest_from`.
-        """
-        return contest_from(self)
 
     def crypto_hash(self) -> ElementModQ:
         """
@@ -613,7 +597,7 @@ class ElectionDescription(Serializable, CryptoHashable):
                     or contest.number_elected <= contest.votes_allowed
                 )
             )
-            if type(contest) is CandidateContestDescription:
+            if isinstance(contest, CandidateContestDescription):
                 candidate_contest = cast(CandidateContestDescription, contest)
                 if candidate_contest.primary_party_ids is not None:
                     for primary_party_id in candidate_contest.primary_party_ids:

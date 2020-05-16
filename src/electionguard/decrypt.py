@@ -8,13 +8,11 @@ from .ballot import (
     PlaintextBallotContest,
     PlaintextBallotSelection,
 )
-
 from .election import (
     InternalElectionDescription,
     ContestDescriptionWithPlaceholders,
     SelectionDescription,
 )
-
 from .group import ElementModP, ElementModQ
 from .hash import hash_elems
 from .logs import log_warning

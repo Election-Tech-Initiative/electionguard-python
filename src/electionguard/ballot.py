@@ -8,26 +8,11 @@ from .chaum_pedersen import (
     make_constant_chaum_pedersen,
     make_disjunctive_chaum_pedersen,
 )
-from .decrypt import (
-    decrypt_selection_with_secret,
-    decrypt_selection_with_nonce,
-    decrypt_contest_with_secret,
-    decrypt_contest_with_nonce,
-    decrypt_ballot_with_secret,
-    decrypt_ballot_with_nonce,
-)
-from .election import (
-    SelectionDescription,
-    ContestDescriptionWithPlaceholders,
-    CiphertextElection,
-    InternalElectionDescription,
-)
+from .election_object_base import ElectionObjectBase
 from .elgamal import ElGamalCiphertext, elgamal_add
-from .encrypt import encrypt_selection, encrypt_contest, encrypt_ballot
 from .group import add_q, ElementModP, ElementModQ, ZERO_MOD_Q
 from .hash import CryptoHashCheckable, hash_elems
 from .logs import log_warning
-from .election_object_base import ElectionObjectBase
 
 
 @dataclass
@@ -109,26 +94,6 @@ class PlaintextBallotSelection(ElectionObjectBase):
         # greater than 1 for cases such as cumulative voting
         as_int = int(as_bool)
         return as_int
-
-    def encrypt(
-        self,
-        selection_description: SelectionDescription,
-        elgamal_public_key: ElementModP,
-        nonce_seed: ElementModQ,
-        is_placeholder: bool = False,
-        should_verify_proofs: bool = True,
-    ) -> Optional["CiphertextBallotSelection"]:
-        """
-        This method is a convenience wrapper around `encrypt_selection`.
-        """
-        return encrypt_selection(
-            self,
-            selection_description,
-            elgamal_public_key,
-            nonce_seed,
-            is_placeholder,
-            should_verify_proofs,
-        )
 
 
 @dataclass
@@ -245,34 +210,6 @@ class CiphertextBallotSelection(ElectionObjectBase, CryptoHashCheckable):
 
         return self.proof.is_valid(self.message, elgamal_public_key)
 
-    def decrypt_with_secret(
-        self,
-        description: SelectionDescription,
-        public_key: ElementModP,
-        secret_key: ElementModQ,
-        suppress_validity_check: bool = False,
-    ) -> Optional[PlaintextBallotSelection]:
-        """
-        This convenience method is a wrapper around `decrypt_selection_with_secret`.
-        """
-        return decrypt_selection_with_secret(
-            self, description, public_key, secret_key, suppress_validity_check
-        )
-
-    def decrypt_with_nonce(
-        self,
-        description: SelectionDescription,
-        public_key: ElementModP,
-        nonce_seed: Optional[ElementModQ] = None,
-        suppress_validity_check: bool = False,
-    ) -> Optional[PlaintextBallotSelection]:
-        """
-        This convenience method is a wrapper around `decrypt_selection_with_nonce`.
-        """
-        return decrypt_selection_with_nonce(
-            self, description, public_key, nonce_seed, suppress_validity_check
-        )
-
     def crypto_hash_with(self, seed_hash: ElementModQ) -> ElementModQ:
         """
         Given an encrypted BallotSelection, generates a hash, suitable for rolling up
@@ -354,26 +291,6 @@ class PlaintextBallotContest(ElectionObjectBase):
             return False
 
         return True
-
-    def encrypt(
-        self,
-        contest_description: ContestDescriptionWithPlaceholders,
-        elgamal_public_key: ElementModP,
-        nonce_seed: ElementModQ,
-        should_verify_proofs: bool = True,
-        elgamal_private_key_debug: Optional[ElementModQ] = None,
-    ) -> Optional["CiphertextBallotContest"]:
-        """
-        This convenience method is a wrapper around `encrypt_contest`.
-        """
-        return encrypt_contest(
-            self,
-            contest_description,
-            elgamal_public_key,
-            nonce_seed,
-            should_verify_proofs,
-            elgamal_private_key_debug,
-        )
 
 
 @dataclass
@@ -523,34 +440,6 @@ class CiphertextBallotContest(ElectionObjectBase, CryptoHashCheckable):
         elgamal_accumulation = self.elgamal_accumulate()
         return self.proof.is_valid(elgamal_accumulation, elgamal_public_key)
 
-    def decrypt_with_secret(
-        self,
-        description: ContestDescriptionWithPlaceholders,
-        public_key: ElementModP,
-        secret_key: ElementModQ,
-        suppress_validity_check: bool = False,
-    ) -> Optional[PlaintextBallotContest]:
-        """
-        This convenience method is a wrapper around `decrypt_contest_with_secret`.
-        """
-        return decrypt_contest_with_secret(
-            self, description, public_key, secret_key, suppress_validity_check
-        )
-
-    def decrypt_with_nonce(
-        self,
-        description: ContestDescriptionWithPlaceholders,
-        public_key: ElementModP,
-        nonce_seed: Optional[ElementModQ] = None,
-        suppress_validity_check: bool = False,
-    ) -> Optional[PlaintextBallotContest]:
-        """
-        This convenience method is a wrapper around `decrypt_contest_with_nonce`.
-        """
-        return decrypt_contest_with_nonce(
-            self, description, public_key, nonce_seed, suppress_validity_check
-        )
-
 
 @dataclass
 class PlaintextBallot(ElectionObjectBase):
@@ -574,20 +463,6 @@ class PlaintextBallot(ElectionObjectBase):
             return False
 
         return True
-
-    def encrypt(
-        self,
-        election_metadata: InternalElectionDescription,
-        encryption_context: CiphertextElection,
-        nonce: Optional[ElementModQ] = None,
-        should_verify_proofs: bool = True,
-    ) -> Optional["CiphertextBallot"]:
-        """
-        This convenience method is a wrapper around `encrypt_ballot`.
-        """
-        return encrypt_ballot(
-            self, election_metadata, encryption_context, nonce, should_verify_proofs
-        )
 
 
 @dataclass
@@ -701,43 +576,3 @@ class CiphertextBallot(ElectionObjectBase, CryptoHashCheckable):
                 )
             )
         return all(valid_proofs)
-
-    def decrypt_with_secret(
-        self,
-        election_metadata: InternalElectionDescription,
-        extended_base_hash: ElementModQ,
-        public_key: ElementModP,
-        secret_key: ElementModQ,
-        suppress_validity_check: bool = False,
-    ) -> Optional[PlaintextBallot]:
-        """
-        This convenience method is a wrapper around `decrypt_ballot_with_secret`.
-        """
-        return decrypt_ballot_with_secret(
-            self,
-            election_metadata,
-            extended_base_hash,
-            public_key,
-            secret_key,
-            suppress_validity_check,
-        )
-
-    def decrypt_with_nonce(
-        self,
-        election_metadata: InternalElectionDescription,
-        extended_base_hash: ElementModQ,
-        public_key: ElementModP,
-        nonce: Optional[ElementModQ] = None,
-        suppress_validity_check: bool = False,
-    ) -> Optional[PlaintextBallot]:
-        """
-        This convenience method is a wrapper around `decrypt_ballot_with_nonce`.
-        """
-        return decrypt_ballot_with_nonce(
-            self,
-            election_metadata,
-            extended_base_hash,
-            public_key,
-            nonce,
-            suppress_validity_check,
-        )

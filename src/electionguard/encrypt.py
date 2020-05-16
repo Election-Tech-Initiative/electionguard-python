@@ -1,5 +1,5 @@
-from typing import Optional, List
 from secrets import randbelow
+from typing import Optional, List
 
 from .ballot import (
     CiphertextBallot,
@@ -9,7 +9,6 @@ from .ballot import (
     PlaintextBallotContest,
     PlaintextBallotSelection,
 )
-
 from .election import (
     CiphertextElection,
     InternalElectionDescription,
@@ -53,6 +52,9 @@ class EncryptionCompositor(object):
 # TODO: most of the functions here could be represented as methods on their corresponding classes,
 #   although I like having all of the encryption-related stuff in one place. For now, I'm going to
 #   go add helper methods on those classes that just call these.
+
+# TODO: I tried having class methods call out to these functions, and ended up with circular import
+#   dependencies. This needs to be revisited, since class methods really are more convenient.
 
 
 def selection_from(
