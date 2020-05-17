@@ -115,7 +115,7 @@ def arb_human_name(draw: _DrawType):
     """
     Generates a string with a human first and last name (based on popular first and last names in the U.S.).
     """
-    return f"{_first_names[draw(integers(0, len(_first_names)))]} {_last_names[draw(integers(0, len(_last_names)))]}"
+    return f"{_first_names[draw(integers(0, len(_first_names) - 1))]} {_last_names[draw(integers(0, len(_last_names) - 1))]}"
 
 
 @composite
@@ -175,8 +175,13 @@ def arb_annotated_string(draw: _DrawType):
 
 
 @composite
-def arb_ballot_style(draw: _DrawType, party_ids: List[Party]):
-    gids = None
+def arb_ballot_style(
+    draw: _DrawType, party_ids: List[Party], geo_units: List[GeopoliticalUnit]
+):
+    assert len(party_ids) > 0
+    assert len(geo_units) > 0
+
+    gids = [geo_units[0].object_id]  # any reason to use others?
     pids = [x.get_party_id() for x in party_ids]
     if len(pids) == 0:
         pids = None
@@ -232,7 +237,7 @@ def arb_candidate(draw: _DrawType, party_list: Optional[List[Party]]):
     return Candidate(
         str(draw(uuids())),
         draw(arb_internationalized_human_name()),
-        pid if draw(bools) else None,
+        pid,
         draw(urls()) if draw(bools) else None,
     )
 
@@ -242,6 +247,7 @@ def arb_candidate_contest_description(
     draw: _DrawType,
     sequence_order: int,
     party_list: List[Party],
+    geo_units: List[GeopoliticalUnit],
     n: Optional[int] = None,
     m: Optional[int] = None,
 ):
@@ -252,6 +258,7 @@ def arb_candidate_contest_description(
         This is where you put the sequence number, starting at zero.
     :param party_list: A list of `Party` objects; each candidate's party is drawn at random from this list.
         See `arb_candidate` for details on this assignment.
+    :param geo_units: A list of `GeopoliticalUnit`; one of these goes into the `electoral_district_id`
     :param n: optional integer, specifying a particular value for n in this n-of-m contest, otherwise
         it's varied by Hypothesis.
     :param m: optional integer, specifying a particular value for m in this n-of-m contest, otherwise
@@ -263,8 +270,7 @@ def arb_candidate_contest_description(
     if m is None:
         m = n + draw(integers(0, 3))  # for an n-of-m election
 
-    parties = draw(arb_party_list(m))
-    party_ids = [p.get_party_id() for p in parties]
+    party_ids = [p.get_party_id() for p in party_list]
 
     candidates = draw(lists(arb_candidate(party_list), min_size=m, max_size=m))
     selection_descriptions = [
@@ -276,7 +282,9 @@ def arb_candidate_contest_description(
         candidates,
         CandidateContestDescription(
             object_id=str(draw(uuids())),
-            electoral_district_id=draw(emails()),
+            electoral_district_id=geo_units[
+                draw(integers(0, len(geo_units) - 1))
+            ].object_id,
             sequence_order=sequence_order,
             vote_variation=VoteVariationType.one_of_m
             if n == 1
@@ -294,7 +302,10 @@ def arb_candidate_contest_description(
 
 @composite
 def arb_contest_description_room_for_overvoting(
-    draw: _DrawType, sequence_order: int, party_list: List[Party]
+    draw: _DrawType,
+    sequence_order: int,
+    party_list: List[Party],
+    geo_units: List[GeopoliticalUnit],
 ):
     """
     Similar to `arb_contest_description`, but guarantees that for the n-of-m contest that n < m,
@@ -304,18 +315,25 @@ def arb_contest_description_room_for_overvoting(
     m = n + draw(integers(1, 3))
     return draw(
         arb_candidate_contest_description(
-            sequence_order=sequence_order, party_list=party_list, n=n, m=m
+            sequence_order=sequence_order,
+            party_list=party_list,
+            geo_units=geo_units,
+            n=n,
+            m=m,
         )
     )
 
 
 @composite
-def arb_referendum_contest_description(draw: _DrawType, sequence_order: int):
+def arb_referendum_contest_description(
+    draw: _DrawType, sequence_order: int, geo_units: List[GeopoliticalUnit]
+):
     """
     Generates a tuple: a list of party-less candidates and a corresponding `ReferendumContestDescription`.
     :param draw: Hidden argument, used by Hypothesis.
     :param sequence_order: When you're making a ballot, it's going to be a list of contests.
         This is where you put the sequence number, starting at zero.
+    :param geo_units: A list of `GeopoliticalUnit`; one of these goes into the `electoral_district_id`
     """
     n = draw(integers(1, 3))
 
@@ -328,7 +346,9 @@ def arb_referendum_contest_description(draw: _DrawType, sequence_order: int):
         candidates,
         ReferendumContestDescription(
             object_id=str(draw(uuids())),
-            electoral_district_id=draw(emails()),
+            electoral_district_id=geo_units[
+                draw(integers(0, len(geo_units) - 1))
+            ].object_id,
             sequence_order=sequence_order,
             vote_variation=VoteVariationType.one_of_m,
             number_elected=1,
@@ -343,7 +363,10 @@ def arb_referendum_contest_description(draw: _DrawType, sequence_order: int):
 
 @composite
 def arb_contest_description(
-    draw: _DrawType, sequence_order: int, party_list: List[Party]
+    draw: _DrawType,
+    sequence_order: int,
+    party_list: List[Party],
+    geo_units: List[GeopoliticalUnit],
 ):
     """
     Generates either the result of `arb_referendum_contest_description` or `arb_candidate_contest_description`.
@@ -352,11 +375,14 @@ def arb_contest_description(
         This is where you put the sequence number, starting at zero.
     :param party_list: A list of `Party` objects; each candidate's party is drawn at random from this list.
         See `arb_candidate` for details on this assignment.
+    :param geo_units: A list of `GeopoliticalUnit`; one of these goes into the `electoral_district_id`
     """
     if draw(booleans()):
-        return draw(arb_referendum_contest_description(sequence_order))
+        return draw(arb_referendum_contest_description(sequence_order, geo_units))
     else:
-        return draw(arb_candidate_contest_description(sequence_order, party_list))
+        return draw(
+            arb_candidate_contest_description(sequence_order, party_list, geo_units)
+        )
 
 
 @composite
@@ -372,11 +398,13 @@ def arb_election_description(
     assert max_num_parties > 0
     assert max_num_contests > 0
 
+    geo_units = [draw(arb_geopolitical_unit())]
     num_parties: int = draw(integers(1, max_num_contests))
     parties: List[Party] = draw(arb_party_list(num_parties))
     num_contests: int = draw(integers(1, 4))  # keep this small so tests run faster
     contest_tuples: List[Tuple[List[Candidate], DerivedContestType]] = [
-        draw(arb_contest_description(i, parties)) for i in range(0, num_contests)
+        draw(arb_contest_description(i, parties, geo_units))
+        for i in range(0, num_contests)
     ]
     # contest_tuples: List[Tuple[List[Candidate], DerivedContestType]] = []
     # for i in range(0, num_contests):
@@ -391,8 +419,7 @@ def arb_election_description(
     # TODO: ElectionDescription has a *list* of ballot styles. It's wildly unclear what that's supposed
     #   to mean. So, at least for now, we'll return a list of size one, where the ballot style includes
     #   all the parties in it. See additional to-do notes next to the class BallotStyle definition.
-    ballot_styles = [draw(arb_ballot_style(parties))]
-    geo_units = [draw(arb_geopolitical_unit())]
+    ballot_styles = [draw(arb_ballot_style(parties, geo_units))]
 
     start_date = draw(datetimes())
     end_date = start_date  # maybe later on we'll do something smarter with the dates

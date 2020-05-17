@@ -214,9 +214,9 @@ class Party(ElectionObjectBase, CryptoHashable):
     logo_uri: Optional[str] = field(default=None)
 
     def get_party_id(self) -> str:
-        # TODO: is this a good way to get a party_id from a party? Should we make
-        #  the abbreviation be mandatory? What should we do if it's absent?
-        return f"{self.abbreviation}"
+        # TODO: is this a good way to get a party_id from a party? Should we use the abbreviation?
+        #   Should this be defined if we're in a non-partisan election, so no parties?
+        return self.object_id
 
     def crypto_hash(self) -> ElementModQ:
         """
@@ -251,8 +251,7 @@ class Candidate(ElectionObjectBase, CryptoHashable):
         """
         Given a `Candidate`, returns a "candidate ID", which is used in other ElectionGuard structures.
         """
-        # TODO: this seems like a total hack for getting a candidate id. What's better?
-        return f"{self.ballot_name.text[0].value} / {self.party_id}"
+        return self.object_id
 
     def to_selection_description(self, sequence_order: int) -> "SelectionDescription":
         """
@@ -584,9 +583,13 @@ class ElectionDescription(Serializable, CryptoHashable):
             )
 
             # validate the number elected (seats)
+
+            # TODO: (REVIEW THIS) changed this from < to <=, because it's entirely possible to have a 1-of-1 election,
+            #   (i.e., a candidate running unopposed), where the voter's only choice is to endorse the
+            #   candidate or to undervote.
             contests_have_valid_number_elected = (
                 contests_have_valid_number_elected
-                and contest.number_elected < len(contest.ballot_selections)
+                and contest.number_elected <= len(contest.ballot_selections)
             )
 
             # validate the number of votes per voter
@@ -688,7 +691,7 @@ class InternalElectionDescription(object):
     """
     `InternalElectionDescription` is a subset of the `Election` structure that specifies
     the components that ElectionGuard uses for conducting an election.  The key component is the
-    `contests` collection, which applices placeholder selections to the `ElectionDescription` contests
+    `contests` collection, which applies placeholder selections to the `ElectionDescription` contests
     """
 
     description: InitVar[ElectionDescription] = None
