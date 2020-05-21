@@ -1,8 +1,7 @@
 ## Contributing
 
 This project welcomes contributions and suggestions. Before you get started, you should
-read the [engineering notes](ENGINEERING_NOTES.md), which describe the tools, techniques,
-and goals of the code.
+read the [readme](README.md) and [the design and architecture notes](docs/Design_and_Architecture.md), which describe design & architecture goals of the code and tools & techniques used.
 
 Most contributions require you to agree to a
 Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us

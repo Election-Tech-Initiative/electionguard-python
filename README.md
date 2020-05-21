@@ -142,6 +142,6 @@ OR
 pipenv run python -m pytest /testss
 ```
 
-## Key concepts
+## Documentation
 
-🚧Under Construction
+- [Design and Architecture](docs/Design_and_Architecture.md)
