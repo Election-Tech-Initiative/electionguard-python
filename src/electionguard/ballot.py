@@ -406,7 +406,8 @@ class CiphertextBallotContest(ElectionObjectBase, CryptoHashCheckable):
 
     def elgamal_accumulate(self) -> ElGamalCiphertext:
         """
-        add the individual ballot_selections `message` fields together
+        Add the individual ballot_selections `message` fields together, suitable for use
+        in a Chaum-Pedersen proof.
         """
         return elgamal_add(*[selection.message for selection in self.ballot_selections])
 

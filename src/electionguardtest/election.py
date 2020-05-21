@@ -2,7 +2,6 @@ from functools import reduce
 from random import Random
 from typing import TypeVar, Callable, List, Optional, Tuple
 
-from hypothesis import assume
 from hypothesis.provisional import urls
 from hypothesis.strategies import (
     composite,
@@ -33,11 +32,10 @@ from electionguard.election import (
     ReferendumContestDescription,
     DerivedContestType,
     ElectionDescription,
-    ContestDescription,
     InternalElectionDescription,
     CiphertextElection,
 )
-from electionguard.encrypt import selection_from, contest_from
+from electionguard.encrypt import selection_from
 from electionguardtest.elgamal import arb_elgamal_keypair
 
 _T = TypeVar("_T")
@@ -199,8 +197,8 @@ def arb_ballot_style(
 
 @composite
 def arb_party_list(draw: _DrawType, num_parties: int):
-    party_names = [f"Party{n}" for n in range(0, num_parties)]
-    party_abbrvs = [f"P{n}" for n in range(0, num_parties)]
+    party_names = [f"Party{n}" for n in range(num_parties)]
+    party_abbrvs = [f"P{n}" for n in range(num_parties)]
 
     assert num_parties > 0
 
@@ -212,7 +210,7 @@ def arb_party_list(draw: _DrawType, num_parties: int):
             color=None,
             logo_uri=draw(urls()),
         )
-        for i in range(0, num_parties)
+        for i in range(num_parties)
     ]
 
 
@@ -282,7 +280,7 @@ def arb_candidate_contest_description(
 
     candidates = draw(lists(arb_candidate(party_list), min_size=m, max_size=m))
     selection_descriptions = [
-        candidates[i].to_selection_description(i) for i in range(0, m)
+        candidates[i].to_selection_description(i) for i in range(m)
     ]
 
     # TODO: right now, we're supporting one-of-m and n-of-m; we need to support other types later.
@@ -347,7 +345,7 @@ def arb_referendum_contest_description(
 
     candidates = draw(lists(arb_candidate(None), min_size=n, max_size=n))
     selection_descriptions = [
-        candidates[i].to_selection_description(i) for i in range(0, n)
+        candidates[i].to_selection_description(i) for i in range(n)
     ]
 
     return (
@@ -395,7 +393,7 @@ def arb_contest_description(
 
 @composite
 def arb_election_description(
-    draw: _DrawType, max_num_parties: int = 20, max_num_contests: int = 4
+    draw: _DrawType, max_num_parties: int = 3, max_num_contests: int = 3
 ):
     """
     Generates an ElectionDescription, the top-level structure.
@@ -412,10 +410,10 @@ def arb_election_description(
     num_contests: int = draw(integers(1, 4))  # keep this small so tests run faster
     contest_tuples: List[Tuple[List[Candidate], DerivedContestType]] = [
         draw(arb_contest_description(i, parties, geo_units))
-        for i in range(0, num_contests)
+        for i in range(num_contests)
     ]
     # contest_tuples: List[Tuple[List[Candidate], DerivedContestType]] = []
-    # for i in range(0, num_contests):
+    # for i in range(num_contests):
     #     contest_tuples.append(draw(arb_contest_description(i, parties)))
     assert len(contest_tuples) > 0
 
@@ -500,25 +498,29 @@ def arb_plaintext_voted_ballot(draw: _DrawType, ied: InternalElectionDescription
 
 
 @composite
-def arb_election_and_ballots(draw: _DrawType, num_ballots: int = 10):
-    """
-    Generates a tuple of an ElectionDescription and a list of plaintext ballots.
-    """
-    ied = InternalElectionDescription(draw(arb_election_description()))
-    assert num_ballots >= 0
-
-    ballots = [draw(arb_plaintext_voted_ballot(ied)) for i in range(0, num_ballots)]
-
-    return (ied, ballots)
-
-
-@composite
 def arb_ciphertext_election(draw: _DrawType, ed: ElectionDescription):
     """
     Generates a tuple of a CiphertextElection and the secret key associated with it -- the context you need to do
     any of the encryption/decryption operations. These ones have exactly one trustee.
     """
-    keypair = draw(arb_elgamal_keypair())
-    assume(keypair is not None)
-    secret_key, public_key = keypair
-    return (secret_key, CiphertextElection(1, 1, public_key, ed.crypto_hash()))
+    secret_key, public_key = draw(arb_elgamal_keypair())
+    return secret_key, CiphertextElection(1, 1, public_key, ed.crypto_hash())
+
+
+# TODO: a more general version of this that makes ballots of multiple ballot styles, allowing for more complex tallying.
+#   arb_election_description() already generates multiple ballot styles, so we're half-way there.
+@composite
+def arb_election_and_ballots(draw: _DrawType, num_ballots: int = 3):
+    """
+    Generates a tuple of: an `ElectionDescription`, a list of plaintext ballots, an ElGamal secret key,
+    and a `CiphertextElection`. Every ballot will match the same ballot style.
+    """
+    assert num_ballots >= 0, "You're asking for a negative number of ballots?"
+    ed = draw(arb_election_description())
+    ied = InternalElectionDescription(ed)
+
+    ballots = [draw(arb_plaintext_voted_ballot(ied)) for _ in range(num_ballots)]
+
+    secret_key, ce = draw(arb_ciphertext_election(ed))
+
+    return ied, ballots, secret_key, ce
