@@ -31,7 +31,7 @@ class PlaintextBallotSelection(ElectionObjectBase):
     A BallotSelection represents an individual selection on a ballot.
 
     This class accepts a `plaintext` string field which has no constraints 
-    in the ElectionGuard Data Specitification, but is constrained logically 
+    in the ElectionGuard Data Specification, but is constrained logically
     in the application to resolve to `True` or `False`.  This implies that the
     data specification supports passing any string that can be represented as
     an integer, however only 0 and 1 is supported for now.
@@ -39,12 +39,14 @@ class PlaintextBallotSelection(ElectionObjectBase):
     This class can also be designated as `is_placeholder_selection` which has no
     context to the data specification but is useful for running validity checks internally
 
-    an `extra_data` field exists to support any arbitrary data to be associated
+    an `extended_data` field exists to support any arbitrary data to be associated
     with the selection.  In practice, this field is the cleartext representation
     of a write-in candidate value.  In the current implementation these values are
     discarded when encrypting.
     """
 
+    # TODO: do we want this to be True or False? Why not an integer, so we can support
+    #   range voting? Seems kinda weird to have a string here. How do we distinguish
     # the plaintext representation of the selection (usually `True` or `False`)
     plaintext: str
 
@@ -81,6 +83,9 @@ class PlaintextBallotSelection(ElectionObjectBase):
         :param from_string: a string representing "true" or "false"
         :return: an integer 0 or 1 for valid data, or 0 if the data is malformed
         """
+
+        # TODO: this is going to need to be generalized to support range voting and other
+        #   things where the voter can indicate more than just one bit per choice.
 
         as_bool = False
         try:

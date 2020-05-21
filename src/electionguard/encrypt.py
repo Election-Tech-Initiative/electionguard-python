@@ -72,6 +72,9 @@ def selection_from(
     :param is_affirmative: Mark this selection as `yes`
     :return: A BallotSelection
     """
+
+    # TODO: is there ever a case where is_affirmative is False?
+
     return PlaintextBallotSelection(
         description.object_id, str(is_affirmative), is_placeholder
     )
@@ -85,6 +88,11 @@ def contest_from(description: ContestDescription) -> PlaintextBallotContest:
     :param description: The `ContestDescription` used to derive the well-formed `BallotContest`
     :return: a `BallotContest`
     """
+
+    # TODO: this method isn't as useful as you might want, because there's no way to specify which
+    #   candidates you want selected and which ones you want unselected. Maybe add another argument
+    #   of List[PlaintextBallotSelection] and make sure that it matches up with description.number_elected?
+
     selections: List[PlaintextBallotSelection] = list()
 
     for selection_description in description.ballot_selections:
@@ -128,6 +136,10 @@ def encrypt_selection(
     elgamal_encryption = elgamal_encrypt(
         selection_representation, selection_nonce, elgamal_public_key
     )
+
+    if elgamal_encryption is None:
+        # will have logged about the failure earlier, so no need to log anything here
+        return None
 
     # Create the return object
     encrypted_selection = CiphertextBallotSelection(

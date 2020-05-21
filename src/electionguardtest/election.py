@@ -1,6 +1,8 @@
 from functools import reduce
+from random import Random
 from typing import TypeVar, Callable, List, Optional, Tuple
 
+from hypothesis import assume
 from hypothesis.provisional import urls
 from hypothesis.strategies import (
     composite,
@@ -14,6 +16,7 @@ from hypothesis.strategies import (
     datetimes,
 )
 
+from electionguard.ballot import PlaintextBallotContest, PlaintextBallot
 from electionguard.election import (
     Candidate,
     ElectionType,
@@ -30,7 +33,12 @@ from electionguard.election import (
     ReferendumContestDescription,
     DerivedContestType,
     ElectionDescription,
+    ContestDescription,
+    InternalElectionDescription,
+    CiphertextElection,
 )
+from electionguard.encrypt import selection_from, contest_from
+from electionguardtest.elgamal import arb_elgamal_keypair
 
 _T = TypeVar("_T")
 _DrawType = Callable[[SearchStrategy[_T]], _T]
@@ -437,3 +445,80 @@ def arb_election_description(
         name=draw(arb_internationalized_text()),
         contact_information=draw(arb_contact_information()),
     )
+
+
+@composite
+def arb_plaintext_voted_ballot(draw: _DrawType, ied: InternalElectionDescription):
+    """
+    Given an `InternalElectionDescription` object, generates an arbitrary `PlaintextBallot` with the
+    choices made randomly.
+    :param draw: Hidden argument, used by Hypothesis.
+    :param description: Any `InternalElectionDescription`
+    """
+
+    num_ballot_styles = len(ied.ballot_styles)
+    assert (
+        num_ballot_styles > 0
+    ), "we shouldn't ever have an election with no ballot styles"
+
+    # pick a ballot style at random
+    bs = ied.ballot_styles[draw(integers(0, num_ballot_styles - 1))]
+    bs_id = bs.object_id
+
+    contests = ied.get_contests_for(bs_id)
+    assert (
+        len(contests) > 0
+    ), "we shouldn't ever have a ballot style with no contests in it"
+
+    voted_contests: List[PlaintextBallotContest] = []
+    for c in contests:
+        assert c.is_valid(), "every contest needs to be valid"
+        n = c.number_elected  # we need exactly this many 1's, and the rest 0's
+        ballot_selections = c.ballot_selections
+        assert len(ballot_selections) >= n
+
+        # TODO: assert something about having the same number of non-placeholders and otherwise satisfying a n-of-m
+        #  ballot. (Or, write this up as a separate property-based test. Kinda hard to tease these individual properties
+        #  apart when the individual parts don't work without being part of an overarching ElectionDescription.)
+
+        random = Random(draw(integers()))
+        random.shuffle(ballot_selections)
+        yes_votes = ballot_selections[
+            : draw(integers(0, n))
+        ]  # we'll vote as few as zero selections and as many as n
+
+        # TODO: write a variant on this test where we overvote, make sure that it's rejected later.
+
+        voted_selections = [
+            selection_from(x, is_placeholder=False, is_affirmative=True)
+            for x in yes_votes
+        ]
+
+        voted_contests.append(PlaintextBallotContest(c.object_id, voted_selections))
+
+    return PlaintextBallot(str(draw(uuids())), bs_id, voted_contests)
+
+
+@composite
+def arb_election_and_ballots(draw: _DrawType, num_ballots: int = 10):
+    """
+    Generates a tuple of an ElectionDescription and a list of plaintext ballots.
+    """
+    ied = InternalElectionDescription(draw(arb_election_description()))
+    assert num_ballots >= 0
+
+    ballots = [draw(arb_plaintext_voted_ballot(ied)) for i in range(0, num_ballots)]
+
+    return (ied, ballots)
+
+
+@composite
+def arb_ciphertext_election(draw: _DrawType, ed: ElectionDescription):
+    """
+    Generates a tuple of a CiphertextElection and the secret key associated with it -- the context you need to do
+    any of the encryption/decryption operations. These ones have exactly one trustee.
+    """
+    keypair = draw(arb_elgamal_keypair())
+    assume(keypair is not None)
+    secret_key, public_key = keypair
+    return (secret_key, CiphertextElection(1, 1, public_key, ed.crypto_hash()))

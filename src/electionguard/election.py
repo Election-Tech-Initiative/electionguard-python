@@ -403,6 +403,7 @@ class ReferendumContestDescription(ContestDescription):
 
 
 # Specify a union type of the available derived contest types
+# TODO: do we need this Union type when we already have a shared base-class (ContestDescription)?
 DerivedContestType = Union[CandidateContestDescription, ReferendumContestDescription]
 
 
@@ -420,10 +421,15 @@ class ContestDescriptionWithPlaceholders(ContestDescription):
     )
 
     def get_all_ballot_selections(self) -> List[SelectionDescription]:
+        # TODO: this API can be confusing, since it returns the placeholders, which we sometimes
+        #   want and sometimes don't.
         return self.ballot_selections + self.placeholder_selections
 
     def is_valid(self) -> bool:
         return len(self.placeholder_selections) == self.number_elected
+
+    def is_placeholder(self, selection: SelectionDescription) -> bool:
+        return selection in self.placeholder_selections
 
     def selection_for(self, selection_id: str) -> Optional[SelectionDescription]:
         matching_selections = list(
@@ -767,6 +773,12 @@ class InternalElectionDescription(object):
 
 
 # TODO: "frozen data class cannot inherit from non-frozen one and vice versa"
+
+# TODO: a better name for this would be "CiphertextElectionContext", since it doesn't have any actual
+#   election definitions or ballots or whatever inside. Given that, it's also an interesting question
+#   whether there should be an (optional?) field for the ElGamal secret key.
+
+
 @dataclass(frozen=True)
 class CiphertextElection(Serializable):  # TODO: CryptoHashcheckable
     """
