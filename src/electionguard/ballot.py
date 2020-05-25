@@ -15,6 +15,18 @@ from .hash import CryptoHashCheckable, hash_elems
 from .logs import log_warning
 
 
+def __list_eq__(
+    list1: List[ElectionObjectBase], list2: List[ElectionObjectBase]
+) -> bool:
+    """
+    We want to compare lists of election objects as if they're sets. We fake this by first
+    sorting them on their object ids, then using regular list comparison.
+    """
+    return sorted(list1, key=lambda x: x.object_id) == sorted(
+        list2, key=lambda x: x.object_id
+    )
+
+
 @dataclass
 class ExtendedData(object):
     value: str
@@ -319,9 +331,8 @@ class PlaintextBallotContest(ElectionObjectBase):
         return True
 
     def __eq__(self, other: Any) -> bool:
-        return (
-            isinstance(other, PlaintextBallotContest)
-            and self.ballot_selections == other.ballot_selections
+        return isinstance(other, PlaintextBallotContest) and __list_eq__(
+            self.ballot_selections, other.ballot_selections
         )
 
     def __ne__(self, other: Any) -> bool:
@@ -504,7 +515,7 @@ class PlaintextBallot(ElectionObjectBase):
         return (
             isinstance(other, PlaintextBallot)
             and self.ballot_style == other.ballot_style
-            and self.contests == other.contests
+            and __list_eq__(self.contests, other.contests)
         )
 
     def __ne__(self, other: Any) -> bool:

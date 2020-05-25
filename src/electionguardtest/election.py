@@ -398,16 +398,18 @@ def arb_election_description(
     """
     Generates an ElectionDescription, the top-level structure.
     :param draw: Hidden argument, used by Hypothesis.
-    :param max_num_parties: The largest number of parties that will be generated (default: 20)
-    :param max_num_contests: The largest number of contests that will be generated (default: 4)
+    :param max_num_parties: The largest number of parties that will be generated (default: 3)
+    :param max_num_contests: The largest number of contests that will be generated (default: 3)
     """
     assert max_num_parties > 0
     assert max_num_contests > 0
 
     geo_units = [draw(arb_geopolitical_unit())]
-    num_parties: int = draw(integers(1, max_num_contests))
+    num_parties: int = draw(integers(1, max_num_parties))
     parties: List[Party] = draw(arb_party_list(num_parties))
-    num_contests: int = draw(integers(1, 4))  # keep this small so tests run faster
+    num_contests: int = draw(
+        integers(1, max_num_contests)
+    )  # keep this small so tests run faster
     contest_tuples: List[Tuple[List[Candidate], DerivedContestType]] = [
         draw(arb_contest_description(i, parties, geo_units))
         for i in range(num_contests)
