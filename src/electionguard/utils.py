@@ -31,10 +31,21 @@ def match_optional(
 def get_or_else_optional(optional: Optional[T], alt_value: T) -> T:
     """
     General-purpose getter for `Optional`. If it's `None`, returns the `alt_value`.
-    Otherwise, returns the contents.
+    Otherwise, returns the contents of `optional`.
     """
     if optional is None:
         return alt_value
+    else:
+        return optional
+
+
+def get_or_else_optional_func(optional: Optional[T], func: Callable[[], T]) -> T:
+    """
+    General-purpose getter for `Optional`. If it's `None`, calls the lambda `func`
+    and returns its value. Otherwise, returns the contents of `optional`.
+    """
+    if optional is None:
+        return func()
     else:
         return optional
 

@@ -61,7 +61,7 @@ def decrypt_selection_with_nonce(
     """
     Decrypt the specified `CiphertextBallotSelection` within the context of the specified selection.
 
-    :param contest: the contest to decrypt
+    :param selection: the contest selection to decrypt
     :param description: the qualified selection metadata that may be a placeholder selection
     :param public_key: the public key for the election (K)
     :param nonce_seed: the optional nonce that was seeded to the encryption function.
@@ -101,6 +101,7 @@ def decrypt_contest_with_secret(
     public_key: ElementModP,
     secret_key: ElementModQ,
     suppress_validity_check: bool = False,
+    remove_placeholders: bool = False,
 ) -> Optional[PlaintextBallotContest]:
     """
     Decrypt the specified `CiphertextBallotContest` within the context of the specified contest.
@@ -110,6 +111,7 @@ def decrypt_contest_with_secret(
     :param public_key: the public key for the election (K)
     :param secret_key: the known secret key used to generate the public key for this election
     :param suppress_validity_check: do not validate the encryption prior to decrypting (useful for tests)
+    :param remove_placeholders: filter out placeholder ciphertext selections after decryption
     """
 
     if not suppress_validity_check and not contest.is_valid_encryption(
@@ -128,11 +130,16 @@ def decrypt_contest_with_secret(
             suppress_validity_check,
         )
         if plaintext_selection is not None:
-            plaintext_selections.append(plaintext_selection)
+            if (
+                not remove_placeholders
+                or not plaintext_selection.is_placeholder_selection
+            ):
+                plaintext_selections.append(plaintext_selection)
         else:
             log_warning(
                 f"decryption with secret failed for contest: {contest.object_id} selection: {selection.object_id}"
             )
+            return None
 
     return PlaintextBallotContest(contest.object_id, plaintext_selections)
 
@@ -143,6 +150,7 @@ def decrypt_contest_with_nonce(
     public_key: ElementModP,
     nonce_seed: Optional[ElementModQ] = None,
     suppress_validity_check: bool = False,
+    remove_placeholders: bool = False,
 ) -> Optional[PlaintextBallotContest]:
     """
     Decrypt the specified `CiphertextBallotContest` within the context of the specified contest.
@@ -153,6 +161,7 @@ def decrypt_contest_with_nonce(
     :param nonce_seed: the optional nonce that was seeded to the encryption function
                         if no value is provided, the nonce field from the contest is used
     :param suppress_validity_check: do not validate the encryption prior to decrypting (useful for tests)
+    :param remove_placeholders: filter out placeholder ciphertext selections after decryption
     """
 
     if not suppress_validity_check and not contest.is_valid_encryption(
@@ -183,11 +192,16 @@ def decrypt_contest_with_nonce(
             suppress_validity_check,
         )
         if plaintext_selection is not None:
-            plaintext_selections.append(plaintext_selection)
+            if (
+                not remove_placeholders
+                or not plaintext_selection.is_placeholder_selection
+            ):
+                plaintext_selections.append(plaintext_selection)
         else:
             log_warning(
                 f"decryption with nonce failed for contest: {contest.object_id} selection: {selection.object_id}"
             )
+            return None
 
     return PlaintextBallotContest(contest.object_id, plaintext_selections)
 
@@ -199,6 +213,7 @@ def decrypt_ballot_with_secret(
     public_key: ElementModP,
     secret_key: ElementModQ,
     suppress_validity_check: bool = False,
+    remove_placeholders: bool = False,
 ) -> Optional[PlaintextBallot]:
     """
     Decrypt the specified `CiphertextBallot` within the context of the specified election.
@@ -209,6 +224,7 @@ def decrypt_ballot_with_secret(
     :param public_key: the public key for the election (K)
     :param secret_key: the known secret key used to generate the public key for this election
     :param suppress_validity_check: do not validate the encryption prior to decrypting (useful for tests)
+    :param remove_placeholders: filter out placeholder ciphertext selections after decryption
     """
 
     if not suppress_validity_check and not ballot.is_valid_encryption(
@@ -226,6 +242,7 @@ def decrypt_ballot_with_secret(
             public_key,
             secret_key,
             suppress_validity_check,
+            remove_placeholders=remove_placeholders,
         )
         if plaintext_contest is not None:
             plaintext_contests.append(plaintext_contest)
@@ -233,6 +250,7 @@ def decrypt_ballot_with_secret(
             log_warning(
                 f"decryption with nonce failed for ballot: {ballot.object_id} selection: {contest.object_id}"
             )
+            return None
 
     return PlaintextBallot(ballot.object_id, ballot.ballot_style, plaintext_contests)
 
@@ -244,6 +262,7 @@ def decrypt_ballot_with_nonce(
     public_key: ElementModP,
     nonce: Optional[ElementModQ] = None,
     suppress_validity_check: bool = False,
+    remove_placeholders: bool = False,
 ) -> Optional[PlaintextBallot]:
     """
     Decrypt the specified `CiphertextBallot` within the context of the specified election.
@@ -254,6 +273,7 @@ def decrypt_ballot_with_nonce(
     :param public_key: the public key for the election (K)
     :param nonce: the optional master ballot nonce that was either seeded to, or gernated by the encryption function
     :param suppress_validity_check: do not validate the encryption prior to decrypting (useful for tests)
+    :param remove_placeholders: filter out placeholder ciphertext selections after decryption
     """
 
     if not suppress_validity_check and not ballot.is_valid_encryption(
@@ -284,6 +304,7 @@ def decrypt_ballot_with_nonce(
             public_key,
             nonce_seed,
             suppress_validity_check,
+            remove_placeholders=remove_placeholders,
         )
         if plaintext_contest is not None:
             plaintext_contests.append(plaintext_contest)
@@ -291,5 +312,6 @@ def decrypt_ballot_with_nonce(
             log_warning(
                 f"decryption with nonce failed for ballot: {ballot.object_id} selection: {contest.object_id}"
             )
+            return None
 
     return PlaintextBallot(ballot.object_id, ballot.ballot_style, plaintext_contests)

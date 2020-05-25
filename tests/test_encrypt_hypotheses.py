@@ -81,7 +81,12 @@ class TestElections(unittest.TestCase):
             self.assertIsNotNone(cb)
             self.assertEqual(num_contests, len(cb.contests))
             db = decrypt_ballot_with_secret(
-                cb, ied, ce.crypto_extended_base_hash, ce.elgamal_public_key, secret_key
+                ballot=cb,
+                election_metadata=ied,
+                extended_base_hash=ce.crypto_extended_base_hash,
+                public_key=ce.elgamal_public_key,
+                secret_key=secret_key,
+                remove_placeholders=True,
             )
 
             self.assertEqual(ballots[i], db)
