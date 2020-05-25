@@ -295,7 +295,10 @@ def encrypt_contest(
         encrypted_selections.append(unwrap_optional(encrypted_selection))
 
     # TODO: support other cases such as cumulative voting (individual selections being an encryption of > 1)
-    if selection_count < contest_description.votes_allowed:
+    if (
+        contest_description.votes_allowed is not None
+        and selection_count < contest_description.votes_allowed
+    ):
         log_warning(
             "mismatching selection count: only n-of-m style elections are currently supported"
         )

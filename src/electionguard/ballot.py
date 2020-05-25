@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field, InitVar
 from distutils import util
-from typing import Optional, List, Any
+from typing import Optional, List, Any, Sequence
 
 from .chaum_pedersen import (
     ConstantChaumPedersenProof,
@@ -16,7 +16,7 @@ from .logs import log_warning
 
 
 def __list_eq__(
-    list1: List[ElectionObjectBase], list2: List[ElectionObjectBase]
+    list1: Sequence[ElectionObjectBase], list2: Sequence[ElectionObjectBase]
 ) -> bool:
     """
     We want to compare lists of election objects as if they're sets. We fake this by first
@@ -288,7 +288,7 @@ class PlaintextBallotContest(ElectionObjectBase):
         expected_object_id: str,
         expected_number_selections: int,
         expected_number_elected: int,
-        votes_allowed: int,
+        votes_allowed: Optional[int],
     ) -> bool:
         """
         Given a PlaintextBallotContest returns true if the state is representative of the expected values.
@@ -324,7 +324,7 @@ class PlaintextBallotContest(ElectionObjectBase):
             )
             return False
 
-        if votes > votes_allowed:
+        if votes_allowed is not None and votes > votes_allowed:
             log_warning(f"invalid votes: expected({votes_allowed}) actual({votes})")
             return False
 
