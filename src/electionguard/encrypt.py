@@ -199,6 +199,8 @@ def encrypt_contest(
 
     # Validate Input
     if not contest.is_valid(
+        # TODO (IMPORTANT): improve the validation here to require all the right selections, all with object-ids
+        #   matching the contest description, i.e., one-to-one with the contest description.
         contest_description.object_id,
         len(contest_description.ballot_selections),
         contest_description.number_elected,
@@ -358,6 +360,8 @@ def encrypt_ballot(
 
     # Validate Input
     if not ballot.is_valid(style.object_id):
+        # TODO (IMPORTANT): improve the validation here to require all the right contests,
+        #   i.e., one-to-one with the election description.
         log_warning(f"malformed input ballot: {ballot}")
         return None
 

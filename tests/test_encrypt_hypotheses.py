@@ -3,6 +3,7 @@ from datetime import timedelta
 from typing import Tuple, List, Dict
 
 from hypothesis import given, HealthCheck, settings
+from hypothesis.strategies import integers
 
 from electionguard.ballot import PlaintextBallot, CiphertextBallot
 from electionguard.election import (
@@ -35,10 +36,11 @@ class TestElections(unittest.TestCase):
     @settings(
         deadline=timedelta(milliseconds=2000),
         suppress_health_check=[HealthCheck.too_slow],
-        max_examples=10,
+        max_examples=5,
     )
     @given(
-        arb_election_and_ballots(), arb_element_mod_q(),
+        integers(1, 3).flatmap(lambda n: arb_election_and_ballots(n)),
+        arb_element_mod_q(),
     )
     def test_accumulation_encryption_decryption(
         self,
@@ -73,13 +75,34 @@ class TestElections(unittest.TestCase):
             self.assertIsNotNone(cb)
 
         encrypted_totals = _accumulate_encrypted_ballots(encrypted_zero, c_ballots)
-        self.assertEqual(len(counters.keys()), len(encrypted_totals.keys()))
 
-        for k in counters.keys():
-            plaintext = counters[k]
-            ciphertext = encrypted_totals[k]
-            decrypted = ciphertext.decrypt(secret_key)
-            self.assertEqual(plaintext, decrypted)
+        decrypted_totals = {}
+        for k in encrypted_totals.keys():
+            decrypted_totals[k] = encrypted_totals[k].decrypt(secret_key)
+
+        self.assertTrue(len(ied.contests) > 0)
+        for contest in ied.contests:
+            selections = contest.ballot_selections
+            placeholders = contest.placeholder_selections
+            self.assertTrue(len(selections) > 0)
+            self.assertTrue(len(placeholders) > 0)
+
+            decrypted_selection_counters = [
+                decrypted_totals[k.object_id] for k in selections
+            ]
+            decrypted_placeholder_counters = [
+                decrypted_totals[k.object_id] for k in placeholders
+            ]
+            plaintext_counters = [counters[k.object_id] for k in selections]
+
+            self.assertEqual(decrypted_selection_counters, plaintext_counters)
+
+            # validate the right number of selections including placeholders
+            counter_sum = sum(decrypted_selection_counters)
+            placeholder_sum = sum(decrypted_placeholder_counters)
+            self.assertEqual(
+                contest.number_elected * num_ballots, counter_sum + placeholder_sum
+            )
 
 
 # TODO: expand this into a supported function in electionguard/encrypt.py
@@ -118,5 +141,7 @@ def _accumulate_plaintext_ballots(ballots: List[PlaintextBallot]) -> Dict[str, i
                 desc_id = s.object_id
                 if desc_id not in counters:
                     counters[desc_id] = 0
-                counters[desc_id] += 1
+                counters[
+                    desc_id
+                ] += s.to_int()  # returns 1 or 0 for n-of-m ballot selections
     return counters

@@ -481,15 +481,20 @@ def arb_plaintext_voted_ballot(draw: _DrawType, ied: InternalElectionDescription
 
         random = Random(draw(integers()))
         random.shuffle(ballot_selections)
-        yes_votes = ballot_selections[
-            : draw(integers(0, n))
-        ]  # we'll vote as few as zero selections and as many as n
+        cut_point = draw(integers(0, n))
+        yes_votes = ballot_selections[:cut_point]
+        no_votes = ballot_selections[cut_point:]
 
         # TODO: write a variant on this test where we overvote, make sure that it's rejected later.
+
+        # TODO: write a variant where we're missing or repeating selections, should be rejected.
 
         voted_selections = [
             selection_from(x, is_placeholder=False, is_affirmative=True)
             for x in yes_votes
+        ] + [
+            selection_from(x, is_placeholder=False, is_affirmative=False)
+            for x in no_votes
         ]
 
         voted_contests.append(PlaintextBallotContest(c.object_id, voted_selections))
