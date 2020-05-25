@@ -6,6 +6,7 @@ from hypothesis import given, HealthCheck, settings
 from hypothesis.strategies import integers
 
 from electionguard.ballot import PlaintextBallot, CiphertextBallot
+from electionguard.decrypt import decrypt_ballot_with_secret
 from electionguard.election import (
     ElectionDescription,
     InternalElectionDescription,
@@ -62,17 +63,28 @@ class TestElections(unittest.TestCase):
 
         counters = _accumulate_plaintext_ballots(ballots)
         num_ballots = len(ballots)
+        num_contests = len(ied.contests)
         zero_nonce, *nonces = Nonces(nonce)[: num_ballots + 1]
         assert len(nonces) == num_ballots
 
         encrypted_zero = elgamal_encrypt(0, zero_nonce, ce.elgamal_public_key)
 
-        c_ballots = [
-            encrypt_ballot(ballots[i], ied, ce, nonces[i]) for i in range(num_ballots)
-        ]
+        c_ballots = []
 
-        for cb in c_ballots:
+        for i in range(num_ballots):
+            cb = encrypt_ballot(ballots[i], ied, ce, nonces[i])
+            c_ballots.append(cb)
+
+            # before we do anything fancy, we'll decrypt each ballot and make sure that we get back
+            # identical plaintext.
+
             self.assertIsNotNone(cb)
+            self.assertEqual(num_contests, len(cb.contests))
+            db = decrypt_ballot_with_secret(
+                cb, ied, ce.crypto_extended_base_hash, ce.elgamal_public_key, secret_key
+            )
+
+            self.assertEqual(ballots[i], db)
 
         encrypted_totals = _accumulate_encrypted_ballots(encrypted_zero, c_ballots)
 
@@ -100,6 +112,9 @@ class TestElections(unittest.TestCase):
             # validate the right number of selections including placeholders
             counter_sum = sum(decrypted_selection_counters)
             placeholder_sum = sum(decrypted_placeholder_counters)
+            if contest.number_elected * num_ballots != counter_sum + placeholder_sum:
+                print("Uh oh")
+
             self.assertEqual(
                 contest.number_elected * num_ballots, counter_sum + placeholder_sum
             )

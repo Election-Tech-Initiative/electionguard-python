@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field, InitVar
 from distutils import util
-from typing import Optional, List
+from typing import Optional, List, Any
 
 from .chaum_pedersen import (
     ConstantChaumPedersenProof,
@@ -19,6 +19,16 @@ from .logs import log_warning
 class ExtendedData(object):
     value: str
     length: int
+
+    def __eq__(self, other: Any) -> bool:
+        return (
+            isinstance(other, ExtendedData)
+            and self.value == other.value
+            and self.length == other.length
+        )
+
+    def __ne__(self, other: Any) -> bool:
+        return not self.__eq__(other)
 
 
 # TODO: ballot.py isn't the right name for this file. It's somehow the cryptographic dual-image
@@ -99,6 +109,17 @@ class PlaintextBallotSelection(ElectionObjectBase):
         # greater than 1 for cases such as cumulative voting
         as_int = int(as_bool)
         return as_int
+
+    def __eq__(self, other: Any) -> bool:
+        return (
+            isinstance(other, PlaintextBallotSelection)
+            and self.plaintext == other.plaintext
+            and self.is_placeholder_selection == other.is_placeholder_selection
+            and self.extended_data == other.extended_data
+        )
+
+    def __ne__(self, other: Any) -> bool:
+        return not self.__eq__(other)
 
 
 @dataclass
@@ -297,6 +318,15 @@ class PlaintextBallotContest(ElectionObjectBase):
 
         return True
 
+    def __eq__(self, other: Any) -> bool:
+        return (
+            isinstance(other, PlaintextBallotContest)
+            and self.ballot_selections == other.ballot_selections
+        )
+
+    def __ne__(self, other: Any) -> bool:
+        return not self.__eq__(other)
+
 
 @dataclass
 class CiphertextBallotContest(ElectionObjectBase, CryptoHashCheckable):
@@ -469,6 +499,16 @@ class PlaintextBallot(ElectionObjectBase):
             return False
 
         return True
+
+    def __eq__(self, other: Any) -> bool:
+        return (
+            isinstance(other, PlaintextBallot)
+            and self.ballot_style == other.ballot_style
+            and self.contests == other.contests
+        )
+
+    def __ne__(self, other: Any) -> bool:
+        return not self.__eq__(other)
 
 
 @dataclass
