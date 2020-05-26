@@ -29,6 +29,12 @@ def __list_eq__(
 
 @dataclass
 class ExtendedData(object):
+    """
+    ExtendedData represents any arbitrary data expressible as a string with a length.
+
+    This class is used primmarily as a field on a selection to indicate a write-in candidate text value
+    """
+
     value: str
     length: int
 
@@ -75,8 +81,11 @@ class PlaintextBallotSelection(ElectionObjectBase):
     # determines if this is a placeholder selection
     is_placeholder_selection: bool = field(default=False)
 
-    # an optional field of arbitrary data, such as the value of a write-in candidate
+    # TODO: ISSUE: #35: encrypt/decrypt
     extended_data: Optional[ExtendedData] = field(default=None)
+    """
+    an optional field of arbitrary data, such as the value of a write-in candidate
+    """
 
     def is_valid(self, expected_object_id: str) -> bool:
         """
@@ -189,8 +198,11 @@ class CiphertextBallotSelection(ElectionObjectBase, CryptoHashCheckable):
     # and was encrypted using the `nonce`
     proof: Optional[DisjunctiveChaumPedersenProof] = field(init=False, default=None)
 
-    # encrypted representation of the extended_data field
+    # TODO: ISSUE: #35: encrypt/decrypt
     extended_data: Optional[ElGamalCiphertext] = field(default=None)
+    """
+    encrypted representation of the extended_data field
+    """
 
     def __post_init__(
         self,

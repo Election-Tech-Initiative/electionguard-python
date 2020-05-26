@@ -143,6 +143,8 @@ def encrypt_selection(
         # will have logged about the failure earlier, so no need to log anything here
         return None
 
+    # TODO: ISSUE: #35: encrypt/decrypt: encrypt the extended_data field
+
     # Create the return object
     encrypted_selection = CiphertextBallotSelection(
         object_id=selection.object_id,
@@ -403,6 +405,7 @@ def encrypt_ballot(
             if contest.object_id == description.object_id:
                 use_contest = contest
                 break
+        # no selections provided for the contest, so create a placeholder contest
         if not use_contest:
             use_contest = contest_from(description)
 

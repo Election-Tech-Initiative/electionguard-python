@@ -82,13 +82,13 @@ def decrypt_selection_with_nonce(
 
     if nonce is None:
         log_warning(
-            f"missing nonce value.  decrypt could not dewrive a nonce value for selection {selection.object_id}"
+            f"missing nonce value.  decrypt could not derive a nonce value for selection {selection.object_id}"
         )
         return None
 
     plaintext = selection.message.decrypt_known_nonce(public_key, nonce)
 
-    # TODO: handle decryption of the extradata field if needed
+    # TODO: ISSUE: #35: encrypt/decrypt: handle decryption of the extradata field if needed
 
     return PlaintextBallotSelection(
         selection.object_id, f"{bool(plaintext)}", selection.is_placeholder_selection
@@ -242,7 +242,7 @@ def decrypt_ballot_with_secret(
             public_key,
             secret_key,
             suppress_validity_check,
-            remove_placeholders=remove_placeholders,
+            remove_placeholders,
         )
         if plaintext_contest is not None:
             plaintext_contests.append(plaintext_contest)
@@ -304,7 +304,7 @@ def decrypt_ballot_with_nonce(
             public_key,
             nonce_seed,
             suppress_validity_check,
-            remove_placeholders=remove_placeholders,
+            remove_placeholders,
         )
         if plaintext_contest is not None:
             plaintext_contests.append(plaintext_contest)
