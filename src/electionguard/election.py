@@ -276,6 +276,12 @@ class SelectionDescription(ElectionObjectBase, CryptoHashable):
 
     candidate_id: str
     sequence_order: int
+    """
+    Used for ordering selections in a contest to ensure various encryption primitives are deterministic.
+    The sequence order must be unique and should be representative of how the contests are represnted
+    on a "master" ballot in an external system.  The sequence order is not required to be in the order 
+    in which they are displayed to a voter.  Any acceptable range of integer values may be provided.
+    """
 
     def crypto_hash(self) -> ElementModQ:
         """
@@ -299,6 +305,13 @@ class ContestDescription(ElectionObjectBase, CryptoHashable):
 
     electoral_district_id: str
     sequence_order: int
+    """
+    Used for ordering contests in a ballot to ensure various encryption primitives are deterministic.
+    The sequence order must be unique and should be representative of how the contests are represnted
+    on a "master" ballot in an external system.  The sequence order is not required to be in the order 
+    in which they are displayed to a voter.  Any acceptable range of integer values may be provided.
+    """
+
     vote_variation: VoteVariationType
 
     # Number of candidates that are elected in the contest ("n" of n-of-m).
@@ -560,6 +573,8 @@ class ElectionDescription(Serializable, CryptoHashable):
                             and primary_party_id in party_ids
                         )
 
+        # TODO: verify that the contest sequence order set is in the proper order
+
         contests_valid = (
             len(contest_ids) is len(self.contests)
             and len(contest_sequence_ids) is len(self.contests)
@@ -590,6 +605,7 @@ class ElectionDescription(Serializable, CryptoHashable):
                     contest_selections_have_valid_candidate_ids
                     and selection.candidate_id in candidate_ids
                 )
+            # TODO: verify that the contest sequence order set is in the proper order
             contest_selections_have_valid_sequence_ids = contest_selections_have_valid_sequence_ids and len(
                 sequence_ids
             ) is len(
@@ -613,7 +629,7 @@ class ElectionDescription(Serializable, CryptoHashable):
 
         if not success:
             log_warning(
-                "Election is_valid: %s",
+                "Election failed validation check: is_valid: %s",
                 str(
                     {
                         "geopolitical_units_valid": geopolitical_units_valid,
