@@ -15,7 +15,7 @@ from .hash import CryptoHashCheckable, hash_elems
 from .logs import log_warning
 
 
-def __list_eq__(
+def _list_eq(
     list1: Sequence[ElectionObjectBase], list2: Sequence[ElectionObjectBase]
 ) -> bool:
     """
@@ -321,7 +321,7 @@ class PlaintextBallotContest(ElectionObjectBase):
         return True
 
     def __eq__(self, other: Any) -> bool:
-        return isinstance(other, PlaintextBallotContest) and __list_eq__(
+        return isinstance(other, PlaintextBallotContest) and _list_eq(
             self.ballot_selections, other.ballot_selections
         )
 
@@ -505,7 +505,7 @@ class PlaintextBallot(ElectionObjectBase):
         return (
             isinstance(other, PlaintextBallot)
             and self.ballot_style == other.ballot_style
-            and __list_eq__(self.contests, other.contests)
+            and _list_eq(self.contests, other.contests)
         )
 
     def __ne__(self, other: Any) -> bool:

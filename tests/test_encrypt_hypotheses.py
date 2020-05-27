@@ -116,11 +116,9 @@ class TestElections(unittest.TestCase):
 
             self.assertEqual(decrypted_selection_counters, plaintext_counters)
 
-            # validate the right number of selections including placeholders
+            # validate the right number of selections including placeholders across all ballots
             counter_sum = sum(decrypted_selection_counters)
             placeholder_sum = sum(decrypted_placeholder_counters)
-            if contest.number_elected * num_ballots != counter_sum + placeholder_sum:
-                print("Uh oh")
 
             self.assertEqual(
                 contest.number_elected * num_ballots, counter_sum + placeholder_sum
@@ -139,6 +137,19 @@ class TestElections(unittest.TestCase):
 def _accumulate_encrypted_ballots(
     encrypted_zero: ElGamalCiphertext, ballots: List[CiphertextBallot]
 ) -> Dict[str, ElGamalCiphertext]:
+    """
+    Internal helper function for testing: takes a list of encrypted ballots as input,
+    digs into all of the individual selections and then accumulates them, using
+    their `object_id` fields as keys. This function only knows what to do with
+    `n_of_m` elections. It's not a general-purpose tallying mechanism for other
+    election types.
+
+    Note that the output will include both "normal" and "placeholder" selections.
+
+    :param encrypted_zero: an encrypted zero, used for the accumulation
+    :param ballots: a list of encrypted ballots
+    :return: a dict from selection object_id's to `ElGamalCiphertext` totals
+    """
     counters: Dict[str, ElGamalCiphertext] = {}
     for b in ballots:
         for c in b.contests:
@@ -153,6 +164,16 @@ def _accumulate_encrypted_ballots(
 
 
 def _accumulate_plaintext_ballots(ballots: List[PlaintextBallot]) -> Dict[str, int]:
+    """
+    Internal helper function for testing: takes a list of plaintext ballots as input,
+    digs into all of the individual selections and then accumulates them, using
+    their `object_id` fields as keys. This function only knows what to do with
+    `n_of_m` elections. It's not a general-purpose tallying mechanism for other
+    election types.
+
+    :param ballots: a list of plaintext ballots
+    :return: a dict from selection object_id's to integer totals
+    """
     counters: Dict[str, int] = {}
     for b in ballots:
         for c in b.contests:
