@@ -1,14 +1,14 @@
 from dataclasses import dataclass, field, InitVar
 from datetime import datetime
 from enum import Enum, unique
-from typing import cast, List, Optional, Set, Union
+from typing import cast, List, Optional, Set
 
 from .election_object_base import ElectionObjectBase
 from .group import Q, P, G, ElementModQ, ElementModP
 from .hash import CryptoHashable, hash_elems
 from .logs import log_warning
 from .serializable import Serializable
-from .utils import unwrap_optional
+from .utils import get_optional
 
 
 @unique
@@ -66,7 +66,6 @@ class ReportingUnitType(Enum):
     other = 28
 
 
-# TODO: should one_of_m exist at all here, or should that just be n_of_m where n=1?
 @unique
 class VoteVariationType(Enum):
     """
@@ -179,13 +178,10 @@ class GeopoliticalUnit(ElectionObjectBase, CryptoHashable):
         )
 
 
-# TODO: In normal parlance, a "ballot style" is one of many variants on a ballot, but that's not at all
-#   what's going on here, where it's just metadata that we otherwise will tend to ignore. We need to
-#   double-check how we're supposed to represent the idea that we have many different precincts, some
-#   of which have overlapping contests and others don't.
 @dataclass
 class BallotStyle(ElectionObjectBase, CryptoHashable):
     """
+    A BallotStyle works as a key to uniquely specify a set of contests. See also `ContestDescription`.
     """
 
     geopolitical_unit_ids: Optional[List[str]] = field(default=None)
@@ -214,8 +210,9 @@ class Party(ElectionObjectBase, CryptoHashable):
     logo_uri: Optional[str] = field(default=None)
 
     def get_party_id(self) -> str:
-        # TODO: is this a good way to get a party_id from a party? Should we use the abbreviation?
-        #   Should this be defined if we're in a non-partisan election, so no parties?
+        """
+        Returns the object identifier associated with the Party.
+        """
         return self.object_id
 
     def crypto_hash(self) -> ElementModQ:
@@ -253,18 +250,6 @@ class Candidate(ElectionObjectBase, CryptoHashable):
         """
         return self.object_id
 
-    def to_selection_description(self, sequence_order: int) -> "SelectionDescription":
-        """
-        Given a `Candidate` and its position in a list of candidates, returns an equivalent
-        `SelectionDescription`.
-        """
-        # TODO: should we have a deterministic mapping from candidate object-ids to SelectionDescription
-        #  object-ids? Currently just prepending "c-", but that's a hack. For that matter, should there
-        #  be a relationship between the candidate id and the object id?
-        return SelectionDescription(
-            f"c-{self.object_id}", self.get_candidate_id(), sequence_order
-        )
-
     def crypto_hash(self) -> ElementModQ:
         """
         A hash representation of the object
@@ -289,14 +274,7 @@ class SelectionDescription(ElectionObjectBase, CryptoHashable):
     however that information is not captured by default when encrypting a specific ballot.
     """
 
-    # TODO: what's the relationship between a candidate_id and a Candidate?
-    #   Should there be a get_candidate_id() method on Candidate?
-    #   Should candidate_id's be unique?
     candidate_id: str
-
-    # TODO: it would be handy if we could eliminate this field and instead rely on the order
-    #  that these ContestDescriptions appear in the ElectionDescription. That would make life
-    #  easier when generating them via Hypothesis.
     sequence_order: int
 
     def crypto_hash(self) -> ElementModQ:
@@ -320,10 +298,6 @@ class ContestDescription(ElectionObjectBase, CryptoHashable):
     """
 
     electoral_district_id: str
-
-    # TODO: it would be handy if we could eliminate this field and instead rely on the order
-    #  that these ContestDescriptions appear in the ElectionDescription. That would make life
-    #  easier when generating them via Hypothesis.
     sequence_order: int
     vote_variation: VoteVariationType
 
@@ -335,9 +309,6 @@ class ContestDescription(ElectionObjectBase, CryptoHashable):
     # to indicate how many total votes a voter can spread around. In n-of-m elections, this will
     # be None.
     votes_allowed: Optional[int]
-    # TODO: enforce this "None" property. Right now, election_factory.py seems to be setting
-    #   votes_allowed = number_elected
-    # TODO: write up better documentation in the comment string.
 
     # Name of the contest, not necessarily as it appears on the ballot.
     name: str
@@ -382,14 +353,9 @@ class CandidateContestDescription(ContestDescription):
     this subclass is used purely for convenience 
     """
 
-    # TODO: what happens if candidates don't have parties associated with them
-    #  (e.g., in a non-partisan election)? Alternative design: have the ContestDescription
-    #  just have a list of Candidates.
     primary_party_ids: List[str] = field(default_factory=lambda: [])
 
 
-# TODO: for a referendum, are we still using "Candidates" (presumably with no party) to
-#   build the SelectionDescription values, or something else?
 @dataclass
 class ReferendumContestDescription(ContestDescription):
     """
@@ -400,11 +366,6 @@ class ReferendumContestDescription(ContestDescription):
     """
 
     pass
-
-
-# Specify a union type of the available derived contest types
-# TODO: do we need this Union type when we already have a shared base-class (ContestDescription)?
-DerivedContestType = Union[CandidateContestDescription, ReferendumContestDescription]
 
 
 @dataclass
@@ -419,11 +380,6 @@ class ContestDescriptionWithPlaceholders(ContestDescription):
     placeholder_selections: List[SelectionDescription] = field(
         default_factory=lambda: []
     )
-
-    def get_all_ballot_selections(self) -> List[SelectionDescription]:
-        # TODO: this API can be confusing, since it returns the placeholders, which we sometimes
-        #   want and sometimes don't.
-        return self.ballot_selections + self.placeholder_selections
 
     def is_valid(self) -> bool:
         return len(self.placeholder_selections) == self.number_elected
@@ -471,7 +427,7 @@ class ElectionDescription(Serializable, CryptoHashable):
     geopolitical_units: List[GeopoliticalUnit]
     parties: List[Party]
     candidates: List[Candidate]
-    contests: List[DerivedContestType]
+    contests: List[ContestDescription]
     ballot_styles: List[BallotStyle]
     name: Optional[InternationalizedText] = field(default=None)
     contact_information: Optional[ContactInformation] = field(default=None)
@@ -480,14 +436,6 @@ class ElectionDescription(Serializable, CryptoHashable):
         """
         Returns a hash of the metadata components of the election
         """
-
-        # gp_unit_hashes = [gpunit.crypto_hash() for gpunit in self.geopolitical_units]
-        # party_hashes = [party.crypto_hash() for party in self.parties]
-        # candidate_hashes = [candidate.crypto_hash() for candidate in self.parties]
-        # contest_hashes = [contest.crypto_hash() for contest in self.contests]
-        # ballot_style_hashes = [
-        #     ballot_style.crypto_hash() for ballot_style in self.ballot_styles
-        # ]
 
         return hash_elems(
             self.election_scope_id,
@@ -589,10 +537,6 @@ class ElectionDescription(Serializable, CryptoHashable):
             )
 
             # validate the number elected (seats)
-
-            # TODO: (REVIEW THIS) changed this from < to <=, because it's entirely possible to have a 1-of-1 election,
-            #   (i.e., a candidate running unopposed), where the voter's only choice is to endorse the
-            #   candidate or to undervote.
             contests_have_valid_number_elected = (
                 contests_have_valid_number_elected
                 and contest.number_elected <= len(contest.ballot_selections)
@@ -772,17 +716,10 @@ class InternalElectionDescription(object):
         return contests
 
 
-# TODO: "frozen data class cannot inherit from non-frozen one and vice versa"
-
-# TODO: a better name for this would be "CiphertextElectionContext", since it doesn't have any actual
-#   election definitions or ballots or whatever inside. Given that, it's also an interesting question
-#   whether there should be an (optional?) field for the ElGamal secret key.
-
-
 @dataclass(frozen=True)
-class CiphertextElection(Serializable):  # TODO: CryptoHashcheckable
+class CiphertextElectionContext(Serializable):  # TODO: CryptoHashcheckable
     """
-    `CiphertextElection` is the ElectionGuard representation of a specific election
+    `CiphertextElectionContext` is the ElectionGuard representation of a specific election
     Note: The ElectionGuard Data Spec deviates from the NIST model in that
     this object includes fields that are populated in the course of encrypting an election
     Specifically, `crypto_base_hash`, `crypto_extended_base_hash` and `elgamal_public_key`
@@ -906,8 +843,6 @@ def generate_placeholder_selections_from(
     for i in range(count):
         sequence_order = max_sequence_order + 1 + i
         selections.append(
-            unwrap_optional(
-                generate_placeholder_selection_from(contest, sequence_order)
-            )
+            get_optional(generate_placeholder_selection_from(contest, sequence_order))
         )
     return selections

@@ -67,9 +67,6 @@ class PlaintextBallotSelection(ElectionObjectBase):
     discarded when encrypting.
     """
 
-    # TODO: do we want this to be True or False? Why not an integer, so we can support
-    #   range voting? Seems kinda weird to have a string here. How do we distinguish
-    # the plaintext representation of the selection (usually `True` or `False`)
     plaintext: str
 
     # determines if this is a placeholder selection
@@ -102,12 +99,8 @@ class PlaintextBallotSelection(ElectionObjectBase):
         represent a Truthy string as 1, or if the string is Falsy, 0
         See: https://docs.python.org/3/distutils/apiref.html#distutils.util.strtobool
 
-        :param from_string: a string representing "true" or "false"
         :return: an integer 0 or 1 for valid data, or 0 if the data is malformed
         """
-
-        # TODO: this is going to need to be generalized to support range voting and other
-        #   things where the voter can indicate more than just one bit per choice.
 
         as_bool = False
         try:
@@ -177,9 +170,6 @@ class CiphertextBallotSelection(ElectionObjectBase, CryptoHashCheckable):
 
     # The nonce used to generate the encryption
     # this value is sensitive & should be treated as a secret
-
-    # TODO: we need some sort of annotation on fields like this. Any sort of automatic serializer
-    #   will just casually grab this and dump it out.
     nonce: Optional[ElementModQ] = field(default=None)
 
     # The hash of the encrypted values

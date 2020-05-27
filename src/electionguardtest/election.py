@@ -30,10 +30,11 @@ from electionguard.election import (
     Party,
     CandidateContestDescription,
     ReferendumContestDescription,
-    DerivedContestType,
     ElectionDescription,
     InternalElectionDescription,
-    CiphertextElection,
+    CiphertextElectionContext,
+    SelectionDescription,
+    ContestDescription,
 )
 from electionguard.encrypt import selection_from
 from electionguardtest.elgamal import arb_elgamal_keypair
@@ -248,6 +249,18 @@ def arb_candidate(draw: _DrawType, party_list: Optional[List[Party]]):
     )
 
 
+def _candidate_to_selection_description(
+    candidate: Candidate, sequence_order: int
+) -> SelectionDescription:
+    """
+    Given a `Candidate` and its position in a list of candidates, returns an equivalent
+    `SelectionDescription`.
+    """
+    return SelectionDescription(
+        f"c-{candidate.object_id}", candidate.get_candidate_id(), sequence_order
+    )
+
+
 @composite
 def arb_candidate_contest_description(
     draw: _DrawType,
@@ -280,7 +293,7 @@ def arb_candidate_contest_description(
 
     candidates = draw(lists(arb_candidate(party_list), min_size=m, max_size=m))
     selection_descriptions = [
-        candidates[i].to_selection_description(i) for i in range(m)
+        _candidate_to_selection_description(candidates[i], i) for i in range(m)
     ]
 
     # TODO: right now, we're supporting one-of-m and n-of-m; we need to support other types later.
@@ -345,7 +358,7 @@ def arb_referendum_contest_description(
 
     candidates = draw(lists(arb_candidate(None), min_size=n, max_size=n))
     selection_descriptions = [
-        candidates[i].to_selection_description(i) for i in range(n)
+        _candidate_to_selection_description(candidates[i], i) for i in range(n)
     ]
 
     return (
@@ -406,31 +419,25 @@ def arb_election_description(
 
     geo_units = [draw(arb_geopolitical_unit())]
     num_parties: int = draw(integers(1, max_num_parties))
+
+    # keep this small so tests run faster
     parties: List[Party] = draw(arb_party_list(num_parties))
-    num_contests: int = draw(
-        integers(1, max_num_contests)
-    )  # keep this small so tests run faster
-    contest_tuples: List[Tuple[List[Candidate], DerivedContestType]] = [
+    num_contests: int = draw(integers(1, max_num_contests))
+    contest_tuples: List[Tuple[List[Candidate], ContestDescription]] = [
         draw(arb_contest_description(i, parties, geo_units))
         for i in range(num_contests)
     ]
-    # contest_tuples: List[Tuple[List[Candidate], DerivedContestType]] = []
-    # for i in range(num_contests):
-    #     contest_tuples.append(draw(arb_contest_description(i, parties)))
     assert len(contest_tuples) > 0
 
-    # TODO: there may be duplicates in the candidate list. Do we care? If so, we'd have to make
-    #   the type hashable, such that we could convert to a set. Good enough left alone for now.
     candidates = reduce(lambda a, b: a + b, [c[0] for c in contest_tuples])
     contests = [c[1] for c in contest_tuples]
 
-    # TODO: ElectionDescription has a *list* of ballot styles. It's wildly unclear what that's supposed
-    #   to mean. So, at least for now, we'll return a list of size one, where the ballot style includes
-    #   all the parties in it. See additional to-do notes next to the class BallotStyle definition.
     ballot_styles = [draw(arb_ballot_style(parties, geo_units))]
 
     start_date = draw(datetimes())
-    end_date = start_date  # maybe later on we'll do something smarter with the dates
+    end_date = (
+        start_date  # maybe later on we'll do something more complicated with dates
+    )
 
     return ElectionDescription(
         election_scope_id=draw(arb_language()),
@@ -477,19 +484,11 @@ def arb_plaintext_voted_ballot(draw: _DrawType, ied: InternalElectionDescription
         ballot_selections = c.ballot_selections
         assert len(ballot_selections) >= n
 
-        # TODO: assert something about having the same number of non-placeholders and otherwise satisfying a n-of-m
-        #  ballot. (Or, write this up as a separate property-based test. Kinda hard to tease these individual properties
-        #  apart when the individual parts don't work without being part of an overarching ElectionDescription.)
-
         random = Random(draw(integers()))
         random.shuffle(ballot_selections)
         cut_point = draw(integers(0, n))
         yes_votes = ballot_selections[:cut_point]
         no_votes = ballot_selections[cut_point:]
-
-        # TODO: write a variant on this test where we overvote, make sure that it's rejected later.
-
-        # TODO: write a variant where we're missing or repeating selections, should be rejected.
 
         voted_selections = [
             selection_from(x, is_placeholder=False, is_affirmative=True)
@@ -507,20 +506,18 @@ def arb_plaintext_voted_ballot(draw: _DrawType, ied: InternalElectionDescription
 @composite
 def arb_ciphertext_election(draw: _DrawType, ed: ElectionDescription):
     """
-    Generates a tuple of a CiphertextElection and the secret key associated with it -- the context you need to do
+    Generates a tuple of a CiphertextElectionContext and the secret key associated with it -- the context you need to do
     any of the encryption/decryption operations. These ones have exactly one trustee.
     """
     secret_key, public_key = draw(arb_elgamal_keypair())
-    return secret_key, CiphertextElection(1, 1, public_key, ed.crypto_hash())
+    return secret_key, CiphertextElectionContext(1, 1, public_key, ed.crypto_hash())
 
 
-# TODO: a more general version of this that makes ballots of multiple ballot styles, allowing for more complex tallying.
-#   arb_election_description() already generates multiple ballot styles, so we're half-way there.
 @composite
 def arb_election_and_ballots(draw: _DrawType, num_ballots: int = 3):
     """
     Generates a tuple of: an `ElectionDescription`, a list of plaintext ballots, an ElGamal secret key,
-    and a `CiphertextElection`. Every ballot will match the same ballot style.
+    and a `CiphertextElectionContext`. Every ballot will match the same ballot style.
     """
     assert num_ballots >= 0, "You're asking for a negative number of ballots?"
     ed = draw(arb_election_description())

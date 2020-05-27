@@ -3,19 +3,19 @@ from dataclasses import dataclass, field
 from typing import Optional, Tuple
 
 from .election import (
-    CiphertextElection,
+    CiphertextElectionContext,
     ElectionDescription,
     InternalElectionDescription,
 )
 
 from .group import ElementModP
-from .utils import unwrap_optional
+from .utils import get_optional
 
 
 @dataclass
 class ElectionBuilder(object):
     """
-    `ElectionBuilder` is a stateful builder object that constructs `CiphertextElection` objects
+    `ElectionBuilder` is a stateful builder object that constructs `CiphertextElectionContext` objects
     following the initialization process that ElectionGuard Expects.
     """
 
@@ -35,7 +35,9 @@ class ElectionBuilder(object):
         self.elgamal_public_key = elgamal_public_key
         return self
 
-    def build(self) -> Optional[Tuple[InternalElectionDescription, CiphertextElection]]:
+    def build(
+        self,
+    ) -> Optional[Tuple[InternalElectionDescription, CiphertextElectionContext]]:
 
         if not self.description.is_valid():
             return None
@@ -45,10 +47,10 @@ class ElectionBuilder(object):
 
         return (
             self.internal_description,
-            CiphertextElection(
+            CiphertextElectionContext(
                 self.number_trustees,
                 self.threshold_trustees,
-                unwrap_optional(self.elgamal_public_key),
+                get_optional(self.elgamal_public_key),
                 self.description.crypto_hash(),
             ),
         )

@@ -34,7 +34,7 @@ from electionguard.utils import (
     flatmap_optional,
     get_or_else_optional,
     match_optional,
-    unwrap_optional,
+    get_optional,
 )
 
 
@@ -137,8 +137,8 @@ class TestOptionalFunctions(unittest.TestCase):
         good: Optional[int] = 3
         bad: Optional[int] = None
 
-        self.assertEqual(unwrap_optional(good), 3)
-        self.assertRaises(Exception, unwrap_optional, bad)
+        self.assertEqual(get_optional(good), 3)
+        self.assertRaises(Exception, get_optional, bad)
 
     def test_match(self):
         good: Optional[int] = 3
@@ -158,5 +158,5 @@ class TestOptionalFunctions(unittest.TestCase):
         good: Optional[int] = 3
         bad: Optional[int] = None
 
-        self.assertEqual(5, unwrap_optional(flatmap_optional(good, lambda x: x + 2)))
+        self.assertEqual(5, get_optional(flatmap_optional(good, lambda x: x + 2)))
         self.assertIsNone(flatmap_optional(bad, lambda x: x + 2))

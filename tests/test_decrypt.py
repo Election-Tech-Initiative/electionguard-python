@@ -570,7 +570,6 @@ class TestDecrypt(unittest.TestCase):
             keypair.public_key,
             seed,
             should_verify_proofs=True,
-            elgamal_private_key_debug=keypair.secret_key,
         )
         self.assertIsNotNone(subject)
 
@@ -628,6 +627,5 @@ class TestDecrypt(unittest.TestCase):
             keypair.public_key,
             seed,
             should_verify_proofs=True,
-            elgamal_private_key_debug=keypair.secret_key,
         )
         self.assertIsNotNone(subject)

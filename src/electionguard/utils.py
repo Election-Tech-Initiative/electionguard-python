@@ -4,7 +4,7 @@ T = TypeVar("T")
 U = TypeVar("U")
 
 
-def unwrap_optional(optional: Optional[T]) -> T:
+def get_optional(optional: Optional[T]) -> T:
     """
     General-purpose unwrapping function to handle `Optional`.
     Raises an exception if it's actually `None`, otherwise

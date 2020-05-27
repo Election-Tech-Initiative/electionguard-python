@@ -10,7 +10,7 @@ from .ballot import (
     PlaintextBallotSelection,
 )
 from .election import (
-    CiphertextElection,
+    CiphertextElectionContext,
     InternalElectionDescription,
     ContestDescription,
     ContestDescriptionWithPlaceholders,
@@ -21,7 +21,7 @@ from .group import Q, ElementModP, ElementModQ, int_to_q_unchecked
 from .hash import hash_elems
 from .logs import log_warning, log_debug
 from .nonces import Nonces
-from .utils import unwrap_optional, get_or_else_optional_func
+from .utils import get_optional, get_or_else_optional_func
 
 
 class EncryptionCompositor(object):
@@ -32,12 +32,12 @@ class EncryptionCompositor(object):
     """
 
     _metadata: InternalElectionDescription
-    _encryption: CiphertextElection
+    _encryption: CiphertextElectionContext
 
     def __init__(
         self,
         election_metadata: InternalElectionDescription,
-        encryption_context: CiphertextElection,
+        encryption_context: CiphertextElectionContext,
     ):
         self._metadata = election_metadata
         self._encryption = encryption_context
@@ -47,14 +47,6 @@ class EncryptionCompositor(object):
         Encrypt the specified ballot using the cached election context.
         """
         return encrypt_ballot(ballot, self._metadata, self._encryption)
-
-
-# TODO: most of the functions here could be represented as methods on their corresponding classes,
-#   although I like having all of the encryption-related stuff in one place. For now, I'm going to
-#   go add helper methods on those classes that just call these.
-
-# TODO: I tried having class methods call out to these functions, and ended up with circular import
-#   dependencies. This needs to be revisited, since class methods really are more convenient.
 
 
 def selection_from(
@@ -73,8 +65,6 @@ def selection_from(
     :return: A BallotSelection
     """
 
-    # TODO: is there ever a case where is_affirmative is False?
-
     return PlaintextBallotSelection(
         description.object_id,
         plaintext=str(is_affirmative),
@@ -90,10 +80,6 @@ def contest_from(description: ContestDescription) -> PlaintextBallotContest:
     :param description: The `ContestDescription` used to derive the well-formed `BallotContest`
     :return: a `BallotContest`
     """
-
-    # TODO: this method isn't as useful as you might want, because there's no way to specify which
-    #   candidates you want selected and which ones you want unselected. Maybe add another argument
-    #   of List[PlaintextBallotSelection] and make sure that it matches up with description.number_elected?
 
     selections: List[PlaintextBallotSelection] = list()
 
@@ -147,7 +133,7 @@ def encrypt_selection(
     encrypted_selection = CiphertextBallotSelection(
         object_id=selection.object_id,
         description_hash=selection_description_hash,
-        message=unwrap_optional(elgamal_encryption),
+        message=get_optional(elgamal_encryption),
         elgamal_public_key=elgamal_public_key,
         proof_seed=chaum_pedersen_nonce,
         selection_representation=selection_representation,
@@ -155,7 +141,8 @@ def encrypt_selection(
         nonce=selection_nonce,
     )
 
-    assert encrypted_selection.proof is not None
+    if encrypted_selection.proof is None:
+        return None  # log will have happened earlier
 
     # optionally, skip the verification step
     if not should_verify_proofs:
@@ -179,7 +166,6 @@ def encrypt_contest(
     elgamal_public_key: ElementModP,
     nonce_seed: ElementModQ,
     should_verify_proofs: bool = True,
-    elgamal_private_key_debug: Optional[ElementModQ] = None,
 ) -> Optional[CiphertextBallotContest]:
 
     """
@@ -196,13 +182,10 @@ def encrypt_contest(
     :param nonce_seed: an `ElementModQ` used as a header to seed the `Nonce` generated for this contest.
                  this value can be (or derived from) the Ballot nonce, but no relationship is required
     :param should_verify_proofs: specify if the proofs should be verified prior to returning (default True)
-    :param elgamal_private_key_debug: if not None, this private key will be used to log useful debugging info about the ciphertexts
     """
 
     # Validate Input
     if not contest.is_valid(
-        # TODO (IMPORTANT): improve the validation here to require all the right selections, all with object-ids
-        #   matching the contest description, i.e., one-to-one with the contest description.
         contest_description.object_id,
         len(contest_description.ballot_selections),
         contest_description.number_elected,
@@ -210,9 +193,6 @@ def encrypt_contest(
     ):
         log_warning(f"malformed input contest: {contest}")
         return None
-
-    # TODO: check the hash of the description matches the expected contest description hash?
-    # is it possible one could attack this function by passing in a description with values added or eremoved?
 
     if not contest_description.is_valid():
         log_warning(f"malformed contest description: {contest_description}")
@@ -262,7 +242,7 @@ def encrypt_contest(
 
         if encrypted_selection is None:
             return None  # log will have happened earlier
-        encrypted_selections.append(unwrap_optional(encrypted_selection))
+        encrypted_selections.append(get_optional(encrypted_selection))
 
     # Handle Placeholder selections
     # After we loop through all of the real selections on the ballot,
@@ -292,7 +272,7 @@ def encrypt_contest(
         )
         if encrypted_selection is None:
             return None  # log will have happened earlier
-        encrypted_selections.append(unwrap_optional(encrypted_selection))
+        encrypted_selections.append(get_optional(encrypted_selection))
 
     # TODO: support other cases such as cumulative voting (individual selections being an encryption of > 1)
     if (
@@ -315,17 +295,8 @@ def encrypt_contest(
         nonce=contest_nonce,
     )
 
-    if elgamal_private_key_debug is not None:
-        log_debug(
-            f"Decrypted selections (should be {contest_description.number_elected} of {contest_description.votes_allowed}):"
-        )
-        for s in encrypted_selections:
-            log_debug(
-                f"ObjectID: {s.object_id}, decrypted: {s.message.decrypt(elgamal_private_key_debug)}"
-            )
-
-    assert encrypted_contest is not None
-    assert encrypted_contest.proof is not None
+    if encrypted_contest is None or encrypted_contest.proof is None:
+        return None  # log will have happened earlier
 
     if not should_verify_proofs:
         return encrypted_contest
@@ -342,19 +313,15 @@ def encrypt_contest(
         return None
 
 
-# TODO: write unit tests to validate that this function works with incomplete inputs; currently only
-#   exercising it with "well-formed" ballots that have all the selections filled in.
-
-
 def encrypt_ballot(
     ballot: PlaintextBallot,
     election_metadata: InternalElectionDescription,
-    encryption_context: CiphertextElection,
+    encryption_context: CiphertextElectionContext,
     nonce: Optional[ElementModQ] = None,
     should_verify_proofs: bool = True,
 ) -> Optional[CiphertextBallot]:
     """
-    Encrypt a specific `Ballot` in the context of a specific `CiphertextElection`.
+    Encrypt a specific `Ballot` in the context of a specific `CiphertextElectionContext`.
 
     This method accepts a ballot representation that only includes `True` selections.
     It will fill missing selections for a contest with `False` values, and generate `placeholder`
@@ -376,8 +343,6 @@ def encrypt_ballot(
 
     # Validate Input
     if not ballot.is_valid(style.object_id):
-        # TODO (IMPORTANT): improve the validation here to require all the right contests,
-        #   i.e., one-to-one with the election description.
         log_warning(f"malformed input ballot: {ballot}")
         return None
 
@@ -412,7 +377,7 @@ def encrypt_ballot(
 
         if encrypted_contest is None:
             return None  # log will have happened earlier
-        encrypted_contests.append(unwrap_optional(encrypted_contest))
+        encrypted_contests.append(get_optional(encrypted_contest))
 
     # Create the return object
     encrypted_ballot = CiphertextBallot(
@@ -433,4 +398,4 @@ def encrypt_ballot(
     ):
         return encrypted_ballot
     else:
-        return None
+        return None  # log will have happened earlier

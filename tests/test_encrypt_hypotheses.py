@@ -10,7 +10,7 @@ from electionguard.decrypt import decrypt_ballot_with_secret
 from electionguard.election import (
     ElectionDescription,
     InternalElectionDescription,
-    CiphertextElection,
+    CiphertextElectionContext,
 )
 from electionguard.elgamal import ElGamalCiphertext, elgamal_encrypt, elgamal_add
 from electionguard.encrypt import encrypt_ballot
@@ -49,7 +49,7 @@ class TestElections(unittest.TestCase):
             InternalElectionDescription,
             List[PlaintextBallot],
             ElementModQ,
-            CiphertextElection,
+            CiphertextElectionContext,
         ],
         nonce: ElementModQ,
     ):

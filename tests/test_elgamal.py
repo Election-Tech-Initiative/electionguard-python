@@ -24,7 +24,7 @@ from electionguard.group import (
 )
 from electionguard.logs import log_info
 from electionguard.nonces import Nonces
-from electionguard.utils import unwrap_optional
+from electionguard.utils import get_optional
 from electionguardtest.elgamal import arb_elgamal_keypair
 from tests.test_group import arb_element_mod_q_no_zero
 
@@ -33,14 +33,14 @@ class TestElGamal(unittest.TestCase):
     def test_simple_elgamal_encryption_decryption(self):
         nonce = ONE_MOD_Q
         secret_key = TWO_MOD_Q
-        keypair = unwrap_optional(elgamal_keypair_from_secret(secret_key))
+        keypair = get_optional(elgamal_keypair_from_secret(secret_key))
         public_key = keypair.public_key
 
         self.assertLess(public_key.to_int(), P)
         elem = g_pow_p(ZERO_MOD_Q)
         self.assertEqual(elem, ONE_MOD_P)  # g^0 == 1
 
-        ciphertext = unwrap_optional(elgamal_encrypt(0, nonce, keypair.public_key))
+        ciphertext = get_optional(elgamal_encrypt(0, nonce, keypair.public_key))
         self.assertEqual(G, ciphertext.alpha.to_int())
         self.assertEqual(
             pow(ciphertext.alpha.to_int(), secret_key.to_int(), P),
@@ -68,9 +68,7 @@ class TestElGamal(unittest.TestCase):
     def test_elgamal_encryption_decryption_inverses(
         self, message: int, nonce: ElementModQ, keypair: ElGamalKeyPair
     ):
-        ciphertext = unwrap_optional(
-            elgamal_encrypt(message, nonce, keypair.public_key)
-        )
+        ciphertext = get_optional(elgamal_encrypt(message, nonce, keypair.public_key))
         plaintext = ciphertext.decrypt(keypair.secret_key)
 
         self.assertEqual(message, plaintext)
@@ -79,9 +77,7 @@ class TestElGamal(unittest.TestCase):
     def test_elgamal_encryption_decryption_with_known_nonce_inverses(
         self, message: int, nonce: ElementModQ, keypair: ElGamalKeyPair
     ):
-        ciphertext = unwrap_optional(
-            elgamal_encrypt(message, nonce, keypair.public_key)
-        )
+        ciphertext = get_optional(elgamal_encrypt(message, nonce, keypair.public_key))
         plaintext = ciphertext.decrypt_known_nonce(keypair.public_key, nonce)
 
         self.assertEqual(message, plaintext)
@@ -107,8 +103,8 @@ class TestElGamal(unittest.TestCase):
         m2: int,
         r2: ElementModQ,
     ):
-        c1 = unwrap_optional(elgamal_encrypt(m1, r1, keypair.public_key))
-        c2 = unwrap_optional(elgamal_encrypt(m2, r2, keypair.public_key))
+        c1 = get_optional(elgamal_encrypt(m1, r1, keypair.public_key))
+        c2 = get_optional(elgamal_encrypt(m2, r2, keypair.public_key))
         c_sum = elgamal_add(c1, c2)
         total = c_sum.decrypt(keypair.secret_key)
 

@@ -17,7 +17,7 @@ from .group import ElementModP, ElementModQ
 from .hash import hash_elems
 from .logs import log_warning
 from .nonces import Nonces
-from .utils import unwrap_optional
+from .utils import get_optional
 
 
 def decrypt_selection_with_secret(
@@ -124,7 +124,7 @@ def decrypt_contest_with_secret(
         selection_description = description.selection_for(selection.object_id)
         plaintext_selection = decrypt_selection_with_secret(
             selection,
-            unwrap_optional(selection_description),
+            get_optional(selection_description),
             public_key,
             secret_key,
             suppress_validity_check,
@@ -186,7 +186,7 @@ def decrypt_contest_with_nonce(
         selection_description = description.selection_for(selection.object_id)
         plaintext_selection = decrypt_selection_with_nonce(
             selection,
-            unwrap_optional(selection_description),
+            get_optional(selection_description),
             public_key,
             nonce_seed,
             suppress_validity_check,
@@ -238,7 +238,7 @@ def decrypt_ballot_with_secret(
         description = election_metadata.contest_for(contest.object_id)
         plaintext_contest = decrypt_contest_with_secret(
             contest,
-            unwrap_optional(description),
+            get_optional(description),
             public_key,
             secret_key,
             suppress_validity_check,
@@ -300,7 +300,7 @@ def decrypt_ballot_with_nonce(
         description = election_metadata.contest_for(contest.object_id)
         plaintext_contest = decrypt_contest_with_nonce(
             contest,
-            unwrap_optional(description),
+            get_optional(description),
             public_key,
             nonce_seed,
             suppress_validity_check,

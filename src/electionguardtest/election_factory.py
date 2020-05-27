@@ -14,7 +14,7 @@ from electionguard.ballot import PlaintextBallot
 
 from electionguard.election import (
     BallotStyle,
-    CiphertextElection,
+    CiphertextElectionContext,
     ElectionDescription,
     ElectionType,
     InternalElectionDescription,
@@ -36,7 +36,7 @@ from electionguard.election_builder import ElectionBuilder
 from electionguard.encrypt import contest_from
 
 from electionguard.group import ElementModP
-from electionguard.utils import unwrap_optional
+from electionguard.utils import get_optional
 
 _T = TypeVar("_T")
 _DrawType = Callable[[SearchStrategy[_T]], _T]
@@ -133,12 +133,12 @@ class ElectionFactory(object):
 
     def get_fake_ciphertext_election(
         self, description: ElectionDescription, elgamal_public_key: ElementModP
-    ) -> Tuple[InternalElectionDescription, CiphertextElection]:
+    ) -> Tuple[InternalElectionDescription, CiphertextElectionContext]:
         builder = ElectionBuilder(
             number_trustees=1, threshold_trustees=1, description=description
         )
         builder.set_public_key(elgamal_public_key)
-        metadata, election = unwrap_optional(builder.build())
+        metadata, election = get_optional(builder.build())
         return metadata, election
 
     # TODO: Move to ballot Factory?
