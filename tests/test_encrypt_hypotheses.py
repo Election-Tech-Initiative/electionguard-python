@@ -2,7 +2,7 @@ import unittest
 from datetime import timedelta
 from typing import Tuple, List, Dict
 
-from hypothesis import given, HealthCheck, settings
+from hypothesis import given, HealthCheck, settings, Phase
 from hypothesis.strategies import integers
 
 from electionguard.ballot import PlaintextBallot, CiphertextBallot
@@ -35,9 +35,11 @@ class TestElections(unittest.TestCase):
         self.assertTrue(ed.is_valid())
 
     @settings(
-        deadline=timedelta(milliseconds=2000),
+        deadline=timedelta(milliseconds=10000),
         suppress_health_check=[HealthCheck.too_slow],
         max_examples=5,
+        # disabling the "shrink" phase, because it runs very slowly
+        phases=[Phase.explicit, Phase.reuse, Phase.generate, Phase.target],
     )
     @given(
         integers(1, 3).flatmap(lambda n: arb_election_and_ballots(n)),

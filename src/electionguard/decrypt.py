@@ -101,7 +101,7 @@ def decrypt_contest_with_secret(
     public_key: ElementModP,
     secret_key: ElementModQ,
     suppress_validity_check: bool = False,
-    remove_placeholders: bool = False,
+    remove_placeholders: bool = True,
 ) -> Optional[PlaintextBallotContest]:
     """
     Decrypt the specified `CiphertextBallotContest` within the context of the specified contest.
@@ -150,7 +150,7 @@ def decrypt_contest_with_nonce(
     public_key: ElementModP,
     nonce_seed: Optional[ElementModQ] = None,
     suppress_validity_check: bool = False,
-    remove_placeholders: bool = False,
+    remove_placeholders: bool = True,
 ) -> Optional[PlaintextBallotContest]:
     """
     Decrypt the specified `CiphertextBallotContest` within the context of the specified contest.
@@ -213,7 +213,7 @@ def decrypt_ballot_with_secret(
     public_key: ElementModP,
     secret_key: ElementModQ,
     suppress_validity_check: bool = False,
-    remove_placeholders: bool = False,
+    remove_placeholders: bool = True,
 ) -> Optional[PlaintextBallot]:
     """
     Decrypt the specified `CiphertextBallot` within the context of the specified election.
@@ -262,7 +262,7 @@ def decrypt_ballot_with_nonce(
     public_key: ElementModP,
     nonce: Optional[ElementModQ] = None,
     suppress_validity_check: bool = False,
-    remove_placeholders: bool = False,
+    remove_placeholders: bool = True,
 ) -> Optional[PlaintextBallot]:
     """
     Decrypt the specified `CiphertextBallot` within the context of the specified election.
