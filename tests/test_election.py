@@ -1,8 +1,7 @@
 import unittest
 
-from electionguard.election import ElectionDescription, InternalElectionDescription
-
 import electionguardtest.election_factory as GENERATOR
+from electionguard.election import ElectionDescription, InternalElectionDescription
 
 factory = GENERATOR.ElectionFactory()
 

@@ -8,12 +8,8 @@ from hypothesis import HealthCheck
 from hypothesis import given, settings
 from hypothesis.strategies import integers
 
-from electionguard.encrypt import (
-    encrypt_contest,
-    encrypt_selection,
-    EncryptionCompositor,
-)
-
+import electionguardtest.ballot_factory as BallotFactory
+import electionguardtest.election_factory as ElectionFactory
 from electionguard.decrypt import (
     decrypt_selection_with_secret,
     decrypt_selection_with_nonce,
@@ -22,31 +18,25 @@ from electionguard.decrypt import (
     decrypt_ballot_with_nonce,
     decrypt_ballot_with_secret,
 )
-
 from electionguard.election import (
     ContestDescription,
     SelectionDescription,
     generate_placeholder_selections_from,
     contest_description_with_placeholders_from,
-    ContestDescriptionWithPlaceholders,
-    VoteVariationType,
 )
-
-from electionguard.elgamal import ElGamalKeyPair, elgamal_keypair_from_secret
-
+from electionguard.elgamal import ElGamalKeyPair
+from electionguard.encrypt import (
+    encrypt_contest,
+    encrypt_selection,
+    EncryptionCompositor,
+)
 from electionguard.group import (
     ElementModQ,
     TWO_MOD_P,
     mult_p,
-    TWO_MOD_Q,
-    ONE_MOD_Q,
 )
-
-from electionguardtest.elgamal import arb_elgamal_keypair
-from electionguardtest.group import arb_element_mod_q_no_zero
-
-import electionguardtest.ballot_factory as BallotFactory
-import electionguardtest.election_factory as ElectionFactory
+from electionguardtest.elgamal import elgamal_keypairs
+from electionguardtest.group import elements_mod_q_no_zero
 
 election_factory = ElectionFactory.ElectionFactory()
 ballot_factory = BallotFactory.BallotFactory()
@@ -60,8 +50,8 @@ class TestDecrypt(unittest.TestCase):
     )
     @given(
         ElectionFactory.get_selection_description_well_formed(),
-        arb_elgamal_keypair(),
-        arb_element_mod_q_no_zero(),
+        elgamal_keypairs(),
+        elements_mod_q_no_zero(),
         integers(),
     )
     def test_decrypt_selection_valid_input_succeeds(
@@ -106,8 +96,8 @@ class TestDecrypt(unittest.TestCase):
     )
     @given(
         ElectionFactory.get_selection_description_well_formed(),
-        arb_elgamal_keypair(),
-        arb_element_mod_q_no_zero(),
+        elgamal_keypairs(),
+        elements_mod_q_no_zero(),
         integers(),
     )
     def test_decrypt_selection_valid_input_tampered_fails(
@@ -168,8 +158,8 @@ class TestDecrypt(unittest.TestCase):
     )
     @given(
         ElectionFactory.get_selection_description_well_formed(),
-        arb_elgamal_keypair(),
-        arb_element_mod_q_no_zero(),
+        elgamal_keypairs(),
+        elements_mod_q_no_zero(),
         integers(),
     )
     def test_decrypt_selection_tampered_nonce_fails(
@@ -206,8 +196,8 @@ class TestDecrypt(unittest.TestCase):
     )
     @given(
         ElectionFactory.get_contest_description_well_formed(),
-        arb_elgamal_keypair(),
-        arb_element_mod_q_no_zero(),
+        elgamal_keypairs(),
+        elements_mod_q_no_zero(),
         integers(),
     )
     def test_decrypt_contest_valid_input_succeeds(
@@ -364,7 +354,7 @@ class TestDecrypt(unittest.TestCase):
         suppress_health_check=[HealthCheck.too_slow],
         max_examples=1,
     )
-    @given(arb_elgamal_keypair())
+    @given(elgamal_keypairs())
     def test_decrypt_ballot_valid_input_succeeds(self, keypair: ElGamalKeyPair):
         """
         Check that decryption works as expected by encrypting a ballot using the stateful `EncryptionCompositor`
@@ -529,7 +519,7 @@ class TestDecrypt(unittest.TestCase):
         suppress_health_check=[HealthCheck.too_slow],
         max_examples=1,
     )
-    @given(arb_elgamal_keypair())
+    @given(elgamal_keypairs())
     def test_decrypt_ballot_valid_input_missing_nonce_fails(
         self, keypair: ElGamalKeyPair
     ):

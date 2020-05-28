@@ -19,7 +19,7 @@ from .election import (
 from .elgamal import elgamal_encrypt
 from .group import Q, ElementModP, ElementModQ, int_to_q_unchecked
 from .hash import hash_elems
-from .logs import log_warning, log_debug
+from .logs import log_warning
 from .nonces import Nonces
 from .utils import get_optional, get_or_else_optional_func
 

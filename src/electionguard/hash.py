@@ -1,15 +1,12 @@
+from abc import abstractmethod
 from hashlib import sha256
 from typing import (
-    Iterable,
-    List,
     Union,
     Optional,
     Protocol,
     runtime_checkable,
-    TypeVar,
     Sequence,
 )
-from abc import abstractmethod
 
 from .group import (
     ElementModPOrQ,

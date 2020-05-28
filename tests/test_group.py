@@ -24,22 +24,22 @@ from electionguard.group import (
     int_to_p_unchecked,
     int_to_q_unchecked,
 )
-from electionguardtest.group import (
-    arb_element_mod_p_no_zero,
-    arb_element_mod_p,
-    arb_element_mod_q,
-    arb_element_mod_q_no_zero,
-)
 from electionguard.utils import (
     flatmap_optional,
     get_or_else_optional,
     match_optional,
     get_optional,
 )
+from electionguardtest.group import (
+    elements_mod_p_no_zero,
+    elements_mod_p,
+    elements_mod_q,
+    elements_mod_q_no_zero,
+)
 
 
 class TestEquality(unittest.TestCase):
-    @given(arb_element_mod_q(), arb_element_mod_q())
+    @given(elements_mod_q(), elements_mod_q())
     def testPsNotEqualToQs(self, q: ElementModQ, q2: ElementModQ):
         p = int_to_p_unchecked(q.to_int())
         p2 = int_to_p_unchecked(q2.to_int())
@@ -64,12 +64,12 @@ class TestModularArithmetic(unittest.TestCase):
     def test_no_mult_inv_of_zero(self):
         self.assertRaises(Exception, mult_inv_p, ZERO_MOD_P)
 
-    @given(arb_element_mod_p_no_zero())
+    @given(elements_mod_p_no_zero())
     def test_mult_inverses(self, elem: ElementModP):
         inv = mult_inv_p(elem)
         self.assertEqual(mult_p(elem, inv), ONE_MOD_P)
 
-    @given(arb_element_mod_p())
+    @given(elements_mod_p())
     def test_mult_identity(self, elem: ElementModP):
         self.assertEqual(elem, mult_p(elem))
 
@@ -92,7 +92,7 @@ class TestModularArithmetic(unittest.TestCase):
         self.assertEqual(gp, g_pow_p(ONE_MOD_Q))
         self.assertEqual(ONE_MOD_P, g_pow_p(ZERO_MOD_Q))
 
-    @given(arb_element_mod_q())
+    @given(elements_mod_q())
     def test_in_bounds_q(self, q: ElementModQ):
         self.assertTrue(q.is_in_bounds())
         too_big = q.to_int() + Q
@@ -102,7 +102,7 @@ class TestModularArithmetic(unittest.TestCase):
         self.assertEqual(None, int_to_q(too_big))
         self.assertEqual(None, int_to_q(too_small))
 
-    @given(arb_element_mod_p())
+    @given(elements_mod_p())
     def test_in_bounds_p(self, p: ElementModP):
         self.assertTrue(p.is_in_bounds())
         too_big = p.to_int() + P
@@ -112,21 +112,21 @@ class TestModularArithmetic(unittest.TestCase):
         self.assertEqual(None, int_to_p(too_big))
         self.assertEqual(None, int_to_p(too_small))
 
-    @given(arb_element_mod_q_no_zero())
+    @given(elements_mod_q_no_zero())
     def test_in_bounds_q_no_zero(self, q: ElementModQ):
         self.assertTrue(q.is_in_bounds_no_zero())
         self.assertFalse(ZERO_MOD_Q.is_in_bounds_no_zero())
         self.assertFalse(int_to_q_unchecked(q.to_int() + Q).is_in_bounds_no_zero())
         self.assertFalse(int_to_q_unchecked(q.to_int() - Q).is_in_bounds_no_zero())
 
-    @given(arb_element_mod_p_no_zero())
+    @given(elements_mod_p_no_zero())
     def test_in_bounds_p_no_zero(self, p: ElementModP):
         self.assertTrue(p.is_in_bounds_no_zero())
         self.assertFalse(ZERO_MOD_P.is_in_bounds_no_zero())
         self.assertFalse(int_to_p_unchecked(p.to_int() + P).is_in_bounds_no_zero())
         self.assertFalse(int_to_p_unchecked(p.to_int() - P).is_in_bounds_no_zero())
 
-    @given(arb_element_mod_q())
+    @given(elements_mod_q())
     def test_large_values_rejected_by_int_to_q(self, q: ElementModQ):
         oversize = q.to_int() + Q
         self.assertEqual(None, int_to_q(oversize))

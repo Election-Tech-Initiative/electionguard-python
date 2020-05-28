@@ -1,26 +1,23 @@
 import unittest
 from datetime import timedelta
-from typing import Tuple, List, Dict
+from typing import List, Dict
 
 from hypothesis import given, HealthCheck, settings, Phase
 from hypothesis.strategies import integers
 
 from electionguard.ballot import PlaintextBallot, CiphertextBallot
 from electionguard.decrypt import decrypt_ballot_with_secret
-from electionguard.election import (
-    ElectionDescription,
-    InternalElectionDescription,
-    CiphertextElectionContext,
-)
+from electionguard.election import ElectionDescription
 from electionguard.elgamal import ElGamalCiphertext, elgamal_encrypt, elgamal_add
 from electionguard.encrypt import encrypt_ballot
 from electionguard.group import ElementModQ
 from electionguard.nonces import Nonces
 from electionguardtest.election import (
-    arb_election_description,
-    arb_election_and_ballots,
+    election_descriptions,
+    elections_and_ballots,
+    ELECTIONS_AND_BALLOTS_TUPLE_TYPE,
 )
-from electionguardtest.group import arb_element_mod_q
+from electionguardtest.group import elements_mod_q
 
 
 class TestElections(unittest.TestCase):
@@ -29,7 +26,7 @@ class TestElections(unittest.TestCase):
         suppress_health_check=[HealthCheck.too_slow],
         max_examples=10,
     )
-    @given(arb_election_description())
+    @given(election_descriptions())
     def test_generators_yield_valid_output(self, ed: ElectionDescription):
         # it's just a one-liner, but it exercises a ton of code to make sure all Hypothesis strategies work
         self.assertTrue(ed.is_valid())
@@ -42,18 +39,10 @@ class TestElections(unittest.TestCase):
         phases=[Phase.explicit, Phase.reuse, Phase.generate, Phase.target],
     )
     @given(
-        integers(1, 3).flatmap(lambda n: arb_election_and_ballots(n)),
-        arb_element_mod_q(),
+        integers(1, 3).flatmap(lambda n: elections_and_ballots(n)), elements_mod_q(),
     )
     def test_accumulation_encryption_decryption(
-        self,
-        everything: Tuple[
-            InternalElectionDescription,
-            List[PlaintextBallot],
-            ElementModQ,
-            CiphertextElectionContext,
-        ],
-        nonce: ElementModQ,
+        self, everything: ELECTIONS_AND_BALLOTS_TUPLE_TYPE, nonce: ElementModQ,
     ):
         ied, ballots, secret_key, ce = everything
 
