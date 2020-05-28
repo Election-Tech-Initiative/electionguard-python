@@ -861,7 +861,7 @@ def generate_placeholder_selection_from(
 
 
 def generate_placeholder_selections_from(
-    contest: ContestDescription, count: int = 1
+    contest: ContestDescription, count: int
 ) -> List[SelectionDescription]:
     """
         Generates the specified number of placeholder selections in ascending sequence order from the max selection sequence orderf

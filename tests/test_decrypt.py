@@ -224,7 +224,9 @@ class TestDecrypt(unittest.TestCase):
         random = Random(random_seed)
         data = ballot_factory.get_random_contest_from(description, random)
 
-        placeholders = generate_placeholder_selections_from(description)
+        placeholders = generate_placeholder_selections_from(
+            description, description.number_elected
+        )
         description_with_placeholders = contest_description_with_placeholders_from(
             description, placeholders
         )
