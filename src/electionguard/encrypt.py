@@ -1,28 +1,28 @@
-from typing import Optional, List
 from secrets import randbelow
+from typing import Optional, List
 
 from .ballot import (
-    CyphertextBallot,
-    CyphertextBallotContest,
-    CyphertextBallotSelection,
-    PlaintextBallot, 
-    PlaintextBallotContest, 
+    CiphertextBallot,
+    CiphertextBallotContest,
+    CiphertextBallotSelection,
+    PlaintextBallot,
+    PlaintextBallotContest,
     PlaintextBallotSelection,
-    hashed_ballot_nonce
 )
-
 from .election import (
-    CyphertextElection, 
-    InternalElectionDescription, 
-    ContestDescription, 
-    ContestDescriptionWithPlaceholders, 
-    SelectionDescription
+    CiphertextElectionContext,
+    InternalElectionDescription,
+    ContestDescription,
+    ContestDescriptionWithPlaceholders,
+    SelectionDescription,
 )
 from .elgamal import elgamal_encrypt
-from .group import Q, ElementModP, ElementModQ, int_to_q
-from .logs import log_warning
+from .group import Q, ElementModP, ElementModQ, int_to_q_unchecked
+from .hash import hash_elems
+from .logs import log_warning, log_debug
 from .nonces import Nonces
-from .utils import unwrap_optional
+from .utils import get_optional, get_or_else_optional_func
+
 
 class EncryptionCompositor(object):
     """
@@ -32,19 +32,28 @@ class EncryptionCompositor(object):
     """
 
     _metadata: InternalElectionDescription
-    _encryption: CyphertextElection
+    _encryption: CiphertextElectionContext
 
-    def __init__(self, election_metadata: InternalElectionDescription, encryption_context: CyphertextElection):
+    def __init__(
+        self,
+        election_metadata: InternalElectionDescription,
+        encryption_context: CiphertextElectionContext,
+    ):
         self._metadata = election_metadata
         self._encryption = encryption_context
 
-    def encrypt(self, ballot: PlaintextBallot) -> Optional[CyphertextBallot]:
+    def encrypt(self, ballot: PlaintextBallot) -> Optional[CiphertextBallot]:
         """
         Encrypt the specified ballot using the cached election context.
         """
         return encrypt_ballot(ballot, self._metadata, self._encryption)
-    
-def selection_from(description: SelectionDescription, is_placeholder: bool = False, is_affirmative: bool = False) -> PlaintextBallotSelection:
+
+
+def selection_from(
+    description: SelectionDescription,
+    is_placeholder: bool = False,
+    is_affirmative: bool = False,
+) -> PlaintextBallotSelection:
     """
     Construct a `BallotSelection` from a specific `SelectionDescription`.
     This function is useful for filling selections when a voter undervotes a ballot.
@@ -55,7 +64,13 @@ def selection_from(description: SelectionDescription, is_placeholder: bool = Fal
     :param is_affirmative: Mark this selection as `yes`
     :return: A BallotSelection
     """
-    return PlaintextBallotSelection(description.object_id, str(is_affirmative), is_placeholder)
+
+    return PlaintextBallotSelection(
+        description.object_id,
+        plaintext=str(is_affirmative),
+        is_placeholder_selection=is_placeholder,
+    )
+
 
 def contest_from(description: ContestDescription) -> PlaintextBallotContest:
     """
@@ -65,23 +80,23 @@ def contest_from(description: ContestDescription) -> PlaintextBallotContest:
     :param description: The `ContestDescription` used to derive the well-formed `BallotContest`
     :return: a `BallotContest`
     """
+
     selections: List[PlaintextBallotSelection] = list()
 
     for selection_description in description.ballot_selections:
         selections.append(selection_from(selection_description))
 
-    return PlaintextBallotContest(
-        description.object_id,
-        selections
-    )
+    return PlaintextBallotContest(description.object_id, selections)
+
 
 def encrypt_selection(
-    selection: PlaintextBallotSelection, 
-    selection_description: SelectionDescription, 
-    elgamal_public_key: ElementModP, 
-    nonce_seed: ElementModQ, 
+    selection: PlaintextBallotSelection,
+    selection_description: SelectionDescription,
+    elgamal_public_key: ElementModP,
+    nonce_seed: ElementModQ,
     is_placeholder: bool = False,
-    should_verify_proofs: bool = True) -> Optional[CyphertextBallotSelection]:
+    should_verify_proofs: bool = True,
+) -> Optional[CiphertextBallotSelection]:
     """
     Encrypt a specific `BallotSelection` in the context of a specific `BallotContest`
 
@@ -99,48 +114,62 @@ def encrypt_selection(
         log_warning(f"malformed input selection: {selection}")
         return None
 
-    nonce_sequence = Nonces(selection_description.crypto_hash(), nonce_seed)
+    selection_description_hash = selection_description.crypto_hash()
+    nonce_sequence = Nonces(selection_description_hash, nonce_seed)
     selection_nonce = nonce_sequence[selection_description.sequence_order]
+    disjunctive_chaum_pedersen_nonce = next(iter(nonce_sequence))
+
     selection_representation = selection.to_int()
 
     # Generate the encryption
     elgamal_encryption = elgamal_encrypt(
-        selection_representation,
-        selection_nonce,
-        elgamal_public_key
+        selection_representation, selection_nonce, elgamal_public_key
     )
 
-    chaum_pedersen_nonce = next(iter(nonce_sequence))
+    if elgamal_encryption is None:
+        # will have logged about the failure earlier, so no need to log anything here
+        return None
+
+    # TODO: ISSUE: #35: encrypt/decrypt: encrypt the extended_data field
 
     # Create the return object
-    encrypted_selection = CyphertextBallotSelection(
-        selection.object_id, 
-        selection_description.crypto_hash(),
-        unwrap_optional(elgamal_encryption),    
-        elgamal_public_key,
-        chaum_pedersen_nonce,
-        selection_representation,
-        is_placeholder,
-        selection_nonce
+    encrypted_selection = CiphertextBallotSelection(
+        object_id=selection.object_id,
+        description_hash=selection_description_hash,
+        message=get_optional(elgamal_encryption),
+        elgamal_public_key=elgamal_public_key,
+        proof_seed=disjunctive_chaum_pedersen_nonce,
+        selection_representation=selection_representation,
+        is_placeholder_selection=is_placeholder,
+        nonce=selection_nonce,
     )
+
+    if encrypted_selection.proof is None:
+        return None  # log will have happened earlier
 
     # optionally, skip the verification step
     if not should_verify_proofs:
         return encrypted_selection
 
     # verify the selection.
-    if encrypted_selection.is_valid_encryption(selection_description.crypto_hash(), elgamal_public_key):
+    if encrypted_selection.is_valid_encryption(
+        selection_description_hash, elgamal_public_key
+    ):
         return encrypted_selection
     else:
-        log_warning(f"mismatching selection proof for selection {encrypted_selection.object_id}")
+        log_warning(
+            f"mismatching selection proof for selection {encrypted_selection.object_id}"
+        )
         return None
 
+
 def encrypt_contest(
-    contest: PlaintextBallotContest, 
-    contest_description: ContestDescriptionWithPlaceholders, 
-    elgamal_public_key: ElementModP, 
+    contest: PlaintextBallotContest,
+    contest_description: ContestDescriptionWithPlaceholders,
+    elgamal_public_key: ElementModP,
     nonce_seed: ElementModQ,
-    should_verify_proofs: bool = True) -> Optional[CyphertextBallotContest]:
+    should_verify_proofs: bool = True,
+) -> Optional[CiphertextBallotContest]:
 
     """
     Encrypt a specific `BallotContest` in the context of a specific `Ballot`.
@@ -163,27 +192,32 @@ def encrypt_contest(
         contest_description.object_id,
         len(contest_description.ballot_selections),
         contest_description.number_elected,
-        contest_description.votes_allowed):
+        contest_description.votes_allowed,
+    ):
         log_warning(f"malformed input contest: {contest}")
         return None
 
-    # TODO: check the hash of the description matches the expected contest description hash?
-    # is it possible one could attack this function by passing in a description with values added or eremoved?
-
     if not contest_description.is_valid():
-        log_warning(f"malformed input description {contest_description}")
+        log_warning(f"malformed contest description: {contest_description}")
+        return None
 
     # account for sequence id
-    nonce_sequence = Nonces(contest_description.crypto_hash(), nonce_seed)
+    contest_description_hash = contest_description.crypto_hash()
+    nonce_sequence = Nonces(contest_description_hash, nonce_seed)
     contest_nonce = nonce_sequence[contest_description.sequence_order]
+    chaum_pedersen_nonce = next(iter(nonce_sequence))
 
-    encrypted_selections: List[CyphertextBallotSelection] = list()
+    encrypted_selections: List[CiphertextBallotSelection] = list()
 
     selection_count = 0
-    
+
+    # TODO: this code could be inefficient if we had a contest with a lot of choices, although the
+    #  O(n^2) iteration here is peanuts compared to the huge cost of doing the cryptography.
+
     # Generate the encrypted selections
     for description in contest_description.ballot_selections:
         has_selection = False
+        encrypted_selection = None
 
         # iterate over the actual selections for each contest description
         # and apply the selected value if it exists.  If it does not, an explicit
@@ -196,30 +230,32 @@ def encrypt_contest(
                 has_selection = True
                 selection_count += selection.to_int()
                 encrypted_selection = encrypt_selection(
-                    selection, 
-                    description, 
-                    elgamal_public_key, 
-                    contest_nonce
+                    selection, description, elgamal_public_key, contest_nonce
                 )
+                break
+
         if not has_selection:
-        # No selection was made for this possible value
-        # so we explicitly set it to false
+            # No selection was made for this possible value
+            # so we explicitly set it to false
             encrypted_selection = encrypt_selection(
-                selection_from(description), 
-                description, 
-                elgamal_public_key, 
-                contest_nonce
+                selection_from(description),
+                description,
+                elgamal_public_key,
+                contest_nonce,
             )
-        encrypted_selections.append(unwrap_optional(encrypted_selection))
+
+        if encrypted_selection is None:
+            return None  # log will have happened earlier
+        encrypted_selections.append(get_optional(encrypted_selection))
 
     # Handle Placeholder selections
-    # After we loop through all of the real selections on the ballot, 
+    # After we loop through all of the real selections on the ballot,
     # we loop through each placeholder value and determine if it should be filled in
 
     # Add a placeholder selection for each possible seat in the contest
     for placeholder in contest_description.placeholder_selections:
         # for undervotes, select the placeholder value as true for each available seat
-        # note this pattern is used since DisjuctiveChaumPedersen expects a 0 or 1
+        # note this pattern is used since DisjunctiveChaumPedersen expects a 0 or 1
         # so each seat can only have a maximum value of 1 in the current implementation
         select_placeholder = False
         if selection_count < contest_description.number_elected:
@@ -227,66 +263,81 @@ def encrypt_contest(
             selection_count += 1
 
         encrypted_selection = encrypt_selection(
-                    selection_from(
-                        description=placeholder,
-                        is_placeholder=True,
-                        is_affirmative=select_placeholder
-                    ), 
-                    placeholder, 
-                    elgamal_public_key, 
-                    contest_nonce
-                )
-        encrypted_selections.append(unwrap_optional(encrypted_selection))
+            selection=selection_from(
+                description=placeholder,
+                is_placeholder=True,
+                is_affirmative=select_placeholder,
+            ),
+            selection_description=placeholder,
+            elgamal_public_key=elgamal_public_key,
+            nonce_seed=contest_nonce,
+            is_placeholder=True,
+            should_verify_proofs=True,
+        )
+        if encrypted_selection is None:
+            return None  # log will have happened earlier
+        encrypted_selections.append(get_optional(encrypted_selection))
 
     # TODO: support other cases such as cumulative voting (individual selections being an encryption of > 1)
-    if selection_count < contest_description.votes_allowed:
-        log_warning("mismatching selection count: only n-of-m style elections are currently supported")
+    if (
+        contest_description.votes_allowed is not None
+        and selection_count < contest_description.votes_allowed
+    ):
+        log_warning(
+            "mismatching selection count: only n-of-m style elections are currently supported"
+        )
         pass
 
-    chaum_pedersen_nonce = next(iter(nonce_sequence))
-
     # Create the return object
-    encrypted_contest = CyphertextBallotContest(
-        contest.object_id, 
-        contest_description.crypto_hash(), 
-        encrypted_selections,
-        elgamal_public_key,
-        chaum_pedersen_nonce,
-        contest_description.number_elected,
-        contest_nonce
+    encrypted_contest = CiphertextBallotContest(
+        object_id=contest.object_id,
+        description_hash=contest_description_hash,
+        ballot_selections=encrypted_selections,
+        elgamal_public_key=elgamal_public_key,
+        proof_seed=chaum_pedersen_nonce,
+        number_elected=contest_description.number_elected,
+        nonce=contest_nonce,
     )
+
+    if encrypted_contest is None or encrypted_contest.proof is None:
+        return None  # log will have happened earlier
 
     if not should_verify_proofs:
         return encrypted_contest
 
     # Verify the proof
-    if encrypted_contest.is_valid_encryption(contest_description.crypto_hash(), elgamal_public_key):
+    if encrypted_contest.is_valid_encryption(
+        contest_description_hash, elgamal_public_key
+    ):
         return encrypted_contest
     else:
-        log_warning(f"mismatching contest proof for contest {encrypted_contest.object_id}")
+        log_warning(
+            f"mismatching contest proof for contest {encrypted_contest.object_id}"
+        )
         return None
 
+
 def encrypt_ballot(
-    ballot: PlaintextBallot, 
+    ballot: PlaintextBallot,
     election_metadata: InternalElectionDescription,
-    encryption_context: CyphertextElection,
+    encryption_context: CiphertextElectionContext,
     nonce: Optional[ElementModQ] = None,
-    should_verify_proofs: bool = True) -> Optional[CyphertextBallot]:
+    should_verify_proofs: bool = True,
+) -> Optional[CiphertextBallot]:
     """
-    Encrypt a specific `Ballot` in the context of a specific `CyphertextElection`.
+    Encrypt a specific `Ballot` in the context of a specific `CiphertextElectionContext`.
 
     This method accepts a ballot representation that only includes `True` selections.
     It will fill missing selections for a contest with `False` values, and generate `placeholder`
-    selections to represent the number of seats available for a given contest.  By adding `placeholder`
-    votes
+    selections to represent the number of seats available for a given contest.
 
     This method also allows for ballots to exclude passing contests for which the voter made no selections.
-    It will fill missing contests with `False` selections and generate `placeholder` selections that are marked `True`
+    It will fill missing contests with `False` selections and generate `placeholder` selections that are marked `True`.
 
     :param ballot: the ballot in the valid input form
     :param election_metadata: the `InternalElectionDescription` which defines this ballot's structure
-    :param elgamal_public_key: the public key (K) used to encrypt the ballot
-    :param nonce: an optional `int` used to seed the `Nonce` generated for this contest.
+    :param encryption_context: all the cryptographic context for the election
+    :param nonce: an optional `int` used to seed the `Nonce` generated for this contest
                  if this value is not provided, the secret generating mechanism of the OS provides its own
     :param should_verify_proofs: specify if the proofs should be verified prior to returning (default True)
     """
@@ -300,55 +351,56 @@ def encrypt_ballot(
         return None
 
     # Generate a random master nonce to use for the contest and selection nonce's on the ballot
-    if nonce is None:
-        random_master_nonce = unwrap_optional(int_to_q(randbelow(Q)))
-    else:
-        random_master_nonce = unwrap_optional(nonce)
+    random_master_nonce = get_or_else_optional_func(
+        nonce, lambda: int_to_q_unchecked(randbelow(Q))
+    )
 
     # Include a representation of the election and the external Id in the nonce's used
     # to derive other nonce values on the ballot
-    nonce_seed = hashed_ballot_nonce(
-        encryption_context.crypto_extended_base_hash, ballot.object_id, random_master_nonce
+    nonce_seed = hash_elems(
+        encryption_context.crypto_extended_base_hash,
+        ballot.object_id,
+        random_master_nonce,
     )
 
-    encrypted_contests: List[CyphertextBallotContest] = list()
+    encrypted_contests: List[CiphertextBallotContest] = list()
 
     # only iterate on contests for this specific ballot style
     for description in election_metadata.get_contests_for(ballot.ballot_style):
+        use_contest = None
         for contest in ballot.contests:
-            # encrypt it as specified
             if contest.object_id == description.object_id:
-                encrypted_contest = encrypt_contest(
-                    contest, 
-                    description, 
-                    encryption_context.elgamal_public_key, 
-                    nonce_seed
-                )
-            else:
-            # the contest was not voted on this ballot,
-            # but we still need to encrypt selections for it
-                encrypted_contest = encrypt_contest(
-                    contest_from(description),
-                    description,
-                    encryption_context.elgamal_public_key,
-                    nonce_seed
-                )
-            encrypted_contests.append(unwrap_optional(encrypted_contest))
+                use_contest = contest
+                break
+        # no selections provided for the contest, so create a placeholder contest
+        if not use_contest:
+            use_contest = contest_from(description)
+
+        encrypted_contest = encrypt_contest(
+            use_contest, description, encryption_context.elgamal_public_key, nonce_seed,
+        )
+
+        if encrypted_contest is None:
+            return None  # log will have happened earlier
+        encrypted_contests.append(get_optional(encrypted_contest))
 
     # Create the return object
-    encrypted_ballot = CyphertextBallot(
-            ballot.object_id, 
-            ballot.ballot_style, 
-            encryption_context.crypto_extended_base_hash,
-            encrypted_contests,
-            random_master_nonce
-        )
+    encrypted_ballot = CiphertextBallot(
+        ballot.object_id,
+        ballot.ballot_style,
+        encryption_context.crypto_extended_base_hash,
+        encrypted_contests,
+        random_master_nonce,
+    )
 
     if not should_verify_proofs:
         return encrypted_ballot
-    
+
     # Verify the proofs
-    if encrypted_ballot.is_valid_encryption(encryption_context.crypto_extended_base_hash, encryption_context.elgamal_public_key): 
+    if encrypted_ballot.is_valid_encryption(
+        encryption_context.crypto_extended_base_hash,
+        encryption_context.elgamal_public_key,
+    ):
         return encrypted_ballot
-    else: 
-        return None
+    else:
+        return None  # log will have happened earlier

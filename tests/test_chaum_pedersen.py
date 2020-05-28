@@ -18,7 +18,7 @@ from electionguard.elgamal import (
 from electionguard.group import ElementModQ, TWO_MOD_Q, ONE_MOD_Q
 from electionguardtest.elgamal import arb_elgamal_keypair
 from electionguardtest.group import arb_element_mod_q_no_zero, arb_element_mod_q
-from electionguard.utils import unwrap_optional
+from electionguard.utils import get_optional
 
 
 class TestDisjunctiveChaumPedersen(unittest.TestCase):
@@ -27,7 +27,7 @@ class TestDisjunctiveChaumPedersen(unittest.TestCase):
         keypair = elgamal_keypair_from_secret(TWO_MOD_Q)
         nonce = ONE_MOD_Q
         seed = TWO_MOD_Q
-        message0 = unwrap_optional(elgamal_encrypt(0, nonce, keypair.public_key))
+        message0 = get_optional(elgamal_encrypt(0, nonce, keypair.public_key))
         proof0 = make_disjunctive_chaum_pedersen_zero(
             message0, nonce, keypair.public_key, seed
         )
@@ -37,7 +37,7 @@ class TestDisjunctiveChaumPedersen(unittest.TestCase):
         self.assertTrue(proof0.is_valid(message0, keypair.public_key))
         self.assertFalse(proof0bad.is_valid(message0, keypair.public_key))
 
-        message1 = unwrap_optional(elgamal_encrypt(1, nonce, keypair.public_key))
+        message1 = get_optional(elgamal_encrypt(1, nonce, keypair.public_key))
         proof1 = make_disjunctive_chaum_pedersen_one(
             message1, nonce, keypair.public_key, seed
         )
@@ -52,7 +52,7 @@ class TestDisjunctiveChaumPedersen(unittest.TestCase):
         keypair = elgamal_keypair_from_secret(TWO_MOD_Q)
         nonce = ONE_MOD_Q
         seed = TWO_MOD_Q
-        message0 = unwrap_optional(elgamal_encrypt(0, nonce, keypair.public_key))
+        message0 = get_optional(elgamal_encrypt(0, nonce, keypair.public_key))
         self.assertRaises(
             Exception,
             make_disjunctive_chaum_pedersen,
@@ -74,7 +74,7 @@ class TestDisjunctiveChaumPedersen(unittest.TestCase):
     def test_djcp_proof_zero(
         self, keypair: ElGamalKeyPair, nonce: ElementModQ, seed: ElementModQ
     ):
-        message = unwrap_optional(elgamal_encrypt(0, nonce, keypair.public_key))
+        message = get_optional(elgamal_encrypt(0, nonce, keypair.public_key))
         proof = make_disjunctive_chaum_pedersen_zero(
             message, nonce, keypair.public_key, seed
         )
@@ -93,7 +93,7 @@ class TestDisjunctiveChaumPedersen(unittest.TestCase):
     def test_djcp_proof_one(
         self, keypair: ElGamalKeyPair, nonce: ElementModQ, seed: ElementModQ
     ):
-        message = unwrap_optional(elgamal_encrypt(1, nonce, keypair.public_key))
+        message = get_optional(elgamal_encrypt(1, nonce, keypair.public_key))
         proof = make_disjunctive_chaum_pedersen_one(
             message, nonce, keypair.public_key, seed
         )
@@ -113,8 +113,8 @@ class TestDisjunctiveChaumPedersen(unittest.TestCase):
         self, keypair: ElGamalKeyPair, nonce: ElementModQ, seed: ElementModQ
     ):
         # We're trying to verify two different ways we might generate an invalid C-P proof.
-        message = unwrap_optional(elgamal_encrypt(0, nonce, keypair.public_key))
-        message_bad = unwrap_optional(elgamal_encrypt(2, nonce, keypair.public_key))
+        message = get_optional(elgamal_encrypt(0, nonce, keypair.public_key))
+        message_bad = get_optional(elgamal_encrypt(2, nonce, keypair.public_key))
         proof = make_disjunctive_chaum_pedersen_zero(
             message, nonce, keypair.public_key, seed
         )
@@ -131,7 +131,7 @@ class TestConstantChaumPedersen(unittest.TestCase):
         keypair = elgamal_keypair_from_secret(TWO_MOD_Q)
         nonce = ONE_MOD_Q
         seed = TWO_MOD_Q
-        message = unwrap_optional(elgamal_encrypt(0, nonce, keypair.public_key))
+        message = get_optional(elgamal_encrypt(0, nonce, keypair.public_key))
         proof = make_constant_chaum_pedersen(
             message, 0, nonce, keypair.public_key, seed
         )
@@ -145,7 +145,7 @@ class TestConstantChaumPedersen(unittest.TestCase):
         keypair = elgamal_keypair_from_secret(TWO_MOD_Q)
         nonce = ONE_MOD_Q
         seed = TWO_MOD_Q
-        message = unwrap_optional(elgamal_encrypt(1, nonce, keypair.public_key))
+        message = get_optional(elgamal_encrypt(1, nonce, keypair.public_key))
         proof = make_constant_chaum_pedersen(
             message, 1, nonce, keypair.public_key, seed
         )
@@ -180,8 +180,8 @@ class TestConstantChaumPedersen(unittest.TestCase):
         if constant == bad_constant:
             bad_constant = constant + 1
 
-        message = unwrap_optional(elgamal_encrypt(constant, nonce, keypair.public_key))
-        message_bad = unwrap_optional(
+        message = get_optional(elgamal_encrypt(constant, nonce, keypair.public_key))
+        message_bad = get_optional(
             elgamal_encrypt(bad_constant, nonce, keypair.public_key)
         )
 

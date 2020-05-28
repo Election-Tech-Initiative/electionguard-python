@@ -11,9 +11,7 @@ _DrawType = Callable[[SearchStrategy[_T]], _T]
 
 
 @composite
-def arb_elgamal_keypair(
-    draw: _DrawType, elem=arb_element_mod_q_no_zero()
-) -> Optional[ElGamalKeyPair]:
+def arb_elgamal_keypair(draw: _DrawType, elem=arb_element_mod_q_no_zero()):
     """
     Generates an arbitrary ElGamal secret/public keypair.
     """

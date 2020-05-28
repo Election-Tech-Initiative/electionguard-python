@@ -2,7 +2,7 @@
 # in the sense that performance may be less than hand-optimized C code, and no guarantees are
 # made about timing or other side-channels.
 
-from typing import Final, Union, NamedTuple, Optional
+from typing import Final, Union, NamedTuple, Optional, Any
 
 from gmpy2 import mpz, powmod
 
@@ -42,12 +42,16 @@ class ElementModQ(NamedTuple):
         return 0 < self.elem < Q
 
     # overload != (not equal to) operator
-    def __ne__(self, other) -> bool:
-        return self.elem != other.elem
+    def __ne__(self, other: Any) -> bool:
+        return (
+            isinstance(other, ElementModP) or isinstance(other, ElementModQ)
+        ) and not eq_elems(self, other)
 
     # overload == (equal to) operator
-    def __eq__(self, other) -> bool:
-        return self.elem == other.elem
+    def __eq__(self, other: Any) -> bool:
+        return (
+            isinstance(other, ElementModP) or isinstance(other, ElementModQ)
+        ) and eq_elems(self, other)
 
 
 class ElementModP(NamedTuple):
@@ -83,6 +87,18 @@ class ElementModP(NamedTuple):
         """
         residue = pow_p(self, ElementModQ(mpz(Q))) == ONE_MOD_P
         return self.is_in_bounds() and residue
+
+    # overload != (not equal to) operator
+    def __ne__(self, other: Any) -> bool:
+        return (
+            isinstance(other, ElementModP) or isinstance(other, ElementModQ)
+        ) and not eq_elems(self, other)
+
+    # overload == (equal to) operator
+    def __eq__(self, other: Any) -> bool:
+        return (
+            isinstance(other, ElementModP) or isinstance(other, ElementModQ)
+        ) and eq_elems(self, other)
 
 
 # Handy constants. Defined once, so we can avoid allocating lots of copies.
@@ -213,3 +229,10 @@ def g_pow_p(e: ElementModPOrQ) -> ElementModP:
     :param e: An element in [0,P).
     """
     return pow_p(ElementModP(mpz(G)), e)
+
+
+def eq_elems(a: ElementModPOrQ, b: ElementModPOrQ) -> bool:
+    """
+    Returns whether the two elements hold the same value.
+    """
+    return a.elem == b.elem

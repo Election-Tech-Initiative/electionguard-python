@@ -3,7 +3,8 @@ from typing import cast, TypeVar, Generic
 
 from jsons import KEY_TRANSFORMER_CAMELCASE, KEY_TRANSFORMER_SNAKECASE, dumps, loads
 
-T = TypeVar('T')
+T = TypeVar("T")
+
 
 @dataclass
 class Serializable(Generic[T]):
@@ -11,7 +12,15 @@ class Serializable(Generic[T]):
         """
         :return: the json representation of this object
         """
-        return cast(str, dumps(self, strip_privates=True, strip_nulls=True, key_transformer=KEY_TRANSFORMER_CAMELCASE))
+        return cast(
+            str,
+            dumps(
+                self,
+                strip_privates=True,
+                strip_nulls=True,
+                key_transformer=KEY_TRANSFORMER_CAMELCASE,
+            ),
+        )
 
     @classmethod
     def from_json(cls, data: str) -> T:

@@ -1,3 +1,5 @@
+.PHONY: all environment install install-mac install-linux install-windows lint validate test coverage coverage-html coverage-xml coverage-erase
+
 CODE_COVERAGE ?= 90
 WINDOWS_32BIT_GMPY2 ?= packages/gmpy2-2.0.8-cp38-cp38-win32.whl
 WINDOWS_64BIT_GMPY2 ?= packages/gmpy2-2.0.8-cp38-cp38-win_amd64.whl
@@ -82,14 +84,10 @@ coverage:
 	pipenv run coverage report --fail-under=$(CODE_COVERAGE)
 
 coverage-html:
-	@make coverage
 	pipenv run coverage html -d coverage
-	@make coverage-erase
 
 coverage-xml:
-	@make coverage
 	pipenv run coverage xml
-	@make coverage-erase
 
 coverage-erase:
 	@pipenv run coverage erase

@@ -11,12 +11,15 @@ from electionguard.elgamal import (
     ElGamalKeyPair,
     elgamal_encrypt,
 )
-from electionguard.group import ElementModQ, int_to_q
+from electionguard.group import ElementModQ, int_to_q, int_to_q_unchecked
 from electionguard.nonces import Nonces
 
 
 # Why are we passing this tuple around rather than just passing three arguments?
 # Makes it easier to run Pool.map().
+from electionguard.utils import get_optional
+
+
 class BenchInput(NamedTuple):
     keypair: ElGamalKeyPair
     r: ElementModQ
@@ -29,7 +32,7 @@ def chaum_pedersen_bench(bi: BenchInput) -> Tuple[float, float]:
     a disjunctive Chaum-Pedersen proof, returning the time (in seconds) to do each operation.
     """
     (keypair, r, s) = bi
-    ciphertext = elgamal_encrypt(0, r, keypair.public_key)
+    ciphertext = get_optional(elgamal_encrypt(0, r, keypair.public_key))
     start1 = timer()
     proof = make_disjunctive_chaum_pedersen_zero(ciphertext, r, keypair.public_key, s)
     end1 = timer()
@@ -47,7 +50,7 @@ def identity(x: int) -> int:
 
 if __name__ == "__main__":
     problem_sizes = (100, 500, 1000, 5000)
-    rands = Nonces(int_to_q(31337))
+    rands = Nonces(int_to_q_unchecked(31337))
     speedup: Dict[int, float] = {}
     print(f"CPUs detected: {cpu_count()}, launching thread pool")
     pool = Pool(cpu_count())
@@ -60,7 +63,11 @@ if __name__ == "__main__":
         print("Benchmarking on problem size: ", size)
         seeds = rands[0:size]
         inputs = [
-            BenchInput(elgamal_keypair_from_secret(a), rands[size], rands[size + 1])
+            BenchInput(
+                get_optional(elgamal_keypair_from_secret(a)),
+                rands[size],
+                rands[size + 1],
+            )
             for a in seeds
         ]
         start_all_scalar = timer()

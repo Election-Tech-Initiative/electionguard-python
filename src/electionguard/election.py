@@ -1,20 +1,15 @@
 from dataclasses import dataclass, field, InitVar
 from datetime import datetime
 from enum import Enum, unique
-from typing import cast, List, Optional, Set, Union
+from typing import cast, List, Optional, Set
 
-from .group import (
-    Q,
-    P,
-    G,
-    ElementModQ, 
-    ElementModP
-)
-from .hash import CryptoHashable, flatten, hash_elems
-from .logs import log_warning
 from .election_object_base import ElectionObjectBase
+from .group import Q, P, G, ElementModQ, ElementModP
+from .hash import CryptoHashable, hash_elems
+from .logs import log_warning
 from .serializable import Serializable
-from .utils import unwrap_optional
+from .utils import get_optional
+
 
 @unique
 class ElectionType(Enum):
@@ -22,6 +17,7 @@ class ElectionType(Enum):
     enumerations for the `ElectionReport` entity
     see: https://developers.google.com/elections-data/reference/election-type
     """
+
     unknown = 0
     general = 1
     partisan_primary_closed = 2
@@ -31,12 +27,14 @@ class ElectionType(Enum):
     special = 6
     other = 7
 
+
 @unique
 class ReportingUnitType(Enum):
     """
     Enumeration for the type of geopolitical unit
     see: https://developers.google.com/elections-data/reference/reporting-unit-type
     """
+
     unknown = 0
     ballot_batch = 1
     ballot_style_area = 2
@@ -67,12 +65,14 @@ class ReportingUnitType(Enum):
     water = 27
     other = 28
 
+
 @unique
 class VoteVariationType(Enum):
     """
     Enumeration for contest algorithm or rules in the `Contest` entity
     see: https://developers.google.com/elections-data/reference/vote-variation
     """
+
     unknown = 0
     one_of_m = 1
     approval = 2
@@ -85,7 +85,8 @@ class VoteVariationType(Enum):
     range = 9
     rcv = 10
     super_majority = 11
-    other = 12 
+    other = 12
+
 
 @dataclass
 class AnnotatedString(Serializable, CryptoHashable):
@@ -93,6 +94,7 @@ class AnnotatedString(Serializable, CryptoHashable):
     Use this as a type for character strings.
     See: https://developers.google.com/elections-data/reference/annotated-string
     """
+
     annotation: str = field(default="")
     value: str = field(default="")
 
@@ -102,12 +104,14 @@ class AnnotatedString(Serializable, CryptoHashable):
         """
         return hash_elems(self.annotation, self.value)
 
+
 @dataclass
 class Language(Serializable, CryptoHashable):
     """
     The ISO-639 language
     see: https://en.wikipedia.org/wiki/ISO_639
     """
+
     value: str
     language: str = field(default="en")
 
@@ -117,22 +121,22 @@ class Language(Serializable, CryptoHashable):
         """
         return hash_elems(self.value, self.language)
 
+
 @dataclass
 class InternationalizedText(Serializable, CryptoHashable):
     """
     This data entity is used to represent multi-national text. Use when text on a ballot contains multi-national text.
     See: https://developers.google.com/elections-data/reference/internationalized-text
     """
+
     text: List[Language] = field(default_factory=lambda: [])
 
     def crypto_hash(self) -> ElementModQ:
         """
         A hash representation of the object
         """
-        text_hashes = [
-            t.crypto_hash() for t in self.text
-        ]
-        return hash_elems(*text_hashes)
+        return hash_elems(self.text)
+
 
 @dataclass
 class ContactInformation(Serializable, CryptoHashable):
@@ -140,6 +144,7 @@ class ContactInformation(Serializable, CryptoHashable):
     For defining contact information about objects such as persons, boards of authorities, and organizations.
     See: https://developers.google.com/elections-data/reference/contact-information
     """
+
     address_line: Optional[List[str]] = field(default=None)
     email: Optional[List[AnnotatedString]] = field(default=None)
     phone: Optional[List[AnnotatedString]] = field(default=None)
@@ -149,12 +154,8 @@ class ContactInformation(Serializable, CryptoHashable):
         """
         A hash representation of the object
         """
-        return hash_elems(*flatten(
-            self.name,
-            self.address_line,
-            self.email,
-            self.phone
-        ))
+        return hash_elems(self.name, self.address_line, self.email, self.phone)
+
 
 @dataclass
 class GeopoliticalUnit(ElectionObjectBase, CryptoHashable):
@@ -163,6 +164,7 @@ class GeopoliticalUnit(ElectionObjectBase, CryptoHashable):
     for the purpose of associating contests, offices, vote counts, or other information with the geographies.
     See: https://developers.google.com/elections-data/reference/gp-unit
     """
+
     name: str
     type: ReportingUnitType
     contact_information: Optional[ContactInformation] = field(default=None)
@@ -171,18 +173,17 @@ class GeopoliticalUnit(ElectionObjectBase, CryptoHashable):
         """
         A hash representation of the object
         """
-        return hash_elems(*flatten(
-            self.object_id,
-            self.name, 
-            str(self.type), 
-            self.contact_information
-            )
+        return hash_elems(
+            self.object_id, self.name, str(self.type), self.contact_information
         )
+
 
 @dataclass
 class BallotStyle(ElectionObjectBase, CryptoHashable):
     """
+    A BallotStyle works as a key to uniquely specify a set of contests. See also `ContestDescription`.
     """
+
     geopolitical_unit_ids: Optional[List[str]] = field(default=None)
     party_ids: Optional[List[str]] = field(default=None)
     image_uri: Optional[str] = field(default=None)
@@ -191,13 +192,10 @@ class BallotStyle(ElectionObjectBase, CryptoHashable):
         """
         A hash representation of the object
         """
-        return hash_elems(*flatten(
-            self.object_id,
-            self.geopolitical_unit_ids,
-            self.party_ids,
-            self.image_uri
-            )
+        return hash_elems(
+            self.object_id, self.geopolitical_unit_ids, self.party_ids, self.image_uri
         )
+
 
 @dataclass
 class Party(ElectionObjectBase, CryptoHashable):
@@ -205,23 +203,30 @@ class Party(ElectionObjectBase, CryptoHashable):
     Use this entity to describe a political party that can then be referenced from other entities.
     See: https://developers.google.com/elections-data/reference/party
     """
+
     ballot_name: InternationalizedText = field(default=InternationalizedText())
     abbreviation: Optional[str] = field(default=None)
     color: Optional[str] = field(default=None)
     logo_uri: Optional[str] = field(default=None)
 
+    def get_party_id(self) -> str:
+        """
+        Returns the object identifier associated with the Party.
+        """
+        return self.object_id
+
     def crypto_hash(self) -> ElementModQ:
         """
         A hash representation of the object
         """
-        return hash_elems(*flatten(
-            self.object_id, 
-            self.ballot_name.crypto_hash(), 
-            self.abbreviation, 
-            self.color, 
-            self.logo_uri
-            )
+        return hash_elems(
+            self.object_id,
+            self.ballot_name,
+            self.abbreviation,
+            self.color,
+            self.logo_uri,
         )
+
 
 @dataclass
 class Candidate(ElectionObjectBase, CryptoHashable):
@@ -234,20 +239,23 @@ class Candidate(ElectionObjectBase, CryptoHashable):
     would be included in the model to represent the `affirmative` and `negative`
     selections for the contest.  See the wiki, readme's, and tests in this repo for more info
     """
+
     ballot_name: InternationalizedText = field(default=InternationalizedText())
     party_id: Optional[str] = field(default=None)
     image_uri: Optional[str] = field(default=None)
+
+    def get_candidate_id(self) -> str:
+        """
+        Given a `Candidate`, returns a "candidate ID", which is used in other ElectionGuard structures.
+        """
+        return self.object_id
 
     def crypto_hash(self) -> ElementModQ:
         """
         A hash representation of the object
         """
-        return hash_elems(*flatten(
-            self.object_id, 
-            self.ballot_name, 
-            self.party_id, 
-            self.image_uri
-            )
+        return hash_elems(
+            self.object_id, self.ballot_name, self.party_id, self.image_uri
         )
 
 
@@ -265,20 +273,24 @@ class SelectionDescription(ElectionObjectBase, CryptoHashable):
     For a given election, the sequence of selections displayed to a user may be different
     however that information is not captured by default when encrypting a specific ballot.
     """
+
     candidate_id: str
     sequence_order: int
+    """
+    Used for ordering selections in a contest to ensure various encryption primitives are deterministic.
+    The sequence order must be unique and should be representative of how the contests are represnted
+    on a "master" ballot in an external system.  The sequence order is not required to be in the order 
+    in which they are displayed to a voter.  Any acceptable range of integer values may be provided.
+    """
 
     def crypto_hash(self) -> ElementModQ:
         """
         A hash representation of the object
         """
-        return hash_elems(
-            self.object_id, 
-            self.sequence_order, 
-            self.candidate_id
-        )
+        return hash_elems(self.object_id, self.sequence_order, self.candidate_id)
 
-@dataclass 
+
+@dataclass
 class ContestDescription(ElectionObjectBase, CryptoHashable):
     """
     Use this data entity for describing a contest and linking the contest 
@@ -290,16 +302,26 @@ class ContestDescription(ElectionObjectBase, CryptoHashable):
     For a given election, the sequence of contests displayed to a user may be different
     however that information is not captured by default when encrypting a specific ballot.
     """
+
     electoral_district_id: str
     sequence_order: int
+    """
+    Used for ordering contests in a ballot to ensure various encryption primitives are deterministic.
+    The sequence order must be unique and should be representative of how the contests are represnted
+    on a "master" ballot in an external system.  The sequence order is not required to be in the order 
+    in which they are displayed to a voter.  Any acceptable range of integer values may be provided.
+    """
+
     vote_variation: VoteVariationType
 
     # Number of candidates that are elected in the contest ("n" of n-of-m).
     # Note: a referendum is considered a specific case of 1-of-m in ElectionGuard
     number_elected: int
 
-    # Maximum number of votes/write-ins per voter in this contest.
-    votes_allowed: int
+    # Maximum number of votes/write-ins per voter in this contest. Used in cumulative voting
+    # to indicate how many total votes a voter can spread around. In n-of-m elections, this will
+    # be None.
+    votes_allowed: Optional[int]
 
     # Name of the contest, not necessarily as it appears on the ballot.
     name: str
@@ -321,19 +343,84 @@ class ContestDescription(ElectionObjectBase, CryptoHashable):
         description match up.
         """
         # remove any placeholders from the hash mechanism
-        return hash_elems(*flatten(
-            self.object_id, 
+        return hash_elems(
+            self.object_id,
             self.sequence_order,
-            self.electoral_district_id, 
-            str(self.vote_variation), 
+            self.electoral_district_id,
+            str(self.vote_variation),
             self.ballot_title,
             self.ballot_subtitle,
             self.name,
             self.number_elected,
             self.votes_allowed,
-            self.ballot_selections
-            )
+            self.ballot_selections,
         )
+
+    def is_valid(self) -> bool:
+        """
+        Check the validity of the contest object by verifying its data
+        """
+        contest_has_valid_number_elected = self.number_elected <= len(
+            self.ballot_selections
+        )
+        contest_has_valid_votes_allowed = (
+            self.votes_allowed is None or self.number_elected <= self.votes_allowed
+        )
+
+        # verify the candidate_ids, selection object_ids, and sequence_ids are unique
+        candidate_ids: Set[str] = set()
+        selection_ids: Set[str] = set()
+        sequence_ids: Set[int] = set()
+        selection_count = 0
+        expected_selection_count = len(self.ballot_selections)
+
+        for selection in self.ballot_selections:
+            selection_count += 1
+            # validate the object_id
+            if selection.object_id not in selection_ids:
+                selection_ids.add(selection.object_id)
+            # validate the sequence_order
+            if selection.sequence_order not in sequence_ids:
+                sequence_ids.add(selection.sequence_order)
+            # validate the candidate id
+            if selection.candidate_id not in candidate_ids:
+                candidate_ids.add(selection.candidate_id)
+
+        selections_have_valid_candidate_ids = (
+            len(candidate_ids) is expected_selection_count
+        )
+        selections_have_valid_selection_ids = (
+            len(selection_ids) is expected_selection_count
+        )
+        selections_have_valid_sequence_ids = (
+            len(sequence_ids) is expected_selection_count
+        )
+
+        success = (
+            contest_has_valid_number_elected
+            and contest_has_valid_votes_allowed
+            and selections_have_valid_candidate_ids
+            and selections_have_valid_selection_ids
+            and selections_have_valid_sequence_ids
+        )
+
+        if not success:
+            log_warning(
+                "Contest %s failed validation check: %s",
+                self.object_id,
+                str(
+                    {
+                        "contest_has_valid_number_elected": contest_has_valid_number_elected,
+                        "contest_has_valid_votes_allowed": contest_has_valid_votes_allowed,
+                        "selections_have_valid_candidate_ids": selections_have_valid_candidate_ids,
+                        "selections_have_valid_selection_ids": selections_have_valid_selection_ids,
+                        "selections_have_valid_sequence_ids": selections_have_valid_sequence_ids,
+                    }
+                ),
+            )
+
+        return True
+
 
 @dataclass
 class CandidateContestDescription(ContestDescription):
@@ -343,7 +430,9 @@ class CandidateContestDescription(ContestDescription):
     Note: The ElectionGuard Data Spec deviates from the NIST model in that
     this subclass is used purely for convenience 
     """
+
     primary_party_ids: List[str] = field(default_factory=lambda: [])
+
 
 @dataclass
 class ReferendumContestDescription(ContestDescription):
@@ -353,38 +442,50 @@ class ReferendumContestDescription(ContestDescription):
     Note: The ElectionGuard Data Spec deviates from the NIST model in that
     this subclass is used purely for convenience
     """
+
     pass
 
-# Specify a union type of the available derived contest types
-DerivedContestType = Union[CandidateContestDescription, ReferendumContestDescription]
 
 @dataclass
 class ContestDescriptionWithPlaceholders(ContestDescription):
     """
-    ContestDescriptionWithPlaceholders is a `ContestDescription` with ElectionGuard `placeholder_selections`
+    ContestDescriptionWithPlaceholders is a `ContestDescription` with ElectionGuard `placeholder_selections`.
+    (The ElectionGuard spec requires for n-of-m elections that there be *exactly* n counters that are one
+    with the rest zero, so if a voter deliberately undervotes, one or more of the placeholder counters will
+    become one. This allows the `ConstantChaumPedersenProof` to verify correctly for undervoted contests.)
     """
-    # Placeholders are used when generating a contest's `ConstantChaumPedersenProof`
-    # to verify that the selection total on the ballot sums to the total number of expected selections
-    placeholder_selections: List[SelectionDescription] = field(default_factory=lambda: [])
-                
-    def get_all_ballot_selections(self) -> List[SelectionDescription]:
-        return self.ballot_selections + self.placeholder_selections
+
+    placeholder_selections: List[SelectionDescription] = field(
+        default_factory=lambda: []
+    )
 
     def is_valid(self) -> bool:
-        return len(self.placeholder_selections) == self.number_elected
+        contest_description_validates = super().is_valid()
+        return (
+            contest_description_validates
+            and len(self.placeholder_selections) == self.number_elected
+        )
+
+    def is_placeholder(self, selection: SelectionDescription) -> bool:
+        return selection in self.placeholder_selections
 
     def selection_for(self, selection_id: str) -> Optional[SelectionDescription]:
-        matching_selections = list(filter(lambda i: i.object_id == selection_id, self.ballot_selections))
+        matching_selections = list(
+            filter(lambda i: i.object_id == selection_id, self.ballot_selections)
+        )
 
         if any(matching_selections):
             return matching_selections[0]
 
-        matching_palceholders = list(filter(lambda i: i.object_id == selection_id, self.placeholder_selections))
+        matching_placeholders = list(
+            filter(lambda i: i.object_id == selection_id, self.placeholder_selections)
+        )
 
-        if any(matching_palceholders):
-            return matching_palceholders[0]
+        if any(matching_placeholders):
+            return matching_placeholders[0]
         else:
             return None
+
 
 @dataclass
 class ElectionDescription(Serializable, CryptoHashable):
@@ -400,6 +501,7 @@ class ElectionDescription(Serializable, CryptoHashable):
 
     See: https://developers.google.com/elections-data/reference/election
     """
+
     election_scope_id: str
     type: ElectionType
     start_date: datetime
@@ -407,7 +509,7 @@ class ElectionDescription(Serializable, CryptoHashable):
     geopolitical_units: List[GeopoliticalUnit]
     parties: List[Party]
     candidates: List[Candidate]
-    contests: List[DerivedContestType]
+    contests: List[ContestDescription]
     ballot_styles: List[BallotStyle]
     name: Optional[InternationalizedText] = field(default=None)
     contact_information: Optional[ContactInformation] = field(default=None)
@@ -417,23 +519,7 @@ class ElectionDescription(Serializable, CryptoHashable):
         Returns a hash of the metadata components of the election
         """
 
-        gp_unit_hashes = [
-            gpunit.crypto_hash() for gpunit in self.geopolitical_units
-        ]
-        party_hashes = [
-            party.crypto_hash() for party in self.parties
-        ]
-        candidate_hashes = [
-            candidate.crypto_hash() for candidate in self.parties
-        ]
-        contest_hashes = [
-            contest.crypto_hash() for contest in self.contests
-        ]
-        ballot_style_hashes = [
-            ballot_style.crypto_hash() for ballot_style in self.ballot_styles
-        ]
-
-        return hash_elems(*flatten(
+        return hash_elems(
             self.election_scope_id,
             str(self.type),
             self.start_date.isoformat(),
@@ -444,10 +530,9 @@ class ElectionDescription(Serializable, CryptoHashable):
             self.parties,
             self.parties,
             self.contests,
-            self.ballot_styles
-            )
+            self.ballot_styles,
         )
-        
+
     def is_valid(self) -> bool:
         """
         Verifies the dataset to ensure it is well-formed
@@ -478,11 +563,14 @@ class ElectionDescription(Serializable, CryptoHashable):
                 break
             # validate associated gp unit ids
             for gp_unit_id in style.geopolitical_unit_ids:
-                ballot_styles_have_valid_gp_unit_ids = ballot_styles_have_valid_gp_unit_ids \
-                and gp_unit_id in gp_unit_ids
+                ballot_styles_have_valid_gp_unit_ids = (
+                    ballot_styles_have_valid_gp_unit_ids and gp_unit_id in gp_unit_ids
+                )
 
-        ballot_styles_valid = len(ballot_style_ids) is len(self.ballot_styles) \
+        ballot_styles_valid = (
+            len(ballot_style_ids) is len(self.ballot_styles)
             and ballot_styles_have_valid_gp_unit_ids
+        )
 
         # Validate Parties
         for party in self.parties:
@@ -498,22 +586,28 @@ class ElectionDescription(Serializable, CryptoHashable):
             if candidate.object_id not in candidate_ids:
                 candidate_ids.add(candidate.object_id)
             # validate the associated party id
-            candidates_have_valid_party_ids = candidates_have_valid_party_ids \
-                and (candidate.party_id is None or candidate.party_id in party_ids)
+            candidates_have_valid_party_ids = candidates_have_valid_party_ids and (
+                candidate.party_id is None or candidate.party_id in party_ids
+            )
 
-        candidates_valid = len(candidate_ids) is len(self.candidates) \
-             and candidates_have_valid_party_ids
+        candidates_valid = (
+            len(candidate_ids) is len(self.candidates)
+            and candidates_have_valid_party_ids
+        )
 
         # Validate Contests
+        contests_validate_their_properties = True
         contests_have_valid_electoral_district_id = True
-        contests_have_valid_number_elected = True
-        contests_have_valid_number_votes_allowed = True
-
         candidate_contests_have_valid_party_ids = True
 
         contest_sequence_ids: Set[int] = set()
 
         for contest in self.contests:
+
+            contests_validate_their_properties = (
+                contests_validate_their_properties and contest.is_valid()
+            )
+
             if contest.object_id not in contest_ids:
                 contest_ids.add(contest.object_id)
 
@@ -522,91 +616,68 @@ class ElectionDescription(Serializable, CryptoHashable):
                 contest_sequence_ids.add(contest.sequence_order)
 
             # validate the associated gp unit id
-            contests_have_valid_electoral_district_id = contests_have_valid_electoral_district_id \
+            contests_have_valid_electoral_district_id = (
+                contests_have_valid_electoral_district_id
                 and contest.electoral_district_id in gp_unit_ids
+            )
 
-            # validate the number elected (seats)
-            contests_have_valid_number_elected = contests_have_valid_number_elected \
-                and contest.number_elected < len(contest.ballot_selections)
-
-            # validate the number of votes per voter
-            contests_have_valid_number_votes_allowed = contests_have_valid_number_votes_allowed \
-                and (contest.votes_allowed is None or contest.number_elected <= contest.votes_allowed)
-            if type(contest) is CandidateContestDescription:
+            if isinstance(contest, CandidateContestDescription):
                 candidate_contest = cast(CandidateContestDescription, contest)
                 if candidate_contest.primary_party_ids is not None:
                     for primary_party_id in candidate_contest.primary_party_ids:
                         # validate the party ids
-                        candidate_contests_have_valid_party_ids = candidate_contests_have_valid_party_ids \
+                        candidate_contests_have_valid_party_ids = (
+                            candidate_contests_have_valid_party_ids
                             and primary_party_id in party_ids
+                        )
 
-        contests_valid = len(contest_ids) is len(self.contests) \
-            and len(contest_sequence_ids) is len(self.contests) \
-            and contests_have_valid_electoral_district_id \
-            and contests_have_valid_number_elected \
-            and contests_have_valid_number_votes_allowed \
+        # TODO: verify that the contest sequence order set is in the proper order
+
+        contests_valid = (
+            len(contest_ids) is len(self.contests)
+            and len(contest_sequence_ids) is len(self.contests)
+            and contests_validate_their_properties
+            and contests_have_valid_electoral_district_id
             and candidate_contests_have_valid_party_ids
+        )
 
-        # Validate Contest Selections
-        contest_selections_have_valid_sequence_ids = True
-        contest_selections_have_valid_candidate_ids = True
-
-        selection_count = 0
-
-        for contest in self.contests:
-            sequence_ids: Set[int] = set()
-            for selection in contest.ballot_selections:
-                selection_count += 1
-                # validate the object_id
-                if selection.object_id not in selection_ids:
-                    selection_ids.add(selection.object_id)
-                # validate the sequence_order
-                if selection.sequence_order not in sequence_ids:
-                    sequence_ids.add(selection.sequence_order)
-                # validate the candidate id
-                contest_selections_have_valid_candidate_ids = contest_selections_have_valid_candidate_ids \
-                    and selection.candidate_id in candidate_ids
-            contest_selections_have_valid_sequence_ids = contest_selections_have_valid_sequence_ids \
-                and len(sequence_ids) is len(contest.ballot_selections)
-
-        selections_valid = len(selection_ids) is selection_count \
-            and contest_selections_have_valid_sequence_ids \
-            and contest_selections_have_valid_candidate_ids
-        
-        success = \
-            geopolitical_units_valid \
-            and ballot_styles_valid \
-            and parties_valid \
-            and candidates_valid \
-            and contests_valid \
-            and selections_valid
+        success = (
+            geopolitical_units_valid
+            and ballot_styles_valid
+            and parties_valid
+            and candidates_valid
+            and contests_valid
+        )
 
         if not success:
-            log_warning("Election is_valid: %s", str({
-                    "geopolitical_units_valid": geopolitical_units_valid,
-                    "ballot_styles_valid": ballot_styles_valid,
-                    "ballot_styles_have_valid_gp_unit_ids": ballot_styles_have_valid_gp_unit_ids,
-                    "parties_valid": parties_valid,
-                    "candidates_valid": candidates_valid,
-                    "candidates_have_valid_party_ids": candidates_have_valid_party_ids,
-                    "contests_valid": contests_valid,
-                    "contests_have_valid_electoral_district_id": contests_have_valid_electoral_district_id,
-                    "contests_have_valid_number_elected": contests_have_valid_number_elected,
-                    "contests_have_valid_number_votes_allowed": contests_have_valid_number_votes_allowed,
-                    "candidate_contests_have_valid_party_ids": candidate_contests_have_valid_party_ids,
-                    "selections_valid": selections_valid,
-                    "contest_selections_have_valid_sequence_ids": contest_selections_have_valid_sequence_ids,
-                    "contest_selections_have_valid_candidate_ids": contest_selections_have_valid_candidate_ids
-                    }))
+            log_warning(
+                "Election failed validation check: is_valid: %s",
+                str(
+                    {
+                        "geopolitical_units_valid": geopolitical_units_valid,
+                        "ballot_styles_valid": ballot_styles_valid,
+                        "ballot_styles_have_valid_gp_unit_ids": ballot_styles_have_valid_gp_unit_ids,
+                        "parties_valid": parties_valid,
+                        "candidates_valid": candidates_valid,
+                        "candidates_have_valid_party_ids": candidates_have_valid_party_ids,
+                        "contests_valid": contests_valid,
+                        "contests_validate_their_properties": contests_validate_their_properties,
+                        "contests_have_valid_electoral_district_id": contests_have_valid_electoral_district_id,
+                        "candidate_contests_have_valid_party_ids": candidate_contests_have_valid_party_ids,
+                    }
+                ),
+            )
         return success
+
 
 @dataclass(frozen=True)
 class InternalElectionDescription(object):
     """
     `InternalElectionDescription` is a subset of the `Election` structure that specifies
     the components that ElectionGuard uses for conducting an election.  The key component is the
-    `contests` collection, which applices placeholder selections to the `ElectionDescription` contests
+    `contests` collection, which applies placeholder selections to the `ElectionDescription` contests
     """
+
     description: InitVar[ElectionDescription] = None
 
     geopolitical_units: List[GeopoliticalUnit] = field(init=False)
@@ -618,53 +689,71 @@ class InternalElectionDescription(object):
     description_hash: ElementModQ = field(init=False)
 
     def __post_init__(self, description: ElectionDescription) -> None:
-        object.__setattr__(self, 'description_hash', description.crypto_hash())
-        object.__setattr__(self, 'geopolitical_units', description.geopolitical_units)
-        object.__setattr__(self, 'ballot_styles', description.ballot_styles)
-        object.__setattr__(self, 'contests', self._generate_contests_with_placeholders(description))
+        object.__setattr__(self, "description_hash", description.crypto_hash())
+        object.__setattr__(self, "geopolitical_units", description.geopolitical_units)
+        object.__setattr__(self, "ballot_styles", description.ballot_styles)
+        object.__setattr__(
+            self, "contests", self._generate_contests_with_placeholders(description)
+        )
 
-    def contest_for(self, contest_id: str) -> Optional[ContestDescriptionWithPlaceholders]:
-        matching_contests = list(filter(lambda i: i.object_id == contest_id, self.contests))
+    def contest_for(
+        self, contest_id: str
+    ) -> Optional[ContestDescriptionWithPlaceholders]:
+        matching_contests = list(
+            filter(lambda i: i.object_id == contest_id, self.contests)
+        )
 
         if any(matching_contests):
             return matching_contests[0]
         else:
             return None
 
-
     def get_ballot_style(self, ballot_style_id: str) -> BallotStyle:
         """
         Get a ballot style for a specified ballot_style_id
         """
-        style = list(filter(lambda i: i.object_id == ballot_style_id, self.ballot_styles))[0]
+        style = list(
+            filter(lambda i: i.object_id == ballot_style_id, self.ballot_styles)
+        )[0]
         return style
 
-    def get_contests_for(self, ballot_style_id: str) -> List[ContestDescriptionWithPlaceholders]:
+    def get_contests_for(
+        self, ballot_style_id: str
+    ) -> List[ContestDescriptionWithPlaceholders]:
         style = self.get_ballot_style(ballot_style_id)
         if style.geopolitical_unit_ids is None:
             return list()
         gp_unit_ids = [gp_unit_id for gp_unit_id in style.geopolitical_unit_ids]
-        contests = list(filter(lambda i: i.electoral_district_id in gp_unit_ids, self.contests))
+        contests = list(
+            filter(lambda i: i.electoral_district_id in gp_unit_ids, self.contests)
+        )
         return contests
 
-    def _generate_contests_with_placeholders(self, description: ElectionDescription) -> List[ContestDescriptionWithPlaceholders]:
+    def _generate_contests_with_placeholders(
+        self, description: ElectionDescription
+    ) -> List[ContestDescriptionWithPlaceholders]:
         """
         for each contest, append the `number_elected` number 
         of placeholder selections to the end of the contest collection
         """
         contests: List[ContestDescriptionWithPlaceholders] = list()
         for contest in description.contests:
-            placeholder_selections = generate_placeholder_selections_from(contest, contest.number_elected)
+            placeholder_selections = generate_placeholder_selections_from(
+                contest, contest.number_elected
+            )
             contests.append(
-                contest_description_with_placeholders_from(contest, placeholder_selections)
+                contest_description_with_placeholders_from(
+                    contest, placeholder_selections
+                )
             )
 
         return contests
 
+
 @dataclass(frozen=True)
-class CyphertextElection(Serializable): #TODO: CryptoHashcheckable
+class CiphertextElectionContext(Serializable):  # TODO: CryptoHashcheckable
     """
-    `CyphertextElection` is the ElectionGuard representation of a specific election
+    `CiphertextElectionContext` is the ElectionGuard representation of a specific election
     Note: The ElectionGuard Data Spec deviates from the NIST model in that
     this object includes fields that are populated in the course of encrypting an election
     Specifically, `crypto_base_hash`, `crypto_extended_base_hash` and `elgamal_public_key`
@@ -688,8 +777,14 @@ class CyphertextElection(Serializable): #TODO: CryptoHashcheckable
     crypto_extended_base_hash: ElementModQ = field(init=False)
 
     def __post_init__(self) -> None:
-        object.__setattr__(self, 'crypto_base_hash', self._crypto_base_hash(self.description_hash))
-        object.__setattr__(self, 'crypto_extended_base_hash', self._crypto_extended_base_hash(self.elgamal_public_key))
+        object.__setattr__(
+            self, "crypto_base_hash", self._crypto_base_hash(self.description_hash)
+        )
+        object.__setattr__(
+            self,
+            "crypto_extended_base_hash",
+            self._crypto_extended_base_hash(self.elgamal_public_key),
+        )
 
     def _crypto_base_hash(self, seed_hash: ElementModQ) -> ElementModQ:
         """
@@ -707,7 +802,9 @@ class CyphertextElection(Serializable): #TODO: CryptoHashcheckable
             P, Q, G, self.number_trustees, self.threshold_trustees, seed_hash
         )
 
-    def _crypto_extended_base_hash(self, elgamal_public_key: ElementModP) -> ElementModQ:
+    def _crypto_extended_base_hash(
+        self, elgamal_public_key: ElementModP
+    ) -> ElementModQ:
         """
         Once the baseline parameters have been produced and confirmed, 
         all of the public trustee commitments 𝐾𝑖,𝑗 are hashed together 
@@ -717,7 +814,10 @@ class CyphertextElection(Serializable): #TODO: CryptoHashcheckable
 
         return hash_elems(self.crypto_base_hash, elgamal_public_key)
 
-def contest_description_with_placeholders_from(description: ContestDescription, placeholders: List[SelectionDescription]) -> ContestDescriptionWithPlaceholders:
+
+def contest_description_with_placeholders_from(
+    description: ContestDescription, placeholders: List[SelectionDescription]
+) -> ContestDescriptionWithPlaceholders:
     return ContestDescriptionWithPlaceholders(
         object_id=description.object_id,
         electoral_district_id=description.electoral_district_id,
@@ -729,45 +829,54 @@ def contest_description_with_placeholders_from(description: ContestDescription, 
         ballot_selections=description.ballot_selections,
         ballot_title=description.ballot_title,
         ballot_subtitle=description.ballot_subtitle,
-        placeholder_selections=placeholders
-        )
+        placeholder_selections=placeholders,
+    )
 
-def generate_placeholder_selection_from(contest: ContestDescription, use_sequence_id: Optional[int] = None) -> Optional[SelectionDescription]:
-        """
+
+def generate_placeholder_selection_from(
+    contest: ContestDescription, use_sequence_id: Optional[int] = None
+) -> Optional[SelectionDescription]:
+    """
         Generates a placeholder selection description that is unique so it can be hashed
 
         :param use_sequence_id: an optional integer unique to the contest identifying this selection's place in the contest
         :return: a SelectionDescription or None
         """
-        sequence_ids = [selection.sequence_order for selection in contest.ballot_selections]
-        if use_sequence_id is None:
-            # if no sequence order is specified, take the max
-            use_sequence_id = max(*sequence_ids) + 1
-        elif use_sequence_id in sequence_ids:
-            log_warning(f"mismatched placeholder selection {use_sequence_id} already exists")
-            return None
-
-        placeholder_object_id = f"{contest.object_id}-{use_sequence_id}"
-        return SelectionDescription(
-            f"{placeholder_object_id}-placeholder", 
-            f"{placeholder_object_id}-candidate", 
-            use_sequence_id
+    sequence_ids = [selection.sequence_order for selection in contest.ballot_selections]
+    if use_sequence_id is None:
+        # if no sequence order is specified, take the max
+        use_sequence_id = max(*sequence_ids) + 1
+    elif use_sequence_id in sequence_ids:
+        log_warning(
+            f"mismatched placeholder selection {use_sequence_id} already exists"
         )
+        return None
 
-def generate_placeholder_selections_from(contest: ContestDescription, count: int = 1) -> List[SelectionDescription]:
-        """
+    placeholder_object_id = f"{contest.object_id}-{use_sequence_id}"
+    return SelectionDescription(
+        f"{placeholder_object_id}-placeholder",
+        f"{placeholder_object_id}-candidate",
+        use_sequence_id,
+    )
+
+
+def generate_placeholder_selections_from(
+    contest: ContestDescription, count: int
+) -> List[SelectionDescription]:
+    """
         Generates the specified number of placeholder selections in ascending sequence order from the max selection sequence orderf
 
+        :param contest: ContestDescription for input
         :param count: optionally specify a number of placeholders to generate
         :return: a collection of `SelectionDescription` objects, which may be empty
         """
-        max_sequence_order = max([selection.sequence_order for selection in contest.ballot_selections])
-        selections: List[SelectionDescription] = list()
-        for i in range(count):
-            sequence_order = max_sequence_order + 1 + i
-            selections.append(
-                unwrap_optional(
-                    generate_placeholder_selection_from(contest, sequence_order)
-                )
-            )
-        return selections
+    max_sequence_order = max(
+        [selection.sequence_order for selection in contest.ballot_selections]
+    )
+    selections: List[SelectionDescription] = list()
+    for i in range(count):
+        sequence_order = max_sequence_order + 1 + i
+        selections.append(
+            get_optional(generate_placeholder_selection_from(contest, sequence_order))
+        )
+    return selections
