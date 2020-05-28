@@ -53,7 +53,6 @@ ballot_factory = BallotFactory.BallotFactory()
 
 
 class TestDecrypt(unittest.TestCase):
-    @unittest.skip("runs forever")
     @settings(
         deadline=timedelta(milliseconds=2000),
         suppress_health_check=[HealthCheck.too_slow],
@@ -69,7 +68,7 @@ class TestDecrypt(unittest.TestCase):
         self,
         selection_description: Tuple[str, SelectionDescription],
         keypair: ElGamalKeyPair,
-        seed: ElementModQ,
+        nonce_seed: ElementModQ,
         random_seed: int,
     ):
 
@@ -79,7 +78,7 @@ class TestDecrypt(unittest.TestCase):
         data = ballot_factory.get_random_selection_from(description, random)
 
         # Act
-        subject = encrypt_selection(data, description, keypair.public_key, seed)
+        subject = encrypt_selection(data, description, keypair.public_key, nonce_seed)
         self.assertIsNotNone(subject)
 
         result_from_key = decrypt_selection_with_secret(
@@ -89,7 +88,7 @@ class TestDecrypt(unittest.TestCase):
             subject, description, keypair.public_key
         )
         result_from_nonce_seed = decrypt_selection_with_nonce(
-            subject, description, keypair.public_key, seed
+            subject, description, keypair.public_key, nonce_seed
         )
 
         # Assert
@@ -161,6 +160,44 @@ class TestDecrypt(unittest.TestCase):
         self.assertIsNone(result_from_key_malformed_proof)
         self.assertIsNone(result_from_nonce_malformed_encryption)
         self.assertIsNone(result_from_nonce_malformed_proof)
+
+    @settings(
+        deadline=timedelta(milliseconds=2000),
+        suppress_health_check=[HealthCheck.too_slow],
+        max_examples=10,
+    )
+    @given(
+        ElectionFactory.get_selection_description_well_formed(),
+        arb_elgamal_keypair(),
+        arb_element_mod_q_no_zero(),
+        integers(),
+    )
+    def test_decrypt_selection_tampered_nonce_fails(
+        self,
+        selection_description: Tuple[str, SelectionDescription],
+        keypair: ElGamalKeyPair,
+        nonce_seed: ElementModQ,
+        random_seed: int,
+    ):
+
+        # Arrange
+        random = Random(random_seed)
+        _, description = selection_description
+        data = ballot_factory.get_random_selection_from(description, random)
+
+        # Act
+        subject = encrypt_selection(data, description, keypair.public_key, nonce_seed)
+        self.assertIsNotNone(subject)
+
+        # Tamper with the nonce by setting it to an aribtrary value
+        subject.nonce = nonce_seed
+
+        result_from_nonce_seed = decrypt_selection_with_nonce(
+            subject, description, keypair.public_key, nonce_seed
+        )
+
+        # Assert
+        self.assertIsNone(result_from_nonce_seed)
 
     @unittest.skip("runs forever")
     @settings(

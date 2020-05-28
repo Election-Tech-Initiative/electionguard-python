@@ -116,7 +116,8 @@ def encrypt_selection(
 
     selection_description_hash = selection_description.crypto_hash()
     nonce_sequence = Nonces(selection_description_hash, nonce_seed)
-    (selection_nonce, chaum_pedersen_nonce) = nonce_sequence[0:2]
+    selection_nonce = nonce_sequence[selection_description.sequence_order]
+    disjunctive_chaum_pedersen_nonce = next(iter(nonce_sequence))
 
     selection_representation = selection.to_int()
 
@@ -137,7 +138,7 @@ def encrypt_selection(
         description_hash=selection_description_hash,
         message=get_optional(elgamal_encryption),
         elgamal_public_key=elgamal_public_key,
-        proof_seed=chaum_pedersen_nonce,
+        proof_seed=disjunctive_chaum_pedersen_nonce,
         selection_representation=selection_representation,
         is_placeholder_selection=is_placeholder,
         nonce=selection_nonce,

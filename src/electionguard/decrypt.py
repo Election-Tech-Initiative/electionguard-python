@@ -86,6 +86,12 @@ def decrypt_selection_with_nonce(
         )
         return None
 
+    if selection.nonce is not None and nonce != selection.nonce:
+        log_warning(
+            f"decrypt could not verify a nonce value for selection {selection.object_id}"
+        )
+        return None
+
     plaintext = selection.message.decrypt_known_nonce(public_key, nonce)
 
     # TODO: ISSUE: #35: encrypt/decrypt: handle decryption of the extradata field if needed
