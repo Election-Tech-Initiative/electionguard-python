@@ -199,7 +199,6 @@ class TestDecrypt(unittest.TestCase):
         # Assert
         self.assertIsNone(result_from_nonce_seed)
 
-    @unittest.skip("runs forever")
     @settings(
         deadline=timedelta(milliseconds=2000),
         suppress_health_check=[HealthCheck.too_slow],
@@ -215,7 +214,7 @@ class TestDecrypt(unittest.TestCase):
         self,
         contest_description: Tuple[str, ContestDescription],
         keypair: ElGamalKeyPair,
-        seed: ElementModQ,
+        nonce_seed: ElementModQ,
         random_seed: int,
     ):
 
@@ -231,23 +230,35 @@ class TestDecrypt(unittest.TestCase):
             description, placeholders
         )
 
+        self.assertTrue(description_with_placeholders.is_valid())
+
         # Act
         subject = encrypt_contest(
-            data, description_with_placeholders, keypair.public_key, seed
+            data, description_with_placeholders, keypair.public_key, nonce_seed
         )
         self.assertIsNotNone(subject)
 
+        # Decrypt the contest, but keep the placeholders
+        # so we can verify the selection count matches as expected in the test
         result_from_key = decrypt_contest_with_secret(
             subject,
             description_with_placeholders,
             keypair.public_key,
             keypair.secret_key,
+            remove_placeholders=False,
         )
         result_from_nonce = decrypt_contest_with_nonce(
-            subject, description_with_placeholders, keypair.public_key
+            subject,
+            description_with_placeholders,
+            keypair.public_key,
+            remove_placeholders=False,
         )
         result_from_nonce_seed = decrypt_contest_with_nonce(
-            subject, description_with_placeholders, keypair.public_key, seed
+            subject,
+            description_with_placeholders,
+            keypair.public_key,
+            nonce_seed,
+            remove_placeholders=False,
         )
 
         # Assert
@@ -348,7 +359,6 @@ class TestDecrypt(unittest.TestCase):
             self.assertTrue(nonce_selection.is_valid(selection_description.object_id))
             self.assertTrue(seed_selection.is_valid(selection_description.object_id))
 
-    @unittest.skip("runs forever")
     @settings(
         deadline=timedelta(milliseconds=2000),
         suppress_health_check=[HealthCheck.too_slow],
@@ -382,12 +392,14 @@ class TestDecrypt(unittest.TestCase):
             encryption_context.crypto_extended_base_hash,
             keypair.public_key,
             keypair.secret_key,
+            remove_placeholders=False,
         )
         result_from_nonce = decrypt_ballot_with_nonce(
             subject,
             metadata,
             encryption_context.crypto_extended_base_hash,
             keypair.public_key,
+            remove_placeholders=False,
         )
         result_from_nonce_seed = decrypt_ballot_with_nonce(
             subject,
@@ -395,6 +407,7 @@ class TestDecrypt(unittest.TestCase):
             encryption_context.crypto_extended_base_hash,
             keypair.public_key,
             subject.nonce,
+            remove_placeholders=False,
         )
 
         # Assert

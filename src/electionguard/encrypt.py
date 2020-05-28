@@ -204,7 +204,8 @@ def encrypt_contest(
     # account for sequence id
     contest_description_hash = contest_description.crypto_hash()
     nonce_sequence = Nonces(contest_description_hash, nonce_seed)
-    (contest_nonce, chaum_pedersen_nonce) = nonce_sequence[0:2]
+    contest_nonce = nonce_sequence[contest_description.sequence_order]
+    chaum_pedersen_nonce = next(iter(nonce_sequence))
 
     encrypted_selections: List[CiphertextBallotSelection] = list()
 

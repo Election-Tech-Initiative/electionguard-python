@@ -187,6 +187,12 @@ def decrypt_contest_with_nonce(
         )
         return None
 
+    if contest.nonce is not None and nonce_seed != contest.nonce:
+        log_warning(
+            f"decrypt could not verify a nonce_seed value for contest {contest.object_id}"
+        )
+        return None
+
     plaintext_selections: List[PlaintextBallotSelection] = list()
     for selection in contest.ballot_selections:
         selection_description = description.selection_for(selection.object_id)
