@@ -14,6 +14,7 @@ from hypothesis.strategies import (
     uuids,
     datetimes,
     one_of,
+    just,
 )
 
 from electionguard.ballot import PlaintextBallotContest, PlaintextBallot
@@ -337,7 +338,7 @@ def candidates(draw: _DrawType, party_list: Optional[List[Party]]):
         str(draw(uuids())),
         draw(internationalized_human_names()),
         pid,
-        draw(urls()) if draw(bools) else None,
+        draw(one_of(just(None), urls())),
     )
 
 
