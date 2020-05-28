@@ -4,7 +4,7 @@ from datetime import timedelta
 from random import Random
 from typing import Tuple
 
-from hypothesis import HealthCheck
+from hypothesis import HealthCheck, Phase
 from hypothesis import given, settings
 from hypothesis.strategies import integers
 
@@ -47,6 +47,8 @@ class TestDecrypt(unittest.TestCase):
         deadline=timedelta(milliseconds=2000),
         suppress_health_check=[HealthCheck.too_slow],
         max_examples=10,
+        # disabling the "shrink" phase, because it runs very slowly
+        phases=[Phase.explicit, Phase.reuse, Phase.generate, Phase.target],
     )
     @given(
         ElectionFactory.get_selection_description_well_formed(),
@@ -93,6 +95,8 @@ class TestDecrypt(unittest.TestCase):
         deadline=timedelta(milliseconds=2000),
         suppress_health_check=[HealthCheck.too_slow],
         max_examples=10,
+        # disabling the "shrink" phase, because it runs very slowly
+        phases=[Phase.explicit, Phase.reuse, Phase.generate, Phase.target],
     )
     @given(
         ElectionFactory.get_selection_description_well_formed(),
@@ -155,6 +159,8 @@ class TestDecrypt(unittest.TestCase):
         deadline=timedelta(milliseconds=2000),
         suppress_health_check=[HealthCheck.too_slow],
         max_examples=10,
+        # disabling the "shrink" phase, because it runs very slowly
+        phases=[Phase.explicit, Phase.reuse, Phase.generate, Phase.target],
     )
     @given(
         ElectionFactory.get_selection_description_well_formed(),
@@ -193,6 +199,8 @@ class TestDecrypt(unittest.TestCase):
         deadline=timedelta(milliseconds=2000),
         suppress_health_check=[HealthCheck.too_slow],
         max_examples=10,
+        # disabling the "shrink" phase, because it runs very slowly
+        phases=[Phase.explicit, Phase.reuse, Phase.generate, Phase.target],
     )
     @given(
         ElectionFactory.get_contest_description_well_formed(),
@@ -353,6 +361,8 @@ class TestDecrypt(unittest.TestCase):
         deadline=timedelta(milliseconds=2000),
         suppress_health_check=[HealthCheck.too_slow],
         max_examples=1,
+        # disabling the "shrink" phase, because it runs very slowly
+        phases=[Phase.explicit, Phase.reuse, Phase.generate, Phase.target],
     )
     @given(elgamal_keypairs())
     def test_decrypt_ballot_valid_input_succeeds(self, keypair: ElGamalKeyPair):
@@ -518,6 +528,8 @@ class TestDecrypt(unittest.TestCase):
         deadline=timedelta(milliseconds=2000),
         suppress_health_check=[HealthCheck.too_slow],
         max_examples=1,
+        # disabling the "shrink" phase, because it runs very slowly
+        phases=[Phase.explicit, Phase.reuse, Phase.generate, Phase.target],
     )
     @given(elgamal_keypairs())
     def test_decrypt_ballot_valid_input_missing_nonce_fails(
