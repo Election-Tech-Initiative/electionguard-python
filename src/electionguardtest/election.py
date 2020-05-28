@@ -73,6 +73,12 @@ _first_names = [
     "Betty",
     "Donald",
     "Dorothy",
+    "Sylvia",
+    "Viktor",
+    "Camille",
+    "Mirai",
+    "Anant",
+    "Rohan",
 ]
 
 _last_names = [
@@ -114,6 +120,11 @@ _last_names = [
     "ADAMS",
     "BAKER",
     "GONZALEZ",
+    "STEELE-LOY",
+    "O'CONNOR",
+    "ANAND",
+    "PATEL",
+    "GUPTA",
 ]
 
 
