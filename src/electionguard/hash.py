@@ -2,7 +2,6 @@ from abc import abstractmethod
 from hashlib import sha256
 from typing import (
     Union,
-    Optional,
     Protocol,
     runtime_checkable,
     Sequence,
