@@ -356,6 +356,71 @@ class ContestDescription(ElectionObjectBase, CryptoHashable):
             self.ballot_selections,
         )
 
+    def is_valid(self) -> bool:
+        """
+        Check the validity of the contest object by verifying its data
+        """
+        contest_has_valid_number_elected = self.number_elected <= len(
+            self.ballot_selections
+        )
+        contest_has_valid_votes_allowed = (
+            self.votes_allowed is None or self.number_elected <= self.votes_allowed
+        )
+
+        # verify the candidate_ids, selection object_ids, and sequence_ids are unique
+        candidate_ids: Set[str] = set()
+        selection_ids: Set[str] = set()
+        sequence_ids: Set[int] = set()
+        selection_count = 0
+        expected_selection_count = len(self.ballot_selections)
+
+        for selection in self.ballot_selections:
+            selection_count += 1
+            # validate the object_id
+            if selection.object_id not in selection_ids:
+                selection_ids.add(selection.object_id)
+            # validate the sequence_order
+            if selection.sequence_order not in sequence_ids:
+                sequence_ids.add(selection.sequence_order)
+            # validate the candidate id
+            if selection.candidate_id not in candidate_ids:
+                candidate_ids.add(selection.candidate_id)
+
+        selections_have_valid_candidate_ids = (
+            len(candidate_ids) is expected_selection_count
+        )
+        selections_have_valid_selection_ids = (
+            len(selection_ids) is expected_selection_count
+        )
+        selections_have_valid_sequence_ids = (
+            len(sequence_ids) is expected_selection_count
+        )
+
+        success = (
+            contest_has_valid_number_elected
+            and contest_has_valid_votes_allowed
+            and selections_have_valid_candidate_ids
+            and selections_have_valid_selection_ids
+            and selections_have_valid_sequence_ids
+        )
+
+        if not success:
+            log_warning(
+                "Contest %s failed validation check: %s",
+                self.object_id,
+                str(
+                    {
+                        "contest_has_valid_number_elected": contest_has_valid_number_elected,
+                        "contest_has_valid_votes_allowed": contest_has_valid_votes_allowed,
+                        "selections_have_valid_candidate_ids": selections_have_valid_candidate_ids,
+                        "selections_have_valid_selection_ids": selections_have_valid_selection_ids,
+                        "selections_have_valid_sequence_ids": selections_have_valid_sequence_ids,
+                    }
+                ),
+            )
+
+        return True
+
 
 @dataclass
 class CandidateContestDescription(ContestDescription):
@@ -395,7 +460,11 @@ class ContestDescriptionWithPlaceholders(ContestDescription):
     )
 
     def is_valid(self) -> bool:
-        return len(self.placeholder_selections) == self.number_elected
+        contest_description_validates = super().is_valid()
+        return (
+            contest_description_validates
+            and len(self.placeholder_selections) == self.number_elected
+        )
 
     def is_placeholder(self, selection: SelectionDescription) -> bool:
         return selection in self.placeholder_selections
@@ -527,15 +596,18 @@ class ElectionDescription(Serializable, CryptoHashable):
         )
 
         # Validate Contests
+        contests_validate_their_properties = True
         contests_have_valid_electoral_district_id = True
-        contests_have_valid_number_elected = True
-        contests_have_valid_number_votes_allowed = True
-
         candidate_contests_have_valid_party_ids = True
 
         contest_sequence_ids: Set[int] = set()
 
         for contest in self.contests:
+
+            contests_validate_their_properties = (
+                contests_validate_their_properties and contest.is_valid()
+            )
+
             if contest.object_id not in contest_ids:
                 contest_ids.add(contest.object_id)
 
@@ -549,20 +621,6 @@ class ElectionDescription(Serializable, CryptoHashable):
                 and contest.electoral_district_id in gp_unit_ids
             )
 
-            # validate the number elected (seats)
-            contests_have_valid_number_elected = (
-                contests_have_valid_number_elected
-                and contest.number_elected <= len(contest.ballot_selections)
-            )
-
-            # validate the number of votes per voter
-            contests_have_valid_number_votes_allowed = (
-                contests_have_valid_number_votes_allowed
-                and (
-                    contest.votes_allowed is None
-                    or contest.number_elected <= contest.votes_allowed
-                )
-            )
             if isinstance(contest, CandidateContestDescription):
                 candidate_contest = cast(CandidateContestDescription, contest)
                 if candidate_contest.primary_party_ids is not None:
@@ -578,44 +636,9 @@ class ElectionDescription(Serializable, CryptoHashable):
         contests_valid = (
             len(contest_ids) is len(self.contests)
             and len(contest_sequence_ids) is len(self.contests)
+            and contests_validate_their_properties
             and contests_have_valid_electoral_district_id
-            and contests_have_valid_number_elected
-            and contests_have_valid_number_votes_allowed
             and candidate_contests_have_valid_party_ids
-        )
-
-        # Validate Contest Selections
-        contest_selections_have_valid_sequence_ids = True
-        contest_selections_have_valid_candidate_ids = True
-
-        selection_count = 0
-
-        for contest in self.contests:
-            sequence_ids: Set[int] = set()
-            for selection in contest.ballot_selections:
-                selection_count += 1
-                # validate the object_id
-                if selection.object_id not in selection_ids:
-                    selection_ids.add(selection.object_id)
-                # validate the sequence_order
-                if selection.sequence_order not in sequence_ids:
-                    sequence_ids.add(selection.sequence_order)
-                # validate the candidate id
-                contest_selections_have_valid_candidate_ids = (
-                    contest_selections_have_valid_candidate_ids
-                    and selection.candidate_id in candidate_ids
-                )
-            # TODO: verify that the contest sequence order set is in the proper order
-            contest_selections_have_valid_sequence_ids = contest_selections_have_valid_sequence_ids and len(
-                sequence_ids
-            ) is len(
-                contest.ballot_selections
-            )
-
-        selections_valid = (
-            len(selection_ids) is selection_count
-            and contest_selections_have_valid_sequence_ids
-            and contest_selections_have_valid_candidate_ids
         )
 
         success = (
@@ -624,7 +647,6 @@ class ElectionDescription(Serializable, CryptoHashable):
             and parties_valid
             and candidates_valid
             and contests_valid
-            and selections_valid
         )
 
         if not success:
@@ -639,13 +661,9 @@ class ElectionDescription(Serializable, CryptoHashable):
                         "candidates_valid": candidates_valid,
                         "candidates_have_valid_party_ids": candidates_have_valid_party_ids,
                         "contests_valid": contests_valid,
+                        "contests_validate_their_properties": contests_validate_their_properties,
                         "contests_have_valid_electoral_district_id": contests_have_valid_electoral_district_id,
-                        "contests_have_valid_number_elected": contests_have_valid_number_elected,
-                        "contests_have_valid_number_votes_allowed": contests_have_valid_number_votes_allowed,
                         "candidate_contests_have_valid_party_ids": candidate_contests_have_valid_party_ids,
-                        "selections_valid": selections_valid,
-                        "contest_selections_have_valid_sequence_ids": contest_selections_have_valid_sequence_ids,
-                        "contest_selections_have_valid_candidate_ids": contest_selections_have_valid_candidate_ids,
                     }
                 ),
             )

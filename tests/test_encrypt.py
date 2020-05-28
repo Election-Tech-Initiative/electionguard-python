@@ -20,6 +20,8 @@ from electionguard.encrypt import (
 from electionguard.election import (
     ContestDescription,
     ContestDescriptionWithPlaceholders,
+    contest_description_with_placeholders_from,
+    generate_placeholder_selections_from,
     SelectionDescription,
     VoteVariationType,
 )
@@ -36,6 +38,7 @@ from electionguard.elgamal import (
 )
 from electionguard.group import (
     ElementModQ,
+    ONE_MOD_Q,
     TWO_MOD_Q,
     int_to_q,
     add_q,
@@ -389,6 +392,99 @@ class TestEncrypt(unittest.TestCase):
 
         # Assert
         self.assertIsNone(result)
+
+    def test_encrypt_contest_manually_formed_contest_description_valid_succeeds(self):
+        description = ContestDescription(
+            object_id="0@A.com-contest",
+            electoral_district_id="0@A.com-gp-unit",
+            sequence_order=1,
+            vote_variation=VoteVariationType.n_of_m,
+            number_elected=1,
+            votes_allowed=1,
+            name="",
+            ballot_selections=[
+                SelectionDescription(
+                    object_id="0@A.com-selection",
+                    candidate_id="0@A.com",
+                    sequence_order=0,
+                ),
+                SelectionDescription(
+                    object_id="0@B.com-selection",
+                    candidate_id="0@B.com",
+                    sequence_order=1,
+                ),
+            ],
+            ballot_title=None,
+            ballot_subtitle=None,
+        )
+
+        keypair = elgamal_keypair_from_secret(TWO_MOD_Q)
+        seed = ONE_MOD_Q
+
+        ####################
+        data = ballot_factory.get_random_contest_from(description, Random(0))
+
+        placeholders = generate_placeholder_selections_from(description)
+        description_with_placeholders = contest_description_with_placeholders_from(
+            description, placeholders
+        )
+
+        # Act
+        subject = encrypt_contest(
+            data,
+            description_with_placeholders,
+            keypair.public_key,
+            seed,
+            should_verify_proofs=True,
+        )
+        self.assertIsNotNone(subject)
+
+    def test_encrypt_contest_duplicate_selection_object_ids_fails(self):
+        """
+        This is an example test of a failing test where the contest description 
+        is malformed
+        """
+        random_seed = 0
+
+        description = ContestDescription(
+            object_id="0@A.com-contest",
+            electoral_district_id="0@A.com-gp-unit",
+            sequence_order=1,
+            vote_variation=VoteVariationType.n_of_m,
+            number_elected=1,
+            votes_allowed=1,
+            name="",
+            ballot_selections=[
+                SelectionDescription(
+                    object_id="0@A.com-selection",
+                    candidate_id="0@A.com",
+                    sequence_order=0,
+                ),
+                # Note the selection description is the same as the first sequence element
+                SelectionDescription(
+                    object_id="0@A.com-selection",
+                    candidate_id="0@A.com",
+                    sequence_order=1,
+                ),
+            ],
+        )
+
+        keypair = elgamal_keypair_from_secret(TWO_MOD_Q)
+        seed = ONE_MOD_Q
+
+        ####################
+        data = ballot_factory.get_random_contest_from(description, Random(0))
+
+        placeholders = generate_placeholder_selections_from(description)
+        description_with_placeholders = contest_description_with_placeholders_from(
+            description, placeholders
+        )
+
+        # Act
+        subject = encrypt_contest(
+            data, description_with_placeholders, keypair.public_key, seed
+        )
+        self.assertIsNone(subject)
 
     def test_encrypt_ballot_simple_succeeds(self):
 
