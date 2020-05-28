@@ -37,9 +37,8 @@ class CryptoHashCheckable(Protocol):
         ...
 
 
-# All the "atomic" types that we know how to hash. Note that Optional[X] = Union[X, None], so
-# we're also prepared to hash None.
-CRYPTO_HASHABLE_T = Optional[Union[CryptoHashable, ElementModPOrQ, str, int]]
+# All the "atomic" types that we know how to hash.
+CRYPTO_HASHABLE_T = Union[CryptoHashable, ElementModPOrQ, str, int, None]
 
 # "Compound" types that we know how to hash. Note that we're using Sequence, rather than List,
 # because Sequences are read-only, and thus safely covariant. All this really means is that
