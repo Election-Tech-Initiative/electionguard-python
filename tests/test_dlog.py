@@ -14,7 +14,7 @@ from electionguard.group import (
     int_to_p_unchecked,
     int_to_q_unchecked,
 )
-from electionguard.utils import unwrap_optional
+from electionguard.utils import get_optional
 
 
 # simpler implementation of discrete_log, only meant for comparison testing of the caching version
@@ -31,7 +31,7 @@ def _discrete_log_uncached(e: ElementModP) -> int:
 class TestDLog(unittest.TestCase):
     @given(integers(0, 100))
     def test_uncached(self, exp: int):
-        plaintext = unwrap_optional(int_to_q(exp))
+        plaintext = get_optional(int_to_q(exp))
         exp_plaintext = g_pow_p(plaintext)
         plaintext_again = _discrete_log_uncached(exp_plaintext)
 
@@ -39,7 +39,7 @@ class TestDLog(unittest.TestCase):
 
     @given(integers(0, 1000))
     def test_cached(self, exp: int):
-        plaintext = unwrap_optional(int_to_q(exp))
+        plaintext = get_optional(int_to_q(exp))
         exp_plaintext = g_pow_p(plaintext)
         plaintext_again = discrete_log(exp_plaintext)
 

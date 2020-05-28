@@ -16,7 +16,7 @@ from electionguard.schnorr import (
     make_schnorr_proof,
     SchnorrProof,
 )
-from electionguard.utils import unwrap_optional
+from electionguard.utils import get_optional
 from tests.test_elgamal import arb_elgamal_keypair
 from tests.test_group import (
     arb_element_mod_q,
@@ -28,7 +28,7 @@ from tests.test_group import (
 class TestSchnorr(unittest.TestCase):
     def test_schnorr_proofs_simple(self) -> None:
         # doesn't get any simpler than this
-        keypair = unwrap_optional(elgamal_keypair_from_secret(TWO_MOD_Q))
+        keypair = get_optional(elgamal_keypair_from_secret(TWO_MOD_Q))
         nonce = ONE_MOD_Q
         proof = make_schnorr_proof(keypair, nonce)
         self.assertTrue(proof.is_valid())

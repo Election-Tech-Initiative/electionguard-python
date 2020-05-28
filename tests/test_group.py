@@ -31,11 +31,33 @@ from electionguardtest.group import (
     arb_element_mod_q_no_zero,
 )
 from electionguard.utils import (
-    flatmap_optional, 
-    get_or_else_optional, 
-    match_optional, 
-    unwrap_optional
+    flatmap_optional,
+    get_or_else_optional,
+    match_optional,
+    get_optional,
 )
+
+
+class TestEquality(unittest.TestCase):
+    @given(arb_element_mod_q(), arb_element_mod_q())
+    def testPsNotEqualToQs(self, q: ElementModQ, q2: ElementModQ):
+        p = int_to_p_unchecked(q.to_int())
+        p2 = int_to_p_unchecked(q2.to_int())
+
+        # same value should imply they're equal
+        self.assertEqual(p, q)
+        self.assertEqual(q, p)
+
+        if q.to_int() != q2.to_int():
+            # these are genuinely different numbers
+            self.assertNotEqual(q, q2)
+            self.assertNotEqual(p, p2)
+            self.assertNotEqual(q, p2)
+            self.assertNotEqual(p, q2)
+
+        # of course, we're going to make sure that a number is equal to itself
+        self.assertEqual(p, p)
+        self.assertEqual(q, q)
 
 
 class TestModularArithmetic(unittest.TestCase):
@@ -115,8 +137,8 @@ class TestOptionalFunctions(unittest.TestCase):
         good: Optional[int] = 3
         bad: Optional[int] = None
 
-        self.assertEqual(unwrap_optional(good), 3)
-        self.assertRaises(Exception, unwrap_optional, bad)
+        self.assertEqual(get_optional(good), 3)
+        self.assertRaises(Exception, get_optional, bad)
 
     def test_match(self):
         good: Optional[int] = 3
@@ -136,5 +158,5 @@ class TestOptionalFunctions(unittest.TestCase):
         good: Optional[int] = 3
         bad: Optional[int] = None
 
-        self.assertEqual(5, unwrap_optional(flatmap_optional(good, lambda x: x + 2)))
+        self.assertEqual(5, get_optional(flatmap_optional(good, lambda x: x + 2)))
         self.assertIsNone(flatmap_optional(bad, lambda x: x + 2))
