@@ -28,7 +28,11 @@ class TestElections(unittest.TestCase):
     )
     @given(election_descriptions())
     def test_generators_yield_valid_output(self, ed: ElectionDescription):
-        # it's just a one-liner, but it exercises a ton of code to make sure all Hypothesis strategies work
+        """
+        Tests that our Hypothesis election strategies generate "valid" output, also exercises the full stack
+        of `is_valid` methods.
+        """
+
         self.assertTrue(ed.is_valid())
 
     @settings(
@@ -44,6 +48,10 @@ class TestElections(unittest.TestCase):
     def test_accumulation_encryption_decryption(
         self, everything: ELECTIONS_AND_BALLOTS_TUPLE_TYPE, nonce: ElementModQ,
     ):
+        """
+        Tests that decryption is the inverse of encryption over arbitrarily generated elections and ballots.
+        """
+
         ied, ballots, secret_key, ce = everything
 
         # - first up, we'll do a tally on the plaintext ballots
