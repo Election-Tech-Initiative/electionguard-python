@@ -2,8 +2,8 @@
 # in the sense that performance may be less than hand-optimized C code, and no guarantees are
 # made about timing or other side-channels.
 
-from typing import Final, Union, NamedTuple, Optional, Any
-
+from typing import Any, Final, NamedTuple, Optional, Union
+from secrets import randbelow
 from gmpy2 import mpz, powmod, to_binary, from_binary
 
 # Constants used by ElectionGuard
@@ -224,6 +224,16 @@ def pow_p(b: ElementModPOrQ, e: ElementModPOrQ) -> ElementModP:
     return ElementModP(powmod(b.elem, e.elem, P))
 
 
+def pow_q(b: ElementModPOrQ, e: ElementModPOrQ) -> ElementModQ:
+    """
+    Computes b^e mod p.
+
+    :param b: An element in [0,P).
+    :param e: An element in [0,P).
+    """
+    return ElementModQ(powmod(b.elem, e.elem, Q))
+
+
 def mult_p(*elems: ElementModPOrQ) -> ElementModP:
     """
     Computes the product, mod p, of all elements.
@@ -236,6 +246,18 @@ def mult_p(*elems: ElementModPOrQ) -> ElementModP:
     return ElementModP(product)
 
 
+def mult_q(*elems: ElementModPOrQ) -> ElementModQ:
+    """
+    Computes the product, mod q, of all elements.
+
+    :param elems: Zero or more elements in [0,P).
+    """
+    product = mpz(1)
+    for x in elems:
+        product = (product * x.elem) % Q
+    return ElementModQ(product)
+
+
 def g_pow_p(e: ElementModPOrQ) -> ElementModP:
     """
     Computes g^e mod p.
@@ -243,6 +265,13 @@ def g_pow_p(e: ElementModPOrQ) -> ElementModP:
     :param e: An element in [0,P).
     """
     return pow_p(ElementModP(mpz(G)), e)
+
+
+def rand_below_q() -> ElementModQ:
+    """
+    Generate random number below Q
+    """
+    return int_to_q_unchecked(randbelow(Q))
 
 
 def eq_elems(a: ElementModPOrQ, b: ElementModPOrQ) -> bool:
