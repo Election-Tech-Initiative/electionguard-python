@@ -639,20 +639,41 @@ class CiphertextBallot(ElectionObjectBase, CryptoHashCheckable):
 
 
 class BallotBoxState(Enum):
+    """
+    Enumeration used when marking a ballot as cast or spoiled
+    """
+
     CAST = 1
+    """
+    A ballot that has been explicitly cast
+    """
     SPOILED = 2
+    """
+    A ballot that has been explicitly spoiled
+    """
     UNKNOWN = 999
+    """
+    A ballot whose state is unknown to ElectionGuard and will not be included in any exlection results
+    """
 
 
-# TODO: immutable
 @dataclass
 class CiphertextBallotBoxBallot(CiphertextBallot):
+    """
+    a `CiphertextBallotBoxBallot` represents a ballot that is or is about to be either cast or spoiled.
+    The state supports the `BallotBoxState.UNKNOWN` enumeration to indicate that this object is mutable
+    and has not yet been explicitly assigned a specific state.
+    """
+
     state: BallotBoxState = field(default=BallotBoxState.UNKNOWN)
 
 
 def from_ciphertext_ballot(
     ballot: CiphertextBallot, state: BallotBoxState
 ) -> CiphertextBallotBoxBallot:
+    """
+    Convert a `CiphertextBallot` into a `CiphertextBallotBoxBallot` with the correct state
+    """
     return CiphertextBallotBoxBallot(
         object_id=ballot.object_id,
         ballot_style=ballot.ballot_style,

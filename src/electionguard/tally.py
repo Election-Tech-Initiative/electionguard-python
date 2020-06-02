@@ -94,16 +94,26 @@ class CiphertextTallyContest(ElectionObjectBase):
 @dataclass
 class CiphertextTally(ElectionObjectBase):
     """
+    A `CiphertextTally` accepts cast and spoiled ballots and accumulates a tally on the cast ballots
     """
 
     _metadata: InternalElectionDescription
     _encryption: CiphertextElectionContext
-    # TODO: cache a collection of cast id's, make sure we can't cast a spoiled, and spoil a cast by id
+
+    # A local cache of ballots id's that have already been cast
     _cast_ballot_ids: Set[str] = field(init=False)
+
     cast: Dict[str, CiphertextTallyContest] = field(init=False)
+    """
+    A collection of each contest and selection in an election.  
+    Retains an encrypted representation of a tally for each selection
+    """
     spoiled_ballots: Dict[str, CiphertextBallotBoxBallot] = field(
         default_factory=lambda: {}
     )
+    """
+    All of the ballots marked spoiled in the election
+    """
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "_cast_ballot_ids", set())
