@@ -468,8 +468,10 @@ class TestEncrypt(unittest.TestCase):
         keypair = elgamal_keypair_from_secret(TWO_MOD_Q)
         seed = ONE_MOD_Q
 
-        ####################
-        data = ballot_factory.get_random_contest_from(description, Random(0))
+        # Bypass checking the validity of the description
+        data = ballot_factory.get_random_contest_from(
+            description, Random(0), suppress_validity_check=True
+        )
 
         placeholders = generate_placeholder_selections_from(
             description, description.number_elected

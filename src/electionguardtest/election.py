@@ -82,7 +82,6 @@ _first_names = [
     "Mirai",
     "Anant",
     "Rohan",
-    # and now for some names with accent characters
     "François",
     "Altuğ",
     "Sigurður",
@@ -134,7 +133,6 @@ _last_names = [
     "ANAND",
     "PATEL",
     "GUPTA",
-    # and now for some names with accent characters
     "ĐẶNG",
 ]
 
@@ -142,7 +140,7 @@ _last_names = [
 @composite
 def human_names(draw: _DrawType):
     """
-    Generates a string with a human first and last name (based on popular first and last names in the U.S.).
+    Generates a string with a human first and last name.
     :param draw: Hidden argument, used by Hypothesis.
     """
     return f"{_first_names[draw(integers(0, len(_first_names) - 1))]} {_last_names[draw(integers(0, len(_last_names) - 1))]}"
@@ -154,9 +152,7 @@ def election_types(draw: _DrawType):
     Generates an `ElectionType`.
     :param draw: Hidden argument, used by Hypothesis.
     """
-    n = draw(
-        integers(0, 7)
-    )  # eventually we need to support all of the different election types
+    n = draw(integers(0, 7))
     return ElectionType(n)
 
 
@@ -248,8 +244,7 @@ def annotated_strings(draw: _DrawType):
     :param draw: Hidden argument, used by Hypothesis.
     """
     s = draw(languages())
-    # We're just reusing the "value" string already associated with the language.
-    # This could be made fancier, but good enough for now.
+    # We're just reusing the "value" string already associated with the language for now.
     return AnnotatedString(annotation=s.language, value=s.value)
 
 
@@ -268,16 +263,16 @@ def ballot_styles(
     assert len(party_ids) > 0
     assert len(geo_units) > 0
 
-    gids = [x.object_id for x in geo_units]
-    if len(gids) == 0:
-        gids = None
+    gp_unit_ids = [x.object_id for x in geo_units]
+    if len(gp_unit_ids) == 0:
+        gp_unit_ids = None
 
-    pids = [x.get_party_id() for x in party_ids]
-    if len(pids) == 0:
-        pids = None
+    party_ids = [x.get_party_id() for x in party_ids]
+    if len(party_ids) == 0:
+        party_ids = None
 
     image_uri = draw(urls())
-    return BallotStyle(str(draw(uuids())), gids, pids, image_uri)
+    return BallotStyle(str(draw(uuids())), gp_unit_ids, party_ids, image_uri)
 
 
 @composite
@@ -311,10 +306,10 @@ def geopolitical_units(draw: _DrawType):
     :param draw: Hidden argument, used by Hypothesis.
     """
     return GeopoliticalUnit(
-        str(draw(uuids())),
-        draw(emails()),
-        draw(reporting_unit_types()),
-        draw(contact_infos()),
+        object_id=str(draw(uuids())),
+        name=draw(emails()),
+        type=draw(reporting_unit_types()),
+        contact_information=draw(contact_infos()),
     )
 
 
@@ -330,14 +325,14 @@ def candidates(draw: _DrawType, party_list: Optional[List[Party]]):
     bools = booleans()
     if party_list:
         party = party_list[draw(integers(0, len(party_list) - 1))]
-        pid = party.get_party_id()
+        party_id = party.get_party_id()
     else:
-        pid = None
+        party_id = None
 
     return Candidate(
         str(draw(uuids())),
         draw(internationalized_human_names()),
-        pid,
+        party_id,
         draw(one_of(just(None), urls())),
     )
 
@@ -386,15 +381,15 @@ def candidate_contest_descriptions(
 
     party_ids = [p.get_party_id() for p in party_list]
 
-    cs = draw(lists(candidates(party_list), min_size=m, max_size=m))
+    contest_candidates = draw(lists(candidates(party_list), min_size=m, max_size=m))
     selection_descriptions = [
-        _candidate_to_selection_description(cs[i], i) for i in range(m)
+        _candidate_to_selection_description(contest_candidates[i], i) for i in range(m)
     ]
 
     vote_variation = VoteVariationType.one_of_m if n == 1 else VoteVariationType.n_of_m
 
     return (
-        cs,
+        contest_candidates,
         CandidateContestDescription(
             object_id=str(draw(uuids())),
             electoral_district_id=geo_units[
@@ -455,13 +450,13 @@ def referendum_contest_descriptions(
     """
     n = draw(integers(1, 3))
 
-    cs = draw(lists(candidates(None), min_size=n, max_size=n))
+    contest_candidates = draw(lists(candidates(None), min_size=n, max_size=n))
     selection_descriptions = [
-        _candidate_to_selection_description(cs[i], i) for i in range(n)
+        _candidate_to_selection_description(contest_candidates[i], i) for i in range(n)
     ]
 
     return (
-        cs,
+        contest_candidates,
         ReferendumContestDescription(
             object_id=str(draw(uuids())),
             electoral_district_id=geo_units[
@@ -522,13 +517,18 @@ def election_descriptions(
     # keep this small so tests run faster
     parties: List[Party] = draw(party_lists(num_parties))
     num_contests: int = draw(integers(1, max_num_contests))
-    contest_tuples: List[Tuple[List[Candidate], ContestDescription]] = [
+
+    # generate a collection candidates mapped to contest descritpions
+    candidate_contests: List[Tuple[List[Candidate], ContestDescription]] = [
         draw(contest_descriptions(i, parties, geo_units)) for i in range(num_contests)
     ]
-    assert len(contest_tuples) > 0
+    assert len(candidate_contests) > 0
 
-    cs = reduce(lambda a, b: a + b, [c[0] for c in contest_tuples])
-    contests = [c[1] for c in contest_tuples]
+    candidates_ = reduce(
+        lambda a, b: a + b,
+        [candidate_contest[0] for candidate_contest in candidate_contests],
+    )
+    contests = [candidate_contest[1] for candidate_contest in candidate_contests]
 
     styles = [draw(ballot_styles(parties, geo_units))]
 
@@ -543,7 +543,7 @@ def election_descriptions(
         end_date=end_date,
         geopolitical_units=geo_units,
         parties=parties,
-        candidates=cs,
+        candidates=candidates_,
         contests=contests,
         ballot_styles=styles,
         name=draw(internationalized_texts()),
@@ -552,33 +552,32 @@ def election_descriptions(
 
 
 @composite
-def plaintext_voted_ballots(draw: _DrawType, ied: InternalElectionDescription):
+def plaintext_voted_ballots(draw: _DrawType, metadata: InternalElectionDescription):
     """
     Given an `InternalElectionDescription` object, generates an arbitrary `PlaintextBallot` with the
     choices made randomly.
     :param draw: Hidden argument, used by Hypothesis.
-    :param ied: Any `InternalElectionDescription`
+    :param metadata: Any `InternalElectionDescription`
     """
 
-    num_ballot_styles = len(ied.ballot_styles)
+    num_ballot_styles = len(metadata.ballot_styles)
     assert (
         num_ballot_styles > 0
     ), "we shouldn't ever have an election with no ballot styles"
 
     # pick a ballot style at random
-    bs = ied.ballot_styles[draw(integers(0, num_ballot_styles - 1))]
-    bs_id = bs.object_id
+    ballot_style = metadata.ballot_styles[draw(integers(0, num_ballot_styles - 1))]
 
-    contests = ied.get_contests_for(bs_id)
+    contests = metadata.get_contests_for(ballot_style.object_id)
     assert (
         len(contests) > 0
     ), "we shouldn't ever have a ballot style with no contests in it"
 
     voted_contests: List[PlaintextBallotContest] = []
-    for c in contests:
-        assert c.is_valid(), "every contest needs to be valid"
-        n = c.number_elected  # we need exactly this many 1's, and the rest 0's
-        ballot_selections = c.ballot_selections
+    for contest in contests:
+        assert contest.is_valid(), "every contest needs to be valid"
+        n = contest.number_elected  # we need exactly this many 1's, and the rest 0's
+        ballot_selections = contest.ballot_selections
         assert len(ballot_selections) >= n
 
         random = Random(draw(integers()))
@@ -588,37 +587,45 @@ def plaintext_voted_ballots(draw: _DrawType, ied: InternalElectionDescription):
         no_votes = ballot_selections[cut_point:]
 
         voted_selections = [
-            selection_from(x, is_placeholder=False, is_affirmative=True)
-            for x in yes_votes
+            selection_from(description, is_placeholder=False, is_affirmative=True)
+            for description in yes_votes
         ] + [
-            selection_from(x, is_placeholder=False, is_affirmative=False)
-            for x in no_votes
+            selection_from(description, is_placeholder=False, is_affirmative=False)
+            for description in no_votes
         ]
 
-        voted_contests.append(PlaintextBallotContest(c.object_id, voted_selections))
+        voted_contests.append(
+            PlaintextBallotContest(contest.object_id, voted_selections)
+        )
 
-    return PlaintextBallot(str(draw(uuids())), bs_id, voted_contests)
+    return PlaintextBallot(str(draw(uuids())), ballot_style.object_id, voted_contests)
 
 
 CIPHERTEXT_ELECTIONS_TUPLE_TYPE = Tuple[ElementModQ, CiphertextElectionContext]
 
 
 @composite
-def ciphertext_elections(draw: _DrawType, ed: ElectionDescription):
+def ciphertext_elections(draw: _DrawType, election_description: ElectionDescription):
     """
     Generates a tuple of a `CiphertextElectionContext` and the secret key associated with it -- this is the context you
     need to do any of the encryption/decryption operations. These contexts have exactly one trustee. Hypothesis doesn't
     let us declare a type hint on strategy return values, so you can use `CIPHERTEXT_ELECTIONS_TUPLE_TYPE`.
 
     :param draw: Hidden argument, used by Hypothesis.
-    :param ed: An `ElectionDescription` object, with which the `CiphertextElectionContext` will be associated
+    :param election_description: An `ElectionDescription` object, with which the `CiphertextElectionContext` will be associated
+    :return: a tuple of a `CiphertextElectionContext` and the secret key associated with it
     """
     secret_key, public_key = draw(elgamal_keypairs())
-    ret_val: CIPHERTEXT_ELECTIONS_TUPLE_TYPE = (
+    ciphertext_election_with_secret: CIPHERTEXT_ELECTIONS_TUPLE_TYPE = (
         secret_key,
-        CiphertextElectionContext(1, 1, public_key, ed.crypto_hash()),
+        CiphertextElectionContext(
+            number_trustees=1,
+            threshold_trustees=1,
+            elgamal_public_key=public_key,
+            description_hash=election_description.crypto_hash(),
+        ),
     )
-    return ret_val
+    return ciphertext_election_with_secret
 
 
 ELECTIONS_AND_BALLOTS_TUPLE_TYPE = Tuple[
@@ -632,20 +639,29 @@ ELECTIONS_AND_BALLOTS_TUPLE_TYPE = Tuple[
 @composite
 def elections_and_ballots(draw: _DrawType, num_ballots: int = 3):
     """
-    Generates a tuple of: an `InternalElectionDescription`, a list of plaintext ballots, an ElGamal secret key,
-    and a `CiphertextElectionContext`. Every ballot will match the same ballot style. Hypothesis doesn't
+    A convenience generator to generate all of the necessary components for simulating an election.
+    Every ballot will match the same ballot style. Hypothesis doesn't
     let us declare a type hint on strategy return values, so you can use `ELECTIONS_AND_BALLOTS_TUPLE_TYPE`.
 
     :param draw: Hidden argument, used by Hypothesis.
     :param num_ballots: The number of ballots to generate (default: 3).
+    :reeturn: a tuple of: an `InternalElectionDescription`, a list of plaintext ballots, an ElGamal secret key,
+        and a `CiphertextElectionContext`
     """
     assert num_ballots >= 0, "You're asking for a negative number of ballots?"
-    ed = draw(election_descriptions())
-    ied = InternalElectionDescription(ed)
+    election_description = draw(election_descriptions())
+    election_metadata = InternalElectionDescription(election_description)
 
-    ballots = [draw(plaintext_voted_ballots(ied)) for _ in range(num_ballots)]
+    ballots = [
+        draw(plaintext_voted_ballots(election_metadata)) for _ in range(num_ballots)
+    ]
 
-    secret_key, ce = draw(ciphertext_elections(ed))
+    secret_key, encryption_context = draw(ciphertext_elections(election_description))
 
-    ret_val: ELECTIONS_AND_BALLOTS_TUPLE_TYPE = (ied, ballots, secret_key, ce)
-    return ret_val
+    mock_election: ELECTIONS_AND_BALLOTS_TUPLE_TYPE = (
+        election_metadata,
+        ballots,
+        secret_key,
+        encryption_context,
+    )
+    return mock_election

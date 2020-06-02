@@ -1,5 +1,4 @@
 import unittest
-import os
 from typing import Tuple
 
 from datetime import timedelta

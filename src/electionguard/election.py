@@ -419,7 +419,7 @@ class ContestDescription(ElectionObjectBase, CryptoHashable):
                 ),
             )
 
-        return True
+        return success
 
 
 @dataclass
