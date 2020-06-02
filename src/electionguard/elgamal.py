@@ -15,7 +15,7 @@ from .group import (
 )
 from .hash import hash_elems
 from .logs import log_error
-from .utils import flatmap_optional, unwrap_optional
+from .utils import flatmap_optional, get_optional
 
 
 class ElGamalKeyPair(NamedTuple):
@@ -84,7 +84,7 @@ def elgamal_keypair_from_secret(a: ElementModQ) -> Optional[ElGamalKeyPair]:
 
 
 def elgamal_keypair_random() -> ElGamalKeyPair:
-    return unwrap_optional(elgamal_keypair_from_secret(TWO_MOD_Q))
+    return get_optional(elgamal_keypair_from_secret(TWO_MOD_Q))
 
 
 def elgamal_combine_public_keys(keys: Iterable[ElementModP]) -> ElementModP:
