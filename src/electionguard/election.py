@@ -673,7 +673,7 @@ class ElectionDescription(Serializable, CryptoHashable):
 @dataclass(frozen=True)
 class InternalElectionDescription(object):
     """
-    `InternalElectionDescription` is a subset of the `Election` structure that specifies
+    `InternalElectionDescription` is a subset of the `ElectionDescription` structure that specifies
     the components that ElectionGuard uses for conducting an election.  The key component is the
     `contests` collection, which applies placeholder selections to the `ElectionDescription` contests
     """
@@ -761,8 +761,14 @@ class CiphertextElectionContext(Serializable):  # TODO: CryptoHashcheckable
     Refer to the [Electionguard Specification](https://github.com/microsoft/electionguard) for more information
     """
 
-    number_trustees: int
-    threshold_trustees: int
+    number_of_guardians: int
+    """
+    The number of guardians necessary to generate the public key
+    """
+    quorum: int
+    """
+    The quorum of guardians necessary to decrypt an election.  Must be less than `number_of_guardians`
+    """
 
     # the `joint public key (K)` in the [ElectionGuard Spec](https://github.com/microsoft/electionguard/wiki)
     elgamal_public_key: ElementModP
@@ -792,14 +798,14 @@ class CiphertextElectionContext(Serializable):  # TODO: CryptoHashcheckable
         - prime modulus (𝑝), 
         - subgroup order (𝑞), 
         - generator (𝑔), 
-        - number of trustees (𝑛), 
+        - number of guardians (𝑛), 
         - decryption threshold value (𝑘), 
         to form a base hash code (𝑄) which will be incorporated 
         into every subsequent hash computation in the election.
         """
 
         return hash_elems(
-            P, Q, G, self.number_trustees, self.threshold_trustees, seed_hash
+            P, Q, G, self.number_of_guardians, self.quorum, seed_hash
         )
 
     def _crypto_extended_base_hash(
@@ -807,7 +813,7 @@ class CiphertextElectionContext(Serializable):  # TODO: CryptoHashcheckable
     ) -> ElementModQ:
         """
         Once the baseline parameters have been produced and confirmed, 
-        all of the public trustee commitments 𝐾𝑖,𝑗 are hashed together 
+        all of the public guardian commitments 𝐾𝑖,𝑗 are hashed together 
         with the base hash 𝑄 to form an extended base hash 𝑄' that will 
         form the basis of subsequent hash computations.
         """
