@@ -41,28 +41,29 @@ def ballot_is_valid_for_style(
         for contest in ballot.contests:
             if description.object_id == contest.object_id:
                 use_contest = contest
+                break
 
-            # verify the contest exists on the ballot
-            if use_contest is None:
-                log_warning(
-                    f"ballot is not valid for style: missing contest {description.object_id}"
-                )
-                return False
+        # verify the contest exists on the ballot
+        if use_contest is None:
+            log_warning(
+                f"ballot is not valid for style: missing contest {description.object_id}"
+            )
+            return False
 
-            # verify the hash matches
-            if contest.description_hash != description.crypto_hash():
-                log_warning(
-                    f"ballot is not valid for style: mismatched hash for contest {description.object_id}"
-                )
-                return False
+        # verify the hash matches
+        if contest.description_hash != description.crypto_hash():
+            log_warning(
+                f"ballot is not valid for style: mismatched hash {contest.description_hash} for contest {description.object_id} hash {description.crypto_hash()}"
+            )
+            return False
 
-            # verify the placeholder count
-            if len(contest.ballot_selections) != len(
-                description.ballot_selections
-            ) + len(description.placeholder_selections):
-                log_warning(
-                    f"ballot is not valid for style: mismatched selection count for contest {description.object_id}"
-                )
-                return False
+        # verify the placeholder count
+        if len(contest.ballot_selections) != len(
+            description.ballot_selections
+        ) + len(description.placeholder_selections):
+            log_warning(
+                f"ballot is not valid for style: mismatched selection count for contest {description.object_id}"
+            )
+            return False
 
     return True
