@@ -19,8 +19,14 @@ class ElectionBuilder(object):
     following the initialization process that ElectionGuard Expects.
     """
 
-    number_trustees: int
-    threshold_trustees: int
+    number_guardians: int
+    """
+    The number of guardians necessary to generate the public key
+    """
+    quorum_of_guardians: int
+    """
+    The quorum of guardians necessary to decrypt an election.  Must be less than `number_guardians`
+    """
 
     description: ElectionDescription
 
@@ -48,8 +54,8 @@ class ElectionBuilder(object):
         return (
             self.internal_description,
             CiphertextElectionContext(
-                self.number_trustees,
-                self.threshold_trustees,
+                self.number_guardians,
+                self.quorum_of_guardians,
                 get_optional(self.elgamal_public_key),
                 self.description.crypto_hash(),
             ),

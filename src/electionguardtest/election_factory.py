@@ -135,7 +135,7 @@ class ElectionFactory(object):
         self, description: ElectionDescription, elgamal_public_key: ElementModP
     ) -> Tuple[InternalElectionDescription, CiphertextElectionContext]:
         builder = ElectionBuilder(
-            number_trustees=1, threshold_trustees=1, description=description
+            number_guardians=1, quorum_of_guardians=1, description=description
         )
         builder.set_public_key(elgamal_public_key)
         metadata, election = get_optional(builder.build())
