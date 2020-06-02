@@ -607,9 +607,9 @@ CIPHERTEXT_ELECTIONS_TUPLE_TYPE = Tuple[ElementModQ, CiphertextElectionContext]
 @composite
 def ciphertext_elections(draw: _DrawType, election_description: ElectionDescription):
     """
-    Generates a tuple of a `CiphertextElectionContext` and the secret key associated with it -- this is the context you
-    need to do any of the encryption/decryption operations. These contexts have exactly one trustee. Hypothesis doesn't
-    let us declare a type hint on strategy return values, so you can use `CIPHERTEXT_ELECTIONS_TUPLE_TYPE`.
+    Generates a `CiphertextElectionContext` with a single public-private key pair as the encryptioin context.
+
+    In a real election, the key ceremony would be used to generate a shared public key.
 
     :param draw: Hidden argument, used by Hypothesis.
     :param election_description: An `ElectionDescription` object, with which the `CiphertextElectionContext` will be associated
@@ -619,8 +619,8 @@ def ciphertext_elections(draw: _DrawType, election_description: ElectionDescript
     ciphertext_election_with_secret: CIPHERTEXT_ELECTIONS_TUPLE_TYPE = (
         secret_key,
         CiphertextElectionContext(
-            number_trustees=1,
-            threshold_trustees=1,
+            number_of_guardians=1,
+            quorum=1,
             elgamal_public_key=public_key,
             description_hash=election_description.crypto_hash(),
         ),
