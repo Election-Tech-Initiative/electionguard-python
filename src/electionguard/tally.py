@@ -73,7 +73,7 @@ class CiphertextTallyContest(ElectionObjectBase):
             return False
 
         # iterate through the tally selections and add the new value to the total
-        for (key, selection_tally) in self.tally_selections:
+        for key, selection_tally in self.tally_selections.items():
             use_selection = None
             for selection in contest_selections:
                 if key == selection.object_id:
@@ -167,6 +167,7 @@ class CiphertextTally(ElectionObjectBase):
         """
         Build the object graph for the tally from the InternalElectionDescription
         """
+
         cast_collection: Dict[str, CiphertextTallyContest] = {}
         for contest in description.contests:
             # build a collection of valid selections for the contest description
@@ -181,6 +182,8 @@ class CiphertextTally(ElectionObjectBase):
                 contest.object_id, contest.crypto_hash(), contest_selections
             )
 
+        log_warning(f"built collection: {cast_collection}")
+
         return cast_collection
 
 
@@ -191,6 +194,8 @@ def tally_ballot(
     Tally a ballt that is either Cast or Spoiled
     :return: The mutated CiphertextTally or None if there is an error
     """
+
+    log_warning(f"tallying: {ballot.object_id}")
 
     if ballot.state == BallotBoxState.CAST:
         if not tally.add_cast(ballot):
@@ -222,7 +227,7 @@ def tally_ballots(
     tally: CiphertextTally = CiphertextTally(
         "election-results", metadata, encryption_context
     )
-    for ballot in iter(store):
+    for ballot in store:
         if tally_ballot(ballot, tally) is None:
             return None
     return tally

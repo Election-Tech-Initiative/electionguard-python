@@ -18,6 +18,7 @@ from electionguardtest.election import (
     ELECTIONS_AND_BALLOTS_TUPLE_TYPE,
 )
 from electionguardtest.group import elements_mod_q
+from electionguardtest.tally import accumulate_plaintext_ballots
 
 
 class TestElections(unittest.TestCase):
@@ -58,7 +59,7 @@ class TestElections(unittest.TestCase):
         metadata, ballots, secret_key, context = everything
 
         # Tally the plaintext ballots for comparison later
-        plaintext_tallies = _accumulate_plaintext_ballots(ballots)
+        plaintext_tallies = accumulate_plaintext_ballots(ballots)
         num_ballots = len(ballots)
         num_contests = len(metadata.contests)
         zero_nonce, *nonces = Nonces(nonce)[: num_ballots + 1]
@@ -167,31 +168,4 @@ def _accumulate_encrypted_ballots(
                 if desc_id not in tally:
                     tally[desc_id] = encrypted_zero
                 tally[desc_id] = elgamal_add(tally[desc_id], selection.message)
-    return tally
-
-
-def _accumulate_plaintext_ballots(ballots: List[PlaintextBallot]) -> Dict[str, int]:
-    """
-    Internal helper function for testing: takes a list of plaintext ballots as input,
-    digs into all of the individual selections and then accumulates them, using
-    their `object_id` fields as keys. This function only knows what to do with
-    `n_of_m` elections. It's not a general-purpose tallying mechanism for other
-    election types.
-
-    :param ballots: a list of plaintext ballots
-    :return: a dict from selection object_id's to integer totals
-    """
-    tally: Dict[str, int] = {}
-    for ballot in ballots:
-        for contest in ballot.contests:
-            for selection in contest.ballot_selections:
-                assert (
-                    not selection.is_placeholder_selection
-                ), "we shouldn't have placeholder selections in the plaintext ballots"
-                desc_id = selection.object_id
-                if desc_id not in tally:
-                    tally[desc_id] = 0
-                tally[
-                    desc_id
-                ] += selection.to_int()  # returns 1 or 0 for n-of-m ballot selections
     return tally

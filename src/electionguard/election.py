@@ -804,9 +804,7 @@ class CiphertextElectionContext(Serializable):  # TODO: CryptoHashcheckable
         into every subsequent hash computation in the election.
         """
 
-        return hash_elems(
-            P, Q, G, self.number_of_guardians, self.quorum, seed_hash
-        )
+        return hash_elems(P, Q, G, self.number_of_guardians, self.quorum, seed_hash)
 
     def _crypto_extended_base_hash(
         self, elgamal_public_key: ElementModP
@@ -886,3 +884,4 @@ def generate_placeholder_selections_from(
             get_optional(generate_placeholder_selection_from(contest, sequence_order))
         )
     return selections
+
