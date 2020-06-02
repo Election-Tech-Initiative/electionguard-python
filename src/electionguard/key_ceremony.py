@@ -22,7 +22,7 @@ from .elgamal import (
 )
 from .group import (
     int_to_q_unchecked,
-    rand_below_q,
+    rand_q,
     ElementModP,
 )
 from .schnorr import SchnorrProof, make_schnorr_proof
@@ -56,7 +56,13 @@ class AuxiliaryPublicKey(NamedTuple):
 
 AuxiliaryEncrypt = Callable[[str, AuxiliaryPublicKey], str]
 
+# FIX_ME Default Auxiliary Encrypt is temporary placeholder
+default_auxiliary_encrypt = lambda unencrypted, key: unencrypted
+
 AuxiliaryDecrypt = Callable[[str, AuxiliaryKeyPair], str]
+
+# FIX_ME Default Auxiliary Decrypt is temporary placeholder
+default_auxiliary_decrypt = lambda encrypted, key_pair: encrypted
 
 
 class ElectionKeyPair(NamedTuple):
@@ -120,6 +126,9 @@ U = TypeVar("U")
 class GuardianDataStore(Generic[T, U]):
     _store: Dict[T, U]
 
+    def __init__(self) -> None:
+        self._store = {}
+
     def set(self, key: T, value: U) -> None:
         self._store[key] = value
 
@@ -149,7 +158,7 @@ def generate_election_key_pair(quorum: int) -> ElectionKeyPair:
     key_pair = ElGamalKeyPair(
         polynomial.coefficients[0], polynomial.coefficient_commitments[0]
     )
-    proof = make_schnorr_proof(key_pair, rand_below_q())
+    proof = make_schnorr_proof(key_pair, rand_q())
     return ElectionKeyPair(key_pair, proof, polynomial)
 
 
@@ -157,7 +166,7 @@ def generate_election_partial_key_backup(
     owner_id: GuardianId,
     polynomial: ElectionPolynomial,
     auxiliary_public_key: AuxiliaryPublicKey,
-    encrypt: AuxiliaryEncrypt,
+    encrypt: AuxiliaryEncrypt = default_auxiliary_encrypt,
 ) -> ElectionPartialKeyBackup:
     value = compute_polynomial_value(auxiliary_public_key.sequence_order, polynomial)
     encrypted_value = encrypt(str(value.to_int()), auxiliary_public_key)
@@ -175,7 +184,7 @@ def verify_election_partial_key_backup(
     verifier_id: GuardianId,
     backup: ElectionPartialKeyBackup,
     auxiliary_key_pair: AuxiliaryKeyPair,
-    decrypt: AuxiliaryDecrypt,
+    decrypt: AuxiliaryDecrypt = default_auxiliary_decrypt,
 ) -> ElectionPartialKeyVerification:
     decrypted_value = decrypt(backup.encrypted_value, auxiliary_key_pair)
     value = int_to_q_unchecked(int(decrypted_value))
@@ -222,5 +231,6 @@ def combine_election_public_keys(
     election_public_keys: GuardianDataStore[GuardianId, ElectionPublicKey]
 ) -> ElectionJointKey:
     # FIXME Lambda or map may not be capable of being transliterated. Consider alternative.
-    public_keys = List(map(lambda value: value.key, election_public_keys.values()))
+    public_keys = map(lambda public_key: public_key.key, election_public_keys.values())
+
     return elgamal_combine_public_keys(public_keys)

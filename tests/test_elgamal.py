@@ -10,6 +10,8 @@ from electionguard.elgamal import (
     elgamal_encrypt,
     elgamal_add,
     elgamal_keypair_from_secret,
+    elgamal_keypair_random,
+    elgamal_combine_public_keys,
 )
 from electionguard.group import (
     ElementModQ,
@@ -116,6 +118,31 @@ class TestElGamal(unittest.TestCase):
     @given(elgamal_keypairs())
     def test_elgamal_keypair_produces_valid_residue(self, keypair):
         self.assertTrue(keypair.public_key.is_valid_residue())
+
+    def test_elgamal_keypair_random(self):
+        # Act
+        random_keypair = elgamal_keypair_random()
+        random_keypair_two = elgamal_keypair_random()
+
+        # Assert
+        self.assertIsNotNone(random_keypair)
+        self.assertIsNotNone(random_keypair.public_key)
+        self.assertIsNotNone(random_keypair.secret_key)
+        self.assertNotEqual(random_keypair, random_keypair_two)
+
+    def test_elgamal_combine_public_keys(self):
+        # Arrange
+        random_keypair = elgamal_keypair_random()
+        random_keypair_two = elgamal_keypair_random()
+        public_keys = [random_keypair.public_key, random_keypair_two.public_key]
+
+        # Act
+        joint_key = elgamal_combine_public_keys(public_keys)
+
+        # Assert
+        self.assertIsNotNone(joint_key)
+        self.assertNotEqual(joint_key, random_keypair.public_key)
+        self.assertNotEqual(joint_key, random_keypair_two.public_key)
 
     # Here's an oddball test: checking whether running lots of parallel exponentiations yields the
     # correct answer. It certainly *should* work, but this verifies that nothing weird is happening
