@@ -40,8 +40,8 @@ with open(os.path.join(some_path, "election-manifest.json"), "r") as manifest:
 # Create an election builder instance, and configure it for a single public-private keypair.
 # in a real election, you would configure this for a group of guardians.  See Key Ceremony for more information.
 builder = ElectionBuilder(
-    number_guardians=1,     # since we will generate a single public-private keypair, we set this to 1
-    quorum_of_guardians=1,  # since we will generate a single public-private keypair, we set this to 1
+    number_of_guardians=1,     # since we will generate a single public-private keypair, we set this to 1
+    quorum=1,                  # since we will generate a single public-private keypair, we set this to 1
     description=election_description
 )
 

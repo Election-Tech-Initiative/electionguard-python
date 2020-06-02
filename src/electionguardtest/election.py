@@ -619,8 +619,8 @@ def ciphertext_elections(draw: _DrawType, election_description: ElectionDescript
     ciphertext_election_with_secret: CIPHERTEXT_ELECTIONS_TUPLE_TYPE = (
         secret_key,
         CiphertextElectionContext(
-            number_guardians=1,
-            quorum_of_guardians=1,
+            number_of_guardians=1,
+            quorum=1,
             elgamal_public_key=public_key,
             description_hash=election_description.crypto_hash(),
         ),

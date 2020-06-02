@@ -761,13 +761,13 @@ class CiphertextElectionContext(Serializable):  # TODO: CryptoHashcheckable
     Refer to the [Electionguard Specification](https://github.com/microsoft/electionguard) for more information
     """
 
-    number_guardians: int
+    number_of_guardians: int
     """
     The number of guardians necessary to generate the public key
     """
-    quorum_of_guardians: int
+    quorum: int
     """
-    The quorum of guardians necessary to decrypt an election.  Must be less than `number_guardians`
+    The quorum of guardians necessary to decrypt an election.  Must be less than `number_of_guardians`
     """
 
     # the `joint public key (K)` in the [ElectionGuard Spec](https://github.com/microsoft/electionguard/wiki)
@@ -805,7 +805,7 @@ class CiphertextElectionContext(Serializable):  # TODO: CryptoHashcheckable
         """
 
         return hash_elems(
-            P, Q, G, self.number_guardians, self.quorum_of_guardians, seed_hash
+            P, Q, G, self.number_of_guardians, self.quorum, seed_hash
         )
 
     def _crypto_extended_base_hash(
