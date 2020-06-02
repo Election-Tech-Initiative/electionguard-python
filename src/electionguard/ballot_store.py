@@ -1,6 +1,5 @@
 from collections.abc import Iterable
-from dataclasses import dataclass, field
-from enum import Enum
+
 from typing import (
     Dict,
     Iterable,
@@ -10,33 +9,8 @@ from typing import (
     Tuple,
 )
 
-from .ballot import CiphertextBallot
+from .ballot import BallotBoxState, CiphertextBallotBoxBallot
 from .logs import log_warning
-
-
-class BallotBoxState(Enum):
-    CAST = 1
-    SPOILED = 2
-    UNKNOWN = 999
-
-
-# TODO: immutable
-@dataclass
-class BallotBoxCiphertextBallot(CiphertextBallot):
-    state: BallotBoxState = field(default=BallotBoxState.UNKNOWN)
-
-
-def from_ciphertext_ballot(
-    ballot: CiphertextBallot, state: BallotBoxState
-) -> BallotBoxCiphertextBallot:
-    return BallotBoxCiphertextBallot(
-        object_id=ballot.object_id,
-        ballot_style=ballot.ballot_style,
-        description_hash=ballot.description_hash,
-        contests=ballot.contests,
-        nonce=ballot.nonce,
-        state=state,
-    )
 
 
 class BallotStore(Iterable):
@@ -44,16 +18,16 @@ class BallotStore(Iterable):
     A representation of a cache of ballots for an election
     """
 
-    _ballot_store: Dict[str, Optional[BallotBoxCiphertextBallot]]
+    _ballot_store: Dict[str, Optional[CiphertextBallotBoxBallot]]
 
     def __init__(self) -> None:
         self._ballot_store = {}
 
-    def __iter__(self) -> Iterator[BallotBoxCiphertextBallot]:
+    def __iter__(self) -> Iterator[CiphertextBallotBoxBallot]:
         return iter(self._ballot_store.values())
 
     def set(
-        self, ballot_id: str, ballot: Optional[BallotBoxCiphertextBallot] = None
+        self, ballot_id: str, ballot: Optional[CiphertextBallotBoxBallot] = None
     ) -> bool:
         """
         Set a specific ballot id to a specific ballot
@@ -64,15 +38,15 @@ class BallotStore(Iterable):
         self._ballot_store[ballot_id] = ballot
         return True
 
-    def all(self) -> List[BallotBoxCiphertextBallot]:
+    def all(self) -> List[CiphertextBallotBoxBallot]:
         """
-        Get all `BallotBoxCiphertextBallot` from the store
+        Get all `CiphertextBallotBoxBallot` from the store
         """
         return list(self._ballot_store.values())
 
-    def get(self, ballot_id: str) -> Optional[BallotBoxCiphertextBallot]:
+    def get(self, ballot_id: str) -> Optional[CiphertextBallotBoxBallot]:
         """
-        Get a BallotBoxCiphertextBallot from the store if it exists 
+        Get a CiphertextBallotBoxBallot from the store if it exists
         """
         try:
             return self._ballot_store[ballot_id]
@@ -81,10 +55,10 @@ class BallotStore(Iterable):
 
     def exists(
         self, ballot_id: str
-    ) -> Tuple[bool, Optional[BallotBoxCiphertextBallot]]:
+    ) -> Tuple[bool, Optional[CiphertextBallotBoxBallot]]:
         """
         Check if a specific ballot exists and return it.
-        :return: `Tuple[bool, Optional[BallotBoxCiphertextBallot]]`
+        :return: `Tuple[bool, Optional[CiphertextBallotBoxBallot]]`
         """
         existing_ballot = self.get(ballot_id)
         if existing_ballot is None:

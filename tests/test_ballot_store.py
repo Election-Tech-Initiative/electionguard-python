@@ -1,10 +1,7 @@
 import unittest
 
-from electionguard.ballot_store import (
-    BallotBoxCiphertextBallot,
-    BallotBoxState,
-    BallotStore,
-)
+from electionguard.ballot import BallotBoxState, CiphertextBallotBoxBallot
+from electionguard.ballot_store import BallotStore
 
 from electionguard.elgamal import elgamal_keypair_from_secret
 from electionguard.encrypt import encrypt_ballot
@@ -33,7 +30,7 @@ class TestBallotStore(unittest.TestCase):
 
         # Set up the ballot store
         subject = BallotStore()
-        data_cast = BallotBoxCiphertextBallot(
+        data_cast = CiphertextBallotBoxBallot(
             encrypted_ballot.object_id,
             encrypted_ballot.ballot_style,
             encrypted_ballot.description_hash,
@@ -41,7 +38,7 @@ class TestBallotStore(unittest.TestCase):
         )
         data_cast.state = BallotBoxState.CAST
 
-        data_spoiled = BallotBoxCiphertextBallot(
+        data_spoiled = CiphertextBallotBoxBallot(
             encrypted_ballot.object_id,
             encrypted_ballot.ballot_style,
             encrypted_ballot.description_hash,
@@ -56,7 +53,7 @@ class TestBallotStore(unittest.TestCase):
         self.assertFalse(
             subject.set(
                 "unknown",
-                BallotBoxCiphertextBallot(
+                CiphertextBallotBoxBallot(
                     encrypted_ballot.object_id,
                     encrypted_ballot.ballot_style,
                     encrypted_ballot.description_hash,

@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field, InitVar
+from enum import Enum
 from distutils import util
 from typing import Optional, List, Any, Sequence
 
@@ -635,3 +636,28 @@ class CiphertextBallot(ElectionObjectBase, CryptoHashCheckable):
                 )
             )
         return all(valid_proofs)
+
+
+class BallotBoxState(Enum):
+    CAST = 1
+    SPOILED = 2
+    UNKNOWN = 999
+
+
+# TODO: immutable
+@dataclass
+class CiphertextBallotBoxBallot(CiphertextBallot):
+    state: BallotBoxState = field(default=BallotBoxState.UNKNOWN)
+
+
+def from_ciphertext_ballot(
+    ballot: CiphertextBallot, state: BallotBoxState
+) -> CiphertextBallotBoxBallot:
+    return CiphertextBallotBoxBallot(
+        object_id=ballot.object_id,
+        ballot_style=ballot.ballot_style,
+        description_hash=ballot.description_hash,
+        contests=ballot.contests,
+        nonce=ballot.nonce,
+        state=state,
+    )

@@ -1,6 +1,7 @@
 import unittest
 
-from electionguard.ballot_store import BallotBoxState, BallotStore
+from electionguard.ballot import BallotBoxState
+from electionguard.ballot_store import BallotStore
 
 from electionguard.ballot_box import (
     BallotBox,
