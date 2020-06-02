@@ -1,15 +1,11 @@
+from abc import abstractmethod
 from hashlib import sha256
 from typing import (
-    Iterable,
-    List,
     Union,
-    Optional,
     Protocol,
     runtime_checkable,
-    TypeVar,
     Sequence,
 )
-from abc import abstractmethod
 
 from .group import (
     ElementModPOrQ,
@@ -40,12 +36,14 @@ class CryptoHashCheckable(Protocol):
         ...
 
 
-CRYPTO_HASHABLE_T = Union[CryptoHashable, ElementModPOrQ, str, int]
+# All the "atomic" types that we know how to hash.
+CRYPTO_HASHABLE_T = Union[CryptoHashable, ElementModPOrQ, str, int, None]
+
+# "Compound" types that we know how to hash. Note that we're using Sequence, rather than List,
+# because Sequences are read-only, and thus safely covariant. All this really means is that
+# we promise never to mutate any list that you pass to hash_elems.
 CRYPTO_HASHABLE_ALL = Union[
-    CRYPTO_HASHABLE_T,
-    Sequence[CRYPTO_HASHABLE_T],
-    Optional[CRYPTO_HASHABLE_T],
-    Optional[Sequence[CRYPTO_HASHABLE_T]],
+    Sequence[CRYPTO_HASHABLE_T], CRYPTO_HASHABLE_T,
 ]
 
 
@@ -73,14 +71,16 @@ def hash_elems(*a: CRYPTO_HASHABLE_ALL) -> ElementModQ:
             # so we'll go with the more JSON-ish "null".
             hash_me = "null"
 
-        elif isinstance(x, list):
-            # The simplest way to deal with lists is to crunch them recursively.
-            hash_me = str(hash_elems(*x).to_int())
-
         elif isinstance(x, ElementModP) or isinstance(x, ElementModQ):
             hash_me = str(x.to_int())
         elif isinstance(x, CryptoHashable):
             hash_me = str(x.crypto_hash().to_int())
+        elif isinstance(x, str):
+            # strings are iterable, so it's important to handle them before the following check
+            hash_me = x
+        elif isinstance(x, Sequence):
+            # The simplest way to deal with lists, tuples, and such are to crunch them recursively.
+            hash_me = str(hash_elems(*x).to_int())
         else:
             hash_me = str(x)
         h.update((hash_me + "|").encode("utf-8"))

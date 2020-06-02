@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from dataclasses import dataclass, field
 from typing import Optional, Tuple
 
@@ -7,7 +8,6 @@ from .election import (
     ElectionDescription,
     InternalElectionDescription,
 )
-
 from .group import ElementModP
 from .utils import get_optional
 

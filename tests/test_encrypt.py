@@ -2,21 +2,19 @@ import unittest
 from copy import deepcopy
 from datetime import timedelta
 from random import Random
+from secrets import randbelow
 from typing import Tuple
 
 from hypothesis import HealthCheck
 from hypothesis import given, settings
 from hypothesis.strategies import integers
 
-from electionguard.encrypt import (
-    contest_from,
-    encrypt_ballot,
-    encrypt_contest,
-    encrypt_selection,
-    selection_from,
-    EncryptionCompositor,
+import electionguardtest.ballot_factory as BallotFactory
+import electionguardtest.election_factory as ElectionFactory
+from electionguard.chaum_pedersen import (
+    make_constant_chaum_pedersen,
+    make_disjunctive_chaum_pedersen,
 )
-
 from electionguard.election import (
     ContestDescription,
     ContestDescriptionWithPlaceholders,
@@ -25,16 +23,18 @@ from electionguard.election import (
     SelectionDescription,
     VoteVariationType,
 )
-
-from electionguard.chaum_pedersen import (
-    make_constant_chaum_pedersen,
-    make_disjunctive_chaum_pedersen,
-)
-
 from electionguard.elgamal import (
     ElGamalKeyPair,
     elgamal_keypair_from_secret,
     elgamal_add,
+)
+from electionguard.encrypt import (
+    contest_from,
+    encrypt_ballot,
+    encrypt_contest,
+    encrypt_selection,
+    selection_from,
+    EncryptionCompositor,
 )
 from electionguard.group import (
     ElementModQ,
@@ -46,14 +46,8 @@ from electionguard.group import (
     TWO_MOD_P,
     mult_p,
 )
-
-from electionguardtest.elgamal import arb_elgamal_keypair
-from electionguardtest.group import arb_element_mod_q_no_zero
-
-import electionguardtest.ballot_factory as BallotFactory
-import electionguardtest.election_factory as ElectionFactory
-
-from secrets import randbelow
+from electionguardtest.elgamal import elgamal_keypairs
+from electionguardtest.group import elements_mod_q_no_zero
 
 election_factory = ElectionFactory.ElectionFactory()
 ballot_factory = BallotFactory.BallotFactory()
@@ -122,8 +116,8 @@ class TestEncrypt(unittest.TestCase):
     )
     @given(
         ElectionFactory.get_selection_description_well_formed(),
-        arb_elgamal_keypair(),
-        arb_element_mod_q_no_zero(),
+        elgamal_keypairs(),
+        elements_mod_q_no_zero(),
         integers(),
     )
     def test_encrypt_selection_valid_input_succeeds(
@@ -156,8 +150,8 @@ class TestEncrypt(unittest.TestCase):
     )
     @given(
         ElectionFactory.get_selection_description_well_formed(),
-        arb_elgamal_keypair(),
-        arb_element_mod_q_no_zero(),
+        elgamal_keypairs(),
+        elements_mod_q_no_zero(),
         integers(),
     )
     def test_encrypt_selection_valid_input_tampered_encryption_fails(
@@ -263,8 +257,8 @@ class TestEncrypt(unittest.TestCase):
     )
     @given(
         ElectionFactory.get_contest_description_well_formed(),
-        arb_elgamal_keypair(),
-        arb_element_mod_q_no_zero(),
+        elgamal_keypairs(),
+        elements_mod_q_no_zero(),
         integers(),
     )
     def test_encrypt_contest_valid_input_succeeds(
@@ -303,8 +297,8 @@ class TestEncrypt(unittest.TestCase):
     )
     @given(
         ElectionFactory.get_contest_description_well_formed(),
-        arb_elgamal_keypair(),
-        arb_element_mod_q_no_zero(),
+        elgamal_keypairs(),
+        elements_mod_q_no_zero(),
         integers(),
     )
     def test_encrypt_contest_valid_input_tampered_proof_fails(
@@ -357,8 +351,8 @@ class TestEncrypt(unittest.TestCase):
     )
     @given(
         ElectionFactory.get_contest_description_well_formed(),
-        arb_elgamal_keypair(),
-        arb_element_mod_q_no_zero(),
+        elgamal_keypairs(),
+        elements_mod_q_no_zero(),
         integers(1, 6),
         integers(),
     )
@@ -474,8 +468,10 @@ class TestEncrypt(unittest.TestCase):
         keypair = elgamal_keypair_from_secret(TWO_MOD_Q)
         seed = ONE_MOD_Q
 
-        ####################
-        data = ballot_factory.get_random_contest_from(description, Random(0))
+        # Bypass checking the validity of the description
+        data = ballot_factory.get_random_contest_from(
+            description, Random(0), suppress_validity_check=True
+        )
 
         placeholders = generate_placeholder_selections_from(
             description, description.number_elected
@@ -580,7 +576,7 @@ class TestEncrypt(unittest.TestCase):
         suppress_health_check=[HealthCheck.too_slow],
         max_examples=10,
     )
-    @given(arb_elgamal_keypair())
+    @given(elgamal_keypairs())
     def test_encrypt_ballot_with_derivative_nonces_regenerates_valid_proofs(
         self, keypair: ElGamalKeyPair
     ):
