@@ -12,6 +12,7 @@ from .group import (
     ZERO_MOD_Q,
     TWO_MOD_Q,
     int_to_q,
+    rand_range_q,
 )
 from .hash import hash_elems
 from .logs import log_error
@@ -84,7 +85,7 @@ def elgamal_keypair_from_secret(a: ElementModQ) -> Optional[ElGamalKeyPair]:
 
 
 def elgamal_keypair_random() -> ElGamalKeyPair:
-    return get_optional(elgamal_keypair_from_secret(TWO_MOD_Q))
+    return get_optional(elgamal_keypair_from_secret(rand_range_q(TWO_MOD_Q)))
 
 
 def elgamal_combine_public_keys(keys: Iterable[ElementModP]) -> ElementModP:

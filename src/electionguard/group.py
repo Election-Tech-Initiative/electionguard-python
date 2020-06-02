@@ -253,11 +253,21 @@ def g_pow_p(e: ElementModPOrQ) -> ElementModP:
     return pow_p(ElementModP(mpz(G)), e)
 
 
-def rand_below_q() -> ElementModQ:
+def rand_q() -> ElementModQ:
     """
-    Generate random number below Q
+    Generate random number between 0 and Q
     """
     return int_to_q_unchecked(randbelow(Q))
+
+
+def rand_range_q(start: ElementModPOrQ) -> ElementModQ:
+    """
+    Generate random number between start and Q
+    """
+    random = 0
+    while random < start.to_int():
+        random = randbelow(Q)
+    return int_to_q_unchecked(random)
 
 
 def eq_elems(a: ElementModPOrQ, b: ElementModPOrQ) -> bool:

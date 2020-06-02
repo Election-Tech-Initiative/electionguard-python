@@ -13,7 +13,7 @@ from .group import (
     ONE_MOD_P,
     pow_p,
     pow_q,
-    rand_below_q,
+    rand_q,
     ZERO_MOD_Q,
 )
 from .schnorr import make_schnorr_proof, SchnorrProof
@@ -28,10 +28,10 @@ class ElectionPolynomial(NamedTuple):
 def generate_polynomial(number_of_coefficients: int) -> ElectionPolynomial:
     polynomial = ElectionPolynomial([], [], [])
     for i in range(number_of_coefficients):
-        coefficient = rand_below_q()
+        coefficient = rand_q()
         commitment = g_pow_p(coefficient)
         proof = make_schnorr_proof(
-            ElGamalKeyPair(coefficient, commitment), rand_below_q()
+            ElGamalKeyPair(coefficient, commitment), rand_q()
         )  # FIXME Alternate schnoor proof method that doesn't need KeyPair
 
         polynomial.coefficients.append(coefficient)

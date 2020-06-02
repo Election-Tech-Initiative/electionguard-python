@@ -15,21 +15,32 @@ TEST_POLYNOMIAL_DEGREE = 3
 
 class TestElectionPolynomial(TestCase):
     def test_generate_polynomial(self):
+        # Act
         polynomial = generate_polynomial(TEST_POLYNOMIAL_DEGREE)
+
+        # Assert
         self.assertIsNotNone(polynomial)
 
     def test_compute_polynomial_value(self):
+        # Arrange
         polynomial = ElectionPolynomial(
             [ONE_MOD_Q, TWO_MOD_Q], [ONE_MOD_P, TWO_MOD_P], [],
         )
 
+        # Act
         value = compute_polynomial_value(TEST_EXPONENT_MODIFIER, polynomial)
+
+        # Assert
         self.assertIsNotNone(value)
 
     def test_verify_polynomial_value(self):
+        # Arrange
         polynomial = generate_polynomial(TEST_POLYNOMIAL_DEGREE)
+
+        # Act
         value = compute_polynomial_value(TEST_EXPONENT_MODIFIER, polynomial)
 
+        # Assert
         self.assertTrue(
             verify_polynomial_value(
                 value, TEST_EXPONENT_MODIFIER, polynomial.coefficient_commitments
