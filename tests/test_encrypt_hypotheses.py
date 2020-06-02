@@ -50,75 +50,85 @@ class TestElections(unittest.TestCase):
     ):
         """
         Tests that decryption is the inverse of encryption over arbitrarily generated elections and ballots.
+
+        This test uses an abitrarily generated dataset with a single public-private keypair for the election
+        encryption context.  It also manually verifies that homomorphic accumulation works as expected.
         """
+        # Arrange
+        metadata, ballots, secret_key, context = everything
 
-        ied, ballots, secret_key, ce = everything
-
-        # - first up, we'll do a tally on the plaintext ballots
-        # - next we'll encrypt the ballots
-        # - then we'll do the homomorphic accumulation
-        # - and decrypt the totals
-        # - and we'd better get the same thing out
-
-        counters = _accumulate_plaintext_ballots(ballots)
+        # Tally the plaintext ballots for comparison later
+        plaintext_tallies = _accumulate_plaintext_ballots(ballots)
         num_ballots = len(ballots)
-        num_contests = len(ied.contests)
+        num_contests = len(metadata.contests)
         zero_nonce, *nonces = Nonces(nonce)[: num_ballots + 1]
-        assert len(nonces) == num_ballots
+        self.assertEqual(len(nonces), num_ballots)
+        self.assertTrue(len(metadata.contests) > 0)
 
-        encrypted_zero = elgamal_encrypt(0, zero_nonce, ce.elgamal_public_key)
+        # Generatea valid encryption of zero
+        encrypted_zero = elgamal_encrypt(0, zero_nonce, context.elgamal_public_key)
 
-        c_ballots = []
+        # Act
+        encrypted_ballots = []
 
+        # encrypt each ballot
         for i in range(num_ballots):
-            cb = encrypt_ballot(ballots[i], ied, ce, nonces[i])
-            c_ballots.append(cb)
+            encrypted_ballot = encrypt_ballot(ballots[i], metadata, context, nonces[i])
+            encrypted_ballots.append(encrypted_ballot)
 
-            # before we do anything fancy, we'll decrypt each ballot and make sure that we get back
-            # identical plaintext.
+            # sanity check the encryption
+            self.assertIsNotNone(encrypted_ballot)
+            self.assertEqual(num_contests, len(encrypted_ballot.contests))
 
-            self.assertIsNotNone(cb)
-            self.assertEqual(num_contests, len(cb.contests))
-            db = decrypt_ballot_with_secret(
-                ballot=cb,
-                election_metadata=ied,
-                extended_base_hash=ce.crypto_extended_base_hash,
-                public_key=ce.elgamal_public_key,
+            # decrypt the ballot with secret and verify it matches the plaintext
+            decrypted_ballot = decrypt_ballot_with_secret(
+                ballot=encrypted_ballot,
+                election_metadata=metadata,
+                extended_base_hash=context.crypto_extended_base_hash,
+                public_key=context.elgamal_public_key,
                 secret_key=secret_key,
                 remove_placeholders=True,
             )
+            self.assertEqual(ballots[i], decrypted_ballot)
 
-            self.assertEqual(ballots[i], db)
+        # homomorphically accumualte the encrypted ballot representations
+        encrypted_tallies = _accumulate_encrypted_ballots(
+            encrypted_zero, encrypted_ballots
+        )
 
-        encrypted_totals = _accumulate_encrypted_ballots(encrypted_zero, c_ballots)
+        decrypted_tallies = {}
+        for object_id in encrypted_tallies.keys():
+            decrypted_tallies[object_id] = encrypted_tallies[object_id].decrypt(
+                secret_key
+            )
 
-        decrypted_totals = {}
-        for k in encrypted_totals.keys():
-            decrypted_totals[k] = encrypted_totals[k].decrypt(secret_key)
+        # loop through the contest descriptions and verify
+        # the decrypted tallies match the plaintext tallies
+        for contest in metadata.contests:
+            # Sanity check the generated data
+            self.assertTrue(len(contest.ballot_selections) > 0)
+            self.assertTrue(len(contest.placeholder_selections) > 0)
 
-        self.assertTrue(len(ied.contests) > 0)
-        for contest in ied.contests:
-            selections = contest.ballot_selections
-            placeholders = contest.placeholder_selections
-            self.assertTrue(len(selections) > 0)
-            self.assertTrue(len(placeholders) > 0)
-
-            decrypted_selection_counters = [
-                decrypted_totals[k.object_id] for k in selections
+            decrypted_selection_tallies = [
+                decrypted_tallies[selection.object_id]
+                for selection in contest.ballot_selections
             ]
-            decrypted_placeholder_counters = [
-                decrypted_totals[k.object_id] for k in placeholders
+            decrypted_placeholder_tallies = [
+                decrypted_tallies[placeholder.object_id]
+                for placeholder in contest.placeholder_selections
             ]
-            plaintext_counters = [counters[k.object_id] for k in selections]
+            plaintext_tally_values = [
+                plaintext_tallies[selection.object_id]
+                for selection in contest.ballot_selections
+            ]
 
-            self.assertEqual(decrypted_selection_counters, plaintext_counters)
+            # verify the plaintext tallies match the decrypted tallies
+            self.assertEqual(decrypted_selection_tallies, plaintext_tally_values)
 
             # validate the right number of selections including placeholders across all ballots
-            counter_sum = sum(decrypted_selection_counters)
-            placeholder_sum = sum(decrypted_placeholder_counters)
-
             self.assertEqual(
-                contest.number_elected * num_ballots, counter_sum + placeholder_sum
+                contest.number_elected * num_ballots,
+                sum(decrypted_selection_tallies) + sum(decrypted_placeholder_tallies),
             )
 
 
@@ -147,17 +157,17 @@ def _accumulate_encrypted_ballots(
     :param ballots: a list of encrypted ballots
     :return: a dict from selection object_id's to `ElGamalCiphertext` totals
     """
-    counters: Dict[str, ElGamalCiphertext] = {}
-    for b in ballots:
-        for c in b.contests:
-            for s in c.ballot_selections:
+    tally: Dict[str, ElGamalCiphertext] = {}
+    for ballot in ballots:
+        for contest in ballot.contests:
+            for selection in contest.ballot_selections:
                 desc_id = (
-                    s.object_id
+                    selection.object_id
                 )  # this should be the same as in the PlaintextBallot!
-                if desc_id not in counters:
-                    counters[desc_id] = encrypted_zero
-                counters[desc_id] = elgamal_add(counters[desc_id], s.message)
-    return counters
+                if desc_id not in tally:
+                    tally[desc_id] = encrypted_zero
+                tally[desc_id] = elgamal_add(tally[desc_id], selection.message)
+    return tally
 
 
 def _accumulate_plaintext_ballots(ballots: List[PlaintextBallot]) -> Dict[str, int]:
@@ -171,17 +181,17 @@ def _accumulate_plaintext_ballots(ballots: List[PlaintextBallot]) -> Dict[str, i
     :param ballots: a list of plaintext ballots
     :return: a dict from selection object_id's to integer totals
     """
-    counters: Dict[str, int] = {}
-    for b in ballots:
-        for c in b.contests:
-            for s in c.ballot_selections:
+    tally: Dict[str, int] = {}
+    for ballot in ballots:
+        for contest in ballot.contests:
+            for selection in contest.ballot_selections:
                 assert (
-                    not s.is_placeholder_selection
+                    not selection.is_placeholder_selection
                 ), "we shouldn't have placeholder selections in the plaintext ballots"
-                desc_id = s.object_id
-                if desc_id not in counters:
-                    counters[desc_id] = 0
-                counters[
+                desc_id = selection.object_id
+                if desc_id not in tally:
+                    tally[desc_id] = 0
+                tally[
                     desc_id
-                ] += s.to_int()  # returns 1 or 0 for n-of-m ballot selections
-    return counters
+                ] += selection.to_int()  # returns 1 or 0 for n-of-m ballot selections
+    return tally
