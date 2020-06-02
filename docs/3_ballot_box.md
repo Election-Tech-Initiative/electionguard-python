@@ -1,5 +1,15 @@
 # Ballot Box
 
+At the conclusion of voting, all of the ballot encryptions are published in the election record together wit hthe proofs that the ballots are well formed.  Additionally, all of the encryptions of each option are homomorphically combined to for an encryption of the total number of times that each option was selected.
+
+## Casting and Spoiling Ballots
+
+ElectionGuard includes a mechanism to mark a specific ballot as either cast or spoiled.  Cast ballots are included in the tally record, while spoiled ballots are not.  Spoiled ballots are decrypted into plaintext and published along with the tally record and the encrypted representation of all cast ballots.
+
+## Jurisdictional Differences
+
+Depending on the jurisdiction conducting an election, and the implementation of the software program that consumes the ElectionGuard SDK, the process of casting and spoiling ballots may be handled differently.  
+
 ## Glossary
 **Ciphertext Ballot** An encrypted representation of a voter's filled-in ballot.
 **Ballot Box** A stateful collection of ballots that are either cast or spoiled.
