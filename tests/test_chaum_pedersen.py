@@ -16,8 +16,8 @@ from electionguard.elgamal import (
     elgamal_keypair_from_secret,
 )
 from electionguard.group import ElementModQ, TWO_MOD_Q, ONE_MOD_Q
-from electionguardtest.elgamal import arb_elgamal_keypair
-from electionguardtest.group import arb_element_mod_q_no_zero, arb_element_mod_q
+from electionguardtest.elgamal import elgamal_keypairs
+from electionguardtest.group import elements_mod_q_no_zero, elements_mod_q
 from electionguard.utils import get_optional
 
 
@@ -70,7 +70,7 @@ class TestDisjunctiveChaumPedersen(unittest.TestCase):
         suppress_health_check=[HealthCheck.too_slow],
         max_examples=10,
     )
-    @given(arb_elgamal_keypair(), arb_element_mod_q_no_zero(), arb_element_mod_q())
+    @given(elgamal_keypairs(), elements_mod_q_no_zero(), elements_mod_q())
     def test_djcp_proof_zero(
         self, keypair: ElGamalKeyPair, nonce: ElementModQ, seed: ElementModQ
     ):
@@ -89,7 +89,7 @@ class TestDisjunctiveChaumPedersen(unittest.TestCase):
         suppress_health_check=[HealthCheck.too_slow],
         max_examples=10,
     )
-    @given(arb_elgamal_keypair(), arb_element_mod_q_no_zero(), arb_element_mod_q())
+    @given(elgamal_keypairs(), elements_mod_q_no_zero(), elements_mod_q())
     def test_djcp_proof_one(
         self, keypair: ElGamalKeyPair, nonce: ElementModQ, seed: ElementModQ
     ):
@@ -108,7 +108,7 @@ class TestDisjunctiveChaumPedersen(unittest.TestCase):
         suppress_health_check=[HealthCheck.too_slow],
         max_examples=10,
     )
-    @given(arb_elgamal_keypair(), arb_element_mod_q_no_zero(), arb_element_mod_q())
+    @given(elgamal_keypairs(), elements_mod_q_no_zero(), elements_mod_q())
     def test_djcp_proof_broken(
         self, keypair: ElGamalKeyPair, nonce: ElementModQ, seed: ElementModQ
     ):
@@ -161,9 +161,9 @@ class TestConstantChaumPedersen(unittest.TestCase):
         max_examples=10,
     )
     @given(
-        arb_elgamal_keypair(),
-        arb_element_mod_q_no_zero(),
-        arb_element_mod_q(),
+        elgamal_keypairs(),
+        elements_mod_q_no_zero(),
+        elements_mod_q(),
         integers(0, 100),
         integers(0, 100),
     )

@@ -1,13 +1,11 @@
 import os
 from random import Random
-from typing import TypeVar, Callable, List, Tuple, Optional
+from typing import TypeVar, Callable, List, Tuple
 
 from hypothesis.strategies import (
     composite,
-    emails,
     booleans,
     integers,
-    lists,
     text,
     uuids,
     SearchStrategy,
@@ -44,7 +42,10 @@ class BallotFactory(object):
         return selection_from(description, is_placeholder, selected)
 
     def get_random_contest_from(
-        self, description: ContestDescription, random: Random
+        self,
+        description: ContestDescription,
+        random: Random,
+        suppress_validity_check=False,
     ) -> PlaintextBallotContest:
         """
         Get a randomly filled contest for the given description that 
@@ -52,6 +53,8 @@ class BallotFactory(object):
         Since this is only used for testing, the random number generator
         (`random`) must be provided to make this function deterministic.
         """
+        if not suppress_validity_check:
+            assert description.is_valid(), "the contest description must be valid"
 
         selections: List[PlaintextBallotSelection] = list()
 
