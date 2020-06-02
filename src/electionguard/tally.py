@@ -121,7 +121,7 @@ class CiphertextTally(ElectionObjectBase):
 
     def add_cast(self, ballot: CiphertextBallotBoxBallot) -> bool:
         """
-        adda cast ballot to the tally
+        add a cast ballot to the tally
         """
         if ballot.state != BallotBoxState.CAST:
             log_warning(
@@ -224,7 +224,7 @@ def tally_ballot(
     ballot: CiphertextBallotBoxBallot, tally: CiphertextTally
 ) -> Optional[CiphertextTally]:
     """
-    Tally a ballt that is either Cast or Spoiled
+    Tally a ballot that is either Cast or Spoiled
     :return: The mutated CiphertextTally or None if there is an error
     """
 
@@ -254,7 +254,7 @@ def tally_ballots(
 ) -> Optional[CiphertextTally]:
     """
     Tally all of the ballots in the ballot store.
-    :return: a ciphertextTally or None if there is an error
+    :return: a CiphertextTally or None if there is an error
     """
     # TODO: unique Id
     tally: CiphertextTally = CiphertextTally(

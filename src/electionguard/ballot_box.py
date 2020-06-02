@@ -63,9 +63,6 @@ def cast_ballot(
     # TODO: check if the ballot includes the proofs, if it does not include the nonce
     # TODO: check if the ballot includes the tracking code and regenerate it if missing
 
-    # check the ballot is well-formed
-    # Check the proofs
-
     ballot_box_ballot = from_ciphertext_ballot(ballot, BallotBoxState.CAST)
 
     store.set(ballot_box_ballot.object_id, ballot_box_ballot)
@@ -98,9 +95,6 @@ def spoil_ballot(
     # TODO: check if the ballot includes the nonce, and possibly regenerate the proofs
     # TODO: check if the ballot includes the proofs, if it does not include the nonce
     # TODO: check if the ballot includes the tracking code and regenerate it if missing
-
-    # check the ballot is well-formed
-    # Cheeck the proofs
 
     ballot_box_ballot = from_ciphertext_ballot(ballot, BallotBoxState.SPOILED)
 
