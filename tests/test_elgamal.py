@@ -25,8 +25,8 @@ from electionguard.group import (
 from electionguard.logs import log_info
 from electionguard.nonces import Nonces
 from electionguard.utils import get_optional
-from electionguardtest.elgamal import arb_elgamal_keypair
-from tests.test_group import arb_element_mod_q_no_zero
+from electionguardtest.elgamal import elgamal_keypairs
+from tests.test_group import elements_mod_q_no_zero
 
 
 class TestElGamal(unittest.TestCase):
@@ -54,7 +54,7 @@ class TestElGamal(unittest.TestCase):
 
         self.assertEqual(0, plaintext)
 
-    @given(integers(0, 100), arb_elgamal_keypair())
+    @given(integers(0, 100), elgamal_keypairs())
     def test_elgamal_encrypt_requires_nonzero_nonce(
         self, message: int, keypair: ElGamalKeyPair
     ):
@@ -64,7 +64,7 @@ class TestElGamal(unittest.TestCase):
         self.assertEqual(None, elgamal_keypair_from_secret(ZERO_MOD_Q))
         self.assertEqual(None, elgamal_keypair_from_secret(ONE_MOD_Q))
 
-    @given(integers(0, 100), arb_element_mod_q_no_zero(), arb_elgamal_keypair())
+    @given(integers(0, 100), elements_mod_q_no_zero(), elgamal_keypairs())
     def test_elgamal_encryption_decryption_inverses(
         self, message: int, nonce: ElementModQ, keypair: ElGamalKeyPair
     ):
@@ -73,7 +73,7 @@ class TestElGamal(unittest.TestCase):
 
         self.assertEqual(message, plaintext)
 
-    @given(integers(0, 100), arb_element_mod_q_no_zero(), arb_elgamal_keypair())
+    @given(integers(0, 100), elements_mod_q_no_zero(), elgamal_keypairs())
     def test_elgamal_encryption_decryption_with_known_nonce_inverses(
         self, message: int, nonce: ElementModQ, keypair: ElGamalKeyPair
     ):
@@ -82,18 +82,18 @@ class TestElGamal(unittest.TestCase):
 
         self.assertEqual(message, plaintext)
 
-    @given(arb_elgamal_keypair())
+    @given(elgamal_keypairs())
     def test_elgamal_generated_keypairs_are_within_range(self, keypair: ElGamalKeyPair):
         self.assertLess(keypair.public_key.to_int(), P)
         self.assertLess(keypair.secret_key.to_int(), G)
         self.assertEqual(g_pow_p(keypair.secret_key), keypair.public_key)
 
     @given(
-        arb_elgamal_keypair(),
+        elgamal_keypairs(),
         integers(0, 100),
-        arb_element_mod_q_no_zero(),
+        elements_mod_q_no_zero(),
         integers(0, 100),
-        arb_element_mod_q_no_zero(),
+        elements_mod_q_no_zero(),
     )
     def test_elgamal_add_homomorphic_accumulation_decrypts_successfully(
         self,
@@ -113,7 +113,7 @@ class TestElGamal(unittest.TestCase):
     def test_elgamal_add_requires_args(self):
         self.assertRaises(Exception, elgamal_add)
 
-    @given(arb_elgamal_keypair())
+    @given(elgamal_keypairs())
     def test_elgamal_keypair_produces_valid_residue(self, keypair):
         self.assertTrue(keypair.public_key.is_valid_residue())
 

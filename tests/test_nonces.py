@@ -6,11 +6,11 @@ from hypothesis.strategies import integers
 
 from electionguard.group import ElementModQ, int_to_q_unchecked
 from electionguard.nonces import Nonces
-from electionguardtest.group import arb_element_mod_q
+from electionguardtest.group import elements_mod_q
 
 
 class TestNonces(unittest.TestCase):
-    @given(arb_element_mod_q())
+    @given(elements_mod_q())
     def test_nonces_iterable(self, seed: ElementModQ):
         n = Nonces(seed)
         i = iter(n)
@@ -18,16 +18,14 @@ class TestNonces(unittest.TestCase):
         q1 = next(i)
         self.assertTrue(q0 != q1)
 
-    @given(arb_element_mod_q(), integers(min_value=0, max_value=1000000))
+    @given(elements_mod_q(), integers(min_value=0, max_value=1000000))
     def test_nonces_deterministic(self, seed: ElementModQ, i: int):
         n1 = Nonces(seed)
         n2 = Nonces(seed)
         self.assertEqual(n1[i], n2[i])
 
     @given(
-        arb_element_mod_q(),
-        arb_element_mod_q(),
-        integers(min_value=0, max_value=1000000),
+        elements_mod_q(), elements_mod_q(), integers(min_value=0, max_value=1000000),
     )
     def test_nonces_seed_matters(self, seed1: ElementModQ, seed2: ElementModQ, i: int):
         assume(seed1 != seed2)
@@ -35,7 +33,7 @@ class TestNonces(unittest.TestCase):
         n2 = Nonces(seed2)
         self.assertNotEqual(n1[i], n2[i])
 
-    @given(arb_element_mod_q())
+    @given(elements_mod_q())
     def test_nonces_with_slices(self, seed: ElementModQ):
         n = Nonces(seed)
         count: int = 0

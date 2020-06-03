@@ -145,3 +145,5 @@ pipenv run python -m pytest /testss
 ## Documentation
 
 - [Design and Architecture](docs/Design_and_Architecture.md)
+
+0. [Election Configuration](docs/0_Election_Configuration.md)
