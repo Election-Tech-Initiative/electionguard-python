@@ -65,8 +65,8 @@ class TestKeyCeremony(TestCase):
         self.assertEqual(backup.designated_id, RECIPIENT_GUARDIAN_ID)
         self.assertEqual(backup.designated_sequence_order, RECIPIENT_SEQUENCE_ORDER)
         self.assertIsNotNone(backup.encrypted_value)
-        self.assertEquals(len(backup.coefficient_commitments), QUORUM)
-        self.assertEquals(len(backup.coefficient_proofs), QUORUM)
+        self.assertEqual(len(backup.coefficient_commitments), QUORUM)
+        self.assertEqual(len(backup.coefficient_proofs), QUORUM)
         for proof in backup.coefficient_proofs:
             self.assertTrue(proof.is_valid())
 
@@ -122,8 +122,8 @@ class TestKeyCeremony(TestCase):
         self.assertEqual(challenge.designated_id, RECIPIENT_GUARDIAN_ID)
         self.assertEqual(challenge.designated_sequence_order, RECIPIENT_SEQUENCE_ORDER)
         self.assertIsNotNone(challenge.value)
-        self.assertEquals(len(challenge.coefficient_commitments), QUORUM)
-        self.assertEquals(len(challenge.coefficient_proofs), QUORUM)
+        self.assertEqual(len(challenge.coefficient_commitments), QUORUM)
+        self.assertEqual(len(challenge.coefficient_proofs), QUORUM)
         for proof in challenge.coefficient_proofs:
             self.assertTrue(proof.is_valid())
 
