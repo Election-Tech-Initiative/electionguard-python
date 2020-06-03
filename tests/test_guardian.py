@@ -466,17 +466,28 @@ class TestGuardian(TestCase):
             RECIPIENT_GUARDIAN_ID, RECIPIENT_SEQUENCE_ORDER, NUMBER_OF_GUARDIANS, QUORUM
         )
         guardian.save_auxiliary_public_key(other_guardian.share_auxiliary_public_key())
-        guardian.save_election_public_key(other_guardian.share_election_public_key())
-
         guardian.generate_election_partial_key_backups()
         key_backup = guardian.share_election_partial_key_backup(RECIPIENT_GUARDIAN_ID)
         other_guardian.save_election_partial_key_backup(key_backup)
         verification = other_guardian.verify_election_partial_key_backup(
             SENDER_GUARDIAN_ID
         )
-        guardian.save_election_partial_key_verification(verification)
 
         # Act
+        joint_key = guardian.publish_joint_key()
+
+        # Assert
+        self.assertIsNone(joint_key)
+
+        # Act
+        guardian.save_election_public_key(other_guardian.share_election_public_key())
+        joint_key = guardian.publish_joint_key()
+
+        # Assert
+        self.assertIsNone(joint_key)
+
+        # Act
+        guardian.save_election_partial_key_verification(verification)
         joint_key = guardian.publish_joint_key()
 
         # Assert
