@@ -133,7 +133,7 @@ class GuardianDataStore(Generic[T, U]):
         self._store[key] = value
 
     def get(self, key: T) -> Optional[U]:
-        return self._store[key]
+        return self._store.get(key)
 
     def length(self) -> int:
         return len(self._store)
