@@ -1,14 +1,14 @@
 # Ballot Box
 
-At the conclusion of voting, all of the ballot encryptions are published in the election record together wit hthe proofs that the ballots are well formed.  Additionally, all of the encryptions of each option are homomorphically combined to for an encryption of the total number of times that each option was selected.
+At the conclusion of voting, all of the ballot encryptions are published in the election record together with the proofs that the ballots are well formed.  Additionally, all of the encryptions of each option are homomorphically combined to form an encryption of the total number of times that each option was selected.
 
 ## Casting and Spoiling Ballots
 
-ElectionGuard includes a mechanism to mark a specific ballot as either cast or spoiled.  Cast ballots are included in the tally record, while spoiled ballots are not.  Spoiled ballots are decrypted into plaintext and published along with the tally record and the encrypted representation of all cast ballots.
+ElectionGuard includes a mechanism to mark a specific ballot as either cast or spoiled.  Cast ballots are included in the tally record, while spoiled ballots are not.  Spoiled ballots are decrypted into plaintext and published along with the rest of the election record.
 
 ## Jurisdictional Differences
 
-Depending on the jurisdiction conducting an election, and the implementation of the software program that consumes the ElectionGuard SDK, the process of casting and spoiling ballots may be handled differently. For this reason, there are multiple ways to interact with the `BallotBox` and `Tally`.
+Depending on the jurisdiction conducting an election the process of casting and spoiling ballots may be handled differently. For this reason, there are multiple ways to interact with the `BallotBox` and `Tally`.
 
 ### Unknown Ballots
 
@@ -16,7 +16,11 @@ In some jurisdictions, there is a limit on the number of ballots that may be mar
 
 ## Encrypted Tally
 
-once all of the ballots are marked as cast or spoiled, all of the encryptions of each option are homomorphically combined to form an encryption of the total number of times that each option was selected.  This process is completed only for cast ballot.  The spoiled ballots are simply marked for inclusion in the election results.
+Once all of the ballots are marked as cast or spoiled, all of the encryptions of each option are homomorphically combined to form an encryption of the total number of times that each option was selected.  
+
+> This process is completed only for cast ballot.
+
+> The spoiled ballots are simply marked for inclusion in the election results.
 
 ## Glossary
 
