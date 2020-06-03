@@ -1,5 +1,4 @@
-from typing import Callable, Optional, Tuple
-
+from typing import Callable, Optional
 
 from .election_object_base import ElectionObjectBase
 from .key_ceremony import (
@@ -9,6 +8,8 @@ from .key_ceremony import (
     AuxiliaryEncrypt,
     combine_election_public_keys,
     CeremonyDetails,
+    default_auxiliary_decrypt,
+    default_auxiliary_encrypt,
     ElectionJointKey,
     ElectionKeyPair,
     ElectionPartialKeyBackup,
@@ -51,12 +52,38 @@ class Guardian(ElectionObjectBase):
         super().__init__(id)
         self.sequence_order = sequence_order
         self.set_ceremony_details(number_of_guardians, quorum)
+        self._backups_to_share = GuardianDataStore[
+            GuardianId, ElectionPartialKeyBackup
+        ]()
+        self._guardian_auxiliary_public_keys = GuardianDataStore[
+            GuardianId, AuxiliaryPublicKey
+        ]()
+        self._guardian_election_public_keys = GuardianDataStore[
+            GuardianId, ElectionPublicKey
+        ]()
+        self._guardian_election_partial_key_backups = GuardianDataStore[
+            GuardianId, ElectionPartialKeyBackup
+        ]()
+        self._guardian_election_partial_key_verifications = GuardianDataStore[
+            GuardianId, ElectionPartialKeyVerification
+        ]()
+
+        self.generate_auxiliary_key_pair()
+        self.generate_election_key_pair()
+
+    def reset(self, number_of_guardians: int, quorum: int) -> None:
+        self._backups_to_share.clear()
+        self._guardian_auxiliary_public_keys.clear()
+        self._guardian_election_public_keys.clear()
+        self._guardian_election_partial_key_backups.clear()
+        self._guardian_election_partial_key_verifications.clear()
+        self.set_ceremony_details(number_of_guardians, quorum)
         self.generate_auxiliary_key_pair()
         self.generate_election_key_pair()
 
     # Ceremony
     def set_ceremony_details(self, number_of_guardians: int, quorum: int) -> None:
-        self.ceremony_details = Tuple[number_of_guardians, quorum]
+        self.ceremony_details = CeremonyDetails(number_of_guardians, quorum)
 
     # Public Keys
     def share_public_keys(self) -> PublicKeySet:
@@ -90,7 +117,7 @@ class Guardian(ElectionObjectBase):
             and self.all_election_public_keys_received()
         )
 
-    # Auxiliary
+    # Auxiliary Key Pair
     def generate_auxiliary_key_pair(
         self,
         generate_auxiliary_key_pair: Callable[
@@ -110,11 +137,11 @@ class Guardian(ElectionObjectBase):
 
     def all_auxiliary_public_keys_received(self) -> bool:
         return (
-            self._guardian_auxiliary_public_keys.length
+            self._guardian_auxiliary_public_keys.length()
             == self.ceremony_details.number_of_guardians
         )
 
-    # Election
+    # Election Key Pair
     def generate_election_key_pair(self) -> None:
         self._election_keys = generate_election_key_pair(self.ceremony_details.quorum)
         self.save_election_public_key(self.share_election_public_key())
@@ -131,11 +158,13 @@ class Guardian(ElectionObjectBase):
 
     def all_election_public_keys_received(self) -> bool:
         return (
-            self._guardian_election_public_keys.length
+            self._guardian_election_public_keys.length()
             == self.ceremony_details.number_of_guardians
         )
 
-    def generate_election_partial_key_backups(self, encrypt: AuxiliaryEncrypt) -> None:
+    def generate_election_partial_key_backups(
+        self, encrypt: AuxiliaryEncrypt = default_auxiliary_encrypt
+    ) -> None:
         if not self.all_auxiliary_public_keys_received():
             return
         for auxiliary_key in self._guardian_auxiliary_public_keys.values():
@@ -144,24 +173,26 @@ class Guardian(ElectionObjectBase):
             )
             self._backups_to_share.set(auxiliary_key.owner_id, backup)
 
+    # Election Partial Key Backup
     def share_election_partial_key_backup(
         self, designated_id: str
     ) -> Optional[ElectionPartialKeyBackup]:
         return self._backups_to_share.get(designated_id)
 
-    def save_guardian_partial_key_backup(
+    def save_election_partial_key_backup(
         self, backup: ElectionPartialKeyBackup
     ) -> None:
         self._guardian_election_partial_key_backups.set(backup.owner_id, backup)
 
     def all_election_partial_key_backups_received(self) -> bool:
         return (
-            self._guardian_election_partial_key_backups.length
+            self._guardian_election_partial_key_backups.length()
             == self.ceremony_details.number_of_guardians - 1
         )
 
+    # Verification
     def verify_election_partial_key_backup(
-        self, guardian_id: str, decrypt: AuxiliaryDecrypt
+        self, guardian_id: str, decrypt: AuxiliaryDecrypt = default_auxiliary_decrypt
     ) -> Optional[ElectionPartialKeyVerification]:
         backup = self._guardian_election_partial_key_backups.get(guardian_id)
         if backup is None:
@@ -169,11 +200,6 @@ class Guardian(ElectionObjectBase):
         return verify_election_partial_key_backup(
             self.object_id, backup, self._auxiliary_keys, decrypt
         )
-
-    def verify_election_partial_key_challenge(
-        self, challenge: ElectionPartialKeyChallenge
-    ) -> ElectionPartialKeyVerification:
-        return verify_election_partial_key_challenge(self.object_id, challenge)
 
     def publish_election_backup_challenge(
         self, guardian_id: str
@@ -185,6 +211,11 @@ class Guardian(ElectionObjectBase):
             backup_in_question, self._election_keys.polynomial
         )
 
+    def verify_election_partial_key_challenge(
+        self, challenge: ElectionPartialKeyChallenge
+    ) -> ElectionPartialKeyVerification:
+        return verify_election_partial_key_challenge(self.object_id, challenge)
+
     def save_election_partial_key_verification(
         self, verification: ElectionPartialKeyVerification
     ) -> None:
@@ -192,7 +223,7 @@ class Guardian(ElectionObjectBase):
             verification.designated_id, verification
         )
 
-    def all_election_secret_key_proofs_verified(self) -> bool:
+    def all_election_partial_key_backups_verified(self) -> bool:
         required = self.ceremony_details.number_of_guardians - 1
         if self._guardian_election_partial_key_verifications.length() != required:
             return False
@@ -201,17 +232,10 @@ class Guardian(ElectionObjectBase):
                 return False
         return True
 
+    # Joint Key
     def publish_joint_key(self) -> Optional[ElectionJointKey]:
-        if self.all_election_secret_key_proofs_verified():
+        if not self.all_election_public_keys_received():
+            return None
+        if not self.all_election_partial_key_backups_verified():
             return None
         return combine_election_public_keys(self._guardian_election_public_keys)
-
-    def reset(self, number_of_guardians: int, quorum: int) -> None:
-        self.set_ceremony_details(number_of_guardians, quorum)
-        self.generate_auxiliary_key_pair()
-        self.generate_election_key_pair()
-        self._backups_to_share.clear()
-        self._guardian_auxiliary_public_keys.clear()
-        self._guardian_election_public_keys.clear()
-        self._guardian_election_partial_key_backups.clear()
-        self._guardian_election_partial_key_verifications.clear()
