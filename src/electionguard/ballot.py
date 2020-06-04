@@ -653,7 +653,7 @@ class BallotBoxState(Enum):
     """
     UNKNOWN = 999
     """
-    A ballot whose state is unknown to ElectionGuard and will not be included in any exlection results
+    A ballot whose state is unknown to ElectionGuard and will not be included in any election results
     """
 
 
