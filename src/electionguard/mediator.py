@@ -43,6 +43,9 @@ class Mediator:
         self._election_partial_key_verifications = GuardianDataStore[
             GuardianPair, ElectionPartialKeyVerification
         ]()
+        self._election_partial_key_challenges = GuardianDataStore[
+            GuardianPair, ElectionPartialKeyChallenge
+        ]()
 
     def reset(self, ceremony_details: CeremonyDetails) -> None:
         self.ceremony_details = ceremony_details
@@ -114,7 +117,7 @@ class Mediator:
             GuardianPair(backup.owner_id, backup.designated_id), backup
         )
 
-    def all_election_partial_key_backups_received(self) -> bool:
+    def all_election_partial_key_backups_available(self) -> bool:
         required_backups_per_guardian = self.ceremony_details.number_of_guardians - 1
         return (
             self._election_partial_key_backups.length()
@@ -128,7 +131,7 @@ class Mediator:
         for current_guardian_id in self.share_guardians_in_attendance():
             if guardian_id != current_guardian_id:
                 backup = self._election_partial_key_backups.get(
-                    GuardianPair(guardian_id, current_guardian_id)
+                    GuardianPair(current_guardian_id, guardian_id)
                 )
                 if backup is not None:
                     backups.append(backup)
@@ -155,7 +158,7 @@ class Mediator:
             * self.ceremony_details.number_of_guardians
         )
 
-    def all_election_partial_key_verified(self) -> bool:
+    def all_election_partial_key_backups_verified(self) -> bool:
         if not self.all_election_partial_key_verifications_received():
             return False
         for verification in self._election_partial_key_verifications.values():
@@ -186,13 +189,13 @@ class Mediator:
 
     def share_open_election_partial_key_challenges(
         self,
-    ) -> Iterable[ElectionPartialKeyChallenge]:
-        return self._election_partial_key_challenges.values()
+    ) -> List[ElectionPartialKeyChallenge]:
+        return list(self._election_partial_key_challenges.values())
 
     # Publish Joint Key
     def publish_joint_key(self) -> Optional[ElectionJointKey]:
         if not self.all_election_public_keys_available():
             return None
-        if not self.all_election_partial_key_verified():
+        if not self.all_election_partial_key_backups_verified():
             return None
         return combine_election_public_keys(self._election_public_keys)
