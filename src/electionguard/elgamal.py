@@ -7,6 +7,7 @@ from .group import (
     g_pow_p,
     mult_p,
     mult_inv_p,
+    ONE_MOD_P,
     pow_p,
     ZERO_MOD_Q,
     int_to_q,
@@ -66,6 +67,13 @@ class ElGamalCiphertext(NamedTuple):
         Computes a cryptographic hash of this ciphertext.
         """
         return hash_elems(self.alpha, self.beta)
+
+
+def elgamal_homomorphic_zero() -> ElGamalCiphertext:
+    """
+    :return: an `ElgamalCiphertext` representing a zero value from which to do homomorphic accumulation
+    """
+    return ElGamalCiphertext(ONE_MOD_P, ONE_MOD_P)
 
 
 def elgamal_keypair_from_secret(a: ElementModQ) -> Optional[ElGamalKeyPair]:
