@@ -9,5 +9,11 @@
   "python.testing.pytestArgs": [],
   "python.testing.nosetestsEnabled": false,
   "python.testing.unittestEnabled": false,
-  "pythonTestExplorer.testFramework": "pytest"
+  "pythonTestExplorer.testFramework": "pytest",
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/.hypothesis": true,
+    "**/.mypy_cache": true,
+    "**/.pytest_cache": true
+  }
 }

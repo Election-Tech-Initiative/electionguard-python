@@ -1,4 +1,4 @@
-from typing import NamedTuple, Optional
+from typing import Iterable, NamedTuple, Optional
 
 from .dlog import discrete_log
 from .group import (
@@ -10,11 +10,13 @@ from .group import (
     ONE_MOD_P,
     pow_p,
     ZERO_MOD_Q,
+    TWO_MOD_Q,
     int_to_q,
+    rand_range_q,
 )
 from .hash import hash_elems
 from .logs import log_error
-from .utils import flatmap_optional
+from .utils import flatmap_optional, get_optional
 
 
 class ElGamalKeyPair(NamedTuple):
@@ -87,6 +89,17 @@ def elgamal_keypair_from_secret(a: ElementModQ) -> Optional[ElGamalKeyPair]:
         return None
 
     return ElGamalKeyPair(a, g_pow_p(a))
+
+
+def elgamal_keypair_random() -> ElGamalKeyPair:
+    return get_optional(elgamal_keypair_from_secret(rand_range_q(TWO_MOD_Q)))
+
+
+def elgamal_combine_public_keys(keys: Iterable[ElementModP]) -> ElementModP:
+    joint_key = ONE_MOD_P
+    for key in keys:
+        joint_key = mult_p(joint_key, key)
+    return joint_key
 
 
 def elgamal_encrypt(

@@ -147,3 +147,4 @@ pipenv run python -m pytest /testss
 - [Design and Architecture](docs/Design_and_Architecture.md)
 
 0. [Election Configuration](docs/0_Election_Configuration.md)
+1. [Key Ceremony](docs/1_Key_Ceremony.md)
