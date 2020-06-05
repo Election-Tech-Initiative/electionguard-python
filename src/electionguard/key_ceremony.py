@@ -6,6 +6,7 @@ from typing import (
     List,
     NamedTuple,
     Optional,
+    Tuple,
     TypeVar,
 )
 
@@ -143,6 +144,12 @@ class GuardianDataStore(Generic[T, U]):
 
     def clear(self) -> None:
         self._store.clear()
+
+    def keys(self) -> Iterable[T]:
+        return self._store.keys()
+
+    def items(self) -> Iterable[Tuple[T, U]]:
+        return self._store.items()
 
 
 def generate_elgamal_auxiliary_key_pair() -> AuxiliaryKeyPair:
