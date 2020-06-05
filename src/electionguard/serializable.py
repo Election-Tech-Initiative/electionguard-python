@@ -8,8 +8,13 @@ T = TypeVar("T")
 
 @dataclass
 class Serializable(Generic[T]):
+    """
+    Serializable class with methods to convert ot json
+    """
+
     def to_json(self) -> str:
         """
+        Serialize to json
         :return: the json representation of this object
         """
         return cast(
@@ -25,6 +30,6 @@ class Serializable(Generic[T]):
     @classmethod
     def from_json(cls, data: str) -> T:
         """
-        deserialize the provided data string into the specified instance
+        Deserialize the provided data string into the specified instance
         """
         return cast(T, loads(data, cls, key_transformer=KEY_TRANSFORMER_SNAKECASE))

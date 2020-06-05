@@ -125,7 +125,7 @@ class Language(Serializable, CryptoHashable):
 @dataclass
 class InternationalizedText(Serializable, CryptoHashable):
     """
-    This data entity is used to represent multi-national text. Use when text on a ballot contains multi-national text.
+    Data entity used to represent multi-national text. Use when text on a ballot contains multi-national text.
     See: https://developers.google.com/elections-data/reference/internationalized-text
     """
 
@@ -231,7 +231,7 @@ class Party(ElectionObjectBase, CryptoHashable):
 @dataclass
 class Candidate(ElectionObjectBase, CryptoHashable):
     """
-    This entity describes information about a candidate in a contest. 
+    Entity describing information about a candidate in a contest. 
     See: https://developers.google.com/elections-data/reference/candidate
     Note: The ElectionGuard Data Spec deviates from the NIST model in that 
     selections for any contest type are considered a "candidate".
@@ -262,7 +262,7 @@ class Candidate(ElectionObjectBase, CryptoHashable):
 @dataclass
 class SelectionDescription(ElectionObjectBase, CryptoHashable):
     """
-    This data entity is for the ballot selections in a contest, 
+    Data entity for the ballot selections in a contest, 
     for example linking candidates and parties to their vote counts.
     See: https://developers.google.com/elections-data/reference/ballot-selection
     Note: The ElectionGuard Data Spec deviates from the NIST model in that
@@ -460,6 +460,10 @@ class ContestDescriptionWithPlaceholders(ContestDescription):
     )
 
     def is_valid(self) -> bool:
+        """
+        Checks is contest description is valid
+        :return: true if valid
+        """
         contest_description_validates = super().is_valid()
         return (
             contest_description_validates
@@ -467,9 +471,18 @@ class ContestDescriptionWithPlaceholders(ContestDescription):
         )
 
     def is_placeholder(self, selection: SelectionDescription) -> bool:
+        """
+        Checks is contest description is placeholder
+        :return: true if placeholder
+        """
         return selection in self.placeholder_selections
 
     def selection_for(self, selection_id: str) -> Optional[SelectionDescription]:
+        """
+        Gets the description for a particular id
+        :param selection_id: Id of Selection
+        :return: description
+        """
         matching_selections = list(
             filter(lambda i: i.object_id == selection_id, self.ballot_selections)
         )
@@ -699,6 +712,11 @@ class InternalElectionDescription(object):
     def contest_for(
         self, contest_id: str
     ) -> Optional[ContestDescriptionWithPlaceholders]:
+        """
+        Get contest by id
+        :param contest_id: Contest id
+        :return: Contest description or none
+        """
         matching_contests = list(
             filter(lambda i: i.object_id == contest_id, self.contests)
         )
@@ -720,6 +738,11 @@ class InternalElectionDescription(object):
     def get_contests_for(
         self, ballot_style_id: str
     ) -> List[ContestDescriptionWithPlaceholders]:
+        """
+        Get contests for a ballot style
+        :param ballot_style_id: ballot style id
+        :return: contest descriptions
+        """
         style = self.get_ballot_style(ballot_style_id)
         if style.geopolitical_unit_ids is None:
             return list()
@@ -733,7 +756,7 @@ class InternalElectionDescription(object):
         self, description: ElectionDescription
     ) -> List[ContestDescriptionWithPlaceholders]:
         """
-        for each contest, append the `number_elected` number 
+        For each contest, append the `number_elected` number 
         of placeholder selections to the end of the contest collection
         """
         contests: List[ContestDescriptionWithPlaceholders] = list()
@@ -822,6 +845,12 @@ class CiphertextElectionContext(Serializable):  # TODO: CryptoHashcheckable
 def contest_description_with_placeholders_from(
     description: ContestDescription, placeholders: List[SelectionDescription]
 ) -> ContestDescriptionWithPlaceholders:
+    """
+    Generates a placeholder selection description
+    :param description: contest description
+    :param placeholders: list of placeholder descriptions of selections
+    :return: a SelectionDescription or None
+    """
     return ContestDescriptionWithPlaceholders(
         object_id=description.object_id,
         electoral_district_id=description.electoral_district_id,
@@ -841,11 +870,11 @@ def generate_placeholder_selection_from(
     contest: ContestDescription, use_sequence_id: Optional[int] = None
 ) -> Optional[SelectionDescription]:
     """
-        Generates a placeholder selection description that is unique so it can be hashed
+    Generates a placeholder selection description that is unique so it can be hashed
 
-        :param use_sequence_id: an optional integer unique to the contest identifying this selection's place in the contest
-        :return: a SelectionDescription or None
-        """
+    :param use_sequence_id: an optional integer unique to the contest identifying this selection's place in the contest
+    :return: a SelectionDescription or None
+    """
     sequence_ids = [selection.sequence_order for selection in contest.ballot_selections]
     if use_sequence_id is None:
         # if no sequence order is specified, take the max
@@ -868,12 +897,12 @@ def generate_placeholder_selections_from(
     contest: ContestDescription, count: int
 ) -> List[SelectionDescription]:
     """
-        Generates the specified number of placeholder selections in ascending sequence order from the max selection sequence orderf
+    Generates the specified number of placeholder selections in ascending sequence order from the max selection sequence orderf
 
-        :param contest: ContestDescription for input
-        :param count: optionally specify a number of placeholders to generate
-        :return: a collection of `SelectionDescription` objects, which may be empty
-        """
+    :param contest: ContestDescription for input
+    :param count: optionally specify a number of placeholders to generate
+    :return: a collection of `SelectionDescription` objects, which may be empty
+    """
     max_sequence_order = max(
         [selection.sequence_order for selection in contest.ballot_selections]
     )

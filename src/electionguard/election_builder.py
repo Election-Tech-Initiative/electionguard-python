@@ -38,13 +38,21 @@ class ElectionBuilder(object):
         self.internal_description = InternalElectionDescription(self.description)
 
     def set_public_key(self, elgamal_public_key: ElementModP) -> ElectionBuilder:
+        """
+        Set election public key
+        :param elgamal_public_key: elgamal public key for election
+        :return: election builder
+        """
         self.elgamal_public_key = elgamal_public_key
         return self
 
     def build(
         self,
     ) -> Optional[Tuple[InternalElectionDescription, CiphertextElectionContext]]:
-
+        """
+        Build election
+        :return: election description and context or none
+        """
         if not self.description.is_valid():
             return None
 

@@ -209,7 +209,6 @@ def encrypt_contest(
     nonce_seed: ElementModQ,
     should_verify_proofs: bool = True,
 ) -> Optional[CiphertextBallotContest]:
-
     """
     Encrypt a specific `BallotContest` in the context of a specific `Ballot`.
 
