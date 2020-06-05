@@ -256,6 +256,8 @@ def g_pow_p(e: ElementModPOrQ) -> ElementModP:
 def rand_q() -> ElementModQ:
     """
     Generate random number between 0 and Q
+
+    :return: Random value between 0 and Q
     """
     return int_to_q_unchecked(randbelow(Q))
 
@@ -263,6 +265,9 @@ def rand_q() -> ElementModQ:
 def rand_range_q(start: ElementModPOrQ) -> ElementModQ:
     """
     Generate random number between start and Q
+
+    :param start: Starting value of range
+    :return: Random value between start and Q
     """
     random = 0
     while random < start.to_int():
