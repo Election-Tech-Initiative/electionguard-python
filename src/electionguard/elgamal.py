@@ -85,10 +85,21 @@ def elgamal_keypair_from_secret(a: ElementModQ) -> Optional[ElGamalKeyPair]:
 
 
 def elgamal_keypair_random() -> ElGamalKeyPair:
+    """
+    Create a random elgamal keypair
+
+    :return: random elgamal key pair
+    """
     return get_optional(elgamal_keypair_from_secret(rand_range_q(TWO_MOD_Q)))
 
 
 def elgamal_combine_public_keys(keys: Iterable[ElementModP]) -> ElementModP:
+    """
+    Combine multiple elgamal public keys into a joint key
+
+    :param keys: list of public elgamal keys
+    :return: joint key of elgamal keys
+    """
     joint_key = ONE_MOD_P
     for key in keys:
         joint_key = mult_p(joint_key, key)
