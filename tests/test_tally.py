@@ -7,7 +7,7 @@ from hypothesis.strategies import integers
 
 from electionguard.ballot import (
     BallotBoxState,
-    CiphertextBallotBoxBallot,
+    CiphertextAcceptedBallot,
     from_ciphertext_ballot,
 )
 from electionguard.ballot_store import BallotStore
@@ -207,7 +207,7 @@ class TestTally(unittest.TestCase):
     def _cannot_erroneously_mutate_state(
         self,
         subject: CiphertextTally,
-        ballot: CiphertextBallotBoxBallot,
+        ballot: CiphertextAcceptedBallot,
         state_to_test: BallotBoxState,
     ) -> bool:
 

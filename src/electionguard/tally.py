@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Optional, List, Dict, Set
 
-from .ballot import BallotBoxState, CiphertextBallotSelection, CiphertextBallotBoxBallot
+from .ballot import BallotBoxState, CiphertextBallotSelection, CiphertextAcceptedBallot
 
 from .ballot_store import BallotStore
 from .election import CiphertextElectionContext, InternalElectionDescription
@@ -108,7 +108,7 @@ class CiphertextTally(ElectionObjectBase):
     A collection of each contest and selection in an election.  
     Retains an encrypted representation of a tally for each selection
     """
-    spoiled_ballots: Dict[str, CiphertextBallotBoxBallot] = field(
+    spoiled_ballots: Dict[str, CiphertextAcceptedBallot] = field(
         default_factory=lambda: {}
     )
     """
@@ -119,7 +119,7 @@ class CiphertextTally(ElectionObjectBase):
         object.__setattr__(self, "_cast_ballot_ids", set())
         object.__setattr__(self, "cast", self._build_tally_collection(self._metadata))
 
-    def add_cast(self, ballot: CiphertextBallotBoxBallot) -> bool:
+    def add_cast(self, ballot: CiphertextAcceptedBallot) -> bool:
         """
         add a cast ballot to the tally
         """
@@ -165,7 +165,7 @@ class CiphertextTally(ElectionObjectBase):
         self._cast_ballot_ids.add(ballot.object_id)
         return True
 
-    def add_spoiled(self, ballot: CiphertextBallotBoxBallot) -> bool:
+    def add_spoiled(self, ballot: CiphertextAcceptedBallot) -> bool:
         """
         Add a spoiled ballot
         """
@@ -221,7 +221,7 @@ class CiphertextTally(ElectionObjectBase):
 
 
 def tally_ballot(
-    ballot: CiphertextBallotBoxBallot, tally: CiphertextTally
+    ballot: CiphertextAcceptedBallot, tally: CiphertextTally
 ) -> Optional[CiphertextTally]:
     """
     Tally a ballot that is either Cast or Spoiled

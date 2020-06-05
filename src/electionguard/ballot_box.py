@@ -4,7 +4,7 @@ from typing import Optional
 from .ballot import (
     BallotBoxState,
     CiphertextBallot,
-    CiphertextBallotBoxBallot,
+    CiphertextAcceptedBallot,
     from_ciphertext_ballot,
 )
 from .ballot_store import BallotStore
@@ -24,30 +24,39 @@ class BallotBox(object):
     _encryption: CiphertextElectionContext = field()
     _store: BallotStore = field()
 
-    def cast(self, ballot: CiphertextBallot) -> Optional[CiphertextBallotBoxBallot]:
+    def cast(self, ballot: CiphertextBallot) -> Optional[CiphertextAcceptedBallot]:
         """
         cast a specific encrypted `CiphertextBallot`
         """
-        return cast_ballot(ballot, self._metadata, self._encryption, self._store)
+        return accept_ballot(
+            ballot, BallotBoxState.CAST, self._metadata, self._encryption, self._store
+        )
 
-    def spoil(self, ballot: CiphertextBallot) -> Optional[CiphertextBallotBoxBallot]:
+    def spoil(self, ballot: CiphertextBallot) -> Optional[CiphertextAcceptedBallot]:
         """
         spoil a specific encrypted `CiphertextBallot`
         """
-        return spoil_ballot(ballot, self._metadata, self._encryption, self._store)
+        return accept_ballot(
+            ballot,
+            BallotBoxState.SPOILED,
+            self._metadata,
+            self._encryption,
+            self._store,
+        )
 
 
-def cast_ballot(
+def accept_ballot(
     ballot: CiphertextBallot,
+    state: BallotBoxState,
     metadata: InternalElectionDescription,
     encryption_context: CiphertextElectionContext,
     store: BallotStore,
-) -> Optional[CiphertextBallotBoxBallot]:
+) -> Optional[CiphertextAcceptedBallot]:
     """
-    Cast a ballot within the context of a specified election and against an existing data store
+    Accept a ballot within the context of a specified election and against an existing data store
     Verified that the ballot is valid for the election `metadata` and `encryption_context` and
     that the ballot has not already been cast or spoiled.
-    :return: a `CiphertextBallotBoxBallot` or `None` if there was an error
+    :return: a `CiphertextAcceptedBallot` or `None` if there was an error
     """
     if not ballot_is_valid_for_election(ballot, metadata, encryption_context):
         return None
@@ -55,7 +64,7 @@ def cast_ballot(
     ballot_exists, existing_ballot = store.exists(ballot.object_id)
     if ballot_exists and existing_ballot is not None:
         log_warning(
-            f"error casting ballot, {ballot.object_id} already exists with state: {existing_ballot.state}"
+            f"error accepting ballot, {ballot.object_id} already exists with state: {existing_ballot.state}"
         )
         return None
 
@@ -63,40 +72,7 @@ def cast_ballot(
     # TODO: check if the ballot includes the proofs, if it does not include the nonce
     # TODO: check if the ballot includes the tracking code and regenerate it if missing
 
-    ballot_box_ballot = from_ciphertext_ballot(ballot, BallotBoxState.CAST)
-
-    store.set(ballot_box_ballot.object_id, ballot_box_ballot)
-    return store.get(ballot_box_ballot.object_id)
-
-
-def spoil_ballot(
-    ballot: CiphertextBallot,
-    metadata: InternalElectionDescription,
-    encryption_context: CiphertextElectionContext,
-    store: BallotStore,
-) -> Optional[CiphertextBallotBoxBallot]:
-    """
-    Spoil a ballot within the context of a specified election and against an existing data store
-    Verified that the ballot is valid for the election `metadata` and `encryption_context` and
-    that the ballot has not already been cast or spoiled.
-    :return: a `CiphertextBallotBoxBallot` or `None` if there was an error
-    """
-    if not ballot_is_valid_for_election(ballot, metadata, encryption_context):
-        log_warning("error in spoil_ballot: ballot is not valid for the election")
-        return None
-
-    ballot_exists, existing_ballot = store.exists(ballot.object_id)
-    if ballot_exists and existing_ballot is not None:
-        log_warning(
-            f"error spoiling ballot, {ballot.object_id} already exists with state: {existing_ballot.state}"
-        )
-        return None
-
-    # TODO: check if the ballot includes the nonce, and possibly regenerate the proofs
-    # TODO: check if the ballot includes the proofs, if it does not include the nonce
-    # TODO: check if the ballot includes the tracking code and regenerate it if missing
-
-    ballot_box_ballot = from_ciphertext_ballot(ballot, BallotBoxState.SPOILED)
+    ballot_box_ballot = from_ciphertext_ballot(ballot, state)
 
     store.set(ballot_box_ballot.object_id, ballot_box_ballot)
     return store.get(ballot_box_ballot.object_id)
