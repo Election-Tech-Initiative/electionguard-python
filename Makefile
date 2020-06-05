@@ -60,18 +60,14 @@ lint:
 	@echo 💚 LINT
 	@echo 1.Pylint
 	pipenv run pylint .
-#TODO Remove Black formatting bypass
 	@echo 2.Black Formatting
-	pipenv run black --check . || true
-#TODO Remove mypy bypass
+	pipenv run black --check .
 	@echo 3.Mypy Static Typing
-	pipenv run mypy bench src stubs tests setup.py || true
-#TODO Remove package metadata bypass
+	pipenv run mypy bench src stubs tests setup.py
 	@echo 4.Package Metadata
-	pipenv run python setup.py check --strict --metadata --restructuredtext || true
-#TODO Remove docstring bypass
+	pipenv run python setup.py check --strict --metadata --restructuredtext
 	@echo 5.Docstring
-	pipenv run pydocstyle || true
+	pipenv run pydocstyle
 
 validate: 
 	@echo ✅ VALIDATE
