@@ -64,6 +64,15 @@ class ElGamalCiphertext(NamedTuple):
         """
         return self.decrypt_known_product(pow_p(public_key, nonce))
 
+    def partial_decrypt(self, secret_key: ElementModQ) -> ElementModP:
+        """
+        Partially Decrypts an ElGamal ciphertext with a known ElGamal secret key. 
+
+        :param secret_key: The corresponding ElGamal secret key.
+        :return: An exponentially encoded plaintext message.
+        """
+        return pow_p(self.alpha, secret_key)
+
     def crypto_hash(self) -> ElementModQ:
         """
         Computes a cryptographic hash of this ciphertext.

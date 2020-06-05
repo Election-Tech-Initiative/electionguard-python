@@ -1,6 +1,10 @@
-from typing import Callable, Optional
+from typing import Callable, Optional, Tuple
+from secrets import randbelow
 
+from .chaum_pedersen import ChaumPedersenProof, make_chaum_pedersen
 from .election_object_base import ElectionObjectBase
+from .elgamal import ElGamalCiphertext
+from .group import ElementModP, ElementModQ, Q, int_to_q_unchecked
 from .key_ceremony import (
     AuxiliaryKeyPair,
     AuxiliaryPublicKey,
@@ -26,6 +30,7 @@ from .key_ceremony import (
     verify_election_partial_key_backup,
     verify_election_partial_key_challenge,
 )
+from .nonces import Nonces
 
 
 class Guardian(ElectionObjectBase):
@@ -239,3 +244,27 @@ class Guardian(ElectionObjectBase):
         if not self.all_election_partial_key_backups_verified():
             return None
         return combine_election_public_keys(self._guardian_election_public_keys)
+
+    def partial_decrypt(
+        self,
+        elgamal_encryption: ElGamalCiphertext,
+        extended_base_hash: ElementModQ,
+        nonce_seed: ElementModQ = None,
+    ) -> Tuple[ElementModP, ChaumPedersenProof]:
+        if nonce_seed is None:
+            nonce_seed = int_to_q_unchecked(randbelow(Q))
+
+        # 𝑀𝑖
+        partial_decryption = elgamal_encryption.partial_decrypt(
+            self._election_keys.key_pair.secret_key
+        )
+        # 𝑀 =𝐴^𝑠𝑖 mod 𝑝 and 𝐾𝑖 = 𝑔^𝑠𝑖 mod 𝑝
+        proof = make_chaum_pedersen(
+            message=elgamal_encryption,
+            s=self._election_keys.key_pair.secret_key,
+            m=partial_decryption,
+            seed=nonce_seed,
+            hash_header=extended_base_hash,
+        )
+
+        return (partial_decryption, proof)
