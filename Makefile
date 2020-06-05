@@ -69,6 +69,9 @@ lint:
 #TODO Remove package metadata bypass
 	@echo 4.Package Metadata
 	pipenv run python setup.py check --strict --metadata --restructuredtext || true
+#TODO Remove docstring bypass
+	@echo 5.Docstring
+	pipenv run pydocstyle || true
 
 validate: 
 	@echo ✅ VALIDATE
