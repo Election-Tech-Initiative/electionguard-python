@@ -1,15 +1,22 @@
 from dataclasses import dataclass, field
 from typing import Optional, List, Dict, Set
+from collections.abc import Container, Sized
 
-from .ballot import BallotBoxState, CiphertextBallotSelection, CiphertextBallotBoxBallot
+from multiprocessing import Pool, cpu_count
+
+from .ballot import BallotBoxState, CiphertextBallotSelection, CiphertextAcceptedBallot
 
 from .ballot_store import BallotStore
 from .election import CiphertextElectionContext, InternalElectionDescription
 from .election_object_base import ElectionObjectBase
-from .elgamal import ElGamalCiphertext, elgamal_add, elgamal_homomorphic_zero
-from .group import ElementModQ
+from .elgamal import ElGamalCiphertext, elgamal_add
+from .group import ElementModQ, ONE_MOD_P
 from .logs import log_warning
 from .ballot_validator import ballot_is_valid_for_election
+
+BALLOT_ID = str
+CONTEST_ID = str
+SELECTION_ID = str
 
 
 @dataclass
@@ -24,13 +31,10 @@ class CiphertextTallySelection(ElectionObjectBase):
     The SelectionDescription hash
     """
 
-    message: ElGamalCiphertext = field(init=False)
+    message: ElGamalCiphertext = field(default=ElGamalCiphertext(ONE_MOD_P, ONE_MOD_P))
     """
     The encrypted representation of the total of all ballots for this selection
     """
-
-    def __post_init__(self) -> None:
-        object.__setattr__(self, "message", elgamal_homomorphic_zero())
 
     def elgamal_accumulate(self, elgamal_ciphertext: ElGamalCiphertext) -> bool:
         """
@@ -53,7 +57,7 @@ class CiphertextTallyContest(ElectionObjectBase):
     The ContestDescription hash
     """
 
-    tally_selections: Dict[str, CiphertextTallySelection]
+    tally_selections: Dict[SELECTION_ID, CiphertextTallySelection]
     """
     A collection of CiphertextTallySelection mapped by SelectionDescription.object_id
     """
@@ -61,38 +65,70 @@ class CiphertextTallyContest(ElectionObjectBase):
     def elgamal_accumulate(
         self, contest_selections: List[CiphertextBallotSelection]
     ) -> bool:
+        """
+        Accumulate the contest selections into this tally
+        """
+
+        selection_ids = set(
+            [
+                selection.object_id
+                for selection in list(
+                    filter(lambda i: not i.is_placeholder_selection, contest_selections)
+                )
+            ]
+        )
 
         if len(contest_selections) == 0:
             log_warning(
-                f"add cannot add an empty collection for contest {self.object_id}"
+                f"accumulate cannot add missing selections for contest {self.object_id}"
             )
             return False
 
+        if any(set(self.tally_selections).difference(selection_ids)):
+            log_warning(
+                f"accumulate cannot add mismatched selections for contest {self.object_id}"
+            )
+            return False
+
+        cpu_pool = Pool(cpu_count())
+
         # iterate through the tally selections and add the new value to the total
-        for key, selection_tally in self.tally_selections.items():
-            use_selection = None
-            for selection in contest_selections:
-                if key == selection.object_id:
-                    use_selection = selection
-                    break
+        results = cpu_pool.starmap(
+            self._accumulate_selections,
+            [
+                (key, selection_tally, contest_selections)
+                for (key, selection_tally) in self.tally_selections.items()
+            ],
+        )
 
-            # we did not find a selection on the ballot that is required
-            # this should never happen when using the `CiphertextTally`
-            # but we check anyway
-            if not use_selection:
-                log_warning(
-                    f"add cannot accumulate for missing selection {selection.object_id}"
-                )
-                return False
+        return all(results)
 
-            if not selection_tally.elgamal_accumulate(use_selection.message):
-                return False
+    def _accumulate_selections(
+        self,
+        key: SELECTION_ID,
+        selection_tally: CiphertextTallySelection,
+        contest_selections: List[CiphertextBallotSelection],
+    ) -> bool:
+        use_selection = None
+        for selection in contest_selections:
+            if key == selection.object_id:
+                use_selection = selection
+                break
 
-        return True
+        # we did not find a selection on the ballot that is required
+        # this should never happen when using the `CiphertextTally`
+        # but we check anyway
+        if not use_selection:
+            log_warning(
+                f"add cannot accumulate for missing selection {selection.object_id}"
+            )
+            return False
+
+        return selection_tally.elgamal_accumulate(use_selection.message)
 
 
 @dataclass
-class CiphertextTally(ElectionObjectBase):
+class CiphertextTally(ElectionObjectBase, Container, Sized):
     """
     A `CiphertextTally` accepts cast and spoiled ballots and accumulates a tally on the cast ballots
     """
@@ -101,14 +137,15 @@ class CiphertextTally(ElectionObjectBase):
     _encryption: CiphertextElectionContext
 
     # A local cache of ballots id's that have already been cast
-    _cast_ballot_ids: Set[str] = field(init=False)
+    _cast_ballot_ids: Set[BALLOT_ID] = field(init=False)
 
-    cast: Dict[str, CiphertextTallyContest] = field(init=False)
+    cast: Dict[CONTEST_ID, CiphertextTallyContest] = field(init=False)
     """
     A collection of each contest and selection in an election.  
     Retains an encrypted representation of a tally for each selection
     """
-    spoiled_ballots: Dict[str, CiphertextBallotBoxBallot] = field(
+
+    spoiled_ballots: Dict[BALLOT_ID, CiphertextAcceptedBallot] = field(
         default_factory=lambda: {}
     )
     """
@@ -119,45 +156,61 @@ class CiphertextTally(ElectionObjectBase):
         object.__setattr__(self, "_cast_ballot_ids", set())
         object.__setattr__(self, "cast", self._build_tally_collection(self._metadata))
 
-    def add_cast(self, ballot: CiphertextBallotBoxBallot) -> bool:
+    def __len__(self) -> int:
+        return len(self._cast_ballot_ids) + len(self.spoiled_ballots)
+
+    def __contains__(self, item: object) -> bool:
+        if not isinstance(item, CiphertextAcceptedBallot):
+            return False
+
+        if (
+            item.object_id in self._cast_ballot_ids
+            or item.object_id in self.spoiled_ballots
+        ):
+            return True
+
+        return False
+
+    def append(self, ballot: CiphertextAcceptedBallot) -> bool:
         """
-        add a cast ballot to the tally
+        append a ballot to the tally
         """
-        if ballot.state != BallotBoxState.CAST:
-            log_warning(
-                f"add cast ballots cannot add {ballot.object_id} with invalid state"
-            )
+        if ballot.state == BallotBoxState.UNKNOWN:
+            log_warning(f"append cannot add {ballot.object_id} with invalid state")
+            return False
+
+        if self.__contains__(ballot):
+            log_warning(f"append cannot add {ballot.object_id} that is already tallied")
             return False
 
         if not ballot_is_valid_for_election(ballot, self._metadata, self._encryption):
             return False
 
-        # make sure we didn't already cast
-        if any(self._cast_ballot_ids.intersection({ballot.object_id})):
-            log_warning(f"add cast cannot add {ballot.object_id} is already tallied")
-            return False
+        if ballot.state == BallotBoxState.CAST:
+            return self._add_cast(ballot)
 
-        # Make sure we didn't already spoil
-        try:
-            if self.spoiled_ballots[ballot.object_id]:
-                log_warning(f"add cast cannot add spoiled {ballot.object_id}")
-                return False
-        except KeyError:
-            pass
+        if ballot.state == BallotBoxState.SPOILED:
+            return self._add_spoiled(ballot)
+
+        log_warning(f"append cannot add {ballot.object_id}")
+        return False
+
+    def _add_cast(self, ballot: CiphertextAcceptedBallot) -> bool:
+        """
+        add a cast ballot to the tally
+        """
 
         # iterate through the contests and elgamal add
         for contest in ballot.contests:
-            use_contest = None
-            try:
-                use_contest = self.cast[contest.object_id]
-            except KeyError:
-                # This should never happen since the ballot is validated against the election metadata
-                # but it's possible the local dictionary was modified so we double check.
+            # This should never happen since the ballot is validated against the election metadata
+            # but it's possible the local dictionary was modified so we double check.
+            if not contest.object_id in self.cast:
                 log_warning(
                     f"add cast missing contest in valid set {contest.object_id}"
                 )
                 return False
 
+            use_contest = self.cast[contest.object_id]
             if not use_contest.elgamal_accumulate(contest.ballot_selections):
                 return False
 
@@ -165,38 +218,17 @@ class CiphertextTally(ElectionObjectBase):
         self._cast_ballot_ids.add(ballot.object_id)
         return True
 
-    def add_spoiled(self, ballot: CiphertextBallotBoxBallot) -> bool:
+    def _add_spoiled(self, ballot: CiphertextAcceptedBallot) -> bool:
         """
         Add a spoiled ballot
         """
-        if ballot.state != BallotBoxState.SPOILED:
-            log_warning(
-                f"spoiled ballots cannot add {ballot.object_id} with invalid state"
-            )
-            return False
-
-        if not ballot_is_valid_for_election(ballot, self._metadata, self._encryption):
-            return False
-
-        # make sure we didn't already cast
-        if any(self._cast_ballot_ids.intersection({ballot.object_id})):
-            log_warning(f"add spoil cannot add {ballot.object_id} is already tallied")
-            return False
-
-        # make sure we didnt already spoil
-        try:
-            if self.spoiled_ballots[ballot.object_id]:
-                log_warning(f"spoiled ballot {ballot.object_id} is already tallied")
-                return False
-        except KeyError:
-            pass
 
         self.spoiled_ballots[ballot.object_id] = ballot
         return True
 
     def _build_tally_collection(
         self, description: InternalElectionDescription
-    ) -> Dict[str, CiphertextTallyContest]:
+    ) -> Dict[CONTEST_ID, CiphertextTallyContest]:
         """
         Build the object graph for the tally from the InternalElectionDescription
         """
@@ -215,36 +247,27 @@ class CiphertextTally(ElectionObjectBase):
                 contest.object_id, contest.crypto_hash(), contest_selections
             )
 
-        log_warning(f"built collection: {cast_collection}")
-
         return cast_collection
 
 
 def tally_ballot(
-    ballot: CiphertextBallotBoxBallot, tally: CiphertextTally
+    ballot: CiphertextAcceptedBallot, tally: CiphertextTally
 ) -> Optional[CiphertextTally]:
     """
     Tally a ballot that is either Cast or Spoiled
     :return: The mutated CiphertextTally or None if there is an error
     """
 
-    log_warning(f"tallying: {ballot.object_id}")
-
-    if ballot.state == BallotBoxState.CAST:
-        if not tally.add_cast(ballot):
-            return None
-    elif ballot.state == BallotBoxState.SPOILED:
-        if not tally.add_spoiled(ballot):
-            return None
-    elif ballot.state == BallotBoxState.UNKNOWN:
+    if ballot.state == BallotBoxState.UNKNOWN:
         log_warning(
             f"tally ballots error tallying unknown state for ballot {ballot.object_id}"
         )
         return None
-    else:
-        return None
 
-    return tally
+    if tally.append(ballot):
+        return tally
+
+    return None
 
 
 def tally_ballots(
@@ -256,7 +279,7 @@ def tally_ballots(
     Tally all of the ballots in the ballot store.
     :return: a CiphertextTally or None if there is an error
     """
-    # TODO: unique Id
+    # TODO: unique Id for the tally
     tally: CiphertextTally = CiphertextTally(
         "election-results", metadata, encryption_context
     )

@@ -1,13 +1,13 @@
-import unittest
+from unittest import TestCase
 
 from electionguard.ballot import BallotBoxState
 from electionguard.ballot_store import BallotStore
 
 from electionguard.ballot_box import (
     BallotBox,
-    cast_ballot,
-    spoil_ballot,
+    accept_ballot,
 )
+from electionguard.ballot_validator import ballot_is_valid_for_election
 from electionguard.elgamal import elgamal_keypair_from_secret
 from electionguard.encrypt import encrypt_ballot
 from electionguard.group import int_to_q
@@ -19,7 +19,7 @@ election_factory = ElectionFactory.ElectionFactory()
 ballot_factory = BallotFactory.BallotFactory()
 
 
-class TestBallotBox(unittest.TestCase):
+class TestBallotBox(TestCase):
     def test_ballot_box_cast_ballot(self):
         # Arrange
         keypair = elgamal_keypair_from_secret(int_to_q(2))
@@ -33,6 +33,9 @@ class TestBallotBox(unittest.TestCase):
 
         # Act
         data = encrypt_ballot(source, metadata, encryption_context)
+        self.assertTrue(
+            ballot_is_valid_for_election(data, metadata, encryption_context)
+        )
         subject = BallotBox(metadata, encryption_context, store)
         result = subject.cast(data)
 
@@ -85,7 +88,9 @@ class TestBallotBox(unittest.TestCase):
 
         # Act
         data = encrypt_ballot(source, metadata, encryption_context)
-        result = cast_ballot(data, metadata, encryption_context, store)
+        result = accept_ballot(
+            data, BallotBoxState.CAST, metadata, encryption_context, store
+        )
 
         # Assert
         expected = store.get(source.object_id)
@@ -95,10 +100,14 @@ class TestBallotBox(unittest.TestCase):
 
         # Test failure modes
         self.assertIsNone(
-            cast_ballot(data, metadata, encryption_context, store)
+            accept_ballot(
+                data, BallotBoxState.CAST, metadata, encryption_context, store
+            )
         )  # cannot cast again
         self.assertIsNone(
-            spoil_ballot(data, metadata, encryption_context, store)
+            accept_ballot(
+                data, BallotBoxState.SPOILED, metadata, encryption_context, store
+            )
         )  # cannot cspoil a ballot already cast
 
     def test_spoil_ballot(self):
@@ -114,7 +123,9 @@ class TestBallotBox(unittest.TestCase):
 
         # Act
         data = encrypt_ballot(source, metadata, encryption_context)
-        result = spoil_ballot(data, metadata, encryption_context, store)
+        result = accept_ballot(
+            data, BallotBoxState.SPOILED, metadata, encryption_context, store
+        )
 
         # Assert
         expected = store.get(source.object_id)
@@ -124,8 +135,12 @@ class TestBallotBox(unittest.TestCase):
 
         # Test failure modes
         self.assertIsNone(
-            spoil_ballot(data, metadata, encryption_context, store)
+            accept_ballot(
+                data, BallotBoxState.SPOILED, metadata, encryption_context, store
+            )
         )  # cannot spoil again
         self.assertIsNone(
-            cast_ballot(data, metadata, encryption_context, store)
+            accept_ballot(
+                data, BallotBoxState.CAST, metadata, encryption_context, store
+            )
         )  # cannot cast a ballot already spoiled

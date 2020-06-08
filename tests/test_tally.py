@@ -1,35 +1,29 @@
-import unittest
+from unittest import TestCase
 from datetime import timedelta
-from typing import List, Dict
+from typing import Dict
 
 from hypothesis import given, HealthCheck, settings, Phase
 from hypothesis.strategies import integers
 
 from electionguard.ballot import (
     BallotBoxState,
-    CiphertextBallotBoxBallot,
+    CiphertextAcceptedBallot,
     from_ciphertext_ballot,
 )
 from electionguard.ballot_store import BallotStore
 
-from electionguard.election import (
-    CiphertextElectionContext,
-    InternalElectionDescription,
-)
 from electionguard.encrypt import encrypt_ballot
 from electionguard.group import ElementModQ, ONE_MOD_Q
 from electionguard.tally import CiphertextTally, tally_ballots, tally_ballot
 
 from electionguardtest.election import (
-    election_descriptions,
     elections_and_ballots,
     ELECTIONS_AND_BALLOTS_TUPLE_TYPE,
 )
-from electionguardtest.group import elements_mod_q
 from electionguardtest.tally import accumulate_plaintext_ballots
 
 
-class TestTally(unittest.TestCase):
+class TestTally(TestCase):
     @settings(
         deadline=timedelta(milliseconds=10000),
         suppress_health_check=[HealthCheck.too_slow],
@@ -138,16 +132,24 @@ class TestTally(unittest.TestCase):
 
         # verify an UNKNOWN state ballot fails
         self.assertIsNone(tally_ballot(first_ballot, subject))
-        self.assertFalse(subject.add_cast(first_ballot))
-        self.assertFalse(subject.add_spoiled(first_ballot))
+        self.assertFalse(subject.append(first_ballot))
 
-        # try to spoil a cast ballot
+        # cast a ballot
         first_ballot.state = BallotBoxState.CAST
-        self.assertFalse(subject.add_spoiled(first_ballot))
+        self.assertTrue(subject.append(first_ballot))
 
-        # try to cast a spoiled ballot
+        # try to append a spoiled ballot
         first_ballot.state = BallotBoxState.SPOILED
-        self.assertFalse(subject.add_cast(first_ballot))
+        self.assertFalse(subject.append(first_ballot))
+
+        # Verify accumulation fails if the selection collection is empty
+        if first_ballot.state == BallotBoxState.CAST:
+            self.assertFalse(
+                subject.cast[first_ballot.object_id].elgamal_accumulate([])
+            )
+
+        # pop the cast ballot
+        subject._cast_ballot_ids.pop()
 
         # reset to cast
         first_ballot.state = BallotBoxState.CAST
@@ -172,26 +174,24 @@ class TestTally(unittest.TestCase):
 
         # verify a spoiled ballot cannot be added twice
         first_ballot.state = BallotBoxState.SPOILED
-        self.assertTrue(subject.add_spoiled(first_ballot))
-        self.assertFalse(subject.add_spoiled(first_ballot))
+        self.assertTrue(subject.append(first_ballot))
+        self.assertFalse(subject.append(first_ballot))
 
         # verify an already spoiled ballot cannot be cast
         first_ballot.state = BallotBoxState.CAST
-        self.assertFalse(subject.add_cast(first_ballot))
+        self.assertFalse(subject.append(first_ballot))
 
         # pop the spoiled ballot
-        subject.spoiled_ballots[first_ballot.object_id] = None
+        subject.spoiled_ballots.pop(first_ballot.object_id)
 
         # verify a cast ballot cannot be added twice
         first_ballot.state = BallotBoxState.CAST
-        self.assertTrue(subject.add_cast(first_ballot))
-        self.assertFalse(subject.add_cast(first_ballot))
+        self.assertTrue(subject.append(first_ballot))
+        self.assertFalse(subject.append(first_ballot))
 
-        # verify an alraedy cast ballot cannot be spoiled
+        # verify an already cast ballot cannot be spoiled
         first_ballot.state = BallotBoxState.SPOILED
-        self.assertFalse(subject.add_spoiled(first_ballot))
-
-    # def test_tally_ballot_already_spoiled_cannot_be_cast(self):
+        self.assertFalse(subject.append(first_ballot))
 
     def _decrypt_with_secret(
         self, tally: CiphertextTally, secret_key: ElementModQ
@@ -207,7 +207,7 @@ class TestTally(unittest.TestCase):
     def _cannot_erroneously_mutate_state(
         self,
         subject: CiphertextTally,
-        ballot: CiphertextBallotBoxBallot,
+        ballot: CiphertextAcceptedBallot,
         state_to_test: BallotBoxState,
     ) -> bool:
 
@@ -215,11 +215,27 @@ class TestTally(unittest.TestCase):
         ballot.state = state_to_test
 
         # remove the first selection
-        first_selection = ballot.contests[0].ballot_selections[0]
+        first_contest = ballot.contests[0]
+        first_selection = first_contest.ballot_selections[0]
         ballot.contests[0].ballot_selections.remove(first_selection)
+
         self.assertIsNone(tally_ballot(ballot, subject))
-        self.assertFalse(subject.add_cast(ballot))
-        self.assertFalse(subject.add_spoiled(ballot))
+        self.assertFalse(subject.append(ballot))
+
+        # Verify accumulation fails if the selection count does not match
+        if ballot.state == BallotBoxState.CAST:
+            first_tally = subject.cast[first_contest.object_id]
+            self.assertFalse(
+                first_tally.elgamal_accumulate(ballot.contests[0].ballot_selections)
+            )
+
+            self.assertFalse(
+                first_tally._accumulate_selections(
+                    first_selection.object_id,
+                    first_tally.tally_selections[first_selection.object_id],
+                    ballot.contests[0].ballot_selections,
+                )
+            )
 
         ballot.contests[0].ballot_selections.insert(0, first_selection)
 
@@ -227,8 +243,7 @@ class TestTally(unittest.TestCase):
         first_contest_hash = ballot.contests[0].description_hash
         ballot.contests[0].description_hash = ONE_MOD_Q
         self.assertIsNone(tally_ballot(ballot, subject))
-        self.assertFalse(subject.add_cast(ballot))
-        self.assertFalse(subject.add_spoiled(ballot))
+        self.assertFalse(subject.append(ballot))
 
         ballot.contests[0].description_hash = first_contest_hash
 
@@ -236,17 +251,36 @@ class TestTally(unittest.TestCase):
         first_contest_object_id = ballot.contests[0].object_id
         ballot.contests[0].object_id = "a-bad-object-id"
         self.assertIsNone(tally_ballot(ballot, subject))
-        self.assertFalse(subject.add_cast(ballot))
-        self.assertFalse(subject.add_spoiled(ballot))
+        self.assertFalse(subject.append(ballot))
 
         ballot.contests[0].object_id = first_contest_object_id
+
+        # modify a selection object id
+        first_contest_selection_object_id = (
+            ballot.contests[0].ballot_selections[0].object_id
+        )
+        ballot.contests[0].ballot_selections[0].object_id = "another-bad-object-id"
+
+        self.assertIsNone(tally_ballot(ballot, subject))
+        self.assertFalse(subject.append(ballot))
+
+        # Verify accumulation fails if the selection object id does not match
+        if ballot.state == BallotBoxState.CAST:
+            self.assertFalse(
+                subject.cast[ballot.contests[0].object_id].elgamal_accumulate(
+                    ballot.contests[0].ballot_selections
+                )
+            )
+
+        ballot.contests[0].ballot_selections[
+            0
+        ].object_id = first_contest_selection_object_id
 
         # modify the ballot's hash
         first_ballot_hash = ballot.description_hash
         ballot.description_hash = ONE_MOD_Q
         self.assertIsNone(tally_ballot(ballot, subject))
-        self.assertFalse(subject.add_cast(ballot))
-        self.assertFalse(subject.add_spoiled(ballot))
+        self.assertFalse(subject.append(ballot))
 
         ballot.description_hash = first_ballot_hash
         ballot.state = input_state

@@ -25,7 +25,7 @@ Once all of the ballots are marked as cast or spoiled, all of the encryptions of
 ## Glossary
 
 - **Ciphertext Ballot** An encrypted representation of a voter's filled-in ballot.
-- **Ciphertext Ballot Box Ballot** A wrapper around the `CiphertextBallot` that represents a ballot that is either, cast, spoiled, or in an unknown state.
+- **Ciphertext Accepted Ballot** A wrapper around the `CiphertextBallot` that represents a ballot that is accepted for inclusion in election results and is either, cast, spoiled, or in an unknown state.
 - **Ballot Box** A stateful collection of ballots that are either cast or spoiled.
 - **Cast Ballot** A ballot which a voter has accepted as valid.
 - **Spoiled Ballot** A ballot which a voter did not accept as valid.
@@ -35,11 +35,10 @@ Once all of the ballots are marked as cast or spoiled, all of the encryptions of
 ## Process
 
 1. Each ballot is loaded into memory (if it is not already).
-2. each ballot is verified to be correct according to the specific election metadata and encryption context.
-2. each ballot is identified as either being cast or spoiled.
-3. each ballot is set to be cast or spoiled by the `BallotBox`.
-4. the collection of cast and spoiled ballots is cached in the `BallotStore`.
-5. 
+2. Each ballot is verified to be correct according to the specific election metadata and encryption context.
+3. Each ballot is `accepted` and identified as either being `cast` or `spoiled`.
+4. The collection of cast and spoiled ballots is cached in the `BallotStore`.
+5. All ballots are tallied.  The `cast` ballots are combined to create a `CiphertextTally` The spoiled ballots are cached for decryption later.
 
 ## Ballot Box
 
@@ -57,37 +56,36 @@ class BallotBox:
     _encryption: CiphertextElection
     _store: BallotStore
 
-    def cast(self, ballot: CyphertextBallot) -> Optional[BallotBoxCiphertextBallot]:
+    def cast(self, ballot: CyphertextBallot) -> Optional[CiphertextAcceptedBallot]:
         ...
 
-    def spoil(self, ballot: CyphertextBallot) -> Optional[BallotBoxCiphertextBallot]:
+    def spoil(self, ballot: CyphertextBallot) -> Optional[CiphertextAcceptedBallot]:
         ...
 
 ```
 
-### Stateless Functions
+### Functions
 
 ``` python
 
-def cast_ballot(
+def accept_ballot(
     ballot: CyphertextBallot,
-     metadata: InternalElectionDescription, 
-     encryption_context: CiphertextElection, 
-     store: BallotStore
-) -> Optional[BallotBoxCiphertextBallot]:
-    ...
-
-def spoil_ballot(
-    ballot: CyphertextBallot, 
+    state: BallotBoxState,
     metadata: InternalElectionDescription, 
     encryption_context: CiphertextElection, 
     store: BallotStore
-) -> Optional[BallotBoxCiphertextBallot]:
+) -> Optional[CiphertextAcceptedBallot]:
     ...
 
 ```
 
-## BallotBoxCiphertextBallot (ballot.py)
+### Implementation details
+
+Depending on the specific election workflow, the `BallotBox` may not be used for a given election.  For instance, in one case a ballot can be "accepted" directly on an electionic device, in which case there is no `BallotBox`.  In a different workflow, a ballot must be explicitly cast or spoiled in a later step, such as after printing for voter review.
+
+In all cases, a ballot must be marked as either `cast` or `spoiled` to be included in a tally result.
+
+## BallotBoxAcceptedBallot (ballot.py)
 
 A ballot can be marked either CAST or SPOILED.  When ballots are first associated with the ballot box, they are marked UNKNOWN.
 
@@ -98,7 +96,7 @@ class BallotBoxState(Enum):
      SPOILED
      UNKNOWN
 
-class CiphertextBallotBoxBallot(CiphertextBallot):
+class CiphertextAcceptedBallot(CiphertextBallot):
     state: BallotBoxState
 
 ```
@@ -123,22 +121,22 @@ class CiphertextTally(ElectionObjectBase):
 
     cast: Dict[str, CiphertextTallyContest]
 
-    spoiled_ballots: Dict[str, CiphertextBallotBoxBallot]
+    spoiled_ballots: Dict[str, CiphertextAcceptedBallot]
 
-    def add_cast(self, ballot: CiphertextBallotBoxBallot) -> bool:
+    def add_cast(self, ballot: CiphertextAcceptedBallot) -> bool:
         ...
 
-    def add_spoiled(self, ballot: CiphertextBallotBoxBallot) -> bool:
+    def add_spoiled(self, ballot: CiphertextAcceptedBallot) -> bool:
         ...
 
 ```
 
-### Stateless Functions
+### Functions
 
 ```python
 
 def tally_ballot(
-    ballot: CiphertextBallotBoxBallot, tally: CiphertextTally
+    ballot: CiphertextAcceptedBallot, tally: CiphertextTally
 ) -> Optional[CiphertextTally]:
 
 def tally_ballots(

@@ -1,7 +1,9 @@
-from .ballot import CiphertextBallot
+from .ballot import CiphertextBallot, CiphertextBallotContest, CiphertextBallotSelection
 from .election import (
     CiphertextElectionContext,
+    ContestDescriptionWithPlaceholders,
     InternalElectionDescription,
+    SelectionDescription,
 )
 
 from .logs import log_warning
@@ -31,6 +33,40 @@ def ballot_is_valid_for_election(
     return True
 
 
+def selection_is_valid_for_style(
+    selection: CiphertextBallotSelection, description: SelectionDescription
+) -> bool:
+    if selection.description_hash != description.crypto_hash():
+        log_warning(
+            f"ballot is not valid for style: mismatched selection description hash {selection.description_hash} for selection {description.object_id} hash {description.crypto_hash()}"
+        )
+        return False
+
+    return True
+
+
+def contest_is_valid_for_style(
+    contest: CiphertextBallotContest, description: ContestDescriptionWithPlaceholders
+) -> bool:
+    # verify the hash matches
+    if contest.description_hash != description.crypto_hash():
+        log_warning(
+            f"ballot is not valid for style: mismatched description hash {contest.description_hash} for contest {description.object_id} hash {description.crypto_hash()}"
+        )
+        return False
+
+    # verify the placeholder count
+    if len(contest.ballot_selections) != len(description.ballot_selections) + len(
+        description.placeholder_selections
+    ):
+        log_warning(
+            f"ballot is not valid for style: mismatched selection count for contest {description.object_id}"
+        )
+        return False
+
+    return True
+
+
 def ballot_is_valid_for_style(
     ballot: CiphertextBallot, metadata: InternalElectionDescription
 ) -> bool:
@@ -50,20 +86,24 @@ def ballot_is_valid_for_style(
             )
             return False
 
-        # verify the hash matches
-        if contest.description_hash != description.crypto_hash():
-            log_warning(
-                f"ballot is not valid for style: mismatched hash {contest.description_hash} for contest {description.object_id} hash {description.crypto_hash()}"
-            )
+        if not contest_is_valid_for_style(use_contest, description):
             return False
 
-        # verify the placeholder count
-        if len(contest.ballot_selections) != len(description.ballot_selections) + len(
-            description.placeholder_selections
-        ):
-            log_warning(
-                f"ballot is not valid for style: mismatched selection count for contest {description.object_id}"
-            )
-            return False
+        # verify the selection metadata
+        for selection_description in description.ballot_selections:
+            use_selection = None
+            for selection in use_contest.ballot_selections:
+                if selection_description.object_id == selection.object_id:
+                    use_selection = selection
+                    break
+
+            if use_selection is None:
+                log_warning(
+                    f"ballot is not valid for style: missing selection {selection_description.object_id}"
+                )
+                return False
+
+            if not selection_is_valid_for_style(use_selection, selection_description):
+                return False
 
     return True

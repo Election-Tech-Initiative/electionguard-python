@@ -263,7 +263,7 @@ class CiphertextBallotSelection(ElectionObjectBase, CryptoHashCheckable):
         In most cases the seed_hash should match the `description_hash`
         """
 
-        return hash_elems(seed_hash, self.message.crypto_hash())
+        return hash_elems(self.object_id, seed_hash, self.message.crypto_hash())
 
 
 @dataclass
@@ -446,7 +446,7 @@ class CiphertextBallotContest(ElectionObjectBase, CryptoHashCheckable):
             selection.crypto_hash for selection in self.ballot_selections
         ]
 
-        return hash_elems(seed_hash, *selection_hashes)
+        return hash_elems(self.object_id, seed_hash, *selection_hashes)
 
     def elgamal_accumulate(self) -> ElGamalCiphertext:
         """
@@ -536,7 +536,7 @@ class CiphertextBallot(ElectionObjectBase, CryptoHashCheckable):
      :field object_id: A unique Ballot ID that is relevant to the external system
     """
 
-    # The `object_id` of the `BallotStyl` in the `Election` Manifest
+    # The `object_id` of the `BallotStyle` in the `Election` Manifest
     ballot_style: str
 
     # The hash of the election metadata
@@ -592,7 +592,7 @@ class CiphertextBallot(ElectionObjectBase, CryptoHashCheckable):
             return ZERO_MOD_Q
 
         contest_hashes = [contest.crypto_hash for contest in self.contests]
-        return hash_elems(seed_hash, *contest_hashes)
+        return hash_elems(self.object_id, seed_hash, *contest_hashes)
 
     def is_valid_encryption(
         self, seed_hash: ElementModQ, elgamal_public_key: ElementModP
@@ -658,27 +658,45 @@ class BallotBoxState(Enum):
 
 
 @dataclass
-class CiphertextBallotBoxBallot(CiphertextBallot):
+class CiphertextAcceptedBallot(CiphertextBallot):
     """
-    a `CiphertextBallotBoxBallot` represents a ballot that is or is about to be either cast or spoiled.
+    a `CiphertextAcceptedBallot` represents a ballot that is accepted for inclusion in election results.
+    an accepted ballot is or is about to be either cast or spoiled.
     The state supports the `BallotBoxState.UNKNOWN` enumeration to indicate that this object is mutable
     and has not yet been explicitly assigned a specific state.
+
+    note, additionally, this ballot includes all proofs but no nonces
     """
 
     state: BallotBoxState = field(default=BallotBoxState.UNKNOWN)
+    """
+    the state of the ballot
+    """
+
+    def __post_init__(self,) -> None:
+        super().__post_init__()
+
+        # HACK: ISSUE: #45: Accepted ballots should not have a nonce assoiciated with them
+
+        for contest in self.contests:
+            for selection in contest.ballot_selections:
+                selection.nonce = None
+            contest.nonce = None
+
+        self.nonce = None
 
 
 def from_ciphertext_ballot(
     ballot: CiphertextBallot, state: BallotBoxState
-) -> CiphertextBallotBoxBallot:
+) -> CiphertextAcceptedBallot:
     """
-    Convert a `CiphertextBallot` into a `CiphertextBallotBoxBallot` with the correct state
+    Convert a `CiphertextBallot` into a `CiphertextAcceptedBallot` with the correct state
     """
-    return CiphertextBallotBoxBallot(
+
+    return CiphertextAcceptedBallot(
         object_id=ballot.object_id,
         ballot_style=ballot.ballot_style,
         description_hash=ballot.description_hash,
         contests=ballot.contests,
-        nonce=ballot.nonce,
         state=state,
     )
