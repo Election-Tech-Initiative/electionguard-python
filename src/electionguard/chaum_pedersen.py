@@ -20,6 +20,10 @@ from .nonces import Nonces
 
 
 class DisjunctiveChaumPedersenProof(NamedTuple):
+    """
+    Representation of disjunctive Chaum Pederson proof
+    """
+
     a0: ElementModP
     b0: ElementModP
     a1: ElementModP
@@ -200,6 +204,10 @@ class ChaumPedersenProof(NamedTuple):
 
 
 class ConstantChaumPedersenProof(NamedTuple):
+    """
+    Representation of constant Chaum Pederson proof
+    """
+
     a: ElementModP
     b: ElementModP
     c: ElementModQ

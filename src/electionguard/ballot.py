@@ -106,7 +106,7 @@ class PlaintextBallotSelection(ElectionObjectBase):
 
     def to_int(self) -> int:
         """
-        represent a Truthy string as 1, or if the string is Falsy, 0
+        Represent a Truthy string as 1, or if the string is Falsy, 0
         See: https://docs.python.org/3/distutils/apiref.html#distutils.util.strtobool
 
         :return: an integer 0 or 1 for valid data, or 0 if the data is malformed
@@ -505,7 +505,11 @@ class PlaintextBallot(ElectionObjectBase):
     contests: List[PlaintextBallotContest]
 
     def is_valid(self, expected_ballot_style_id: str) -> bool:
-
+        """
+        Check if expected ballot style is valid
+        :param expected_ballot_style_id: Expected ballot style id
+        :return: True if valid
+        """
         if self.ballot_style != expected_ballot_style_id:
             log_warning(
                 f"invalid ballot_style: for: {self.object_id} expected({expected_ballot_style_id}) actual({self.ballot_style})"

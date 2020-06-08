@@ -18,6 +18,10 @@ from .group import (
 
 @runtime_checkable
 class CryptoHashable(Protocol):
+    """
+    Denotes hashable
+    """
+
     @abstractmethod
     def crypto_hash(self) -> ElementModQ:
         """
@@ -28,6 +32,10 @@ class CryptoHashable(Protocol):
 
 @runtime_checkable
 class CryptoHashCheckable(Protocol):
+    """
+    Checkable version of crypto hash
+    """
+
     @abstractmethod
     def crypto_hash_with(self, seed_hash: ElementModQ) -> ElementModQ:
         """
