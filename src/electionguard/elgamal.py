@@ -7,6 +7,7 @@ from .group import (
     g_pow_p,
     mult_p,
     mult_inv_p,
+    ONE_MOD_P,
     pow_p,
     ZERO_MOD_Q,
     int_to_q,
