@@ -1,4 +1,4 @@
-import unittest
+from unittest import TestCase
 
 from electionguard.ballot import BallotBoxState
 from electionguard.ballot_store import BallotStore
@@ -7,6 +7,7 @@ from electionguard.ballot_box import (
     BallotBox,
     accept_ballot,
 )
+from electionguard.ballot_validator import ballot_is_valid_for_election
 from electionguard.elgamal import elgamal_keypair_from_secret
 from electionguard.encrypt import encrypt_ballot
 from electionguard.group import int_to_q
@@ -18,7 +19,7 @@ election_factory = ElectionFactory.ElectionFactory()
 ballot_factory = BallotFactory.BallotFactory()
 
 
-class TestBallotBox(unittest.TestCase):
+class TestBallotBox(TestCase):
     def test_ballot_box_cast_ballot(self):
         # Arrange
         keypair = elgamal_keypair_from_secret(int_to_q(2))
@@ -32,6 +33,9 @@ class TestBallotBox(unittest.TestCase):
 
         # Act
         data = encrypt_ballot(source, metadata, encryption_context)
+        self.assertTrue(
+            ballot_is_valid_for_election(data, metadata, encryption_context)
+        )
         subject = BallotBox(metadata, encryption_context, store)
         result = subject.cast(data)
 

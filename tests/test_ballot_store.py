@@ -1,4 +1,4 @@
-import unittest
+from unittest import TestCase
 
 from electionguard.ballot import BallotBoxState, CiphertextAcceptedBallot
 from electionguard.ballot_store import BallotStore
@@ -14,7 +14,7 @@ election_factory = ElectionFactory.ElectionFactory()
 ballot_factory = BallotFactory.BallotFactory()
 
 
-class TestBallotStore(unittest.TestCase):
+class TestBallotStore(TestCase):
     def test_ballot_store(self):
 
         # Arrange

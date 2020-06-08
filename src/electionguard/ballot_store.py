@@ -12,13 +12,15 @@ from typing import (
 from .ballot import BallotBoxState, CiphertextAcceptedBallot
 from .logs import log_warning
 
+BallotId = str
+
 
 class BallotStore(Iterable):
     """
     A representation of a cache of ballots for an election
     """
 
-    _ballot_store: Dict[str, Optional[CiphertextAcceptedBallot]]
+    _ballot_store: Dict[BallotId, Optional[CiphertextAcceptedBallot]]
 
     def __init__(self) -> None:
         self._ballot_store = {}
@@ -53,9 +55,7 @@ class BallotStore(Iterable):
         except KeyError:
             return None
 
-    def exists(
-        self, ballot_id: str
-    ) -> Tuple[bool, Optional[CiphertextAcceptedBallot]]:
+    def exists(self, ballot_id: str) -> Tuple[bool, Optional[CiphertextAcceptedBallot]]:
         """
         Check if a specific ballot exists and return it.
         :return: `Tuple[bool, Optional[CiphertextAcceptedBallot]]`

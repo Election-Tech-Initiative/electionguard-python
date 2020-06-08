@@ -69,13 +69,6 @@ class ElGamalCiphertext(NamedTuple):
         return hash_elems(self.alpha, self.beta)
 
 
-def elgamal_homomorphic_zero() -> ElGamalCiphertext:
-    """
-    :return: an `ElgamalCiphertext` representing a zero value from which to do homomorphic accumulation
-    """
-    return ElGamalCiphertext(ONE_MOD_P, ONE_MOD_P)
-
-
 def elgamal_keypair_from_secret(a: ElementModQ) -> Optional[ElGamalKeyPair]:
     """
     Given an ElGamal secret key (typically, a random number in [2,Q)), returns

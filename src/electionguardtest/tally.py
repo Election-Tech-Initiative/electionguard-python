@@ -19,11 +19,10 @@ def accumulate_plaintext_ballots(ballots: List[PlaintextBallot]) -> Dict[str, in
             for selection in contest.ballot_selections:
                 assert (
                     not selection.is_placeholder_selection
-                ), "we shouldn't have placeholder selections in the plaintext ballots"
+                ), "Placeholder selections should not exist in the plaintext ballots"
                 desc_id = selection.object_id
                 if desc_id not in tally:
                     tally[desc_id] = 0
-                tally[
-                    desc_id
-                ] += selection.to_int()  # returns 1 or 0 for n-of-m ballot selections
+                # returns 1 or 0 for n-of-m ballot selections
+                tally[desc_id] += selection.to_int()
     return tally

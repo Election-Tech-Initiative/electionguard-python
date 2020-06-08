@@ -263,7 +263,7 @@ class CiphertextBallotSelection(ElectionObjectBase, CryptoHashCheckable):
         In most cases the seed_hash should match the `description_hash`
         """
 
-        return hash_elems(seed_hash, self.message.crypto_hash())
+        return hash_elems(self.object_id, seed_hash, self.message.crypto_hash())
 
 
 @dataclass
@@ -446,7 +446,7 @@ class CiphertextBallotContest(ElectionObjectBase, CryptoHashCheckable):
             selection.crypto_hash for selection in self.ballot_selections
         ]
 
-        return hash_elems(seed_hash, *selection_hashes)
+        return hash_elems(self.object_id, seed_hash, *selection_hashes)
 
     def elgamal_accumulate(self) -> ElGamalCiphertext:
         """
@@ -592,7 +592,7 @@ class CiphertextBallot(ElectionObjectBase, CryptoHashCheckable):
             return ZERO_MOD_Q
 
         contest_hashes = [contest.crypto_hash for contest in self.contests]
-        return hash_elems(seed_hash, *contest_hashes)
+        return hash_elems(self.object_id, seed_hash, *contest_hashes)
 
     def is_valid_encryption(
         self, seed_hash: ElementModQ, elgamal_public_key: ElementModP
