@@ -1,15 +1,7 @@
-from dataclasses import dataclass, field, InitVar
-from secrets import randbelow
+from dataclasses import dataclass, field
+from multiprocessing import Pool, cpu_count
 from typing import Dict, Optional, List, Set
 
-from .ballot import (
-    CiphertextBallot,
-    CiphertextBallotContest,
-    CiphertextBallotSelection,
-    PlaintextBallot,
-    PlaintextBallotContest,
-    PlaintextBallotSelection,
-)
 from .decryption_share import (
     CiphertextDecryptionSelection,
     CiphertextPartialDecryptionSelection,
@@ -21,21 +13,14 @@ from .decryption_share import (
 from .election import (
     CiphertextElectionContext,
     InternalElectionDescription,
-    ContestDescriptionWithPlaceholders,
-    SelectionDescription,
 )
-from .chaum_pedersen import ConstantChaumPedersenProof, make_constant_chaum_pedersen
 from .dlog import discrete_log
-from .nonces import Nonces
 from .election_object_base import ElectionObjectBase
 from .elgamal import ElGamalCiphertext
 from .guardian import Guardian
-from .tally import CiphertextTally, CiphertextTallyContest, CiphertextTallySelection
-from .group import ElementModP, ElementModQ, Q, int_to_q_unchecked, div_p, mult_p
-from .hash import hash_elems
+from .tally import CiphertextTally, CiphertextTallySelection
+from .group import ElementModP, div_p, mult_p
 from .logs import log_warning
-from .nonces import Nonces
-from .utils import get_optional
 
 AVAILABLE_GUARDIAN_ID = str
 MISSING_GUARDIAN_ID = str
@@ -201,8 +186,6 @@ class DecryptionMediator:
                         for selection in contest.selections.values()
                     ]
                 )
-                # todo: move this somewhere else
-                # also, the decrypt known product may work here
                 decrypted_value = div_p(selection.message.beta, all_shares_product_M)
                 plaintext_selections[selection.object_id] = PlaintextTallySelection(
                     selection.object_id,
@@ -270,34 +253,56 @@ def compute_decryption_share(
     """
     Compute a decryptions hare for a guardian
     """
-    # TODO: use all cores
+    cpu_pool = Pool(cpu_count())
     contests: Dict[str, CiphertextDecryptionContest] = {}
 
     for contest in tally.cast.values():
         selections: Dict[str, CiphertextDecryptionSelection] = {}
-        for selection in contest.tally_selections.values():
-            (decryption, proof) = guardian.partially_decrypt_tally(
-                selection.message, encryption_context.crypto_extended_base_hash
-            )
-            if proof.is_valid(
-                selection.message,
-                guardian.share_election_public_key().key,
-                decryption,
-                encryption_context.crypto_extended_base_hash,
-            ):
-                selections[selection.object_id] = CiphertextDecryptionSelection(
-                    selection.object_id, selection.description_hash, decryption, proof
-                )
-            else:
+        selection_decryptions = cpu_pool.starmap(
+            _compute_decryption_for_selection,
+            [
+                (guardian, selection, encryption_context)
+                for (_, selection) in contest.tally_selections.items()
+            ],
+        )
+
+        for decryption in selection_decryptions:
+            if decryption is None:
                 log_warning(
-                    f"compute decryption share proof failed for {guardian.object_id} {selection.object_id}"
+                    f"could not compute share for guardian {guardian.object_id} contest {contest.object_id}"
                 )
                 return None
+            selections[decryption.object_id] = decryption
+
         contests[contest.object_id] = CiphertextDecryptionContest(
             contest.object_id, contest.description_hash, selections
         )
 
     return DecryptionShare(guardian.object_id, contests)
+
+
+def _compute_decryption_for_selection(
+    guardian: Guardian,
+    selection: CiphertextTallySelection,
+    encryption_context: CiphertextElectionContext,
+) -> Optional[CiphertextDecryptionSelection]:
+    (decryption, proof) = guardian.partially_decrypt_tally(
+        selection.message, encryption_context.crypto_extended_base_hash
+    )
+    if proof.is_valid(
+        selection.message,
+        guardian.share_election_public_key().key,
+        decryption,
+        encryption_context.crypto_extended_base_hash,
+    ):
+        return CiphertextDecryptionSelection(
+            selection.object_id, selection.description_hash, decryption, proof
+        )
+    else:
+        log_warning(
+            f"compute decryption share proof failed for {guardian.object_id} {selection.object_id}"
+        )
+        return None
 
 
 def compute_partial_decryption_share(

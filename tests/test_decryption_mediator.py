@@ -15,6 +15,7 @@ from electionguard.decryption_mediator import (
     PlaintextTally,
     PlaintextTallyContest,
     PlaintextTallySelection,
+    _compute_decryption_for_selection,
 )
 from electionguard.election import (
     CiphertextElectionContext,
@@ -204,6 +205,22 @@ class TestDecryptionMediator(TestCase):
         self.ciphertext_tally = tally_ballots(
             ballot_store, self.metadata, self.encryption_context
         )
+
+    def test_compute_selection(self):
+        # Arrange
+        first_selection = [
+            selection
+            for contest in self.ciphertext_tally.cast.values()
+            for selection in contest.tally_selections.values()
+        ][0]
+
+        # act
+        result = _compute_decryption_for_selection(
+            GUARDIAN_1, first_selection, self.encryption_context
+        )
+
+        # assert
+        self.assertIsNotNone(result)
 
     def test_announce(self):
         # Arrange
