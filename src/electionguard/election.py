@@ -913,4 +913,3 @@ def generate_placeholder_selections_from(
             get_optional(generate_placeholder_selection_from(contest, sequence_order))
         )
     return selections
-
