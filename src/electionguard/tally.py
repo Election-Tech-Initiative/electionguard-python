@@ -284,6 +284,8 @@ def tally_ballots(
         "election-results", metadata, encryption_context
     )
     for ballot in store:
+        if ballot is None:
+            return None
         if tally_ballot(ballot, tally) is None:
             return None
     return tally
