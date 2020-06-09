@@ -1,18 +1,16 @@
-from dataclasses import dataclass, field, InitVar
-from typing import Optional, List, Any, Sequence, Dict
+from dataclasses import dataclass
+from typing import Dict
 
 from .chaum_pedersen import ChaumPedersenProof
 from .election_object_base import ElectionObjectBase
 
-from .elgamal import ElGamalCiphertext, elgamal_add
-from .group import add_q, ElementModP, ElementModQ, ZERO_MOD_Q
-from .hash import CryptoHashCheckable, hash_elems
-from .logs import log_warning
+from .group import ElementModP, ElementModQ
 
 
 @dataclass
-class CiphertextDecryptionSelection(ElectionObjectBase, CryptoHashCheckable):
+class CiphertextDecryptionSelection(ElectionObjectBase):
     """
+    A Ciphertext Decryption Selection
     """
 
     # The SelectionDescription hash
@@ -24,16 +22,11 @@ class CiphertextDecryptionSelection(ElectionObjectBase, CryptoHashCheckable):
     # Proof that the share was decrypted correctly
     proof: ChaumPedersenProof
 
-    def crypto_hash_with(self, seed_hash: ElementModQ) -> ElementModQ:
-        """
-        Generates a hash with a given seed that can be checked later against the seed and class metadata.
-        """
-        ...
-
 
 @dataclass
-class CiphertextPartialDecryptionSelection(ElectionObjectBase, CryptoHashCheckable):
+class CiphertextPartialDecryptionSelection(ElectionObjectBase):
     """
+    A Cipertext Partial Decryption Selection
     """
 
     # The SelectionDescription hash
@@ -45,16 +38,11 @@ class CiphertextPartialDecryptionSelection(ElectionObjectBase, CryptoHashCheckab
     # Proof that the share was decrypted correctly
     proof: ChaumPedersenProof
 
-    def crypto_hash_with(self, seed_hash: ElementModQ) -> ElementModQ:
-        """
-        Generates a hash with a given seed that can be checked later against the seed and class metadata.
-        """
-        ...
-
 
 @dataclass
-class CiphertextDecryptionContest(ElectionObjectBase, CryptoHashCheckable):
+class CiphertextDecryptionContest(ElectionObjectBase):
     """
+    A ciphertext Decryption contest
     """
 
     # The ContestDescription Hash
@@ -63,16 +51,11 @@ class CiphertextDecryptionContest(ElectionObjectBase, CryptoHashCheckable):
     # the collection of decryption shares for this contest's selections
     selections: Dict[str, CiphertextDecryptionSelection]
 
-    def crypto_hash_with(self, seed_hash: ElementModQ) -> ElementModQ:
-        """
-        Generates a hash with a given seed that can be checked later against the seed and class metadata.
-        """
-        ...
-
 
 @dataclass
-class CiphertextPartialDecryptionContest(ElectionObjectBase, CryptoHashCheckable):
+class CiphertextPartialDecryptionContest(ElectionObjectBase):
     """
+    A Ciphertext Partial Decryption contest
     """
 
     # The ContestDescription Hash
@@ -81,16 +64,11 @@ class CiphertextPartialDecryptionContest(ElectionObjectBase, CryptoHashCheckable
     # the collection of decryption shares for this contest's selections
     selections: Dict[str, CiphertextPartialDecryptionSelection]
 
-    def crypto_hash_with(self, seed_hash: ElementModQ) -> ElementModQ:
-        """
-        Generates a hash with a given seed that can be checked later against the seed and class metadata.
-        """
-        ...
-
 
 @dataclass
 class DecryptionShare:
     """
+    A Decryption Share
     """
 
     # The Available Guardian that this share belongs to
@@ -99,16 +77,11 @@ class DecryptionShare:
     # The collection of all contests in the election
     contests: Dict[str, CiphertextDecryptionContest]
 
-    def crypto_hash_with(self, seed_hash: ElementModQ) -> ElementModQ:
-        """
-        Generates a hash with a given seed that can be checked later against the seed and class metadata.
-        """
-        ...
-
 
 @dataclass
 class PartialDecryptionShare:
     """
+    A Partial Decryption Share
     """
 
     # The Available Guardian that this partial share belongs to
@@ -121,9 +94,3 @@ class PartialDecryptionShare:
     contests: Dict[str, CiphertextPartialDecryptionContest]
 
     lagrange_coefficient: ElementModQ
-
-    def crypto_hash_with(self, seed_hash: ElementModQ) -> ElementModQ:
-        """
-        Generates a hash with a given seed that can be checked later against the seed and class metadata.
-        """
-        ...

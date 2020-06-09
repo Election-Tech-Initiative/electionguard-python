@@ -180,12 +180,10 @@ class TestDecryptionMediator(TestCase):
 
         # setup the election
         self.election = election_factory.get_fake_election()
-        (
-            self.metadata,
-            self.encryption_context,
-        ) = election_factory.get_fake_ciphertext_election(
-            self.election, self.joint_public_key
-        )
+        builder = ElectionBuilder(NUMBER_OF_GUARDIANS, QUORUM, self.election)
+        self.metadata, self.encryption_context = builder.set_public_key(
+            self.joint_public_key
+        ).build()
 
         self.ballot_marking_device = EncryptionCompositor(
             self.metadata, self.encryption_context
@@ -218,6 +216,12 @@ class TestDecryptionMediator(TestCase):
 
         # assert
         self.assertIsNotNone(result)
+
+        # Can only announce once
+        self.assertIsNone(subject.announce(GUARDIAN_1))
+
+        # Cannot get plaintext tally without a quorum
+        self.assertIsNone(subject.get_plaintext_tally())
 
     @settings(
         deadline=timedelta(milliseconds=10000),

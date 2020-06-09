@@ -126,7 +126,6 @@ class DecryptionMediator:
             )
             return None
 
-    # TODO: should return a Dict?
     def compensate(
         self, missing_guardian_id: str
     ) -> Optional[List[PartialDecryptionShare]]:
@@ -148,7 +147,7 @@ class DecryptionMediator:
             else:
                 partial_decryptions.append(partial)
 
-        # Verify we generated the correct number of partials
+        # Verify generated the correct number of partials
         if len(partial_decryptions) != len(self._available_guardians):
             log_warning(
                 f"compensate mismatch partial decryptions for missing guardian {missing_guardian_id}"
@@ -165,17 +164,18 @@ class DecryptionMediator:
         if self._plaintext_tally is not None:
             return self._plaintext_tally
 
-        # Make sure we have a Quorum of Guardians that have announced
+        # Make sure a Quorum of Guardians have announced
         if len(self._available_guardians) < self._encryption.quorum:
             log_warning(
                 "cannot get plaintext tally with less than quorum available guardians"
             )
             return None
 
-        # If all Guardians are present we can decrypt the tally
+        # If all Guardians are present decrypt the tally
         if len(self._available_guardians) == self._encryption.number_of_guardians:
             return self._decrypt_tally()
 
+        # If missing guardians compensate for the missing guardians
         for missing in self._missing_guardians:
             partial_decryptions = self.compensate(missing)
             if partial_decryptions is None:
@@ -220,6 +220,12 @@ class DecryptionMediator:
         Submit the decryption share
         """
 
+        if share.guardian_id in self._decryption_shares:
+            log_warning(
+                f"cannot submit for guardian {share.guardian_id} that already decrypted"
+            )
+            return False
+
         self._decryption_shares[share.guardian_id] = share
         return True
 
@@ -238,6 +244,17 @@ class DecryptionMediator:
         """
         Submit partial decryption share
         """
+
+        if (
+            share.missing_guardian_id in self._partial_decryption_shares
+            and share.available_guardian_id
+            in self._partial_decryption_shares[share.missing_guardian_id]
+        ):
+            log_warning(
+                f"cannot submit partial for guardian {share.available_guardian_id} on behalf of {share.missing_guardian_id} that already compensated"
+            )
+            return False
+
         self._partial_decryption_shares[share.missing_guardian_id][
             share.available_guardian_id
         ] = share
