@@ -4,7 +4,7 @@ from electionguard.ballot import BallotBoxState, CiphertextAcceptedBallot
 from electionguard.ballot_store import BallotStore
 
 from electionguard.elgamal import elgamal_keypair_from_secret
-from electionguard.encrypt import encrypt_ballot
+from electionguard.encrypt import encrypt_ballot, EncryptionDevice
 from electionguard.group import int_to_q
 
 import electionguardtest.ballot_factory as BallotFactory
@@ -12,6 +12,7 @@ import electionguardtest.election_factory as ElectionFactory
 
 election_factory = ElectionFactory.ElectionFactory()
 ballot_factory = BallotFactory.BallotFactory()
+SEED_HASH = EncryptionDevice("Location").get_hash()
 
 
 class TestBallotStore(TestCase):
@@ -26,7 +27,9 @@ class TestBallotStore(TestCase):
 
         # get an encrypted fake ballot to work with
         fake_ballot = election_factory.get_fake_ballot(metadata)
-        encrypted_ballot = encrypt_ballot(fake_ballot, metadata, encryption_context)
+        encrypted_ballot = encrypt_ballot(
+            fake_ballot, metadata, encryption_context, SEED_HASH
+        )
 
         # Set up the ballot store
         subject = BallotStore()
@@ -35,6 +38,8 @@ class TestBallotStore(TestCase):
             encrypted_ballot.ballot_style,
             encrypted_ballot.description_hash,
             encrypted_ballot.contests,
+            encrypted_ballot.tracking_id,
+            encrypted_ballot.timestamp,
         )
         data_cast.state = BallotBoxState.CAST
 
@@ -43,6 +48,8 @@ class TestBallotStore(TestCase):
             encrypted_ballot.ballot_style,
             encrypted_ballot.description_hash,
             encrypted_ballot.contests,
+            encrypted_ballot.tracking_id,
+            encrypted_ballot.timestamp,
         )
         data_spoiled.state = BallotBoxState.SPOILED
 
@@ -58,6 +65,8 @@ class TestBallotStore(TestCase):
                     encrypted_ballot.ballot_style,
                     encrypted_ballot.description_hash,
                     encrypted_ballot.contests,
+                    encrypted_ballot.tracking_id,
+                    encrypted_ballot.timestamp,
                 ),
             )
         )
