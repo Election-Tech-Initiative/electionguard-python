@@ -70,7 +70,7 @@ GUARDIAN_3.generate_election_partial_key_backups()
 
 class TestDecryptionMediator(TestCase):
     def setUp(self):
-        self.key_ceremony = Mediator(CEREMONY_DETAILS)
+        self.key_ceremony = KeyCeremonyMediator(CEREMONY_DETAILS)
         self.key_ceremony.confirm_presence_of_guardian(GUARDIAN_1.share_public_keys())
         self.key_ceremony.confirm_presence_of_guardian(GUARDIAN_2.share_public_keys())
         self.key_ceremony.confirm_presence_of_guardian(GUARDIAN_3.share_public_keys())
