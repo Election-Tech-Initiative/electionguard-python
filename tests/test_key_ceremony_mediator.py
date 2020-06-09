@@ -6,7 +6,7 @@ from electionguard.key_ceremony import (
     ElectionPartialKeyVerification,
     GuardianPair,
 )
-from electionguard.mediator import Mediator
+from electionguard.key_ceremony_mediator import KeyCeremonyMediator
 
 NUMBER_OF_GUARDIANS = 2
 QUORUM = 2
@@ -24,10 +24,10 @@ GUARDIAN_1.generate_election_partial_key_backups()
 GUARDIAN_2.generate_election_partial_key_backups()
 
 
-class TestMediator(TestCase):
+class TestKeyCeremonyMediator(TestCase):
     def test_reset(self):
         # Arrange
-        mediator = Mediator(CEREMONY_DETAILS)
+        mediator = KeyCeremonyMediator(CEREMONY_DETAILS)
         new_ceremony_details = CeremonyDetails(3, 3)
 
         mediator.reset(new_ceremony_details)
@@ -35,7 +35,7 @@ class TestMediator(TestCase):
 
     def test_mediator_takes_attendance(self):
         # Arrange
-        mediator = Mediator(CEREMONY_DETAILS)
+        mediator = KeyCeremonyMediator(CEREMONY_DETAILS)
 
         # Act
         mediator.confirm_presence_of_guardian(GUARDIAN_1.share_public_keys())
@@ -58,7 +58,7 @@ class TestMediator(TestCase):
 
     def test_exchange_of_auxiliary_public_keys(self):
         # Arrange
-        mediator = Mediator(CEREMONY_DETAILS)
+        mediator = KeyCeremonyMediator(CEREMONY_DETAILS)
 
         # Act
         mediator.receive_auxiliary_public_key(GUARDIAN_1.share_auxiliary_public_key())
@@ -81,7 +81,7 @@ class TestMediator(TestCase):
     # Election Public Keys
     def test_exchange_of_election_public_keys(self):
         # Arrange
-        mediator = Mediator(CEREMONY_DETAILS)
+        mediator = KeyCeremonyMediator(CEREMONY_DETAILS)
 
         # Act
         mediator.receive_election_public_key(GUARDIAN_1.share_election_public_key())
@@ -104,7 +104,7 @@ class TestMediator(TestCase):
     # Election Partial Key Backups
     def test_exchange_of_election_partial_key_backup(self):
         # Arrange
-        mediator = Mediator(CEREMONY_DETAILS)
+        mediator = KeyCeremonyMediator(CEREMONY_DETAILS)
         mediator.confirm_presence_of_guardian(GUARDIAN_1.share_public_keys())
         mediator.confirm_presence_of_guardian(GUARDIAN_2.share_public_keys())
         backup_from_1_for_2 = GUARDIAN_1.share_election_partial_key_backup(
@@ -148,8 +148,11 @@ class TestMediator(TestCase):
 
     # Partial Key Verifications
     def test_partial_key_backup_verification_success(self):
+        """
+        Test for the happy path of the verification process where each key is successfully verified and no bad actors.
+        """
         # Arrange
-        mediator = Mediator(CEREMONY_DETAILS)
+        mediator = KeyCeremonyMediator(CEREMONY_DETAILS)
         mediator.confirm_presence_of_guardian(GUARDIAN_1.share_public_keys())
         mediator.confirm_presence_of_guardian(GUARDIAN_2.share_public_keys())
         mediator.receive_election_partial_key_backup(
@@ -185,8 +188,12 @@ class TestMediator(TestCase):
         self.assertIsNotNone(joint_key)
 
     def test_partial_key_backup_verification_failure(self):
+        """
+        In this case, the recipient guardian does not correctly verify the sent key backup.
+        This failed verificaton requires the sender create a challenge and a new verifier aka another guardian must verify this challenge. 
+        """
         # Arrange
-        mediator = Mediator(CEREMONY_DETAILS)
+        mediator = KeyCeremonyMediator(CEREMONY_DETAILS)
         mediator.confirm_presence_of_guardian(GUARDIAN_1.share_public_keys())
         mediator.confirm_presence_of_guardian(GUARDIAN_2.share_public_keys())
         mediator.receive_election_partial_key_backup(

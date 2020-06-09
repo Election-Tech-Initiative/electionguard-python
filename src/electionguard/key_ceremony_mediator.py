@@ -16,9 +16,9 @@ from .key_ceremony import (
 )
 
 
-class Mediator:
+class KeyCeremonyMediator:
     """
-    Mediator for assisting communication between guardians 
+    KeyCeremonyMediator for assisting communication between guardians 
     """
 
     ceremony_details: CeremonyDetails

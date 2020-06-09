@@ -327,7 +327,7 @@ def combine_election_public_keys(
     Creates a joint election key from the public keys of all guardians
     :return: Joint key for election
     """
-    # FIXME Lambda or map may not be capable of being transliterated. Consider alternative.
+    # TODO Lambda or map may not be capable of being transliterated. Consider alternative.
     public_keys = map(lambda public_key: public_key.key, election_public_keys.values())
 
     return elgamal_combine_public_keys(public_keys)

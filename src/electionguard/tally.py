@@ -173,7 +173,7 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
 
     def append(self, ballot: CiphertextAcceptedBallot) -> bool:
         """
-        append a ballot to the tally
+        Append a ballot to the tally
         """
         if ballot.state == BallotBoxState.UNKNOWN:
             log_warning(f"append cannot add {ballot.object_id} with invalid state")
@@ -197,7 +197,7 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
 
     def _add_cast(self, ballot: CiphertextAcceptedBallot) -> bool:
         """
-        add a cast ballot to the tally
+        Add a cast ballot to the tally
         """
 
         # iterate through the contests and elgamal add

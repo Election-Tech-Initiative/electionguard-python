@@ -37,13 +37,16 @@ def generate_polynomial(number_of_coefficients: int) -> ElectionPolynomial:
     :param number_of_coefficients: Number of coefficients of polynomial
     :return: Polynomial used to share election keys
     """
-    polynomial = ElectionPolynomial([], [], [])
+    coefficients: List[ElementModQ] = []
+    commitments: List[ElementModP] = []
+    proofs: List[SchnorrProof] = []
+    polynomial = ElectionPolynomial(coefficients, commitments, proofs)
     for i in range(number_of_coefficients):
         coefficient = rand_q()
         commitment = g_pow_p(coefficient)
         proof = make_schnorr_proof(
             ElGamalKeyPair(coefficient, commitment), rand_q()
-        )  # FIXME Alternate schnoor proof method that doesn't need KeyPair
+        )  # TODO Alternate schnoor proof method that doesn't need KeyPair
 
         polynomial.coefficients.append(coefficient)
         polynomial.coefficient_commitments.append(commitment)
@@ -82,7 +85,7 @@ def verify_polynomial_value(
     :param coefficient_commitments: Commitments for coefficients of polynomial
     :return: True if verified on polynomial
     """
-    # FIXME Revisit mod p over mod q
+    # TODO Revisit mod p over mod q
     commitment_output = ONE_MOD_P
     for (i, commitment) in enumerate(coefficient_commitments):
         exponent = pow_p(int_to_p_unchecked(exponent_modifier), int_to_p_unchecked(i))
