@@ -31,9 +31,6 @@ class CiphertextTallySelection(ElectionObjectBase):
     The SelectionDescription hash
     """
 
-    # We are explicitly setting this field to (1,1) in this instance
-    # but for some use cases, you may instead want to initialize with
-    # elgamal_encrypt(0, some_nonce, some_public_key)
     message: ElGamalCiphertext = field(default=ElGamalCiphertext(ONE_MOD_P, ONE_MOD_P))
     """
     The encrypted representation of the total of all ballots for this selection
@@ -176,7 +173,7 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
 
     def append(self, ballot: CiphertextAcceptedBallot) -> bool:
         """
-        append a ballot to the tally
+        Append a ballot to the tally
         """
         if ballot.state == BallotBoxState.UNKNOWN:
             log_warning(f"append cannot add {ballot.object_id} with invalid state")
@@ -200,7 +197,7 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
 
     def _add_cast(self, ballot: CiphertextAcceptedBallot) -> bool:
         """
-        add a cast ballot to the tally
+        Add a cast ballot to the tally
         """
 
         # iterate through the contests and elgamal add
@@ -287,7 +284,8 @@ def tally_ballots(
         "election-results", metadata, encryption_context
     )
     for ballot in store:
+        if ballot is None:
+            return None
         if tally_ballot(ballot, tally) is None:
-            log_warning(f"tally ballots failed for ballot {ballot.object_id}")
             return None
     return tally

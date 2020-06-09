@@ -1,5 +1,6 @@
 from secrets import randbelow
-from typing import Optional, List
+from typing import List, Optional, NamedTuple
+from uuid import getnode
 
 from .ballot import (
     CiphertextBallot,
@@ -9,6 +10,7 @@ from .ballot import (
     PlaintextBallotContest,
     PlaintextBallotSelection,
 )
+
 from .election import (
     CiphertextElectionContext,
     InternalElectionDescription,
@@ -21,32 +23,69 @@ from .group import Q, ElementModP, ElementModQ, int_to_q_unchecked
 from .hash import hash_elems
 from .logs import log_warning
 from .nonces import Nonces
+from .tracker import get_hash_for_device
 from .utils import get_optional, get_or_else_optional_func
 
 
-class EncryptionCompositor(object):
+class EncryptionDevice(object):
     """
-    EncryptionCompositor is an object for caching election and encryption state.
+    Metadata for encryption device
+    """
+
+    uuid: int
+    location: str
+
+    def __init__(self, location: str) -> None:
+        self.uuid = generate_device_uuid()
+        self.location = location
+
+    def get_hash(self) -> ElementModQ:
+        """
+        Get hash for encryption device
+        :return: Starting hash
+        """
+        return get_hash_for_device(self.uuid, self.location)
+
+
+class EncryptionMediator(object):
+    """
+    An object for caching election and encryption state.
 
     It composes Elections and Ballots.
     """
 
     _metadata: InternalElectionDescription
     _encryption: CiphertextElectionContext
+    _seed_hash: ElementModQ
 
     def __init__(
         self,
         election_metadata: InternalElectionDescription,
         encryption_context: CiphertextElectionContext,
+        encryption_device: EncryptionDevice,
     ):
         self._metadata = election_metadata
         self._encryption = encryption_context
+        self._seed_hash = encryption_device.get_hash()
 
     def encrypt(self, ballot: PlaintextBallot) -> Optional[CiphertextBallot]:
         """
         Encrypt the specified ballot using the cached election context.
         """
-        return encrypt_ballot(ballot, self._metadata, self._encryption)
+        encrypted_ballot = encrypt_ballot(
+            ballot, self._metadata, self._encryption, self._seed_hash
+        )
+        if encrypted_ballot is not None and encrypted_ballot.tracking_id is not None:
+            self._seed_hash = encrypted_ballot.tracking_id
+        return encrypted_ballot
+
+
+def generate_device_uuid() -> int:
+    """
+    Get unique identifier for device
+    :return: Unique identifier
+    """
+    return getnode()
 
 
 def selection_from(
@@ -320,6 +359,7 @@ def encrypt_ballot(
     ballot: PlaintextBallot,
     election_metadata: InternalElectionDescription,
     encryption_context: CiphertextElectionContext,
+    seed_hash: ElementModQ,
     nonce: Optional[ElementModQ] = None,
     should_verify_proofs: bool = True,
 ) -> Optional[CiphertextBallot]:
@@ -336,6 +376,7 @@ def encrypt_ballot(
     :param ballot: the ballot in the valid input form
     :param election_metadata: the `InternalElectionDescription` which defines this ballot's structure
     :param encryption_context: all the cryptographic context for the election
+    :param seed_hash: Hash from previous ballot or starting hash from device
     :param nonce: an optional `int` used to seed the `Nonce` generated for this contest
                  if this value is not provided, the secret generating mechanism of the OS provides its own
     :param should_verify_proofs: specify if the proofs should be verified prior to returning (default True)
@@ -391,6 +432,12 @@ def encrypt_ballot(
         encrypted_contests,
         random_master_nonce,
     )
+
+    # Generate tracking id
+    encrypted_ballot.generate_tracking_id(seed_hash)
+
+    if not encrypted_ballot.tracking_id:
+        return None
 
     if not should_verify_proofs:
         return encrypted_ballot

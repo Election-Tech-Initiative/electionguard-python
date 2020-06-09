@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field, InitVar
+from datetime import datetime
 from enum import Enum
 from distutils import util
 from typing import Optional, List, Any, Sequence
@@ -14,6 +15,8 @@ from .elgamal import ElGamalCiphertext, elgamal_add
 from .group import add_q, ElementModP, ElementModQ, ZERO_MOD_Q
 from .hash import CryptoHashCheckable, hash_elems
 from .logs import log_warning
+from .tracker import get_rotating_tracker_hash, tracker_hash_to_words
+from .utils import to_ticks
 
 
 def _list_eq(
@@ -549,6 +552,12 @@ class CiphertextBallot(ElectionObjectBase, CryptoHashCheckable):
     # The list of contests for this ballot
     contests: List[CiphertextBallotContest]
 
+    # the unique ballot tracking id for this ballot
+    tracking_id: Optional[ElementModQ] = field(init=False)
+
+    # timestamp in ticks
+    timestamp: int = field(init=False)
+
     # the hash of the encrypted ballot representation
     crypto_hash: ElementModQ = field(init=False)
 
@@ -556,14 +565,9 @@ class CiphertextBallot(ElectionObjectBase, CryptoHashCheckable):
     # this value is sensitive & should be treated as a secret
     nonce: Optional[ElementModQ] = field(default=None)
 
-    # the unique ballot tracking id for this ballot
-    tracking_id: str = field(init=False)
-
     def __post_init__(self) -> None:
         self.crypto_hash = self.crypto_hash_with(self.description_hash)
-
-        # TODO: Generate Tracking code
-        self.tracking_id = "abc123"
+        self.timestamp = to_ticks(datetime.utcnow())
 
     @property
     def hashed_ballot_nonce(self) -> Optional[ElementModQ]:
@@ -579,6 +583,25 @@ class CiphertextBallot(ElectionObjectBase, CryptoHashCheckable):
             return None
 
         return hash_elems(self.description_hash, self.object_id, self.nonce)
+
+    def generate_tracking_id(self, seed_hash: ElementModQ) -> None:
+        """
+        Generate a tracking id from given hash and existing ballot hash
+        :param seed_hash: Seed hash whether starting or previous
+        :param date_time: Current date time
+        """
+        self.tracking_id = get_rotating_tracker_hash(
+            seed_hash, self.timestamp, self.crypto_hash
+        )
+
+    def get_tracker_code(self) -> Optional[str]:
+        """
+        Get a tracker hash as a code in friendly readable words for sharing
+        :return: Tracker in words or None
+        """
+        if not self.tracking_id:
+            return None
+        return tracker_hash_to_words(self.tracking_id)
 
     def crypto_hash_with(self, seed_hash: ElementModQ) -> ElementModQ:
         """
@@ -672,6 +695,8 @@ class CiphertextAcceptedBallot(CiphertextBallot):
     note, additionally, this ballot includes all proofs but no nonces
     """
 
+    tracking_id: Optional[ElementModQ]
+    timestamp: int
     state: BallotBoxState = field(default=BallotBoxState.UNKNOWN)
     """
     the state of the ballot
@@ -702,5 +727,7 @@ def from_ciphertext_ballot(
         ballot_style=ballot.ballot_style,
         description_hash=ballot.description_hash,
         contests=ballot.contests,
+        tracking_id=ballot.tracking_id,
+        timestamp=ballot.timestamp,
         state=state,
     )

@@ -25,7 +25,7 @@ class BallotStore(Iterable):
     def __init__(self) -> None:
         self._ballot_store = {}
 
-    def __iter__(self) -> Iterator[CiphertextAcceptedBallot]:
+    def __iter__(self) -> Iterator[Optional[CiphertextAcceptedBallot]]:
         return iter(self._ballot_store.values())
 
     def set(
@@ -40,7 +40,7 @@ class BallotStore(Iterable):
         self._ballot_store[ballot_id] = ballot
         return True
 
-    def all(self) -> List[CiphertextAcceptedBallot]:
+    def all(self) -> List[Optional[CiphertextAcceptedBallot]]:
         """
         Get all `CiphertextAcceptedBallot` from the store
         """

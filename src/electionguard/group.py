@@ -4,7 +4,7 @@
 
 from typing import Any, Final, NamedTuple, Optional, Union
 from secrets import randbelow
-from gmpy2 import mpz, powmod, invert
+from gmpy2 import mpz, powmod, invert, to_binary, from_binary
 
 # Constants used by ElectionGuard
 Q: Final[int] = pow(2, 256) - 189
@@ -156,6 +156,20 @@ def int_to_p_unchecked(i: int) -> ElementModP:
     you're absolutely, positively, certain the input is in-bounds.
     """
     return ElementModP(mpz(i))
+
+
+def q_to_bytes(e: ElementModQ) -> bytes:
+    """
+    Returns a byte sequence from the element.
+    """
+    return to_binary(e.elem)
+
+
+def bytes_to_q(b: bytes) -> ElementModQ:
+    """
+    Returns an element from a byte sequence.
+    """
+    return ElementModQ(mpz(from_binary(b)))
 
 
 def add_q(*elems: ElementModQ) -> ElementModQ:

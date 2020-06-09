@@ -9,7 +9,7 @@ from electionguard.ballot_box import (
 )
 from electionguard.ballot_validator import ballot_is_valid_for_election
 from electionguard.elgamal import elgamal_keypair_from_secret
-from electionguard.encrypt import encrypt_ballot
+from electionguard.encrypt import encrypt_ballot, EncryptionDevice
 from electionguard.group import int_to_q
 
 import electionguardtest.ballot_factory as BallotFactory
@@ -17,6 +17,8 @@ import electionguardtest.election_factory as ElectionFactory
 
 election_factory = ElectionFactory.ElectionFactory()
 ballot_factory = BallotFactory.BallotFactory()
+
+SEED_HASH = EncryptionDevice("Location").get_hash()
 
 
 class TestBallotBox(TestCase):
@@ -32,7 +34,7 @@ class TestBallotBox(TestCase):
         self.assertTrue(source.is_valid(metadata.ballot_styles[0].object_id))
 
         # Act
-        data = encrypt_ballot(source, metadata, encryption_context)
+        data = encrypt_ballot(source, metadata, encryption_context, SEED_HASH)
         self.assertTrue(
             ballot_is_valid_for_election(data, metadata, encryption_context)
         )
@@ -61,7 +63,7 @@ class TestBallotBox(TestCase):
         self.assertTrue(source.is_valid(metadata.ballot_styles[0].object_id))
 
         # Act
-        data = encrypt_ballot(source, metadata, encryption_context)
+        data = encrypt_ballot(source, metadata, encryption_context, SEED_HASH)
         subject = BallotBox(metadata, encryption_context, store)
         result = subject.spoil(data)
 
@@ -87,7 +89,7 @@ class TestBallotBox(TestCase):
         self.assertTrue(source.is_valid(metadata.ballot_styles[0].object_id))
 
         # Act
-        data = encrypt_ballot(source, metadata, encryption_context)
+        data = encrypt_ballot(source, metadata, encryption_context, SEED_HASH)
         result = accept_ballot(
             data, BallotBoxState.CAST, metadata, encryption_context, store
         )
@@ -122,7 +124,7 @@ class TestBallotBox(TestCase):
         self.assertTrue(source.is_valid(metadata.ballot_styles[0].object_id))
 
         # Act
-        data = encrypt_ballot(source, metadata, encryption_context)
+        data = encrypt_ballot(source, metadata, encryption_context, SEED_HASH)
         result = accept_ballot(
             data, BallotBoxState.SPOILED, metadata, encryption_context, store
         )

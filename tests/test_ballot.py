@@ -6,7 +6,7 @@ from datetime import timedelta
 from hypothesis import HealthCheck
 from hypothesis import given, settings
 
-from electionguard.ballot import PlaintextBallot, PlaintextBallotSelection
+from electionguard.ballot import PlaintextBallotSelection
 
 import electionguardtest.ballot_factory as BallotFactory
 

@@ -4,7 +4,7 @@ from secrets import randbelow
 from .chaum_pedersen import ChaumPedersenProof, make_chaum_pedersen
 from .election_object_base import ElectionObjectBase
 from .elgamal import ElGamalCiphertext
-from .group import ElementModP, ElementModQ, Q, int_to_q_unchecked
+from .group import ElementModP, ElementModQ, int_to_q_unchecked, Q
 from .key_ceremony import (
     AuxiliaryKeyPair,
     AuxiliaryPublicKey,
@@ -30,7 +30,6 @@ from .key_ceremony import (
     verify_election_partial_key_backup,
     verify_election_partial_key_challenge,
 )
-from .nonces import Nonces
 
 
 class Guardian(ElectionObjectBase):

@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Callable, Optional, TypeVar
 
 T = TypeVar("T")
@@ -59,3 +60,15 @@ def flatmap_optional(optional: Optional[T], mapper: Callable[[T], U]) -> Optiona
         return None
     else:
         return mapper(optional)
+
+
+def to_ticks(date_time: datetime) -> int:
+    """
+    Return the number of ticks for a date time
+    :param date_time: Date time to convert
+    :return: number of ticks
+    """
+    t0 = datetime(1, 1, 1)
+    seconds = int((date_time - t0).total_seconds())
+    ticks = seconds * 10 ** 7
+    return ticks

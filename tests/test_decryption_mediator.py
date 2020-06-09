@@ -25,9 +25,9 @@ from electionguard.election import (
     SelectionDescription,
 )
 from electionguard.election_builder import ElectionBuilder
-from electionguard.encrypt import EncryptionCompositor, encrypt_ballot
+from electionguard.encrypt import EncryptionDevice, EncryptionMediator, encrypt_ballot
 
-from electionguard.group import ElementModP
+from electionguard.group import ElementModP, int_to_q_unchecked
 from electionguard.guardian import Guardian
 from electionguard.key_ceremony import (
     CeremonyDetails,
@@ -186,8 +186,9 @@ class TestDecryptionMediator(TestCase):
             self.joint_public_key
         ).build()
 
-        self.ballot_marking_device = EncryptionCompositor(
-            self.metadata, self.encryption_context
+        self.encryption_device = EncryptionDevice("location")
+        self.ballot_marking_device = EncryptionMediator(
+            self.metadata, self.encryption_context, self.encryption_device
         )
 
         # get some fake ballots
@@ -291,7 +292,9 @@ class TestDecryptionMediator(TestCase):
         # encrypt each ballot
         store = BallotStore()
         for ballot in ballots:
-            encrypted_ballot = encrypt_ballot(ballot, metadata, context)
+            encrypted_ballot = encrypt_ballot(
+                ballot, metadata, context, int_to_q_unchecked(1)
+            )
             self.assertIsNotNone(encrypted_ballot)
             # add to the ballot store
             store.set(

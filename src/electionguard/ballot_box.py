@@ -26,7 +26,7 @@ class BallotBox(object):
 
     def cast(self, ballot: CiphertextBallot) -> Optional[CiphertextAcceptedBallot]:
         """
-        cast a specific encrypted `CiphertextBallot`
+        Cast a specific encrypted `CiphertextBallot`
         """
         return accept_ballot(
             ballot, BallotBoxState.CAST, self._metadata, self._encryption, self._store
@@ -34,7 +34,7 @@ class BallotBox(object):
 
     def spoil(self, ballot: CiphertextBallot) -> Optional[CiphertextAcceptedBallot]:
         """
-        spoil a specific encrypted `CiphertextBallot`
+        Spoil a specific encrypted `CiphertextBallot`
         """
         return accept_ballot(
             ballot,
