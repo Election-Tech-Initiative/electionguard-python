@@ -5,11 +5,11 @@ from typing import List, Dict
 from hypothesis import given, HealthCheck, settings, Phase
 from hypothesis.strategies import integers
 
-from electionguard.ballot import PlaintextBallot, CiphertextBallot
+from electionguard.ballot import CiphertextBallot
 from electionguard.decrypt import decrypt_ballot_with_secret
 from electionguard.election import ElectionDescription
 from electionguard.elgamal import ElGamalCiphertext, elgamal_encrypt, elgamal_add
-from electionguard.encrypt import encrypt_ballot
+from electionguard.encrypt import encrypt_ballot, EncryptionDevice
 from electionguard.group import ElementModQ
 from electionguard.nonces import Nonces
 from electionguardtest.election import (
@@ -19,6 +19,9 @@ from electionguardtest.election import (
 )
 from electionguardtest.group import elements_mod_q
 from electionguardtest.tally import accumulate_plaintext_ballots
+
+
+SEED_HASH = EncryptionDevice("Location").get_hash()
 
 
 class TestElections(unittest.TestCase):
@@ -74,7 +77,9 @@ class TestElections(unittest.TestCase):
 
         # encrypt each ballot
         for i in range(num_ballots):
-            encrypted_ballot = encrypt_ballot(ballots[i], metadata, context, nonces[i])
+            encrypted_ballot = encrypt_ballot(
+                ballots[i], metadata, context, SEED_HASH, nonces[i]
+            )
             encrypted_ballots.append(encrypted_ballot)
 
             # sanity check the encryption

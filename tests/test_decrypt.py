@@ -28,7 +28,8 @@ from electionguard.elgamal import ElGamalKeyPair
 from electionguard.encrypt import (
     encrypt_contest,
     encrypt_selection,
-    EncryptionCompositor,
+    EncryptionDevice,
+    EncryptionMediator,
 )
 from electionguard.group import (
     ElementModQ,
@@ -367,7 +368,7 @@ class TestDecrypt(unittest.TestCase):
     @given(elgamal_keypairs())
     def test_decrypt_ballot_valid_input_succeeds(self, keypair: ElGamalKeyPair):
         """
-        Check that decryption works as expected by encrypting a ballot using the stateful `EncryptionCompositor`
+        Check that decryption works as expected by encrypting a ballot using the stateful `EncryptionMediator`
         and then calling the various decrypt functions.
         """
 
@@ -380,7 +381,8 @@ class TestDecrypt(unittest.TestCase):
         )
 
         data = ballot_factory.get_simple_ballot_from_file()
-        operator = EncryptionCompositor(metadata, encryption_context)
+        device = EncryptionDevice("Location")
+        operator = EncryptionMediator(metadata, encryption_context, device)
 
         # Act
         subject = operator.encrypt(data)
@@ -543,7 +545,8 @@ class TestDecrypt(unittest.TestCase):
         )
 
         data = ballot_factory.get_simple_ballot_from_file()
-        operator = EncryptionCompositor(metadata, encryption_context)
+        device = EncryptionDevice("Location")
+        operator = EncryptionMediator(metadata, encryption_context, device)
 
         # Act
         subject = operator.encrypt(data)

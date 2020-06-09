@@ -12,7 +12,7 @@ from electionguard.ballot import (
 )
 from electionguard.ballot_store import BallotStore
 
-from electionguard.encrypt import encrypt_ballot
+from electionguard.encrypt import encrypt_ballot, EncryptionDevice
 from electionguard.group import ElementModQ, ONE_MOD_Q
 from electionguard.tally import CiphertextTally, tally_ballots, tally_ballot
 
@@ -42,8 +42,10 @@ class TestTally(TestCase):
 
         # encrypt each ballot
         store = BallotStore()
+        seed_hash = EncryptionDevice("Location").get_hash()
         for ballot in ballots:
-            encrypted_ballot = encrypt_ballot(ballot, metadata, context)
+            encrypted_ballot = encrypt_ballot(ballot, metadata, context, seed_hash)
+            seed_hash = encrypted_ballot.tracking_id
             self.assertIsNotNone(encrypted_ballot)
             # add to the ballot store
             store.set(
@@ -77,8 +79,10 @@ class TestTally(TestCase):
 
         # encrypt each ballot
         store = BallotStore()
+        seed_hash = EncryptionDevice("Location").get_hash()
         for ballot in ballots:
-            encrypted_ballot = encrypt_ballot(ballot, metadata, context)
+            encrypted_ballot = encrypt_ballot(ballot, metadata, context, seed_hash)
+            seed_hash = encrypted_ballot.tracking_id
             self.assertIsNotNone(encrypted_ballot)
             # add to the ballot store
             store.set(
@@ -114,8 +118,10 @@ class TestTally(TestCase):
 
         # encrypt each ballot
         store = BallotStore()
+        seed_hash = EncryptionDevice("Location").get_hash()
         for ballot in ballots:
-            encrypted_ballot = encrypt_ballot(ballot, metadata, context)
+            encrypted_ballot = encrypt_ballot(ballot, metadata, context, seed_hash)
+            seed_hash = encrypted_ballot.tracking_id
             self.assertIsNotNone(encrypted_ballot)
             # add to the ballot store
             store.set(

@@ -34,7 +34,8 @@ from electionguard.encrypt import (
     encrypt_contest,
     encrypt_selection,
     selection_from,
-    EncryptionCompositor,
+    EncryptionDevice,
+    EncryptionMediator,
 )
 from electionguard.group import (
     ElementModQ,
@@ -51,6 +52,7 @@ from electionguardtest.group import elements_mod_q_no_zero
 
 election_factory = ElectionFactory.ElectionFactory()
 ballot_factory = BallotFactory.BallotFactory()
+SEED_HASH = EncryptionDevice("Location").get_hash()
 
 
 class TestEncrypt(unittest.TestCase):
@@ -502,13 +504,16 @@ class TestEncrypt(unittest.TestCase):
         self.assertTrue(subject.is_valid(metadata.ballot_styles[0].object_id))
 
         # Act
-        result = encrypt_ballot(subject, metadata, encryption_context)
+        result = encrypt_ballot(subject, metadata, encryption_context, SEED_HASH)
+        tracker_code = result.get_tracker_code()
         result_from_seed = encrypt_ballot(
-            subject, metadata, encryption_context, nonce_seed
+            subject, metadata, encryption_context, SEED_HASH, nonce_seed
         )
 
         # Assert
         self.assertIsNotNone(result)
+        self.assertIsNotNone(result.tracking_id)
+        self.assertIsNotNone(tracker_code)
         self.assertIsNotNone(result_from_seed)
         self.assertTrue(
             result.is_valid_encryption(
@@ -533,7 +538,8 @@ class TestEncrypt(unittest.TestCase):
         data = election_factory.get_fake_ballot(metadata)
         self.assertTrue(data.is_valid(metadata.ballot_styles[0].object_id))
 
-        subject = EncryptionCompositor(metadata, encryption_context)
+        device = EncryptionDevice("Location")
+        subject = EncryptionMediator(metadata, encryption_context, device)
 
         # Act
         result = subject.encrypt(data)
@@ -557,7 +563,8 @@ class TestEncrypt(unittest.TestCase):
         data = ballot_factory.get_simple_ballot_from_file()
         self.assertTrue(data.is_valid(metadata.ballot_styles[0].object_id))
 
-        subject = EncryptionCompositor(metadata, encryption_context)
+        device = EncryptionDevice("Location")
+        subject = EncryptionMediator(metadata, encryption_context, device)
 
         # Act
         result = subject.encrypt(data)
@@ -595,7 +602,8 @@ class TestEncrypt(unittest.TestCase):
         data = ballot_factory.get_simple_ballot_from_file()
         self.assertTrue(data.is_valid(metadata.ballot_styles[0].object_id))
 
-        subject = EncryptionCompositor(metadata, encryption_context)
+        device = EncryptionDevice("Location")
+        subject = EncryptionMediator(metadata, encryption_context, device)
 
         # Act
         result = subject.encrypt(data)
