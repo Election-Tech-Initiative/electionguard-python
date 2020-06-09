@@ -34,7 +34,7 @@ from electionguard.key_ceremony import (
     ElectionPartialKeyVerification,
     GuardianPair,
 )
-from electionguard.mediator import Mediator
+from electionguard.key_ceremony_mediator import KeyCeremonyMediator
 from electionguard.tally import CiphertextTally, tally_ballots, tally_ballot
 from electionguard.utils import get_optional
 
