@@ -126,7 +126,8 @@ class ChaumPedersenProof(NamedTuple):
         e.g. that the equations 𝑔^𝑣𝑖 = 𝑎𝑖𝐾^𝑐𝑖 mod 𝑝 and 𝐴^𝑣𝑖 = 𝑏𝑖𝑀𝑖^𝑐𝑖 mod 𝑝 are satisfied.
         
         :param message: The ciphertext message
-        :param k: The public key of the election
+        :param k: The public key corresponding to the private key used to encrypt 
+                  (e.g. the Guardian public election key)
         :param m:
         :param q: The extended base hash of the election
         :return: True if everything is consistent. False otherwise.
@@ -391,6 +392,7 @@ def make_chaum_pedersen(
 ) -> ChaumPedersenProof:
     """
     Produces a proof that a given value corresponds to a specific encryption.
+    computes: 𝑀 =𝐴^𝑠𝑖 mod 𝑝 and 𝐾𝑖 = 𝑔^𝑠𝑖 mod 𝑝
 
     :param message: An ElGamal ciphertext
     :param s: The nonce or secret used to derive the value

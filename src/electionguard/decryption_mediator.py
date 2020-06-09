@@ -25,21 +25,26 @@ from .election import (
     SelectionDescription,
 )
 from .chaum_pedersen import ConstantChaumPedersenProof, make_constant_chaum_pedersen
+from .dlog import discrete_log
 from .nonces import Nonces
 from .election_object_base import ElectionObjectBase
 from .elgamal import ElGamalCiphertext
 from .guardian import Guardian
 from .tally import CiphertextTally, CiphertextTallyContest, CiphertextTallySelection
-from .group import ElementModP, ElementModQ, Q, int_to_q_unchecked
+from .group import ElementModP, ElementModQ, Q, int_to_q_unchecked, div_p, mult_p
 from .hash import hash_elems
 from .logs import log_warning
 from .nonces import Nonces
 from .utils import get_optional
 
+AVAILABLE_GUARDIAN_ID = str
+MISSING_GUARDIAN_ID = str
+
 
 @dataclass
 class PlaintextTallySelection(ElectionObjectBase):
     """
+    A plaintext tallied selection
     """
 
     plaintext: int
@@ -52,6 +57,7 @@ class PlaintextTallySelection(ElectionObjectBase):
 @dataclass
 class PlaintextTallyContest(ElectionObjectBase):
     """
+    A plaintext tallied contest
     """
 
     selections: Dict[str, PlaintextTallySelection]
@@ -59,12 +65,17 @@ class PlaintextTallyContest(ElectionObjectBase):
 
 @dataclass
 class PlaintextTally(ElectionObjectBase):
+    """
+    The plaintext representation of the election
+    """
+
     contests: Dict[str, PlaintextTallyContest]
 
 
 @dataclass
 class DecryptionMediator:
     """
+    Decryption Mediator
     """
 
     _metadata: InternalElectionDescription
@@ -73,18 +84,20 @@ class DecryptionMediator:
     _ciphertext_tally: CiphertextTally
     _plaintext_tally: Optional[PlaintextTally] = field(default=None)
 
-    _available_guardians: Dict[str, Guardian] = field(default_factory=lambda: {})
-    _missing_guardians: Set[str] = field(default_factory=lambda: set())
+    _available_guardians: Dict[AVAILABLE_GUARDIAN_ID, Guardian] = field(
+        default_factory=lambda: {}
+    )
+    _missing_guardians: Set[MISSING_GUARDIAN_ID] = field(default_factory=lambda: set())
 
     # A collection of Decryption Shares for each Available Guardian
-    _decryption_shares: Dict[str, List[DecryptionShare]] = field(
+    _decryption_shares: Dict[AVAILABLE_GUARDIAN_ID, DecryptionShare] = field(
         default_factory=lambda: {}
     )
 
     # A collection of Partial Decryption Shares for each Available Guardian
-    _partial_decryption_shares: Dict[str, List[PartialDecryptionShare]] = field(
-        default_factory=lambda: {}
-    )
+    _partial_decryption_shares: Dict[
+        MISSING_GUARDIAN_ID, Dict[MISSING_GUARDIAN_ID, PartialDecryptionShare]
+    ] = field(default_factory=lambda: {})
 
     def announce(self, guardian: Guardian) -> Optional[DecryptionShare]:
         """
@@ -92,7 +105,7 @@ class DecryptionMediator:
         """
 
         # Only allow a guardian to announce once
-        if self._available_guardians[guardian.object_id] is not None:
+        if guardian.object_id in self._available_guardians:
             log_warning(f"guardian {guardian.object_id} already announced")
             return None
 
@@ -118,6 +131,7 @@ class DecryptionMediator:
         self, missing_guardian_id: str
     ) -> Optional[List[PartialDecryptionShare]]:
         """
+        Compensate
         """
 
         partial_decryptions: List[PartialDecryptionShare] = List()
@@ -145,6 +159,7 @@ class DecryptionMediator:
 
     def get_plaintext_tally(self) -> Optional[PlaintextTally]:
         """
+        Get the plaintext tally for the election
         """
 
         if self._plaintext_tally is not None:
@@ -164,35 +179,70 @@ class DecryptionMediator:
         for missing in self._missing_guardians:
             partial_decryptions = self.compensate(missing)
             if partial_decryptions is None:
-                break
+                log_warning(f"get plaintext tally failed compensating for {missing}")
+                return None
             self._submit_partial_decryption_shares(partial_decryptions)
 
         return self._decrypt_tally()
 
     def _decrypt_tally(self) -> Optional[PlaintextTally]:
         """
+        Decrypt tally
         """
-        ...
+        plaintext_contests: Dict[str, PlaintextTallyContest] = {}
+        for contest in self._ciphertext_tally.cast.values():
+            plaintext_selections: Dict[str, PlaintextTallySelection] = {}
+            for selection in contest.tally_selections.values():
+                all_shares_product_M = mult_p(
+                    *[
+                        selection.share
+                        for share in self._decryption_shares.values()
+                        for contest in share.contests.values()
+                        for selection in contest.selections.values()
+                    ]
+                )
+                # todo: move this somewhere else
+                # also, the decrypt known product may work here
+                decrypted_value = div_p(selection.message.beta, all_shares_product_M)
+                plaintext_selections[selection.object_id] = PlaintextTallySelection(
+                    selection.object_id,
+                    discrete_log(decrypted_value),
+                    decrypted_value,
+                    selection.message,
+                )
+            plaintext_contests[contest.object_id] = PlaintextTallyContest(
+                contest.object_id, plaintext_selections
+            )
+        return PlaintextTally(self._ciphertext_tally.object_id, plaintext_contests)
 
     def _submit_decryption_share(self, share: DecryptionShare) -> bool:
         """
+        Submit the decryption share
         """
 
-        # Wipe the keys from memory
-        ...
+        self._decryption_shares[share.guardian_id] = share
+        return True
 
     def _submit_partial_decryption_shares(
         self, shares: List[PartialDecryptionShare]
     ) -> bool:
         """
+        Submit partial decrruyption shares
         """
-        ...
+        for share in shares:
+            self._submit_partial_decryption_share(share)
+
+        return True
 
     def _submit_partial_decryption_share(self, share: PartialDecryptionShare) -> bool:
         """
+        Submit partial decryption share
         """
-        # wipe the keyshares from memory?
-        ...
+        self._partial_decryption_shares[share.missing_guardian_id][
+            share.available_guardian_id
+        ] = share
+
+        return True
 
 
 def compute_decryption_share(
@@ -200,17 +250,21 @@ def compute_decryption_share(
     tally: CiphertextTally,
     encryption_context: CiphertextElectionContext,
 ) -> Optional[DecryptionShare]:
+    """
+    Compute a decryptions hare for a guardian
+    """
+    # TODO: use all cores
     contests: Dict[str, CiphertextDecryptionContest] = {}
 
     for contest in tally.cast.values():
-        selections: Dict[str, CiphertextDecryptionSelection]
+        selections: Dict[str, CiphertextDecryptionSelection] = {}
         for selection in contest.tally_selections.values():
-            (decryption, proof) = guardian.partial_decrypt(
+            (decryption, proof) = guardian.partially_decrypt_tally(
                 selection.message, encryption_context.crypto_extended_base_hash
             )
             if proof.is_valid(
                 selection.message,
-                encryption_context.elgamal_public_key,
+                guardian.share_election_public_key().key,
                 decryption,
                 encryption_context.crypto_extended_base_hash,
             ):
@@ -232,4 +286,7 @@ def compute_decryption_share(
 def compute_partial_decryption_share(
     available_guardian: Guardian, missing_guardian_id: str, tally: CiphertextTally
 ) -> Optional[PartialDecryptionShare]:
-    ...
+    """
+    Compute a partial decryption share for a missing guardian
+    """
+    return None

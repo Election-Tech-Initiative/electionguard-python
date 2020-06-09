@@ -31,6 +31,9 @@ class CiphertextTallySelection(ElectionObjectBase):
     The SelectionDescription hash
     """
 
+    # We are explicitly setting this field to (1,1) in this instance
+    # but for some use cases, you may instead want to initialize with
+    # elgamal_encrypt(0, some_nonce, some_public_key)
     message: ElGamalCiphertext = field(default=ElGamalCiphertext(ONE_MOD_P, ONE_MOD_P))
     """
     The encrypted representation of the total of all ballots for this selection
@@ -285,5 +288,6 @@ def tally_ballots(
     )
     for ballot in store:
         if tally_ballot(ballot, tally) is None:
+            log_warning(f"tally ballots failed for ballot {ballot.object_id}")
             return None
     return tally

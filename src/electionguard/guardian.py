@@ -346,12 +346,14 @@ class Guardian(ElectionObjectBase):
             return None
         return combine_election_public_keys(self._guardian_election_public_keys)
 
-    def partial_decrypt(
+    def partially_decrypt_tally(
         self,
         elgamal_encryption: ElGamalCiphertext,
         extended_base_hash: ElementModQ,
         nonce_seed: ElementModQ = None,
     ) -> Tuple[ElementModP, ChaumPedersenProof]:
+        """
+        """
         if nonce_seed is None:
             nonce_seed = int_to_q_unchecked(randbelow(Q))
 

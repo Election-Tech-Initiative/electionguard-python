@@ -43,7 +43,7 @@ class CiphertextPartialDecryptionSelection(ElectionObjectBase, CryptoHashCheckab
     partial_share: ElementModP
 
     # Proof that the share was decrypted correctly
-    proof: ConstantChaumPedersenProof
+    proof: ChaumPedersenProof
 
     def crypto_hash_with(self, seed_hash: ElementModQ) -> ElementModQ:
         """
