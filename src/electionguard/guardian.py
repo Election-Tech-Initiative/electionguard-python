@@ -352,6 +352,7 @@ class Guardian(ElectionObjectBase):
         nonce_seed: ElementModQ = None,
     ) -> Tuple[ElementModP, ChaumPedersenProof]:
         """
+        Partially Decrypt a tally
         """
         if nonce_seed is None:
             nonce_seed = int_to_q_unchecked(randbelow(Q))
