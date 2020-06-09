@@ -36,6 +36,12 @@ def ballot_is_valid_for_election(
 def selection_is_valid_for_style(
     selection: CiphertextBallotSelection, description: SelectionDescription
 ) -> bool:
+    """
+    Determine if selection is valid for ballot style
+    :param selection: Ballot selection
+    :param description: Selection description
+    :return: Is valid
+    """
     if selection.description_hash != description.crypto_hash():
         log_warning(
             f"ballot is not valid for style: mismatched selection description hash {selection.description_hash} for selection {description.object_id} hash {description.crypto_hash()}"
@@ -48,6 +54,12 @@ def selection_is_valid_for_style(
 def contest_is_valid_for_style(
     contest: CiphertextBallotContest, description: ContestDescriptionWithPlaceholders
 ) -> bool:
+    """
+    Determine if contest is valid for ballot style
+    :param contest: Contest
+    :param description: Contest description
+    :return: Is valid
+    """
     # verify the hash matches
     if contest.description_hash != description.crypto_hash():
         log_warning(
@@ -70,6 +82,12 @@ def contest_is_valid_for_style(
 def ballot_is_valid_for_style(
     ballot: CiphertextBallot, metadata: InternalElectionDescription
 ) -> bool:
+    """
+    Determine if ballot is valid for ballot style
+    :param ballot: Ballot
+    :param metadata: Internal election description
+    :return: Is valid
+    """
     descriptions = metadata.get_contests_for(ballot.ballot_style)
 
     for description in descriptions:

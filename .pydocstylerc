@@ -1,0 +1,4 @@
+[pydocstyle]
+ignore = D100,D104, D105,D107,D200,D202,D203,D205,D212,D400,D401,D415
+match = (?!setup).*\.py
+match_dir = ^(?!(tests|electionguardtest|bench)).*

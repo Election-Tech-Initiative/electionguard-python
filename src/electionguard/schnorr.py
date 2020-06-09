@@ -14,6 +14,10 @@ from .logs import log_warning
 
 
 class SchnorrProof(NamedTuple):
+    """
+    Representation of a Schnorr proof
+    """
+
     k: ElementModP
     h: ElementModP
     u: ElementModQ

@@ -42,7 +42,7 @@ def tracker_hash_to_words(
     segments = q_to_bytes(tracker_hash)
     int_values = [x for x in segments]
     words: List[str] = []
-    # FIXME Reduce length of segments
+    # TODO Reduce length of segments
     for value in int_values:
         words.append(get_word(value))
     return seperator.join(words)

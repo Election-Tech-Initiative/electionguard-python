@@ -10,6 +10,7 @@ docutils = "*"
 mypy = "*"
 pylint = "*"
 pytest = "*"
+pydocstyle = "*"
 
 [packages]
 hypothesis = "==5.15.1"
