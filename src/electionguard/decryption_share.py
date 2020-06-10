@@ -6,11 +6,14 @@ from .election_object_base import ElectionObjectBase
 
 from .group import ElementModP, ElementModQ
 
+GUARDIAN_ID = str
+OBJECT_ID = str
+
 
 @dataclass
 class CiphertextDecryptionSelection(ElectionObjectBase):
     """
-    A Ciphertext Decryption Selection
+    A Guardian's Partial Decryption of a selection
     """
 
     # The SelectionDescription hash
@@ -42,14 +45,14 @@ class CiphertextPartialDecryptionSelection(ElectionObjectBase):
 @dataclass
 class CiphertextDecryptionContest(ElectionObjectBase):
     """
-    A ciphertext Decryption contest
+    A Guardian's Partial Decryption of a contest
     """
 
     # The ContestDescription Hash
     description_hash: ElementModQ
 
     # the collection of decryption shares for this contest's selections
-    selections: Dict[str, CiphertextDecryptionSelection]
+    selections: Dict[OBJECT_ID, CiphertextDecryptionSelection]
 
 
 @dataclass
@@ -62,20 +65,20 @@ class CiphertextPartialDecryptionContest(ElectionObjectBase):
     description_hash: ElementModQ
 
     # the collection of decryption shares for this contest's selections
-    selections: Dict[str, CiphertextPartialDecryptionSelection]
+    selections: Dict[OBJECT_ID, CiphertextPartialDecryptionSelection]
 
 
 @dataclass
 class DecryptionShare:
     """
-    A Decryption Share
+    A Guardian's Share of a decryption of an election
     """
 
     # The Available Guardian that this share belongs to
-    guardian_id: str
+    guardian_id: GUARDIAN_ID
 
     # The collection of all contests in the election
-    contests: Dict[str, CiphertextDecryptionContest]
+    contests: Dict[OBJECT_ID, CiphertextDecryptionContest]
 
 
 @dataclass
@@ -85,12 +88,12 @@ class PartialDecryptionShare:
     """
 
     # The Available Guardian that this partial share belongs to
-    available_guardian_id: str
+    available_guardian_id: GUARDIAN_ID
 
     # The Missing Guardian for whom this share is calculated on behalf of
-    missing_guardian_id: str
+    missing_guardian_id: GUARDIAN_ID
 
     # The collection of all contests in the election
-    contests: Dict[str, CiphertextPartialDecryptionContest]
+    contests: Dict[OBJECT_ID, CiphertextPartialDecryptionContest]
 
     lagrange_coefficient: ElementModQ

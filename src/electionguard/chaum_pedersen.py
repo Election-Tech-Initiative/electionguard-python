@@ -109,6 +109,10 @@ class DisjunctiveChaumPedersenProof(NamedTuple):
 
 
 class ChaumPedersenProof(NamedTuple):
+    """
+    Representation of a generic Chaum-Pedersen Zero Knowledge proof 
+    """
+
     a: ElementModP
     b: ElementModP
     c: ElementModQ
@@ -241,7 +245,7 @@ class ConstantChaumPedersenProof(NamedTuple):
             constant_q = tmp
             in_bounds_constant = True
 
-        # this is an arbitrary constant check to verify that decryption will be perfomrant
+        # this is an arbitrary constant check to verify that decryption will be performant
         # in some use cases this value may need to be increased
         sane_constant = 0 <= constant < 1_000_000_000
         same_c = c == hash_elems(alpha, beta, a, b)
@@ -338,10 +342,10 @@ def make_disjunctive_chaum_pedersen_zero(
     """
     (alpha, beta) = message
 
-    # We need to pick three random numbers in Q.
+    # Pick three random numbers in Q.
     c1, v1, u0 = Nonces(seed, "disjoint-chaum-pedersen-proof")[0:3]
 
-    # And now, the NIZK computation
+    # Computate the NIZKP
     a0 = g_pow_p(u0)
     b0 = pow_p(k, u0)
     q_minus_c1 = negate_q(c1)
@@ -367,10 +371,10 @@ def make_disjunctive_chaum_pedersen_one(
     """
     (alpha, beta) = message
 
-    # We need to pick three random numbers in Q.
+    # Pick three random numbers in Q.
     c0, v0, u1 = Nonces(seed, "disjoint-chaum-pedersen-proof")[0:3]
 
-    # And now, the NIZK computation
+    # Computate the NIZKP
     q_minus_c0 = negate_q(c0)
     a0 = mult_p(g_pow_p(v0), pow_p(alpha, q_minus_c0))
     b0 = mult_p(pow_p(k, v0), pow_p(beta, q_minus_c0))

@@ -45,7 +45,7 @@ When one or more of the Guardians are missing, any subset of the Guardians that 
 
 ## Usage Example
 
-Here is a simple example of how to execute the decryption process
+Here is a simple example of how to execute the decryption process.
 
 ```python
 

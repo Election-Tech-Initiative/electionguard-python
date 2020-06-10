@@ -345,25 +345,32 @@ class Guardian(ElectionObjectBase):
             return None
         return combine_election_public_keys(self._guardian_election_public_keys)
 
-    def partially_decrypt_tally(
+    def partially_decrypt(
         self,
-        elgamal_encryption: ElGamalCiphertext,
+        elgamal: ElGamalCiphertext,
         extended_base_hash: ElementModQ,
         nonce_seed: ElementModQ = None,
     ) -> Tuple[ElementModP, ChaumPedersenProof]:
         """
-        Partially Decrypt a tally
+        Compute a partial decryption of an elgamal encryption
+
+        :param elgamal: the `ElGamalCiphertext` that will be partially decrypted
+        :param extended_base_hash: the extended base hash of the election that 
+                                   was used to generate t he ElGamal Ciphertext
+        :param nonce_seed: an optional value used to generate the `ChaumPedersenProof`
+                           if no value is provided, a random number will be used.
+        :return: a `Tuple[ElementModP, ChaumPedersenProof]` of the decryption and its proof
         """
         if nonce_seed is None:
             nonce_seed = int_to_q_unchecked(randbelow(Q))
 
         # 𝑀𝑖
-        partial_decryption = elgamal_encryption.partial_decrypt(
+        partial_decryption = elgamal.partial_decrypt(
             self._election_keys.key_pair.secret_key
         )
         # 𝑀 =𝐴^𝑠𝑖 mod 𝑝 and 𝐾𝑖 = 𝑔^𝑠𝑖 mod 𝑝
         proof = make_chaum_pedersen(
-            message=elgamal_encryption,
+            message=elgamal,
             s=self._election_keys.key_pair.secret_key,
             m=partial_decryption,
             seed=nonce_seed,
