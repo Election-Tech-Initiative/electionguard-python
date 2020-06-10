@@ -35,7 +35,7 @@ In this implementation, we take an approach that utilizes all Available Guardian
 
 ### Decryption when some Guardians are Missing
 
-When one or more of the Guardians are missing, any subset of the Guardians that are present can use the information they have about the other guardian's prviate keys to reconstruct the partial decryption shares for the missing trustees.
+When one or more of the Guardians are missing, any subset of the Guardians that are present can use the information they have about the other guardian's prviate keys to reconstruct the partial decryption shares for the missing guardians.
 
 4. Each `Available Guardian` computes a `Partial Decryption Share` for each `Missing Guardian`
 5. a `Quorum` count of `Partial Decryption Shares` are randomly chosen from the values generated in the previous step for a specific `Missing guardian`
