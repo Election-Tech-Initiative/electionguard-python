@@ -63,9 +63,12 @@ class PlaintextTally(ElectionObjectBase):
     spoiled_ballots: Dict[BALLOT_ID, Dict[OBJECT_ID, PlaintextTallyContest]]
 
 
-def cast_shares_for_selection(
+def get_cast_shares_for_selection(
     selection_id: str, shares: Dict[AVAILABLE_GUARDIAN_ID, DecryptionShare],
 ) -> Dict[AVAILABLE_GUARDIAN_ID, ElementModP]:
+    """
+    get the cast shares for a given selection
+    """
     cast_shares: Dict[AVAILABLE_GUARDIAN_ID, ElementModP] = {}
     for share in shares.values():
         for contest in share.contests.values():
@@ -76,11 +79,14 @@ def cast_shares_for_selection(
     return cast_shares
 
 
-def spoiled_shares_for_selection(
+def get_spoiled_shares_for_selection(
     ballot_id: str,
     selection_id: str,
     shares: Dict[AVAILABLE_GUARDIAN_ID, DecryptionShare],
 ) -> Dict[AVAILABLE_GUARDIAN_ID, ElementModP]:
+    """
+    get the spoiled shares for a given selection
+    """
     spoiled_shares: Dict[AVAILABLE_GUARDIAN_ID, ElementModP] = {}
     for share in shares.values():
         for ballot in share.spoiled_ballots.values():
@@ -258,7 +264,10 @@ class DecryptionMediator:
             plaintext_selections = cpu_pool.starmap(
                 self._decrypt_selection,
                 [
-                    (selection, cast_shares_for_selection(selection.object_id, shares))
+                    (
+                        selection,
+                        get_cast_shares_for_selection(selection.object_id, shares),
+                    )
                     for (_, selection) in contest.tally_selections.items()
                 ],
             )
@@ -305,7 +314,7 @@ class DecryptionMediator:
                     [
                         (
                             selection,
-                            spoiled_shares_for_selection(
+                            get_spoiled_shares_for_selection(
                                 spoiled_ballot.object_id, selection.object_id, shares
                             ),
                         )
