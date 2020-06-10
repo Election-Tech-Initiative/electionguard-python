@@ -101,6 +101,8 @@ class CiphertextTallyContest(ElectionObjectBase):
             ],
         )
 
+        cpu_pool.close()
+
         return all(results)
 
     def _accumulate_selections(

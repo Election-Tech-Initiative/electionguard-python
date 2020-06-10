@@ -14,9 +14,6 @@ from electionguard.elgamal import (
 from electionguard.group import ElementModQ, int_to_q, int_to_q_unchecked
 from electionguard.nonces import Nonces
 
-
-# Why are we passing this tuple around rather than just passing three arguments?
-# Makes it easier to run Pool.map().
 from electionguard.utils import get_optional
 
 
@@ -44,7 +41,7 @@ def chaum_pedersen_bench(bi: BenchInput) -> Tuple[float, float]:
 
 
 def identity(x: int) -> int:
-    """Cheesy function used just to warm up the parallel mapper prior to benchmarking."""
+    """Placeholder function used just to warm up the parallel mapper prior to benchmarking."""
     return x
 
 
@@ -54,7 +51,9 @@ if __name__ == "__main__":
     speedup: Dict[int, float] = {}
     print(f"CPUs detected: {cpu_count()}, launching thread pool")
     pool = Pool(cpu_count())
-    results = pool.map(identity, range(1, 30000))  # warm up
+
+    # warm up the pool to help get consistent measurements
+    results = pool.map(identity, range(1, 30000))
     assert results == list(range(1, 30000))
 
     bench_start = timer()
@@ -86,7 +85,7 @@ if __name__ == "__main__":
         print(f"    Avg    = {avg_verify_scalar:.6f} sec")
         print(f"    Stddev = {std_verify_scalar:.6f} sec")
 
-        # Now, with parallelism!
+        # Run in parallel
         start_all_parallel = timer()
         timing_data_parallel = pool.map(chaum_pedersen_bench, inputs)
         end_all_parallel = timer()
@@ -101,7 +100,7 @@ if __name__ == "__main__":
     print("Size / Speedup")
     for size in problem_sizes:
         print(f"{size:4d} / {speedup[size]:.3f}x")
-    pool.close()  # apparently necessary to avoid warnings from the Pool system
+    pool.close()
 
     bench_end = timer()
     print()

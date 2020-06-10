@@ -194,16 +194,34 @@ class TestDecryptionMediator(TestCase):
         )
 
         # get some fake ballots
-        fake_ballot = election_factory.get_fake_ballot(self.metadata)
-        self.assertTrue(fake_ballot.is_valid(self.metadata.ballot_styles[0].object_id))
-        self.expected_plaintext_tally = accumulate_plaintext_ballots([fake_ballot])
+        self.fake_cast_ballot = election_factory.get_fake_ballot(
+            self.metadata, "some-unique-ballot-id-cast"
+        )
+        self.fake_spoiled_ballot = election_factory.get_fake_ballot(
+            self.metadata, "some-unique-ballot-id-spoiled"
+        )
+        self.assertTrue(
+            self.fake_cast_ballot.is_valid(self.metadata.ballot_styles[0].object_id)
+        )
+        self.assertTrue(
+            self.fake_spoiled_ballot.is_valid(self.metadata.ballot_styles[0].object_id)
+        )
+        self.expected_plaintext_tally = accumulate_plaintext_ballots(
+            [self.fake_cast_ballot]
+        )
 
-        encrypted_ballot = self.ballot_marking_device.encrypt(fake_ballot)
+        encrypted_fake_cast_ballot = self.ballot_marking_device.encrypt(
+            self.fake_cast_ballot
+        )
+        encrypted_fake_spoiled_ballot = self.ballot_marking_device.encrypt(
+            self.fake_spoiled_ballot
+        )
 
         # configure the ballot box
         ballot_store = BallotStore()
         ballot_box = BallotBox(self.metadata, self.encryption_context, ballot_store)
-        ballot_box.cast(encrypted_ballot)
+        ballot_box.cast(encrypted_fake_cast_ballot)
+        ballot_box.spoil(encrypted_fake_spoiled_ballot)
 
         # generate encrypted tally
         self.ciphertext_tally = tally_ballots(
@@ -251,6 +269,48 @@ class TestDecryptionMediator(TestCase):
 
     def test_decrypt_selection(self):
         # Arrange
+
+        # find the first selection
+        first_contest = [contest for contest in self.ciphertext_tally.cast.values()][0]
+        first_selection = list(first_contest.tally_selections.values())[0]
+
+        # precompute decryption shares for the guardians
+        first_share = compute_decryption_share(
+            GUARDIAN_1, self.ciphertext_tally, self.encryption_context
+        )
+        second_share = compute_decryption_share(
+            GUARDIAN_2, self.ciphertext_tally, self.encryption_context
+        )
+        third_share = compute_decryption_share(
+            GUARDIAN_3, self.ciphertext_tally, self.encryption_context
+        )
+        shares = {
+            GUARDIAN_1_ID: first_share.contests[first_contest.object_id]
+            .selections[first_selection.object_id]
+            .share,
+            GUARDIAN_2_ID: second_share.contests[first_contest.object_id]
+            .selections[first_selection.object_id]
+            .share,
+            GUARDIAN_3_ID: third_share.contests[first_contest.object_id]
+            .selections[first_selection.object_id]
+            .share,
+        }
+
+        subject = DecryptionMediator(
+            self.metadata, self.encryption_context, self.ciphertext_tally
+        )
+
+        # act
+        result = subject._decrypt_selection(first_selection, shares)
+
+        # assert
+        self.assertIsNotNone(result)
+        self.assertEqual(
+            self.expected_plaintext_tally[first_selection.object_id], result.plaintext
+        )
+
+    def test_decrypt_spoiled_ballots(self):
+        # Arrange
         # precompute decryption shares for the guardians
         first_share = compute_decryption_share(
             GUARDIAN_1, self.ciphertext_tally, self.encryption_context
@@ -271,21 +331,45 @@ class TestDecryptionMediator(TestCase):
             self.metadata, self.encryption_context, self.ciphertext_tally
         )
 
-        # find the first selection
-        first_selection = [
-            selection
-            for contest in self.ciphertext_tally.cast.values()
-            for selection in contest.tally_selections.values()
-        ][0]
-
         # act
-        result = subject._decrypt_selection(first_selection, shares)
+        result = subject._decrypt_spoiled_ballots(
+            self.ciphertext_tally.spoiled_ballots, shares
+        )
 
         # assert
         self.assertIsNotNone(result)
-        self.assertEqual(
-            self.expected_plaintext_tally[first_selection.object_id], result.plaintext
+        self.assertTrue(self.fake_spoiled_ballot.object_id in result)
+
+        spoiled_ballot = result[self.fake_spoiled_ballot.object_id]
+        for contest in self.fake_spoiled_ballot.contests:
+            for selection in contest.ballot_selections:
+                self.assertEqual(
+                    spoiled_ballot[contest.object_id]
+                    .selections[selection.object_id]
+                    .plaintext,
+                    result[self.fake_spoiled_ballot.object_id][contest.object_id]
+                    .selections[selection.object_id]
+                    .plaintext,
+                )
+
+    def test_get_plaintext_tally_all_guardians_present_simple(self):
+        # Arrange
+        subject = DecryptionMediator(
+            self.metadata, self.encryption_context, self.ciphertext_tally
         )
+
+        # act
+        self.assertIsNotNone(subject.announce(GUARDIAN_1))
+        self.assertIsNotNone(subject.announce(GUARDIAN_2))
+        self.assertIsNotNone(subject.announce(GUARDIAN_3))
+
+        decrypted_tallies = subject.get_plaintext_tally()
+        result = self._convert_to_selections(decrypted_tallies)
+        print(result)
+
+        # assert
+        self.assertIsNotNone(result)
+        self.assertEqual(self.expected_plaintext_tally, result)
 
     @settings(
         deadline=timedelta(milliseconds=10000),
@@ -307,7 +391,6 @@ class TestDecryptionMediator(TestCase):
             plaintext_voted_ballots(metadata, randrange(3, 6))
         )
         plaintext_tallies = accumulate_plaintext_ballots(plaintext_ballots)
-        print(plaintext_tallies)
 
         encrypted_tally = self._generate_encrypted_tally(
             metadata, context, plaintext_ballots
@@ -322,7 +405,6 @@ class TestDecryptionMediator(TestCase):
 
         decrypted_tallies = subject.get_plaintext_tally()
         result = self._convert_to_selections(decrypted_tallies)
-        print(result)
 
         # assert
         self.assertIsNotNone(result)
