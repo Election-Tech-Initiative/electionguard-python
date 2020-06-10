@@ -6,6 +6,7 @@ from .election_object_base import ElectionObjectBase
 
 from .group import ElementModP, ElementModQ
 
+BALLOT_ID = str
 GUARDIAN_ID = str
 OBJECT_ID = str
 
@@ -69,6 +70,22 @@ class CiphertextPartialDecryptionContest(ElectionObjectBase):
 
 
 @dataclass
+class BallotDecryptionShare:
+    """
+    A Guardian's Share of a decryption of a specific ballot
+    """
+
+    # The Available Guardian that this share belongs to
+    guardian_id: GUARDIAN_ID
+
+    # The Ballot Id that this Decryption Share belongs to
+    ballot_id: BALLOT_ID
+
+    # The collection of all contests in the ballot
+    contests: Dict[OBJECT_ID, CiphertextDecryptionContest]
+
+
+@dataclass
 class DecryptionShare:
     """
     A Guardian's Share of a decryption of an election
@@ -79,6 +96,8 @@ class DecryptionShare:
 
     # The collection of all contests in the election
     contests: Dict[OBJECT_ID, CiphertextDecryptionContest]
+
+    spoiled_ballots: Dict[BALLOT_ID, BallotDecryptionShare]
 
 
 @dataclass

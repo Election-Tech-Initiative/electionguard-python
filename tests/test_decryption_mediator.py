@@ -1,4 +1,4 @@
-from unittest import TestCase
+from unittest import TestCase, skip
 from datetime import timedelta
 from typing import Dict, List
 from random import Random, randrange
@@ -18,7 +18,7 @@ from electionguard.decryption_mediator import (
     compute_decryption_share,
     _compute_decryption_for_selection,
 )
-from electionguard.decryption_share import DecryptionShare
+from electionguard.decryption_share import DecryptionShare, BallotDecryptionShare
 from electionguard.election import (
     CiphertextElectionContext,
     ElectionDescription,
@@ -227,7 +227,7 @@ class TestDecryptionMediator(TestCase):
 
         # Cannot submit another share internally
         self.assertFalse(
-            subject._submit_decryption_share(DecryptionShare(GUARDIAN_1_ID, {}))
+            subject._submit_decryption_share(DecryptionShare(GUARDIAN_1_ID, {}, {}))
         )
 
         # Cannot get plaintext tally without a quorum
