@@ -15,8 +15,10 @@ from electionguard.decryption_mediator import (
     PlaintextTally,
     PlaintextTallyContest,
     PlaintextTallySelection,
+    compute_decryption_share,
     _compute_decryption_for_selection,
 )
+from electionguard.decryption_share import DecryptionShare
 from electionguard.election import (
     CiphertextElectionContext,
     ElectionDescription,
@@ -194,6 +196,7 @@ class TestDecryptionMediator(TestCase):
         # get some fake ballots
         fake_ballot = election_factory.get_fake_ballot(self.metadata)
         self.assertTrue(fake_ballot.is_valid(self.metadata.ballot_styles[0].object_id))
+        self.expected_plaintext_tally = accumulate_plaintext_ballots([fake_ballot])
 
         encrypted_ballot = self.ballot_marking_device.encrypt(fake_ballot)
 
@@ -206,6 +209,29 @@ class TestDecryptionMediator(TestCase):
         self.ciphertext_tally = tally_ballots(
             ballot_store, self.metadata, self.encryption_context
         )
+
+    def test_announce(self):
+        # Arrange
+        subject = DecryptionMediator(
+            self.metadata, self.encryption_context, self.ciphertext_tally
+        )
+
+        # act
+        result = subject.announce(GUARDIAN_1)
+
+        # assert
+        self.assertIsNotNone(result)
+
+        # Can only announce once
+        self.assertIsNone(subject.announce(GUARDIAN_1))
+
+        # Cannot submit another share internally
+        self.assertFalse(
+            subject._submit_decryption_share(DecryptionShare(GUARDIAN_1_ID, {}))
+        )
+
+        # Cannot get plaintext tally without a quorum
+        self.assertIsNone(subject.get_plaintext_tally())
 
     def test_compute_selection(self):
         # Arrange
@@ -223,23 +249,43 @@ class TestDecryptionMediator(TestCase):
         # assert
         self.assertIsNotNone(result)
 
-    def test_announce(self):
+    def test_decrypt_selection(self):
         # Arrange
+        # precompute decryption shares for the guardians
+        first_share = compute_decryption_share(
+            GUARDIAN_1, self.ciphertext_tally, self.encryption_context
+        )
+        second_share = compute_decryption_share(
+            GUARDIAN_2, self.ciphertext_tally, self.encryption_context
+        )
+        third_share = compute_decryption_share(
+            GUARDIAN_3, self.ciphertext_tally, self.encryption_context
+        )
+        shares = {
+            GUARDIAN_1_ID: first_share,
+            GUARDIAN_2_ID: second_share,
+            GUARDIAN_3_ID: third_share,
+        }
+
         subject = DecryptionMediator(
             self.metadata, self.encryption_context, self.ciphertext_tally
         )
 
+        # find the first selection
+        first_selection = [
+            selection
+            for contest in self.ciphertext_tally.cast.values()
+            for selection in contest.tally_selections.values()
+        ][0]
+
         # act
-        result = subject.announce(GUARDIAN_1)
+        result = subject._decrypt_selection(first_selection, shares)
 
         # assert
         self.assertIsNotNone(result)
-
-        # Can only announce once
-        self.assertIsNone(subject.announce(GUARDIAN_1))
-
-        # Cannot get plaintext tally without a quorum
-        self.assertIsNone(subject.get_plaintext_tally())
+        self.assertEqual(
+            self.expected_plaintext_tally[first_selection.object_id], result.plaintext
+        )
 
     @settings(
         deadline=timedelta(milliseconds=10000),
