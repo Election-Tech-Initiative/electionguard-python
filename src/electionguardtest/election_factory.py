@@ -142,15 +142,20 @@ class ElectionFactory(object):
         return metadata, election
 
     # TODO: Move to ballot Factory?
-    def get_fake_ballot(self, election: ElectionDescription = None) -> PlaintextBallot:
+    def get_fake_ballot(
+        self, election: ElectionDescription = None, ballot_id: str = None
+    ) -> PlaintextBallot:
         """
         Get a single Fake Ballot object that is manually constructed with default vaules
         """
         if election is None:
             election = self.get_fake_election()
 
+        if ballot_id is None:
+            ballot_id = "some-unique-ballot-id-123"
+
         fake_ballot = PlaintextBallot(
-            "some-unique-ballot-id-123",
+            ballot_id,
             election.ballot_styles[0].object_id,
             [contest_from(election.contests[0]), contest_from(election.contests[1])],
         )

@@ -552,7 +552,22 @@ def election_descriptions(
 
 
 @composite
-def plaintext_voted_ballots(draw: _DrawType, metadata: InternalElectionDescription):
+def plaintext_voted_ballots(
+    draw: _DrawType, metadata: InternalElectionDescription, count: int = 1
+):
+    """
+    Given
+    """
+    if count == 1:
+        return draw(plaintext_voted_ballot(metadata))
+    ballots: List[PlaintextBallot] = []
+    for i in range(count):
+        ballots.append(draw(plaintext_voted_ballot(metadata)))
+    return ballots
+
+
+@composite
+def plaintext_voted_ballot(draw: _DrawType, metadata: InternalElectionDescription):
     """
     Given an `InternalElectionDescription` object, generates an arbitrary `PlaintextBallot` with the
     choices made randomly.
@@ -561,17 +576,13 @@ def plaintext_voted_ballots(draw: _DrawType, metadata: InternalElectionDescripti
     """
 
     num_ballot_styles = len(metadata.ballot_styles)
-    assert (
-        num_ballot_styles > 0
-    ), "we shouldn't ever have an election with no ballot styles"
+    assert num_ballot_styles > 0, "invalid election with no ballot styles"
 
     # pick a ballot style at random
     ballot_style = metadata.ballot_styles[draw(integers(0, num_ballot_styles - 1))]
 
     contests = metadata.get_contests_for(ballot_style.object_id)
-    assert (
-        len(contests) > 0
-    ), "we shouldn't ever have a ballot style with no contests in it"
+    assert len(contests) > 0, "invalid ballot style with no contests in it"
 
     voted_contests: List[PlaintextBallotContest] = []
     for contest in contests:

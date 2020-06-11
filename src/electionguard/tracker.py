@@ -18,7 +18,7 @@ def get_hash_for_device(uuid: int, location: str) -> ElementModQ:
 
 
 def get_rotating_tracker_hash(
-    seed_hash: ElementModQ, timestamp: int, ballot_hash: ElementModQ
+    prev_hash: ElementModQ, timestamp: int, ballot_hash: ElementModQ
 ) -> ElementModQ:
     """
     Get the rotated tracker hash for a particular ballot. 
@@ -27,7 +27,7 @@ def get_rotating_tracker_hash(
     :param ballot_hash: Hash of ballot to track
     :return: Tracker hash
     """
-    return hash_elems(seed_hash, timestamp, ballot_hash)
+    return hash_elems(prev_hash, timestamp, ballot_hash)
 
 
 def tracker_hash_to_words(

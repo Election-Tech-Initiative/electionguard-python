@@ -50,10 +50,10 @@ class BallotStore(Iterable):
         """
         Get a CiphertextAcceptedBallot from the store if it exists
         """
-        try:
+        if ballot_id in self._ballot_store:
             return self._ballot_store[ballot_id]
-        except KeyError:
-            return None
+
+        return None
 
     def exists(self, ballot_id: str) -> Tuple[bool, Optional[CiphertextAcceptedBallot]]:
         """

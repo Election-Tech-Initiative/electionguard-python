@@ -108,6 +108,106 @@ class DisjunctiveChaumPedersenProof(NamedTuple):
         return success
 
 
+class ChaumPedersenProof(NamedTuple):
+    """
+    Representation of a generic Chaum-Pedersen Zero Knowledge proof 
+    """
+
+    a: ElementModP
+    b: ElementModP
+    c: ElementModQ
+    v: ElementModQ
+
+    def is_valid(
+        self,
+        message: ElGamalCiphertext,
+        k: ElementModP,
+        m: ElementModP,
+        q: ElementModQ,
+    ) -> bool:
+        """
+        Validates a Chaum-Pedersen proof.
+        e.g. that the equations 𝑔^𝑣𝑖 = 𝑎𝑖𝐾^𝑐𝑖 mod 𝑝 and 𝐴^𝑣𝑖 = 𝑏𝑖𝑀𝑖^𝑐𝑖 mod 𝑝 are satisfied.
+        
+        :param message: The ciphertext message
+        :param k: The public key corresponding to the private key used to encrypt 
+                  (e.g. the Guardian public election key)
+        :param m:
+        :param q: The extended base hash of the election
+        :return: True if everything is consistent. False otherwise.
+        """
+        (alpha, beta) = message
+        (a, b, c, v) = self
+        in_bounds_alpha = alpha.is_valid_residue()
+        in_bounds_beta = beta.is_valid_residue()
+        in_bounds_k = k.is_valid_residue()
+        in_bounds_m = m.is_valid_residue()
+        in_bounds_a = a.is_valid_residue()
+        in_bounds_b = b.is_valid_residue()
+        in_bounds_c = c.is_in_bounds()
+        in_bounds_v = v.is_in_bounds()
+        in_bounds_q = q.is_in_bounds()
+
+        same_c = c == hash_elems(q, alpha, beta, a, b, m)
+        consistent_gv = (
+            in_bounds_v
+            and in_bounds_a
+            and in_bounds_c
+            and in_bounds_v
+            # The equation 𝑔^𝑣𝑖 = 𝑎𝑖𝐾^𝑐𝑖
+            and g_pow_p(v) == mult_p(a, pow_p(k, c))
+        )
+
+        # The equation 𝐴^𝑣𝑖 = 𝑏𝑖𝑀𝑖^𝑐𝑖 mod 𝑝
+        consistent_kv = (
+            in_bounds_alpha
+            and in_bounds_b
+            and in_bounds_c
+            and in_bounds_v
+            and pow_p(alpha, v) == mult_p(b, pow_p(m, c))
+        )
+
+        success = (
+            in_bounds_alpha
+            and in_bounds_beta
+            and in_bounds_k
+            and in_bounds_m
+            and in_bounds_a
+            and in_bounds_b
+            and in_bounds_c
+            and in_bounds_v
+            and in_bounds_q
+            and same_c
+            and consistent_gv
+            and consistent_kv
+        )
+
+        if not success:
+            log_warning(
+                "found an invalid Constant Chaum-Pedersen proof: "
+                + str(
+                    {
+                        "in_bounds_alpha": in_bounds_alpha,
+                        "in_bounds_beta": in_bounds_beta,
+                        "in_bounds_k": in_bounds_k,
+                        "in_bounds_m": in_bounds_m,
+                        "in_bounds_a": in_bounds_a,
+                        "in_bounds_b": in_bounds_b,
+                        "in_bounds_c": in_bounds_c,
+                        "in_bounds_v": in_bounds_v,
+                        "in_bounds_q": in_bounds_q,
+                        "same_c": same_c,
+                        "consistent_gv": consistent_gv,
+                        "consistent_kv": consistent_kv,
+                        "k": k,
+                        "q": q,
+                        "proof": self,
+                    }
+                ),
+            )
+        return success
+
+
 class ConstantChaumPedersenProof(NamedTuple):
     """
     Representation of constant Chaum Pederson proof
@@ -122,6 +222,7 @@ class ConstantChaumPedersenProof(NamedTuple):
     def is_valid(self, message: ElGamalCiphertext, k: ElementModP) -> bool:
         """
         Validates a "constant" Chaum-Pedersen proof.
+        e.g. that the equations 𝑔𝑉 = 𝑎𝐴𝐶 mod 𝑝 and 𝑔𝐿𝐾𝑣 = 𝑏𝐵𝐶 mod 𝑝 are satisfied.
 
         :param message: The ciphertext message
         :param k: The public key of the election
@@ -143,6 +244,9 @@ class ConstantChaumPedersenProof(NamedTuple):
         else:
             constant_q = tmp
             in_bounds_constant = True
+
+        # this is an arbitrary constant check to verify that decryption will be performant
+        # in some use cases this value may need to be increased
         sane_constant = 0 <= constant < 1_000_000_000
         same_c = c == hash_elems(alpha, beta, a, b)
         consistent_gv = (
@@ -150,8 +254,11 @@ class ConstantChaumPedersenProof(NamedTuple):
             and in_bounds_a
             and in_bounds_alpha
             and in_bounds_c
+            # The equation 𝑔^𝑉 = 𝑎𝐴^𝐶 mod 𝑝
             and g_pow_p(v) == mult_p(a, pow_p(alpha, c))
         )
+
+        # The equation 𝑔^𝐿𝐾^𝑣 = 𝑏𝐵^𝐶 mod 𝑝
         consistent_kv = in_bounds_constant and mult_p(
             g_pow_p(mult_p(c, constant_q)), pow_p(k, v)
         ) == mult_p(b, pow_p(beta, c))
@@ -235,10 +342,10 @@ def make_disjunctive_chaum_pedersen_zero(
     """
     (alpha, beta) = message
 
-    # We need to pick three random numbers in Q.
+    # Pick three random numbers in Q.
     c1, v1, u0 = Nonces(seed, "disjoint-chaum-pedersen-proof")[0:3]
 
-    # And now, the NIZK computation
+    # Computate the NIZKP
     a0 = g_pow_p(u0)
     b0 = pow_p(k, u0)
     q_minus_c1 = negate_q(c1)
@@ -264,10 +371,10 @@ def make_disjunctive_chaum_pedersen_one(
     """
     (alpha, beta) = message
 
-    # We need to pick three random numbers in Q.
+    # Pick three random numbers in Q.
     c0, v0, u1 = Nonces(seed, "disjoint-chaum-pedersen-proof")[0:3]
 
-    # And now, the NIZK computation
+    # Computate the NIZKP
     q_minus_c0 = negate_q(c0)
     a0 = mult_p(g_pow_p(v0), pow_p(alpha, q_minus_c0))
     b0 = mult_p(pow_p(k, v0), pow_p(beta, q_minus_c0))
@@ -278,6 +385,36 @@ def make_disjunctive_chaum_pedersen_one(
     v1 = a_plus_bc_q(u1, c1, r)
 
     return DisjunctiveChaumPedersenProof(a0, b0, a1, b1, c0, c1, v0, v1)
+
+
+def make_chaum_pedersen(
+    message: ElGamalCiphertext,
+    s: ElementModQ,
+    m: ElementModP,
+    seed: ElementModQ,
+    hash_header: ElementModQ,
+) -> ChaumPedersenProof:
+    """
+    Produces a proof that a given value corresponds to a specific encryption.
+    computes: 𝑀 =𝐴^𝑠𝑖 mod 𝑝 and 𝐾𝑖 = 𝑔^𝑠𝑖 mod 𝑝
+
+    :param message: An ElGamal ciphertext
+    :param s: The nonce or secret used to derive the value
+    :param m: The value we are trying to prove
+    :param seed: Used to generate other random values here
+    :param hash_header: A value used when generating the challenge, 
+                        usually the election extended base hash (𝑄)
+    """
+    (alpha, beta) = message
+
+    # We need to pick three random numbers in Q.
+    u = Nonces(seed, "constant-chaum-pedersen-proof")[0]
+    a = g_pow_p(u)
+    b = pow_p(alpha, u)
+    c = hash_elems(hash_header, alpha, beta, a, b, m)
+    v = a_plus_bc_q(u, c, s)
+
+    return ChaumPedersenProof(a, b, c, v)
 
 
 def make_constant_chaum_pedersen(

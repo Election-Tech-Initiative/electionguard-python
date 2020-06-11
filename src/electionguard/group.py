@@ -4,7 +4,7 @@
 
 from typing import Any, Final, NamedTuple, Optional, Union
 from secrets import randbelow
-from gmpy2 import mpz, powmod, to_binary, from_binary
+from gmpy2 import mpz, powmod, invert, to_binary, from_binary
 
 # Constants used by ElectionGuard
 Q: Final[int] = pow(2, 256) - 189
@@ -188,6 +188,14 @@ def a_minus_b_q(a: ElementModQ, b: ElementModQ) -> ElementModQ:
     Computes (a-b) mod q.
     """
     return ElementModQ((a.elem - b.elem) % Q)
+
+
+def div_p(a: ElementModPOrQ, b: ElementModPOrQ) -> ElementModP:
+    """
+    Computes a/b mod p
+    """
+    inverse = invert(b.elem, mpz(P))
+    return mult_p(a, int_to_p_unchecked(inverse))
 
 
 def negate_q(a: ElementModQ) -> ElementModQ:
