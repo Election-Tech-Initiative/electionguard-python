@@ -1,4 +1,4 @@
-.PHONY: all environment install install-mac install-linux install-windows lint validate test coverage coverage-html coverage-xml coverage-erase
+.PHONY: all environment install install-mac install-linux install-windows lint validate test test-example coverage coverage-html coverage-xml coverage-erase
 
 CODE_COVERAGE ?= 90
 WINDOWS_32BIT_GMPY2 ?= packages/gmpy2-2.0.8-cp38-cp38-win32.whl
@@ -76,6 +76,10 @@ validate:
 test: 
 	@echo ✅ TEST
 	pipenv run pytest . -x
+
+test-example:
+	@echo ✅ TEST Example
+	pipenv run python -m pytest -s tests/integration/test_end_to_end_election.py
 
 coverage:
 	@echo ✅ COVERAGE

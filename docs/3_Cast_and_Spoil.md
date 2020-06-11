@@ -42,48 +42,63 @@ Once all of the ballots are marked as cast or spoiled, all of the encryptions of
 
 ## Ballot Box
 
-The ballot box can be interacted with via a stateful class that caches the election context, or via stateless functions
+The ballot box can be interacted with via a stateful class that caches the election context, or via stateless functions.  The following examples demonstrate some ways to interact with the ballot box.
 
-### Stateful Class
+Depending on the specific election workflow, the `BallotBox`class  may not be used for a given election.  For instance, in one case a ballot can be "accepted" directly on an electionic device, in which case there is no `BallotBox`.  In a different workflow, a ballot may be explicitly cast or spoiled in a later step, such as after printing for voter review.
+
+In all cases, a ballot must be marked as either `cast` or `spoiled` to be included in a tally result.
+
+### Class Example
 
 ```python
 
-BallotStore = Dict[str, BallotBoxCiphertextBallot]
+from electionguard.ballot_box import BallotBox
 
-class BallotBox:
+metadata: InternalElectionDescription
+encryption: CiphertextElection
+store: BallotStore
+ballots_to_cast: List[CiphertextBallot]
+ballots_to_spoil: List[CiphertextBallot]
 
-    _metadata: InternalElectionDescription
-    _encryption: CiphertextElection
-    _store: BallotStore
+# The Ballot Box is a thin wrapper around the function method
+ballot_box = BallotBox(metadata, encryption, store)
 
-    def cast(self, ballot: CyphertextBallot) -> Optional[CiphertextAcceptedBallot]:
-        ...
+# Cast the ballots
+for ballot in ballots_to_cast:
+    accepted_ballot = ballot_box.cast(ballot)
+    # The ballot is both returned, and placed into the ballot store
+    assert(store.get(accepted_ballot.object_id) == accepted_ballot)
 
-    def spoil(self, ballot: CyphertextBallot) -> Optional[CiphertextAcceptedBallot]:
-        ...
+# Spoil the ballots
+for ballot in ballots_to_spoil:
+    assert(ballot_box.spoil(ballot) is not None)
 
 ```
 
-### Functions
+### Function Example
 
 ``` python
 
-def accept_ballot(
-    ballot: CyphertextBallot,
-    state: BallotBoxState,
-    metadata: InternalElectionDescription, 
-    encryption_context: CiphertextElection, 
-    store: BallotStore
-) -> Optional[CiphertextAcceptedBallot]:
-    ...
+from electionguard.ballot_box import accept_ballot
+
+metadata: InternalElectionDescription
+encryption: CiphertextElection
+store: BallotStore
+ballots_to_cast: List[CiphertextBallot]
+ballots_to_spoil: List[CiphertextBallot]
+
+for ballot in ballots_to_cast:
+    accepted_ballot = accept_ballot(
+        ballot, BallotBoxState.CAST, metadata, encryption, store
+    )
+
+for ballot in ballots_to_spoil:
+    accepted_ballot = accept_ballot(
+        ballot, BallotBoxState.SPOILED, metadata, encryption, store
+    )
 
 ```
 
-### Implementation details
-
-Depending on the specific election workflow, the `BallotBox` may not be used for a given election.  For instance, in one case a ballot can be "accepted" directly on an electionic device, in which case there is no `BallotBox`.  In a different workflow, a ballot must be explicitly cast or spoiled in a later step, such as after printing for voter review.
-
-In all cases, a ballot must be marked as either `cast` or `spoiled` to be included in a tally result.
 
 ## BallotBoxAcceptedBallot (ballot.py)
 

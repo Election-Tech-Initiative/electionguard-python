@@ -97,7 +97,7 @@
             }
         }
     ],
-    "parties":[
+    "parties": [
         {
             "objectId": "whig",
             "abbreviation": "WHI",
@@ -195,22 +195,22 @@
             "isWriteIn": true
         },
         {
-            "objectId": "referendum-michigan-affirmative",
+            "objectId": "referendum-pineapple-affirmative",
             "ballotName": {
                 "text": [
                     {
-                        "value": "The State Should Purchase",
+                        "value": "Pineapple should be banned on pizza",
                         "language": "en"
                     }
                 ]
             }
         },
         {
-            "objectId": "referendum-michigan-negative",
+            "objectId": "referendum-pineapple-negative",
             "ballotName": {
                 "text": [
                     {
-                        "value": "The State Should Not Purchase",
+                        "value": "Pineapple should not be banned on pizza",
                         "language": "en"
                     }
                 ]
@@ -259,7 +259,7 @@
             "ballotSubtitle": {
                 "text": [
                     {
-                        "value": "Pick one",
+                        "value": "Please choose up to two candidates",
                         "language": "en"
                     },
                     {
@@ -280,28 +280,28 @@
         },
         {
             "@type": "ReferendumContest",
-            "objectId": "referendum-michigan",
+            "objectId": "referendum-pineapple",
             "sequenceOrder": 1,
             "ballotSelections": [
                 {
-                    "objectId": "referendum-michigan-affirmative-selection",
+                    "objectId": "referendum-pineapple-affirmative-selection",
                     "sequenceOrder": 0,
-                    "candidateId": "referendum-michigan-affirmative"
+                    "candidateId": "referendum-pineapple-affirmative"
                 },
                 {
-                    "objectId": "referendum-michigan-negative-selection",
+                    "objectId": "referendum-pineapple-negative-selection",
                     "sequenceOrder": 1,
-                    "candidateId": "referendum-michigan-negative"
+                    "candidateId": "referendum-pineapple-negative"
                 }
             ],
             "ballotTitle": {
                 "text": [
                     {
-                        "value": "The Michigan Question",
+                        "value": "Should pineapple be banned on pizza?",
                         "language": "en"
                     },
                     {
-                        "value": "Juez de la corte suprema",
+                        "value": "¿Debería prohibirse la piña en la pizza?",
                         "language": "es"
                     }
                 ]
@@ -309,18 +309,18 @@
             "ballotSubtitle": {
                 "text": [
                     {
-                        "value": "asymmetrical affogato authentic sriracha literally messenger bag pour-over butcher. Activated charcoal poke tofu heirloom art party celiac, kinfolk drinking vinegar air plant hexagon asymmetrical keytar four dollar toast viral.",
+                        "value": "The township considers this issue to be very important",
                         "language": "en"
                     },
                     {
-                        "value": "Uno",
+                        "value": "El municipio considera que esta cuestión es muy importante",
                         "language": "es"
                     }
                 ]
             },
             "voteVariation": "one_of_m",
             "electoralDistrictId": "harrison-township",
-            "name": "The Michigan Question",
+            "name": "The Pineapple Question",
             "numberElected": 1,
             "votesAllowed": 1
         }

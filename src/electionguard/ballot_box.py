@@ -22,7 +22,7 @@ class BallotBox(object):
 
     _metadata: InternalElectionDescription = field()
     _encryption: CiphertextElectionContext = field()
-    _store: BallotStore = field()
+    _store: BallotStore = field(default_factory=lambda: BallotStore())
 
     def cast(self, ballot: CiphertextBallot) -> Optional[CiphertextAcceptedBallot]:
         """

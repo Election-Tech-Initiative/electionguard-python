@@ -298,16 +298,11 @@ class DecryptionMediator:
             BALLOT_ID, Dict[OBJECT_ID, PlaintextTallyContest]
         ] = {}
 
-        # return plaintext_spoiled_ballots
-
         cpu_pool = Pool(cpu_count())
 
         for spoiled_ballot in spoiled_ballots.values():
             contests: Dict[OBJECT_ID, PlaintextTallyContest] = {}
             for contest in spoiled_ballot.contests:
-                log_warning(
-                    f"decrypting spoiled {spoiled_ballot.object_id} contest {contest.object_id}"
-                )
                 selections: Dict[OBJECT_ID, PlaintextTallySelection] = {}
                 plaintext_selections = cpu_pool.starmap(
                     self._decrypt_selection,

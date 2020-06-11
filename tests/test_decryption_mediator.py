@@ -50,143 +50,39 @@ from electionguardtest.tally import accumulate_plaintext_ballots
 election_factory = ElectionFactory.ElectionFactory()
 ballot_factory = BallotFactory.BallotFactory()
 
-NUMBER_OF_GUARDIANS = 3
-QUORUM = 2
-CEREMONY_DETAILS = CeremonyDetails(NUMBER_OF_GUARDIANS, QUORUM)
-GUARDIAN_1_ID = "Guardian 1"
-GUARDIAN_2_ID = "Guardian 2"
-GUARDIAN_3_ID = "Guardian 3"
-GUARDIAN_1 = Guardian(GUARDIAN_1_ID, 1, NUMBER_OF_GUARDIANS, QUORUM)
-GUARDIAN_2 = Guardian(GUARDIAN_2_ID, 2, NUMBER_OF_GUARDIANS, QUORUM)
-GUARDIAN_3 = Guardian(GUARDIAN_3_ID, 3, NUMBER_OF_GUARDIANS, QUORUM)
-GUARDIAN_1.save_guardian_public_keys(GUARDIAN_2.share_public_keys())
-GUARDIAN_1.save_guardian_public_keys(GUARDIAN_3.share_public_keys())
-GUARDIAN_2.save_guardian_public_keys(GUARDIAN_1.share_public_keys())
-GUARDIAN_2.save_guardian_public_keys(GUARDIAN_3.share_public_keys())
-GUARDIAN_3.save_guardian_public_keys(GUARDIAN_1.share_public_keys())
-GUARDIAN_3.save_guardian_public_keys(GUARDIAN_2.share_public_keys())
-GUARDIAN_1.generate_election_partial_key_backups()
-GUARDIAN_2.generate_election_partial_key_backups()
-GUARDIAN_3.generate_election_partial_key_backups()
-
 
 class TestDecryptionMediator(TestCase):
+    NUMBER_OF_GUARDIANS = 3
+    QUORUM = 2
+    CEREMONY_DETAILS = CeremonyDetails(NUMBER_OF_GUARDIANS, QUORUM)
+
     def setUp(self):
-        self.key_ceremony = KeyCeremonyMediator(CEREMONY_DETAILS)
-        self.key_ceremony.confirm_presence_of_guardian(GUARDIAN_1.share_public_keys())
-        self.key_ceremony.confirm_presence_of_guardian(GUARDIAN_2.share_public_keys())
-        self.key_ceremony.confirm_presence_of_guardian(GUARDIAN_3.share_public_keys())
 
-        self.assertTrue(self.key_ceremony.all_guardians_in_attendance())
+        self.key_ceremony = KeyCeremonyMediator(self.CEREMONY_DETAILS)
 
-        # share the aux keys
-        self.key_ceremony.receive_auxiliary_public_key(
-            GUARDIAN_1.share_auxiliary_public_key()
-        )
-        self.key_ceremony.receive_auxiliary_public_key(
-            GUARDIAN_2.share_auxiliary_public_key()
-        )
-        self.key_ceremony.receive_auxiliary_public_key(
-            GUARDIAN_3.share_auxiliary_public_key()
-        )
+        self.guardians: List[Guardian] = []
 
-        self.assertTrue(self.key_ceremony.all_auxiliary_public_keys_available())
+        # Setup Guardians
+        for i in range(self.NUMBER_OF_GUARDIANS):
+            self.guardians.append(
+                Guardian("guardian_" + str(i), i, self.NUMBER_OF_GUARDIANS, self.QUORUM)
+            )
 
-        # share the election keys
-        self.key_ceremony.receive_election_public_key(
-            GUARDIAN_1.share_election_public_key()
-        )
-        self.key_ceremony.receive_election_public_key(
-            GUARDIAN_2.share_election_public_key()
-        )
-        self.key_ceremony.receive_election_public_key(
-            GUARDIAN_3.share_election_public_key()
-        )
+        # Attendance (Public Key Share)
+        for guardian in self.guardians:
+            self.key_ceremony.announce(guardian)
 
-        self.assertTrue(self.key_ceremony.all_election_public_keys_available())
-
-        # Share the partial key backups
-        self.key_ceremony.receive_election_partial_key_backup(
-            GUARDIAN_1.share_election_partial_key_backup(GUARDIAN_2_ID)
-        )
-        self.key_ceremony.receive_election_partial_key_backup(
-            GUARDIAN_1.share_election_partial_key_backup(GUARDIAN_3_ID)
-        )
-        self.key_ceremony.receive_election_partial_key_backup(
-            GUARDIAN_2.share_election_partial_key_backup(GUARDIAN_1_ID)
-        )
-        self.key_ceremony.receive_election_partial_key_backup(
-            GUARDIAN_2.share_election_partial_key_backup(GUARDIAN_3_ID)
-        )
-        self.key_ceremony.receive_election_partial_key_backup(
-            GUARDIAN_3.share_election_partial_key_backup(GUARDIAN_1_ID)
-        )
-        self.key_ceremony.receive_election_partial_key_backup(
-            GUARDIAN_3.share_election_partial_key_backup(GUARDIAN_2_ID)
-        )
-
-        self.assertTrue(self.key_ceremony.all_election_partial_key_backups_available())
-
-        # save the backups
-        GUARDIAN_1.save_election_partial_key_backup(
-            self.key_ceremony.share_election_partial_key_backups_to_guardian(
-                GUARDIAN_1_ID
-            )[0]
-        )
-        GUARDIAN_1.save_election_partial_key_backup(
-            self.key_ceremony.share_election_partial_key_backups_to_guardian(
-                GUARDIAN_1_ID
-            )[1]
-        )
-        GUARDIAN_2.save_election_partial_key_backup(
-            self.key_ceremony.share_election_partial_key_backups_to_guardian(
-                GUARDIAN_2_ID
-            )[0]
-        )
-        GUARDIAN_2.save_election_partial_key_backup(
-            self.key_ceremony.share_election_partial_key_backups_to_guardian(
-                GUARDIAN_2_ID
-            )[1]
-        )
-        GUARDIAN_3.save_election_partial_key_backup(
-            self.key_ceremony.share_election_partial_key_backups_to_guardian(
-                GUARDIAN_3_ID
-            )[0]
-        )
-        GUARDIAN_3.save_election_partial_key_backup(
-            self.key_ceremony.share_election_partial_key_backups_to_guardian(
-                GUARDIAN_3_ID
-            )[1]
-        )
-
-        # verify the keys
-        verification1_2 = GUARDIAN_1.verify_election_partial_key_backup(GUARDIAN_2_ID)
-        verification1_3 = GUARDIAN_1.verify_election_partial_key_backup(GUARDIAN_3_ID)
-        verification2_1 = GUARDIAN_2.verify_election_partial_key_backup(GUARDIAN_1_ID)
-        verification2_3 = GUARDIAN_2.verify_election_partial_key_backup(GUARDIAN_3_ID)
-        verification3_1 = GUARDIAN_3.verify_election_partial_key_backup(GUARDIAN_1_ID)
-        verification3_2 = GUARDIAN_3.verify_election_partial_key_backup(GUARDIAN_2_ID)
-
-        self.key_ceremony.receive_election_partial_key_verification(verification1_2)
-        self.key_ceremony.receive_election_partial_key_verification(verification1_3)
-        self.key_ceremony.receive_election_partial_key_verification(verification2_1)
-        self.key_ceremony.receive_election_partial_key_verification(verification2_3)
-        self.key_ceremony.receive_election_partial_key_verification(verification3_1)
-        self.key_ceremony.receive_election_partial_key_verification(verification3_2)
-
-        self.assertTrue(
-            self.key_ceremony.all_election_partial_key_verifications_received()
-        )
-        self.assertTrue(self.key_ceremony.all_election_partial_key_backups_verified())
+        self.key_ceremony.orchestrate()
+        self.key_ceremony.verify()
 
         self.joint_public_key = self.key_ceremony.publish_joint_key()
+        self.assertIsNotNone(self.joint_public_key)
 
         # setup the election
         self.election = election_factory.get_fake_election()
-        builder = ElectionBuilder(NUMBER_OF_GUARDIANS, QUORUM, self.election)
-        self.metadata, self.encryption_context = builder.set_public_key(
-            self.joint_public_key
-        ).build()
+        builder = ElectionBuilder(self.NUMBER_OF_GUARDIANS, self.QUORUM, self.election)
+        builder.set_public_key(self.joint_public_key)
+        self.metadata, self.encryption_context = get_optional(builder.build())
 
         self.encryption_device = EncryptionDevice("location")
         self.ballot_marking_device = EncryptionMediator(
@@ -194,10 +90,10 @@ class TestDecryptionMediator(TestCase):
         )
 
         # get some fake ballots
-        self.fake_cast_ballot = election_factory.get_fake_ballot(
+        self.fake_cast_ballot = ballot_factory.get_fake_ballot(
             self.metadata, "some-unique-ballot-id-cast"
         )
-        self.fake_spoiled_ballot = election_factory.get_fake_ballot(
+        self.fake_spoiled_ballot = ballot_factory.get_fake_ballot(
             self.metadata, "some-unique-ballot-id-spoiled"
         )
         self.assertTrue(
@@ -210,11 +106,35 @@ class TestDecryptionMediator(TestCase):
             [self.fake_cast_ballot]
         )
 
+        # Fill in any missing selections that were not made on any ballots
+        selection_ids = set(
+            [
+                selection.object_id
+                for contest in self.metadata.contests
+                for selection in contest.ballot_selections
+            ]
+        )
+
+        missing_selection_ids = selection_ids.difference(
+            set(self.expected_plaintext_tally)
+        )
+
+        for id in missing_selection_ids:
+            self.expected_plaintext_tally[id] = 0
+
+        # Encrypt
         encrypted_fake_cast_ballot = self.ballot_marking_device.encrypt(
             self.fake_cast_ballot
         )
         encrypted_fake_spoiled_ballot = self.ballot_marking_device.encrypt(
             self.fake_spoiled_ballot
+        )
+        self.assertIsNotNone(encrypted_fake_cast_ballot)
+        self.assertIsNotNone(encrypted_fake_spoiled_ballot)
+        self.assertTrue(
+            encrypted_fake_cast_ballot.is_valid_encryption(
+                self.encryption_context.crypto_extended_base_hash, self.joint_public_key
+            )
         )
 
         # configure the ballot box
@@ -235,17 +155,19 @@ class TestDecryptionMediator(TestCase):
         )
 
         # act
-        result = subject.announce(GUARDIAN_1)
+        result = subject.announce(self.guardians[0])
 
         # assert
         self.assertIsNotNone(result)
 
         # Can only announce once
-        self.assertIsNone(subject.announce(GUARDIAN_1))
+        self.assertIsNone(subject.announce(self.guardians[0]))
 
         # Cannot submit another share internally
         self.assertFalse(
-            subject._submit_decryption_share(DecryptionShare(GUARDIAN_1_ID, {}, {}))
+            subject._submit_decryption_share(
+                DecryptionShare(self.guardians[0].object_id, {}, {})
+            )
         )
 
         # Cannot get plaintext tally without a quorum
@@ -261,12 +183,13 @@ class TestDecryptionMediator(TestCase):
 
         # act
         result = _compute_decryption_for_selection(
-            GUARDIAN_1, first_selection, self.encryption_context
+            self.guardians[0], first_selection, self.encryption_context
         )
 
         # assert
         self.assertIsNotNone(result)
 
+    @skip("for now")
     def test_decrypt_selection(self):
         # Arrange
 
@@ -276,22 +199,25 @@ class TestDecryptionMediator(TestCase):
 
         # precompute decryption shares for the guardians
         first_share = compute_decryption_share(
-            GUARDIAN_1, self.ciphertext_tally, self.encryption_context
+            self.guardians[0], self.ciphertext_tally, self.encryption_context
         )
         second_share = compute_decryption_share(
-            GUARDIAN_2, self.ciphertext_tally, self.encryption_context
+            self.guardians[1], self.ciphertext_tally, self.encryption_context
         )
         third_share = compute_decryption_share(
-            GUARDIAN_3, self.ciphertext_tally, self.encryption_context
+            self.guardians[2], self.ciphertext_tally, self.encryption_context
         )
         shares = {
-            GUARDIAN_1_ID: first_share.contests[first_contest.object_id]
+            self.guardians[0]
+            .object_id: first_share.contests[first_contest.object_id]
             .selections[first_selection.object_id]
             .share,
-            GUARDIAN_2_ID: second_share.contests[first_contest.object_id]
+            self.guardians[1]
+            .object_id: second_share.contests[first_contest.object_id]
             .selections[first_selection.object_id]
             .share,
-            GUARDIAN_3_ID: third_share.contests[first_contest.object_id]
+            self.guardians[2]
+            .object_id: third_share.contests[first_contest.object_id]
             .selections[first_selection.object_id]
             .share,
         }
@@ -313,18 +239,18 @@ class TestDecryptionMediator(TestCase):
         # Arrange
         # precompute decryption shares for the guardians
         first_share = compute_decryption_share(
-            GUARDIAN_1, self.ciphertext_tally, self.encryption_context
+            self.guardians[0], self.ciphertext_tally, self.encryption_context
         )
         second_share = compute_decryption_share(
-            GUARDIAN_2, self.ciphertext_tally, self.encryption_context
+            self.guardians[1], self.ciphertext_tally, self.encryption_context
         )
         third_share = compute_decryption_share(
-            GUARDIAN_3, self.ciphertext_tally, self.encryption_context
+            self.guardians[2], self.ciphertext_tally, self.encryption_context
         )
         shares = {
-            GUARDIAN_1_ID: first_share,
-            GUARDIAN_2_ID: second_share,
-            GUARDIAN_3_ID: third_share,
+            self.guardians[0].object_id: first_share,
+            self.guardians[1].object_id: second_share,
+            self.guardians[2].object_id: third_share,
         }
 
         subject = DecryptionMediator(
@@ -359,13 +285,11 @@ class TestDecryptionMediator(TestCase):
         )
 
         # act
-        self.assertIsNotNone(subject.announce(GUARDIAN_1))
-        self.assertIsNotNone(subject.announce(GUARDIAN_2))
-        self.assertIsNotNone(subject.announce(GUARDIAN_3))
+        for guardian in self.guardians:
+            self.assertIsNotNone(subject.announce(guardian))
 
         decrypted_tallies = subject.get_plaintext_tally()
         result = self._convert_to_selections(decrypted_tallies)
-        print(result)
 
         # assert
         self.assertIsNotNone(result)
@@ -384,7 +308,7 @@ class TestDecryptionMediator(TestCase):
     ):
         # Arrange
         description = data.draw(election_descriptions(parties, contests))
-        builder = ElectionBuilder(NUMBER_OF_GUARDIANS, QUORUM, description)
+        builder = ElectionBuilder(self.NUMBER_OF_GUARDIANS, self.QUORUM, description)
         metadata, context = builder.set_public_key(self.joint_public_key).build()
 
         plaintext_ballots: List[PlaintextBallot] = data.draw(
@@ -399,9 +323,8 @@ class TestDecryptionMediator(TestCase):
         subject = DecryptionMediator(metadata, context, encrypted_tally)
 
         # act
-        self.assertIsNotNone(subject.announce(GUARDIAN_1))
-        self.assertIsNotNone(subject.announce(GUARDIAN_2))
-        self.assertIsNotNone(subject.announce(GUARDIAN_3))
+        for guardian in self.guardians:
+            self.assertIsNotNone(subject.announce(guardian))
 
         decrypted_tallies = subject.get_plaintext_tally()
         result = self._convert_to_selections(decrypted_tallies)
