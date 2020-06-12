@@ -6,7 +6,7 @@ Guardians are typically Election Officials, Trustees Canvass Board Members, Gove
 
 ## Summary
 
-The Key Ceremony is broken into several high-level steps.  Each Guardian must _announce_ their _attendance_ in the key ceremony, generate their own public-private key pairs, and then _share_ those key pairs with the Quorum.  Then the data tyhat is shared is mathematically verified using Non-Interactive Zero Knowledge Proofs, and finally a _joint public key_ is created to encrypt ballots in the election.
+The Key Ceremony is broken into several high-level steps.  Each Guardian must _announce_ their _attendance_ in the key ceremony, generate their own public-private key pairs, and then _share_ those key pairs with the Quorum.  Then the data that is shared is mathematically verified using Non-Interactive Zero Knowledge Proofs, and finally a _joint public key_ is created to encrypt ballots in the election.
 
 ### Attendance
 Guardians exchange all public keys and ensure each fellow gaurdian has received an election and auxiliary public key ensuring at all guardians are in attendance.
@@ -60,3 +60,38 @@ This is a detailed description of the entire Key Ceremony Process
 - [`key_ceremony.py`](src/electionguard/key_ceremony.py)
 - [`guardian.py`](src/electionguard/guardian.py)
 - [`key_ceremony_mediator.py`](src/electionguard/key_ceremony_mediator.py)
+
+## Usage Example
+
+This example demonstrates a convenience method to generate guardians for an election
+
+```python
+
+NUMBER_OF_GUARDIANS: int
+QUORUM: int
+
+details: CeremonyDetails
+guardians: List[Guardian]
+
+# Setup Guardians
+for i in range(NUMBER_OF_GUARDIANS):
+  guardians.append(
+    Guardian(f"some_guardian_id_{str(i)}", i, NUMBER_OF_GUARDIANS, QUORUM)
+  )
+
+mediator = KeyCeremonyMediator(details)
+
+# Attendance (Public Key Share)
+for guardian in guardians:
+  mediator.announce(guardian)
+
+# Orchestation (Private Key Share)
+orchestrated = mediator.orchestrate()
+
+# Verify (Prove the guardians acted in good faith)
+verified = mediator.verify()
+
+# Publish the Joint Public Key
+joint_public_key = mediator.publish_joint_key()
+
+```

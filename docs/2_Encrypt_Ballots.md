@@ -1,6 +1,6 @@
 # Encrypt Ballots
 
-The primary function of ElectionGuard is to encrypt ballots.  Ballots are encrypted on a uniquuely identified device within the context of a specific election.  The election public key is used to encrypt ballots.  A master _nonce_ value is generated for each ballot and the nonce is used to derive other nonce values for encrypting the selection on each ballot.
+The primary function of ElectionGuard is to encrypt ballots.  Ballots are encrypted on a uniquely identified device within the context of a specific election.  The election public key is used to encrypt ballots.  A _master nonce_ value is generated for each ballot and the nonce is used to derive other nonce values for encrypting the selection on each ballot.
 
 ## Glossary
 

@@ -38,7 +38,8 @@ from electionguard.decryption_mediator import DecryptionMediator, PlaintextTally
 
 class TestEndToEndElection(TestCase):
     """
-    A full happy path of the end to end election using the mediator
+    This test is a complete simple example of executing an End-to-End encrypted election.
+    In a real world scenario all of these steps would not be completed on the same machine. 
     """
 
     NUMBER_OF_GUARDIANS = 5
@@ -71,7 +72,7 @@ class TestEndToEndElection(TestCase):
 
     def test_end_to_end_election(self) -> None:
         """
-        This test is a complete example of executing an End-to-End encrypted election.  
+        Execute the simplified end-to-end test demonstrating each component of the system.
         """
         self.step_0_configure_election()
         self.step_1_key_ceremony()

@@ -1,6 +1,6 @@
 # Cast and Spoil Ballots
 
-At the conclusion of voting, all of the ballot encryptions are published in the election record together with the proofs that the ballots are well formed.  Additionally, all of the encryptions of each option are homomorphically combined to form an encryption of the total number of times that each option was selected.
+Each ballot that is completed by a voter must be either cast or spoiled.  A cast ballot is a ballot that the voter accepts as valid and wishes to include in the official election tally.  A spoiled ballot, also referred to as a challenged ballot, is a ballot that the voter does not accept as valid and wishes to exclude from the official election tally.
 
 ElectionGuard includes a mechanism to mark a specific ballot as either cast or spoiled.  Cast ballots are included in the tally record, while spoiled ballots are not.  Spoiled ballots are decrypted into plaintext and published along with the rest of the election record.
 
@@ -8,13 +8,16 @@ ElectionGuard includes a mechanism to mark a specific ballot as either cast or s
 
 Depending on the jurisdiction conducting an election the process of casting and spoiling ballots may be handled differently. For this reason, there are multiple ways to interact with the `BallotBox` and `Tally`.
 
+- By calling [accept_ballot](###-Function-Example) - Ballots can be marked cast or spoiled manually.
+- By using the [Ballot Box](###-Class-Example) - Ballots can be marked cast or spoiled using a stateful class.
+
 ### Unknown Ballots
 
-In some jurisdictions, there is a limit on the number of ballots that may be marked spoiled.  If this is the case, use the `BallotBoxState.UNKNOWN` state, or extend the enumeration to support your specific use case.
+In some jurisdictions, there is a limit on the number of ballots that may be marked as spoiled.  If this is the case, you may use the `BallotBoxState.UNKNOWN` state, or extend the enumeration to support your specific use case.
 
 ## Encrypted Tally
 
-Once all of the ballots are marked as cast or spoiled, all of the encryptions of each option are homomorphically combined to form an encryption of the total number of times that each option was selected.  
+Once all of the ballots are marked as cast or spoiled, all of the encryptions of each option are homomorphically combined to form an encryption of the total number of times that each option was selected in the election.  
 
 > This process is completed only for cast ballot.
 
@@ -23,11 +26,12 @@ Once all of the ballots are marked as cast or spoiled, all of the encryptions of
 ## Glossary
 
 - **Ciphertext Ballot** An encrypted representation of a voter's filled-in ballot.
-- **Ciphertext Accepted Ballot** A wrapper around the `CiphertextBallot` that represents a ballot that is accepted for inclusion in election results and is either, cast, spoiled, or in an unknown state.
+- **Ciphertext Accepted Ballot** A wrapper around the `CiphertextBallot` that represents a ballot that is accepted for inclusion in election results and is either: cast or spoiled.
 - **Ballot Box** A stateful collection of ballots that are either cast or spoiled.
-- **Cast Ballot** A ballot which a voter has accepted as valid.
-- **Spoiled Ballot** A ballot which a voter did not accept as valid.
-- **Unknown Ballot** A ballot which may not yet be determiend as cast or spoiled, or that may have been spoiled but is otherwise not counted in the election results.
+- **Ballot Store** A repository for retaining cast and spoiled ballots.
+- **Cast Ballot** A ballot which a voter has accepted as valid to be included in the official election tally.
+- **Spoiled Ballot** A ballot which a voter did not accept as valid and is not included in the tally.
+- **Unknown Ballot** A ballot which may not yet be determiend as cast or spoiled, or that may have been spoiled but is otherwise not published in the election results.
 - **Homomorphic Tally** An encrypted representation of every selection on every ballt that was cast.  This representation is stored in a `CiphertextTally` object.
 
 ## Process
