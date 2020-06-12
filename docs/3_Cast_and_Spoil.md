@@ -1,8 +1,6 @@
-# Ballot Box
+# Cast and Spoil Ballots
 
 At the conclusion of voting, all of the ballot encryptions are published in the election record together with the proofs that the ballots are well formed.  Additionally, all of the encryptions of each option are homomorphically combined to form an encryption of the total number of times that each option was selected.
-
-## Casting and Spoiling Ballots
 
 ElectionGuard includes a mechanism to mark a specific ballot as either cast or spoiled.  Cast ballots are included in the tally record, while spoiled ballots are not.  Spoiled ballots are decrypted into plaintext and published along with the rest of the election record.
 

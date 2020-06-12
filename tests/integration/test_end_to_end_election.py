@@ -70,6 +70,9 @@ class TestEndToEndElection(TestCase):
     decrypter: DecryptionMediator
 
     def test_end_to_end_election(self) -> None:
+        """
+        This test is a complete example of executing an End-to-End encrypted election.  
+        """
         self.step_0_configure_election()
         self.step_1_key_ceremony()
         self.step_2_encrypt_votes()

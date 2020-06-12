@@ -6,145 +6,91 @@ description: "ElectionGuard: Support for e2e verified elections."
 urlFragment: "https://github.com/microsoft/electionguard-python"
 ---
 
-# ElectionGuard-Python
+# 🗳 ElectionGuard Python
 
-<!--
-Guidelines on README format: https://review.docs.microsoft.com/help/onboard/admin/samples/concepts/readme-template?branch=master
+[![license](https://img.shields.io/github/license/microsoft/electionguard)](LICENSE)
 
-Guidance on onboarding samples to docs.microsoft.com/samples: https://review.docs.microsoft.com/help/onboard/admin/samples/process/onboarding?branch=master
+This repository is a "reference implementation" of ElectionGuard written in Python3. This implementation can be used to conduct End-to-End Verifiable Elections as well as privacy-enhanced risk-limiting audits.  Components of this library can also be used to construct "Verifiers" to validate the results of an ElectionGuard election.
 
-Taxonomies for products and languages: https://review.docs.microsoft.com/new-hope/information-architecture/metadata/taxonomies?branch=master
--->
+## 📁 In This Repository
 
-This repository is a "reference implementation" of ElectionGuard written in Python3. This includes
-both a "verifier" application, useful for validating the results of an ElectionGuard election, as
-well as a standalone Python library, suitable for building other applications.
+| File/folder             | Description                              |
+| ----------------------- | ---------------------------------------- |
+| `bench`                 | Microbenchmarks based on this codebase   |
+| `docs`                  | Documentation for using the library      |
+| `src/electionguard`     | Source code to the ElectionGuard library |
+| `src/electionguardtest` | sample data and generators for testing   |
+| `stubs`                 | Type annotations for external libraries  |
+| `tests`                 | Unit tests to exercise this codebase     |
+| `CONTRIBUTING.md`       | Guidelines for contributing              |
+| `README.md`             | This README file                         |
+| `LICENSE`               | The license for ElectionGuard-Python.    |
 
-## Contents
+## ❓ What Is ElectionGuard?
 
-Outline the file contents of the repository. It helps users navigate the codebase, build configuration and any related assets.
+ElectionGuard is an open source software development kit (SDK) that makes voting more secure, transparent and accessible. The ElectionGuard SDK leverages homomorphic encryption to ensure that votes recorded by electronic systems of any type remain encrypted, secure, and secret. Meanwhile, ElectionGuard also allows verifiable and accurate tallying of ballots by any 3rd party organization without compromising secrecy or security.
 
-| File/folder         | Description                              |
-| ------------------- | ---------------------------------------- |
-| `bench`             | Microbenchmarks based on this codebase   |
-| `src/electionguard` | Source code to the ElectionGuard library |
-| `stubs`             | Type annotations for external libraries  |
-| `tests`             | Unit tests to exercise this codebase     |
-| `CONTRIBUTING.md`   | Guidelines for contributing              |
-| `README.md`         | This README file                         |
-| `LICENSE`           | The license for ElectionGuard-Python.    |
+Learn More in the [ElectionGuard Repository](https://github.com/microsoft/electionguard)
 
-## Prerequisites
+## 🦸 How Can I use ElectionGuard?
 
-### Python 3.8+
+ElectionGuard supports a variety of use cases.  The Primary use case is to generate verifiable end-to-end (E2E) encrypted elections.  The Electionguard process can also be used for other use cases such as privacy enhanced risk-limiting audits (RLAs).
 
-This code was developed against Python3.8, and is unlikely to work against earlier versions. [Download Python](https://www.python.org/downloads/).
+## 💻 Requirements
 
-### make (Recommended)
+- [Python 3.8](https://www.python.org/downloads/) is used to develop this SDK
+- [GNU Make](https://www.gnu.org/software/make/manual/make.html) is used to simplify the commands and GitHub Actions. This approach is recommended to simplify the command line experience. This is built in for MacOS and Linux. For Windows, setup is simpler with [Chocolatey](https://chocolatey.org/install) and installing the provided [make package](https://chocolatey.org/packages/make). The other Windows option is [manually installing make](http://gnuwin32.sourceforge.net/packages/make.htm).
+- [Gmpy2](https://gmpy2.readthedocs.io/en/latest/) is used for [Arbitrary-precision arithmetic](https://en.wikipedia.org/wiki/Arbitrary-precision_arithmetic) which
+has its own [installation requirements (native C libraries)](https://gmpy2.readthedocs.io/en/latest/intro.html#installation) on Linux and MacOS.  **⚠️ Note:** _This is not required for Windows since the gmpy2 precompiled libraries are provided._
+- [pipenv](https://github.com/pypa/pipenv) is used to configure the python environment. Installation instructions can be found [here](https://github.com/pypa/pipenv#installation).
 
-**make** is used to simplify the commands and GitHub Actions. This approach is recommended to simplify the command line experience. This is built in for MacOS and Linux. For Windows, setup is simpler with [Chocolatey](https://chocolatey.org/install) and installing the provided [make package](https://chocolatey.org/packages/make). The other Windows option is [manually installing make](http://gnuwin32.sourceforge.net/packages/make.htm).
+## 🚀 Quick Start
 
-### gmpy2 Requirements
-
-To make the math go faster, we're using [Gmpy2](https://gmpy2.readthedocs.io/en/latest/), which
-has its own [installation requirements (native C libraries)](https://gmpy2.readthedocs.io/en/latest/intro.html#installation).
-
-**⚠️ Note:** _This is not required for Windows since the gmpy2 precompiled libraries are provided._
-
-### pipenv
-
-[pipenv](https://github.com/pypa/pipenv) is used to configure the environment. Installation instructions can be found [here](https://github.com/pypa/pipenv#installation).
-
-## Quick Start
-
-Using **make**, the entire Github Action workflow can be run with one command: `make`
-
-## Setup
-
-### 1. Initialize dev environment
+Using **make**, the entire Github Action workflow can be run with one command: 
 
 ```
-make environment
+make
 ```
 
-OR
-
-```
-pipenv install --dev
-```
-
-### 2. Install `electionguard` module in edit mode
-
-```
-make install
-```
-
-OR
-
-```
-pipenv run python -m pip install -e .
-```
-
-**⚠️ Note:** _For Windows without `make`, use supplied precompiled **gmpy2** package with the `--find-links` or `-f` option. The 32 vs 64 bit is based on your installed python version NOT your system._
-
-_**Determine if 64-bit:**_
-
-_This code snippet will read `true` for 64 bit._
-
-`python -c 'from sys import maxsize; print(maxsize > 2**32)`
-
-_**Install module with link**_
-
-- **32-bit:** `pipenv run pip install -f packages/gmpy2-2.0.8-cp38-cp38-win32.whl -e .`
-- **64-bit:** `pipenv run pip install -f packages/gmpy2-2.0.8-cp38-cp38-win_amd64 -e .`
-
-### 3. Validate import of module _(Optional)_
-
-```
-make validate
-```
-
-OR
-
-```
-pipenv run python -c 'import electionguard; print(electionguard.__package__ + " successfully imported")'
-```
-
-## Running
-
-### Option 1: Code Coverage
-
-```
-make coverage
-```
-
-OR
-
-```
-pipenv run coverage report
-```
-
-### Option 2: Run tests in VS Code
-
-Install recommended test explorer extensions and run unit tests through tool.
-
-**⚠️ Note:** For Windows, be sure to select the [virtual environment Python interpreter](https://docs.microsoft.com/en-us/visualstudio/python/installing-python-interpreters).
-
-### Option 3: Run test command
+The unit and integration tests can also be run with make:
 
 ```
 make test
 ```
 
-OR
+A complete end-to-end election example can be run intepdendently by executing:
 
 ```
-pipenv run python -m pytest /testss
+make test-example
 ```
 
-## Documentation
+Ther are more examples in the [Build and Run](docs/Build_and_Run.md) documentation
+
+## 📄 Documentation
 
 - [Design and Architecture](docs/Design_and_Architecture.md)
+- [Build and Run](docs/Build_and_Run.md)
 
-0. [Election Configuration](docs/0_Election_Configuration.md)
+The ElectionGuard process is divided into steps:
+
+0. [Configure Election](docs/0_Configure_Election.md)
 1. [Key Ceremony](docs/1_Key_Ceremony.md)
+2. [Encrypt Ballots](docs/2_Encrypt_Ballots.md)
+3. [Cast and Spoil](docs/3_Cast_and_Spoil.md)
+4. [Decrypt Tally](docs/4_Decrypt_Tally.md)
+
+## Contributing
+
+This project encourages community contributions for development, testing, documentation, code review, and performance analysis, etc.  For more information on how to contribute, see [the contribution guidelines](CONTRIBUTING.md)
+
+### Code of Conduct
+
+This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
+
+### Reproting Issues
+
+Please report any bugs, feature requests, or enhancements using the [Github Issue Tracker](https://github.com/microsoft/electionguard-python/issues).  Please do not report any secirity vulnerabilities using the Issue Tracker.  Instead, please report them to the Microsoft Security Response Center (MSRC) at [https://msrc.microsoft.com/create-report](https://msrc.microsoft.com/create-report).  See the [Security Documentation](SECURITY.md) for more information.
+
+## License
+
+This repository is licensed under the [MIT License](LICENSE)
