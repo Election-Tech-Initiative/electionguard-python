@@ -6,11 +6,11 @@ from .ballot import CiphertextAcceptedBallot
 from .decryption_share import (
     BallotDecryptionShare,
     CiphertextDecryptionSelection,
-    CiphertextPartialDecryptionSelection,
+    CiphertextCompensatedDecryptionSelection,
     CiphertextDecryptionContest,
-    CiphertextPartialDecryptionContest,
+    CiphertextCompensatedDecryptionContest,
     DecryptionShare,
-    PartialDecryptionShare,
+    CompensatedDecryptionShare,
     get_cast_shares_for_selection,
     get_spoiled_shares_for_selection,
 )
@@ -67,7 +67,7 @@ class DecryptionMediator:
 
     # A collection of Partial Decryption Shares for each Available Guardian
     _partial_decryption_shares: Dict[
-        MISSING_GUARDIAN_ID, Dict[AVAILABLE_GUARDIAN_ID, PartialDecryptionShare]
+        MISSING_GUARDIAN_ID, Dict[AVAILABLE_GUARDIAN_ID, CompensatedDecryptionShare]
     ] = field(default_factory=lambda: {})
 
     def announce(self, guardian: Guardian) -> Optional[DecryptionShare]:
@@ -103,16 +103,16 @@ class DecryptionMediator:
 
     def compensate(
         self, missing_guardian_id: str
-    ) -> Optional[List[PartialDecryptionShare]]:
+    ) -> Optional[List[CompensatedDecryptionShare]]:
         """
         Compensate for a missing guardian by reconstructing the share using the available guardians.
 
         :param missing_guardian_id: the guardian that failed to `announce`.
-        :return: a collection of `PartialDecryptionShare` generated from all available guardians 
+        :return: a collection of `CompensatedDecryptionShare` generated from all available guardians
                  or `None if there is an error
         """
 
-        partial_decryptions: List[PartialDecryptionShare] = List()
+        partial_decryptions: List[CompensatedDecryptionShare] = List()
 
         # Loop through each of the available guardians
         # and calculate a partial for the missing one
@@ -249,7 +249,7 @@ class DecryptionMediator:
         return True
 
     def _submit_partial_decryption_shares(
-        self, shares: List[PartialDecryptionShare]
+        self, shares: List[CompensatedDecryptionShare]
     ) -> bool:
         """
         Submit partial decruyption shares to be used in the decryption
@@ -259,7 +259,9 @@ class DecryptionMediator:
 
         return True
 
-    def _submit_partial_decryption_share(self, share: PartialDecryptionShare) -> bool:
+    def _submit_partial_decryption_share(
+        self, share: CompensatedDecryptionShare
+    ) -> bool:
         """
         Submit partial decryption share to be used in the decryption
         """
@@ -282,28 +284,22 @@ class DecryptionMediator:
 
 
 def compute_decryption_share(
-    guardian: Guardian,
-    tally: CiphertextTally,
-    encryption_context: CiphertextElectionContext,
+    guardian: Guardian, tally: CiphertextTally, context: CiphertextElectionContext,
 ) -> Optional[DecryptionShare]:
     """
     Compute a decryptions share for a guardian
 
     :param guardian: The guardian who will partially decrypt the tally
     :param tally: The election tally to decrypt
-    :encryption_context: The public election encryption context
+    :context: The public election encryption context
     :return: a `DecryptionShare` or `None` if there is an error
     """
 
-    contests = _compute_decryption_for_cast_contests(
-        guardian, tally, encryption_context
-    )
+    contests = _compute_decryption_for_cast_contests(guardian, tally, context)
     if contests is None:
         return None
 
-    spoiled_ballots = _compute_decryption_for_spoiled_ballots(
-        guardian, tally, encryption_context
-    )
+    spoiled_ballots = _compute_decryption_for_spoiled_ballots(guardian, tally, context)
 
     if spoiled_ballots is None:
         return None
@@ -312,9 +308,7 @@ def compute_decryption_share(
 
 
 def _compute_decryption_for_cast_contests(
-    guardian: Guardian,
-    tally: CiphertextTally,
-    encryption_context: CiphertextElectionContext,
+    guardian: Guardian, tally: CiphertextTally, context: CiphertextElectionContext,
 ) -> Optional[Dict[CONTEST_ID, CiphertextDecryptionContest]]:
     """
     Compute the decryption for all of the cast contests in the Ciphertext Tally
@@ -327,7 +321,7 @@ def _compute_decryption_for_cast_contests(
         selection_decryptions = cpu_pool.starmap(
             _compute_decryption_for_selection,
             [
-                (guardian, selection, encryption_context)
+                (guardian, selection, context)
                 for (_, selection) in contest.tally_selections.items()
             ],
         )
@@ -349,9 +343,7 @@ def _compute_decryption_for_cast_contests(
 
 
 def _compute_decryption_for_spoiled_ballots(
-    guardian: Guardian,
-    tally: CiphertextTally,
-    encryption_context: CiphertextElectionContext,
+    guardian: Guardian, tally: CiphertextTally, context: CiphertextElectionContext,
 ) -> Optional[Dict[BALLOT_ID, BallotDecryptionShare]]:
     """
     Compute the decryption for all spoiled ballots in the Ciphertext Tally
@@ -366,7 +358,7 @@ def _compute_decryption_for_spoiled_ballots(
             selection_decryptions = cpu_pool.starmap(
                 _compute_decryption_for_selection,
                 [
-                    (guardian, selection, encryption_context)
+                    (guardian, selection, context)
                     for selection in contest.ballot_selections
                 ],
             )
@@ -393,26 +385,26 @@ def _compute_decryption_for_spoiled_ballots(
 def _compute_decryption_for_selection(
     guardian: Guardian,
     selection: CiphertextTallySelection,
-    encryption_context: CiphertextElectionContext,
+    context: CiphertextElectionContext,
 ) -> Optional[CiphertextDecryptionSelection]:
     """
     Compute a partial decryption for a specific selection
 
     :param guardian: The guardian who will partially decrypt the tally
     :param selection: The specific selection to decrypt
-    :encryption_context: The public election encryption context
+    :context: The public election encryption context
     :return: a `CiphertextDecryptionSelection` or `None` if there is an error
     """
 
     (decryption, proof) = guardian.partially_decrypt(
-        selection.message, encryption_context.crypto_extended_base_hash
+        selection.message, context.crypto_extended_base_hash
     )
 
     if proof.is_valid(
         selection.message,
         guardian.share_election_public_key().key,
         decryption,
-        encryption_context.crypto_extended_base_hash,
+        context.crypto_extended_base_hash,
     ):
         return CiphertextDecryptionSelection(
             selection.object_id, selection.description_hash, decryption, proof
@@ -426,7 +418,7 @@ def _compute_decryption_for_selection(
 
 def compute_partial_decryption_share(
     available_guardian: Guardian, missing_guardian_id: str, tally: CiphertextTally
-) -> Optional[PartialDecryptionShare]:
+) -> Optional[CompensatedDecryptionShare]:
     """
     Compute a partial decryption share for a missing guardian
     """

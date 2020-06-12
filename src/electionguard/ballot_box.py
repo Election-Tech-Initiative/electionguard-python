@@ -49,16 +49,16 @@ def accept_ballot(
     ballot: CiphertextBallot,
     state: BallotBoxState,
     metadata: InternalElectionDescription,
-    encryption_context: CiphertextElectionContext,
+    context: CiphertextElectionContext,
     store: BallotStore,
 ) -> Optional[CiphertextAcceptedBallot]:
     """
     Accept a ballot within the context of a specified election and against an existing data store
-    Verified that the ballot is valid for the election `metadata` and `encryption_context` and
+    Verified that the ballot is valid for the election `metadata` and `context` and
     that the ballot has not already been cast or spoiled.
     :return: a `CiphertextAcceptedBallot` or `None` if there was an error
     """
-    if not ballot_is_valid_for_election(ballot, metadata, encryption_context):
+    if not ballot_is_valid_for_election(ballot, metadata, context):
         return None
 
     ballot_exists, existing_ballot = store.exists(ballot.object_id)

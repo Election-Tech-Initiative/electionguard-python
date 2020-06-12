@@ -667,12 +667,12 @@ def elections_and_ballots(draw: _DrawType, num_ballots: int = 3):
         draw(plaintext_voted_ballots(election_metadata)) for _ in range(num_ballots)
     ]
 
-    secret_key, encryption_context = draw(ciphertext_elections(election_description))
+    secret_key, context = draw(ciphertext_elections(election_description))
 
     mock_election: ELECTIONS_AND_BALLOTS_TUPLE_TYPE = (
         election_metadata,
         ballots,
         secret_key,
-        encryption_context,
+        context,
     )
     return mock_election

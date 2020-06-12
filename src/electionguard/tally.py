@@ -319,16 +319,14 @@ def tally_ballot(
 def tally_ballots(
     store: BallotStore,
     metadata: InternalElectionDescription,
-    encryption_context: CiphertextElectionContext,
+    context: CiphertextElectionContext,
 ) -> Optional[CiphertextTally]:
     """
     Tally all of the ballots in the ballot store.
     :return: a CiphertextTally or None if there is an error
     """
     # TODO: unique Id for the tally
-    tally: CiphertextTally = CiphertextTally(
-        "election-results", metadata, encryption_context
-    )
+    tally: CiphertextTally = CiphertextTally("election-results", metadata, context)
     for ballot in store:
         if ballot is None:
             return None

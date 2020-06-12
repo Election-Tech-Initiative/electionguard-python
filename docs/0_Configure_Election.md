@@ -53,6 +53,6 @@ builder.set_public_key(keypair.public_key)
 
 # get an `InternalElectionDescription` and `CiphertextElectionContext`
 # that are used for the remainder of the election.
-(internal_metadata, encryption_context) = builder.build()
+(internal_metadata, context) = builder.build()
 
 ```

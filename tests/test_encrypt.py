@@ -493,7 +493,7 @@ class TestEncrypt(unittest.TestCase):
         # Arrange
         keypair = elgamal_keypair_from_secret(int_to_q(2))
         election = election_factory.get_fake_election()
-        metadata, encryption_context = election_factory.get_fake_ciphertext_election(
+        metadata, context = election_factory.get_fake_ciphertext_election(
             election, keypair.public_key
         )
         nonce_seed = TWO_MOD_Q
@@ -504,10 +504,10 @@ class TestEncrypt(unittest.TestCase):
         self.assertTrue(subject.is_valid(metadata.ballot_styles[0].object_id))
 
         # Act
-        result = encrypt_ballot(subject, metadata, encryption_context, SEED_HASH)
+        result = encrypt_ballot(subject, metadata, context, SEED_HASH)
         tracker_code = result.get_tracker_code()
         result_from_seed = encrypt_ballot(
-            subject, metadata, encryption_context, SEED_HASH, nonce_seed
+            subject, metadata, context, SEED_HASH, nonce_seed
         )
 
         # Assert
@@ -517,12 +517,12 @@ class TestEncrypt(unittest.TestCase):
         self.assertIsNotNone(result_from_seed)
         self.assertTrue(
             result.is_valid_encryption(
-                encryption_context.crypto_extended_base_hash, keypair.public_key
+                context.crypto_extended_base_hash, keypair.public_key
             )
         )
         self.assertTrue(
             result_from_seed.is_valid_encryption(
-                encryption_context.crypto_extended_base_hash, keypair.public_key
+                context.crypto_extended_base_hash, keypair.public_key
             )
         )
 
@@ -530,7 +530,7 @@ class TestEncrypt(unittest.TestCase):
         # Arrange
         keypair = elgamal_keypair_from_secret(int_to_q(2))
         election = election_factory.get_fake_election()
-        metadata, encryption_context = election_factory.get_fake_ciphertext_election(
+        metadata, context = election_factory.get_fake_ciphertext_election(
             election, keypair.public_key
         )
 
@@ -539,7 +539,7 @@ class TestEncrypt(unittest.TestCase):
         self.assertTrue(data.is_valid(metadata.ballot_styles[0].object_id))
 
         device = EncryptionDevice("Location")
-        subject = EncryptionMediator(metadata, encryption_context, device)
+        subject = EncryptionMediator(metadata, context, device)
 
         # Act
         result = subject.encrypt(data)
@@ -548,7 +548,7 @@ class TestEncrypt(unittest.TestCase):
         self.assertIsNotNone(result)
         self.assertTrue(
             result.is_valid_encryption(
-                encryption_context.crypto_extended_base_hash, keypair.public_key
+                context.crypto_extended_base_hash, keypair.public_key
             )
         )
 
@@ -556,7 +556,7 @@ class TestEncrypt(unittest.TestCase):
         # Arrange
         keypair = elgamal_keypair_from_secret(int_to_q(2))
         election = election_factory.get_simple_election_from_file()
-        metadata, encryption_context = election_factory.get_fake_ciphertext_election(
+        metadata, context = election_factory.get_fake_ciphertext_election(
             election, keypair.public_key
         )
 
@@ -564,7 +564,7 @@ class TestEncrypt(unittest.TestCase):
         self.assertTrue(data.is_valid(metadata.ballot_styles[0].object_id))
 
         device = EncryptionDevice("Location")
-        subject = EncryptionMediator(metadata, encryption_context, device)
+        subject = EncryptionMediator(metadata, context, device)
 
         # Act
         result = subject.encrypt(data)
@@ -574,7 +574,7 @@ class TestEncrypt(unittest.TestCase):
         self.assertEqual(data.object_id, result.object_id)
         self.assertTrue(
             result.is_valid_encryption(
-                encryption_context.crypto_extended_base_hash, keypair.public_key
+                context.crypto_extended_base_hash, keypair.public_key
             )
         )
 
@@ -595,7 +595,7 @@ class TestEncrypt(unittest.TestCase):
 
         # Arrange
         election = election_factory.get_simple_election_from_file()
-        metadata, encryption_context = election_factory.get_fake_ciphertext_election(
+        metadata, context = election_factory.get_fake_ciphertext_election(
             election, keypair.public_key
         )
 
@@ -603,13 +603,13 @@ class TestEncrypt(unittest.TestCase):
         self.assertTrue(data.is_valid(metadata.ballot_styles[0].object_id))
 
         device = EncryptionDevice("Location")
-        subject = EncryptionMediator(metadata, encryption_context, device)
+        subject = EncryptionMediator(metadata, context, device)
 
         # Act
         result = subject.encrypt(data)
         self.assertTrue(
             result.is_valid_encryption(
-                encryption_context.crypto_extended_base_hash, keypair.public_key
+                context.crypto_extended_base_hash, keypair.public_key
             )
         )
 

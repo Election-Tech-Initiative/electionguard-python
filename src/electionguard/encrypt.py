@@ -61,11 +61,11 @@ class EncryptionMediator(object):
     def __init__(
         self,
         election_metadata: InternalElectionDescription,
-        encryption_context: CiphertextElectionContext,
+        context: CiphertextElectionContext,
         encryption_device: EncryptionDevice,
     ):
         self._metadata = election_metadata
-        self._encryption = encryption_context
+        self._encryption = context
         self._seed_hash = encryption_device.get_hash()
 
     def encrypt(self, ballot: PlaintextBallot) -> Optional[CiphertextBallot]:
@@ -358,7 +358,7 @@ def encrypt_contest(
 def encrypt_ballot(
     ballot: PlaintextBallot,
     election_metadata: InternalElectionDescription,
-    encryption_context: CiphertextElectionContext,
+    context: CiphertextElectionContext,
     seed_hash: ElementModQ,
     nonce: Optional[ElementModQ] = None,
     should_verify_proofs: bool = True,
@@ -375,7 +375,7 @@ def encrypt_ballot(
 
     :param ballot: the ballot in the valid input form
     :param election_metadata: the `InternalElectionDescription` which defines this ballot's structure
-    :param encryption_context: all the cryptographic context for the election
+    :param context: all the cryptographic context for the election
     :param seed_hash: Hash from previous ballot or starting hash from device
     :param nonce: an optional `int` used to seed the `Nonce` generated for this contest
                  if this value is not provided, the secret generating mechanism of the OS provides its own
@@ -398,9 +398,7 @@ def encrypt_ballot(
     # Include a representation of the election and the external Id in the nonce's used
     # to derive other nonce values on the ballot
     nonce_seed = hash_elems(
-        encryption_context.crypto_extended_base_hash,
-        ballot.object_id,
-        random_master_nonce,
+        context.crypto_extended_base_hash, ballot.object_id, random_master_nonce,
     )
 
     encrypted_contests: List[CiphertextBallotContest] = list()
@@ -417,7 +415,7 @@ def encrypt_ballot(
             use_contest = contest_from(description)
 
         encrypted_contest = encrypt_contest(
-            use_contest, description, encryption_context.elgamal_public_key, nonce_seed,
+            use_contest, description, context.elgamal_public_key, nonce_seed,
         )
 
         if encrypted_contest is None:
@@ -428,7 +426,7 @@ def encrypt_ballot(
     encrypted_ballot = CiphertextBallot(
         ballot.object_id,
         ballot.ballot_style,
-        encryption_context.crypto_extended_base_hash,
+        context.crypto_extended_base_hash,
         encrypted_contests,
         random_master_nonce,
     )
@@ -444,8 +442,7 @@ def encrypt_ballot(
 
     # Verify the proofs
     if encrypted_ballot.is_valid_encryption(
-        encryption_context.crypto_extended_base_hash,
-        encryption_context.elgamal_public_key,
+        context.crypto_extended_base_hash, context.elgamal_public_key,
     ):
         return encrypted_ballot
     else:

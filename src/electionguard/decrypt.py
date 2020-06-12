@@ -26,7 +26,7 @@ from .tally import (
     CiphertextTallySelection,
     PlaintextTallySelection,
 )
-from .types import BALLOT_ID, CONTEST_ID, GUARDIAN_ID, SELECTION_ID
+from .types import CONTEST_ID, GUARDIAN_ID, SELECTION_ID
 from .utils import get_optional
 
 

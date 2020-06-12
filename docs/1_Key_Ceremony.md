@@ -95,3 +95,7 @@ verified = mediator.verify()
 joint_public_key = mediator.publish_joint_key()
 
 ```
+
+## Implementation Considerations
+
+ElectionGuard can be run without the key ceremony.  The key ceremony is the recommended process to generate keys for live end-to-end verifiable elections, however this process may not be necessary for other use cases such as privacy preserving risk limiting audits.

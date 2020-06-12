@@ -21,15 +21,13 @@ class TestBallotStore(TestCase):
         # Arrange
         keypair = elgamal_keypair_from_secret(int_to_q(2))
         election = election_factory.get_fake_election()
-        metadata, encryption_context = election_factory.get_fake_ciphertext_election(
+        metadata, context = election_factory.get_fake_ciphertext_election(
             election, keypair.public_key
         )
 
         # get an encrypted fake ballot to work with
         fake_ballot = election_factory.get_fake_ballot(metadata)
-        encrypted_ballot = encrypt_ballot(
-            fake_ballot, metadata, encryption_context, SEED_HASH
-        )
+        encrypted_ballot = encrypt_ballot(fake_ballot, metadata, context, SEED_HASH)
 
         # Set up the ballot store
         subject = BallotStore()
