@@ -1,72 +1,133 @@
 import logging
-from typing import Any
+import inspect
+import os.path
+import sys
+from typing import Any, Tuple
 
-# Unified logging for the ElectionGuard core library: we're sending all logging info to a file on disk
-# ("electionguard.log") and we're only sending errors and criticals to the console. When normally running
-# unit tests, this will go to 'tests/electionguard.log'. When running Tox, it goes to the project root directory.
+from .singleton import Singleton
 
-# TODO: Make this work if we're running ElectionGuard in multiple *processes* at the same time.
+FORMAT = "[%(process)d:%(asctime)s]:%(levelname)s:%(message)s"
 
-# Says the Python logging cookbook:
-#     https://docs.python.org/3/howto/logging-cookbook.html#logging-to-a-single-file-from-multiple-processes
-# Although logging is thread-safe, and logging to a single file from multiple threads in a single process
-# is supported, logging to a single file from multiple processes is not supported, because there is no
-# standard way to serialize access to a single file across multiple processes in Python.
 
-logging.basicConfig(
-    filename="electionguard.log",
-    level=logging.DEBUG,
-    format="%(asctime)s:%(name)s:%(levelname)s:%(message)s",
-    filemode="w",  # erase and overwrite the log file each time
-)
-__logger = logging.getLogger("electionguard")
-__ch = logging.StreamHandler()
-__ch.setLevel(logging.ERROR)
-__ch.setFormatter(logging.Formatter("%(asctime)s:%(name)s:%(levelname)s:%(message)s"))
-# create formatter and add it to the handlers
-__logger.addHandler(__ch)
+class ElectionGuardLog(Singleton):
+    """
+    A singleton log for the library
+    """
+
+    __logger: logging.Logger
+
+    def __init__(self) -> None:
+        super(ElectionGuardLog, self).__init__()
+
+        logging.basicConfig(
+            handlers=[self._get_file_handler(), self._get_stream_handler()],
+        )
+        self.__logger = logging.getLogger("electionguard")
+
+    @staticmethod
+    def __get_call_info() -> Tuple[str, str, int]:
+        stack = inspect.stack()
+
+        # stack[0]: __get_call_info
+        # stack[1]: __formatted_message
+        # stack[2]: (log method, e.g. "warn")
+        # stack[3]: Singleton
+        # stack[4]: caller <-- we want this
+
+        filename = stack[4][1]
+        line = stack[4][2]
+        funcname = stack[4][3]
+
+        return filename, funcname, line
+
+    def __formatted_message(self, message: str) -> str:
+        filename, funcname, line = self.__get_call_info()
+        message = f"{os.path.basename(filename)}.{funcname}:#L{line}: {message}"
+        return message
+
+    def _get_stream_handler(self) -> logging.StreamHandler:
+        """
+        Get a Stream Handler
+        """
+        stream_handler = logging.StreamHandler(sys.stdout)
+        stream_handler.setLevel(logging.WARNING)
+        stream_handler.setFormatter(logging.Formatter(FORMAT))
+        return stream_handler
+
+    def _get_file_handler(self) -> logging.FileHandler:
+        """
+        Get a File System Handler
+        """
+        file_handler = logging.FileHandler("electionguard.log", "w+")
+        file_handler.setLevel(logging.DEBUG)
+        file_handler.setFormatter(logging.Formatter(FORMAT))
+        return file_handler
+
+    def debug(self, message: str, *args: Any, **kwargs: Any) -> None:
+        """
+        Logs a debug message
+        """
+        self.__logger.debug(self.__formatted_message(message), *args, **kwargs)
+
+    def info(self, message: str, *args: Any, **kwargs: Any) -> None:
+        """
+        Logs a info message
+        """
+        self.__logger.info(self.__formatted_message(message), *args, **kwargs)
+
+    def warn(self, message: str, *args: Any, **kwargs: Any) -> None:
+        """
+        Logs a warning message
+        """
+        self.__logger.warn(self.__formatted_message(message), *args, **kwargs)
+
+    def error(self, message: str, *args: Any, **kwargs: Any) -> None:
+        """
+        Logs a error message
+        """
+        self.__logger.error(self.__formatted_message(message), *args, **kwargs)
+
+    def critical(self, message: str, *args: Any, **kwargs: Any) -> None:
+        """
+        Logs a critical message
+        """
+        self.__logger.critical(self.__formatted_message(message), *args, **kwargs)
+
+
+global LOG
+LOG = ElectionGuardLog()
 
 
 def log_debug(msg: str, *args: Any, **kwargs: Any) -> None:
     """
     Logs a debug message to the console and the file log.
     """
-    __logger.debug(msg, *args, **kwargs)
+    LOG.debug(msg, *args, **kwargs)
 
 
 def log_info(msg: str, *args: Any, **kwargs: Any) -> None:
     """
     Logs an information message to the console and the file log.
     """
-    __logger.info(msg, *args, **kwargs)
+    LOG.info(msg, *args, **kwargs)
 
 
 def log_warning(msg: str, *args: Any, **kwargs: Any) -> None:
     """
     Logs a warning message to the console and the file log.
     """
-    __logger.warning(msg, *args, **kwargs)
+    LOG.warn(msg, *args, **kwargs)
 
 
 def log_error(msg: str, *args: Any, **kwargs: Any) -> None:
     """
     Logs an error message to the console and the file log.
     """
-    __logger.error(msg, *args, **kwargs)
+    LOG.error(msg, *args, **kwargs)
 
 
 def log_critical(msg: str, *args: Any, **kwargs: Any) -> None:
     """
     Logs a critical message to the console and the file log.
     """
-    __logger.critical(msg, *args, **kwargs)
-
-
-# these should only appear in the log file
-log_debug("ElectionGuard log system starting (testing debug)")
-log_info("ElectionGuard log system starting (testing info)")
-log_warning("ElectionGuard log system starting (testing warning)")
-
-# these should be in the log file and visible on the console
-log_error("ElectionGuard log system starting (testing error)")
-log_critical("ElectionGuard log system starting (testing critical)")
+    LOG.critical(msg, *args, **kwargs)
