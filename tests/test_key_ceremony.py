@@ -4,7 +4,6 @@ from electionguard.key_ceremony import (
     AuxiliaryPublicKey,
     ElectionPublicKey,
     GuardianDataStore,
-    GuardianId,
     generate_elgamal_auxiliary_key_pair,
     generate_election_key_pair,
     generate_election_partial_key_backup,
@@ -13,6 +12,7 @@ from electionguard.key_ceremony import (
     verify_election_partial_key_challenge,
     combine_election_public_keys,
 )
+from electionguard.types import GUARDIAN_ID
 
 SENDER_GUARDIAN_ID = "Test Guardian 1"
 RECIPIENT_GUARDIAN_ID = "Test Guardian 2"
@@ -161,7 +161,7 @@ class TestKeyCeremony(TestCase):
         # Arrange
         random_keypair = generate_election_key_pair(QUORUM)
         random_keypair_two = generate_election_key_pair(QUORUM)
-        public_keys = GuardianDataStore[GuardianId, ElectionPublicKey]()
+        public_keys = GuardianDataStore[GUARDIAN_ID, ElectionPublicKey]()
         public_keys.set(
             RECIPIENT_GUARDIAN_ID,
             ElectionPublicKey(

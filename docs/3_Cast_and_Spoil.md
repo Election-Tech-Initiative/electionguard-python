@@ -17,7 +17,7 @@ In some jurisdictions, there is a limit on the number of ballots that may be mar
 
 ## Encrypted Tally
 
-Once all of the ballots are marked as cast or spoiled, all of the encryptions of each option are homomorphically combined to form an encryption of the total number of times that each option was selected in the election.  
+Once all of the ballots are marked as _cast_ or _spoiled_, all of the encryptions of each option are homomorphically combined to form an encryption of the total number of times that each option was selected in the election.  
 
 > This process is completed only for cast ballot.
 
@@ -46,7 +46,7 @@ Once all of the ballots are marked as cast or spoiled, all of the encryptions of
 
 The ballot box can be interacted with via a stateful class that caches the election context, or via stateless functions.  The following examples demonstrate some ways to interact with the ballot box.
 
-Depending on the specific election workflow, the `BallotBox`class  may not be used for a given election.  For instance, in one case a ballot can be "accepted" directly on an electionic device, in which case there is no `BallotBox`.  In a different workflow, a ballot may be explicitly cast or spoiled in a later step, such as after printing for voter review.
+Depending on the specific election workflow, the `BallotBox`class  may not be used for a given election.  For instance, in one case a ballot can be **accepted** directly on an electionic device, in which case there is no `BallotBox`.  In a different workflow, a ballot may be explicitly cast or spoiled in a later step, such as after printing for voter review.
 
 In all cases, a ballot must be marked as either `cast` or `spoiled` to be included in a tally result.
 
@@ -62,7 +62,7 @@ store: BallotStore
 ballots_to_cast: List[CiphertextBallot]
 ballots_to_spoil: List[CiphertextBallot]
 
-# The Ballot Box is a thin wrapper around the function method
+# The Ballot Box is a thin wrapper around the `accept_ballot` function method
 ballot_box = BallotBox(metadata, encryption, store)
 
 # Cast the ballots
@@ -101,65 +101,37 @@ for ballot in ballots_to_spoil:
 
 ```
 
-
-## BallotBoxAcceptedBallot (ballot.py)
-
-A ballot can be marked either CAST or SPOILED.  When ballots are first associated with the ballot box, they are marked UNKNOWN.
-
-```python
-
-class BallotBoxState(Enum):
-     CAST
-     SPOILED
-     UNKNOWN
-
-class CiphertextAcceptedBallot(CiphertextBallot):
-    state: BallotBoxState
-
-```
-
 ## Tally
 
-Generating the encrypted `CiphertextTally` can be completed by creating a `CiphertextTally` stateful class and manually marshalling each cast and spoiled ballot.  Usingthis method is preferable when the collection of ballots is very large
+Generating the encrypted `CiphertextTally` can be completed by creating a `CiphertextTally` stateful class and manually marshalling each cast and spoiled ballot.  Using this method is preferable when the collection of ballots is very large
 
-For convenience, stateless functions are also provided to automatically generate the `CiphertextTally` from a `BallotStore`.  This method is preferred when the collection of ballots is arbitrarily small, or when the `BallotStore` is overloaded with a csutom implementation.
+For convenience, stateless functions are also provided to automatically generate the `CiphertextTally` from a `BallotStore`.  This method is preferred when the collection of ballots is arbitrarily small, or when the `BallotStore` is overloaded with a custom implementation.
 
-### Stateful Class
+### Using the Stateful Class
 
 ```python
 
-@dataclass
-class CiphertextTally(ElectionObjectBase):
-    _metadata: InternalElectionDescription
-    _encryption: CiphertextElectionContext
+metadata: InternalElectionDescription
+context: CiphertextElectionContext
 
-    # A local cache of ballots id's that have already been cast
-    _cast_ballot_ids: Set[str]
+ballots: List[CiphertextAcceptedBallot]
 
-    cast: Dict[str, CiphertextTallyContest]
+tally = CiphertextTally(metadata, context)
 
-    spoiled_ballots: Dict[str, CiphertextAcceptedBallot]
-
-    def add_cast(self, ballot: CiphertextAcceptedBallot) -> bool:
-        ...
-
-    def add_spoiled(self, ballot: CiphertextAcceptedBallot) -> bool:
-        ...
+for ballot in ballots:
+    assert(tally.append(ballot))
 
 ```
 
-### Functions
+### Functional Method
 
 ```python
 
-def tally_ballot(
-    ballot: CiphertextAcceptedBallot, tally: CiphertextTally
-) -> Optional[CiphertextTally]:
+metadata: InternalElectionDescription
+context: CiphertextElectionContext
+store: BallotStore
 
-def tally_ballots(
-    store: BallotStore,
-    metadata: InternalElectionDescription,
-    encryption_context: CiphertextElectionContext,
-) -> Optional[CiphertextTally]:
+tally = tally_ballots(store, metadata, context)
+assert(tally is not None)
 
 ```

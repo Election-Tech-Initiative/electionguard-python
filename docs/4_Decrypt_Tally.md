@@ -6,7 +6,7 @@ In order to decrypt the homomorphically-combined encryption of each selection, e
 
 It is preferable that all guardians be present for decryption, however in the event that guardians cannot be present, Electionguard includes a mechanism to decrypt with the `Quorum of Guardians`.
 
-During the `Key Ceremony` a `Quorum of Guardians` is defined that represents the minimum number of guardians that must be present to decrypt the election.  If the decryption is to proceed with a `Quorum of Guardians` greater than or equal to the `Quorum` count, but less than the total number of guardians configured during the key ceremony, then a subset of the `Present Guardians` must also each construct a `Partial Decryption Share` for the missing `Missing Guardian`, in addition to providing their own `Decryption Share`.
+During the [Key Ceremony](1_Key_Ceremony.md) a `Quorum of Guardians` is defined that represents the minimum number of guardians that must be present to decrypt the election.  If the decryption is to proceed with a `Quorum of Guardians` greater than or equal to the `Quorum` count, but less than the total number of guardians, then a subset of the `Available Guardians` must also each construct a `Partial Decryption Share` for the missing `Missing Guardian`, in addition to providing their own `Decryption Share`.
 
 It is important to note that mathematically not every present guardian has to compute a `Partial Decryption Share` for every `Missing Guardian`.  Only the `Quorum Count` of guardians are necessary to construct `Partial Decryption Shares` in order to compensate for any Missing Guardian.  
 

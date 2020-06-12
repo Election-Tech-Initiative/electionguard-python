@@ -6,9 +6,7 @@ from .election_object_base import ElectionObjectBase
 
 from .group import ElementModP, ElementModQ
 
-BALLOT_ID = str
-GUARDIAN_ID = str
-OBJECT_ID = str
+from .types import BALLOT_ID, CONTEST_ID, GUARDIAN_ID, SELECTION_ID
 
 
 @dataclass
@@ -53,7 +51,7 @@ class CiphertextDecryptionContest(ElectionObjectBase):
     description_hash: ElementModQ
 
     # the collection of decryption shares for this contest's selections
-    selections: Dict[OBJECT_ID, CiphertextDecryptionSelection]
+    selections: Dict[SELECTION_ID, CiphertextDecryptionSelection]
 
 
 @dataclass
@@ -66,7 +64,7 @@ class CiphertextPartialDecryptionContest(ElectionObjectBase):
     description_hash: ElementModQ
 
     # the collection of decryption shares for this contest's selections
-    selections: Dict[OBJECT_ID, CiphertextPartialDecryptionSelection]
+    selections: Dict[SELECTION_ID, CiphertextPartialDecryptionSelection]
 
 
 @dataclass
@@ -82,7 +80,7 @@ class BallotDecryptionShare:
     ballot_id: BALLOT_ID
 
     # The collection of all contests in the ballot
-    contests: Dict[OBJECT_ID, CiphertextDecryptionContest]
+    contests: Dict[CONTEST_ID, CiphertextDecryptionContest]
 
 
 @dataclass
@@ -95,7 +93,7 @@ class DecryptionShare:
     guardian_id: GUARDIAN_ID
 
     # The collection of all contests in the election
-    contests: Dict[OBJECT_ID, CiphertextDecryptionContest]
+    contests: Dict[CONTEST_ID, CiphertextDecryptionContest]
 
     spoiled_ballots: Dict[BALLOT_ID, BallotDecryptionShare]
 
@@ -113,6 +111,39 @@ class PartialDecryptionShare:
     missing_guardian_id: GUARDIAN_ID
 
     # The collection of all contests in the election
-    contests: Dict[OBJECT_ID, CiphertextPartialDecryptionContest]
+    contests: Dict[CONTEST_ID, CiphertextPartialDecryptionContest]
 
     lagrange_coefficient: ElementModQ
+
+
+def get_cast_shares_for_selection(
+    selection_id: str, shares: Dict[GUARDIAN_ID, DecryptionShare],
+) -> Dict[GUARDIAN_ID, ElementModP]:
+    """
+    Get the cast shares for a given selection
+    """
+    cast_shares: Dict[GUARDIAN_ID, ElementModP] = {}
+    for share in shares.values():
+        for contest in share.contests.values():
+            for selection in contest.selections.values():
+                if selection.object_id == selection_id:
+                    cast_shares[share.guardian_id] = selection.share
+
+    return cast_shares
+
+
+def get_spoiled_shares_for_selection(
+    ballot_id: str, selection_id: str, shares: Dict[GUARDIAN_ID, DecryptionShare],
+) -> Dict[GUARDIAN_ID, ElementModP]:
+    """
+    Get the spoiled shares for a given selection
+    """
+    spoiled_shares: Dict[GUARDIAN_ID, ElementModP] = {}
+    for share in shares.values():
+        for ballot in share.spoiled_ballots.values():
+            if ballot.ballot_id == ballot_id:
+                for contest in ballot.contests.values():
+                    for selection in contest.selections.values():
+                        if selection.object_id == selection_id:
+                            spoiled_shares[share.guardian_id] = selection.share
+    return spoiled_shares

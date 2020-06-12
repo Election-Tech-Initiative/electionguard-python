@@ -27,6 +27,7 @@ from .group import (
     ElementModP,
 )
 from .schnorr import SchnorrProof, make_schnorr_proof
+from .types import GUARDIAN_ID
 
 
 class CeremonyDetails(NamedTuple):
@@ -36,9 +37,6 @@ class CeremonyDetails(NamedTuple):
 
     number_of_guardians: int
     quorum: int
-
-
-GuardianId = str
 
 
 class AuxiliaryKeyPair(NamedTuple):
@@ -52,7 +50,7 @@ class AuxiliaryKeyPair(NamedTuple):
 class AuxiliaryPublicKey(NamedTuple):
     """A tuple of auxiliary public key and owner information"""
 
-    owner_id: GuardianId
+    owner_id: GUARDIAN_ID
     sequence_order: int
     key: str
 
@@ -79,7 +77,7 @@ class ElectionKeyPair(NamedTuple):
 class ElectionPublicKey(NamedTuple):
     """A tuple of election public key and owner information"""
 
-    owner_id: GuardianId
+    owner_id: GUARDIAN_ID
     proof: SchnorrProof
     key: ElementModP
 
@@ -87,7 +85,7 @@ class ElectionPublicKey(NamedTuple):
 class PublicKeySet(NamedTuple):
     """Public key set of auxiliary and election keys and owner information"""
 
-    owner_id: GuardianId
+    owner_id: GUARDIAN_ID
     sequence_order: int
     auxiliary_public_key: str
     election_public_key: ElementModP
@@ -97,15 +95,15 @@ class PublicKeySet(NamedTuple):
 class GuardianPair(NamedTuple):
     """Pair of guardians involved in sharing"""
 
-    owner_id: GuardianId
-    designated_id: GuardianId
+    owner_id: GUARDIAN_ID
+    designated_id: GUARDIAN_ID
 
 
 class ElectionPartialKeyBackup(NamedTuple):
     """Election partial key backup used for key sharing"""
 
-    owner_id: GuardianId
-    designated_id: GuardianId
+    owner_id: GUARDIAN_ID
+    designated_id: GUARDIAN_ID
     designated_sequence_order: int
 
     encrypted_value: str
@@ -116,17 +114,17 @@ class ElectionPartialKeyBackup(NamedTuple):
 class ElectionPartialKeyVerification(NamedTuple):
     """Verification of election partial key used in key sharing"""
 
-    owner_id: GuardianId
-    designated_id: GuardianId
-    verifier_id: GuardianId
+    owner_id: GUARDIAN_ID
+    designated_id: GUARDIAN_ID
+    verifier_id: GUARDIAN_ID
     verified: bool
 
 
 class ElectionPartialKeyChallenge(NamedTuple):
     """Challenge of election partial key used in key sharing"""
 
-    owner_id: GuardianId
-    designated_id: GuardianId
+    owner_id: GUARDIAN_ID
+    designated_id: GUARDIAN_ID
     designated_sequence_order: int
 
     value: int
@@ -228,7 +226,7 @@ def generate_election_key_pair(quorum: int) -> ElectionKeyPair:
 
 
 def generate_election_partial_key_backup(
-    owner_id: GuardianId,
+    owner_id: GUARDIAN_ID,
     polynomial: ElectionPolynomial,
     auxiliary_public_key: AuxiliaryPublicKey,
     encrypt: AuxiliaryEncrypt = default_auxiliary_encrypt,
@@ -254,7 +252,7 @@ def generate_election_partial_key_backup(
 
 
 def verify_election_partial_key_backup(
-    verifier_id: GuardianId,
+    verifier_id: GUARDIAN_ID,
     backup: ElectionPartialKeyBackup,
     auxiliary_key_pair: AuxiliaryKeyPair,
     decrypt: AuxiliaryDecrypt = default_auxiliary_decrypt,
@@ -300,7 +298,7 @@ def generate_election_partial_key_challenge(
 
 
 def verify_election_partial_key_challenge(
-    verifier_id: GuardianId, challenge: ElectionPartialKeyChallenge
+    verifier_id: GUARDIAN_ID, challenge: ElectionPartialKeyChallenge
 ) -> ElectionPartialKeyVerification:
     """
     Verify a challenge to a previous verification of a partial key backup
@@ -321,7 +319,7 @@ def verify_election_partial_key_challenge(
 
 
 def combine_election_public_keys(
-    election_public_keys: GuardianDataStore[GuardianId, ElectionPublicKey]
+    election_public_keys: GuardianDataStore[GUARDIAN_ID, ElectionPublicKey]
 ) -> ElectionJointKey:
     """
     Creates a joint election key from the public keys of all guardians

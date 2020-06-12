@@ -189,7 +189,6 @@ class TestDecryptionMediator(TestCase):
         # assert
         self.assertIsNotNone(result)
 
-    @skip("for now")
     def test_decrypt_selection(self):
         # Arrange
 

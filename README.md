@@ -1,10 +1,4 @@
----
-page_type: sample
-languages:
-  - python
-description: "ElectionGuard: Support for e2e verified elections."
-urlFragment: "https://github.com/microsoft/electionguard-python"
----
+![Microsoft Defending Democracy Program: ElectionGuard Python](electionguard-logo-small.png)
 
 # 🗳 ElectionGuard Python
 
