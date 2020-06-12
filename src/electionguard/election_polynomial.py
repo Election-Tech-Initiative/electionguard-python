@@ -85,7 +85,6 @@ def verify_polynomial_value(
     :param coefficient_commitments: Commitments for coefficients of polynomial
     :return: True if verified on polynomial
     """
-    # TODO Revisit mod p over mod q
     commitment_output = ONE_MOD_P
     for (i, commitment) in enumerate(coefficient_commitments):
         exponent = pow_p(int_to_p_unchecked(exponent_modifier), int_to_p_unchecked(i))

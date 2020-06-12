@@ -169,7 +169,7 @@ def encrypt_selection(
         # will have logged about the failure earlier, so no need to log anything here
         return None
 
-    # TODO: ISSUE: #35: encrypt/decrypt: encrypt the extended_data field
+    # TODO: ISSUE #35: encrypt/decrypt: encrypt the extended_data field
 
     # Create the return object
     encrypted_selection = CiphertextBallotSelection(
@@ -249,8 +249,9 @@ def encrypt_contest(
 
     selection_count = 0
 
-    # TODO: this code could be inefficient if we had a contest with a lot of choices, although the
-    #  O(n^2) iteration here is peanuts compared to the huge cost of doing the cryptography.
+    # TODO: ISSUE #54 this code could be inefficient if we had a contest
+    # with a lot of choices, although the O(n^2) iteration here is small
+    # compared to the huge cost of doing the cryptography.
 
     # Generate the encrypted selections
     for description in contest_description.ballot_selections:
@@ -316,7 +317,8 @@ def encrypt_contest(
             return None  # log will have happened earlier
         encrypted_selections.append(get_optional(encrypted_selection))
 
-    # TODO: support other cases such as cumulative voting (individual selections being an encryption of > 1)
+    # TODO: ISSUE #33: support other cases such as cumulative voting
+    # (individual selections being an encryption of > 1)
     if (
         contest_description.votes_allowed is not None
         and selection_count < contest_description.votes_allowed
@@ -353,6 +355,11 @@ def encrypt_contest(
             f"mismatching contest proof for contest {encrypted_contest.object_id}"
         )
         return None
+
+
+# TODO: ISSUE #57: add the device hash to the function interface so it can be propagated with the ballot.
+# also propagate the seed hash so that the ballot tracking id's can be regenerated
+# by traversing the collection of ballots encrypted by a specific device
 
 
 def encrypt_ballot(

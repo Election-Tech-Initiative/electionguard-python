@@ -499,7 +499,6 @@ class TestEncrypt(unittest.TestCase):
         nonce_seed = TWO_MOD_Q
 
         # TODO: Ballot Factory
-        # TODO: Expected type 'Optional[ElectionDescription]', got 'InternalElectionDescription' instead
         subject = election_factory.get_fake_ballot(metadata)
         self.assertTrue(subject.is_valid(metadata.ballot_styles[0].object_id))
 
@@ -534,7 +533,6 @@ class TestEncrypt(unittest.TestCase):
             election, keypair.public_key
         )
 
-        # TODO: Expected type 'Optional[ElectionDescription]', got 'InternalElectionDescription' instead
         data = election_factory.get_fake_ballot(metadata)
         self.assertTrue(data.is_valid(metadata.ballot_styles[0].object_id))
 

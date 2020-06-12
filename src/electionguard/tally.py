@@ -325,7 +325,7 @@ def tally_ballots(
     Tally all of the ballots in the ballot store.
     :return: a CiphertextTally or None if there is an error
     """
-    # TODO: unique Id for the tally
+    # TODO: ISSUE #14: unique Id for the tally
     tally: CiphertextTally = CiphertextTally("election-results", metadata, context)
     for ballot in store:
         if ballot is None:

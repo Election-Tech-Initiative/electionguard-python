@@ -53,10 +53,6 @@ class ExtendedData(object):
         return not self.__eq__(other)
 
 
-# TODO: ballot.py isn't the right name for this file. It's somehow the cryptographic dual-image
-#   of the content in election.py. So, maybe this should be "crypto_election.py"?
-
-
 @dataclass
 class PlaintextBallotSelection(ElectionObjectBase):
     """
@@ -82,7 +78,7 @@ class PlaintextBallotSelection(ElectionObjectBase):
     # determines if this is a placeholder selection
     is_placeholder_selection: bool = field(default=False)
 
-    # TODO: ISSUE: #35: encrypt/decrypt
+    # TODO: ISSUE #35: encrypt/decrypt
     extended_data: Optional[ExtendedData] = field(default=None)
     """
     an optional field of arbitrary data, such as the value of a write-in candidate
@@ -123,7 +119,7 @@ class PlaintextBallotSelection(ElectionObjectBase):
                 f"to_int could not convert plaintext: {self.plaintext.lower()} to bool"
             )
 
-        # TODO: If the boolean coercion above fails, support integer votes
+        # TODO: ISSUE #33: If the boolean coercion above fails, support integer votes
         # greater than 1 for cases such as cumulative voting
         as_int = int(as_bool)
         return as_int
@@ -192,7 +188,7 @@ class CiphertextBallotSelection(ElectionObjectBase, CryptoHashCheckable):
     # and was encrypted using the `nonce`
     proof: Optional[DisjunctiveChaumPedersenProof] = field(init=False, default=None)
 
-    # TODO: ISSUE: #35: encrypt/decrypt
+    # TODO: ISSUE #35: encrypt/decrypt
     extended_data: Optional[ElGamalCiphertext] = field(default=None)
     """
     encrypted representation of the extended_data field

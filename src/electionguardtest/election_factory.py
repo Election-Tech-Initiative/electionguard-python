@@ -210,7 +210,7 @@ def get_contest_description_well_formed(
     first_int = draw(ints)
     second_int = draw(ints)
 
-    # TODO: support more votes than seats for other VoteVariationType options
+    # TODO ISSUE #33: support more votes than seats for other VoteVariationType options
     number_elected = min(first_int, second_int)
     votes_allowed = number_elected
 

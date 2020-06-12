@@ -68,9 +68,8 @@ def accept_ballot(
         )
         return None
 
-    # TODO: check if the ballot includes the nonce, and possibly regenerate the proofs
-    # TODO: check if the ballot includes the proofs, if it does not include the nonce
-    # TODO: check if the ballot includes the tracking code and regenerate it if missing
+    # TODO: ISSUE #56: check if the ballot includes the nonce, and regenerate the proofs
+    # TODO: ISSUE #56: check if the ballot includes the proofs, if it does not include the nonce
 
     ballot_box_ballot = from_ciphertext_ballot(ballot, state)
 
