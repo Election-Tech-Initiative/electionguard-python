@@ -1,4 +1,4 @@
-from unittest import TestCase
+from unittest import TestCase, skip
 from datetime import timedelta
 from typing import Dict
 
@@ -27,11 +27,11 @@ class TestTally(TestCase):
     @settings(
         deadline=timedelta(milliseconds=10000),
         suppress_health_check=[HealthCheck.too_slow],
-        max_examples=1,
+        max_examples=3,
         # disabling the "shrink" phase, because it runs very slowly
         phases=[Phase.explicit, Phase.reuse, Phase.generate, Phase.target],
     )
-    @given(integers(1, 3).flatmap(lambda n: elections_and_ballots(n)))
+    @given(integers(2, 5).flatmap(lambda n: elections_and_ballots(n)))
     def test_tally_cast_ballots_accumulates_valid_tally(
         self, everything: ELECTIONS_AND_BALLOTS_TUPLE_TYPE
     ):
@@ -64,7 +64,7 @@ class TestTally(TestCase):
     @settings(
         deadline=timedelta(milliseconds=10000),
         suppress_health_check=[HealthCheck.too_slow],
-        max_examples=1,
+        max_examples=3,
         # disabling the "shrink" phase, because it runs very slowly
         phases=[Phase.explicit, Phase.reuse, Phase.generate, Phase.target],
     )
@@ -104,7 +104,7 @@ class TestTally(TestCase):
     @settings(
         deadline=timedelta(milliseconds=10000),
         suppress_health_check=[HealthCheck.too_slow],
-        max_examples=1,
+        max_examples=3,
         # disabling the "shrink" phase, because it runs very slowly
         phases=[Phase.explicit, Phase.reuse, Phase.generate, Phase.target],
     )
@@ -235,13 +235,12 @@ class TestTally(TestCase):
                 first_tally.elgamal_accumulate(ballot.contests[0].ballot_selections)
             )
 
-            self.assertFalse(
-                first_tally._accumulate_selections(
-                    first_selection.object_id,
-                    first_tally.tally_selections[first_selection.object_id],
-                    ballot.contests[0].ballot_selections,
-                )
+            key, bad_accumulation = first_tally._accumulate_selections(
+                first_selection.object_id,
+                first_tally.tally_selections[first_selection.object_id],
+                ballot.contests[0].ballot_selections,
             )
+            self.assertIsNone(bad_accumulation)
 
         ballot.contests[0].ballot_selections.insert(0, first_selection)
 

@@ -1,5 +1,6 @@
 from typing import Iterable, List, Optional
 
+from .guardian import Guardian
 from .key_ceremony import (
     AuxiliaryPublicKey,
     CeremonyDetails,
@@ -14,6 +15,7 @@ from .key_ceremony import (
     PublicKeySet,
     combine_election_public_keys,
 )
+from .logs import log_warning
 
 
 class KeyCeremonyMediator:
@@ -34,6 +36,7 @@ class KeyCeremonyMediator:
     _election_partial_key_verifications: GuardianDataStore[
         GuardianPair, ElectionPartialKeyVerification
     ]
+    _guardians: List[Guardian] = []
 
     def __init__(self, ceremony_details: CeremonyDetails):
         self.ceremony_details = ceremony_details
@@ -51,6 +54,84 @@ class KeyCeremonyMediator:
             GuardianPair, ElectionPartialKeyChallenge
         ]()
 
+    def announce(self, guardian: Guardian) -> None:
+        """
+        Announce the guardian as present and participating the Key Ceremony
+        :param guardian: The guardian to announce
+        """
+        self.confirm_presence_of_guardian(guardian.share_public_keys())
+        self._guardians.append(guardian)
+
+        # When all guardians have announced, share the public keys among them
+        if self.all_guardians_in_attendance():
+            for sender in self._guardians:
+                for recipient in self._guardians:
+                    if sender.object_id != recipient.object_id:
+                        recipient.save_guardian_public_keys(sender.share_public_keys())
+
+    def orchestrate(self) -> Optional[List[Guardian]]:
+        """
+        Orchestrate the KLey Ceremony by sharing keys among the anounced guardians
+        :retun: a collection of guardians, or None if there is an error
+        """
+        if not self.all_guardians_in_attendance():
+            return None
+
+        # Partial Key Backup Generation
+        for guardian in self._guardians:
+            guardian.generate_election_partial_key_backups()
+
+        # Share Partial Key Backup
+        for sender in self._guardians:
+            for recipient in self._guardians:
+                if sender.object_id != recipient.object_id:
+                    backup = sender.share_election_partial_key_backup(
+                        recipient.object_id
+                    )
+
+                    if backup is not None:
+                        self.receive_election_partial_key_backup(backup)
+                    else:
+                        log_warning(
+                            f"orchestrate failed sender {sender.object_id} could not share backup with recipient: {recipient.object_id}"
+                        )
+                        return None
+
+        # Save the backups
+        if self.all_election_partial_key_backups_available:
+            for recipient_guardian in self._guardians:
+                backups = self.share_election_partial_key_backups_to_guardian(
+                    recipient_guardian.object_id
+                )
+                for backup in backups:
+                    recipient_guardian.save_election_partial_key_backup(backup)
+
+        return self._guardians
+
+    def verify(self) -> bool:
+        """
+        Verify that the guardians correctly shared keys
+        :return: True if verification succeds, else False
+        """
+        for recipient in self._guardians:
+            for sender in self._guardians:
+                if sender.object_id != recipient.object_id:
+                    verification = recipient.verify_election_partial_key_backup(
+                        sender.object_id
+                    )
+                    if verification is not None:
+                        self.receive_election_partial_key_verification(verification)
+                    else:
+                        log_warning(
+                            f"verify failed recipient {recipient.object_id} could not verify backup from sender: {sender.object_id}"
+                        )
+                        return False
+
+        return (
+            self.all_election_partial_key_verifications_received()
+            and self.all_election_partial_key_backups_verified()
+        )
+
     def reset(self, ceremony_details: CeremonyDetails) -> None:
         """
         Reset mediator to initial state
@@ -62,6 +143,7 @@ class KeyCeremonyMediator:
         self._election_partial_key_backups.clear()
         self._election_partial_key_challenges.clear()
         self._election_partial_key_verifications.clear()
+        self._guardians.clear()
 
     # Attendance
     def confirm_presence_of_guardian(self, public_key_set: PublicKeySet) -> None:
@@ -154,16 +236,18 @@ class KeyCeremonyMediator:
     # Election Partial Key Backups
     def receive_election_partial_key_backup(
         self, backup: ElectionPartialKeyBackup
-    ) -> None:
+    ) -> bool:
         """
         Receive election partial key backup from guardian
         :param backup: Election partial key backup
+        :return: boolean indicating success or failure
         """
         if backup.owner_id == backup.designated_id:
-            return
+            return False
         self._election_partial_key_backups.set(
             GuardianPair(backup.owner_id, backup.designated_id), backup
         )
+        return True
 
     def all_election_partial_key_backups_available(self) -> bool:
         """

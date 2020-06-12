@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Optional, List, Dict, Set
+from typing import Optional, List, Dict, Set, Tuple
 from collections.abc import Container, Sized
 
 from multiprocessing import Pool, cpu_count
@@ -36,13 +36,15 @@ class CiphertextTallySelection(ElectionObjectBase):
     The encrypted representation of the total of all ballots for this selection
     """
 
-    def elgamal_accumulate(self, elgamal_ciphertext: ElGamalCiphertext) -> bool:
+    def elgamal_accumulate(
+        self, elgamal_ciphertext: ElGamalCiphertext
+    ) -> ElGamalCiphertext:
         """
         Homomorphically add the specified value to the message
         """
         new_value = elgamal_add(*[self.message, elgamal_ciphertext])
         self.message = new_value
-        return True
+        return self.message
 
 
 @dataclass
@@ -103,14 +105,20 @@ class CiphertextTallyContest(ElectionObjectBase):
 
         cpu_pool.close()
 
-        return all(results)
+        for (key, ciphertext) in results:
+            if ciphertext is None:
+                return False
+            else:
+                self.tally_selections[key].message = ciphertext
+
+        return True
 
     def _accumulate_selections(
         self,
         key: SELECTION_ID,
         selection_tally: CiphertextTallySelection,
         contest_selections: List[CiphertextBallotSelection],
-    ) -> bool:
+    ) -> Tuple[SELECTION_ID, Optional[ElGamalCiphertext]]:
         use_selection = None
         for selection in contest_selections:
             if key == selection.object_id:
@@ -124,9 +132,9 @@ class CiphertextTallyContest(ElectionObjectBase):
             log_warning(
                 f"add cannot accumulate for missing selection {selection.object_id}"
             )
-            return False
+            return key, None
 
-        return selection_tally.elgamal_accumulate(use_selection.message)
+        return key, selection_tally.elgamal_accumulate(use_selection.message)
 
 
 @dataclass
@@ -196,6 +204,12 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
 
         log_warning(f"append cannot add {ballot.object_id}")
         return False
+
+    def count(self) -> int:
+        """
+        Get a Count of the cast ballots
+        """
+        return len(self._cast_ballot_ids)
 
     def _add_cast(self, ballot: CiphertextAcceptedBallot) -> bool:
         """

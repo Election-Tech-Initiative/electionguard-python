@@ -1,6 +1,6 @@
 # Election Configuration
 
-An election in Electionguard is defined as a set of metadata and cryptographic artifacts necessary to encrypt, conduct, and decrypt, tally, and verify an election.  The Data format used for election metadata is based on the [NIST Election Common Standard Data Specification](https://www.nist.gov/itl/voting/interoperability) but includes some modifications to support the end-to-end cryptography of ElectionGuard.
+An election in ElectionGuard is defined as a set of metadata and cryptographic artifacts necessary to encrypt, conduct, tally, decrypt, and verify an election.  The Data format used for election metadata is based on the [NIST Election Common Standard Data Specification](https://www.nist.gov/itl/voting/interoperability) but includes some modifications to support the end-to-end cryptography of ElectionGuard.
 
 Election metadata is described in a specific format parseable into an `ElectionDescription` and it's validity is checked to ensure that it is of an appropriate structure to conduct an End-to-End Verified ElectionGuard Election.  ElectionGuard only verifies the componets of the election metadata that are necessary to encrypt and decrypt the election.  Some components of the election metadata are not checked for structural validity, but are used when gerating a hash representation of the `Election Description`.
 

@@ -1,6 +1,6 @@
 # Decryption
 
-At the conclusion of voting, all of the ballot encryptions are published in the election record together with the proofs that the ballots are well-formed. Additionally, all of the encryptions of each option are homomorphically combined to form an encryption of the total number of times that each option was selected.
+At the conclusion of voting, all of the cast ballots are published in their encrypted form in the election record together with the proofs that the ballots are well-formed.  Additionally, all of the encryptions of each option are homomorphically-combined to form an encryption of the total number of times that each option was selected.  The homomorphically-combined encryptions are decrypted to generate the election tally.  Indivial cast ballots are not decrypted.  All of the spoiled ballots are decrypted individually and the plaintext values are published along with the encrypted representations and the proofs.
 
 In order to decrypt the homomorphically-combined encryption of each selection, each `Guardian` participating in the decryption must compute a specific `Decryption Share` of the decryption.
 

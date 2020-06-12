@@ -1,6 +1,12 @@
 # Key Ceremony
 
+The ElectionGuard Key Ceremony is the process used by Election Officials to share encryption keys for an election.  Before an election, a fixed number of Guardians are selection to hold the private keys nedded to decrypt the election results.  A Quorum count of Guardians can also be specified to compensate for guardians who may be missing at the time of Decryption.  For instance, 5 Guardians may be selected to hold the keys, but only 3 of them are required to decrypt the election results.
+
+Guardians are typically Election Officials, Trustees Canvass Board Members, Government Officials or other trusted aruthorities who are responsible and accountable for conducting the election.
+
 ## Summary
+
+The Key Ceremony is broken into several high-level steps.  Each Guardian must _announce_ their _attendance_ in the key ceremony, generate their own public-private key pairs, and then _share_ those key pairs with the Quorum.  Then the data that is shared is mathematically verified using Non-Interactive Zero Knowledge Proofs, and finally a _joint public key_ is created to encrypt ballots in the election.
 
 ### Attendance
 Guardians exchange all public keys and ensure each fellow gaurdian has received an election and auxiliary public key ensuring at all guardians are in attendance.
@@ -13,7 +19,7 @@ The final step is to publish the joint election key after all keys and backups h
 
 ## Glossary
 
-- **Guardian** A guardian of the election who holds the ability to decrypt the election results
+- **Guardian** A guardian of the election who holds the ability to partially decrypt the election results
 - **Key Ceremony Mediator** A mediator to mediate communication (if needed) of information such as keys between the guardians
 - **Election Key Pair:** Pair of keys (public & secret) used to encrypt/decrypt election
 - **Auxiliary Key Pair:** Pair of keys (public & secret) used to encrypt/decrypt information sent between guardians
@@ -23,6 +29,8 @@ The final step is to publish the joint election key after all keys and backups h
 - **Quorum:** Quantity of guardians (k) that is required to decrypt the election and is less than the total number of guardians available (n)
 
 ## Process
+
+This is a detailed description of the entire Key Ceremony Process
 
 1. The ceremony details are decided upon. These include a `number_of_guardians` and `quorum` of guardians required for decryption.
 2. Each guardian creates a unique `id` and `sequence_order`.
@@ -52,3 +60,38 @@ The final step is to publish the joint election key after all keys and backups h
 - [`key_ceremony.py`](src/electionguard/key_ceremony.py)
 - [`guardian.py`](src/electionguard/guardian.py)
 - [`key_ceremony_mediator.py`](src/electionguard/key_ceremony_mediator.py)
+
+## Usage Example
+
+This example demonstrates a convenience method to generate guardians for an election
+
+```python
+
+NUMBER_OF_GUARDIANS: int
+QUORUM: int
+
+details: CeremonyDetails
+guardians: List[Guardian]
+
+# Setup Guardians
+for i in range(NUMBER_OF_GUARDIANS):
+  guardians.append(
+    Guardian(f"some_guardian_id_{str(i)}", i, NUMBER_OF_GUARDIANS, QUORUM)
+  )
+
+mediator = KeyCeremonyMediator(details)
+
+# Attendance (Public Key Share)
+for guardian in guardians:
+  mediator.announce(guardian)
+
+# Orchestation (Private Key Share)
+orchestrated = mediator.orchestrate()
+
+# Verify (Prove the guardians acted in good faith)
+verified = mediator.verify()
+
+# Publish the Joint Public Key
+joint_public_key = mediator.publish_joint_key()
+
+```

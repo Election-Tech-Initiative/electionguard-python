@@ -30,6 +30,7 @@ from .key_ceremony import (
     verify_election_partial_key_backup,
     verify_election_partial_key_challenge,
 )
+from .logs import log_warning
 
 
 class Guardian(ElectionObjectBase):
@@ -222,18 +223,23 @@ class Guardian(ElectionObjectBase):
 
     def generate_election_partial_key_backups(
         self, encrypt: AuxiliaryEncrypt = default_auxiliary_encrypt
-    ) -> None:
+    ) -> bool:
         """
         Generate all election partial key backups based on existing public keys
         :param encrypt: Encryption function using auxiliary key
         """
         if not self.all_auxiliary_public_keys_received():
-            return
+            log_warning(
+                f"guardian; {self.object_id} could not generate election partial key backups: missing auxiliary keys"
+            )
+            return False
         for auxiliary_key in self._guardian_auxiliary_public_keys.values():
             backup = generate_election_partial_key_backup(
                 self.object_id, self._election_keys.polynomial, auxiliary_key, encrypt
             )
             self._backups_to_share.set(auxiliary_key.owner_id, backup)
+
+        return True
 
     # Election Partial Key Backup
     def share_election_partial_key_backup(

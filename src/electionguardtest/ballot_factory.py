@@ -1,6 +1,8 @@
 import os
 from random import Random
-from typing import TypeVar, Callable, List, Tuple
+from typing import cast, TypeVar, Callable, List, Tuple
+
+from jsons import KEY_TRANSFORMER_CAMELCASE, KEY_TRANSFORMER_SNAKECASE, dumps, loads
 
 from hypothesis.strategies import (
     composite,
@@ -17,9 +19,13 @@ from electionguard.ballot import (
     PlaintextBallotSelection,
 )
 
-from electionguard.election import ContestDescription, SelectionDescription
+from electionguard.election import (
+    ContestDescription,
+    SelectionDescription,
+    InternalElectionDescription,
+)
 
-from electionguard.encrypt import selection_from
+from electionguard.encrypt import selection_from, contest_from
 from electionguardtest.election_factory import get_contest_description_well_formed
 
 _T = TypeVar("_T")
@@ -30,6 +36,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 
 class BallotFactory(object):
     simple_ballot_filename = "ballot_in_simple.json"
+    simple_ballots_filename = "plaintext_ballots_simple.json"
 
     def get_random_selection_from(
         self,
@@ -46,6 +53,7 @@ class BallotFactory(object):
         description: ContestDescription,
         random: Random,
         suppress_validity_check=False,
+        with_trues=False,
     ) -> PlaintextBallotContest:
         """
         Get a randomly filled contest for the given description that 
@@ -62,7 +70,12 @@ class BallotFactory(object):
 
         for selection_description in description.ballot_selections:
             selection = self.get_random_selection_from(selection_description, random)
+            # the caller may force a true value
             voted += selection.to_int()
+            if voted <= 1 and selection.to_int() and with_trues:
+                selections.append(selection)
+                continue
+
             # Possibly append the true selection, indicating an undervote
             if voted <= description.number_elected and bool(random.randint(0, 1)) == 1:
                 selections.append(selection)
@@ -73,13 +86,54 @@ class BallotFactory(object):
 
         return PlaintextBallotContest(description.object_id, selections)
 
+    def get_fake_ballot(
+        self,
+        election: InternalElectionDescription,
+        ballot_id: str = None,
+        with_trues=True,
+    ) -> PlaintextBallot:
+        """
+        Get a single Fake Ballot object that is manually constructed with default vaules
+        """
+
+        if ballot_id is None:
+            ballot_id = "some-unique-ballot-id-123"
+
+        contests: List[PlaintextBallotContest] = []
+        for contest in election.get_contests_for(election.ballot_styles[0].object_id):
+            contests.append(
+                self.get_random_contest_from(contest, Random(), with_trues=with_trues)
+            )
+
+        fake_ballot = PlaintextBallot(
+            ballot_id, election.ballot_styles[0].object_id, contests
+        )
+
+        return fake_ballot
+
     def get_simple_ballot_from_file(self) -> PlaintextBallot:
         return self._get_ballot_from_file(self.simple_ballot_filename)
+
+    def get_simple_ballots_from_file(self) -> List[PlaintextBallot]:
+        return self._get_ballots_from_file(self.simple_ballots_filename)
 
     def _get_ballot_from_file(self, filename: str) -> PlaintextBallot:
         with open(os.path.join(here, "data", filename), "r") as subject:
             data = subject.read()
             target = PlaintextBallot.from_json(data)
+        return target
+
+    def _get_ballots_from_file(self, filename: str) -> List[PlaintextBallot]:
+        with open(os.path.join(here, "data", filename), "r") as subject:
+            data = subject.read()
+            target = cast(
+                List[PlaintextBallot],
+                loads(
+                    data,
+                    List[PlaintextBallot],
+                    key_transformer=KEY_TRANSFORMER_SNAKECASE,
+                ),
+            )
         return target
 
 
