@@ -11,8 +11,7 @@ from typing import (
 
 from .ballot import BallotBoxState, CiphertextAcceptedBallot
 from .logs import log_warning
-
-BallotId = str
+from .types import BALLOT_ID
 
 
 class BallotStore(Iterable):
@@ -20,7 +19,7 @@ class BallotStore(Iterable):
     A representation of a cache of ballots for an election
     """
 
-    _ballot_store: Dict[BallotId, Optional[CiphertextAcceptedBallot]]
+    _ballot_store: Dict[BALLOT_ID, Optional[CiphertextAcceptedBallot]]
 
     def __init__(self) -> None:
         self._ballot_store = {}

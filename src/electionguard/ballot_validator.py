@@ -12,7 +12,7 @@ from .logs import log_warning
 def ballot_is_valid_for_election(
     ballot: CiphertextBallot,
     metadata: InternalElectionDescription,
-    encryption_context: CiphertextElectionContext,
+    context: CiphertextElectionContext,
 ) -> bool:
     """
     Determine if a ballot is valid for a given election
@@ -22,8 +22,7 @@ def ballot_is_valid_for_election(
         return False
 
     if not ballot.is_valid_encryption(
-        encryption_context.crypto_extended_base_hash,
-        encryption_context.elgamal_public_key,
+        context.crypto_extended_base_hash, context.elgamal_public_key,
     ):
         log_warning(
             f"ballot_is_valid_for_election: mismatching ballot encryption {ballot.object_id}"

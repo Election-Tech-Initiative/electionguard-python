@@ -24,13 +24,13 @@ from .key_ceremony import (
     generate_election_partial_key_backup,
     generate_election_partial_key_challenge,
     generate_elgamal_auxiliary_key_pair,
-    GuardianId,
     GuardianDataStore,
     PublicKeySet,
     verify_election_partial_key_backup,
     verify_election_partial_key_challenge,
 )
 from .logs import log_warning
+from .types import GUARDIAN_ID
 
 
 class Guardian(ElectionObjectBase):
@@ -42,16 +42,16 @@ class Guardian(ElectionObjectBase):
     ceremony_details: CeremonyDetails
     _auxiliary_keys: AuxiliaryKeyPair
     _election_keys: ElectionKeyPair
-    _backups_to_share: GuardianDataStore[GuardianId, ElectionPartialKeyBackup]
+    _backups_to_share: GuardianDataStore[GUARDIAN_ID, ElectionPartialKeyBackup]
 
     # From Other Guardians
-    _guardian_auxiliary_public_keys: GuardianDataStore[GuardianId, AuxiliaryPublicKey]
-    _guardian_election_public_keys: GuardianDataStore[GuardianId, ElectionPublicKey]
+    _guardian_auxiliary_public_keys: GuardianDataStore[GUARDIAN_ID, AuxiliaryPublicKey]
+    _guardian_election_public_keys: GuardianDataStore[GUARDIAN_ID, ElectionPublicKey]
     _guardian_election_partial_key_backups: GuardianDataStore[
-        GuardianId, ElectionPartialKeyBackup
+        GUARDIAN_ID, ElectionPartialKeyBackup
     ]
     _guardian_election_partial_key_verifications: GuardianDataStore[
-        GuardianId, ElectionPartialKeyVerification
+        GUARDIAN_ID, ElectionPartialKeyVerification
     ]
 
     def __init__(
@@ -62,19 +62,19 @@ class Guardian(ElectionObjectBase):
         self.sequence_order = sequence_order
         self.set_ceremony_details(number_of_guardians, quorum)
         self._backups_to_share = GuardianDataStore[
-            GuardianId, ElectionPartialKeyBackup
+            GUARDIAN_ID, ElectionPartialKeyBackup
         ]()
         self._guardian_auxiliary_public_keys = GuardianDataStore[
-            GuardianId, AuxiliaryPublicKey
+            GUARDIAN_ID, AuxiliaryPublicKey
         ]()
         self._guardian_election_public_keys = GuardianDataStore[
-            GuardianId, ElectionPublicKey
+            GUARDIAN_ID, ElectionPublicKey
         ]()
         self._guardian_election_partial_key_backups = GuardianDataStore[
-            GuardianId, ElectionPartialKeyBackup
+            GUARDIAN_ID, ElectionPartialKeyBackup
         ]()
         self._guardian_election_partial_key_verifications = GuardianDataStore[
-            GuardianId, ElectionPartialKeyVerification
+            GUARDIAN_ID, ElectionPartialKeyVerification
         ]()
 
         self.generate_auxiliary_key_pair()
@@ -243,7 +243,7 @@ class Guardian(ElectionObjectBase):
 
     # Election Partial Key Backup
     def share_election_partial_key_backup(
-        self, designated_id: GuardianId
+        self, designated_id: GUARDIAN_ID
     ) -> Optional[ElectionPartialKeyBackup]:
         """
         Share election partial key backup with another guardian
@@ -274,7 +274,7 @@ class Guardian(ElectionObjectBase):
     # Verification
     def verify_election_partial_key_backup(
         self,
-        guardian_id: GuardianId,
+        guardian_id: GUARDIAN_ID,
         decrypt: AuxiliaryDecrypt = default_auxiliary_decrypt,
     ) -> Optional[ElectionPartialKeyVerification]:
         """
@@ -291,7 +291,7 @@ class Guardian(ElectionObjectBase):
         )
 
     def publish_election_backup_challenge(
-        self, guardian_id: GuardianId
+        self, guardian_id: GUARDIAN_ID
     ) -> Optional[ElectionPartialKeyChallenge]:
         """
         Publish election backup challenge of election partial key verification

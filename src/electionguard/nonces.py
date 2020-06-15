@@ -22,8 +22,7 @@ class Nonces(Sequence[ElementModQ]):
         else:
             self.__seed = seed
 
-    # Why are there overloads here? https://github.com/python/mypy/issues/4108
-    # TODO: get these 'pass' lines ignored by the coverage tester so we can hit 100%.
+    # https://github.com/python/mypy/issues/4108
     @overload
     def __getitem__(self, index: int) -> ElementModQ:
         pass

@@ -16,7 +16,7 @@ The primary function of ElectionGuard is to encrypt ballots.  Ballots are encryp
 2. Generate a random master nonce value to use as a secret when encrypting the ballot
 3. Using the metadata of the election and the master nonce, encrypt each selection on the ballot
 4. For each selection on the ballot, generate a disjunctive Non-Interactive Zero-Knowledge Proof that the encryption is either an encryption of zero or one
-5. For each contest on the ballot, generate a Non-Interactive Zero-Knowledge Proof that the sum of all encrypted balies is equal to the selection limit on the contest
+5. For each contest on the ballot, generate a Non-Interactive Zero-Knowledge Proof that the sum of all encrypted ballots is equal to the selection limit on the contest
 6. Generate a tracking code for the ballot
 
 ## Usage Example

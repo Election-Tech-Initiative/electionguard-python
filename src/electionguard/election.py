@@ -644,7 +644,7 @@ class ElectionDescription(Serializable, CryptoHashable):
                             and primary_party_id in party_ids
                         )
 
-        # TODO: verify that the contest sequence order set is in the proper order
+        # TODO: ISSUE #55: verify that the contest sequence order set is in the proper order
 
         contests_valid = (
             len(contest_ids) is len(self.contests)
@@ -774,7 +774,7 @@ class InternalElectionDescription(object):
 
 
 @dataclass(frozen=True)
-class CiphertextElectionContext(Serializable):  # TODO: CryptoHashcheckable
+class CiphertextElectionContext(Serializable):
     """
     `CiphertextElectionContext` is the ElectionGuard representation of a specific election
     Note: The ElectionGuard Data Spec deviates from the NIST model in that

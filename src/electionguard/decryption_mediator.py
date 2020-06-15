@@ -6,96 +6,35 @@ from .ballot import CiphertextAcceptedBallot
 from .decryption_share import (
     BallotDecryptionShare,
     CiphertextDecryptionSelection,
-    CiphertextPartialDecryptionSelection,
+    CiphertextCompensatedDecryptionSelection,
     CiphertextDecryptionContest,
-    CiphertextPartialDecryptionContest,
+    CiphertextCompensatedDecryptionContest,
     DecryptionShare,
-    PartialDecryptionShare,
+    CompensatedDecryptionShare,
+    get_cast_shares_for_selection,
+    get_spoiled_shares_for_selection,
+)
+from .decrypt import (
+    decrypt_selection_with_decryption_shares,
+    decrypt_tally_contests_with_decryption_shares,
 )
 from .election import (
     CiphertextElectionContext,
     InternalElectionDescription,
 )
-from .dlog import discrete_log
-from .election_object_base import ElectionObjectBase
-from .elgamal import ElGamalCiphertext
 from .guardian import Guardian
-from .tally import CiphertextTally, CiphertextTallyContest, CiphertextTallySelection
-from .group import ElementModP, ElementModQ, div_p, mult_p
+from .tally import (
+    CiphertextTally,
+    PlaintextTally,
+    PlaintextTallyContest,
+    CiphertextTallySelection,
+    PlaintextTallySelection,
+)
 from .logs import log_warning
+from .types import BALLOT_ID, CONTEST_ID, GUARDIAN_ID, SELECTION_ID
 
-AVAILABLE_GUARDIAN_ID = str
-MISSING_GUARDIAN_ID = str
-BALLOT_ID = str
-OBJECT_ID = str
-
-
-@dataclass
-class PlaintextTallySelection(ElectionObjectBase):
-    """
-    A plaintext Tally Selection is a decrypted selection of a contest
-    """
-
-    plaintext: int
-    # g^tally or M in the spec
-    value: ElementModP
-
-    message: ElGamalCiphertext
-
-
-@dataclass
-class PlaintextTallyContest(ElectionObjectBase):
-    """
-    A plaintext Tally Contest is a collection of plaintext selections
-    """
-
-    selections: Dict[OBJECT_ID, PlaintextTallySelection]
-
-
-@dataclass
-class PlaintextTally(ElectionObjectBase):
-    """
-    The plaintext representation of all contests in the election
-    """
-
-    contests: Dict[OBJECT_ID, PlaintextTallyContest]
-
-    spoiled_ballots: Dict[BALLOT_ID, Dict[OBJECT_ID, PlaintextTallyContest]]
-
-
-def get_cast_shares_for_selection(
-    selection_id: str, shares: Dict[AVAILABLE_GUARDIAN_ID, DecryptionShare],
-) -> Dict[AVAILABLE_GUARDIAN_ID, ElementModP]:
-    """
-    Get the cast shares for a given selection
-    """
-    cast_shares: Dict[AVAILABLE_GUARDIAN_ID, ElementModP] = {}
-    for share in shares.values():
-        for contest in share.contests.values():
-            for selection in contest.selections.values():
-                if selection.object_id == selection_id:
-                    cast_shares[share.guardian_id] = selection.share
-
-    return cast_shares
-
-
-def get_spoiled_shares_for_selection(
-    ballot_id: str,
-    selection_id: str,
-    shares: Dict[AVAILABLE_GUARDIAN_ID, DecryptionShare],
-) -> Dict[AVAILABLE_GUARDIAN_ID, ElementModP]:
-    """
-    Get the spoiled shares for a given selection
-    """
-    spoiled_shares: Dict[AVAILABLE_GUARDIAN_ID, ElementModP] = {}
-    for share in shares.values():
-        for ballot in share.spoiled_ballots.values():
-            if ballot.ballot_id == ballot_id:
-                for contest in ballot.contests.values():
-                    for selection in contest.selections.values():
-                        if selection.object_id == selection_id:
-                            spoiled_shares[share.guardian_id] = selection.share
-    return spoiled_shares
+AVAILABLE_GUARDIAN_ID = GUARDIAN_ID
+MISSING_GUARDIAN_ID = GUARDIAN_ID
 
 
 @dataclass
@@ -112,7 +51,7 @@ class DecryptionMediator:
     _plaintext_tally: Optional[PlaintextTally] = field(default=None)
 
     # Since spoiled ballots are decrypted, they are just a special case of a tally
-    _plaintext_spoiled_ballots: Dict[OBJECT_ID, Optional[PlaintextTally]] = field(
+    _plaintext_spoiled_ballots: Dict[BALLOT_ID, Optional[PlaintextTally]] = field(
         default_factory=lambda: {}
     )
 
@@ -128,7 +67,7 @@ class DecryptionMediator:
 
     # A collection of Partial Decryption Shares for each Available Guardian
     _partial_decryption_shares: Dict[
-        MISSING_GUARDIAN_ID, Dict[AVAILABLE_GUARDIAN_ID, PartialDecryptionShare]
+        MISSING_GUARDIAN_ID, Dict[AVAILABLE_GUARDIAN_ID, CompensatedDecryptionShare]
     ] = field(default_factory=lambda: {})
 
     def announce(self, guardian: Guardian) -> Optional[DecryptionShare]:
@@ -164,16 +103,16 @@ class DecryptionMediator:
 
     def compensate(
         self, missing_guardian_id: str
-    ) -> Optional[List[PartialDecryptionShare]]:
+    ) -> Optional[List[CompensatedDecryptionShare]]:
         """
         Compensate for a missing guardian by reconstructing the share using the available guardians.
 
         :param missing_guardian_id: the guardian that failed to `announce`.
-        :return: a collection of `PartialDecryptionShare` generated from all available guardians 
+        :return: a collection of `CompensatedDecryptionShare` generated from all available guardians
                  or `None if there is an error
         """
 
-        partial_decryptions: List[PartialDecryptionShare] = List()
+        partial_decryptions: List[CompensatedDecryptionShare] = List()
 
         # Loop through each of the available guardians
         # and calculate a partial for the missing one
@@ -237,7 +176,7 @@ class DecryptionMediator:
         """
         Try to decrypt the tally
         """
-        contests = self._decrypt_tally_contests(tally.cast, shares)
+        contests = decrypt_tally_contests_with_decryption_shares(tally.cast, shares)
 
         if contests is None:
             return None
@@ -249,63 +188,24 @@ class DecryptionMediator:
 
         return PlaintextTally(tally.object_id, contests, spoiled_ballots)
 
-    def _decrypt_tally_contests(
-        self,
-        tally: Dict[str, CiphertextTallyContest],
-        shares: Dict[AVAILABLE_GUARDIAN_ID, DecryptionShare],
-    ) -> Optional[Dict[OBJECT_ID, PlaintextTallyContest]]:
-        cpu_pool = Pool(cpu_count())
-        contests: Dict[OBJECT_ID, PlaintextTallyContest] = {}
-
-        # iterate through the tally contests
-        for contest in tally.values():
-            selections: Dict[OBJECT_ID, PlaintextTallySelection] = {}
-
-            plaintext_selections = cpu_pool.starmap(
-                self._decrypt_selection,
-                [
-                    (
-                        selection,
-                        get_cast_shares_for_selection(selection.object_id, shares),
-                    )
-                    for (_, selection) in contest.tally_selections.items()
-                ],
-            )
-
-            # verify the plaintext values are received and add them to the collection
-            for plaintext in plaintext_selections:
-                if plaintext is None:
-                    log_warning(
-                        f"could not decrypt tally for contest {contest.object_id}"
-                    )
-                    return None
-                selections[plaintext.object_id] = plaintext
-
-            contests[contest.object_id] = PlaintextTallyContest(
-                contest.object_id, selections
-            )
-
-        cpu_pool.close()
-        return contests
-
     def _decrypt_spoiled_ballots(
         self,
         spoiled_ballots: Dict[BALLOT_ID, CiphertextAcceptedBallot],
         shares: Dict[AVAILABLE_GUARDIAN_ID, DecryptionShare],
-    ) -> Optional[Dict[BALLOT_ID, Dict[OBJECT_ID, PlaintextTallyContest]]]:
+    ) -> Optional[Dict[BALLOT_ID, Dict[CONTEST_ID, PlaintextTallyContest]]]:
 
         plaintext_spoiled_ballots: Dict[
-            BALLOT_ID, Dict[OBJECT_ID, PlaintextTallyContest]
+            BALLOT_ID, Dict[CONTEST_ID, PlaintextTallyContest]
         ] = {}
 
         cpu_pool = Pool(cpu_count())
 
         for spoiled_ballot in spoiled_ballots.values():
-            contests: Dict[OBJECT_ID, PlaintextTallyContest] = {}
+            contests: Dict[CONTEST_ID, PlaintextTallyContest] = {}
             for contest in spoiled_ballot.contests:
-                selections: Dict[OBJECT_ID, PlaintextTallySelection] = {}
+                selections: Dict[SELECTION_ID, PlaintextTallySelection] = {}
                 plaintext_selections = cpu_pool.starmap(
-                    self._decrypt_selection,
+                    decrypt_selection_with_decryption_shares,
                     [
                         (
                             selection,
@@ -334,28 +234,6 @@ class DecryptionMediator:
         cpu_pool.close()
         return plaintext_spoiled_ballots
 
-    def _decrypt_selection(
-        self,
-        selection: CiphertextTallySelection,
-        shares: Dict[AVAILABLE_GUARDIAN_ID, ElementModP],
-    ) -> Optional[PlaintextTallySelection]:
-        """
-        Compute the decryption for a specific selection
-        """
-        log_warning(f"decrypting selection {selection.object_id}")
-
-        # accumulate all of the shares calculated for the selection
-        all_shares_product_M = mult_p(*list(shares.values()))
-
-        # Calculate 𝑀=𝐵⁄(∏𝑀𝑖) mod 𝑝.
-        decrypted_value = div_p(selection.message.beta, all_shares_product_M)
-        return PlaintextTallySelection(
-            selection.object_id,
-            discrete_log(decrypted_value),
-            decrypted_value,
-            selection.message,
-        )
-
     def _submit_decryption_share(self, share: DecryptionShare) -> bool:
         """
         Submit the decryption share to be used in the decryption
@@ -371,7 +249,7 @@ class DecryptionMediator:
         return True
 
     def _submit_partial_decryption_shares(
-        self, shares: List[PartialDecryptionShare]
+        self, shares: List[CompensatedDecryptionShare]
     ) -> bool:
         """
         Submit partial decruyption shares to be used in the decryption
@@ -381,7 +259,9 @@ class DecryptionMediator:
 
         return True
 
-    def _submit_partial_decryption_share(self, share: PartialDecryptionShare) -> bool:
+    def _submit_partial_decryption_share(
+        self, share: CompensatedDecryptionShare
+    ) -> bool:
         """
         Submit partial decryption share to be used in the decryption
         """
@@ -404,28 +284,22 @@ class DecryptionMediator:
 
 
 def compute_decryption_share(
-    guardian: Guardian,
-    tally: CiphertextTally,
-    encryption_context: CiphertextElectionContext,
+    guardian: Guardian, tally: CiphertextTally, context: CiphertextElectionContext,
 ) -> Optional[DecryptionShare]:
     """
     Compute a decryptions share for a guardian
 
     :param guardian: The guardian who will partially decrypt the tally
     :param tally: The election tally to decrypt
-    :encryption_context: The public election encryption context
+    :context: The public election encryption context
     :return: a `DecryptionShare` or `None` if there is an error
     """
 
-    contests = _compute_decryption_for_cast_contests(
-        guardian, tally, encryption_context
-    )
+    contests = _compute_decryption_for_cast_contests(guardian, tally, context)
     if contests is None:
         return None
 
-    spoiled_ballots = _compute_decryption_for_spoiled_ballots(
-        guardian, tally, encryption_context
-    )
+    spoiled_ballots = _compute_decryption_for_spoiled_ballots(guardian, tally, context)
 
     if spoiled_ballots is None:
         return None
@@ -434,22 +308,20 @@ def compute_decryption_share(
 
 
 def _compute_decryption_for_cast_contests(
-    guardian: Guardian,
-    tally: CiphertextTally,
-    encryption_context: CiphertextElectionContext,
-) -> Optional[Dict[OBJECT_ID, CiphertextDecryptionContest]]:
+    guardian: Guardian, tally: CiphertextTally, context: CiphertextElectionContext,
+) -> Optional[Dict[CONTEST_ID, CiphertextDecryptionContest]]:
     """
     Compute the decryption for all of the cast contests in the Ciphertext Tally
     """
     cpu_pool = Pool(cpu_count())
-    contests: Dict[OBJECT_ID, CiphertextDecryptionContest] = {}
+    contests: Dict[CONTEST_ID, CiphertextDecryptionContest] = {}
 
     for contest in tally.cast.values():
-        selections: Dict[OBJECT_ID, CiphertextDecryptionSelection] = {}
+        selections: Dict[SELECTION_ID, CiphertextDecryptionSelection] = {}
         selection_decryptions = cpu_pool.starmap(
             _compute_decryption_for_selection,
             [
-                (guardian, selection, encryption_context)
+                (guardian, selection, context)
                 for (_, selection) in contest.tally_selections.items()
             ],
         )
@@ -471,9 +343,7 @@ def _compute_decryption_for_cast_contests(
 
 
 def _compute_decryption_for_spoiled_ballots(
-    guardian: Guardian,
-    tally: CiphertextTally,
-    encryption_context: CiphertextElectionContext,
+    guardian: Guardian, tally: CiphertextTally, context: CiphertextElectionContext,
 ) -> Optional[Dict[BALLOT_ID, BallotDecryptionShare]]:
     """
     Compute the decryption for all spoiled ballots in the Ciphertext Tally
@@ -482,13 +352,13 @@ def _compute_decryption_for_spoiled_ballots(
     spoiled_ballots: Dict[BALLOT_ID, BallotDecryptionShare] = {}
 
     for spoiled_ballot in tally.spoiled_ballots.values():
-        contests: Dict[OBJECT_ID, CiphertextDecryptionContest] = {}
+        contests: Dict[CONTEST_ID, CiphertextDecryptionContest] = {}
         for contest in spoiled_ballot.contests:
-            selections: Dict[OBJECT_ID, CiphertextDecryptionSelection] = {}
+            selections: Dict[SELECTION_ID, CiphertextDecryptionSelection] = {}
             selection_decryptions = cpu_pool.starmap(
                 _compute_decryption_for_selection,
                 [
-                    (guardian, selection, encryption_context)
+                    (guardian, selection, context)
                     for selection in contest.ballot_selections
                 ],
             )
@@ -515,26 +385,26 @@ def _compute_decryption_for_spoiled_ballots(
 def _compute_decryption_for_selection(
     guardian: Guardian,
     selection: CiphertextTallySelection,
-    encryption_context: CiphertextElectionContext,
+    context: CiphertextElectionContext,
 ) -> Optional[CiphertextDecryptionSelection]:
     """
     Compute a partial decryption for a specific selection
 
     :param guardian: The guardian who will partially decrypt the tally
     :param selection: The specific selection to decrypt
-    :encryption_context: The public election encryption context
+    :context: The public election encryption context
     :return: a `CiphertextDecryptionSelection` or `None` if there is an error
     """
 
     (decryption, proof) = guardian.partially_decrypt(
-        selection.message, encryption_context.crypto_extended_base_hash
+        selection.message, context.crypto_extended_base_hash
     )
 
     if proof.is_valid(
         selection.message,
         guardian.share_election_public_key().key,
         decryption,
-        encryption_context.crypto_extended_base_hash,
+        context.crypto_extended_base_hash,
     ):
         return CiphertextDecryptionSelection(
             selection.object_id, selection.description_hash, decryption, proof
@@ -548,7 +418,7 @@ def _compute_decryption_for_selection(
 
 def compute_partial_decryption_share(
     available_guardian: Guardian, missing_guardian_id: str, tally: CiphertextTally
-) -> Optional[PartialDecryptionShare]:
+) -> Optional[CompensatedDecryptionShare]:
     """
     Compute a partial decryption share for a missing guardian
     """

@@ -10,12 +10,12 @@ from .key_ceremony import (
     ElectionPartialKeyVerification,
     ElectionPublicKey,
     GuardianDataStore,
-    GuardianId,
     GuardianPair,
     PublicKeySet,
     combine_election_public_keys,
 )
 from .logs import log_warning
+from .types import GUARDIAN_ID
 
 
 class KeyCeremonyMediator:
@@ -25,8 +25,8 @@ class KeyCeremonyMediator:
 
     ceremony_details: CeremonyDetails
 
-    _auxiliary_public_keys: GuardianDataStore[GuardianId, AuxiliaryPublicKey]
-    _election_public_keys: GuardianDataStore[GuardianId, ElectionPublicKey]
+    _auxiliary_public_keys: GuardianDataStore[GUARDIAN_ID, AuxiliaryPublicKey]
+    _election_public_keys: GuardianDataStore[GUARDIAN_ID, ElectionPublicKey]
     _election_partial_key_backups: GuardianDataStore[
         GuardianPair, ElectionPartialKeyBackup
     ]
@@ -41,9 +41,9 @@ class KeyCeremonyMediator:
     def __init__(self, ceremony_details: CeremonyDetails):
         self.ceremony_details = ceremony_details
         self._auxiliary_public_keys = GuardianDataStore[
-            GuardianId, AuxiliaryPublicKey
+            GUARDIAN_ID, AuxiliaryPublicKey
         ]()
-        self._election_public_keys = GuardianDataStore[GuardianId, ElectionPublicKey]()
+        self._election_public_keys = GuardianDataStore[GUARDIAN_ID, ElectionPublicKey]()
         self._election_partial_key_backups = GuardianDataStore[
             GuardianPair, ElectionPartialKeyBackup
         ]()
@@ -176,7 +176,7 @@ class KeyCeremonyMediator:
             and self.all_election_public_keys_available()
         )
 
-    def share_guardians_in_attendance(self) -> Iterable[GuardianId]:
+    def share_guardians_in_attendance(self) -> Iterable[GUARDIAN_ID]:
         """
         Share a list of all the guardians in attendance
         :return: list of guardians ids
@@ -261,7 +261,7 @@ class KeyCeremonyMediator:
         )
 
     def share_election_partial_key_backups_to_guardian(
-        self, guardian_id: GuardianId
+        self, guardian_id: GUARDIAN_ID
     ) -> List[ElectionPartialKeyBackup]:
         """
         Share all election partial key backups for designated guardian

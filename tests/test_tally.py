@@ -202,6 +202,9 @@ class TestTally(TestCase):
     def _decrypt_with_secret(
         self, tally: CiphertextTally, secret_key: ElementModQ
     ) -> Dict[str, int]:
+        """
+        Demonstrates how to decrypt a tally with a known secret key
+        """
         plaintext_selections: Dict[str, int] = {}
         for _, contest in tally.cast.items():
             for object_id, selection in contest.tally_selections.items():

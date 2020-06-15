@@ -5,18 +5,28 @@ from collections.abc import Container, Sized
 from multiprocessing import Pool, cpu_count
 
 from .ballot import BallotBoxState, CiphertextBallotSelection, CiphertextAcceptedBallot
-
 from .ballot_store import BallotStore
+from .ballot_validator import ballot_is_valid_for_election
 from .election import CiphertextElectionContext, InternalElectionDescription
 from .election_object_base import ElectionObjectBase
 from .elgamal import ElGamalCiphertext, elgamal_add
-from .group import ElementModQ, ONE_MOD_P
+from .group import ElementModQ, ONE_MOD_P, ElementModP
 from .logs import log_warning
-from .ballot_validator import ballot_is_valid_for_election
 
-BALLOT_ID = str
-CONTEST_ID = str
-SELECTION_ID = str
+from .types import BALLOT_ID, CONTEST_ID, SELECTION_ID
+
+
+@dataclass
+class PlaintextTallySelection(ElectionObjectBase):
+    """
+    A plaintext Tally Selection is a decrypted selection of a contest
+    """
+
+    plaintext: int
+    # g^tally or M in the spec
+    value: ElementModP
+
+    message: ElGamalCiphertext
 
 
 @dataclass
@@ -45,6 +55,15 @@ class CiphertextTallySelection(ElectionObjectBase):
         new_value = elgamal_add(*[self.message, elgamal_ciphertext])
         self.message = new_value
         return self.message
+
+
+@dataclass
+class PlaintextTallyContest(ElectionObjectBase):
+    """
+    A plaintext Tally Contest is a collection of plaintext selections
+    """
+
+    selections: Dict[SELECTION_ID, PlaintextTallySelection]
 
 
 @dataclass
@@ -135,6 +154,17 @@ class CiphertextTallyContest(ElectionObjectBase):
             return key, None
 
         return key, selection_tally.elgamal_accumulate(use_selection.message)
+
+
+@dataclass
+class PlaintextTally(ElectionObjectBase):
+    """
+    The plaintext representation of all contests in the election
+    """
+
+    contests: Dict[CONTEST_ID, PlaintextTallyContest]
+
+    spoiled_ballots: Dict[BALLOT_ID, Dict[CONTEST_ID, PlaintextTallyContest]]
 
 
 @dataclass
@@ -289,16 +319,14 @@ def tally_ballot(
 def tally_ballots(
     store: BallotStore,
     metadata: InternalElectionDescription,
-    encryption_context: CiphertextElectionContext,
+    context: CiphertextElectionContext,
 ) -> Optional[CiphertextTally]:
     """
     Tally all of the ballots in the ballot store.
     :return: a CiphertextTally or None if there is an error
     """
-    # TODO: unique Id for the tally
-    tally: CiphertextTally = CiphertextTally(
-        "election-results", metadata, encryption_context
-    )
+    # TODO: ISSUE #14: unique Id for the tally
+    tally: CiphertextTally = CiphertextTally("election-results", metadata, context)
     for ballot in store:
         if ballot is None:
             return None

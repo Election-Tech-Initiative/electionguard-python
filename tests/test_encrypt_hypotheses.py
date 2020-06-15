@@ -138,15 +138,6 @@ class TestElections(unittest.TestCase):
             )
 
 
-# TODO: expand this into a supported function in electionguard/encrypt.py
-#   This should include generating Chaum-Pedersen decryption proofs over the ElGamal totals.
-#   An interesting question is whether we want to squish everything back into
-#   a single CiphertextBallot per ballot style, or what we want to do with
-#   races that appear on more than one ballot style. The code below completely
-#   blows off the concept of a specific ballot style and just focuses on the
-#   better-be-unique selection object-ids.
-
-
 def _accumulate_encrypted_ballots(
     encrypted_zero: ElGamalCiphertext, ballots: List[CiphertextBallot]
 ) -> Dict[str, ElGamalCiphertext]:

@@ -1,7 +1,7 @@
 from unittest import TestCase, skip
 from datetime import timedelta
 from typing import Dict, List
-from random import Random, randrange
+from random import randrange
 
 from hypothesis import given, HealthCheck, settings, Phase
 from hypothesis.strategies import integers, data
@@ -10,6 +10,7 @@ from electionguard.ballot import PlaintextBallot, from_ciphertext_ballot
 from electionguard.ballot_store import BallotStore
 
 from electionguard.ballot_box import BallotBox, BallotBoxState
+from electionguard.decrypt import decrypt_selection_with_decryption_shares
 from electionguard.decryption_mediator import (
     DecryptionMediator,
     PlaintextTally,
@@ -81,12 +82,15 @@ class TestDecryptionMediator(TestCase):
         # setup the election
         self.election = election_factory.get_fake_election()
         builder = ElectionBuilder(self.NUMBER_OF_GUARDIANS, self.QUORUM, self.election)
+
+        self.assertIsNone(builder.build())  # Can't build without the public key
+
         builder.set_public_key(self.joint_public_key)
-        self.metadata, self.encryption_context = get_optional(builder.build())
+        self.metadata, self.context = get_optional(builder.build())
 
         self.encryption_device = EncryptionDevice("location")
         self.ballot_marking_device = EncryptionMediator(
-            self.metadata, self.encryption_context, self.encryption_device
+            self.metadata, self.context, self.encryption_device
         )
 
         # get some fake ballots
@@ -133,26 +137,22 @@ class TestDecryptionMediator(TestCase):
         self.assertIsNotNone(encrypted_fake_spoiled_ballot)
         self.assertTrue(
             encrypted_fake_cast_ballot.is_valid_encryption(
-                self.encryption_context.crypto_extended_base_hash, self.joint_public_key
+                self.context.crypto_extended_base_hash, self.joint_public_key
             )
         )
 
         # configure the ballot box
         ballot_store = BallotStore()
-        ballot_box = BallotBox(self.metadata, self.encryption_context, ballot_store)
+        ballot_box = BallotBox(self.metadata, self.context, ballot_store)
         ballot_box.cast(encrypted_fake_cast_ballot)
         ballot_box.spoil(encrypted_fake_spoiled_ballot)
 
         # generate encrypted tally
-        self.ciphertext_tally = tally_ballots(
-            ballot_store, self.metadata, self.encryption_context
-        )
+        self.ciphertext_tally = tally_ballots(ballot_store, self.metadata, self.context)
 
     def test_announce(self):
         # Arrange
-        subject = DecryptionMediator(
-            self.metadata, self.encryption_context, self.ciphertext_tally
-        )
+        subject = DecryptionMediator(self.metadata, self.context, self.ciphertext_tally)
 
         # act
         result = subject.announce(self.guardians[0])
@@ -183,13 +183,12 @@ class TestDecryptionMediator(TestCase):
 
         # act
         result = _compute_decryption_for_selection(
-            self.guardians[0], first_selection, self.encryption_context
+            self.guardians[0], first_selection, self.context
         )
 
         # assert
         self.assertIsNotNone(result)
 
-    @skip("for now")
     def test_decrypt_selection(self):
         # Arrange
 
@@ -199,13 +198,13 @@ class TestDecryptionMediator(TestCase):
 
         # precompute decryption shares for the guardians
         first_share = compute_decryption_share(
-            self.guardians[0], self.ciphertext_tally, self.encryption_context
+            self.guardians[0], self.ciphertext_tally, self.context
         )
         second_share = compute_decryption_share(
-            self.guardians[1], self.ciphertext_tally, self.encryption_context
+            self.guardians[1], self.ciphertext_tally, self.context
         )
         third_share = compute_decryption_share(
-            self.guardians[2], self.ciphertext_tally, self.encryption_context
+            self.guardians[2], self.ciphertext_tally, self.context
         )
         shares = {
             self.guardians[0]
@@ -222,12 +221,8 @@ class TestDecryptionMediator(TestCase):
             .share,
         }
 
-        subject = DecryptionMediator(
-            self.metadata, self.encryption_context, self.ciphertext_tally
-        )
-
         # act
-        result = subject._decrypt_selection(first_selection, shares)
+        result = decrypt_selection_with_decryption_shares(first_selection, shares)
 
         # assert
         self.assertIsNotNone(result)
@@ -239,13 +234,13 @@ class TestDecryptionMediator(TestCase):
         # Arrange
         # precompute decryption shares for the guardians
         first_share = compute_decryption_share(
-            self.guardians[0], self.ciphertext_tally, self.encryption_context
+            self.guardians[0], self.ciphertext_tally, self.context
         )
         second_share = compute_decryption_share(
-            self.guardians[1], self.ciphertext_tally, self.encryption_context
+            self.guardians[1], self.ciphertext_tally, self.context
         )
         third_share = compute_decryption_share(
-            self.guardians[2], self.ciphertext_tally, self.encryption_context
+            self.guardians[2], self.ciphertext_tally, self.context
         )
         shares = {
             self.guardians[0].object_id: first_share,
@@ -253,9 +248,7 @@ class TestDecryptionMediator(TestCase):
             self.guardians[2].object_id: third_share,
         }
 
-        subject = DecryptionMediator(
-            self.metadata, self.encryption_context, self.ciphertext_tally
-        )
+        subject = DecryptionMediator(self.metadata, self.context, self.ciphertext_tally)
 
         # act
         result = subject._decrypt_spoiled_ballots(
@@ -280,9 +273,7 @@ class TestDecryptionMediator(TestCase):
 
     def test_get_plaintext_tally_all_guardians_present_simple(self):
         # Arrange
-        subject = DecryptionMediator(
-            self.metadata, self.encryption_context, self.ciphertext_tally
-        )
+        subject = DecryptionMediator(self.metadata, self.context, self.ciphertext_tally)
 
         # act
         for guardian in self.guardians:

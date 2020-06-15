@@ -24,18 +24,14 @@ from electionguard.election import (
     generate_placeholder_selections_from,
     contest_description_with_placeholders_from,
 )
-from electionguard.elgamal import ElGamalKeyPair
+from electionguard.elgamal import ElGamalKeyPair, ElGamalCiphertext
 from electionguard.encrypt import (
     encrypt_contest,
     encrypt_selection,
     EncryptionDevice,
     EncryptionMediator,
 )
-from electionguard.group import (
-    ElementModQ,
-    TWO_MOD_P,
-    mult_p,
-)
+from electionguard.group import ElementModQ, TWO_MOD_P, mult_p, int_to_q_unchecked
 from electionguardtest.elgamal import elgamal_keypairs
 from electionguardtest.group import elements_mod_q_no_zero
 
@@ -359,6 +355,97 @@ class TestDecrypt(unittest.TestCase):
             self.assertTrue(seed_selection.is_valid(selection_description.object_id))
 
     @settings(
+        deadline=timedelta(milliseconds=5000),
+        suppress_health_check=[HealthCheck.too_slow],
+        max_examples=10,
+        # disabling the "shrink" phase, because it runs very slowly
+        phases=[Phase.explicit, Phase.reuse, Phase.generate, Phase.target],
+    )
+    @given(
+        ElectionFactory.get_contest_description_well_formed(),
+        elgamal_keypairs(),
+        elements_mod_q_no_zero(),
+        integers(),
+    )
+    def test_decrypt_contest_invalid_input_fails(
+        self,
+        contest_description: Tuple[str, ContestDescription],
+        keypair: ElGamalKeyPair,
+        nonce_seed: ElementModQ,
+        random_seed: int,
+    ):
+
+        # Arrange
+        _, description = contest_description
+        random = Random(random_seed)
+        data = ballot_factory.get_random_contest_from(description, random)
+
+        placeholders = generate_placeholder_selections_from(
+            description, description.number_elected
+        )
+        description_with_placeholders = contest_description_with_placeholders_from(
+            description, placeholders
+        )
+
+        self.assertTrue(description_with_placeholders.is_valid())
+
+        # Act
+        subject = encrypt_contest(
+            data, description_with_placeholders, keypair.public_key, nonce_seed
+        )
+        self.assertIsNotNone(subject)
+
+        # tamper with the nonce
+        subject.nonce = int_to_q_unchecked(1)
+
+        result_from_nonce = decrypt_contest_with_nonce(
+            subject,
+            description_with_placeholders,
+            keypair.public_key,
+            remove_placeholders=False,
+        )
+        result_from_nonce_seed = decrypt_contest_with_nonce(
+            subject,
+            description_with_placeholders,
+            keypair.public_key,
+            nonce_seed,
+            remove_placeholders=False,
+        )
+
+        # Assert
+        self.assertIsNone(result_from_nonce)
+        self.assertIsNone(result_from_nonce_seed)
+
+        # Tamper with the encryption
+        subject.ballot_selections[0].message = ElGamalCiphertext(TWO_MOD_P, TWO_MOD_P)
+
+        result_from_key_tampered = decrypt_contest_with_secret(
+            subject,
+            description_with_placeholders,
+            keypair.public_key,
+            keypair.secret_key,
+            remove_placeholders=False,
+        )
+        result_from_nonce_tampered = decrypt_contest_with_nonce(
+            subject,
+            description_with_placeholders,
+            keypair.public_key,
+            remove_placeholders=False,
+        )
+        result_from_nonce_seed_tampered = decrypt_contest_with_nonce(
+            subject,
+            description_with_placeholders,
+            keypair.public_key,
+            nonce_seed,
+            remove_placeholders=False,
+        )
+
+        # Assert
+        self.assertIsNone(result_from_key_tampered)
+        self.assertIsNone(result_from_nonce_tampered)
+        self.assertIsNone(result_from_nonce_seed_tampered)
+
+    @settings(
         deadline=timedelta(milliseconds=2000),
         suppress_health_check=[HealthCheck.too_slow],
         max_examples=1,
@@ -376,13 +463,13 @@ class TestDecrypt(unittest.TestCase):
 
         # Arrange
         election = election_factory.get_simple_election_from_file()
-        metadata, encryption_context = election_factory.get_fake_ciphertext_election(
+        metadata, context = election_factory.get_fake_ciphertext_election(
             election, keypair.public_key
         )
 
         data = ballot_factory.get_simple_ballot_from_file()
         device = EncryptionDevice("Location")
-        operator = EncryptionMediator(metadata, encryption_context, device)
+        operator = EncryptionMediator(metadata, context, device)
 
         # Act
         subject = operator.encrypt(data)
@@ -391,7 +478,7 @@ class TestDecrypt(unittest.TestCase):
         result_from_key = decrypt_ballot_with_secret(
             subject,
             metadata,
-            encryption_context.crypto_extended_base_hash,
+            context.crypto_extended_base_hash,
             keypair.public_key,
             keypair.secret_key,
             remove_placeholders=False,
@@ -399,14 +486,14 @@ class TestDecrypt(unittest.TestCase):
         result_from_nonce = decrypt_ballot_with_nonce(
             subject,
             metadata,
-            encryption_context.crypto_extended_base_hash,
+            context.crypto_extended_base_hash,
             keypair.public_key,
             remove_placeholders=False,
         )
         result_from_nonce_seed = decrypt_ballot_with_nonce(
             subject,
             metadata,
-            encryption_context.crypto_extended_base_hash,
+            context.crypto_extended_base_hash,
             keypair.public_key,
             subject.nonce,
             remove_placeholders=False,
@@ -540,13 +627,13 @@ class TestDecrypt(unittest.TestCase):
 
         # Arrange
         election = election_factory.get_simple_election_from_file()
-        metadata, encryption_context = election_factory.get_fake_ciphertext_election(
+        metadata, context = election_factory.get_fake_ciphertext_election(
             election, keypair.public_key
         )
 
         data = ballot_factory.get_simple_ballot_from_file()
         device = EncryptionDevice("Location")
-        operator = EncryptionMediator(metadata, encryption_context, device)
+        operator = EncryptionMediator(metadata, context, device)
 
         # Act
         subject = operator.encrypt(data)
@@ -556,15 +643,12 @@ class TestDecrypt(unittest.TestCase):
         missing_nonce_value = None
 
         result_from_nonce = decrypt_ballot_with_nonce(
-            subject,
-            metadata,
-            encryption_context.crypto_extended_base_hash,
-            keypair.public_key,
+            subject, metadata, context.crypto_extended_base_hash, keypair.public_key,
         )
         result_from_nonce_seed = decrypt_ballot_with_nonce(
             subject,
             metadata,
-            encryption_context.crypto_extended_base_hash,
+            context.crypto_extended_base_hash,
             keypair.public_key,
             missing_nonce_value,
         )
