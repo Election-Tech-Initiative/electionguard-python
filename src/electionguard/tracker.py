@@ -40,11 +40,8 @@ def tracker_hash_to_words(
     """
 
     segments = q_to_bytes(tracker_hash)
-    int_values = [x for x in segments]
-    words: List[str] = []
+    words = [get_word(value) for value in segments]
     # TODO Reduce length of segments
-    for value in int_values:
-        words.append(get_word(value))
     return seperator.join(words)
 
 
@@ -58,8 +55,6 @@ def tracker_words_to_hash(
     :return: Tracker hash
     """
     words = tracker_words.split(seperator)
-    int_values: List[int] = []
-    for word in words:
-        int_values.append(get_index_from_word(word))
+    int_values = [get_index_from_word(word) for word in words]
     value = bytes(int_values)
     return bytes_to_q(value)

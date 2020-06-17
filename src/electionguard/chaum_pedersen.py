@@ -345,7 +345,7 @@ def make_disjunctive_chaum_pedersen_zero(
     # Pick three random numbers in Q.
     c1, v1, u0 = Nonces(seed, "disjoint-chaum-pedersen-proof")[0:3]
 
-    # Computate the NIZKP
+    # Compute the NIZKP
     a0 = g_pow_p(u0)
     b0 = pow_p(k, u0)
     q_minus_c1 = negate_q(c1)
@@ -374,7 +374,7 @@ def make_disjunctive_chaum_pedersen_one(
     # Pick three random numbers in Q.
     c0, v0, u1 = Nonces(seed, "disjoint-chaum-pedersen-proof")[0:3]
 
-    # Computate the NIZKP
+    # Compute the NIZKP
     q_minus_c0 = negate_q(c0)
     a0 = mult_p(g_pow_p(v0), pow_p(alpha, q_minus_c0))
     b0 = mult_p(pow_p(k, v0), pow_p(beta, q_minus_c0))
@@ -407,7 +407,7 @@ def make_chaum_pedersen(
     """
     (alpha, beta) = message
 
-    # We need to pick three random numbers in Q.
+    # Pick one random number in Q.
     u = Nonces(seed, "constant-chaum-pedersen-proof")[0]
     a = g_pow_p(u)
     b = pow_p(alpha, u)
@@ -435,7 +435,7 @@ def make_constant_chaum_pedersen(
     """
     (alpha, beta) = message
 
-    # We need to pick three random numbers in Q.
+    # Pick one random number in Q.
     u = Nonces(seed, "constant-chaum-pedersen-proof")[0]
     a = g_pow_p(u)
     b = pow_p(k, u)

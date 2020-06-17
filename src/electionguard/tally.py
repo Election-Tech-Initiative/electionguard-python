@@ -52,7 +52,7 @@ class CiphertextTallySelection(ElectionObjectBase):
         """
         Homomorphically add the specified value to the message
         """
-        new_value = elgamal_add(*[self.message, elgamal_ciphertext])
+        new_value = elgamal_add(self.message, elgamal_ciphertext)
         self.message = new_value
         return self.message
 
@@ -93,9 +93,8 @@ class CiphertextTallyContest(ElectionObjectBase):
         selection_ids = set(
             [
                 selection.object_id
-                for selection in list(
-                    filter(lambda i: not i.is_placeholder_selection, contest_selections)
-                )
+                for selection in contest_selections
+                if not selection.is_placeholder_selection
             ]
         )
 
@@ -148,9 +147,7 @@ class CiphertextTallyContest(ElectionObjectBase):
         # this should never happen when using the `CiphertextTally`
         # but we check anyway
         if not use_selection:
-            log_warning(
-                f"add cannot accumulate for missing selection {selection.object_id}"
-            )
+            log_warning(f"add cannot accumulate for missing selection {key}")
             return key, None
 
         return key, selection_tally.elgamal_accumulate(use_selection.message)

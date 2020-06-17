@@ -4,10 +4,11 @@ MAX_INDEX = 4095
 
 def get_word(index: int) -> str:
     """
-    Get word(4096 options) based on 16 bit index for use with trackers.
+    Get word (4096 options) based on 16 bit index for use with trackers.
     :param index: index of word
     :return: word
     """
+    # TODO: should this generate a warning if the index is out of range?
     if index < MIN_INDEX:
         return words[MIN_INDEX]
     if index > MAX_INDEX:
@@ -17,10 +18,12 @@ def get_word(index: int) -> str:
 
 def get_index_from_word(word: str) -> int:
     """
-    Get the index of a word(4096 options) based on 16 bit index for use with trackers.
+    Get the index of a word (4096 options) based on 16 bit index for use with trackers.
     :param word: word
     :return: index of word
     """
+    # TODO: should this fail in a predictable way if the word is absent? Currently raises ValueError.
+    #   Alternatives might be changing the type to return Optional[int] and returning None.
     return words.index(word)
 
 
