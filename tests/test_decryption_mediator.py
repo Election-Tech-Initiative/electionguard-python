@@ -30,7 +30,7 @@ from electionguard.election import (
 from electionguard.election_builder import ElectionBuilder
 from electionguard.encrypt import EncryptionDevice, EncryptionMediator, encrypt_ballot
 
-from electionguard.group import ElementModP, int_to_q_unchecked
+from electionguard.group import ElementModP, int_to_q_unchecked, ZERO_MOD_P
 from electionguard.guardian import Guardian
 from electionguard.key_ceremony import (
     CeremonyDetails,
@@ -166,13 +166,14 @@ class TestDecryptionMediator(TestCase):
         # Cannot submit another share internally
         self.assertFalse(
             subject._submit_decryption_share(
-                DecryptionShare(self.guardians[0].object_id, {}, {})
+                DecryptionShare(self.guardians[0].object_id, ZERO_MOD_P, {}, {})
             )
         )
 
         # Cannot get plaintext tally without a quorum
         self.assertIsNone(subject.get_plaintext_tally())
 
+    # @skip("for now")
     def test_compute_selection(self):
         # Arrange
         first_selection = [
@@ -189,7 +190,8 @@ class TestDecryptionMediator(TestCase):
         # assert
         self.assertIsNotNone(result)
 
-    def test_decrypt_selection(self):
+    # @skip("for now")
+    def test_decrypt_selection_all_present(self):
         # Arrange
 
         # find the first selection
@@ -206,23 +208,33 @@ class TestDecryptionMediator(TestCase):
         third_share = compute_decryption_share(
             self.guardians[2], self.ciphertext_tally, self.context
         )
+
+        # build type: Dict[GUARDIAN_ID, Tuple[ELECTION_PUBLIC_KEY, DecryptionShare]]
         shares = {
-            self.guardians[0]
-            .object_id: first_share.contests[first_contest.object_id]
-            .selections[first_selection.object_id]
-            .share,
-            self.guardians[1]
-            .object_id: second_share.contests[first_contest.object_id]
-            .selections[first_selection.object_id]
-            .share,
-            self.guardians[2]
-            .object_id: third_share.contests[first_contest.object_id]
-            .selections[first_selection.object_id]
-            .share,
+            self.guardians[0].object_id: (
+                self.guardians[0].share_election_public_key().key,
+                first_share.contests[first_contest.object_id].selections[
+                    first_selection.object_id
+                ],
+            ),
+            self.guardians[1].object_id: (
+                self.guardians[1].share_election_public_key().key,
+                second_share.contests[first_contest.object_id].selections[
+                    first_selection.object_id
+                ],
+            ),
+            self.guardians[2].object_id: (
+                self.guardians[2].share_election_public_key().key,
+                third_share.contests[first_contest.object_id].selections[
+                    first_selection.object_id
+                ],
+            ),
         }
 
         # act
-        result = decrypt_selection_with_decryption_shares(first_selection, shares)
+        result = decrypt_selection_with_decryption_shares(
+            first_selection, shares, self.context.crypto_extended_base_hash
+        )
 
         # assert
         self.assertIsNotNone(result)
@@ -230,7 +242,8 @@ class TestDecryptionMediator(TestCase):
             self.expected_plaintext_tally[first_selection.object_id], result.plaintext
         )
 
-    def test_decrypt_spoiled_ballots(self):
+    # @skip("for now")
+    def test_decrypt_spoiled_ballots_all_guardians_present(self):
         # Arrange
         # precompute decryption shares for the guardians
         first_share = compute_decryption_share(
@@ -252,7 +265,9 @@ class TestDecryptionMediator(TestCase):
 
         # act
         result = subject._decrypt_spoiled_ballots(
-            self.ciphertext_tally.spoiled_ballots, shares
+            self.ciphertext_tally.spoiled_ballots,
+            shares,
+            self.context.crypto_extended_base_hash,
         )
 
         # assert

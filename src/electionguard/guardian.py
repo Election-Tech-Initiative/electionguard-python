@@ -43,6 +43,9 @@ class Guardian(ElectionObjectBase):
     _auxiliary_keys: AuxiliaryKeyPair
     _election_keys: ElectionKeyPair
     _backups_to_share: GuardianDataStore[GUARDIAN_ID, ElectionPartialKeyBackup]
+    """
+    The collection of this guardian's partial key backups that will be shared to other guardians
+    """
 
     # From Other Guardians
     _guardian_auxiliary_public_keys: GuardianDataStore[GUARDIAN_ID, AuxiliaryPublicKey]
@@ -50,9 +53,16 @@ class Guardian(ElectionObjectBase):
     _guardian_election_partial_key_backups: GuardianDataStore[
         GUARDIAN_ID, ElectionPartialKeyBackup
     ]
+    """
+    The collection of other guardians' partial key backups that are shared with this guardian
+    """
+
     _guardian_election_partial_key_verifications: GuardianDataStore[
         GUARDIAN_ID, ElectionPartialKeyVerification
     ]
+    """
+    The collection of other guardians' verifications that they shared their backups correctly
+    """
 
     def __init__(
         self, id: str, sequence_order: int, number_of_guardians: int, quorum: int,

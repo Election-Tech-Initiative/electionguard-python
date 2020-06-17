@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Dict
+from typing import Dict, Tuple
 
 from .chaum_pedersen import ChaumPedersenProof
 from .election_object_base import ElectionObjectBase
@@ -15,14 +15,21 @@ class CiphertextDecryptionSelection(ElectionObjectBase):
     A Guardian's Partial Decryption of a selection
     """
 
-    # The SelectionDescription hash
     description_hash: ElementModQ
+    """
+    The SelectionDescription hash
+    """
 
     # M_i in the spec
     share: ElementModP
+    """
+    The Share of the selection
+    """
 
-    # Proof that the share was decrypted correctly
     proof: ChaumPedersenProof
+    """
+    The Proof that the share was decrypted correctly
+    """
 
 
 @dataclass
@@ -31,8 +38,11 @@ class CiphertextCompensatedDecryptionSelection(ElectionObjectBase):
     A Compensated Partial Decryption Selection
     """
 
-    # The SelectionDescription hash
+    #
     description_hash: ElementModQ
+    """
+    The SelectionDescription hash
+    """
 
     # M_i in the spec
     partial_share: ElementModP
@@ -47,11 +57,15 @@ class CiphertextDecryptionContest(ElectionObjectBase):
     A Guardian's Partial Decryption of a contest
     """
 
-    # The ContestDescription Hash
     description_hash: ElementModQ
+    """
+    The ContestDescription Hash
+    """
 
-    # the collection of decryption shares for this contest's selections
     selections: Dict[SELECTION_ID, CiphertextDecryptionSelection]
+    """
+    the collection of decryption shares for this contest's selections
+    """
 
 
 @dataclass
@@ -70,17 +84,28 @@ class CiphertextCompensatedDecryptionContest(ElectionObjectBase):
 @dataclass
 class BallotDecryptionShare:
     """
-    A Guardian's Partial Decryption Share of a specific ballot
+    A Guardian's Partial Decryption Share of a specific ballot (e.g. of a spoiled ballot)
     """
 
-    # The Available Guardian that this share belongs to
     guardian_id: GUARDIAN_ID
+    """
+    The Available Guardian that this share belongs to
+    """
 
-    # The Ballot Id that this Decryption Share belongs to
+    public_key: ElementModP
+    """
+    The election public key for the guardian
+    """
+
     ballot_id: BALLOT_ID
+    """
+    The Ballot Id that this Decryption Share belongs to
+    """
 
-    # The collection of all contests in the ballot
     contests: Dict[CONTEST_ID, CiphertextDecryptionContest]
+    """
+    The collection of all contests in the ballot
+    """
 
 
 @dataclass
@@ -89,13 +114,25 @@ class DecryptionShare:
     A Guardian's Partial Decryption Share of an election tally
     """
 
-    # The Available Guardian that this share belongs to
     guardian_id: GUARDIAN_ID
+    """
+    The Available Guardian that this share belongs to
+    """
 
-    # The collection of all contests in the election
+    public_key: ElementModP
+    """
+    The election public key for the guardian
+    """
+
     contests: Dict[CONTEST_ID, CiphertextDecryptionContest]
+    """
+    The collection of decryption shares for all contests in the election
+    """
 
     spoiled_ballots: Dict[BALLOT_ID, BallotDecryptionShare]
+    """
+    The collection of decryption shares for all spoiled ballots in the election
+    """
 
 
 @dataclass
@@ -117,34 +154,41 @@ class CompensatedDecryptionShare:
     lagrange_coefficient: ElementModQ
 
 
-def get_cast_shares_for_selection(
+def get_tally_shares_for_selection(
     selection_id: str, shares: Dict[GUARDIAN_ID, DecryptionShare],
-) -> Dict[GUARDIAN_ID, ElementModP]:
+) -> Dict[GUARDIAN_ID, Tuple[ElementModP, CiphertextDecryptionSelection]]:
     """
-    Get the cast shares for a given selection
+    Get all of the cast shares for a specific selection
     """
-    cast_shares: Dict[GUARDIAN_ID, ElementModP] = {}
+    cast_shares: Dict[
+        GUARDIAN_ID, Tuple[ElementModP, CiphertextDecryptionSelection]
+    ] = {}
     for share in shares.values():
         for contest in share.contests.values():
             for selection in contest.selections.values():
                 if selection.object_id == selection_id:
-                    cast_shares[share.guardian_id] = selection.share
+                    cast_shares[share.guardian_id] = (share.public_key, selection)
 
     return cast_shares
 
 
 def get_spoiled_shares_for_selection(
     ballot_id: str, selection_id: str, shares: Dict[GUARDIAN_ID, DecryptionShare],
-) -> Dict[GUARDIAN_ID, ElementModP]:
+) -> Dict[GUARDIAN_ID, Tuple[ElementModP, CiphertextDecryptionSelection]]:
     """
     Get the spoiled shares for a given selection
     """
-    spoiled_shares: Dict[GUARDIAN_ID, ElementModP] = {}
+    spoiled_shares: Dict[
+        GUARDIAN_ID, Tuple[ElementModP, CiphertextDecryptionSelection]
+    ] = {}
     for share in shares.values():
         for ballot in share.spoiled_ballots.values():
             if ballot.ballot_id == ballot_id:
                 for contest in ballot.contests.values():
                     for selection in contest.selections.values():
                         if selection.object_id == selection_id:
-                            spoiled_shares[share.guardian_id] = selection.share
+                            spoiled_shares[share.guardian_id] = (
+                                share.public_key,
+                                selection,
+                            )
     return spoiled_shares

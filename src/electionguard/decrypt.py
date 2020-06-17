@@ -1,5 +1,5 @@
 from multiprocessing import Pool, cpu_count
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 from .ballot import (
     CiphertextBallot,
@@ -9,7 +9,11 @@ from .ballot import (
     PlaintextBallotContest,
     PlaintextBallotSelection,
 )
-from .decryption_share import DecryptionShare, get_cast_shares_for_selection
+from .decryption_share import (
+    CiphertextDecryptionSelection,
+    DecryptionShare,
+    get_tally_shares_for_selection,
+)
 from .dlog import discrete_log
 from .election import (
     InternalElectionDescription,
@@ -29,20 +33,43 @@ from .tally import (
 from .types import CONTEST_ID, GUARDIAN_ID, SELECTION_ID
 from .utils import get_optional
 
+ELECTION_PUBLIC_KEY = ElementModP
+
 
 def decrypt_selection_with_decryption_shares(
-    selection: CiphertextTallySelection, shares: Dict[GUARDIAN_ID, ElementModP],
+    selection: CiphertextTallySelection,
+    shares: Dict[
+        GUARDIAN_ID, Tuple[ELECTION_PUBLIC_KEY, CiphertextDecryptionSelection]
+    ],
+    extended_base_hash: ElementModQ,
+    suppress_validity_check: bool = False,
 ) -> Optional[PlaintextTallySelection]:
     """
     Decrypt the specified `CiphertextTallySelection` with the collection of `ElementModP` decryption shares
 
     :param selection: a `CiphertextTallySelection`
     :param shares: the collection of shares to decrypt the selection
+    :param extended_base_hash: the extended base hash code (𝑄') for the election
     :return: a `PlaintextTallySelection` or `None` if there is an error
+    :param suppress_validity_check: do not validate the encryption prior to decrypting (useful for tests)
     """
 
+    if not suppress_validity_check:
+        # Verify that all of the shares are computed correctly
+        for guardian_id, share in shares.items():
+            (public_key, decryption) = share
+            if not decryption.proof.is_valid(
+                selection.message, public_key, decryption.share, extended_base_hash,
+            ):
+                log_warning(
+                    f"decrypt selection failed for guardian: {guardian_id} selection: {selection.object_id}"
+                )
+                return None
+
     # accumulate all of the shares calculated for the selection
-    all_shares_product_M = mult_p(*list(shares.values()))
+    all_shares_product_M = mult_p(
+        *[decryption.share for (_, decryption) in shares.values()]
+    )
 
     # Calculate 𝑀=𝐵⁄(∏𝑀𝑖) mod 𝑝.
     decrypted_value = div_p(selection.message.beta, all_shares_product_M)
@@ -255,12 +282,14 @@ def decrypt_contest_with_nonce(
 def decrypt_tally_contests_with_decryption_shares(
     tally: Dict[CONTEST_ID, CiphertextTallyContest],
     shares: Dict[GUARDIAN_ID, DecryptionShare],
+    extended_base_hash: ElementModQ,
 ) -> Optional[Dict[CONTEST_ID, PlaintextTallyContest]]:
     """
     Decrypt the specified tally within the context of the specified Decryption Shares
 
     :param tally: the encrypted tally of contests
     :param shares: a collection of `DecryptionShare` used to decrypt
+    :param extended_base_hash: the extended base hash code (𝑄') for the election
     :return: a collection of `PlaintextTallyContest` or `None` if there is an error
     """
     cpu_pool = Pool(cpu_count())
@@ -273,7 +302,11 @@ def decrypt_tally_contests_with_decryption_shares(
         plaintext_selections = cpu_pool.starmap(
             decrypt_selection_with_decryption_shares,
             [
-                (selection, get_cast_shares_for_selection(selection.object_id, shares),)
+                (
+                    selection,
+                    get_tally_shares_for_selection(selection.object_id, shares),
+                    extended_base_hash,
+                )
                 for (_, selection) in contest.tally_selections.items()
             ],
         )

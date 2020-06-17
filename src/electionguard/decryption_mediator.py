@@ -11,7 +11,6 @@ from .decryption_share import (
     CiphertextCompensatedDecryptionContest,
     DecryptionShare,
     CompensatedDecryptionShare,
-    get_cast_shares_for_selection,
     get_spoiled_shares_for_selection,
 )
 from .decrypt import (
@@ -22,6 +21,7 @@ from .election import (
     CiphertextElectionContext,
     InternalElectionDescription,
 )
+from .group import ElementModQ
 from .guardian import Guardian
 from .tally import (
     CiphertextTally,
@@ -60,15 +60,19 @@ class DecryptionMediator:
     )
     _missing_guardians: Set[MISSING_GUARDIAN_ID] = field(default_factory=lambda: set())
 
-    # A collection of Decryption Shares for each Available Guardian
     _decryption_shares: Dict[AVAILABLE_GUARDIAN_ID, DecryptionShare] = field(
         default_factory=lambda: {}
     )
+    """
+    A collection of Decryption Shares for each Available Guardian
+    """
 
-    # A collection of Partial Decryption Shares for each Available Guardian
-    _partial_decryption_shares: Dict[
+    _compensated_decryption_shares: Dict[
         MISSING_GUARDIAN_ID, Dict[AVAILABLE_GUARDIAN_ID, CompensatedDecryptionShare]
     ] = field(default_factory=lambda: {})
+    """
+    A collection of Compensated Decryption Shares for each Available Guardian
+    """
 
     def announce(self, guardian: Guardian) -> Optional[DecryptionShare]:
         """
@@ -112,28 +116,28 @@ class DecryptionMediator:
                  or `None if there is an error
         """
 
-        partial_decryptions: List[CompensatedDecryptionShare] = List()
+        compensated_decryptions: List[CompensatedDecryptionShare] = []
 
         # Loop through each of the available guardians
         # and calculate a partial for the missing one
         for guardian in self._available_guardians.values():
-            partial = compute_partial_decryption_share(
+            share = compute_compensated_decryption_share(
                 guardian, missing_guardian_id, self._ciphertext_tally
             )
-            if partial is None:
+            if share is None:
                 log_warning(f"compensation failed for missing: {missing_guardian_id}")
                 break
             else:
-                partial_decryptions.append(partial)
+                compensated_decryptions.append(share)
 
         # Verify generated the correct number of partials
-        if len(partial_decryptions) != len(self._available_guardians):
+        if len(compensated_decryptions) != len(self._available_guardians):
             log_warning(
                 f"compensate mismatch partial decryptions for missing guardian {missing_guardian_id}"
             )
             return None
         else:
-            return partial_decryptions
+            return compensated_decryptions
 
     def get_plaintext_tally(self, recompute: bool = False) -> Optional[PlaintextTally]:
         """
@@ -156,32 +160,41 @@ class DecryptionMediator:
 
         # If all Guardians are present decrypt the tally
         if len(self._available_guardians) == self._encryption.number_of_guardians:
-            return self._decrypt_tally(self._ciphertext_tally, self._decryption_shares)
+            return self._decrypt_tally(
+                self._ciphertext_tally, self._decryption_shares, self._encryption
+            )
 
         # If missing guardians compensate for the missing guardians
         for missing in self._missing_guardians:
-            partial_decryptions = self.compensate(missing)
-            if partial_decryptions is None:
+            compensated_decryptions = self.compensate(missing)
+            if compensated_decryptions is None:
                 log_warning(f"get plaintext tally failed compensating for {missing}")
                 return None
-            self._submit_partial_decryption_shares(partial_decryptions)
+            self._submit_compensated_decryption_shares(compensated_decryptions)
 
-        return self._decrypt_tally(self._ciphertext_tally, self._decryption_shares)
+        return self._decrypt_tally(
+            self._ciphertext_tally, self._decryption_shares, self._encryption
+        )
 
     def _decrypt_tally(
         self,
         tally: CiphertextTally,
         shares: Dict[AVAILABLE_GUARDIAN_ID, DecryptionShare],
+        context: CiphertextElectionContext,
     ) -> Optional[PlaintextTally]:
         """
         Try to decrypt the tally
         """
-        contests = decrypt_tally_contests_with_decryption_shares(tally.cast, shares)
+        contests = decrypt_tally_contests_with_decryption_shares(
+            tally.cast, shares, context.crypto_extended_base_hash
+        )
 
         if contests is None:
             return None
 
-        spoiled_ballots = self._decrypt_spoiled_ballots(tally.spoiled_ballots, shares)
+        spoiled_ballots = self._decrypt_spoiled_ballots(
+            tally.spoiled_ballots, shares, context.crypto_extended_base_hash
+        )
 
         if spoiled_ballots is None:
             return None
@@ -192,6 +205,7 @@ class DecryptionMediator:
         self,
         spoiled_ballots: Dict[BALLOT_ID, CiphertextAcceptedBallot],
         shares: Dict[AVAILABLE_GUARDIAN_ID, DecryptionShare],
+        extended_base_hash: ElementModQ,
     ) -> Optional[Dict[BALLOT_ID, Dict[CONTEST_ID, PlaintextTallyContest]]]:
 
         plaintext_spoiled_ballots: Dict[
@@ -212,6 +226,7 @@ class DecryptionMediator:
                             get_spoiled_shares_for_selection(
                                 spoiled_ballot.object_id, selection.object_id, shares
                             ),
+                            extended_base_hash,
                         )
                         for selection in contest.ballot_selections
                     ],
@@ -248,35 +263,35 @@ class DecryptionMediator:
         self._decryption_shares[share.guardian_id] = share
         return True
 
-    def _submit_partial_decryption_shares(
+    def _submit_compensated_decryption_shares(
         self, shares: List[CompensatedDecryptionShare]
     ) -> bool:
         """
-        Submit partial decruyption shares to be used in the decryption
+        Submit compensated decryption shares to be used in the decryption
         """
         for share in shares:
-            self._submit_partial_decryption_share(share)
+            self._submit_compensated_decryption_share(share)
 
         return True
 
-    def _submit_partial_decryption_share(
+    def _submit_compensated_decryption_share(
         self, share: CompensatedDecryptionShare
     ) -> bool:
         """
-        Submit partial decryption share to be used in the decryption
+        Submit compensated decryption share to be used in the decryption
         """
 
         if (
-            share.missing_guardian_id in self._partial_decryption_shares
+            share.missing_guardian_id in self._compensated_decryption_shares
             and share.available_guardian_id
-            in self._partial_decryption_shares[share.missing_guardian_id]
+            in self._compensated_decryption_shares[share.missing_guardian_id]
         ):
             log_warning(
-                f"cannot submit partial for guardian {share.available_guardian_id} on behalf of {share.missing_guardian_id} that already compensated"
+                f"cannot submit compensated share for guardian {share.available_guardian_id} on behalf of {share.missing_guardian_id} that already compensated"
             )
             return False
 
-        self._partial_decryption_shares[share.missing_guardian_id][
+        self._compensated_decryption_shares[share.missing_guardian_id][
             share.available_guardian_id
         ] = share
 
@@ -304,7 +319,12 @@ def compute_decryption_share(
     if spoiled_ballots is None:
         return None
 
-    return DecryptionShare(guardian.object_id, contests, spoiled_ballots)
+    return DecryptionShare(
+        guardian.object_id,
+        guardian.share_election_public_key().key,
+        contests,
+        spoiled_ballots,
+    )
 
 
 def _compute_decryption_for_cast_contests(
@@ -376,7 +396,10 @@ def _compute_decryption_for_spoiled_ballots(
             )
 
         spoiled_ballots[spoiled_ballot.object_id] = BallotDecryptionShare(
-            guardian.object_id, spoiled_ballot.object_id, contests
+            guardian.object_id,
+            guardian.share_election_public_key().key,
+            spoiled_ballot.object_id,
+            contests,
         )
     cpu_pool.close()
     return spoiled_ballots
@@ -390,7 +413,7 @@ def _compute_decryption_for_selection(
     """
     Compute a partial decryption for a specific selection
 
-    :param guardian: The guardian who will partially decrypt the tally
+    :param guardian: The guardian who will partially decrypt the selection
     :param selection: The specific selection to decrypt
     :context: The public election encryption context
     :return: a `CiphertextDecryptionSelection` or `None` if there is an error
@@ -416,7 +439,7 @@ def _compute_decryption_for_selection(
         return None
 
 
-def compute_partial_decryption_share(
+def compute_compensated_decryption_share(
     available_guardian: Guardian, missing_guardian_id: str, tally: CiphertextTally
 ) -> Optional[CompensatedDecryptionShare]:
     """

@@ -101,7 +101,7 @@ class ElementModP(NamedTuple):
         ) and eq_elems(self, other)
 
 
-# Handy constants. Defined once, so we can avoid allocating lots of copies.
+# Common constants
 ZERO_MOD_Q: Final[ElementModQ] = ElementModQ(mpz(0))
 ONE_MOD_Q: Final[ElementModQ] = ElementModQ(mpz(1))
 TWO_MOD_Q: Final[ElementModQ] = ElementModQ(mpz(2))
@@ -110,7 +110,7 @@ ZERO_MOD_P: Final[ElementModP] = ElementModP(mpz(0))
 ONE_MOD_P: Final[ElementModP] = ElementModP(mpz(1))
 TWO_MOD_P: Final[ElementModP] = ElementModP(mpz(2))
 
-ElementModPOrQ = Union[ElementModP, ElementModQ]  # generally useful typedef
+ElementModPOrQ = Union[ElementModP, ElementModQ]
 
 
 def int_to_q(i: int) -> Optional[ElementModQ]:
