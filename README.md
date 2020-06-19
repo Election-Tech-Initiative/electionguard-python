@@ -1,4 +1,4 @@
-![Microsoft Defending Democracy Program: ElectionGuard Python](electionguard-logo-small.png)
+![Microsoft Defending Democracy Program: ElectionGuard Python](images/electionguard-banner.svg)
 
 # 🗳 ElectionGuard Python
 
