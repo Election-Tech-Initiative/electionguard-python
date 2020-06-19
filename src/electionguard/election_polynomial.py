@@ -15,6 +15,7 @@ from .group import (
     pow_q,
     rand_q,
     ZERO_MOD_Q,
+    Q,
 )
 from .schnorr import make_schnorr_proof, SchnorrProof
 
@@ -22,7 +23,7 @@ from .schnorr import make_schnorr_proof, SchnorrProof
 class ElectionPolynomial(NamedTuple):
     """
     ElectionPolynomial is a polynomial defined by coefficients. The 0 coefficient is used for a secret key which can 
-    be discovered by a quorum of n gaurdians corresponding to n coefficients.
+    be discovered by a quorum of n guardians corresponding to n coefficients.
     """
 
     coefficients: List[ElementModQ]
@@ -41,6 +42,14 @@ def generate_polynomial(number_of_coefficients: int) -> ElectionPolynomial:
     commitments: List[ElementModP] = []
     proofs: List[SchnorrProof] = []
     polynomial = ElectionPolynomial(coefficients, commitments, proofs)
+
+    assert number_of_coefficients > 0, "must have a positive number of coefficients"
+
+    # TODO: you might want to have an optional argument -- a nonce -- from which you derive all
+    #   the coefficients, rather than making them all be random here. That would make this function
+    #   deterministic and thus more testable. Of course, when used "for real", you'd make sure that
+    #   the input nonce was truly random.
+
     for i in range(number_of_coefficients):
         coefficient = rand_q()
         commitment = g_pow_p(coefficient)
@@ -64,6 +73,9 @@ def compute_polynomial_value(
     :param polynomial: Election polynomial
     :return: Polynomial used to share election keys
     """
+
+    assert 0 <= exponent_modifier < Q, "exponent_modifier is out of range"
+
     computed_value = ZERO_MOD_Q
     for (i, coefficient) in enumerate(polynomial.coefficients):
         exponent = pow_q(int_to_q_unchecked(exponent_modifier), int_to_p_unchecked(i))

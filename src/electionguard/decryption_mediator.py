@@ -3,26 +3,24 @@ from multiprocessing import Pool, cpu_count
 from typing import Dict, Optional, List, Set
 
 from .ballot import CiphertextAcceptedBallot
-from .decryption_share import (
-    BallotDecryptionShare,
-    CiphertextDecryptionSelection,
-    CiphertextCompensatedDecryptionSelection,
-    CiphertextDecryptionContest,
-    CiphertextCompensatedDecryptionContest,
-    DecryptionShare,
-    CompensatedDecryptionShare,
-    get_cast_shares_for_selection,
-    get_spoiled_shares_for_selection,
-)
 from .decrypt import (
     decrypt_selection_with_decryption_shares,
     decrypt_tally_contests_with_decryption_shares,
+)
+from .decryption_share import (
+    BallotDecryptionShare,
+    CiphertextDecryptionSelection,
+    CiphertextDecryptionContest,
+    DecryptionShare,
+    CompensatedDecryptionShare,
+    get_spoiled_shares_for_selection,
 )
 from .election import (
     CiphertextElectionContext,
     InternalElectionDescription,
 )
 from .guardian import Guardian
+from .logs import log_warning
 from .tally import (
     CiphertextTally,
     PlaintextTally,
@@ -30,7 +28,6 @@ from .tally import (
     CiphertextTallySelection,
     PlaintextTallySelection,
 )
-from .logs import log_warning
 from .types import BALLOT_ID, CONTEST_ID, GUARDIAN_ID, SELECTION_ID
 
 AVAILABLE_GUARDIAN_ID = GUARDIAN_ID
@@ -112,7 +109,7 @@ class DecryptionMediator:
                  or `None if there is an error
         """
 
-        partial_decryptions: List[CompensatedDecryptionShare] = List()
+        partial_decryptions: List[CompensatedDecryptionShare] = list()
 
         # Loop through each of the available guardians
         # and calculate a partial for the missing one
