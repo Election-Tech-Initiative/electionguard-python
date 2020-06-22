@@ -68,6 +68,8 @@ lint:
 	pipenv run python setup.py check --strict --metadata --restructuredtext
 	@echo 5.Docstring
 	pipenv run pydocstyle
+	@echo 6.Documentation
+	pipenv run mkdocs build --strict
 
 validate: 
 	@echo ✅ VALIDATE
