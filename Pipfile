@@ -11,6 +11,7 @@ mypy = "*"
 pylint = "*"
 pytest = "*"
 pydocstyle = "*"
+mkdocs = "*"
 
 [packages]
 hypothesis = "==5.15.1"
