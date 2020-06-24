@@ -2,7 +2,7 @@
 
 # 🗳 ElectionGuard Python
 
-[![license](https://img.shields.io/github/license/microsoft/electionguard)](LICENSE)
+![Github Package Action](https://github.com/microsoft/electionguard-python/workflows/Release%20Build/badge.svg) [![](https://img.shields.io/pypi/v/electionguard)](https://pypi.org/project/electionguard/) [![](https://img.shields.io/pypi/dm/electionguard)](https://pypi.org/project/electionguard/) [![Documentation Status](https://readthedocs.org/projects/electionguard-python/badge/?version=latest)](https://electionguard-python.readthedocs.io) [![license](https://img.shields.io/github/license/microsoft/electionguard)](https://github.com/microsoft/electionguard-python/blob/main/LICENSE)
 
 This repository is a "reference implementation" of ElectionGuard written in Python3. This implementation can be used to conduct End-to-End Verifiable Elections as well as privacy-enhanced risk-limiting audits.  Components of this library can also be used to construct "Verifiers" to validate the results of an ElectionGuard election.
 
@@ -62,10 +62,17 @@ For more detailed build and run options, see the [documentation](docs/Build_and_
 
 ## 📄 Documentation
 
+Overviews:
+
+- [Github Pages](https://microsoft.github.io/electionguard-python/)
+- [Read the Docs](https://electionguard-python.readthedocs.io/)
+
+Sections:
+
 - [Design and Architecture](docs/Design_and_Architecture.md)
 - [Build and Run](docs/Build_and_Run.md)
 
-Step-by-step ElectionGuard process:
+Step-by-Step Process:
 
 0. [Configure Election](docs/0_Configure_Election.md)
 1. [Key Ceremony](docs/1_Key_Ceremony.md)
@@ -84,6 +91,10 @@ This project has adopted the [Microsoft Open Source Code of Conduct](https://ope
 ### Reporting Issues
 
 Please report any bugs, feature requests, or enhancements using the [Github Issue Tracker](https://github.com/microsoft/electionguard-python/issues).  Please do not report any secirity vulnerabilities using the Issue Tracker.  Instead, please report them to the Microsoft Security Response Center (MSRC) at [https://msrc.microsoft.com/create-report](https://msrc.microsoft.com/create-report).  See the [Security Documentation](SECURITY.md) for more information.
+
+### Have Questions?
+
+Electionguard would love for you to ask questions out in the open using Github Issues. If you really want to email the ElectionGuard team, reach out at electionguard@microsoft.com.
 
 ## License
 

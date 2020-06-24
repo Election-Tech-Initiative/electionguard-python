@@ -1,6 +1,8 @@
-name: Validate Pull Request
+name: Release Build
 
-on: [pull_request, repository_dispatch]
+on:
+  milestone:
+    types: [closed]
 
 env:
   PYTHON_VERSION: 3.8
@@ -90,3 +92,71 @@ jobs:
       - name: Test
         continue-on-error: true #TODO Remove Window tests bypass
         run: make test
+
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    needs: [code_analysis, windows_check, mac_check, linux_check]
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Change Directory
+        run: cd ${{ github.workspace }}
+      - name: Get Version
+        run: echo ::set-env name=PACKAGE_VERSION::$(echo $VERSION | python setup.py --version)
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.PACKAGE_VERSION }}
+          release_name: Release ${{ env.PACKAGE_VERSION }}
+          draft: false
+          prerelease: false
+      - name: Package
+        run: make package
+      - name: Upload Package as Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: package
+          path: dist/
+      - name: Upload Package to PyPi
+        run: |
+          python -m pip install --user --upgrade twine
+          python -m twine upload --username __token__ --password ${{ secrets.PYPI_TOKEN }} dist/*
+      - name: Validate Import
+        run: make package-validate
+      - name: Dependency Graph
+        run: | 
+          sudo apt install graphviz
+          pip install pydeps
+          pydeps --max-bacon 2 -o dependency-graph.svg src/electionguard
+      - name: Upload Dependency Graph as Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: dependency-graph
+          path: dependency-graph.svg
+      - name: Zip Artifacts
+        run: |
+          mv dist electionguard
+          mv dependency-graph.svg electionguard
+          zip -r electionguard.zip electionguard
+      - name: Add Artifacts to Release
+        id: upload-release-asset_1
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./electionguard.zip
+          asset_name: electionguard.zip
+          asset_content_type: application/zip
+      - name: Deploy Github Pages
+        run: |
+          pip install mkdocs
+          mkdocs gh-deploy --force

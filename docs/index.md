@@ -1,8 +1,8 @@
-![Microsoft Defending Democracy Program: ElectionGuard Python](https://github.com/microsoft/electionguard-python/tree/main/images/electionguard-banner.svg)
+![Microsoft Defending Democracy Program: ElectionGuard Python](https://github.com/microsoft/electionguard-python/blob/main/images/electionguard-banner.svg?raw=true)
 
 # 🗳 ElectionGuard Python
 
-[![license](https://img.shields.io/github/license/microsoft/electionguard)](LICENSE)
+![Github Package Action](https://github.com/microsoft/electionguard-python/workflows/Release%20Build/badge.svg) [![](https://img.shields.io/pypi/v/electionguard)](https://pypi.org/project/electionguard/) [![](https://img.shields.io/pypi/dm/electionguard)](https://pypi.org/project/electionguard/) [![Documentation Status](https://readthedocs.org/projects/electionguard-python/badge/?version=latest)](https://electionguard-python.readthedocs.io) [![license](https://img.shields.io/github/license/microsoft/electionguard)](https://github.com/microsoft/electionguard-python/blob/main/LICENSE)
 
 This repository is a "reference implementation" of ElectionGuard written in Python3. This implementation can be used to conduct End-to-End Verifiable Elections as well as privacy-enhanced risk-limiting audits.  Components of this library can also be used to construct "Verifiers" to validate the results of an ElectionGuard election.
 
@@ -64,13 +64,19 @@ For more detailed build and run options, see the [documentation](Build_and_Run.m
 
 ## 📄 Documentation
 
+Sections:
+
 - [Design and Architecture](Design_and_Architecture.md)
 - [Build and Run](Build_and_Run.md)
 
-Step-by-step ElectionGuard process:
+Step-by-Step Process:
 
 0. [Configure Election](0_Configure_Election.md)
 1. [Key Ceremony](1_Key_Ceremony.md)
 2. [Encrypt Ballots](2_Encrypt_Ballots.md)
 3. [Cast and Spoil](3_Cast_and_Spoil.md)
 4. [Decrypt Tally](4_Decrypt_Tally.md)
+
+## ❓Questions
+
+Electionguard would love for you to ask questions out in the open using Github Issues. If you really want to email the ElectionGuard team, reach out at electionguard@microsoft.com.
