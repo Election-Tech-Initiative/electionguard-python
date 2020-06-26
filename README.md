@@ -71,6 +71,7 @@ Sections:
 
 - [Design and Architecture](docs/Design_and_Architecture.md)
 - [Build and Run](docs/Build_and_Run.md)
+- [Project Workflow](docs/Project_Workflow.md)
 
 Step-by-Step Process:
 
