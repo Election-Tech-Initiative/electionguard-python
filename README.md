@@ -98,5 +98,23 @@ Please report any bugs, feature requests, or enhancements using the [Github Issu
 Electionguard would love for you to ask questions out in the open using Github Issues. If you really want to email the ElectionGuard team, reach out at electionguard@microsoft.com.
 
 ## License
+This repository is licensed under the [MIT License](LICENSE) 
 
-This repository is licensed under the [MIT License](LICENSE)
+## Thanks! 🎉
+A huge thank you to those who helped to contribute to this project so far, including:
+
+**[Josh Benaloh _(Microsoft)_](https://www.microsoft.com/en-us/research/people/benaloh/)**
+
+<a href="https://www.microsoft.com/en-us/research/people/benaloh/"><img src="https://www.microsoft.com/en-us/research/wp-content/uploads/2016/09/avatar_user__1473484671-180x180.jpg" title="Josh Benaloh" width="80" height="80"></a> 
+
+**[Keith Fung](https://github.com/keithrfung) [_(InfernoRed Technology)_](https://infernored.com/)**
+
+<a href="https://github.com/keithrfung"><img src="https://avatars2.githubusercontent.com/u/10125297?v=4" title="keithrfung" width="80" height="80"></a>
+
+**[Matt Wilhelm](https://github.com/AddressXception) [_(InfernoRed Technology)_](https://infernored.com/)**
+
+<a href="https://github.com/AddressXception"><img src="https://avatars0.githubusercontent.com/u/6232853?s=460&u=8fec95386acad6109ad71a2aad2d097b607ebd6a&v=4" title="AddressXception" width="80" height="80"></a>
+
+**[Dan Wallach](https://twitter.com/danwallach)**
+
+<a href="https://github.com/danwallach"><img src="https://avatars2.githubusercontent.com/u/743029?v=4" title="danwallach" width="80" height="80"></a>
