@@ -1,9 +1,9 @@
 from unittest import TestCase
 
+from electionguard.data_store import DataStore
 from electionguard.key_ceremony import (
     AuxiliaryPublicKey,
     ElectionPublicKey,
-    GuardianDataStore,
     generate_elgamal_auxiliary_key_pair,
     generate_election_key_pair,
     generate_election_partial_key_backup,
@@ -161,7 +161,7 @@ class TestKeyCeremony(TestCase):
         # Arrange
         random_keypair = generate_election_key_pair(QUORUM)
         random_keypair_two = generate_election_key_pair(QUORUM)
-        public_keys = GuardianDataStore[GUARDIAN_ID, ElectionPublicKey]()
+        public_keys = DataStore[GUARDIAN_ID, ElectionPublicKey]()
         public_keys.set(
             RECIPIENT_GUARDIAN_ID,
             ElectionPublicKey(

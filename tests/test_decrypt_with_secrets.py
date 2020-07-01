@@ -10,7 +10,7 @@ from hypothesis.strategies import integers
 
 import electionguardtest.ballot_factory as BallotFactory
 import electionguardtest.election_factory as ElectionFactory
-from electionguard.decrypt import (
+from electionguard.decrypt_with_secrets import (
     decrypt_selection_with_secret,
     decrypt_selection_with_nonce,
     decrypt_contest_with_secret,

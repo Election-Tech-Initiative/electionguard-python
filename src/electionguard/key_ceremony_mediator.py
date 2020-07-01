@@ -1,5 +1,6 @@
 from typing import Iterable, List, Optional
 
+from .data_store import DataStore
 from .guardian import Guardian
 from .key_ceremony import (
     AuxiliaryPublicKey,
@@ -9,7 +10,6 @@ from .key_ceremony import (
     ElectionPartialKeyChallenge,
     ElectionPartialKeyVerification,
     ElectionPublicKey,
-    GuardianDataStore,
     GuardianPair,
     PublicKeySet,
     combine_election_public_keys,
@@ -25,32 +25,28 @@ class KeyCeremonyMediator:
 
     ceremony_details: CeremonyDetails
 
-    _auxiliary_public_keys: GuardianDataStore[GUARDIAN_ID, AuxiliaryPublicKey]
-    _election_public_keys: GuardianDataStore[GUARDIAN_ID, ElectionPublicKey]
-    _election_partial_key_backups: GuardianDataStore[
-        GuardianPair, ElectionPartialKeyBackup
-    ]
-    _election_partial_key_challenges: GuardianDataStore[
+    _auxiliary_public_keys: DataStore[GUARDIAN_ID, AuxiliaryPublicKey]
+    _election_public_keys: DataStore[GUARDIAN_ID, ElectionPublicKey]
+    _election_partial_key_backups: DataStore[GuardianPair, ElectionPartialKeyBackup]
+    _election_partial_key_challenges: DataStore[
         GuardianPair, ElectionPartialKeyChallenge
     ]
-    _election_partial_key_verifications: GuardianDataStore[
+    _election_partial_key_verifications: DataStore[
         GuardianPair, ElectionPartialKeyVerification
     ]
     _guardians: List[Guardian] = []
 
     def __init__(self, ceremony_details: CeremonyDetails):
         self.ceremony_details = ceremony_details
-        self._auxiliary_public_keys = GuardianDataStore[
-            GUARDIAN_ID, AuxiliaryPublicKey
-        ]()
-        self._election_public_keys = GuardianDataStore[GUARDIAN_ID, ElectionPublicKey]()
-        self._election_partial_key_backups = GuardianDataStore[
+        self._auxiliary_public_keys = DataStore[GUARDIAN_ID, AuxiliaryPublicKey]()
+        self._election_public_keys = DataStore[GUARDIAN_ID, ElectionPublicKey]()
+        self._election_partial_key_backups = DataStore[
             GuardianPair, ElectionPartialKeyBackup
         ]()
-        self._election_partial_key_verifications = GuardianDataStore[
+        self._election_partial_key_verifications = DataStore[
             GuardianPair, ElectionPartialKeyVerification
         ]()
-        self._election_partial_key_challenges = GuardianDataStore[
+        self._election_partial_key_challenges = DataStore[
             GuardianPair, ElectionPartialKeyChallenge
         ]()
 

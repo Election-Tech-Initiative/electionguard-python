@@ -38,10 +38,17 @@ In this implementation, we take an approach that utilizes all Available Guardian
 When one or more of the Guardians are missing, any subset of the Guardians that are present can use the information they have about the other guardian's prviate keys to reconstruct the partial decryption shares for the missing guardians.
 
 4. Each `Available Guardian` computes a `Partial Decryption Share` for each `Missing Guardian`
-5. a `Quorum` count of `Partial Decryption Shares` are randomly chosen from the values generated in the previous step for a specific `Missing guardian`
-6. Each randomly chosen `Available Guardian` uses its `Partial Decryption Share` to compute a share of the missing partial decryption.
-7. If there is more than one Missing guardian, then one of the Available Guardians randomly chosen in the previous step is excluded from the next round.
-8. the process is re-run until all Missing Guardians are compensated for.
+5. at least a `Quorum` count of `Partial Decryption Shares` are chosen from the values generated in the previous step for a specific `Missing guardian`
+6. Each chosen `Available Guardian` uses its `Partial Decryption Share` to compute a share of the missing partial decryption.
+7. the process is re-run until all Missing Guardians are compensated for.
+8. The `Compensated Decryption Shares` are combined to _reconstruct_ the missing `DecryptionShare`
+9. finally, all of the `DecryptionShares` are combined to generate a tally for each option on every contest
+
+## Challenged/Spoiled Ballots
+
+If a ballot is not to be included in the vote count, it is considered challenged, or [Spoiled](https://en.wikipedia.org/wiki/Spoilt_vote).  Every ballot spoiled in an election is invidually verifiably decrypted in exactly the same way that the aggregate ballot of tallies is decrypted.  Since spoiled ballots are not included as part of the vote count, they are included in the Election Record with their plaintext values included along with the encrypted representations.
+
+Spoiling ballots is an important part of the ElectionGuard process as it allows voters to explicitly generate challenge ballots that are verifiable as part of the Election Record.
 
 ## Usage Example
 
@@ -70,6 +77,10 @@ for guardian in missing_guardians:
 
 # Generate the plaintext tally
 plaintext_tally = mediator.get_plaintext_tally()
+
+# The plaintext tally automatically includes the election tally and the spoiled ballots
+contest_tallies = plaintext_tally.contests
+spoiled_ballots = plaintext_tally.spoiled_ballots
 
 ```
 

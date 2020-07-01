@@ -1,4 +1,4 @@
-from unittest import TestCase, skip
+from unittest import TestCase
 from datetime import timedelta
 from typing import Dict, List
 from random import randrange
@@ -10,16 +10,17 @@ from electionguard.ballot import PlaintextBallot, from_ciphertext_ballot
 from electionguard.ballot_store import BallotStore
 
 from electionguard.ballot_box import BallotBox, BallotBoxState
-from electionguard.decrypt import decrypt_selection_with_decryption_shares
-from electionguard.decryption_mediator import (
-    DecryptionMediator,
-    PlaintextTally,
-    PlaintextTallyContest,
-    PlaintextTallySelection,
-    compute_decryption_share,
-    _compute_decryption_for_selection,
-    _compute_compensated_decryption_for_selection,
+from electionguard.decrypt_with_shares import (
+    decrypt_selection_with_decryption_shares,
+    decrypt_spoiled_ballots,
 )
+from electionguard.decryption import (
+    compute_decryption_share,
+    compute_compensated_decryption_share,
+    compute_decryption_share_for_selection,
+    compute_compensated_decryption_share_for_selection,
+)
+from electionguard.decryption_mediator import DecryptionMediator
 from electionguard.decryption_share import (
     CiphertextDecryptionSelection,
     DecryptionShare,
@@ -27,30 +28,26 @@ from electionguard.decryption_share import (
 )
 from electionguard.election import (
     CiphertextElectionContext,
-    ElectionDescription,
     InternalElectionDescription,
-    ContestDescriptionWithPlaceholders,
-    SelectionDescription,
 )
 from electionguard.election_builder import ElectionBuilder
 from electionguard.encrypt import EncryptionDevice, EncryptionMediator, encrypt_ballot
 from electionguard.election_polynomial import compute_lagrange_coefficient
 
 from electionguard.group import (
-    ElementModP,
     int_to_q_unchecked,
     ZERO_MOD_P,
     mult_p,
     pow_p,
 )
 from electionguard.guardian import Guardian
-from electionguard.key_ceremony import (
-    CeremonyDetails,
-    ElectionPartialKeyVerification,
-    GuardianPair,
-)
+from electionguard.key_ceremony import CeremonyDetails
 from electionguard.key_ceremony_mediator import KeyCeremonyMediator
-from electionguard.tally import CiphertextTally, tally_ballots, tally_ballot
+from electionguard.tally import (
+    CiphertextTally,
+    PlaintextTally,
+    tally_ballots,
+)
 from electionguard.utils import get_optional
 
 import electionguardtest.ballot_factory as BallotFactory
@@ -219,7 +216,7 @@ class TestDecryptionMediator(TestCase):
         ][0]
 
         # act
-        result = _compute_decryption_for_selection(
+        result = compute_decryption_share_for_selection(
             self.guardians[0], first_selection, self.context
         )
 
@@ -250,11 +247,11 @@ class TestDecryptionMediator(TestCase):
         print(lagrange_1)
 
         # compute their shares
-        share_0 = _compute_decryption_for_selection(
+        share_0 = compute_decryption_share_for_selection(
             self.guardians[0], first_selection, self.context
         )
 
-        share_1 = _compute_decryption_for_selection(
+        share_1 = compute_decryption_share_for_selection(
             self.guardians[1], first_selection, self.context
         )
 
@@ -262,14 +259,14 @@ class TestDecryptionMediator(TestCase):
         self.assertIsNotNone(share_1)
 
         # compute compensations shares for the missing guardian
-        compensation_0 = _compute_compensated_decryption_for_selection(
+        compensation_0 = compute_compensated_decryption_share_for_selection(
             self.guardians[0],
             self.guardians[2].object_id,
             first_selection,
             self.context,
         )
 
-        compensation_1 = _compute_compensated_decryption_for_selection(
+        compensation_1 = compute_compensated_decryption_share_for_selection(
             self.guardians[1],
             self.guardians[2].object_id,
             first_selection,
@@ -439,7 +436,7 @@ class TestDecryptionMediator(TestCase):
         subject = DecryptionMediator(self.metadata, self.context, self.ciphertext_tally)
 
         # act
-        result = subject._decrypt_spoiled_ballots(
+        result = decrypt_spoiled_ballots(
             self.ciphertext_tally.spoiled_ballots,
             shares,
             self.context.crypto_extended_base_hash,

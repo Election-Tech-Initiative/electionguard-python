@@ -98,20 +98,17 @@ def compute_polynomial_value(
 
 def compute_lagrange_coefficient(coordinate: int, *degrees: int) -> ElementModQ:
     """
+    Compute the lagrange coefficient for a specific coordinate against N degrees.
+    :param coordinate: the coordinate to plot, uisually a Guardian's Sequence Order
+    :param degrees: the degrees across which to plot, usually the collection of 
+                    available Guardians' Sequence Orders
     """
 
-    print(f"coordinate: {coordinate}")
-    print(f"degrees: {degrees}")
-
     numerator = mult_q(*[int_to_q_unchecked(degree) for degree in degrees])
-    print(f"numerator: {numerator}")
     denominator = mult_q(
         *[int_to_q_unchecked(degree - coordinate) for degree in degrees]
     )
-    print(f"denominator: {denominator}")
-
     result = div_q((numerator), (denominator))
-    print(f"w: {result}")
     return result
 
 

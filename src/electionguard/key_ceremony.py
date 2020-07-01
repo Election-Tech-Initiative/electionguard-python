@@ -1,17 +1,11 @@
-from collections import Mapping
 from typing import (
     Callable,
-    Dict,
-    Generic,
-    Iterable,
-    Iterator,
     List,
     NamedTuple,
-    Optional,
-    Tuple,
     TypeVar,
 )
 
+from .data_store import DataStore
 from .election_polynomial import (
     compute_polynomial_value,
     ElectionPolynomial,
@@ -26,6 +20,8 @@ from .elgamal import (
 from .group import int_to_q_unchecked, rand_q, ElementModP, ElementModQ
 from .schnorr import SchnorrProof, make_schnorr_proof
 from .types import GUARDIAN_ID
+
+ElectionJointKey = ElementModP
 
 
 class CeremonyDetails(NamedTuple):
@@ -169,98 +165,6 @@ class ElectionPartialKeyChallenge(NamedTuple):
     coefficient_proofs: List[SchnorrProof]
 
 
-ElectionJointKey = ElementModP
-
-T = TypeVar("T")
-U = TypeVar("U")
-
-
-# TODO: as generic and use for ballots as well, implement the right interfaces
-class GuardianDataStore(Generic[T, U]):
-    """
-    Wrapper around dictionary for guardian data storage
-    """
-
-    _store: Dict[T, U]
-
-    def __init__(self) -> None:
-        self._store = {}
-
-    def set(self, key: T, value: U) -> None:
-        """
-        Create or update a new value in store
-        :param key: key
-        :param value: value
-        """
-        self._store[key] = value
-
-    def get(self, key: T) -> Optional[U]:
-        """
-        Get value in store
-        :param key: key
-        :return: value if found
-        """
-        return self._store.get(key)
-
-    def pop(self, key: T) -> Optional[U]:
-        """
-        """
-        if key in self._store:
-            return self._store.pop(key)
-        return None
-
-    def length(self) -> int:
-        """
-        Get length or count of store
-        :return: Count in store
-        """
-        return len(self._store)
-
-    def values(self) -> Iterable[U]:
-        """
-        Gets all values in store as list
-        :return: List of values
-        """
-        return self._store.values()
-
-    def clear(self) -> None:
-        """
-        Clear data from store
-        """
-        self._store.clear()
-
-    def keys(self) -> Iterable[T]:
-        """
-        Gets all keys in store as list
-        :return: List of keys
-        """
-        return self._store.keys()
-
-    def items(self) -> Iterable[Tuple[T, U]]:
-        """
-        Gets all items in store as list
-        :return: List of (key, value)
-        """
-        return self._store.items()
-
-
-class ReadOnlyDataStore(Generic[T, U], Mapping):
-    """
-    """
-
-    def __init__(self, data: GuardianDataStore[T, U]):
-        self._data: GuardianDataStore[T, U] = data
-
-    def __getitem__(self, key: T) -> Optional[U]:
-        return self._data.get(key)
-
-    def __len__(self) -> int:
-        return self._data.length()
-
-    def __iter__(self) -> Iterator:
-        return iter(self._data.items())
-
-
 def generate_elgamal_auxiliary_key_pair() -> AuxiliaryKeyPair:
     """
     Generate auxiliary key pair using elgamal
@@ -383,7 +287,7 @@ def verify_election_partial_key_challenge(
 
 
 def combine_election_public_keys(
-    election_public_keys: GuardianDataStore[GUARDIAN_ID, ElectionPublicKey]
+    election_public_keys: DataStore[GUARDIAN_ID, ElectionPublicKey]
 ) -> ElectionJointKey:
     """
     Creates a joint election key from the public keys of all guardians

@@ -2,6 +2,7 @@ from typing import Callable, Optional, Tuple
 from secrets import randbelow
 
 from .chaum_pedersen import ChaumPedersenProof, make_chaum_pedersen
+from .data_store import DataStore, ReadOnlyDataStore
 from .election_object_base import ElectionObjectBase
 from .elgamal import ElGamalCiphertext
 from .group import (
@@ -9,7 +10,6 @@ from .group import (
     ElementModQ,
     int_to_q_unchecked,
     Q,
-    mult_q,
     mult_p,
     pow_q,
     pow_p,
@@ -36,9 +36,7 @@ from .key_ceremony import (
     generate_election_partial_key_backup,
     generate_election_partial_key_challenge,
     generate_elgamal_auxiliary_key_pair,
-    GuardianDataStore,
     PublicKeySet,
-    ReadOnlyDataStore,
     verify_election_partial_key_backup,
     verify_election_partial_key_challenge,
 )
@@ -55,30 +53,30 @@ class Guardian(ElectionObjectBase):
     ceremony_details: CeremonyDetails
     _auxiliary_keys: AuxiliaryKeyPair
     _election_keys: ElectionKeyPair
-    _backups_to_share: GuardianDataStore[GUARDIAN_ID, ElectionPartialKeyBackup]
+    _backups_to_share: DataStore[GUARDIAN_ID, ElectionPartialKeyBackup]
     """
     The collection of this guardian's partial key backups that will be shared to other guardians
     """
 
     # From Other Guardians
-    _guardian_auxiliary_public_keys: GuardianDataStore[GUARDIAN_ID, AuxiliaryPublicKey]
+    _guardian_auxiliary_public_keys: DataStore[GUARDIAN_ID, AuxiliaryPublicKey]
     """
     The collection of other guardians' auxiliary public keys that are shared with this guardian
     """
 
-    _guardian_election_public_keys: GuardianDataStore[GUARDIAN_ID, ElectionPublicKey]
+    _guardian_election_public_keys: DataStore[GUARDIAN_ID, ElectionPublicKey]
     """
     The collection of other guardians' election public keys that are shared with this guardian
     """
 
-    _guardian_election_partial_key_backups: GuardianDataStore[
+    _guardian_election_partial_key_backups: DataStore[
         GUARDIAN_ID, ElectionPartialKeyBackup
     ]
     """
     The collection of other guardians' partial key backups that are shared with this guardian
     """
 
-    _guardian_election_partial_key_verifications: GuardianDataStore[
+    _guardian_election_partial_key_verifications: DataStore[
         GUARDIAN_ID, ElectionPartialKeyVerification
     ]
     """
@@ -92,19 +90,17 @@ class Guardian(ElectionObjectBase):
         super().__init__(id)
         self.sequence_order = sequence_order
         self.set_ceremony_details(number_of_guardians, quorum)
-        self._backups_to_share = GuardianDataStore[
-            GUARDIAN_ID, ElectionPartialKeyBackup
-        ]()
-        self._guardian_auxiliary_public_keys = GuardianDataStore[
+        self._backups_to_share = DataStore[GUARDIAN_ID, ElectionPartialKeyBackup]()
+        self._guardian_auxiliary_public_keys = DataStore[
             GUARDIAN_ID, AuxiliaryPublicKey
         ]()
-        self._guardian_election_public_keys = GuardianDataStore[
+        self._guardian_election_public_keys = DataStore[
             GUARDIAN_ID, ElectionPublicKey
         ]()
-        self._guardian_election_partial_key_backups = GuardianDataStore[
+        self._guardian_election_partial_key_backups = DataStore[
             GUARDIAN_ID, ElectionPartialKeyBackup
         ]()
-        self._guardian_election_partial_key_verifications = GuardianDataStore[
+        self._guardian_election_partial_key_verifications = DataStore[
             GUARDIAN_ID, ElectionPartialKeyVerification
         ]()
 
@@ -221,6 +217,7 @@ class Guardian(ElectionObjectBase):
         self,
     ) -> ReadOnlyDataStore[GUARDIAN_ID, AuxiliaryPublicKey]:
         """
+        Get a read-only view of the auxiliary public keys provided to this Guardian
         """
         return ReadOnlyDataStore(self._guardian_auxiliary_public_keys)
 
@@ -233,7 +230,6 @@ class Guardian(ElectionObjectBase):
         )
         self.save_election_public_key(self.share_election_public_key())
 
-    # TODO: make a property?
     def share_election_public_key(self) -> ElectionPublicKey:
         """
         Share election public key with another guardian
@@ -266,6 +262,7 @@ class Guardian(ElectionObjectBase):
         self,
     ) -> ReadOnlyDataStore[GUARDIAN_ID, ElectionPublicKey]:
         """
+        Get a read-only view of the Guardian Election Publiuc Keys shared with this Guardian
 
         """
         return ReadOnlyDataStore(self._guardian_election_public_keys)
@@ -488,6 +485,9 @@ class Guardian(ElectionObjectBase):
     def recovery_public_key_for(
         self, missing_guardian_id: GUARDIAN_ID
     ) -> Optional[ElementModP]:
+        """
+        Compute the recovery public key for a given guardian
+        """
         backup = self._guardian_election_partial_key_backups.get(missing_guardian_id)
         if backup is None:
             log_warning(
