@@ -36,7 +36,7 @@ class ExtendedData(object):
     """
     ExtendedData represents any arbitrary data expressible as a string with a length.
 
-    This class is used primmarily as a field on a selection to indicate a write-in candidate text value
+    This class is used primarily as a field on a selection to indicate a write-in candidate text value
     """
 
     value: str
@@ -691,8 +691,8 @@ class CiphertextAcceptedBallot(CiphertextBallot):
     note, additionally, this ballot includes all proofs but no nonces
     """
 
-    tracking_id: Optional[ElementModQ]
-    timestamp: int
+    tracking_id: Optional[ElementModQ] = None
+    timestamp: int = 0
     state: BallotBoxState = field(default=BallotBoxState.UNKNOWN)
     """
     the state of the ballot

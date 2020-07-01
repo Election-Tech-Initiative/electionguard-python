@@ -111,10 +111,7 @@ def elgamal_combine_public_keys(keys: Iterable[ElementModP]) -> ElementModP:
     :param keys: list of public elgamal keys
     :return: joint key of elgamal keys
     """
-    joint_key = ONE_MOD_P
-    for key in keys:
-        joint_key = mult_p(joint_key, key)
-    return joint_key
+    return mult_p(*keys)
 
 
 def elgamal_encrypt(

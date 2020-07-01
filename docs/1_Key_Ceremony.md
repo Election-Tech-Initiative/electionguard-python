@@ -57,9 +57,9 @@ This is a detailed description of the entire Key Ceremony Process
 
 ## Files
 
-- [`key_ceremony.py`](src/electionguard/key_ceremony.py)
-- [`guardian.py`](src/electionguard/guardian.py)
-- [`key_ceremony_mediator.py`](src/electionguard/key_ceremony_mediator.py)
+- [`key_ceremony.py`](https://github.com/microsoft/electionguard-python/tree/main/src/electionguard/key_ceremony.py)
+- [`guardian.py`](https://github.com/microsoft/electionguard-python/tree/main/src/electionguard/guardian.py)
+- [`key_ceremony_mediator.py`](https://github.com/microsoft/electionguard-python/tree/main/src/electionguard/key_ceremony_mediator.py)
 
 ## Usage Example
 

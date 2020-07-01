@@ -1,4 +1,4 @@
-![Microsoft Defending Democracy Program: ElectionGuard Python](electionguard-logo-small.png)
+![Microsoft Defending Democracy Program: ElectionGuard Python](images/electionguard-banner.svg)
 
 # 🗳 ElectionGuard Python
 
@@ -32,7 +32,7 @@ ElectionGuard supports a variety of use cases.  The Primary use case is to gener
 
 ## 💻 Requirements
 
-- [Python 3.8](https://www.python.org/downloads/) is used to develop this SDK
+- [Python 3.8](https://www.python.org/downloads/) is <ins>**required**</ins> to develop this SDK. If developer uses multiple versions of python, [pyenv](https://github.com/pyenv/pyenv) is suggested to assist version management.
 - [GNU Make](https://www.gnu.org/software/make/manual/make.html) is used to simplify the commands and GitHub Actions. This approach is recommended to simplify the command line experience. This is built in for MacOS and Linux. For Windows, setup is simpler with [Chocolatey](https://chocolatey.org/install) and installing the provided [make package](https://chocolatey.org/packages/make). The other Windows option is [manually installing make](http://gnuwin32.sourceforge.net/packages/make.htm).
 - [Gmpy2](https://gmpy2.readthedocs.io/en/latest/) is used for [Arbitrary-precision arithmetic](https://en.wikipedia.org/wiki/Arbitrary-precision_arithmetic) which
 has its own [installation requirements (native C libraries)](https://gmpy2.readthedocs.io/en/latest/intro.html#installation) on Linux and MacOS.  **⚠️ Note:** _This is not required for Windows since the gmpy2 precompiled libraries are provided._
@@ -40,7 +40,7 @@ has its own [installation requirements (native C libraries)](https://gmpy2.readt
 
 ## 🚀 Quick Start
 
-Using **make**, the entire Github Action workflow can be run with one command: 
+Using [**make**](https://www.gnu.org/software/make/manual/make.html), the entire [Github Action workflow](.github/workflows/pull_request.yml) can be run with one command: 
 
 ```
 make
@@ -52,20 +52,20 @@ The unit and integration tests can also be run with make:
 make test
 ```
 
-A complete end-to-end election example can be run intepdendently by executing:
+A complete end-to-end election example can be run independently by executing:
 
 ```
 make test-example
 ```
 
-Ther are more examples in the [Build and Run](docs/Build_and_Run.md) documentation
+For more detailed build and run options, see the [documentation](docs/Build_and_Run.md).
 
 ## 📄 Documentation
 
 - [Design and Architecture](docs/Design_and_Architecture.md)
 - [Build and Run](docs/Build_and_Run.md)
 
-The ElectionGuard process is divided into steps:
+Step-by-step ElectionGuard process:
 
 0. [Configure Election](docs/0_Configure_Election.md)
 1. [Key Ceremony](docs/1_Key_Ceremony.md)
@@ -81,7 +81,7 @@ This project encourages community contributions for development, testing, docume
 
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
 
-### Reproting Issues
+### Reporting Issues
 
 Please report any bugs, feature requests, or enhancements using the [Github Issue Tracker](https://github.com/microsoft/electionguard-python/issues).  Please do not report any secirity vulnerabilities using the Issue Tracker.  Instead, please report them to the Microsoft Security Response Center (MSRC) at [https://msrc.microsoft.com/create-report](https://msrc.microsoft.com/create-report).  See the [Security Documentation](SECURITY.md) for more information.
 

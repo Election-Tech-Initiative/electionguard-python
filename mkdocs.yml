@@ -1,0 +1,20 @@
+site_name: ElectionGuard Python
+# site_description:
+site_author: Microsoft
+# google_analytics: 
+# remote_branch: for gh-deploy to GithubPages
+# remote_name: for gh-deploy to Github Pages
+copyright: '© Microsoft 2020'
+docs_dir: 'docs'
+repo_url: https://github.com/microsoft/electionguard-python/
+nav:
+    - Home: index.md
+    - Design and Architecture: Design_and_Architecture.md
+    - Build and Run: Build_and_Run.md
+    - Steps:
+        - 0. Configure Election: 0_Configure_Election.md
+        - 1. Key Ceremony: 1_Key_Ceremony.md
+        - 2. Encrypt Ballots: 2_Encrypt_Ballots.md
+        - 3. Cast and Spoil: 3_Cast_and_Spoil.md
+        - 4. Decrypt Tally: 4_Decrypt_Tally.md
+theme: readthedocs

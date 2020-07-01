@@ -68,11 +68,14 @@ lint:
 	pipenv run python setup.py check --strict --metadata --restructuredtext
 	@echo 5.Docstring
 	pipenv run pydocstyle
+	@echo 6.Documentation
+	pipenv run mkdocs build --strict
 
 validate: 
 	@echo ✅ VALIDATE
 	@pipenv run python -c 'import electionguard; print(electionguard.__package__ + " successfully imported")'
 
+# Test
 test: 
 	@echo ✅ TEST
 	pipenv run pytest . -x
@@ -81,6 +84,7 @@ test-example:
 	@echo ✅ TEST Example
 	pipenv run python -m pytest -s tests/integration/test_end_to_end_election.py
 
+# Coverage
 coverage:
 	@echo ✅ COVERAGE
 	pipenv run coverage run -m pytest
@@ -94,3 +98,14 @@ coverage-xml:
 
 coverage-erase:
 	@pipenv run coverage erase
+
+# Documentation
+docs-serve:
+	pipenv run mkdocs serve
+
+docs-build:
+	pipenv run mkdocs build
+
+docs-deploy:
+	@echo 🚀 DEPLOY to Github Pages
+	pipenv run mkdocs gh-deploy

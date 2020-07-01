@@ -1,8 +1,9 @@
-import logging
 import inspect
+import logging
 import os.path
 import sys
 from typing import Any, Tuple
+from logging.handlers import RotatingFileHandler
 
 from .singleton import Singleton
 
@@ -19,10 +20,9 @@ class ElectionGuardLog(Singleton):
     def __init__(self) -> None:
         super(ElectionGuardLog, self).__init__()
 
-        logging.basicConfig(
-            handlers=[self._get_file_handler(), self._get_stream_handler()],
-        )
         self.__logger = logging.getLogger("electionguard")
+        self.__logger.addHandler(self._get_file_handler())
+        self.__logger.addHandler(self._get_stream_handler())
 
     @staticmethod
     def __get_call_info() -> Tuple[str, str, int]:
@@ -47,7 +47,7 @@ class ElectionGuardLog(Singleton):
 
     def _get_stream_handler(self) -> logging.StreamHandler:
         """
-        Get a Stream Handler
+        Get a Stream Handler, sends only warnings and errors to stdout.
         """
         stream_handler = logging.StreamHandler(sys.stdout)
         stream_handler.setLevel(logging.WARNING)
@@ -56,9 +56,16 @@ class ElectionGuardLog(Singleton):
 
     def _get_file_handler(self) -> logging.FileHandler:
         """
-        Get a File System Handler
+        Get a File System Handler, sends verbose logging to a file, `electionguard.log`.
+        When that file gets too large, the logs will rotate, creating files with names
+        like `electionguard.log.1`.
         """
-        file_handler = logging.FileHandler("electionguard.log", "w+")
+
+        # TODO: add file compression, save a bunch of space.
+        #   https://medium.com/@rahulraghu94/overriding-pythons-timedrotatingfilehandler-to-compress-your-log-files-iot-c766a4ace240
+        file_handler = RotatingFileHandler(
+            "electionguard.log", "a", maxBytes=10_000_000, backupCount=10
+        )
         file_handler.setLevel(logging.DEBUG)
         file_handler.setFormatter(logging.Formatter(FORMAT))
         return file_handler
@@ -94,7 +101,6 @@ class ElectionGuardLog(Singleton):
         self.__logger.critical(self.__formatted_message(message), *args, **kwargs)
 
 
-global LOG
 LOG = ElectionGuardLog()
 
 

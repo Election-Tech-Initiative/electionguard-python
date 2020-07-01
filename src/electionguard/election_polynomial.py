@@ -18,6 +18,7 @@ from .group import (
     pow_q,
     rand_q,
     ZERO_MOD_Q,
+    Q,
 )
 from .schnorr import make_schnorr_proof, SchnorrProof
 
@@ -88,6 +89,9 @@ def compute_polynomial_value(
     :param polynomial: Election polynomial
     :return: Polynomial used to share election keys
     """
+
+    assert 0 <= exponent_modifier < Q, "exponent_modifier is out of range"
+
     computed_value = ZERO_MOD_Q
     for (i, coefficient) in enumerate(polynomial.coefficients):
         exponent = pow_q(int_to_q_unchecked(exponent_modifier), int_to_p_unchecked(i))

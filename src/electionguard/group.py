@@ -292,7 +292,7 @@ def rand_q() -> ElementModQ:
     return int_to_q_unchecked(randbelow(Q))
 
 
-def rand_range_q(start: ElementModPOrQ) -> ElementModQ:
+def rand_range_q(start: ElementModQ) -> ElementModQ:
     """
     Generate random number between start and Q
 
