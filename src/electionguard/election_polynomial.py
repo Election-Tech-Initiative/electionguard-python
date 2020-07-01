@@ -48,8 +48,6 @@ class ElectionPolynomial(NamedTuple):
     """
 
 
-# TODO: would this be better if we instead took in the list of sequence orders
-# along with an optional seed and allowed these to be deterministically created?
 def generate_polynomial(
     number_of_coefficients: int, nonce: ElementModQ = None
 ) -> ElectionPolynomial:
@@ -57,6 +55,7 @@ def generate_polynomial(
     Generates a polynomial for sharing election keys
 
     :param number_of_coefficients: Number of coefficients of polynomial
+    :param nonce: an optional nonce parameter that may be provided (useful for testing)
     :return: Polynomial used to share election keys
     """
     coefficients: List[ElementModQ] = []
@@ -64,6 +63,8 @@ def generate_polynomial(
     proofs: List[SchnorrProof] = []
 
     for i in range(number_of_coefficients):
+        # Note: the nonce value is not safe.  it is designed for testing only.
+        # this method should be called without the nonce in production.
         coefficient = (
             int_to_q_unchecked(nonce.to_int() + i) if nonce is not None else rand_q()
         )
@@ -78,8 +79,7 @@ def generate_polynomial(
     return ElectionPolynomial(coefficients, commitments, proofs)
 
 
-# TODO: compute polynomial coordinate
-def compute_polynomial_value(
+def compute_polynomial_coordinate(
     exponent_modifier: int, polynomial: ElectionPolynomial
 ) -> ElementModQ:
     """
@@ -116,27 +116,24 @@ def compute_lagrange_coefficient(coordinate: int, *degrees: int) -> ElementModQ:
     return result
 
 
-def verify_polynomial_value(
-    value: ElementModQ,
+def verify_polynomial_coordinate(
+    coordinate: ElementModQ,
     exponent_modifier: int,
     coefficient_commitments: List[ElementModP],
 ) -> bool:
     """
-    Verify a polynomial value is in fact on the polynomial's curve
+    Verify a polynomial coordinate value is in fact on the polynomial's curve
 
-    :param value: Value to be checked
+    :param coordinate: Value to be checked
     :param exponent_modifier: Unique modifier (usually sequence order) for exponent
     :param coefficient_commitments: Commitments for coefficients of polynomial
     :return: True if verified on polynomial
     """
-
-    # j is my index
-    # l is another index
     commitment_output = ONE_MOD_P
     for (i, commitment) in enumerate(coefficient_commitments):
         exponent = pow_p(int_to_p_unchecked(exponent_modifier), int_to_p_unchecked(i))
         factor = pow_p(commitment, exponent)
         commitment_output = mult_p(commitment_output, factor)
 
-    value_output = g_pow_p(value)
+    value_output = g_pow_p(coordinate)
     return value_output == commitment_output

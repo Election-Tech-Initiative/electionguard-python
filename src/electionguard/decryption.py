@@ -392,8 +392,8 @@ def reconstruct_missing_tally_decryption_shares(
     ],
 ) -> Optional[Dict[MISSING_GUARDIAN_ID, DecryptionShare]]:
     """
-        Use all available guardians to reconstruct the missing shares
-        """
+    Use all available guardians to reconstruct the missing shares for all missing guardians
+    """
 
     reconstructed_shares: Dict[MISSING_GUARDIAN_ID, DecryptionShare] = {}
     for missing_guardian_id, shares in compensated_shares.items():
@@ -449,7 +449,13 @@ def reconstruct_decryption_contests(
     lagrange_coefficients: Dict[AVAILABLE_GUARDIAN_ID, ElementModQ],
 ) -> Dict[CONTEST_ID, CiphertextDecryptionContest]:
     """
-    Recontruct the missing Decryption Share for a missing guardian from the collection of compensated decryption
+    Recontruct the missing Decryption Share for a missing guardian 
+    from the collection of compensated decryption shares
+
+    :param missing_guardian_id: The guardian id for the missing guardian
+    :param cast_tally: The collection of `CiphertextTallyContest` that is cast
+    :shares: the collection of `CompensatedDecryptionShare` for the missing guardian
+    :lagrange_coefficients: the lagrange coefficients corresponding to the available guardians that provided shares
     """
     # iterate through the tallies and accumulate all of the shares for this guardian
     contests: Dict[CONTEST_ID, CiphertextDecryptionContest] = {}
@@ -499,7 +505,13 @@ def reconstruct_decryption_ballots(
     lagrange_coefficients: Dict[AVAILABLE_GUARDIAN_ID, ElementModQ],
 ) -> Dict[BALLOT_ID, BallotDecryptionShare]:
     """
-    aa
+    Recontruct the missing Decryption shares for a missing guardian from the collection of compensated decryption shares
+
+    :param missing_guardian_id: The guardian id for the missing guardian
+    :param public_key: the public key for the missing guardian
+    :param spoiled_ballots: The collection of `CiphertextAcceptedBallot` that is spoiled
+    :shares: the collection of `CompensatedDecryptionShare` for the missing guardian
+    :lagrange_coefficients: the lagrange coefficients corresponding to the available guardians that provided shares
     """
     spoiled_ballot_shares: Dict[BALLOT_ID, BallotDecryptionShare] = {}
     for ballot_id, spoiled_ballot in spoiled_ballots.items():
@@ -547,4 +559,3 @@ def reconstruct_decryption_ballots(
         )
 
     return spoiled_ballot_shares
-

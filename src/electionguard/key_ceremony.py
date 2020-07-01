@@ -2,15 +2,14 @@ from typing import (
     Callable,
     List,
     NamedTuple,
-    TypeVar,
 )
 
 from .data_store import DataStore
 from .election_polynomial import (
-    compute_polynomial_value,
+    compute_polynomial_coordinate,
     ElectionPolynomial,
     generate_polynomial,
-    verify_polynomial_value,
+    verify_polynomial_coordinate,
 )
 from .elgamal import (
     ElGamalKeyPair,
@@ -207,7 +206,9 @@ def generate_election_partial_key_backup(
     :param encrypt: Function to encrypt using auxiliary key
     :return: Election partial key backup
     """
-    value = compute_polynomial_value(auxiliary_public_key.sequence_order, polynomial)
+    value = compute_polynomial_coordinate(
+        auxiliary_public_key.sequence_order, polynomial
+    )
     encrypted_value = encrypt(str(value.to_int()), auxiliary_public_key)
     return ElectionPartialKeyBackup(
         owner_id,
@@ -240,7 +241,7 @@ def verify_election_partial_key_backup(
         backup.owner_id,
         backup.designated_id,
         verifier_id,
-        verify_polynomial_value(
+        verify_polynomial_coordinate(
             value, backup.designated_sequence_order, backup.coefficient_commitments
         ),
     )
@@ -259,7 +260,9 @@ def generate_election_partial_key_challenge(
         backup.owner_id,
         backup.designated_id,
         backup.designated_sequence_order,
-        compute_polynomial_value(backup.designated_sequence_order, polynomial).to_int(),
+        compute_polynomial_coordinate(
+            backup.designated_sequence_order, polynomial
+        ).to_int(),
         backup.coefficient_commitments,
         backup.coefficient_proofs,
     )
@@ -278,7 +281,7 @@ def verify_election_partial_key_challenge(
         challenge.owner_id,
         challenge.designated_id,
         verifier_id,
-        verify_polynomial_value(
+        verify_polynomial_coordinate(
             int_to_q_unchecked(challenge.value),
             challenge.designated_sequence_order,
             challenge.coefficient_commitments,

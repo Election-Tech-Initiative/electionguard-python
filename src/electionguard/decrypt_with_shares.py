@@ -211,4 +211,3 @@ def decrypt_spoiled_ballots(
         plaintext_spoiled_ballots[spoiled_ballot.object_id] = contests
 
     return plaintext_spoiled_ballots
-

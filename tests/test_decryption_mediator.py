@@ -224,6 +224,10 @@ class TestDecryptionMediator(TestCase):
         self.assertIsNotNone(result)
 
     def test_compute_compensated_selection(self):
+        """
+        This test demonstrates the complete workflow for computing a comepnsated decryption share
+        For one selection. It is useful for verifying that the workflow is correct
+        """
         # Arrange
         first_selection = [
             selection
@@ -475,8 +479,6 @@ class TestDecryptionMediator(TestCase):
 
     def test_get_plaintext_tally_compensate_missing_guardian_simple(self):
 
-        print("START MEDIATOR TEST --------------------------------")
-
         # Arrange
         subject = DecryptionMediator(self.metadata, self.context, self.ciphertext_tally)
 
@@ -485,7 +487,8 @@ class TestDecryptionMediator(TestCase):
         self.assertIsNotNone(subject.announce(self.guardians[0]))
         self.assertIsNotNone(subject.announce(self.guardians[1]))
 
-        # self.assertIsNotNone(subject.compensate(self.guardians[2].object_id))
+        # explicitly compensate to demonstrate that this is possible, but not required
+        self.assertIsNotNone(subject.compensate(self.guardians[2].object_id))
 
         decrypted_tallies = subject.get_plaintext_tally()
         self.assertIsNotNone(decrypted_tallies)

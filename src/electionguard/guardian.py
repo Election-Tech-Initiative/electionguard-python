@@ -506,4 +506,3 @@ class Guardian(ElectionObjectBase):
             pub_key = mult_p(pub_key, pow_p(commitment, exponent))
 
         return pub_key
-
