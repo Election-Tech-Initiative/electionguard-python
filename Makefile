@@ -108,4 +108,33 @@ docs-build:
 
 docs-deploy:
 	@echo 🚀 DEPLOY to Github Pages
-	pipenv run mkdocs gh-deploy
+	pipenv run mkdocs gh-deploy --force
+
+dependency-graph:
+	pipenv run pydeps --max-bacon 2 -o dependency-graph.svg src/electionguard
+
+# Package
+package:
+	@echo ⬇️ INSTALL WHEEL
+	python -m pip install --user --upgrade setuptools wheel
+	@echo 📦 PACKAGE
+	python setup.py sdist bdist_wheel
+
+package-upload:
+	python3 -m pip install --user --upgrade twine
+	python -m twine upload dist/*
+
+package-upload-test:
+	python3 -m pip install --user --upgrade twine
+	python -m twine upload --repository testpypi dist/*
+
+package-validate:	
+	@echo ✅ VALIDATE
+	python -m pip install --no-deps electionguard
+	python -c 'import electionguard'
+
+
+package-validate-test:	
+	@echo ✅ VALIDATE
+	python -m pip install --index-url https://test.pypi.org/simple/ --no-deps electionguard
+	python -c 'import electionguard'
