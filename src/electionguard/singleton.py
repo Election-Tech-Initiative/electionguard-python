@@ -15,6 +15,6 @@ class Singleton:
             Singleton()
         return Singleton.__instance
 
-    def __init__(self) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         if Singleton.__instance is None:
             Singleton.__instance = self

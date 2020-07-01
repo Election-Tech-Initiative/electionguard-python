@@ -144,9 +144,9 @@ class TestElGamal(unittest.TestCase):
         self.assertNotEqual(joint_key, random_keypair.public_key)
         self.assertNotEqual(joint_key, random_keypair_two.public_key)
 
-    # Here's an oddball test: checking whether running lots of parallel exponentiations yields the
-    # correct answer. It certainly *should* work, but this verifies that nothing weird is happening
-    # in the GMPY2 library, with it's C code below that.
+    # test whether running lots of parallel exponentiations yields the
+    # correct answer. This verifies that nothing weird is happening
+    # in the GMPY2 library
     def test_gmpy2_parallelism_is_safe(self):
         cpus = cpu_count()
         problem_size = 1000

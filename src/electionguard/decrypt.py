@@ -1,5 +1,6 @@
-from multiprocessing import Pool, cpu_count
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Union
+from multiprocessing import cpu_count
+from multiprocessing.dummy import Pool
 
 from .ballot import (
     CiphertextBallot,
@@ -24,6 +25,8 @@ from .group import ElementModP, ElementModQ, mult_p, div_p
 from .hash import hash_elems
 from .logs import log_warning
 from .nonces import Nonces
+
+# from .process import GlobalProcessingPool, CPU_POOL
 from .tally import (
     CiphertextTallyContest,
     PlaintextTallyContest,
@@ -35,9 +38,13 @@ from .utils import get_optional
 
 ELECTION_PUBLIC_KEY = ElementModP
 
+# TODO: split this into two files, one decrypt with secrets, the other decrypt with guardians
+
+CiphertextSelection = Union[CiphertextBallotSelection, CiphertextTallySelection]
+
 
 def decrypt_selection_with_decryption_shares(
-    selection: CiphertextTallySelection,
+    selection: CiphertextSelection,
     shares: Dict[
         GUARDIAN_ID, Tuple[ELECTION_PUBLIC_KEY, CiphertextDecryptionSelection]
     ],
@@ -57,14 +64,44 @@ def decrypt_selection_with_decryption_shares(
     if not suppress_validity_check:
         # Verify that all of the shares are computed correctly
         for guardian_id, share in shares.items():
-            (public_key, decryption) = share
-            if not decryption.proof.is_valid(
+            public_key, decryption = share
+            # verify we have a proof or recovered parts
+            if decryption.proof is None and decryption.recovered_parts is None:
+                log_warning(
+                    f"decrypt selection failed for guardian: {guardian_id} selection: {selection.object_id} with missing data"
+                )
+                return None
+
+            if decryption.proof is not None and decryption.recovered_parts is not None:
+                log_warning(
+                    f"decrypt selection failed for guardian: {guardian_id} selection: {selection.object_id} cannot have proof and recovery"
+                )
+                return None
+
+            if decryption.proof is not None and not decryption.proof.is_valid(
                 selection.message, public_key, decryption.share, extended_base_hash,
             ):
                 log_warning(
-                    f"decrypt selection failed for guardian: {guardian_id} selection: {selection.object_id}"
+                    f"decrypt selection failed for guardian: {guardian_id} selection: {selection.object_id} with invalid proof"
                 )
                 return None
+
+            if decryption.recovered_parts is not None:
+                for (
+                    compensating_guardian_id,
+                    part,
+                ) in decryption.recovered_parts.items():
+                    if not part.proof.is_valid(
+                        selection.message,
+                        part.recovery_key,
+                        part.share,
+                        extended_base_hash,
+                    ):
+
+                        log_warning(
+                            f"decrypt selection failed for guardian: {guardian_id} selection: {selection.object_id} with invalid partial proof"
+                        )
+                        return None
 
     # accumulate all of the shares calculated for the selection
     all_shares_product_M = mult_p(
@@ -73,11 +110,9 @@ def decrypt_selection_with_decryption_shares(
 
     # Calculate 𝑀=𝐵⁄(∏𝑀𝑖) mod 𝑝.
     decrypted_value = div_p(selection.message.beta, all_shares_product_M)
+    d_log = discrete_log(decrypted_value)
     return PlaintextTallySelection(
-        selection.object_id,
-        discrete_log(decrypted_value),
-        decrypted_value,
-        selection.message,
+        selection.object_id, d_log, decrypted_value, selection.message,
     )
 
 
@@ -279,7 +314,7 @@ def decrypt_contest_with_nonce(
     return PlaintextBallotContest(contest.object_id, plaintext_selections)
 
 
-def decrypt_tally_contests_with_decryption_shares(
+def decrypt_tally_contests_with_decryption_shares_async(
     tally: Dict[CONTEST_ID, CiphertextTallyContest],
     shares: Dict[GUARDIAN_ID, DecryptionShare],
     extended_base_hash: ElementModQ,
@@ -292,8 +327,9 @@ def decrypt_tally_contests_with_decryption_shares(
     :param extended_base_hash: the extended base hash code (𝑄') for the election
     :return: a collection of `PlaintextTallyContest` or `None` if there is an error
     """
-    cpu_pool = Pool(cpu_count())
     contests: Dict[CONTEST_ID, PlaintextTallyContest] = {}
+
+    cpu_pool = Pool(cpu_count())
 
     # iterate through the tally contests
     for contest in tally.values():
@@ -323,6 +359,43 @@ def decrypt_tally_contests_with_decryption_shares(
         )
 
     cpu_pool.close()
+
+    return contests
+
+
+def decrypt_tally_contests_with_decryption_shares(
+    tally: Dict[CONTEST_ID, CiphertextTallyContest],
+    shares: Dict[GUARDIAN_ID, DecryptionShare],
+    extended_base_hash: ElementModQ,
+) -> Optional[Dict[CONTEST_ID, PlaintextTallyContest]]:
+    """
+    Decrypt the specified tally within the context of the specified Decryption Shares
+
+    :param tally: the encrypted tally of contests
+    :param shares: a collection of `DecryptionShare` used to decrypt
+    :param extended_base_hash: the extended base hash code (𝑄') for the election
+    :return: a collection of `PlaintextTallyContest` or `None` if there is an error
+    """
+    contests: Dict[CONTEST_ID, PlaintextTallyContest] = {}
+
+    # iterate through the tally contests
+    for contest in tally.values():
+        selections: Dict[SELECTION_ID, PlaintextTallySelection] = {}
+
+        for (_, selection) in contest.tally_selections.items():
+            tally_shares = get_tally_shares_for_selection(selection.object_id, shares)
+            plaintext_selection = decrypt_selection_with_decryption_shares(
+                selection, tally_shares, extended_base_hash
+            )
+            if plaintext_selection is None:
+                log_warning(f"could not decrypt tally for contest {contest.object_id}")
+                return None
+            selections[plaintext_selection.object_id] = plaintext_selection
+
+        contests[contest.object_id] = PlaintextTallyContest(
+            contest.object_id, selections
+        )
+
     return contests
 
 

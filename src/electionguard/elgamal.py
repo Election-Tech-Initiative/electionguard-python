@@ -66,7 +66,9 @@ class ElGamalCiphertext(NamedTuple):
 
     def partial_decrypt(self, secret_key: ElementModQ) -> ElementModP:
         """
-        Partially Decrypts an ElGamal ciphertext with a known ElGamal secret key. 
+        Partially Decrypts an ElGamal ciphertext with a known ElGamal secret key.
+
+        𝑀_i = 𝐴^𝑠𝑖 mod 𝑝 in the spec
 
         :param secret_key: The corresponding ElGamal secret key.
         :return: An exponentially encoded plaintext message.

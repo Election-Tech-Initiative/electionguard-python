@@ -198,6 +198,14 @@ def div_p(a: ElementModPOrQ, b: ElementModPOrQ) -> ElementModP:
     return mult_p(a, int_to_p_unchecked(inverse))
 
 
+def div_q(a: ElementModPOrQ, b: ElementModPOrQ) -> ElementModQ:
+    """
+    Computes a/b mod q
+    """
+    inverse = invert(b.elem, mpz(Q))
+    return mult_q(a, int_to_q_unchecked(inverse))
+
+
 def negate_q(a: ElementModQ) -> ElementModQ:
     """
     Computes (Q - a) mod q.
