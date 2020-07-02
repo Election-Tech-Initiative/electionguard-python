@@ -1,0 +1,1867 @@
+{
+    "name": {
+        "text": [
+            {
+                "value": "Hamiltion County General Election",
+                "language": "en"
+            },
+            {
+                "value": "Primaria de primavera del condado de Jefferson",
+                "language": "es"
+            }
+        ]
+    },
+    "contactInformation": {
+        "addressLine": [
+            "1234 Paul Revere Run",
+            "Hamilton, Ozark 999999"
+        ],
+        "name": "Hamilton State Election Commission",
+        "email": [
+            {
+                "annotation": "press",
+                "value": "inquiries@hamilton.state.gov"
+            },
+            {
+                "annotation": "federal",
+                "value": "commissioner@hamilton.state.gov"
+            }
+        ],
+        "phone": [
+            {
+                "annotation": "domestic",
+                "value": "123-456-7890"
+            },
+            {
+                "annotation": "international",
+                "value": "+1-123-456-7890"
+            }
+        ]
+    },
+    "startDate": "2020-03-01T08:00:00-05:00",
+    "endDate": "2020-03-01T20:00:00-05:00",
+    "electionScopeId": "hamilton-county-primary",
+    "type": "special",
+    "geopoliticalUnits": [
+        {
+            "objectId": "hamilton-county",
+            "name": "Hamilton County",
+            "type": "county",
+            "contactInformation": {
+                "addressLine": [
+                    "1234 Samuel Adams Way",
+                    "Jefferson, Hamilton 999999"
+                ],
+                "name": "Hamilton County Clerk",
+                "email": [
+                    {
+                        "annotation": "inquiries",
+                        "value": "inquiries@hamiltoncounty.gov"
+                    }
+                ],
+                "phone": [
+                    {
+                        "annotation": "domestic",
+                        "value": "123-456-7890"
+                    }
+                ]
+            }
+        },
+        {
+            "objectId": "lacroix-township-precinct-1",
+            "name": "Lacroix Township Precinct 1",
+            "type": "precinct",
+            "contactInformation": {
+                "addressLine": [
+                    "1234 Thorton Drive",
+                    "LaCroix, Ozark 999999"
+                ],
+                "name": "LaCroix Town Hall",
+                "email": [
+                    {
+                        "annotation": "inquiries",
+                        "value": "inquiries@lacrox.gov"
+                    }
+                ],
+                "phone": [
+                    {
+                        "annotation": "domestic",
+                        "value": "123-456-7890"
+                    }
+                ]
+            }
+        },
+        {
+            "objectId": "lacroix-township-precinct-2",
+            "name": "Lacroix Township Precinct 2",
+            "type": "precinct",
+            "contactInformation": {
+                "addressLine": [
+                    "1234 Clinton Portis Drive",
+                    "LaCroix, Ozark 999999"
+                ],
+                "name": "Portis Communicty Center",
+                "email": [
+                    {
+                        "annotation": "inquiries",
+                        "value": "inquiries@lacrox.gov"
+                    }
+                ],
+                "phone": [
+                    {
+                        "annotation": "domestic",
+                        "value": "123-456-7890"
+                    }
+                ]
+            }
+        },
+        {
+            "objectId": "lacrox-exeter-utility-district",
+            "name": "Exeter Utility District",
+            "type": "utility",
+            "contactInformation": {
+                "addressLine": [
+                    "1234 Watt Drive",
+                    "La Croix, Ozark 999999"
+                ],
+                "name": "Exeter Utility District coordinator",
+                "email": [
+                    {
+                        "annotation": "inquiries",
+                        "value": "inquiries@exeter-utility.com"
+                    }
+                ],
+                "phone": [
+                    {
+                        "annotation": "domestic",
+                        "value": "123-456-7890"
+                    }
+                ]
+            }
+        },
+        {
+            "objectId": "arlington-township-precinct-1",
+            "name": "Arlington Township Precinct 1",
+            "type": "precinct",
+            "contactInformation": {
+                "addressLine": [
+                    "1234 Pahk Avenue",
+                    "Arlinton, Ozark 999999"
+                ],
+                "name": "Arlington Town Hall",
+                "email": [
+                    {
+                        "annotation": "inquiries",
+                        "value": "inquiries@arlington-township.gov"
+                    }
+                ],
+                "phone": [
+                    {
+                        "annotation": "domestic",
+                        "value": "123-456-7890"
+                    }
+                ]
+            }
+        },
+        {
+            "objectId": "pismo-beach-school-district-precinct-1",
+            "name": "Pismo Beach School District Precinct 1",
+            "type": "school",
+            "contactInformation": {
+                "addressLine": [
+                    "1234 Pismo Beach Elementary",
+                    "Arlington, Ozark 999999"
+                ],
+                "name": "Pismo Beah Elementary",
+                "email": [
+                    {
+                        "annotation": "inquiries",
+                        "value": "inquiries@pismo-beach-school.edu"
+                    }
+                ],
+                "phone": [
+                    {
+                        "annotation": "domestic",
+                        "value": "123-456-7890"
+                    }
+                ]
+            }
+        },
+        {
+            "objectId": "pismo-beach-school-district-precinct-2",
+            "name": "Pismo Beach School District Precinct 2",
+            "type": "school",
+            "contactInformation": {
+                "addressLine": [
+                    "1234 Albuquerque Drive",
+                    "Arlington, Ozark 999999"
+                ],
+                "name": "James Baldwin Middle School",
+                "email": [
+                    {
+                        "annotation": "inquiries",
+                        "value": "inquiries@pismo-beach-school.edu"
+                    }
+                ],
+                "phone": [
+                    {
+                        "annotation": "domestic",
+                        "value": "123-456-7890"
+                    }
+                ]
+            }
+        },
+        {
+            "objectId": "somerset-school-district-precinct-1",
+            "name": "Somerset School District",
+            "type": "school",
+            "contactInformation": {
+                "addressLine": [
+                    "1234 Somerset Avenue",
+                    "Arlinton, Ozark 999999"
+                ],
+                "name": "Someset Elementary",
+                "email": [
+                    {
+                        "annotation": "inquiries",
+                        "value": "inquiries@somerset-elementary.edu"
+                    }
+                ],
+                "phone": [
+                    {
+                        "annotation": "domestic",
+                        "value": "123-456-7890"
+                    }
+                ]
+            }
+        },
+        {
+            "objectId": "somerset-school-district-precinct-2",
+            "name": "Somerset School District",
+            "type": "school",
+            "contactInformation": {
+                "addressLine": [
+                    "1234 Somerset Avenue",
+                    "Arlinton, Ozark 999999"
+                ],
+                "name": "Someset Elementary",
+                "email": [
+                    {
+                        "annotation": "inquiries",
+                        "value": "inquiries@somerset-elementary.edu"
+                    }
+                ],
+                "phone": [
+                    {
+                        "annotation": "domestic",
+                        "value": "123-456-7890"
+                    }
+                ]
+            }
+        },
+        {
+            "objectId": "harris-township",
+            "name": "Harris Township",
+            "type": "township",
+            "contactInformation": {
+                "addressLine": [
+                    "1234 Pahk Avenue",
+                    "Harris, Ozark 999999"
+                ],
+                "name": "harris Town Hall",
+                "email": [
+                    {
+                        "annotation": "inquiries",
+                        "value": "inquiries@harris-township.gov"
+                    }
+                ],
+                "phone": [
+                    {
+                        "annotation": "domestic",
+                        "value": "123-456-7890"
+                    }
+                ]
+            }
+        },
+        {
+            "objectId": "harris-township",
+            "name": "Medford Township",
+            "type": "township",
+            "contactInformation": {
+                "addressLine": [
+                    "1234 Somerville Gateway",
+                    "Medford, Ozark 999999"
+                ],
+                "name": "Medford Town Hall",
+                "email": [
+                    {
+                        "annotation": "inquiries",
+                        "value": "inquiries@harris-township.gov"
+                    }
+                ],
+                "phone": [
+                    {
+                        "annotation": "domestic",
+                        "value": "123-456-7890"
+                    }
+                ]
+            }
+        }
+    ],
+    "parties":[
+        {
+            "objectId": "whig",
+            "abbreviation": "WHI",
+            "color": "AAAAAA",
+            "logoUri": "http://some/path/to/whig.svg",
+            "name": {
+                "text": [
+                    {
+                        "value": "Whig Party",
+                        "language": "en"
+                    }
+                ]
+            }
+        },
+        {
+            "objectId": "federalist",
+            "abbreviation": "FED",
+            "color": "CCCCCC",
+            "logoUri": "http://some/path/to/federalist.svg",
+            "name": {
+                "text": [
+                    {
+                        "value": "Federalist Party",
+                        "language": "en"
+                    }
+                ]
+            }
+        },
+        {
+            "objectId": "peoples",
+            "abbreviation": "PPL",
+            "color": "EEEEEE",
+            "logoUri": "http://some/path/to/people-s.svg",
+            "name": {
+                "text": [
+                    {
+                        "value": "People's Party",
+                        "language": "en"
+                    }
+                ]
+            }
+        },
+        {
+            "objectId": "liberty",
+            "abbreviation": "LIB",
+            "color": "EEEEEE",
+            "logoUri": "http://some/path/to/liberty.svg",
+            "name": {
+                "text": [
+                    {
+                        "value": "Liberty Party",
+                        "language": "en"
+                    }
+                ]
+            }
+        },
+        {
+            "objectId": "constitution",
+            "abbreviation": "CONST",
+            "color": "EEEEEE",
+            "logoUri": "http://some/path/to/democratic-repulbican.svg",
+            "name": {
+                "text": [
+                    {
+                        "value": "Constitution Party",
+                        "language": "en"
+                    }
+                ]
+            }
+        },
+        {
+            "objectId": "labor",
+            "abbreviation": "LBR",
+            "color": "EEEEEE",
+            "logoUri": "http://some/path/to/laobr.svg",
+            "name": {
+                "text": [
+                    {
+                        "value": "Labor Party",
+                        "language": "en"
+                    }
+                ]
+            }
+        },
+        {
+            "objectId": "independent",
+            "abbreviation": "IND",
+            "color": "EEEEEE",
+            "logoUri": "http://some/path/to/independent.svg",
+            "name": {
+                "text": [
+                    {
+                        "value": "Independent",
+                        "language": "en"
+                    }
+                ]
+            }
+        }
+    ],
+    "candidates": [
+        {
+            "objectId": "barchi-hallaren",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "Joseph Barchi and Joseph Hallaren",
+                        "language": "en"
+                    }
+                ]
+            },
+            "partyId": "whig"
+        },
+        {
+            "objectId": "cramer-vuocolo",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "Adam Cramer and Greg Vuocolo",
+                        "language": "en"
+                    }
+                ]
+            },
+            "partyId": "federalist"
+        },
+        {
+            "objectId": "court-blumhardt",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "Daniel Court and Amy Blumhardt",
+                        "language": "en"
+                    }
+                ]
+            },
+            "partyId": "peoples"
+        },
+        {
+            "objectId": "boone-lian",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "Alvin Boone and James Lian",
+                        "language": "en"
+                    }
+                ]
+            },
+            "partyId": "liberty"
+        },
+        {
+            "objectId": "hildebrand-garritty",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "Ashley Hildebrand-McDougall and James Garritty",
+                        "language": "en"
+                    }
+                ]
+            },
+            "partyId": "constitution"
+        },
+        {
+            "objectId": "patterson-lariviere",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "Martin Patterson and Clay Lariviere",
+                        "language": "en"
+                    }
+                ]
+            },
+            "partyId": "labor"
+        },
+        {
+            "objectId": "franz",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "Charlene Franz",
+                        "language": "en"
+                    }
+                ]
+            },
+            "partyId": "federalist"
+        },
+        {
+            "objectId": "harris",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "Gerald Harris",
+                        "language": "en"
+                    }
+                ]
+            },
+            "partyId": "peoples"
+        },
+        {
+            "objectId": "bargmann",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "Linda Bargmann",
+                        "language": "en"
+                    }
+                ]
+            },
+            "partyId": "constitution"
+        },
+        {
+            "objectId": "abcock",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "Barbara Adcock",
+                        "language": "en"
+                    }
+                ]
+            },
+            "partyId": "liberty"
+        },
+        {
+            "objectId": "steel-loy",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "Carrie Steel-Loy",
+                        "language": "en"
+                    }
+                ]
+            },
+            "partyId": "labor"
+        },
+        {
+            "objectId": "sharp",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "Frederick Sharp",
+                        "language": "en"
+                    }
+                ]
+            },
+            "partyId": "constitution"
+        },
+        {
+            "objectId": "wallace",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "Alex Wallace",
+                        "language": "en"
+                    }
+                ]
+            },
+            "partyId": "iundependent"
+        },
+        {
+            "objectId": "williams",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "Barbara Williams",
+                        "language": "en"
+                    }
+                ]
+            },
+            "partyId": "peoples"
+        },
+        {
+            "objectId": "sharp-althea",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "Althea Sharp",
+                        "language": "en"
+                    }
+                ]
+            },
+            "partyId": "whig"
+        },
+        {
+            "objectId": "alpern",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "Douglas Alpern",
+                        "language": "en"
+                    }
+                ]
+            },
+            "partyId": "federalist"
+        },
+        {
+            "objectId": "windbeck",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "Ann Windbeck",
+                        "language": "en"
+                    }
+                ]
+            },
+            "partyId": "peoples"
+        },
+        {
+            "objectId": "greher",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "Mike Greher",
+                        "language": "en"
+                    }
+                ]
+            },
+            "partyId": "constitution"
+        },
+        {
+            "objectId": "alexander",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "Patricia Alexander",
+                        "language": "en"
+                    }
+                ]
+            },
+            "partyId": "whig"
+        },
+        {
+            "objectId": "mitchell",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "Kenneth Mitchell",
+                        "language": "en"
+                    }
+                ]
+            },
+            "partyId": "federalist"
+        },
+        {
+            "objectId": "lee",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "Stan Lee",
+                        "language": "en"
+                    }
+                ]
+            },
+            "partyId": "independent"
+        },
+        {
+            "objectId": "ash",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "Henry Ash",
+                        "language": "en"
+                    }
+                ]
+            },
+            "partyId": "liberty"
+        },
+        {
+            "objectId": "kennedy",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "Karen Kennedy",
+                        "language": "en"
+                    }
+                ]
+            },
+            "partyId": "independent"
+        },
+        {
+            "objectId": "jackson",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "Van Jackson",
+                        "language": "en"
+                    }
+                ]
+            },
+            "partyId": "labor"
+        },
+        {
+            "objectId": "brown",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "Debbie Brown",
+                        "language": "en"
+                    }
+                ]
+            },
+            "partyId": "peoples"
+        },
+        {
+            "objectId": "teller",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "Joseph Teller",
+                        "language": "en"
+                    }
+                ]
+            },
+            "partyId": "peoples"
+        },
+        {
+            "objectId": "ward",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "Greg Ward",
+                        "language": "en"
+                    }
+                ]
+            },
+            "partyId": "inedependent"
+        },
+        {
+            "objectId": "murphy",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "Lou Murphy",
+                        "language": "en"
+                    }
+                ]
+            },
+            "partyId": "federalist"
+        },
+        {
+            "objectId": "newman",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "Jane Newman",
+                        "language": "en"
+                    }
+                ]
+            },
+            "partyId": "whig"
+        },
+        {
+            "objectId": "callanann",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "Jack Callanann",
+                        "language": "en"
+                    }
+                ]
+            },
+            "partyId": "labor"
+        },
+        {
+            "objectId": "york",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "Esther York",
+                        "language": "en"
+                    }
+                ]
+            },
+            "partyId": "labor"
+        },
+        {
+            "objectId": "chandler",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "Glenn Chandler",
+                        "language": "en"
+                    }
+                ]
+            },
+            "partyId": "labor"
+        },
+        {
+            "objectId": "solis",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "Andrea Solis",
+                        "language": "en"
+                    }
+                ]
+            },
+            "partyId": "labor"
+        },
+        {
+            "objectId": "keller",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "Amos Keller",
+                        "language": "en"
+                    }
+                ]
+            },
+            "partyId": "constitution"
+        },
+        {
+            "objectId": "rangel",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "Davitra Rangel",
+                        "language": "en"
+                    }
+                ]
+            },
+            "partyId": "peoples"
+        },
+        {
+            "objectId": "argent",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "Camille Argent",
+                        "language": "en"
+                    }
+                ]
+            },
+            "partyId": "liberty"
+        },
+        {
+            "objectId": "witherspoon-smithson",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "Chloe Witherspoon-Smithson",
+                        "language": "en"
+                    }
+                ]
+            },
+            "partyId": "independent"
+        },
+        {
+            "objectId": "bainbridge",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "Clayton Bainbridge",
+                        "language": "en"
+                    }
+                ]
+            },
+            "partyId": "peoples"
+        },
+        {
+            "objectId": "hennessey",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "Charlene Hennessey",
+                        "language": "en"
+                    }
+                ]
+            },
+            "partyId": "whig"
+        },
+        {
+            "objectId": "savoy",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "Eric Savoy",
+                        "language": "en"
+                    }
+                ]
+            },
+            "partyId": "labor"
+        },
+        {
+            "objectId": "tawa",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "Susan Tawa",
+                        "language": "en"
+                    }
+                ]
+            },
+            "partyId": "constitution"
+        },
+        {
+            "objectId": "tawa-mary",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "Mary Tawa",
+                        "language": "en"
+                    }
+                ]
+            },
+            "partyId": "independent"
+        },
+        {
+            "objectId": "altman",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "Valarie Altman",
+                        "language": "en"
+                    }
+                ]
+            },
+            "partyId": "peoples"
+        },
+        {
+            "objectId": "moore",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "Helen Moore",
+                        "language": "en"
+                    }
+                ]
+            }
+        },
+        {
+            "objectId": "white",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "John White",
+                        "language": "en"
+                    }
+                ]
+            }
+        },
+        {
+            "objectId": "smallberries",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "John Smallberries",
+                        "language": "en"
+                    }
+                ]
+            }
+        },
+        {
+            "objectId": "warfin",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "John Warfin",
+                        "language": "en"
+                    }
+                ]
+            }
+        },
+        {
+            "objectId": "norberg",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "Chris Norberg",
+                        "language": "en"
+                    }
+                ]
+            }
+        },
+        {
+            "objectId": "parks",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "Abigail Parks",
+                        "language": "en"
+                    }
+                ]
+            }
+        },
+        {
+            "objectId": "savannah",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "Harmony Savannah",
+                        "language": "en"
+                    }
+                ]
+            }
+        },
+        {
+            "objectId": "summers",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "Buffy Summers",
+                        "language": "en"
+                    }
+                ]
+            }
+        },
+        {
+            "objectId": "chase",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "Cordelia Chase",
+                        "language": "en"
+                    }
+                ]
+            }
+        },
+        {
+            "objectId": "osborne",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "Daniel Osborne",
+                        "language": "en"
+                    }
+                ]
+            }
+        },
+        {
+            "objectId": "rosenberg",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "Willow Rosenberg",
+                        "language": "en"
+                    }
+                ]
+            }
+        },
+        {
+            "objectId": "head",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "Anthony Stewart Head",
+                        "language": "en"
+                    }
+                ]
+            }
+        },
+        {
+            "objectId": "marsters",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "James Marsters",
+                        "language": "en"
+                    }
+                ]
+            }
+        },
+        {
+            "objectId": "write-in",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "Write In Candidate",
+                        "language": "en"
+                    },
+                    {
+                        "value": "Escribir en la candidata",
+                        "language": "es"
+                    }
+                ]
+            },
+            "isWriteIn": true
+        },
+        {
+            "objectId": "ozark-chief-justice-retain-demergue-affirmative",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "Retain",
+                        "language": "en"
+                    },
+                    {
+                        "value": "Conservar",
+                        "language": "es"
+                    }
+                ]
+            }
+        },
+        {
+            "objectId": "ozark-chief-justice-retain-demergue-negative",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "Reject",
+                        "language": "en"
+                    },
+                    {
+                        "value": "Rechazar",
+                        "language": "es"
+                    }
+                ]
+            }
+        },
+        {
+            "objectId": "exeter-utility-district-referendum-affirmative",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "Yes",
+                        "language": "en"
+                    }
+                ]
+            }
+        },
+        {
+            "objectId": "exeter-utility-district-referendum-negative",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "No",
+                        "language": "en"
+                    }
+                ]
+            }
+        }
+    ],
+    "contests": [
+        {
+            "@type": "CandidateContest",
+            "objectId": "us-president",
+            "voteVariation": "one_of_m",
+            "electoralDistrictId": "hamilton-county",
+            "name": "President and Vice President of the United States",
+            "numberElected": 1,
+            "votesAllowed": 1,
+            "sequenceOrder": 0,            "ballotTitle": {
+                "text": [
+                    {
+                        "value": "President and Vice President of the United States",
+                        "language": "en"
+                    },
+                    {
+                        "value": "Presidente y Vicepresidente de los Estados Unidos",
+                        "language": "es"
+                    }
+                ]
+            },
+            "ballotSubtitle": {
+                "text": [
+                    {
+                        "value": "Vote for one",
+                        "language": "en"
+                    },
+                    {
+                        "value": "Votar por uno",
+                        "language": "es"
+                    }
+                ]
+            },
+            "ballotSelections": [
+                {
+                    "objectId": "barchi-hallaren-selection",
+                    "sequenceOrder": 0,
+                    "candidateId": "barchi-hallaren"
+                },
+                {
+                    "objectId": "cramer-vuocolo-selection",
+                    "sequenceOrder": 1,
+                    "candidateId": "cramer-vuocolo"
+                },
+                {
+                    "objectId": "court-blumhardt-selection",
+                    "sequenceOrder": 2,
+                    "candidateId": "court-blumhardt"
+                },
+                {
+                    "objectId": "boone-lian-selection",
+                    "sequenceOrder": 3,
+                    "candidateId": "boone-lian"
+                },
+                {
+                    "objectId": "hildebrand-garritty-selection",
+                    "sequenceOrder": 4,
+                    "candidateId": "hildebrand-garritty"
+                },
+                {
+                    "objectId": "patterson-lariviere-selection",
+                    "sequenceOrder": 5,
+                    "candidateId": "patterson-lariviere"
+                },
+                {
+                    "objectId": "write-in-selection-president",
+                    "sequenceOrder": 6,
+                    "candidateId": "write-in"
+                }
+            ]
+        },
+        {
+            "@type": "CandidateContest",
+            "objectId": "ozark-governor",
+            "voteVariation": "one_of_m",
+            "electoralDistrictId": "hamilton-county",
+            "name": "Governor of the Commonwealth of Ozark",
+            "numberElected": 1,
+            "votesAllowed": 1,
+            "sequenceOrder": 1,            "ballotTitle": {
+                "text": [
+                    {
+                        "value": "Governor of the Commonwealth of Ozark",
+                        "language": "en"
+                    },
+                    {
+                        "value": "Gobernador de la Mancomunidad de Ozark",
+                        "language": "es"
+                    }
+                ]
+            },
+            "ballotSubtitle": {
+                "text": [
+                    {
+                        "value": "Vote for one",
+                        "language": "en"
+                    },
+                    {
+                        "value": "Votar por uno",
+                        "language": "es"
+                    }
+                ]
+            },
+            "ballotSelections": [
+                {
+                    "objectId": "franz-selection",
+                    "sequenceOrder": 0,
+                    "candidateId": "franz"
+                },
+                {
+                    "objectId": "harris-selection",
+                    "sequenceOrder": 1,
+                    "candidateId": "harris"
+                },
+                {
+                    "objectId": "bargmann-selection",
+                    "sequenceOrder": 2,
+                    "candidateId": "bargmann"
+                },
+                {
+                    "objectId": "abcock-selection",
+                    "sequenceOrder": 3,
+                    "candidateId": "abcock"
+                },
+                {
+                    "objectId": "steel-loy-selection",
+                    "sequenceOrder": 4,
+                    "candidateId": "steel-loy"
+                },
+                {
+                    "objectId": "sharp-selection",
+                    "sequenceOrder": 5,
+                    "candidateId": "sharp"
+                },
+                {
+                    "objectId": "walace-selection",
+                    "sequenceOrder": 6,
+                    "candidateId": "wallace"
+                },
+                {
+                    "objectId": "williams-selection",
+                    "sequenceOrder": 7,
+                    "candidateId": "williams"
+                },
+                {
+                    "objectId": "alpern-selection",
+                    "sequenceOrder": 9,
+                    "candidateId": "alpern"
+                },
+                {
+                    "objectId": "windbeck-selection",
+                    "sequenceOrder": 10,
+                    "candidateId": "windbeck"
+                },
+                {
+                    "objectId": "sharp-althea-selection",
+                    "sequenceOrder": 11,
+                    "candidateId": "sharp-althea"
+                },
+                {
+                    "objectId": "greher-selection",
+                    "sequenceOrder": 12,
+                    "candidateId": "greher"
+                },
+                {
+                    "objectId": "alexander-selection",
+                    "sequenceOrder": 13,
+                    "candidateId": "alexander"
+                },
+                {
+                    "objectId": "mitchell-selection",
+                    "sequenceOrder": 14,
+                    "candidateId": "mitchell"
+                },
+                {
+                    "objectId": "lee-selection",
+                    "sequenceOrder": 15,
+                    "candidateId": "lee"
+                },
+                {
+                    "objectId": "ash-selection",
+                    "sequenceOrder": 16,
+                    "candidateId": "ash"
+                },
+                {
+                    "objectId": "kennedy-selection",
+                    "sequenceOrder": 17,
+                    "candidateId": "kennedy"
+                },
+                {
+                    "objectId": "jackson-selection",
+                    "sequenceOrder": 18,
+                    "candidateId": "jackson"
+                },
+                {
+                    "objectId": "brown-selection",
+                    "sequenceOrder": 19,
+                    "candidateId": "brown"
+                },
+                {
+                    "objectId": "teller-selection",
+                    "sequenceOrder": 20,
+                    "candidateId": "teller"
+                },
+                {
+                    "objectId": "ward-selection",
+                    "sequenceOrder": 21,
+                    "candidateId": "ward"
+                },
+                {
+                    "objectId": "murphy-selection",
+                    "sequenceOrder": 22,
+                    "candidateId": "murphy"
+                },
+                {
+                    "objectId": "newman-selection",
+                    "sequenceOrder": 23,
+                    "candidateId": "newman"
+                },
+                {
+                    "objectId": "callanann-selection",
+                    "sequenceOrder": 24,
+                    "candidateId": "callanann"
+                },
+                {
+                    "objectId": "york-selection",
+                    "sequenceOrder": 25,
+                    "candidateId": "york"
+                },
+                {
+                    "objectId": "chandler-selection",
+                    "sequenceOrder": 26,
+                    "candidateId": "chandler"
+                },
+                {
+                    "objectId": "write-in-selection-governor",
+                    "sequenceOrder": 27,
+                    "candidateId": "write-in"
+                }
+            ]
+        },
+        {
+            "@type": "CandidateContest",
+            "objectId": "us-congress-district-5",
+            "voteVariation": "one_of_m",
+            "electoralDistrictId": "us-congress-district-5",
+            "name": "US Congress District 5",
+            "numberElected": 1,
+            "votesAllowed": 1,
+            "sequenceOrder": 2,
+            "ballotTitle": {
+                "text": [
+                    {
+                        "value": "United States House of Representatives Congressional District 5",
+                        "language": "en"
+                    },
+                    {
+                        "value": "Cámara de Representantes de los Estados Unidos Distrito 5 del Congreso de Ozark",
+                        "language": "es"
+                    }
+                ]
+            },
+            "ballotSubtitle": {
+                "text": [
+                    {
+                        "value": "Vote for one",
+                        "language": "en"
+                    },
+                    {
+                        "value": "Votar por uno",
+                        "language": "es"
+                    }
+                ]
+            },
+            "ballotSelections": [
+                {
+                    "objectId": "soliz-selection",
+                    "sequenceOrder": 0,
+                    "candidateId": "soliz"
+                },
+                {
+                    "objectId": "keller-selection",
+                    "sequenceOrder": 1,
+                    "candidateId": "keller"
+                },
+                {
+                    "objectId": "rangel-selection",
+                    "sequenceOrder": 2,
+                    "candidateId": "rengel"
+                },
+                {
+                    "objectId": "argent-selection",
+                    "sequenceOrder": 3,
+                    "candidateId": "argent"
+                },
+                {
+                    "objectId": "witherspoon-smithson-selection",
+                    "sequenceOrder": 4,
+                    "candidateId": "witherspoon-smithson"
+                },
+                {
+                    "objectId": "write-in-selection-us-congress-district-5",
+                    "sequenceOrder": 5,
+                    "candidateId": "write-in"
+                }
+            ]
+        },
+        {
+            "@type": "CandidateContest",
+            "objectId": "us-congress-district-7",
+            "voteVariation": "one_of_m",
+            "electoralDistrictId": "hamilton-county",
+            "name": "US Congress District 7",
+            "numberElected": 1,
+            "votesAllowed": 1,
+            "sequenceOrder": 3,
+            "ballotTitle": {
+                "text": [
+                    {
+                        "value": "United States House of Representatives Ozark Congressional District 7",
+                        "language": "en"
+                    },
+                    {
+                        "value": "Cámara de Representantes de los Estados Unidos Distrito 7 del Congreso de Ozark",
+                        "language": "es"
+                    }
+                ]
+            },
+            "ballotSubtitle": {
+                "text": [
+                    {
+                        "value": "Vote for one",
+                        "language": "en"
+                    },
+                    {
+                        "value": "Votar por uno",
+                        "language": "es"
+                    }
+                ]
+            },
+            "ballotSelections": [
+                {
+                    "objectId": "bainbridge-selection",
+                    "sequenceOrder": 0,
+                    "candidateId": "bainbridge"
+                },
+                {
+                    "objectId": "hennessey-selection",
+                    "sequenceOrder": 1,
+                    "candidateId": "hennessey"
+                },
+                {
+                    "objectId": "savoy-selection",
+                    "sequenceOrder": 2,
+                    "candidateId": "savoy"
+                },
+                {
+                    "objectId": "tawa-selection",
+                    "sequenceOrder": 3,
+                    "candidateId": "tawa"
+                },
+                {
+                    "objectId": "tawa-mary-selection",
+                    "sequenceOrder": 4,
+                    "candidateId": "tawa-mary"
+                },
+                {
+                    "objectId": "write-in-selection-us-congress-district-7",
+                    "sequenceOrder": 5,
+                    "candidateId": "write-in"
+                }
+            ]
+        },
+        {
+            "@type": "CandidateContest",
+            "objectId": "pismo-beach-school-board",
+            "voteVariation": "one_of_m",
+            "electoralDistrictId": "pismo-beach-school-disctrict",
+            "name": "Pismo Beach School Board",
+            "numberElected": 3,
+            "votesAllowed": 3,
+            "sequenceOrder": 4,
+            "ballotTitle": {
+                "text": [
+                    {
+                        "value": "Pismo Beach School Board",
+                        "language": "en"
+                    },
+                    {
+                        "value": "Junta Escolar de Pismo Beach",
+                        "language": "es"
+                    }
+                ]
+            },
+            "ballotSubtitle": {
+                "text": [
+                    {
+                        "value": "Vote for up to 3",
+                        "language": "en"
+                    },
+                    {
+                        "value": "Vote por hasta 3",
+                        "language": "es"
+                    }
+                ]
+            },
+            "ballotSelections": [
+                {
+                    "objectId": "moore-selection",
+                    "sequenceOrder": 0,
+                    "candidateId": "moore"
+                },
+                {
+                    "objectId": "white-selection",
+                    "sequenceOrder": 1,
+                    "candidateId": "white"
+                },
+                {
+                    "objectId": "smallberries-selection",
+                    "sequenceOrder": 2,
+                    "candidateId": "smallberries"
+                },
+                {
+                    "objectId": "warfin-selection",
+                    "sequenceOrder": 3,
+                    "candidateId": "warfin"
+                },
+                {
+                    "objectId": "norberg-selection",
+                    "sequenceOrder": 4,
+                    "candidateId": "norberg"
+                },
+                {
+                    "objectId": "parks-selection",
+                    "sequenceOrder": 5,
+                    "candidateId": "parks"
+                },
+                {
+                    "objectId": "savannah-selection",
+                    "sequenceOrder": 6,
+                    "candidateId": "savannah"
+                },
+                {
+                    "objectId": "write-in-selection-1-pismo-beach-school-board",
+                    "sequenceOrder": 7,
+                    "candidateId": "write-in"
+                },
+                {
+                    "objectId": "write-in-selection-2-pismo-beach-school-board",
+                    "sequenceOrder": 8,
+                    "candidateId": "write-in"
+                },
+                {
+                    "objectId": "write-in-selection-3-pismo-beach-school-board",
+                    "sequenceOrder": 9,
+                    "candidateId": "write-in"
+                }
+            ]
+        },
+        {
+            "@type": "CandidateContest",
+            "objectId": "somerset-school-board",
+            "voteVariation": "one_of_m",
+            "electoralDistrictId": "somerset-school-district",
+            "name": "Somerset School Board",
+            "numberElected": 2,
+            "votesAllowed": 2,
+            "sequenceOrder": 5,
+            "ballotTitle": {
+                "text": [
+                    {
+                        "value": "Pismo Beach School Board",
+                        "language": "en"
+                    },
+                    {
+                        "value": "Junta Escolar de Somerset",
+                        "language": "es"
+                    }
+                ]
+            },
+            "ballotSubtitle": {
+                "text": [
+                    {
+                        "value": "Vote for up to 2",
+                        "language": "en"
+                    },
+                    {
+                        "value": "Vote por hasta 2",
+                        "language": "es"
+                    }
+                ]
+            },
+            "ballotSelections": [
+                {
+                    "objectId": "summers-selection",
+                    "sequenceOrder": 0,
+                    "candidateId": "summers"
+                },
+                {
+                    "objectId": "chase-selection",
+                    "sequenceOrder": 1,
+                    "candidateId": "chase"
+                },
+                {
+                    "objectId": "osborne-selection",
+                    "sequenceOrder": 2,
+                    "candidateId": "osborne"
+                },
+                {
+                    "objectId": "rosenberg-selection",
+                    "sequenceOrder": 3,
+                    "candidateId": "rosenberg"
+                },
+                {
+                    "objectId": "head-selection",
+                    "sequenceOrder": 4,
+                    "candidateId": "head"
+                },
+                {
+                    "objectId": "marsters-selection",
+                    "sequenceOrder": 5,
+                    "candidateId": "marsters"
+                },
+                {
+                    "objectId": "write-in-selection-1-somerset-school-board",
+                    "sequenceOrder": 6,
+                    "candidateId": "write-in"
+                },
+                {
+                    "objectId": "write-in-selection-2-somerset-school-board",
+                    "sequenceOrder": 7,
+                    "candidateId": "write-in"
+                }
+            ]
+        },
+        {
+            "@type": "ReferendumContest",
+            "objectId": "ozark-chief-justice-retain-demergue",
+            "sequenceOrder": 6,
+            "voteVariation": "one_of_m",
+            "electoralDistrictId": "hamilton-county",
+            "name": "Retain Robert Demergue as Chief Justice?",
+            "numberElected": 1,
+            "votesAllowed": 1,
+            "ballotTitle": {
+                "text": [
+                    {
+                        "value": "Retain Robert Demergue as Chief Justice?",
+                        "language": "en"
+                    },
+                    {
+                        "value": "¿Retener a Robert Demergue como Presidente del Tribunal Supremo?",
+                        "language": "es"
+                    }
+                ]
+            },
+            "ballotSubtitle": {
+                "text": [
+                    {
+                        "value": "Choose 'Accept' or 'Reject'",
+                        "language": "en"
+                    },
+                    {
+                        "value": "Elija 'Aceptar' o 'Rechazar'",
+                        "language": "es"
+                    }
+                ]
+            },
+            "ballotSelections": [
+                {
+                    "objectId": "ozark-chief-justice-retain-demergue-affirmative-selection",
+                    "sequenceOrder": 0,
+                    "candidateId": "ozark-chief-justice-retain-demergue-affirmative"
+                },
+                {
+                    "objectId": "ozark-chief-justice-retain-demergue-negative-selection",
+                    "sequenceOrder": 1,
+                    "candidateId": "ozark-chief-justice-retain-demergue-negative"
+                }
+            ]
+        },
+        {
+            "@type": "ReferendumContest",
+            "objectId": "exeter-utility-district-referendum",
+            "sequenceOrder": 1,
+            "voteVariation": "one_of_m",
+            "electoralDistrictId": "exeter-utility-district",
+            "name": "Capital Projects Levy",
+            "numberElected": 1,
+            "votesAllowed": 1,
+            "ballotSelections": [
+                {
+                    "objectId": "exeter-utility-district-referendum-affirmative-selection",
+                    "sequenceOrder": 0,
+                    "candidateId": "exeter-utility-district-referendum-affirmative"
+                },
+                {
+                    "objectId": "exeter-utility-district-referendum-selection",
+                    "sequenceOrder": 1,
+                    "candidateId": "exeter-utility-district-referendum"
+                }
+            ],
+            "ballotTitle": {
+                "text": [
+                    {
+                        "value": "Levy Lift to Maintain Public Safety and Other Core Utility Services",
+                        "language": "en"
+                    },
+                    {
+                        "value": "Levy Lift para Mantener la Seguridad Pública y Otros Servicios Básicos",
+                        "language": "es"
+                    }
+                ]
+            },
+            "ballotSubtitle": {
+                "text": [
+                    {
+                        "value": "Should this Proposition be approved?",
+                        "language": "en"
+                    },
+                    {
+                        "value": "Uno",
+                        "language": "es"
+                    }
+                ]
+            },
+            "ballotDescription": {
+                "text": [
+                    {
+                        "value": "The Executive Board of the Exeter Utility district adopted Ordinance No. 970 concerning voter approval of its regular property tax levy. This proposition would maintain police, fire, park and mandated community services by increasing the regular property tax levy rate above the limit factor by $0.20/$1,000 assessed value to a maximum rate of $0.83712/$1,000 assessed valuation for collection in 2020, set a 5% limit factor for each year 2021-2025, use the 2025 levy amount as the base to compute subsequent levy limits, and exempt low income seniors and disabled; as set forth in Ordinance No. 970.",
+                        "language": "en"
+                    },
+                    {
+                        "value": "La Junta Ejecutiva del distrito de Servicios Públicos de Exeter adoptó la Ordenanza No. 970 sobre la aprobación de los votantes de su recaudación de impuestos de propiedad regulatoria. Esta propuesta mantendría a la policía, los bomberos, los parques y los servicios comunitarios obligatorios al aumentar la tasa de recaudación del impuesto a la propiedad regular de por encima del factor límite en un valor tasado de $ 0.20 / $ 1,000 a una tasa máxima de $ 0.83712 / $ 1,000 de tasación tasada para cobrar en 2020, establecer un 5% factor límite para cada año 2021-2025, use el monto del impuesto 2025 como base para calcular los límites de impuestos posteriores, y exima a las personas de la tercera edad de bajos ingresos y discapacitadas; como se establece en la Ordenanza No. 970.",
+                        "language": "es"
+                    }
+                ]
+            }
+        }
+    ],
+    "ballotStyles": [
+        {
+            "objectId": "us-president",
+            "geopoliticalUnitIds": [
+                "jefferson-county",
+                "lacroix-township-precinct-1",
+                "lacroix-township-precinct-2",
+                "lacrox-exeter-utility-district",
+                "arlington-township-precinct-1",
+                "pismo-beach-school-district-precinct-1",
+                "pismo-beach-school-district-precinct-2",
+                "somerset-school-district-precinct-1",
+                "somerset-school-district-precinct-2",
+                "harris-township"
+            ]
+        },
+        {
+            "objectId": "ozark-governor",
+            "geopoliticalUnitIds": [
+                "jefferson-county",
+                "lacroix-township-precinct-1",
+                "lacroix-township-precinct-2",
+                "lacrox-exeter-utility-district",
+                "arlington-township-precinct-1",
+                "pismo-beach-school-district-precinct-1",
+                "pismo-beach-school-district-precinct-2",
+                "somerset-school-district-precinct-1",
+                "somerset-school-district-precinct-2",
+                "harris-township"
+            ]
+        },
+        {
+            "objectId": "us-congress-district-5",
+            "geopoliticalUnitIds": [
+                "lacroix-township-precinct-2",
+                "pismo-beach-school-district-precinct-2",
+                "somerset-school-district-precinct-2",
+                "harris-township"
+            ]
+        },
+        {
+            "objectId": "us-congress-district-7",
+            "geopoliticalUnitIds": [
+                "lacroix-township-precinct-1",
+                "lacrox-exeter-utility-district",
+                "arlington-township-precinct-1",
+                "pismo-beach-school-district-precinct-1",
+                "somerset-school-district-precinct-1",
+                "harris-township"
+            ]
+        },
+        {
+            "objectId": "pismo-beach-school-board",
+            "geopoliticalUnitIds": [
+                "pismo-beach-school-district-precinct-1",
+                "pismo-beach-school-district-precinct-2"
+            ]
+        },
+        {
+            "objectId": "somerset-school-board",
+            "geopoliticalUnitIds": [
+                "somerset-school-district-precinct-1",
+                "somerset-school-district-precinct-2"
+            ]
+        },
+        {
+            "objectId": "ozark-chief-justice-retain-demergue",
+            "geopoliticalUnitIds": [
+                "jefferson-county",
+                "lacroix-township-precinct-1",
+                "lacroix-township-precinct-2",
+                "lacrox-exeter-utility-district",
+                "arlington-township-precinct-1",
+                "pismo-beach-school-district-precinct-1",
+                "pismo-beach-school-district-precinct-2",
+                "somerset-school-district-precinct-1",
+                "somerset-school-district-precinct-2",
+                "harris-township"
+            ]
+        },
+        {
+            "objectId": "exeter-utility-district-referendum",
+            "geopoliticalUnitIds": [
+                "lacrox-exeter-utility-district"
+            ]
+        }
+    ]
+}

@@ -17,7 +17,7 @@ From an `ElectionDescription` we derive an `InternalElectionDescription` that in
 ## Process
 
 1. Define an election according to the `ElectionDescription` requirements.  
-2. Use the [NIST Common Standard Data Specification](https://www.nist.gov/itl/voting/interoperability) as a guide, but note the differences in [election.py](https://github.com/microsoft/electionguard-python/tree/main/src/electionguard.election.py).
+2. Use the [NIST Common Standard Data Specification](https://www.nist.gov/itl/voting/interoperability) as a guide, but note the differences in [election.py](https://github.com/microsoft/electionguard-python/tree/main/src/electionguard.election.py) and the provided [sample manifest](sample/election-manifest.json).
 3. Parse the `ElectionDescription` into the application.
 4. Define the encryption parameters necessary for conducting an election (see `Key Ceremony`).
 5. Create the Pubic Key either from a single secret, or from the Key Ceremony.
