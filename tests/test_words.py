@@ -30,8 +30,20 @@ class TestWord(TestCase):
         INDEX_BELOW_MIN = -1
         INDEX_ABOVE_MAX = 4096
 
-        word_min = get_word(INDEX_BELOW_MIN)
-        word_max = get_word(INDEX_ABOVE_MAX)
+        # Act
+        word_past_min = get_word(INDEX_BELOW_MIN)
+        word_past_max = get_word(INDEX_ABOVE_MAX)
 
-        self.assertEqual(word_min, "aardvark")
-        self.assertEqual(word_max, "prospect")
+        # Assert
+        self.assertIsNone(word_past_min)
+        self.assertIsNone(word_past_max)
+
+    def test_get_index_of_word_not_in_list(self):
+        # Arrange
+        FAILING_WORD = "thiswordshouldfail"
+
+        # Act
+        failed_index = get_index_from_word(FAILING_WORD)
+
+        # Assert
+        self.assertIsNone(failed_index)
