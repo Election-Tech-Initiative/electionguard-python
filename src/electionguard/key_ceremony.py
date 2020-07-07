@@ -82,7 +82,6 @@ class ElectionKeyPair(NamedTuple):
     polynomial: ElectionPolynomial
 
 
-# TODO: move this stuff into a different file, like "election keys" or something
 class ElectionPublicKey(NamedTuple):
     """A tuple of election public key and owner information"""
 
