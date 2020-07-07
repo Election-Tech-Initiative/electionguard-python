@@ -2,9 +2,7 @@ from typing import Any
 
 
 class Singleton:
-    """
-    A Singleton Class
-    """
+    """A Singleton Class"""
 
     __instance = None
 
@@ -15,6 +13,6 @@ class Singleton:
             Singleton()
         return Singleton.__instance
 
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
+    def __init__(self) -> None:
         if Singleton.__instance is None:
             Singleton.__instance = self

@@ -262,7 +262,7 @@ class Guardian(ElectionObjectBase):
         self,
     ) -> ReadOnlyDataStore[GUARDIAN_ID, ElectionPublicKey]:
         """
-        Get a read-only view of the Guardian Election Publiuc Keys shared with this Guardian
+        Get a read-only view of the Guardian Election Public Keys shared with this Guardian
 
         """
         return ReadOnlyDataStore(self._guardian_election_public_keys)

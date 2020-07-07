@@ -87,4 +87,4 @@ spoiled_ballots = plaintext_tally.spoiled_ballots
 
 ## Implementation Considerations
 
-In certain use cases where the `Key Ceremony` is not used, ballots and tallies can be decrypted directly using the secret key of the election.  See the [Tally Tests](../tests/test_tally.md) for an example of how to decrypt the tally using the secret key.
+In certain use cases where the `Key Ceremony` is not used, ballots and tallies can be decrypted directly using the secret key of the election.  See the [Tally Tests](https://github.com/microsoft/electionguard-python/tree/main/tests/test_tally.md) for an example of how to decrypt the tally using the secret key.

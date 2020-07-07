@@ -27,25 +27,20 @@ from .schnorr import make_schnorr_proof, SchnorrProof
 # TODO: do not use lists here as they are susceptible to order-based attacks
 class ElectionPolynomial(NamedTuple):
     """
-    ElectionPolynomial is a polynomial defined by coefficients. 
+    A polynomial defined by coefficients
+
     The 0-index coefficient is used for a secret key which can 
     be discovered by a quorum of n guardians corresponding to n coefficients.
     """
 
     coefficients: List[ElementModQ]
-    """
-    The secret coefficients `a_ij`
-    """
+    """The secret coefficients `a_ij` """
 
     coefficient_commitments: List[ElementModP]
-    """
-    The public keys `K_ij`generated from secret coefficients
-    """
+    """The public keys `K_ij`generated from secret coefficients"""
 
     coefficient_proofs: List[SchnorrProof]
-    """
-    A proof of posession of the private key for each secret coefficient
-    """
+    """A proof of posession of the private key for each secret coefficient"""
 
 
 def generate_polynomial(

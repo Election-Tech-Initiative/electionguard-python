@@ -43,7 +43,8 @@ def decrypt_selection_with_decryption_shares(
     suppress_validity_check: bool = False,
 ) -> Optional[PlaintextTallySelection]:
     """
-    Decrypt the specified `CiphertextTallySelection` with the collection of `ElementModP` decryption shares
+    Decrypt the specified `CiphertextTallySelection` with the collection of `ElementModP` decryption shares.
+    Each share is expected to be passed with the corresponding public key so that the encryption can be validated
 
     :param selection: a `CiphertextTallySelection`
     :param shares: the collection of shares to decrypt the selection
@@ -57,42 +58,10 @@ def decrypt_selection_with_decryption_shares(
         for guardian_id, share in shares.items():
             public_key, decryption = share
             # verify we have a proof or recovered parts
-            if decryption.proof is None and decryption.recovered_parts is None:
-                log_warning(
-                    f"decrypt selection failed for guardian: {guardian_id} selection: {selection.object_id} with missing data"
-                )
-                return None
-
-            if decryption.proof is not None and decryption.recovered_parts is not None:
-                log_warning(
-                    f"decrypt selection failed for guardian: {guardian_id} selection: {selection.object_id} cannot have proof and recovery"
-                )
-                return None
-
-            if decryption.proof is not None and not decryption.proof.is_valid(
-                selection.message, public_key, decryption.share, extended_base_hash,
+            if not decryption.is_valid(
+                selection.message, public_key, extended_base_hash
             ):
-                log_warning(
-                    f"decrypt selection failed for guardian: {guardian_id} selection: {selection.object_id} with invalid proof"
-                )
                 return None
-
-            if decryption.recovered_parts is not None:
-                for (
-                    compensating_guardian_id,
-                    part,
-                ) in decryption.recovered_parts.items():
-                    if not part.proof.is_valid(
-                        selection.message,
-                        part.recovery_key,
-                        part.share,
-                        extended_base_hash,
-                    ):
-
-                        log_warning(
-                            f"decrypt selection failed for guardian: {guardian_id} selection: {selection.object_id} with invalid partial proof"
-                        )
-                        return None
 
     # accumulate all of the shares calculated for the selection
     all_shares_product_M = mult_p(
@@ -126,7 +95,7 @@ def decrypt_tally_contests_with_decryption_shares(
     for contest in tally.values():
         selections: Dict[SELECTION_ID, PlaintextTallySelection] = {}
 
-        for (_, selection) in contest.tally_selections.items():
+        for selection in contest.tally_selections.values():
             tally_shares = get_tally_shares_for_selection(selection.object_id, shares)
             plaintext_selection = decrypt_selection_with_decryption_shares(
                 selection, tally_shares, extended_base_hash
