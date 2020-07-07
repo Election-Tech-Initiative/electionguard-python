@@ -20,9 +20,8 @@ from .group import (
 )
 from .schnorr import make_schnorr_proof, SchnorrProof
 
-# TODO: rename to just polynomial and improve the documentation with some links to wikipedia
 
-# TODO: do not use lists here as they are susceptible to order-based attacks
+# TODO:ISSUE #84: do not use lists here
 class ElectionPolynomial(NamedTuple):
     """
     A polynomial defined by coefficients
@@ -58,9 +57,7 @@ def generate_polynomial(
     for i in range(number_of_coefficients):
         # Note: the nonce value is not safe.  it is designed for testing only.
         # this method should be called without the nonce in production.
-        coefficient = (
-            int_to_q_unchecked(nonce.to_int() + i) if nonce is not None else rand_q()
-        )
+        coefficient = add_q(nonce, i) if nonce is not None else rand_q()
         commitment = g_pow_p(coefficient)
         proof = make_schnorr_proof(
             ElGamalKeyPair(coefficient, commitment), rand_q()
@@ -87,7 +84,7 @@ def compute_polynomial_coordinate(
 
     computed_value = ZERO_MOD_Q
     for (i, coefficient) in enumerate(polynomial.coefficients):
-        exponent = pow_q(int_to_q_unchecked(exponent_modifier), int_to_p_unchecked(i))
+        exponent = pow_q(exponent_modifier, i)
         factor = mult_q(coefficient, exponent)
         computed_value = add_q(computed_value, factor)
     return computed_value
@@ -101,10 +98,8 @@ def compute_lagrange_coefficient(coordinate: int, *degrees: int) -> ElementModQ:
                     available Guardians' Sequence Orders
     """
 
-    numerator = mult_q(*[int_to_q_unchecked(degree) for degree in degrees])
-    denominator = mult_q(
-        *[int_to_q_unchecked(degree - coordinate) for degree in degrees]
-    )
+    numerator = mult_q(*[degree for degree in degrees])
+    denominator = mult_q(*[(degree - coordinate) for degree in degrees])
     result = div_q((numerator), (denominator))
     return result
 

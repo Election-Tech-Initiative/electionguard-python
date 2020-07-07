@@ -8,14 +8,15 @@ from .elgamal import ElGamalCiphertext
 from .group import (
     ElementModP,
     ElementModQ,
+    int_to_q,
     int_to_q_unchecked,
     Q,
     mult_p,
     pow_q,
     pow_p,
-    int_to_q_unchecked,
     int_to_p_unchecked,
     ONE_MOD_P,
+    rand_q,
 )
 from .key_ceremony import (
     AuxiliaryKeyPair,
@@ -42,6 +43,7 @@ from .key_ceremony import (
 )
 from .logs import log_warning
 from .types import GUARDIAN_ID
+from .utils import get_optional
 
 
 class Guardian(ElectionObjectBase):
@@ -414,7 +416,7 @@ class Guardian(ElectionObjectBase):
         :return: a `Tuple[ElementModP, ChaumPedersenProof]` of the decryption and its proof
         """
         if nonce_seed is None:
-            nonce_seed = int_to_q_unchecked(randbelow(Q))
+            nonce_seed = rand_q()
 
         # TODO: ISSUE #47: Decrypt the election secret key
 
@@ -456,7 +458,7 @@ class Guardian(ElectionObjectBase):
         :return: a `Tuple[ElementModP, ChaumPedersenProof]` of the decryption and its proof
         """
         if nonce_seed is None:
-            nonce_seed = int_to_q_unchecked(randbelow(Q))
+            nonce_seed = rand_q()
 
         backup = self._guardian_election_partial_key_backups.get(missing_guardian_id)
         if backup is None:
@@ -466,7 +468,7 @@ class Guardian(ElectionObjectBase):
             return None
 
         decrypted_value = decrypt(backup.encrypted_value, self._auxiliary_keys)
-        partial_secret_key = int_to_q_unchecked(int(decrypted_value))
+        partial_secret_key = get_optional(int_to_q(int(decrypted_value)))
 
         # 𝑀_{𝑖,l} = 𝐴^P𝑖_{l}
         partial_decryption = elgamal.partial_decrypt(partial_secret_key)
@@ -500,9 +502,7 @@ class Guardian(ElectionObjectBase):
         # K_ij^(l^j) for j in 0..k-1.  K_ij is coefficients[j].public_key
         pub_key = ONE_MOD_P
         for index, commitment in enumerate(backup.coefficient_commitments):
-            exponent = pow_q(
-                int_to_q_unchecked(self.sequence_order), int_to_p_unchecked(index)
-            )
+            exponent = pow_q(self.sequence_order, index)
             pub_key = mult_p(pub_key, pow_p(commitment, exponent))
 
         return pub_key

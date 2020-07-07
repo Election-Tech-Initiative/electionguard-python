@@ -16,9 +16,10 @@ from .elgamal import (
     elgamal_combine_public_keys,
     elgamal_keypair_random,
 )
-from .group import int_to_q_unchecked, rand_q, ElementModP, ElementModQ
+from .group import int_to_q, rand_q, ElementModP, ElementModQ
 from .schnorr import SchnorrProof, make_schnorr_proof
 from .types import GUARDIAN_ID
+from .utils import get_optional
 
 ElectionJointKey = ElementModP
 
@@ -234,7 +235,7 @@ def verify_election_partial_key_backup(
     """
 
     decrypted_value = decrypt(backup.encrypted_value, auxiliary_key_pair)
-    value = int_to_q_unchecked(int(decrypted_value))
+    value = get_optional(int_to_q(int(decrypted_value)))
 
     return ElectionPartialKeyVerification(
         backup.owner_id,
@@ -281,7 +282,7 @@ def verify_election_partial_key_challenge(
         challenge.designated_id,
         verifier_id,
         verify_polynomial_coordinate(
-            int_to_q_unchecked(challenge.value),
+            get_optional(int_to_q(challenge.value)),
             challenge.designated_sequence_order,
             challenge.coefficient_commitments,
         ),

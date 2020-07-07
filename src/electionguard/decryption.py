@@ -385,7 +385,8 @@ def reconstruct_missing_tally_decryption_shares(
     ciphertext_tally: CiphertextTally,
     missing_guardians: DataStore[MISSING_GUARDIAN_ID, ElectionPublicKey],
     compensated_shares: Dict[
-        MISSING_GUARDIAN_ID, Dict[AVAILABLE_GUARDIAN_ID, CompensatedTallyDecryptionShare]
+        MISSING_GUARDIAN_ID,
+        Dict[AVAILABLE_GUARDIAN_ID, CompensatedTallyDecryptionShare],
     ],
     lagrange_coefficients: Dict[
         MISSING_GUARDIAN_ID, Dict[AVAILABLE_GUARDIAN_ID, ElementModQ]
