@@ -1,33 +1,27 @@
 from typing import (
     Callable,
-    Dict,
-    Generic,
-    Iterable,
     List,
     NamedTuple,
-    Optional,
-    Tuple,
-    TypeVar,
 )
 
+from .data_store import DataStore
 from .election_polynomial import (
-    compute_polynomial_value,
+    compute_polynomial_coordinate,
     ElectionPolynomial,
     generate_polynomial,
-    verify_polynomial_value,
+    verify_polynomial_coordinate,
 )
 from .elgamal import (
     ElGamalKeyPair,
     elgamal_combine_public_keys,
     elgamal_keypair_random,
 )
-from .group import (
-    int_to_q_unchecked,
-    rand_q,
-    ElementModP,
-)
+from .group import int_to_q, rand_q, ElementModP, ElementModQ
 from .schnorr import SchnorrProof, make_schnorr_proof
 from .types import GUARDIAN_ID
+from .utils import get_optional
+
+ElectionJointKey = ElementModP
 
 
 class CeremonyDetails(NamedTuple):
@@ -51,18 +45,33 @@ class AuxiliaryPublicKey(NamedTuple):
     """A tuple of auxiliary public key and owner information"""
 
     owner_id: GUARDIAN_ID
+    """
+    The unique identifier of the guardian
+    """
+
     sequence_order: int
+    """
+    The sequence order of the auxiliary public key (usually the guardian's sequence order)
+    """
+
     key: str
+    """
+    A string representation of the Auxiliary public key.  
+    It is up to the external `AuxiliaryEncrypt` function to know how to parse this value
+    """
 
 
 AuxiliaryEncrypt = Callable[[str, AuxiliaryPublicKey], str]
+"""
+A Genric callable type that represents an encryption/decryption scheme.
+"""
 
-# FIX_ME Default Auxiliary Encrypt is temporary placeholder
+# FIX_ME ISSUE #47: Default Auxiliary Encrypt is temporary placeholder
 default_auxiliary_encrypt = lambda unencrypted, key: unencrypted
 
 AuxiliaryDecrypt = Callable[[str, AuxiliaryKeyPair], str]
 
-# FIX_ME Default Auxiliary Decrypt is temporary placeholder
+# FIX_ME ISSUE #47: Default Auxiliary Decrypt is temporary placeholder
 default_auxiliary_decrypt = lambda encrypted, key_pair: encrypted
 
 
@@ -103,12 +112,32 @@ class ElectionPartialKeyBackup(NamedTuple):
     """Election partial key backup used for key sharing"""
 
     owner_id: GUARDIAN_ID
+    """
+    The Id of the guardian that generated this backup
+    """
     designated_id: GUARDIAN_ID
+    """
+    The Id of the guardian to receive this backup
+    """
     designated_sequence_order: int
+    """
+    The sequence order of the designated guardian
+    """
 
     encrypted_value: str
+    """
+    The encrypted coordinate corresponding to a secret election polynomial
+    """
+
     coefficient_commitments: List[ElementModP]
+    """
+    The public keys `K_ij`generated from the election polynomial coefficients
+    """
+
     coefficient_proofs: List[SchnorrProof]
+    """
+    the proofs of posession of the private keys for the election polynomial secret coefficients
+    """
 
 
 class ElectionPartialKeyVerification(NamedTuple):
@@ -126,77 +155,13 @@ class ElectionPartialKeyChallenge(NamedTuple):
     owner_id: GUARDIAN_ID
     designated_id: GUARDIAN_ID
     designated_sequence_order: int
+    """
+    The sequence order of the designated guardian
+    """
 
     value: int
     coefficient_commitments: List[ElementModP]
     coefficient_proofs: List[SchnorrProof]
-
-
-ElectionJointKey = ElementModP
-
-T = TypeVar("T")
-U = TypeVar("U")
-
-
-class GuardianDataStore(Generic[T, U]):
-    """
-    Wrapper around dictionary for guardian data storage
-    """
-
-    _store: Dict[T, U]
-
-    def __init__(self) -> None:
-        self._store = {}
-
-    def set(self, key: T, value: U) -> None:
-        """
-        Create or update a new value in store
-        :param key: key
-        :param value: value
-        """
-        self._store[key] = value
-
-    def get(self, key: T) -> Optional[U]:
-        """
-        Get value in store
-        :param key: key
-        :return: value if found
-        """
-        return self._store.get(key)
-
-    def length(self) -> int:
-        """
-        Get length or count of store
-        :return: Count in store
-        """
-        return len(self._store)
-
-    def values(self) -> Iterable[U]:
-        """
-        Gets all values in store as list
-        :return: List of values
-        """
-        return self._store.values()
-
-    def clear(self) -> None:
-        """
-        Clear data from store
-        """
-        self._store.clear()
-
-    def keys(self) -> Iterable[T]:
-        """
-        Gets all keys in store as list
-        :return: List of keys
-        """
-        return self._store.keys()
-
-    def items(self) -> Iterable[Tuple[T, U]]:
-        """
-        Gets all items in store as list
-        :return: List of (key, value)
-        """
-        return self._store.items()
 
 
 def generate_elgamal_auxiliary_key_pair() -> AuxiliaryKeyPair:
@@ -211,13 +176,15 @@ def generate_elgamal_auxiliary_key_pair() -> AuxiliaryKeyPair:
     )
 
 
-def generate_election_key_pair(quorum: int) -> ElectionKeyPair:
+def generate_election_key_pair(
+    quorum: int, nonce: ElementModQ = None
+) -> ElectionKeyPair:
     """
     Generate election key pair, proof, and polynomial
     :param quorum: Quorum of guardians needed to decrypt
     :return: Election key pair
     """
-    polynomial = generate_polynomial(quorum)
+    polynomial = generate_polynomial(quorum, nonce)
     key_pair = ElGamalKeyPair(
         polynomial.coefficients[0], polynomial.coefficient_commitments[0]
     )
@@ -234,12 +201,14 @@ def generate_election_partial_key_backup(
     """
     Generate election partial key backup for sharing
     :param owner_id: Owner of election key
-    :param polynomial: Election polynomial
-    :param auxiliary_public_key: Auxiliary public key
+    :param polynomial: The owner's Election polynomial
+    :param auxiliary_public_key: The Auxiliary public key
     :param encrypt: Function to encrypt using auxiliary key
     :return: Election partial key backup
     """
-    value = compute_polynomial_value(auxiliary_public_key.sequence_order, polynomial)
+    value = compute_polynomial_coordinate(
+        auxiliary_public_key.sequence_order, polynomial
+    )
     encrypted_value = encrypt(str(value.to_int()), auxiliary_public_key)
     return ElectionPartialKeyBackup(
         owner_id,
@@ -266,13 +235,13 @@ def verify_election_partial_key_backup(
     """
 
     decrypted_value = decrypt(backup.encrypted_value, auxiliary_key_pair)
-    value = int_to_q_unchecked(int(decrypted_value))
+    value = get_optional(int_to_q(int(decrypted_value)))
 
     return ElectionPartialKeyVerification(
         backup.owner_id,
         backup.designated_id,
         verifier_id,
-        verify_polynomial_value(
+        verify_polynomial_coordinate(
             value, backup.designated_sequence_order, backup.coefficient_commitments
         ),
     )
@@ -291,7 +260,9 @@ def generate_election_partial_key_challenge(
         backup.owner_id,
         backup.designated_id,
         backup.designated_sequence_order,
-        compute_polynomial_value(backup.designated_sequence_order, polynomial).to_int(),
+        compute_polynomial_coordinate(
+            backup.designated_sequence_order, polynomial
+        ).to_int(),
         backup.coefficient_commitments,
         backup.coefficient_proofs,
     )
@@ -310,8 +281,8 @@ def verify_election_partial_key_challenge(
         challenge.owner_id,
         challenge.designated_id,
         verifier_id,
-        verify_polynomial_value(
-            int_to_q_unchecked(challenge.value),
+        verify_polynomial_coordinate(
+            get_optional(int_to_q(challenge.value)),
             challenge.designated_sequence_order,
             challenge.coefficient_commitments,
         ),
@@ -319,11 +290,12 @@ def verify_election_partial_key_challenge(
 
 
 def combine_election_public_keys(
-    election_public_keys: GuardianDataStore[GUARDIAN_ID, ElectionPublicKey]
+    election_public_keys: DataStore[GUARDIAN_ID, ElectionPublicKey]
 ) -> ElectionJointKey:
     """
     Creates a joint election key from the public keys of all guardians
     :return: Joint key for election
     """
-    public_keys = [pk.key for pk in election_public_keys.values()]
+    public_keys = map(lambda public_key: public_key.key, election_public_keys.values())
+
     return elgamal_combine_public_keys(public_keys)

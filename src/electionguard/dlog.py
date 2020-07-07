@@ -40,7 +40,6 @@ async def __discrete_log_internal(e: ElementModP) -> int:
 
     async with __dlog_lock:
         g = int_to_p_unchecked(G)
-
         while e != __dlog_max_elem:
             __dlog_max_exp = __dlog_max_exp + 1
             __dlog_max_elem = mult_p(g, __dlog_max_elem)

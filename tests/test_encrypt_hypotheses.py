@@ -6,7 +6,7 @@ from hypothesis import given, HealthCheck, settings, Phase
 from hypothesis.strategies import integers
 
 from electionguard.ballot import CiphertextBallot
-from electionguard.decrypt import decrypt_ballot_with_secret
+from electionguard.decrypt_with_secrets import decrypt_ballot_with_secret
 from electionguard.election import ElectionDescription
 from electionguard.elgamal import ElGamalCiphertext, elgamal_encrypt, elgamal_add
 from electionguard.encrypt import encrypt_ballot, EncryptionDevice

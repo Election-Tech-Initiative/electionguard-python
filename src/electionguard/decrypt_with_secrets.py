@@ -1,5 +1,4 @@
-from multiprocessing import Pool, cpu_count
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 from .ballot import (
     CiphertextBallot,
@@ -9,49 +8,21 @@ from .ballot import (
     PlaintextBallotContest,
     PlaintextBallotSelection,
 )
-from .decryption_share import DecryptionShare, get_cast_shares_for_selection
-from .dlog import discrete_log
 from .election import (
     InternalElectionDescription,
     ContestDescriptionWithPlaceholders,
     SelectionDescription,
 )
-from .group import ElementModP, ElementModQ, mult_p, div_p
+from .group import ElementModP, ElementModQ
 from .hash import hash_elems
 from .logs import log_warning
 from .nonces import Nonces
-from .tally import (
-    CiphertextTallyContest,
-    PlaintextTallyContest,
-    CiphertextTallySelection,
-    PlaintextTallySelection,
-)
-from .types import CONTEST_ID, GUARDIAN_ID, SELECTION_ID
+
 from .utils import get_optional
 
+ELECTION_PUBLIC_KEY = ElementModP
 
-def decrypt_selection_with_decryption_shares(
-    selection: CiphertextTallySelection, shares: Dict[GUARDIAN_ID, ElementModP],
-) -> Optional[PlaintextTallySelection]:
-    """
-    Decrypt the specified `CiphertextTallySelection` with the collection of `ElementModP` decryption shares
-
-    :param selection: a `CiphertextTallySelection`
-    :param shares: the collection of shares to decrypt the selection
-    :return: a `PlaintextTallySelection` or `None` if there is an error
-    """
-
-    # accumulate all of the shares calculated for the selection
-    all_shares_product_M = mult_p(*list(shares.values()))
-
-    # Calculate 𝑀=𝐵⁄(∏𝑀𝑖) mod 𝑝.
-    decrypted_value = div_p(selection.message.beta, all_shares_product_M)
-    return PlaintextTallySelection(
-        selection.object_id,
-        discrete_log(decrypted_value),
-        decrypted_value,
-        selection.message,
-    )
+# The Methods in this file can be used to decrypt values if private keys or nonces are known
 
 
 def decrypt_selection_with_secret(
@@ -250,47 +221,6 @@ def decrypt_contest_with_nonce(
             return None
 
     return PlaintextBallotContest(contest.object_id, plaintext_selections)
-
-
-def decrypt_tally_contests_with_decryption_shares(
-    tally: Dict[CONTEST_ID, CiphertextTallyContest],
-    shares: Dict[GUARDIAN_ID, DecryptionShare],
-) -> Optional[Dict[CONTEST_ID, PlaintextTallyContest]]:
-    """
-    Decrypt the specified tally within the context of the specified Decryption Shares
-
-    :param tally: the encrypted tally of contests
-    :param shares: a collection of `DecryptionShare` used to decrypt
-    :return: a collection of `PlaintextTallyContest` or `None` if there is an error
-    """
-    cpu_pool = Pool(cpu_count())
-    contests: Dict[CONTEST_ID, PlaintextTallyContest] = {}
-
-    # iterate through the tally contests
-    for contest in tally.values():
-        selections: Dict[SELECTION_ID, PlaintextTallySelection] = {}
-
-        plaintext_selections = cpu_pool.starmap(
-            decrypt_selection_with_decryption_shares,
-            [
-                (selection, get_cast_shares_for_selection(selection.object_id, shares),)
-                for (_, selection) in contest.tally_selections.items()
-            ],
-        )
-
-        # verify the plaintext values are received and add them to the collection
-        for plaintext in plaintext_selections:
-            if plaintext is None:
-                log_warning(f"could not decrypt tally for contest {contest.object_id}")
-                return None
-            selections[plaintext.object_id] = plaintext
-
-        contests[contest.object_id] = PlaintextTallyContest(
-            contest.object_id, selections
-        )
-
-    cpu_pool.close()
-    return contests
 
 
 def decrypt_ballot_with_secret(
