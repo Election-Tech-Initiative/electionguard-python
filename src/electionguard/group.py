@@ -101,7 +101,7 @@ class ElementModP(NamedTuple):
         ) and eq_elems(self, other)
 
 
-# Handy constants. Defined once, so we can avoid allocating lots of copies.
+# Common constants
 ZERO_MOD_Q: Final[ElementModQ] = ElementModQ(mpz(0))
 ONE_MOD_Q: Final[ElementModQ] = ElementModQ(mpz(1))
 TWO_MOD_Q: Final[ElementModQ] = ElementModQ(mpz(2))
@@ -110,7 +110,10 @@ ZERO_MOD_P: Final[ElementModP] = ElementModP(mpz(0))
 ONE_MOD_P: Final[ElementModP] = ElementModP(mpz(1))
 TWO_MOD_P: Final[ElementModP] = ElementModP(mpz(2))
 
-ElementModPOrQ = Union[ElementModP, ElementModQ]  # generally useful typedef
+ElementModPOrQ = Union[ElementModP, ElementModQ]
+ElementModPOrQorInt = Union[ElementModP, ElementModQ, int]
+ElementModQorInt = Union[ElementModQ, int]
+ElementModPorInt = Union[ElementModP, int]
 
 
 def int_to_q(i: int) -> Optional[ElementModQ]:
@@ -172,77 +175,128 @@ def bytes_to_q(b: bytes) -> ElementModQ:
     return ElementModQ(mpz(from_binary(b)))
 
 
-def add_q(*elems: ElementModQ) -> ElementModQ:
+def add_q(*elems: ElementModQorInt) -> ElementModQ:
     """
     Adds together one or more elements in Q, returns the sum mod Q.
     """
     t = mpz(0)
     for e in elems:
+        if isinstance(e, int):
+            e = int_to_q_unchecked(e)
         t = (t + e.elem) % Q
 
     return ElementModQ(t)
 
 
-def a_minus_b_q(a: ElementModQ, b: ElementModQ) -> ElementModQ:
+def a_minus_b_q(a: ElementModQorInt, b: ElementModQorInt) -> ElementModQ:
     """
     Computes (a-b) mod q.
     """
+    if isinstance(a, int):
+        a = int_to_q_unchecked(a)
+    if isinstance(b, int):
+        b = int_to_q_unchecked(b)
+
     return ElementModQ((a.elem - b.elem) % Q)
 
 
-def div_p(a: ElementModPOrQ, b: ElementModPOrQ) -> ElementModP:
+def div_p(a: ElementModPOrQorInt, b: ElementModPOrQorInt) -> ElementModP:
     """
     Computes a/b mod p
     """
+    if isinstance(a, int):
+        a = int_to_p_unchecked(a)
+    if isinstance(b, int):
+        b = int_to_p_unchecked(b)
+
     inverse = invert(b.elem, mpz(P))
     return mult_p(a, int_to_p_unchecked(inverse))
 
 
-def negate_q(a: ElementModQ) -> ElementModQ:
+def div_q(a: ElementModPOrQorInt, b: ElementModPOrQorInt) -> ElementModQ:
+    """
+    Computes a/b mod q
+    """
+    if isinstance(a, int):
+        a = int_to_p_unchecked(a)
+    if isinstance(b, int):
+        b = int_to_p_unchecked(b)
+
+    inverse = invert(b.elem, mpz(Q))
+    return mult_q(a, int_to_q_unchecked(inverse))
+
+
+def negate_q(a: ElementModQorInt) -> ElementModQ:
     """
     Computes (Q - a) mod q.
     """
+    if isinstance(a, int):
+        a = int_to_q_unchecked(a)
     return ElementModQ(Q - a.elem)
 
 
-def a_plus_bc_q(a: ElementModQ, b: ElementModQ, c: ElementModQ) -> ElementModQ:
+def a_plus_bc_q(
+    a: ElementModQorInt, b: ElementModQorInt, c: ElementModQorInt
+) -> ElementModQ:
     """
     Computes (a + b * c) mod q.
     """
+    if isinstance(a, int):
+        a = int_to_q_unchecked(a)
+    if isinstance(b, int):
+        b = int_to_q_unchecked(b)
+    if isinstance(c, int):
+        c = int_to_q_unchecked(c)
+
     return ElementModQ((a.elem + b.elem * c.elem) % Q)
 
 
-def mult_inv_p(e: ElementModPOrQ) -> ElementModP:
+def mult_inv_p(e: ElementModPOrQorInt) -> ElementModP:
     """
     Computes the multiplicative inverse mod p.
 
     :param e:  An element in [1, P).
     """
+    if isinstance(e, int):
+        e = int_to_p_unchecked(e)
+
     assert e.elem != 0, "No multiplicative inverse for zero"
     return ElementModP(powmod(e.elem, -1, P))
 
 
-def pow_p(b: ElementModPOrQ, e: ElementModPOrQ) -> ElementModP:
+def pow_p(b: ElementModPOrQorInt, e: ElementModPOrQorInt) -> ElementModP:
     """
     Computes b^e mod p.
 
     :param b: An element in [0,P).
     :param e: An element in [0,P).
     """
+
+    if isinstance(b, int):
+        b = int_to_p_unchecked(b)
+    if isinstance(e, int):
+        e = int_to_p_unchecked(e)
+
     return ElementModP(powmod(b.elem, e.elem, P))
 
 
-def pow_q(b: ElementModPOrQ, e: ElementModPOrQ) -> ElementModQ:
+def pow_q(b: ElementModQorInt, e: ElementModQorInt) -> ElementModQ:
     """
     Computes b^e mod p.
 
-    :param b: An element in [0,P).
-    :param e: An element in [0,P).
+    :param b: An element in [0,Q).
+    :param e: An element in [0,Q).
     """
+    if isinstance(b, int):
+        b = int_to_q_unchecked(b)
+
+    if isinstance(e, int):
+        e = int_to_q_unchecked(e)
+
     return ElementModQ(powmod(b.elem, e.elem, Q))
 
 
-def mult_p(*elems: ElementModPOrQ) -> ElementModP:
+def mult_p(*elems: ElementModPOrQorInt) -> ElementModP:
     """
     Computes the product, mod p, of all elements.
 
@@ -250,11 +304,13 @@ def mult_p(*elems: ElementModPOrQ) -> ElementModP:
     """
     product = mpz(1)
     for x in elems:
+        if isinstance(x, int):
+            x = int_to_p_unchecked(x)
         product = (product * x.elem) % P
     return ElementModP(product)
 
 
-def mult_q(*elems: ElementModPOrQ) -> ElementModQ:
+def mult_q(*elems: ElementModPOrQorInt) -> ElementModQ:
     """
     Computes the product, mod q, of all elements.
 
@@ -262,6 +318,8 @@ def mult_q(*elems: ElementModPOrQ) -> ElementModQ:
     """
     product = mpz(1)
     for x in elems:
+        if isinstance(x, int):
+            x = int_to_p_unchecked(x)
         product = (product * x.elem) % Q
     return ElementModQ(product)
 
@@ -284,15 +342,18 @@ def rand_q() -> ElementModQ:
     return int_to_q_unchecked(randbelow(Q))
 
 
-def rand_range_q(start: ElementModQ) -> ElementModQ:
+def rand_range_q(start: ElementModQorInt) -> ElementModQ:
     """
     Generate random number between start and Q
 
     :param start: Starting value of range
     :return: Random value between start and Q
     """
+    if isinstance(start, ElementModQ):
+        start = start.to_int()
+
     random = 0
-    while random < start.to_int():
+    while random < start:
         random = randbelow(Q)
     return int_to_q_unchecked(random)
 

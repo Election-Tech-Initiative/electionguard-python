@@ -2,9 +2,7 @@ from typing import Any
 
 
 class Singleton:
-    """
-    A Singleton Class
-    """
+    """A Singleton Class"""
 
     __instance = None
 

@@ -1,5 +1,5 @@
 from secrets import randbelow
-from typing import List, Optional, NamedTuple
+from typing import List, Optional
 from uuid import getnode
 
 from .ballot import (
@@ -19,7 +19,7 @@ from .election import (
     SelectionDescription,
 )
 from .elgamal import elgamal_encrypt
-from .group import Q, ElementModP, ElementModQ, int_to_q_unchecked
+from .group import Q, ElementModP, ElementModQ, rand_q
 from .hash import hash_elems
 from .logs import log_warning
 from .nonces import Nonces
@@ -398,9 +398,7 @@ def encrypt_ballot(
         return None
 
     # Generate a random master nonce to use for the contest and selection nonce's on the ballot
-    random_master_nonce = get_or_else_optional_func(
-        nonce, lambda: int_to_q_unchecked(randbelow(Q))
-    )
+    random_master_nonce = get_or_else_optional_func(nonce, lambda: rand_q())
 
     # Include a representation of the election and the external Id in the nonce's used
     # to derive other nonce values on the ballot

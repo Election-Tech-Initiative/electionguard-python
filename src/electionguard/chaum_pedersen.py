@@ -127,12 +127,16 @@ class ChaumPedersenProof(NamedTuple):
     ) -> bool:
         """
         Validates a Chaum-Pedersen proof.
-        e.g. that the equations 𝑔^𝑣𝑖 = 𝑎𝑖𝐾^𝑐𝑖 mod 𝑝 and 𝐴^𝑣𝑖 = 𝑏𝑖𝑀𝑖^𝑐𝑖 mod 𝑝 are satisfied.
+        e.g.
+        - The given value 𝑣𝑖 is in the set Z𝑞
+        - The given values 𝑎𝑖 and 𝑏𝑖 are both in the set Z𝑞^𝑟
+        - The challenge value 𝑐 satisfies 𝑐 = 𝐻(𝑄, (𝐴, 𝐵), (𝑎 , 𝑏 ), 𝑀 ).
+        - that the equations 𝑔^𝑣𝑖 = 𝑎𝑖𝐾^𝑐𝑖 mod 𝑝 and 𝐴^𝑣𝑖 = 𝑏𝑖𝑀𝑖^𝑐𝑖 mod 𝑝 are satisfied.
         
         :param message: The ciphertext message
         :param k: The public key corresponding to the private key used to encrypt 
                   (e.g. the Guardian public election key)
-        :param m:
+        :param m: The value being checked for validity
         :param q: The extended base hash of the election
         :return: True if everything is consistent. False otherwise.
         """
@@ -184,7 +188,7 @@ class ChaumPedersenProof(NamedTuple):
 
         if not success:
             log_warning(
-                "found an invalid Constant Chaum-Pedersen proof: "
+                "found an invalid Chaum-Pedersen proof: "
                 + str(
                     {
                         "in_bounds_alpha": in_bounds_alpha,
@@ -225,7 +229,7 @@ class ConstantChaumPedersenProof(NamedTuple):
         e.g. that the equations 𝑔𝑉 = 𝑎𝐴𝐶 mod 𝑝 and 𝑔𝐿𝐾𝑣 = 𝑏𝐵𝐶 mod 𝑝 are satisfied.
 
         :param message: The ciphertext message
-        :param k: The public key of the election
+        :param K: The public key of the election
         :return: True if everything is consistent. False otherwise.
         """
 
@@ -403,16 +407,16 @@ def make_chaum_pedersen(
     :param m: The value we are trying to prove
     :param seed: Used to generate other random values here
     :param hash_header: A value used when generating the challenge, 
-                        usually the election extended base hash (𝑄)
+                        usually the election extended base hash (𝑄')
     """
     (alpha, beta) = message
 
     # Pick one random number in Q.
     u = Nonces(seed, "constant-chaum-pedersen-proof")[0]
-    a = g_pow_p(u)
-    b = pow_p(alpha, u)
-    c = hash_elems(hash_header, alpha, beta, a, b, m)
-    v = a_plus_bc_q(u, c, s)
+    a = g_pow_p(u)  # 𝑔^𝑢𝑖 mod 𝑝
+    b = pow_p(alpha, u)  # 𝐴^𝑢𝑖 mod 𝑝
+    c = hash_elems(hash_header, alpha, beta, a, b, m)  # sha256(𝑄', A, B, a𝑖, b𝑖, 𝑀𝑖)
+    v = a_plus_bc_q(u, c, s)  # (𝑢𝑖 + 𝑐𝑖𝑠𝑖) mod 𝑞
 
     return ChaumPedersenProof(a, b, c, v)
 

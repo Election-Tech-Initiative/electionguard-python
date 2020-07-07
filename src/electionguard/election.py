@@ -799,10 +799,10 @@ class CiphertextElectionContext(Serializable):
     # The hash of the election metadata
     description_hash: ElementModQ
 
-    # the `base hash code (Q)` in the [ElectionGuard Spec](https://github.com/microsoft/electionguard/wiki)
+    # the `base hash code (𝑄)` in the [ElectionGuard Spec](https://github.com/microsoft/electionguard/wiki)
     crypto_base_hash: ElementModQ = field(init=False)
 
-    # the `extended base hash code (Q')` in the [ElectionGuard Spec](https://github.com/microsoft/electionguard/wiki)
+    # the `extended base hash code (𝑄')` in the [ElectionGuard Spec](https://github.com/microsoft/electionguard/wiki)
     crypto_extended_base_hash: ElementModQ = field(init=False)
 
     def __post_init__(self) -> None:

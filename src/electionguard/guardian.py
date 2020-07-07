@@ -2,9 +2,22 @@ from typing import Callable, Optional, Tuple
 from secrets import randbelow
 
 from .chaum_pedersen import ChaumPedersenProof, make_chaum_pedersen
+from .data_store import DataStore, ReadOnlyDataStore
 from .election_object_base import ElectionObjectBase
 from .elgamal import ElGamalCiphertext
-from .group import ElementModP, ElementModQ, int_to_q_unchecked, Q
+from .group import (
+    ElementModP,
+    ElementModQ,
+    int_to_q,
+    int_to_q_unchecked,
+    Q,
+    mult_p,
+    pow_q,
+    pow_p,
+    int_to_p_unchecked,
+    ONE_MOD_P,
+    rand_q,
+)
 from .key_ceremony import (
     AuxiliaryKeyPair,
     AuxiliaryPublicKey,
@@ -24,13 +37,13 @@ from .key_ceremony import (
     generate_election_partial_key_backup,
     generate_election_partial_key_challenge,
     generate_elgamal_auxiliary_key_pair,
-    GuardianDataStore,
     PublicKeySet,
     verify_election_partial_key_backup,
     verify_election_partial_key_challenge,
 )
 from .logs import log_warning
 from .types import GUARDIAN_ID
+from .utils import get_optional
 
 
 class Guardian(ElectionObjectBase):
@@ -42,17 +55,35 @@ class Guardian(ElectionObjectBase):
     ceremony_details: CeremonyDetails
     _auxiliary_keys: AuxiliaryKeyPair
     _election_keys: ElectionKeyPair
-    _backups_to_share: GuardianDataStore[GUARDIAN_ID, ElectionPartialKeyBackup]
+    _backups_to_share: DataStore[GUARDIAN_ID, ElectionPartialKeyBackup]
+    """
+    The collection of this guardian's partial key backups that will be shared to other guardians
+    """
 
     # From Other Guardians
-    _guardian_auxiliary_public_keys: GuardianDataStore[GUARDIAN_ID, AuxiliaryPublicKey]
-    _guardian_election_public_keys: GuardianDataStore[GUARDIAN_ID, ElectionPublicKey]
-    _guardian_election_partial_key_backups: GuardianDataStore[
+    _guardian_auxiliary_public_keys: DataStore[GUARDIAN_ID, AuxiliaryPublicKey]
+    """
+    The collection of other guardians' auxiliary public keys that are shared with this guardian
+    """
+
+    _guardian_election_public_keys: DataStore[GUARDIAN_ID, ElectionPublicKey]
+    """
+    The collection of other guardians' election public keys that are shared with this guardian
+    """
+
+    _guardian_election_partial_key_backups: DataStore[
         GUARDIAN_ID, ElectionPartialKeyBackup
     ]
-    _guardian_election_partial_key_verifications: GuardianDataStore[
+    """
+    The collection of other guardians' partial key backups that are shared with this guardian
+    """
+
+    _guardian_election_partial_key_verifications: DataStore[
         GUARDIAN_ID, ElectionPartialKeyVerification
     ]
+    """
+    The collection of other guardians' verifications that they shared their backups correctly
+    """
 
     def __init__(
         self, id: str, sequence_order: int, number_of_guardians: int, quorum: int,
@@ -61,24 +92,22 @@ class Guardian(ElectionObjectBase):
         super().__init__(id)
         self.sequence_order = sequence_order
         self.set_ceremony_details(number_of_guardians, quorum)
-        self._backups_to_share = GuardianDataStore[
-            GUARDIAN_ID, ElectionPartialKeyBackup
-        ]()
-        self._guardian_auxiliary_public_keys = GuardianDataStore[
+        self._backups_to_share = DataStore[GUARDIAN_ID, ElectionPartialKeyBackup]()
+        self._guardian_auxiliary_public_keys = DataStore[
             GUARDIAN_ID, AuxiliaryPublicKey
         ]()
-        self._guardian_election_public_keys = GuardianDataStore[
+        self._guardian_election_public_keys = DataStore[
             GUARDIAN_ID, ElectionPublicKey
         ]()
-        self._guardian_election_partial_key_backups = GuardianDataStore[
+        self._guardian_election_partial_key_backups = DataStore[
             GUARDIAN_ID, ElectionPartialKeyBackup
         ]()
-        self._guardian_election_partial_key_verifications = GuardianDataStore[
+        self._guardian_election_partial_key_verifications = DataStore[
             GUARDIAN_ID, ElectionPartialKeyVerification
         ]()
 
         self.generate_auxiliary_key_pair()
-        self.generate_election_key_pair()
+        self.generate_election_key_pair(int_to_q_unchecked(self.sequence_order))
 
     def reset(self, number_of_guardians: int, quorum: int) -> None:
         """
@@ -119,7 +148,7 @@ class Guardian(ElectionObjectBase):
 
     def save_guardian_public_keys(self, public_key_set: PublicKeySet) -> None:
         """
-        Save public election and auxiliary keys for other guardian
+        Save public election and auxiliary keys for another guardian
         :param public_key_set: Public set of election and auxiliary keys
         """
         self.save_auxiliary_public_key(
@@ -186,11 +215,21 @@ class Guardian(ElectionObjectBase):
             == self.ceremony_details.number_of_guardians
         )
 
-    def generate_election_key_pair(self) -> None:
+    def guardian_auxiliary_public_keys(
+        self,
+    ) -> ReadOnlyDataStore[GUARDIAN_ID, AuxiliaryPublicKey]:
+        """
+        Get a read-only view of the auxiliary public keys provided to this Guardian
+        """
+        return ReadOnlyDataStore(self._guardian_auxiliary_public_keys)
+
+    def generate_election_key_pair(self, nonce: ElementModQ = None) -> None:
         """
         Generate election key pair for encrypting/decrypting election
         """
-        self._election_keys = generate_election_key_pair(self.ceremony_details.quorum)
+        self._election_keys = generate_election_key_pair(
+            self.ceremony_details.quorum, nonce
+        )
         self.save_election_public_key(self.share_election_public_key())
 
     def share_election_public_key(self) -> ElectionPublicKey:
@@ -220,6 +259,15 @@ class Guardian(ElectionObjectBase):
             self._guardian_election_public_keys.length()
             == self.ceremony_details.number_of_guardians
         )
+
+    def guardian_election_public_keys(
+        self,
+    ) -> ReadOnlyDataStore[GUARDIAN_ID, ElectionPublicKey]:
+        """
+        Get a read-only view of the Guardian Election Public Keys shared with this Guardian
+
+        """
+        return ReadOnlyDataStore(self._guardian_election_public_keys)
 
     def generate_election_partial_key_backups(
         self, encrypt: AuxiliaryEncrypt = default_auxiliary_encrypt
@@ -368,13 +416,16 @@ class Guardian(ElectionObjectBase):
         :return: a `Tuple[ElementModP, ChaumPedersenProof]` of the decryption and its proof
         """
         if nonce_seed is None:
-            nonce_seed = int_to_q_unchecked(randbelow(Q))
+            nonce_seed = rand_q()
 
-        # 𝑀𝑖
+        # TODO: ISSUE #47: Decrypt the election secret key
+
+        # 𝑀_i = 𝐴^𝑠𝑖 mod 𝑝
         partial_decryption = elgamal.partial_decrypt(
             self._election_keys.key_pair.secret_key
         )
-        # 𝑀 =𝐴^𝑠𝑖 mod 𝑝 and 𝐾𝑖 = 𝑔^𝑠𝑖 mod 𝑝
+
+        # 𝑀_i = 𝐴^𝑠𝑖 mod 𝑝 and 𝐾𝑖 = 𝑔^𝑠𝑖 mod 𝑝
         proof = make_chaum_pedersen(
             message=elgamal,
             s=self._election_keys.key_pair.secret_key,
@@ -384,3 +435,74 @@ class Guardian(ElectionObjectBase):
         )
 
         return (partial_decryption, proof)
+
+    def compensate_decrypt(
+        self,
+        missing_guardian_id: str,
+        elgamal: ElGamalCiphertext,
+        extended_base_hash: ElementModQ,
+        nonce_seed: ElementModQ = None,
+        decrypt: AuxiliaryDecrypt = default_auxiliary_decrypt,
+    ) -> Optional[Tuple[ElementModP, ChaumPedersenProof]]:
+        """
+        Compute a compensated partial decryption of an elgamal encryption 
+        on behalf of the missing guardian
+
+        :param missing_guardian_id: the guardian 
+        :param elgamal: the `ElGamalCiphertext` that will be partially decrypted
+        :param extended_base_hash: the extended base hash of the election that 
+                                   was used to generate t he ElGamal Ciphertext
+        :param nonce_seed: an optional value used to generate the `ChaumPedersenProof`
+                           if no value is provided, a random number will be used.
+        :param decrypt: an `AuxiliaryDecrypt` function to decrypt the missing guardina private key backup
+        :return: a `Tuple[ElementModP, ChaumPedersenProof]` of the decryption and its proof
+        """
+        if nonce_seed is None:
+            nonce_seed = rand_q()
+
+        backup = self._guardian_election_partial_key_backups.get(missing_guardian_id)
+        if backup is None:
+            log_warning(
+                f"compensate decrypt guardian {self.object_id} missing backup for {missing_guardian_id}"
+            )
+            return None
+
+        decrypted_value = decrypt(backup.encrypted_value, self._auxiliary_keys)
+        partial_secret_key = get_optional(int_to_q(int(decrypted_value)))
+
+        # 𝑀_{𝑖,l} = 𝐴^P𝑖_{l}
+        partial_decryption = elgamal.partial_decrypt(partial_secret_key)
+
+        # 𝑀_{𝑖,l} = 𝐴^𝑠𝑖 mod 𝑝 and 𝐾𝑖 = 𝑔^𝑠𝑖 mod 𝑝
+        proof = make_chaum_pedersen(
+            message=elgamal,
+            s=partial_secret_key,
+            m=partial_decryption,
+            seed=nonce_seed,
+            hash_header=extended_base_hash,
+        )
+
+        return (partial_decryption, proof)
+
+    def recovery_public_key_for(
+        self, missing_guardian_id: GUARDIAN_ID
+    ) -> Optional[ElementModP]:
+        """
+        Compute the recovery public key for a given guardian
+        """
+        backup = self._guardian_election_partial_key_backups.get(missing_guardian_id)
+        if backup is None:
+            log_warning(
+                f"compensate decrypt guardian {self.object_id} missing backup for {missing_guardian_id}"
+            )
+            return None
+
+        # compute the recovery public key,
+        # corresponding to the secret share Pi(l)
+        # K_ij^(l^j) for j in 0..k-1.  K_ij is coefficients[j].public_key
+        pub_key = ONE_MOD_P
+        for index, commitment in enumerate(backup.coefficient_commitments):
+            exponent = pow_q(self.sequence_order, index)
+            pub_key = mult_p(pub_key, pow_p(commitment, exponent))
+
+        return pub_key

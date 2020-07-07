@@ -13,7 +13,7 @@ from .ballot import BallotBoxState, CiphertextAcceptedBallot
 from .logs import log_warning
 from .types import BALLOT_ID
 
-
+# TODO: ISSUE # 74: Remove this class in favor of using DataStore
 class BallotStore(Iterable):
     """
     A representation of a cache of ballots for an election
