@@ -1,27 +1,29 @@
+from typing import Optional
+
 MIN_INDEX = 0
 MAX_INDEX = 4095
 
 
-def get_word(index: int) -> str:
+def get_word(index: int) -> Optional[str]:
     """
     Get word (4096 options) based on 16 bit index for use with trackers.
-    :param index: index of word
-    :return: word
+    :param index: index of word between 0 and 4095
+    :return: word or None if index outside bounds
     """
     if index < MIN_INDEX:
-        return words[MIN_INDEX]
+        return None
     if index > MAX_INDEX:
-        return words[MAX_INDEX]
+        return None
     return words[index]
 
 
-def get_index_from_word(word: str) -> int:
+def get_index_from_word(word: str) -> Optional[int]:
     """
     Get the index of a word (4096 options) based on 16 bit index for use with trackers.
     :param word: word
-    :return: index of word
+    :return: index of word or None if not found
     """
-    return words.index(word)
+    return words.index(word) if word in words else None
 
 
 words = [

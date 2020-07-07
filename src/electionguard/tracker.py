@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from .hash import hash_elems
 from .group import ElementModQ, q_to_bytes, bytes_to_q
@@ -32,29 +32,39 @@ def get_rotating_tracker_hash(
 
 def tracker_hash_to_words(
     tracker_hash: ElementModQ, seperator: str = DEFAULT_SEPERATOR
-) -> str:
+) -> Optional[str]:
     """
     Convert tracker has to human readable / friendly words
     :param hash: Tracker hash
-    :return: Human readable tracker string
+    :return: Human readable tracker string or None
     """
 
     segments = q_to_bytes(tracker_hash)
-    words = [get_word(value) for value in segments]
-    # TODO Reduce length of segments
+    words: List[str] = []
+    for value in segments:
+        word = get_word(value)
+        if word is None:
+            return None
+        words.append(word)
+    # FIXME ISSUE #82 Minimize length of tracker
     return seperator.join(words)
 
 
 def tracker_words_to_hash(
     tracker_words: str, seperator: str = DEFAULT_SEPERATOR
-) -> ElementModQ:
+) -> Optional[ElementModQ]:
     """
     Convert tracker from human readable / friendly words to hash
     :param tracker_words: Tracker words
     :param seperator: Seperator used between words
-    :return: Tracker hash
+    :return: Tracker hash or None
     """
     words = tracker_words.split(seperator)
-    int_values = [get_index_from_word(word) for word in words]
+    int_values: List[int] = []
+    for word in words:
+        index = get_index_from_word(word)
+        if index is None:
+            return None
+        int_values.append(index)
     value = bytes(int_values)
     return bytes_to_q(value)
