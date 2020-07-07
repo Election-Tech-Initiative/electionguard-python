@@ -25,6 +25,7 @@ from .key_ceremony import (
     AuxiliaryEncrypt,
     combine_election_public_keys,
     CeremonyDetails,
+    CoefficientValidationSet,
     default_auxiliary_decrypt,
     default_auxiliary_encrypt,
     ElectionJointKey,
@@ -33,6 +34,7 @@ from .key_ceremony import (
     ElectionPartialKeyChallenge,
     ElectionPartialKeyVerification,
     ElectionPublicKey,
+    get_coefficient_validation_set,
     generate_election_key_pair,
     generate_election_partial_key_backup,
     generate_election_partial_key_challenge,
@@ -241,6 +243,14 @@ class Guardian(ElectionObjectBase):
             self.object_id,
             self._election_keys.proof,
             self._election_keys.key_pair.public_key,
+        )
+
+    def share_coefficient_validation_set(self) -> CoefficientValidationSet:
+        """
+        Share coefficient validation set to be used for validating the coefficients post election
+        """
+        return get_coefficient_validation_set(
+            self.object_id, self._election_keys.polynomial
         )
 
     def save_election_public_key(self, key: ElectionPublicKey) -> None:

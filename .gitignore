@@ -137,3 +137,6 @@ coverage/
 cov.xml
 
 .DS_Store
+
+# File output
+results/
