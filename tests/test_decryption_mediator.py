@@ -530,7 +530,7 @@ class TestDecryptionMediator(TestCase):
         self.assertEqual(self.expected_plaintext_tally, result)
 
     @settings(
-        deadline=timedelta(milliseconds=10000),
+        deadline=timedelta(milliseconds=15000),
         suppress_health_check=[HealthCheck.too_slow],
         max_examples=8,
         # disabling the "shrink" phase, because it runs very slowly
