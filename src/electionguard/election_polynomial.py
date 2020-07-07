@@ -1,5 +1,4 @@
 from typing import List, NamedTuple
-from math import prod
 
 from .elgamal import ElGamalKeyPair
 from .group import (
@@ -13,7 +12,6 @@ from .group import (
     mult_p,
     mult_q,
     ONE_MOD_P,
-    ONE_MOD_Q,
     pow_p,
     pow_q,
     rand_q,

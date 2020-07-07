@@ -11,8 +11,8 @@ from .decryption_share import (
     CiphertextCompensatedDecryptionSelection,
     CiphertextDecryptionContest,
     CiphertextCompensatedDecryptionContest,
-    DecryptionShare,
-    CompensatedDecryptionShare,
+    TallyDecryptionShare,
+    CompensatedTallyDecryptionShare,
 )
 from .election import CiphertextElectionContext
 from .group import ElementModP, ElementModQ, mult_p, pow_p
@@ -38,14 +38,14 @@ CiphertextSelection = Union[CiphertextBallotSelection, CiphertextTallySelection]
 
 def compute_decryption_share(
     guardian: Guardian, tally: CiphertextTally, context: CiphertextElectionContext,
-) -> Optional[DecryptionShare]:
+) -> Optional[TallyDecryptionShare]:
     """
     Compute a decryptions share for a guardian
 
     :param guardian: The guardian who will partially decrypt the tally
     :param tally: The election tally to decrypt
     :context: The public election encryption context
-    :return: a `DecryptionShare` or `None` if there is an error
+    :return: a `TallyDecryptionShare` or `None` if there is an error
     """
 
     contests = compute_decryption_share_for_cast_contests(guardian, tally, context)
@@ -59,7 +59,7 @@ def compute_decryption_share(
     if spoiled_ballots is None:
         return None
 
-    return DecryptionShare(
+    return TallyDecryptionShare(
         guardian.object_id,
         guardian.share_election_public_key().key,
         contests,
@@ -72,7 +72,7 @@ def compute_compensated_decryption_share(
     missing_guardian_id: str,
     tally: CiphertextTally,
     context: CiphertextElectionContext,
-) -> Optional[CompensatedDecryptionShare]:
+) -> Optional[CompensatedTallyDecryptionShare]:
     """
     Compute a compensated decryptions share for a guardian
 
@@ -80,7 +80,7 @@ def compute_compensated_decryption_share(
     :param missing_guardian_id: the missing guardian id to compensate
     :param tally: The election tally to decrypt
     :context: The public election encryption context
-    :return: a `DecryptionShare` or `None` if there is an error
+    :return: a `TallyDecryptionShare` or `None` if there is an error
     """
 
     contests = compute_compensated_decryption_share_for_cast_contests(
@@ -96,7 +96,7 @@ def compute_compensated_decryption_share(
     if spoiled_ballots is None:
         return None
 
-    return CompensatedDecryptionShare(
+    return CompensatedTallyDecryptionShare(
         guardian.object_id,
         missing_guardian_id,
         guardian.share_election_public_key().key,
@@ -385,17 +385,17 @@ def reconstruct_missing_tally_decryption_shares(
     ciphertext_tally: CiphertextTally,
     missing_guardians: DataStore[MISSING_GUARDIAN_ID, ElectionPublicKey],
     compensated_shares: Dict[
-        MISSING_GUARDIAN_ID, Dict[AVAILABLE_GUARDIAN_ID, CompensatedDecryptionShare]
+        MISSING_GUARDIAN_ID, Dict[AVAILABLE_GUARDIAN_ID, CompensatedTallyDecryptionShare]
     ],
     lagrange_coefficients: Dict[
         MISSING_GUARDIAN_ID, Dict[AVAILABLE_GUARDIAN_ID, ElementModQ]
     ],
-) -> Optional[Dict[MISSING_GUARDIAN_ID, DecryptionShare]]:
+) -> Optional[Dict[MISSING_GUARDIAN_ID, TallyDecryptionShare]]:
     """
     Use all available guardians to reconstruct the missing shares for all missing guardians
     """
 
-    reconstructed_shares: Dict[MISSING_GUARDIAN_ID, DecryptionShare] = {}
+    reconstructed_shares: Dict[MISSING_GUARDIAN_ID, TallyDecryptionShare] = {}
     for missing_guardian_id, shares in compensated_shares.items():
 
         # Make sure there is a public key
@@ -435,7 +435,7 @@ def reconstruct_missing_tally_decryption_shares(
             lagrange_coefficients_for_missing,
         )
 
-        reconstructed_shares[missing_guardian_id] = DecryptionShare(
+        reconstructed_shares[missing_guardian_id] = TallyDecryptionShare(
             missing_guardian_id, public_key.key, contests, spoiled_ballots
         )
 
@@ -445,7 +445,7 @@ def reconstruct_missing_tally_decryption_shares(
 def reconstruct_decryption_contests(
     missing_guardian_id: MISSING_GUARDIAN_ID,
     cast_tally: Dict[CONTEST_ID, CiphertextTallyContest],
-    shares: Dict[AVAILABLE_GUARDIAN_ID, CompensatedDecryptionShare],
+    shares: Dict[AVAILABLE_GUARDIAN_ID, CompensatedTallyDecryptionShare],
     lagrange_coefficients: Dict[AVAILABLE_GUARDIAN_ID, ElementModQ],
 ) -> Dict[CONTEST_ID, CiphertextDecryptionContest]:
     """
@@ -454,7 +454,7 @@ def reconstruct_decryption_contests(
 
     :param missing_guardian_id: The guardian id for the missing guardian
     :param cast_tally: The collection of `CiphertextTallyContest` that is cast
-    :shares: the collection of `CompensatedDecryptionShare` for the missing guardian
+    :shares: the collection of `CompensatedTallyDecryptionShare` for the missing guardian
     :lagrange_coefficients: the lagrange coefficients corresponding to the available guardians that provided shares
     """
     # iterate through the tallies and accumulate all of the shares for this guardian
@@ -501,7 +501,7 @@ def reconstruct_decryption_ballots(
     missing_guardian_id: MISSING_GUARDIAN_ID,
     public_key: ElectionPublicKey,
     spoiled_ballots: Dict[BALLOT_ID, CiphertextAcceptedBallot],
-    shares: Dict[AVAILABLE_GUARDIAN_ID, CompensatedDecryptionShare],
+    shares: Dict[AVAILABLE_GUARDIAN_ID, CompensatedTallyDecryptionShare],
     lagrange_coefficients: Dict[AVAILABLE_GUARDIAN_ID, ElementModQ],
 ) -> Dict[BALLOT_ID, BallotDecryptionShare]:
     """
@@ -510,7 +510,7 @@ def reconstruct_decryption_ballots(
     :param missing_guardian_id: The guardian id for the missing guardian
     :param public_key: the public key for the missing guardian
     :param spoiled_ballots: The collection of `CiphertextAcceptedBallot` that is spoiled
-    :shares: the collection of `CompensatedDecryptionShare` for the missing guardian
+    :shares: the collection of `CompensatedTallyDecryptionShare` for the missing guardian
     :lagrange_coefficients: the lagrange coefficients corresponding to the available guardians that provided shares
     """
     spoiled_ballot_shares: Dict[BALLOT_ID, BallotDecryptionShare] = {}

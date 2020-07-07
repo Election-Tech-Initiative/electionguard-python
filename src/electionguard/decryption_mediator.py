@@ -7,7 +7,7 @@ from .decryption import (
     compute_compensated_decryption_share,
     reconstruct_missing_tally_decryption_shares,
 )
-from .decryption_share import DecryptionShare, CompensatedDecryptionShare
+from .decryption_share import TallyDecryptionShare, CompensatedTallyDecryptionShare
 from .decrypt_with_shares import decrypt_tally
 from .election import (
     CiphertextElectionContext,
@@ -48,7 +48,6 @@ class DecryptionMediator:
         default_factory=lambda: {}
     )
 
-    # TODO: as GuardianDataStore
     _available_guardians: Dict[AVAILABLE_GUARDIAN_ID, Guardian] = field(
         default_factory=lambda: {}
     )
@@ -56,8 +55,7 @@ class DecryptionMediator:
         default_factory=lambda: DataStore()
     )
 
-    # TODO: as GuardianDataStore
-    _decryption_shares: Dict[AVAILABLE_GUARDIAN_ID, DecryptionShare] = field(
+    _decryption_shares: Dict[AVAILABLE_GUARDIAN_ID, TallyDecryptionShare] = field(
         default_factory=lambda: {}
     )
     """
@@ -72,19 +70,20 @@ class DecryptionMediator:
     """
 
     _compensated_decryption_shares: Dict[
-        MISSING_GUARDIAN_ID, Dict[AVAILABLE_GUARDIAN_ID, CompensatedDecryptionShare]
+        MISSING_GUARDIAN_ID,
+        Dict[AVAILABLE_GUARDIAN_ID, CompensatedTallyDecryptionShare],
     ] = field(default_factory=lambda: {})
     """
     A collection of Compensated Decryption Shares for each Available Guardian
     """
 
-    def announce(self, guardian: Guardian) -> Optional[DecryptionShare]:
+    def announce(self, guardian: Guardian) -> Optional[TallyDecryptionShare]:
         """
         Announce that a Guardian is present and participating in the decryption.  
         A Decryption Share will be generated for the Guardian
 
         :param guardian: The guardian who will participate in the decryption.
-        :return: a `DecryptionShare` for this `Guardian` or `None` if there is an error.
+        :return: a `TallyDecryptionShare` for this `Guardian` or `None` if there is an error.
         """
 
         # Only allow a guardian to announce once
@@ -143,12 +142,12 @@ class DecryptionMediator:
 
     def compensate(
         self, missing_guardian_id: str
-    ) -> Optional[List[CompensatedDecryptionShare]]:
+    ) -> Optional[List[CompensatedTallyDecryptionShare]]:
         """
         Compensate for a missing guardian by reconstructing the share using the available guardians.
 
         :param missing_guardian_id: the guardian that failed to `announce`.
-        :return: a collection of `CompensatedDecryptionShare` generated from all available guardians
+        :return: a collection of `CompensatedTallyDecryptionShare` generated from all available guardians
                  or `None if there is an error
         """
 
@@ -159,7 +158,7 @@ class DecryptionMediator:
                 self._compensated_decryption_shares[missing_guardian_id].values()
             )
 
-        compensated_decryptions: List[CompensatedDecryptionShare] = []
+        compensated_decryptions: List[CompensatedTallyDecryptionShare] = []
         lagrange_coefficients: Dict[AVAILABLE_GUARDIAN_ID, ElementModQ] = {}
 
         available_sequences = [
@@ -252,7 +251,7 @@ class DecryptionMediator:
             log_warning(f"get plaintext tally failed with missing decryption shares")
             return None
 
-        merged_decryption_shares: Dict[str, DecryptionShare] = {}
+        merged_decryption_shares: Dict[str, TallyDecryptionShare] = {}
 
         for available, share in self._decryption_shares.items():
             merged_decryption_shares[available] = share
@@ -268,7 +267,7 @@ class DecryptionMediator:
             self._ciphertext_tally, merged_decryption_shares, self._encryption
         )
 
-    def _submit_decryption_share(self, share: DecryptionShare) -> bool:
+    def _submit_decryption_share(self, share: TallyDecryptionShare) -> bool:
         """
         Submit the decryption share to be used in the decryption
         """
@@ -282,7 +281,7 @@ class DecryptionMediator:
         return True
 
     def _submit_compensated_decryption_shares(
-        self, shares: List[CompensatedDecryptionShare]
+        self, shares: List[CompensatedTallyDecryptionShare]
     ) -> bool:
         """
         Submit compensated decryption shares to be used in the decryption
@@ -291,7 +290,7 @@ class DecryptionMediator:
         return all(results)
 
     def _submit_compensated_decryption_share(
-        self, share: CompensatedDecryptionShare
+        self, share: CompensatedTallyDecryptionShare
     ) -> bool:
         """
         Submit compensated decryption share to be used in the decryption

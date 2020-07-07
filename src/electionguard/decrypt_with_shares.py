@@ -2,7 +2,7 @@ from typing import Dict, Optional, Tuple, Union
 
 from .ballot import CiphertextAcceptedBallot, CiphertextBallotSelection
 from .decryption_share import (
-    DecryptionShare,
+    TallyDecryptionShare,
     CiphertextDecryptionSelection,
     get_spoiled_shares_for_selection,
     get_tally_shares_for_selection,
@@ -78,14 +78,14 @@ def decrypt_selection_with_decryption_shares(
 
 def decrypt_tally_contests_with_decryption_shares(
     tally: Dict[CONTEST_ID, CiphertextTallyContest],
-    shares: Dict[GUARDIAN_ID, DecryptionShare],
+    shares: Dict[GUARDIAN_ID, TallyDecryptionShare],
     extended_base_hash: ElementModQ,
 ) -> Optional[Dict[CONTEST_ID, PlaintextTallyContest]]:
     """
     Decrypt the specified tally within the context of the specified Decryption Shares
 
     :param tally: the encrypted tally of contests
-    :param shares: a collection of `DecryptionShare` used to decrypt
+    :param shares: a collection of `TallyDecryptionShare` used to decrypt
     :param extended_base_hash: the extended base hash code (𝑄') for the election
     :return: a collection of `PlaintextTallyContest` or `None` if there is an error
     """
@@ -114,7 +114,7 @@ def decrypt_tally_contests_with_decryption_shares(
 
 def decrypt_tally(
     tally: CiphertextTally,
-    shares: Dict[GUARDIAN_ID, DecryptionShare],
+    shares: Dict[GUARDIAN_ID, TallyDecryptionShare],
     context: CiphertextElectionContext,
 ) -> Optional[PlaintextTally]:
     """
@@ -143,7 +143,7 @@ def decrypt_tally(
 
 def decrypt_spoiled_ballots(
     spoiled_ballots: Dict[BALLOT_ID, CiphertextAcceptedBallot],
-    shares: Dict[AVAILABLE_GUARDIAN_ID, DecryptionShare],
+    shares: Dict[AVAILABLE_GUARDIAN_ID, TallyDecryptionShare],
     extended_base_hash: ElementModQ,
 ) -> Optional[Dict[BALLOT_ID, Dict[CONTEST_ID, PlaintextTallyContest]]]:
     """

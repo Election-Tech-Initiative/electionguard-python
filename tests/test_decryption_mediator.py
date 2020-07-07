@@ -16,15 +16,13 @@ from electionguard.decrypt_with_shares import (
 )
 from electionguard.decryption import (
     compute_decryption_share,
-    compute_compensated_decryption_share,
     compute_decryption_share_for_selection,
     compute_compensated_decryption_share_for_selection,
 )
 from electionguard.decryption_mediator import DecryptionMediator
 from electionguard.decryption_share import (
     CiphertextDecryptionSelection,
-    DecryptionShare,
-    BallotDecryptionShare,
+    TallyDecryptionShare,
 )
 from electionguard.election import (
     CiphertextElectionContext,
@@ -200,7 +198,7 @@ class TestDecryptionMediator(TestCase):
         # Cannot submit another share internally
         self.assertFalse(
             subject._submit_decryption_share(
-                DecryptionShare(self.guardians[0].object_id, ZERO_MOD_P, {}, {})
+                TallyDecryptionShare(self.guardians[0].object_id, ZERO_MOD_P, {}, {})
             )
         )
 
@@ -223,9 +221,36 @@ class TestDecryptionMediator(TestCase):
         # assert
         self.assertIsNotNone(result)
 
+    def test_compute_compensated_selection_failure(self):
+        # Arrange
+        first_selection = [
+            selection
+            for contest in self.ciphertext_tally.cast.values()
+            for selection in contest.tally_selections.values()
+        ][0]
+
+        # Act
+        self.guardians[0]._guardian_election_partial_key_backups.pop(
+            self.guardians[2].object_id
+        )
+
+        self.assertIsNone(
+            self.guardians[0].recovery_public_key_for(self.guardians[2].object_id)
+        )
+
+        result = compute_compensated_decryption_share_for_selection(
+            self.guardians[0],
+            self.guardians[2].object_id,
+            first_selection,
+            self.context,
+        )
+
+        # Assert
+        self.assertIsNone(result)
+
     def test_compute_compensated_selection(self):
         """
-        This test demonstrates the complete workflow for computing a comepnsated decryption share
+        demonstrates the complete workflow for computing a comepnsated decryption share
         For one selection. It is useful for verifying that the workflow is correct
         """
         # Arrange
@@ -386,7 +411,7 @@ class TestDecryptionMediator(TestCase):
             self.guardians[2], self.ciphertext_tally, self.context
         )
 
-        # build type: Dict[GUARDIAN_ID, Tuple[ELECTION_PUBLIC_KEY, DecryptionShare]]
+        # build type: Dict[GUARDIAN_ID, Tuple[ELECTION_PUBLIC_KEY, TallyDecryptionShare]]
         shares = {
             self.guardians[0].object_id: (
                 self.guardians[0].share_election_public_key().key,
@@ -476,6 +501,11 @@ class TestDecryptionMediator(TestCase):
         # assert
         self.assertIsNotNone(result)
         self.assertEqual(self.expected_plaintext_tally, result)
+
+        # Verify we get the same tally back if we call again
+        another_decrypted_tally = subject.get_plaintext_tally()
+
+        self.assertEqual(decrypted_tallies, another_decrypted_tally)
 
     def test_get_plaintext_tally_compensate_missing_guardian_simple(self):
 

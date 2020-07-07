@@ -1,5 +1,5 @@
 from secrets import randbelow
-from typing import List, Optional, NamedTuple
+from typing import List, Optional
 from uuid import getnode
 
 from .ballot import (

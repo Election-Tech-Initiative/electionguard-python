@@ -42,7 +42,7 @@ When one or more of the Guardians are missing, any subset of the Guardians that 
 5. at least a `Quorum` count of `Partial Decryption Shares` are chosen from the values generated in the previous step for a specific `Missing guardian`
 6. Each chosen `Available Guardian` uses its `Partial Decryption Share` to compute a share of the missing partial decryption.
 7. the process is re-run until all Missing Guardians are compensated for.
-8. The `Compensated Decryption Shares` are combined to _reconstruct_ the missing `DecryptionShare`
+8. The `Compensated Decryption Shares` are combined to _reconstruct_ the missing `TallyDecryptionShare`
 9. finally, all of the `DecryptionShares` are combined to generate a tally for each option on every contest
 
 ## Challenged/Spoiled Ballots
