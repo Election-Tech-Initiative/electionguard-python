@@ -1,13 +1,8 @@
 import unittest
-from random import Random
 
-
-from electionguard.ballot import PlaintextBallotContest
 from electionguard.election import (
     ContestDescriptionWithPlaceholders,
     ElectionDescription,
-    generate_placeholder_selections_from,
-    contest_description_with_placeholders_from,
     InternalElectionDescription,
     SelectionDescription,
     VoteVariationType,

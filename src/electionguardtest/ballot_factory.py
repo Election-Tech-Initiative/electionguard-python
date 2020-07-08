@@ -2,7 +2,7 @@ import os
 from random import Random
 from typing import cast, TypeVar, Callable, List, Tuple
 
-from jsons import KEY_TRANSFORMER_CAMELCASE, KEY_TRANSFORMER_SNAKECASE, dumps, loads
+from jsons import KEY_TRANSFORMER_SNAKECASE, loads
 
 from hypothesis.strategies import (
     composite,
@@ -25,7 +25,7 @@ from electionguard.election import (
     InternalElectionDescription,
 )
 
-from electionguard.encrypt import selection_from, contest_from
+from electionguard.encrypt import selection_from
 from electionguardtest.election_factory import get_contest_description_well_formed
 
 _T = TypeVar("_T")
@@ -171,6 +171,6 @@ def get_selection_poorly_formed(
 
 @composite
 def get_well_formed_contest_and_ballot(
-    draw: _DrawType, desc=get_contest_description_well_formed(), random_seed=integers()
+    draw: _DrawType, desc=get_contest_description_well_formed()
 ) -> Tuple[ContestDescription, PlaintextBallotContest]:
     (object_id, contest_description_with_placeholders) = draw(desc)

@@ -1,5 +1,4 @@
 from typing import Callable, Optional, Tuple
-from secrets import randbelow
 
 from .chaum_pedersen import ChaumPedersenProof, make_chaum_pedersen
 from .data_store import DataStore, ReadOnlyDataStore
@@ -10,11 +9,9 @@ from .group import (
     ElementModQ,
     int_to_q,
     int_to_q_unchecked,
-    Q,
     mult_p,
     pow_q,
     pow_p,
-    int_to_p_unchecked,
     ONE_MOD_P,
     rand_q,
 )
