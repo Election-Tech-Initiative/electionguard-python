@@ -1,13 +1,11 @@
 import os
+from jsons import KEY_TRANSFORMER_SNAKECASE, loads
 from random import Random
 from typing import cast, TypeVar, Callable, List, Tuple
-
-from jsons import KEY_TRANSFORMER_SNAKECASE, loads
 
 from hypothesis.strategies import (
     composite,
     booleans,
-    integers,
     text,
     uuids,
     SearchStrategy,
@@ -26,7 +24,6 @@ from electionguard.election import (
 )
 
 from electionguard.encrypt import selection_from
-from electionguardtest.election_factory import get_contest_description_well_formed
 
 _T = TypeVar("_T")
 _DrawType = Callable[[SearchStrategy[_T]], _T]
@@ -167,10 +164,3 @@ def get_selection_poorly_formed(
         object_id,
         PlaintextBallotSelection(object_id, f"{draw(text)}", draw(bools), extra_data),
     )
-
-
-@composite
-def get_well_formed_contest_and_ballot(
-    draw: _DrawType, desc=get_contest_description_well_formed()
-) -> Tuple[ContestDescription, PlaintextBallotContest]:
-    (object_id, contest_description_with_placeholders) = draw(desc)

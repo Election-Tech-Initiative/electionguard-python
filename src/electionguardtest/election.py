@@ -6,7 +6,6 @@ from hypothesis.provisional import urls
 from hypothesis.strategies import (
     composite,
     emails,
-    booleans,
     integers,
     lists,
     SearchStrategy,
@@ -322,7 +321,6 @@ def candidates(draw: _DrawType, party_list: Optional[List[Party]]):
     :param party_list: A list of `Party` objects. If None, then the resulting `Candidate`
         will have no party.
     """
-    bools = booleans()
     if party_list:
         party = party_list[draw(integers(0, len(party_list) - 1))]
         party_id = party.get_party_id()

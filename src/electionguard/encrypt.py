@@ -325,7 +325,6 @@ def encrypt_contest(
         log_warning(
             "mismatching selection count: only n-of-m style elections are currently supported"
         )
-        pass
 
     # Create the return object
     encrypted_contest = CiphertextBallotContest(

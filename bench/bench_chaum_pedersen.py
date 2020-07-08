@@ -11,7 +11,7 @@ from electionguard.elgamal import (
     ElGamalKeyPair,
     elgamal_encrypt,
 )
-from electionguard.group import ElementModQ, int_to_q, int_to_q_unchecked
+from electionguard.group import ElementModQ, int_to_q_unchecked
 from electionguard.nonces import Nonces
 
 from electionguard.utils import get_optional
