@@ -59,7 +59,7 @@ endif
 lint:
 	@echo 💚 LINT
 	@echo 1.Pylint
-	pipenv run pylint .
+	pipenv run pylint ./src/**/*.py ./tests/**/*.py ./bench/**/*.py
 	@echo 2.Black Formatting
 	pipenv run black --check .
 	@echo 3.Mypy Static Typing
