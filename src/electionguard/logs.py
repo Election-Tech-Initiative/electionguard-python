@@ -86,7 +86,7 @@ class ElectionGuardLog(Singleton):
         """
         Logs a warning message
         """
-        self.__logger.warn(self.__formatted_message(message), *args, **kwargs)
+        self.__logger.warning(self.__formatted_message(message), *args, **kwargs)
 
     def error(self, message: str, *args: Any, **kwargs: Any) -> None:
         """

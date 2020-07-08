@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import (
     Callable,
     List,
@@ -19,6 +20,7 @@ from .elgamal import (
 from .group import int_to_q, rand_q, ElementModP, ElementModQ
 from .schnorr import SchnorrProof, make_schnorr_proof
 from .types import GUARDIAN_ID
+from .serializable import Serializable
 from .utils import get_optional
 
 ElectionJointKey = ElementModP
@@ -140,6 +142,15 @@ class ElectionPartialKeyBackup(NamedTuple):
     """
 
 
+@dataclass
+class CoefficientValidationSet(Serializable):
+    """Set of validation pieces for election key coefficients"""
+
+    owner_id: GUARDIAN_ID
+    coefficient_commitments: List[ElementModP]
+    coefficient_proofs: List[SchnorrProof]
+
+
 class ElectionPartialKeyVerification(NamedTuple):
     """Verification of election partial key used in key sharing"""
 
@@ -217,6 +228,24 @@ def generate_election_partial_key_backup(
         encrypted_value,
         polynomial.coefficient_commitments,
         polynomial.coefficient_proofs,
+    )
+
+
+def get_coefficient_validation_set(
+    owner_id: GUARDIAN_ID, polynomial: ElectionPolynomial,
+) -> CoefficientValidationSet:
+    """Get coefficient validation set from polynomial"""
+    return CoefficientValidationSet(
+        owner_id, polynomial.coefficient_commitments, polynomial.coefficient_proofs,
+    )
+
+
+def get_coefficient_validation_set_from_backup(
+    backup: ElectionPartialKeyBackup,
+) -> CoefficientValidationSet:
+    """Get coefficient validation set from a election partial key backup"""
+    return CoefficientValidationSet(
+        backup.owner_id, backup.coefficient_commitments, backup.coefficient_proofs,
     )
 
 

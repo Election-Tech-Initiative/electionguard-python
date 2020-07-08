@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
-from typing import Callable, Dict, Generic, List, Union
+from typing import Callable, Dict, List, Union
+from os import path
+from shutil import rmtree
 from unittest import TestCase
 
 from random import randint
@@ -12,6 +14,7 @@ from electionguard.utils import get_optional
 
 # Step 0 - Configure Election
 from electionguard.election import (
+    ElectionConstants,
     ElectionDescription,
     InternalElectionDescription,
     CiphertextElectionContext,
@@ -20,6 +23,7 @@ from electionguard.election_builder import ElectionBuilder
 
 # Step 1 - Key Ceremony
 from electionguard.guardian import Guardian
+from electionguard.key_ceremony import CoefficientValidationSet
 from electionguard.key_ceremony_mediator import KeyCeremonyMediator
 
 # Step 2 - Encrypt Votes
@@ -35,25 +39,32 @@ from electionguard.ballot_box import BallotBox
 from electionguard.tally import tally_ballots, CiphertextTally
 from electionguard.decryption_mediator import DecryptionMediator, PlaintextTally
 
+# Publish
+from electionguard.publish import publish, RESULTS_DIR
+
 
 class TestEndToEndElection(TestCase):
     """
-    This test is a complete simple example of executing an End-to-End encrypted election.
+    Test a complete simple example of executing an End-to-End encrypted election.
     In a real world scenario all of these steps would not be completed on the same machine. 
     """
 
     NUMBER_OF_GUARDIANS = 5
     QUORUM = 3
 
+    REMOVE_OUTPUT = True
+
     # Step 0 - Configure Election
     description: ElectionDescription
     election_builder: ElectionBuilder
     metadata: InternalElectionDescription
     context: CiphertextElectionContext
+    constants: ElectionConstants
 
     # Step 1 - Key Ceremony
     mediator: KeyCeremonyMediator
     guardians: List[Guardian] = []
+    coefficient_validation_sets: List[CoefficientValidationSet] = []
 
     # Step 2 - Encrypt Votes
     device: EncryptionDevice
@@ -80,6 +91,7 @@ class TestEndToEndElection(TestCase):
         self.step_3_cast_and_spoil()
         self.step_4_decrypt_tally()
         self.compare_results()
+        self.publish_results()
 
     def step_0_configure_election(self) -> None:
         """
@@ -188,9 +200,16 @@ class TestEndToEndElection(TestCase):
             joint_key is not None,
         )
 
+        # Save Validation Keys
+        for guardian in self.guardians:
+            self.coefficient_validation_sets.append(
+                guardian.share_coefficient_validation_set()
+            )
+
         # Build the Election
         self.election_builder.set_public_key(get_optional(joint_key))
         self.metadata, self.context = get_optional(self.election_builder.build())
+        self.constants = ElectionConstants()
 
         # Move on to encrypting ballots
 
@@ -361,6 +380,28 @@ class TestEndToEndElection(TestCase):
                                     f"expected: {expected}, actual: {decrypted_selection.plaintext}",
                                     expected == decrypted_selection.plaintext,
                                 )
+
+    def publish_results(self) -> None:
+        """
+        Publish results/artifacts of the election
+        """
+        publish(
+            self.description,
+            self.context,
+            self.constants,
+            self.ciphertext_ballots,
+            self.ciphertext_tally,
+            self.plaintext_tally,
+            self.coefficient_validation_sets,
+        )
+        self._assert_message(
+            "Publish",
+            f"Artifacts published to: {RESULTS_DIR}",
+            path.exists(RESULTS_DIR),
+        )
+
+        if self.REMOVE_OUTPUT:
+            rmtree(RESULTS_DIR)
 
     def _assert_message(
         self, name: str, message: str, condition: Union[Callable, bool] = True

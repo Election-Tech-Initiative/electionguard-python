@@ -53,6 +53,9 @@ class ElementModQ(NamedTuple):
             isinstance(other, ElementModP) or isinstance(other, ElementModQ)
         ) and eq_elems(self, other)
 
+    def __str__(self) -> str:
+        return self.elem.digits()
+
 
 class ElementModP(NamedTuple):
     """An element of the larger `mod p` space, i.e., in [0, P), where P is a 4096-bit prime."""
@@ -99,6 +102,9 @@ class ElementModP(NamedTuple):
         return (
             isinstance(other, ElementModP) or isinstance(other, ElementModQ)
         ) and eq_elems(self, other)
+
+    def __str__(self) -> str:
+        return self.elem.digits()
 
 
 # Common constants

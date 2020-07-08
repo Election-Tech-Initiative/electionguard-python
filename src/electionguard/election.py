@@ -4,7 +4,7 @@ from enum import Enum, unique
 from typing import cast, List, Optional, Set
 
 from .election_object_base import ElectionObjectBase
-from .group import Q, P, G, ElementModQ, ElementModP
+from .group import Q, P, R, G, G_INV, ElementModQ, ElementModP
 from .hash import CryptoHashable, hash_elems
 from .logs import log_warning
 from .serializable import Serializable
@@ -771,6 +771,19 @@ class InternalElectionDescription(object):
             )
 
         return contests
+
+
+@dataclass(frozen=True)
+class ElectionConstants(Serializable):
+    """
+    The constants for mathematical functions during the election. 
+    """
+
+    p = P
+    q = Q
+    r = R
+    g = G
+    g_inv = G_INV
 
 
 @dataclass(frozen=True)
