@@ -33,7 +33,7 @@ def publish(
     ciphertext_ballots: List[CiphertextBallot],
     ciphertext_tally: CiphertextTally,
     plaintext_tally: PlaintextTally,
-    coefficient_validation_sets: List[CoefficientValidationSet] = [],
+    coefficient_validation_sets: List[CoefficientValidationSet] = None,
     results_directory: str = RESULTS_DIR,
 ) -> None:
     """Publishes the election record as json"""
@@ -46,9 +46,10 @@ def publish(
     constants.to_json_file(CONSTANTS_FILE_NAME, results_directory)
 
     make_directory(COEFFICIENTS_DIR)
-    for coefficient_validation_set in coefficient_validation_sets:
-        set_name = COEFFICIENT_PREFIX + coefficient_validation_set.owner_id
-        coefficient_validation_set.to_json_file(set_name, COEFFICIENTS_DIR)
+    if coefficient_validation_sets is not None:
+        for coefficient_validation_set in coefficient_validation_sets:
+            set_name = COEFFICIENT_PREFIX + coefficient_validation_set.owner_id
+            coefficient_validation_set.to_json_file(set_name, COEFFICIENTS_DIR)
 
     make_directory(BALLOTS_DIR)
     for ballot in ciphertext_ballots:

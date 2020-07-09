@@ -161,10 +161,6 @@ class DecryptionMediator:
         compensated_decryptions: List[CompensatedTallyDecryptionShare] = []
         lagrange_coefficients: Dict[AVAILABLE_GUARDIAN_ID, ElementModQ] = {}
 
-        available_sequences = [
-            guardian.sequence_order for guardian in self._available_guardians.values()
-        ]
-
         # Loop through each of the available guardians
         # and calculate a partial for the missing one
         for available_guardian in self._available_guardians.values():

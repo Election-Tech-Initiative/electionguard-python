@@ -1,12 +1,18 @@
 from dataclasses import dataclass
-from jsons import KEY_TRANSFORMER_CAMELCASE, KEY_TRANSFORMER_SNAKECASE, dumps, loads
+from jsons import (
+    KEY_TRANSFORMER_CAMELCASE,
+    KEY_TRANSFORMER_SNAKECASE,
+    dumps,
+    loads,
+    JsonsError,
+)
 from typing import cast, TypeVar, Generic
 
 T = TypeVar("T")
 
 JSON_FILE_EXTENSION: str = ".json"
 WRITE: str = "w"
-JSON_PARSE_ERROR = '{"error": "Object could not be parsed"}'
+JSON_PARSE_ERROR = '{"error": "Object could not be parsed due to json issue"}'
 
 # base10 as string for ElementModP and ElementModQ
 
@@ -32,7 +38,7 @@ class Serializable(Generic[T]):
                     key_transformer=KEY_TRANSFORMER_CAMELCASE,
                 ),
             )
-        except:
+        except JsonsError:
             return JSON_PARSE_ERROR
 
     def to_json_file(self, file_name: str, file_path: str = "") -> None:
