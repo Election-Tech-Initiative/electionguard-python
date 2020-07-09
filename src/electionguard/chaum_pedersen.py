@@ -163,7 +163,7 @@ class ChaumPedersenProof(NamedTuple):
         )
 
         # The equation 𝐴^𝑣𝑖 = 𝑏𝑖𝑀𝑖^𝑐𝑖 mod 𝑝
-        consistent_kv = (
+        consistent_av = (
             in_bounds_alpha
             and in_bounds_b
             and in_bounds_c
@@ -183,7 +183,7 @@ class ChaumPedersenProof(NamedTuple):
             and in_bounds_q
             and same_c
             and consistent_gv
-            and consistent_kv
+            and consistent_av
         )
 
         if not success:
@@ -202,7 +202,7 @@ class ChaumPedersenProof(NamedTuple):
                         "in_bounds_q": in_bounds_q,
                         "same_c": same_c,
                         "consistent_gv": consistent_gv,
-                        "consistent_kv": consistent_kv,
+                        "consistent_av": consistent_av,
                         "k": k,
                         "q": q,
                         "proof": self,
@@ -432,7 +432,7 @@ def make_constant_chaum_pedersen(
     Produces a proof that a given encryption corresponds to a specific total value.
 
     :param message: An ElGamal ciphertext
-    :param constant: The plaintext constant value used to make the ElGamal ciphertext
+    :param constant: The plaintext constant value used to make the ElGamal ciphertext (L in the spec)
     :param r: The aggregate nonce used creating the ElGamal ciphertext
     :param k: The ElGamal public key for the election
     :param seed: Used to generate other random values here
@@ -441,9 +441,9 @@ def make_constant_chaum_pedersen(
 
     # Pick one random number in Q.
     u = Nonces(seed, "constant-chaum-pedersen-proof")[0]
-    a = g_pow_p(u)
-    b = pow_p(k, u)
-    c = hash_elems(alpha, beta, a, b)
+    a = g_pow_p(u)  # 𝑔^𝑢𝑖 mod 𝑝
+    b = pow_p(k, u)  # 𝐴^𝑢𝑖 mod 𝑝
+    c = hash_elems(alpha, beta, a, b)  # sha256(𝑄', A, B, a, b)
     v = a_plus_bc_q(u, c, r)
 
     return ConstantChaumPedersenProof(a, b, c, v, constant)

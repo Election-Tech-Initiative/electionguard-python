@@ -157,7 +157,7 @@ class TestChaumPedersen(TestCase):
         integers(0, 100),
         integers(0, 100),
     )
-    def test_ccp_proof(
+    def test_cp_proof(
         self,
         keypair: ElGamalKeyPair,
         nonce: ElementModQ,

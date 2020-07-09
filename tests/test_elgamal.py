@@ -18,6 +18,7 @@ from electionguard.group import (
     g_pow_p,
     G,
     P,
+    Q,
     ZERO_MOD_Q,
     TWO_MOD_Q,
     ONE_MOD_Q,
@@ -87,7 +88,7 @@ class TestElGamal(unittest.TestCase):
     @given(elgamal_keypairs())
     def test_elgamal_generated_keypairs_are_within_range(self, keypair: ElGamalKeyPair):
         self.assertLess(keypair.public_key.to_int(), P)
-        self.assertLess(keypair.secret_key.to_int(), G)
+        self.assertLess(keypair.secret_key.to_int(), Q)
         self.assertEqual(g_pow_p(keypair.secret_key), keypair.public_key)
 
     @given(
