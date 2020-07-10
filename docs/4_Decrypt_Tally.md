@@ -10,14 +10,14 @@ During the [Key Ceremony](1_Key_Ceremony.md) a `Quorum of Guardians` is defined 
 
 It is important to note that mathematically not every present guardian has to compute a `Partial Decryption Share` for every `Missing Guardian`.  Only the `Quorum Count` of guardians are necessary to construct `Partial Decryption Shares` in order to compensate for any Missing Guardian.  
 
-In this implementation, we take an approach that utilizes all Available Guardians to compensate for Missing Guardians.  When it is determined that guardians are missing, all available guardians each calculate a `Partial Decryption Share` for the missing guardian and publish the result.  A `Quorum of Guardians` count of available `Partial Decryption Shares` is randomly selected from the pool of availalbe partial decryption shares for a given` Missing Guardian`.  If more than one guardian is missing, we randomly choose to ignore the `Partial Decryption Share` provided by one of the Available Guardians whose partial decrypotion share was chosen for the previous Missing Guardian, and randomly select again from the pool of available Partial Decryption Shares.  This ensures that all available guardians have the opportunity to participate in compensating for Missing Guardians.
+In this implementation, we take an approach that utilizes all Available Guardians to compensate for Missing Guardians.  When it is determined that guardians are missing, all available guardians each calculate a `Partial Decryption Share` for the missing guardian and publish the result.  A `Quorum of Guardians` count of available `Partial Decryption Shares` is randomly selected from the pool of available partial decryption shares for a given` Missing Guardian`.  If more than one guardian is missing, we randomly choose to ignore the `Partial Decryption Share` provided by one of the Available Guardians whose partial decryption share was chosen for the previous Missing Guardian, and randomly select again from the pool of available Partial Decryption Shares.  This ensures that all available guardians have the opportunity to participate in compensating for Missing Guardians.
 
 ## Glossary
 - **Guardian** A guardian of the election who holds the ability to partially decrypt the election results
 - **Decryption Share** A guardian's partial share of a decryption
 - **Encrypted Tally** The homomorphically-combined and encrypted representation of all selections made for each option on every contest in the election.  See [Ballot Box]() for more information.
 - **Key Ceremony** The process conducted at the beginning of the election to create the joint encryption context for encrypting ballots during the election.  See [Key Ceremony](1_Key_Ceremony.md) for more information.
-- **Quorum of Guardians** The mininimum count (_threshold_) of guardians that must be present in order to successfully decrypt the election results.
+- **Quorum of Guardians** The minimum count (_threshold_) of guardians that must be present in order to successfully decrypt the election results.
 - **Available Guardian** A guardian that has announced as _present_ for the decryption phase
 - **Missing Guardian** A guardian who was configured during the `Key Ceremony` but who is not present for the decryption of the election results.
 - **Compensated Decryption Share** - a partial decryption share value computed by an available guardian to compensate for a missing guardian so that the missing guardian's share can be generated and the election results can be successfully decrypted.
@@ -30,13 +30,13 @@ In this implementation, we take an approach that utilizes all Available Guardian
 
 ### Decryption when All Guardians are Present
 
-3. If all guardians are present, the Decrypion Shares are combined to generate a tally for each option on every contest
+3. If all guardians are present, the Decryption Shares are combined to generate a tally for each option on every contest
 
 ### Decryption when some Guardians are Missing 
 
 _warning: The functionality described in this segment is still a 🚧 Work In Progress_
 
-When one or more of the Guardians are missing, any subset of the Guardians that are present can use the information they have about the other guardian's prviate keys to reconstruct the partial decryption shares for the missing guardians.
+When one or more of the Guardians are missing, any subset of the Guardians that are present can use the information they have about the other guardian's private keys to reconstruct the partial decryption shares for the missing guardians.
 
 4. Each `Available Guardian` computes a `Partial Decryption Share` for each `Missing Guardian`
 5. at least a `Quorum` count of `Partial Decryption Shares` are chosen from the values generated in the previous step for a specific `Missing guardian`
@@ -47,7 +47,7 @@ When one or more of the Guardians are missing, any subset of the Guardians that 
 
 ## Challenged/Spoiled Ballots
 
-If a ballot is not to be included in the vote count, it is considered challenged, or [Spoiled](https://en.wikipedia.org/wiki/Spoilt_vote).  Every ballot spoiled in an election is invidually verifiably decrypted in exactly the same way that the aggregate ballot of tallies is decrypted.  Since spoiled ballots are not included as part of the vote count, they are included in the Election Record with their plaintext values included along with the encrypted representations.
+If a ballot is not to be included in the vote count, it is considered challenged, or [Spoiled](https://en.wikipedia.org/wiki/Spoilt_vote).  Every ballot spoiled in an election is individually verifiably decrypted in exactly the same way that the aggregate ballot of tallies is decrypted.  Since spoiled ballots are not included as part of the vote count, they are included in the Election Record with their plaintext values included along with the encrypted representations.
 
 Spoiling ballots is an important part of the ElectionGuard process as it allows voters to explicitly generate challenge ballots that are verifiable as part of the Election Record.
 

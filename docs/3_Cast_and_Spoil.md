@@ -31,8 +31,8 @@ Once all of the ballots are marked as _cast_ or _spoiled_, all of the encryption
 - **Ballot Store** A repository for retaining cast and spoiled ballots.
 - **Cast Ballot** A ballot which a voter has accepted as valid to be included in the official election tally.
 - **Spoiled Ballot** A ballot which a voter did not accept as valid and is not included in the tally.
-- **Unknown Ballot** A ballot which may not yet be determiend as cast or spoiled, or that may have been spoiled but is otherwise not published in the election results.
-- **Homomorphic Tally** An encrypted representation of every selection on every ballt that was cast.  This representation is stored in a `CiphertextTally` object.
+- **Unknown Ballot** A ballot which may not yet be determined as cast or spoiled, or that may have been spoiled but is otherwise not published in the election results.
+- **Homomorphic Tally** An encrypted representation of every selection on every ballot that was cast.  This representation is stored in a `CiphertextTally` object.
 
 ## Process
 
@@ -46,7 +46,7 @@ Once all of the ballots are marked as _cast_ or _spoiled_, all of the encryption
 
 The ballot box can be interacted with via a stateful class that caches the election context, or via stateless functions.  The following examples demonstrate some ways to interact with the ballot box.
 
-Depending on the specific election workflow, the `BallotBox`class  may not be used for a given election.  For instance, in one case a ballot can be **accepted** directly on an electionic device, in which case there is no `BallotBox`.  In a different workflow, a ballot may be explicitly cast or spoiled in a later step, such as after printing for voter review.
+Depending on the specific election workflow, the `BallotBox`class  may not be used for a given election.  For instance, in one case a ballot can be **accepted** directly on an electronic device, in which case there is no `BallotBox`.  In a different workflow, a ballot may be explicitly cast or spoiled in a later step, such as after printing for voter review.
 
 In all cases, a ballot must be marked as either `cast` or `spoiled` to be included in a tally result.
 
