@@ -7,7 +7,6 @@ from .group import (
     ElementModQ,
     g_pow_p,
     int_to_p_unchecked,
-    int_to_q_unchecked,
     div_q,
     mult_p,
     mult_q,

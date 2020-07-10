@@ -1,4 +1,3 @@
-from secrets import randbelow
 from typing import List, Optional
 from uuid import getnode
 
@@ -19,7 +18,7 @@ from .election import (
     SelectionDescription,
 )
 from .elgamal import elgamal_encrypt
-from .group import Q, ElementModP, ElementModQ, rand_q
+from .group import ElementModP, ElementModQ, rand_q
 from .hash import hash_elems
 from .logs import log_warning
 from .nonces import Nonces
@@ -326,7 +325,6 @@ def encrypt_contest(
         log_warning(
             "mismatching selection count: only n-of-m style elections are currently supported"
         )
-        pass
 
     # Create the return object
     encrypted_contest = CiphertextBallotContest(

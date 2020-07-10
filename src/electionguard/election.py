@@ -387,13 +387,13 @@ class ContestDescription(ElectionObjectBase, CryptoHashable):
                 candidate_ids.add(selection.candidate_id)
 
         selections_have_valid_candidate_ids = (
-            len(candidate_ids) is expected_selection_count
+            len(candidate_ids) == expected_selection_count
         )
         selections_have_valid_selection_ids = (
-            len(selection_ids) is expected_selection_count
+            len(selection_ids) == expected_selection_count
         )
         selections_have_valid_sequence_ids = (
-            len(sequence_ids) is expected_selection_count
+            len(sequence_ids) == expected_selection_count
         )
 
         success = (
@@ -563,7 +563,7 @@ class ElectionDescription(Serializable, CryptoHashable):
                 gp_unit_ids.add(gp_unit.object_id)
 
         # fail if there are duplicates
-        geopolitical_units_valid = len(gp_unit_ids) is len(self.geopolitical_units)
+        geopolitical_units_valid = len(gp_unit_ids) == len(self.geopolitical_units)
 
         # Validate Ballot Styles
         ballot_styles_have_valid_gp_unit_ids = True
@@ -581,7 +581,7 @@ class ElectionDescription(Serializable, CryptoHashable):
                 )
 
         ballot_styles_valid = (
-            len(ballot_style_ids) is len(self.ballot_styles)
+            len(ballot_style_ids) == len(self.ballot_styles)
             and ballot_styles_have_valid_gp_unit_ids
         )
 
@@ -590,7 +590,7 @@ class ElectionDescription(Serializable, CryptoHashable):
             if party.object_id not in party_ids:
                 party_ids.add(party.object_id)
 
-        parties_valid = len(party_ids) is len(self.parties)
+        parties_valid = len(party_ids) == len(self.parties)
 
         # Validate Candidates
         candidates_have_valid_party_ids = True
@@ -604,7 +604,7 @@ class ElectionDescription(Serializable, CryptoHashable):
             )
 
         candidates_valid = (
-            len(candidate_ids) is len(self.candidates)
+            len(candidate_ids) == len(self.candidates)
             and candidates_have_valid_party_ids
         )
 
@@ -647,8 +647,8 @@ class ElectionDescription(Serializable, CryptoHashable):
         # TODO: ISSUE #55: verify that the contest sequence order set is in the proper order
 
         contests_valid = (
-            len(contest_ids) is len(self.contests)
-            and len(contest_sequence_ids) is len(self.contests)
+            len(contest_ids) == len(self.contests)
+            and len(contest_sequence_ids) == len(self.contests)
             and contests_validate_their_properties
             and contests_have_valid_electoral_district_id
             and candidate_contests_have_valid_party_ids
