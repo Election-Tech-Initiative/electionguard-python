@@ -4,7 +4,7 @@
 
 ![Github Package Action](https://github.com/microsoft/electionguard-python/workflows/Release%20Build/badge.svg) [![](https://img.shields.io/pypi/v/electionguard)](https://pypi.org/project/electionguard/) [![](https://img.shields.io/pypi/dm/electionguard)](https://pypi.org/project/electionguard/) [![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/microsoft/electionguard-python.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/microsoft/electionguard-python/context:python) [![Total alerts](https://img.shields.io/lgtm/alerts/g/microsoft/electionguard-python.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/microsoft/electionguard-python/alerts/) [![Documentation Status](https://readthedocs.org/projects/electionguard-python/badge/?version=latest)](https://electionguard-python.readthedocs.io) [![license](https://img.shields.io/github/license/microsoft/electionguard)](https://github.com/microsoft/electionguard-python/blob/main/LICENSE)
 
-This repository is a "reference implementation" of ElectionGuard written in Python3. This implementation can be used to conduct End-to-End Verifiable Elections as well as privacy-enhanced risk-limiting audits.  Components of this library can also be used to construct "Verifiers" to validate the results of an ElectionGuard election.
+This repository is a "reference implementation" of ElectionGuard written in Python 3. This implementation can be used to conduct End-to-End Verifiable Elections as well as privacy-enhanced risk-limiting audits.  Components of this library can also be used to construct "Verifiers" to validate the results of an ElectionGuard election.
 
 ## 📁 In This Repository
 
@@ -40,7 +40,7 @@ has its own [installation requirements (native C libraries)](https://gmpy2.readt
 
 ## 🚀 Quick Start
 
-Using [**make**](https://www.gnu.org/software/make/manual/make.html), the entire [Github Action workflow](.github/workflows/pull_request.yml) can be run with one command: 
+Using [**make**](https://www.gnu.org/software/make/manual/make.html), the entire [GitHub Action workflow](.github/workflows/pull_request.yml) can be run with one command: 
 
 ```
 make
@@ -64,7 +64,7 @@ For more detailed build and run options, see the [documentation](docs/Build_and_
 
 Overviews:
 
-- [Github Pages](https://microsoft.github.io/electionguard-python/)
+- [GitHub Pages](https://microsoft.github.io/electionguard-python/)
 - [Read the Docs](https://electionguard-python.readthedocs.io/)
 
 Sections:
@@ -91,11 +91,11 @@ This project has adopted the [Microsoft Open Source Code of Conduct](https://ope
 
 ### Reporting Issues
 
-Please report any bugs, feature requests, or enhancements using the [Github Issue Tracker](https://github.com/microsoft/electionguard-python/issues).  Please do not report any secirity vulnerabilities using the Issue Tracker.  Instead, please report them to the Microsoft Security Response Center (MSRC) at [https://msrc.microsoft.com/create-report](https://msrc.microsoft.com/create-report).  See the [Security Documentation](SECURITY.md) for more information.
+Please report any bugs, feature requests, or enhancements using the [GitHub Issue Tracker](https://github.com/microsoft/electionguard-python/issues).  Please do not report any security vulnerabilities using the Issue Tracker.  Instead, please report them to the Microsoft Security Response Center (MSRC) at [https://msrc.microsoft.com/create-report](https://msrc.microsoft.com/create-report).  See the [Security Documentation](SECURITY.md) for more information.
 
 ### Have Questions?
 
-Electionguard would love for you to ask questions out in the open using Github Issues. If you really want to email the ElectionGuard team, reach out at electionguard@microsoft.com.
+Electionguard would love for you to ask questions out in the open using GitHub Issues. If you really want to email the ElectionGuard team, reach out at electionguard@microsoft.com.
 
 ## License
 This repository is licensed under the [MIT License](LICENSE) 

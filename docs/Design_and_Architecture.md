@@ -40,7 +40,7 @@ For both naming purposes and usability, union classes are generally preferred. T
 
 ### 🚫 Exceptions
 
-To allow for easier transliteration, the library will not raise exception across the API boundary since this is not available in all languages. Instead, the library will have a variety of functions that indicate failures by returning `None`; the caller is expected to check if the result is `None` before any further processing. Python3 `typing` calls this sort of result `Optional`.This tactic also indicates all exceptions raised are expected to be from bugs.
+To allow for easier transliteration, the library will not raise exception across the API boundary since this is not available in all languages. Instead, the library will have a variety of functions that indicate failures by returning `None`; the caller is expected to check if the result is `None` before any further processing. Python 3 `typing` calls this sort of result `Optional`.This tactic also indicates all exceptions raised are expected to be from bugs.
 
 ### 🚫 Multiple Inheritance
 
@@ -58,7 +58,7 @@ The library contains a `Pipfile` that can be used with `pipenv`to ensure the cor
 
 #### Folder Structure
 
-The folder structure is kept to a bare minimum. The ElectionGuard library is located in `src/electionguard` and tests are in `tests`. Standalone applications or other pieces should be in seperate subdirectories. For example, the `bench` directory contains a simple Chaum-Pedersen proof computation benchmark.
+The folder structure is kept to a bare minimum. The ElectionGuard library is located in `src/electionguard` and tests are in `tests`. Standalone applications or other pieces should be in separate subdirectories. For example, the `bench` directory contains a simple Chaum-Pedersen proof computation benchmark.
 
 #### Commands
 
@@ -70,7 +70,7 @@ The library uses several tools to assist developers in maintaining clean code. V
 
 #### Typing
 
-The library uses Python3's **type hints** throughout and ensures return types are defined. **[Mypy](https://mypy.readthedocs.io/en/stable/)** is used to statically check the typing.
+The library uses Python 3 **type hints** throughout and ensures return types are defined. **[Mypy](https://mypy.readthedocs.io/en/stable/)** is used to statically check the typing.
 
 #### Linting
 
@@ -88,7 +88,7 @@ The goal of the project is 100% code coverage with an understanding that there a
 
 Property testing is helpful for [testing certain properties](https://fsharpforfunandprofit.com/posts/property-based-testing-2/). The library uses [Hypothesis](https://hypothesis.readthedocs.io/en/stable/) property-based testing to vigorously exercise the library. The library includes generator functions for all the core datatypes, making them easy to randomly generate.
 
-### 🚀 Continous Integration
+### 🚀 Continuous Integration
 
 GitHub Actions are being used for continuous integration. Cross-platform is a primary goal and the workflows provided demonstrate how a developer can build in Linux, MacOS, and Windows.
 
