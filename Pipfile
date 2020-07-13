@@ -7,18 +7,19 @@ verify_ssl = true
 black = "*"
 coverage = "*"
 docutils = "*"
+hypothesis = "==5.15.1"
 mkdocs = "*"
 mypy = "*"
 pydeps = "*"
 pydocstyle = "*"
 pylint = "*"
 pytest = "*"
+typish = '*'
 
 [packages]
-hypothesis = "==5.15.1"
 numpy = '==1.18.2'
 jsons = '==1.1.2'
-typish = '*'
+cryptography = "*"
 
 [requires]
 python_version = "3.8"
