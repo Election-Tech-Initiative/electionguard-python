@@ -23,8 +23,6 @@ from .key_ceremony import (
     combine_election_public_keys,
     CeremonyDetails,
     CoefficientValidationSet,
-    default_auxiliary_decrypt,
-    default_auxiliary_encrypt,
     ElectionJointKey,
     ElectionKeyPair,
     ElectionPartialKeyBackup,
@@ -35,12 +33,13 @@ from .key_ceremony import (
     generate_election_key_pair,
     generate_election_partial_key_backup,
     generate_election_partial_key_challenge,
-    generate_elgamal_auxiliary_key_pair,
+    generate_rsa_auxiliary_key_pair,
     PublicKeySet,
     verify_election_partial_key_backup,
     verify_election_partial_key_challenge,
 )
 from .logs import log_warning
+from .rsa import rsa_encrypt, rsa_decrypt
 from .types import GUARDIAN_ID
 from .utils import get_optional
 
@@ -179,7 +178,7 @@ class Guardian(ElectionObjectBase):
         self,
         generate_auxiliary_key_pair: Callable[
             [], AuxiliaryKeyPair
-        ] = generate_elgamal_auxiliary_key_pair,
+        ] = generate_rsa_auxiliary_key_pair,
     ) -> None:
         """
         Generate auxiliary key pair
@@ -277,7 +276,7 @@ class Guardian(ElectionObjectBase):
         return ReadOnlyDataStore(self._guardian_election_public_keys)
 
     def generate_election_partial_key_backups(
-        self, encrypt: AuxiliaryEncrypt = default_auxiliary_encrypt
+        self, encrypt: AuxiliaryEncrypt = rsa_encrypt
     ) -> bool:
         """
         Generate all election partial key backups based on existing public keys
@@ -292,6 +291,11 @@ class Guardian(ElectionObjectBase):
             backup = generate_election_partial_key_backup(
                 self.object_id, self._election_keys.polynomial, auxiliary_key, encrypt
             )
+            if backup is None:
+                log_warning(
+                    f"guardian; {self.object_id} could not generate election partial key backups: failed to encrypt"
+                )
+                return False
             self._backups_to_share.set(auxiliary_key.owner_id, backup)
 
         return True
@@ -328,9 +332,7 @@ class Guardian(ElectionObjectBase):
 
     # Verification
     def verify_election_partial_key_backup(
-        self,
-        guardian_id: GUARDIAN_ID,
-        decrypt: AuxiliaryDecrypt = default_auxiliary_decrypt,
+        self, guardian_id: GUARDIAN_ID, decrypt: AuxiliaryDecrypt = rsa_decrypt,
     ) -> Optional[ElectionPartialKeyVerification]:
         """
         Verify election partial key backup value is in polynomial
@@ -449,7 +451,7 @@ class Guardian(ElectionObjectBase):
         elgamal: ElGamalCiphertext,
         extended_base_hash: ElementModQ,
         nonce_seed: ElementModQ = None,
-        decrypt: AuxiliaryDecrypt = default_auxiliary_decrypt,
+        decrypt: AuxiliaryDecrypt = rsa_decrypt,
     ) -> Optional[Tuple[ElementModP, ChaumPedersenProof]]:
         """
         Compute a compensated partial decryption of an elgamal encryption 
@@ -474,7 +476,14 @@ class Guardian(ElectionObjectBase):
             )
             return None
 
-        decrypted_value = decrypt(backup.encrypted_value, self._auxiliary_keys)
+        decrypted_value = decrypt(
+            backup.encrypted_value, self._auxiliary_keys.secret_key
+        )
+        if decrypted_value is None:
+            log_warning(
+                f"compensate decrypt guardian {self.object_id} failed decryption for {missing_guardian_id}"
+            )
+            return None
         partial_secret_key = get_optional(int_to_q(int(decrypted_value)))
 
         # 𝑀_{𝑖,l} = 𝐴^P𝑖_{l}

@@ -1,10 +1,12 @@
 from dataclasses import dataclass
-from typing import (
-    Callable,
-    List,
-    NamedTuple,
-)
+from typing import List, Optional, NamedTuple
 
+from .auxiliary import (
+    AuxiliaryKeyPair,
+    AuxiliaryDecrypt,
+    AuxiliaryEncrypt,
+    AuxiliaryPublicKey,
+)
 from .data_store import DataStore
 from .election_polynomial import (
     compute_polynomial_coordinate,
@@ -18,9 +20,10 @@ from .elgamal import (
     elgamal_keypair_random,
 )
 from .group import int_to_q, rand_q, ElementModP, ElementModQ
+from .rsa import rsa_keypair, rsa_decrypt, rsa_encrypt
 from .schnorr import SchnorrProof, make_schnorr_proof
-from .types import GUARDIAN_ID
 from .serializable import Serializable
+from .types import GUARDIAN_ID
 from .utils import get_optional
 
 ElectionJointKey = ElementModP
@@ -33,48 +36,6 @@ class CeremonyDetails(NamedTuple):
 
     number_of_guardians: int
     quorum: int
-
-
-class AuxiliaryKeyPair(NamedTuple):
-    """A tuple of a secret key and public key."""
-
-    secret_key: str
-    """The secret or private key"""
-    public_key: str
-
-
-class AuxiliaryPublicKey(NamedTuple):
-    """A tuple of auxiliary public key and owner information"""
-
-    owner_id: GUARDIAN_ID
-    """
-    The unique identifier of the guardian
-    """
-
-    sequence_order: int
-    """
-    The sequence order of the auxiliary public key (usually the guardian's sequence order)
-    """
-
-    key: str
-    """
-    A string representation of the Auxiliary public key.  
-    It is up to the external `AuxiliaryEncrypt` function to know how to parse this value
-    """
-
-
-AuxiliaryEncrypt = Callable[[str, AuxiliaryPublicKey], str]
-"""
-A Genric callable type that represents an encryption/decryption scheme.
-"""
-
-# FIX_ME ISSUE #47: Default Auxiliary Encrypt is temporary placeholder
-default_auxiliary_encrypt = lambda unencrypted, key: unencrypted
-
-AuxiliaryDecrypt = Callable[[str, AuxiliaryKeyPair], str]
-
-# FIX_ME ISSUE #47: Default Auxiliary Decrypt is temporary placeholder
-default_auxiliary_decrypt = lambda encrypted, key_pair: encrypted
 
 
 class ElectionKeyPair(NamedTuple):
@@ -187,6 +148,15 @@ def generate_elgamal_auxiliary_key_pair() -> AuxiliaryKeyPair:
     )
 
 
+def generate_rsa_auxiliary_key_pair() -> AuxiliaryKeyPair:
+    """
+    Generate auxiliary key pair using RSA
+    :return: Auxiliary key pair
+    """
+    rsa_key_pair = rsa_keypair()
+    return AuxiliaryKeyPair(rsa_key_pair.private_key, rsa_key_pair.public_key)
+
+
 def generate_election_key_pair(
     quorum: int, nonce: ElementModQ = None
 ) -> ElectionKeyPair:
@@ -207,8 +177,8 @@ def generate_election_partial_key_backup(
     owner_id: GUARDIAN_ID,
     polynomial: ElectionPolynomial,
     auxiliary_public_key: AuxiliaryPublicKey,
-    encrypt: AuxiliaryEncrypt = default_auxiliary_encrypt,
-) -> ElectionPartialKeyBackup:
+    encrypt: AuxiliaryEncrypt = rsa_encrypt,
+) -> Optional[ElectionPartialKeyBackup]:
     """
     Generate election partial key backup for sharing
     :param owner_id: Owner of election key
@@ -220,7 +190,9 @@ def generate_election_partial_key_backup(
     value = compute_polynomial_coordinate(
         auxiliary_public_key.sequence_order, polynomial
     )
-    encrypted_value = encrypt(str(value.to_int()), auxiliary_public_key)
+    encrypted_value = encrypt(str(value.to_int()), auxiliary_public_key.key)
+    if encrypted_value is None:
+        return None
     return ElectionPartialKeyBackup(
         owner_id,
         auxiliary_public_key.owner_id,
@@ -253,7 +225,7 @@ def verify_election_partial_key_backup(
     verifier_id: GUARDIAN_ID,
     backup: ElectionPartialKeyBackup,
     auxiliary_key_pair: AuxiliaryKeyPair,
-    decrypt: AuxiliaryDecrypt = default_auxiliary_decrypt,
+    decrypt: AuxiliaryDecrypt = rsa_decrypt,
 ) -> ElectionPartialKeyVerification:
     """
     Verify election partial key backup contain point on owners polynomial
@@ -263,9 +235,12 @@ def verify_election_partial_key_backup(
     :param decrypt: Decryption function using auxiliary key
     """
 
-    decrypted_value = decrypt(backup.encrypted_value, auxiliary_key_pair)
+    decrypted_value = decrypt(backup.encrypted_value, auxiliary_key_pair.secret_key)
+    if decrypted_value is None:
+        return ElectionPartialKeyVerification(
+            backup.owner_id, backup.designated_id, verifier_id, False
+        )
     value = get_optional(int_to_q(int(decrypted_value)))
-
     return ElectionPartialKeyVerification(
         backup.owner_id,
         backup.designated_id,
