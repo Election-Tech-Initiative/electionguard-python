@@ -40,8 +40,8 @@
     },
     "startDate": "2020-03-01T08:00:00-05:00",
     "endDate": "2020-03-01T20:00:00-05:00",
-    "electionScopeId": "hamilton-county-primary",
-    "type": "special",
+    "electionScopeId": "hamilton-county-general-election",
+    "type": "general",
     "geopoliticalUnits": [
         {
             "objectId": "hamilton-county",
@@ -68,8 +68,32 @@
             }
         },
         {
+            "objectId": "us-congress-district-5",
+            "name": "Us Congressional District 5",
+            "type": "congressional",
+            "contactInformation": {
+                "addressLine": [
+                    "1234 Somerville Gateway",
+                    "Medford, Ozark 999999"
+                ],
+                "name": "Medford Town Hall",
+                "email": [
+                    {
+                        "annotation": "inquiries",
+                        "value": "inquiries@harris-township.gov"
+                    }
+                ],
+                "phone": [
+                    {
+                        "annotation": "domestic",
+                        "value": "123-456-7890"
+                    }
+                ]
+            }
+        },
+        {
             "objectId": "lacroix-township-precinct-1",
-            "name": "Lacroix Township Precinct 1",
+            "name": "LaCroix Township Precinct 1",
             "type": "precinct",
             "contactInformation": {
                 "addressLine": [
@@ -93,7 +117,7 @@
         },
         {
             "objectId": "lacroix-township-precinct-2",
-            "name": "Lacroix Township Precinct 2",
+            "name": "LaCroix Township Precinct 2",
             "type": "precinct",
             "contactInformation": {
                 "addressLine": [
@@ -116,7 +140,7 @@
             }
         },
         {
-            "objectId": "lacrox-exeter-utility-district",
+            "objectId": "lacroix-exeter-utility-district",
             "name": "Exeter Utility District",
             "type": "utility",
             "contactInformation": {
@@ -282,33 +306,9 @@
                     }
                 ]
             }
-        },
-        {
-            "objectId": "harris-township",
-            "name": "Medford Township",
-            "type": "township",
-            "contactInformation": {
-                "addressLine": [
-                    "1234 Somerville Gateway",
-                    "Medford, Ozark 999999"
-                ],
-                "name": "Medford Town Hall",
-                "email": [
-                    {
-                        "annotation": "inquiries",
-                        "value": "inquiries@harris-township.gov"
-                    }
-                ],
-                "phone": [
-                    {
-                        "annotation": "domestic",
-                        "value": "123-456-7890"
-                    }
-                ]
-            }
         }
     ],
-    "parties":[
+    "parties": [
         {
             "objectId": "whig",
             "abbreviation": "WHI",
@@ -1146,7 +1146,7 @@
             "name": "President and Vice President of the United States",
             "numberElected": 1,
             "votesAllowed": 1,
-            "sequenceOrder": 0,            
+            "sequenceOrder": 0,
             "ballotTitle": {
                 "text": [
                     {
@@ -1217,7 +1217,8 @@
             "name": "Governor of the Commonwealth of Ozark",
             "numberElected": 1,
             "votesAllowed": 1,
-            "sequenceOrder": 1,            "ballotTitle": {
+            "sequenceOrder": 1,
+            "ballotTitle": {
                 "text": [
                     {
                         "value": "Governor of the Commonwealth of Ozark",
