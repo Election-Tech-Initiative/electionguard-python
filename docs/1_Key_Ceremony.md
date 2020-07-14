@@ -34,26 +34,29 @@ This is a detailed description of the entire Key Ceremony Process
 
 1. The ceremony details are decided upon. These include a `number_of_guardians` and `quorum` of guardians required for decryption.
 2. Each guardian creates a unique `id` and `sequence_order`.
-3. Each guardian must generate their `auxiliary key pair`.
+3. Each guardian must generate their `auxiliary key pair`.\*
 4. Each guardian must give the other guardians their `auxiliary public key` directly or through a mediator.
 5. Each guardian must check if all `auxiliary public keys` are received.
 6. Each guardian must generate their `election key pair` _(ElGamal key pair)_. This will generate a corresponding Schnorr `proof` and `polynomial` used for generating `election partial key backups` for sharing.
 7. Each guardian must give the other guardians their `election public key` directly or through a mediator.
 8. Each guardian must check if all `election public keys` are received.
-9. Each guardian must generate `election partial key backup` for each other guardian. The guardian will use their `polynomial` and the designated guardian's `sequence_order` to create the value. The backup will be encrypted with the designated guardian's `auxiliary public key`
+9. Each guardian must generate `election partial key backup` for each other guardian. The guardian will use their `polynomial` and the designated guardian's `sequence_order` to create the value. The backup will be encrypted with the designated guardian's `auxiliary public key`\*
 10. Each guardian must send each encrypted `election partial key backup` to the designated guardian directly or through a `mediator`.
 11. Each guardian checks if all encrypted `election partial key backups` have been received by their recipient guardian directly or through a mediator.
-12. Each recipient guardian decrypts each received encrypted `election partial key backup` with their own `auxiliary private key`
+12. Each recipient guardian decrypts each received encrypted `election partial key backup` with their own `auxiliary private key`\*
 13. Each recipient guardian verifies each `election partial key backup` and sends confirmation of verification
     - If the proof verifies, continue
     - If the proof fails
-      1. Sender guardian publishes the `election partial key backup` value sent to recipient as a `election partial key challenge` where the value is **unencrypted** to all the other guardians \*
+      1. Sender guardian publishes the `election partial key backup` value sent to recipient as a `election partial key challenge` where the value is **unencrypted** to all the other guardians \*\*
       2. Alternate guardian (outside sender or original recipient) attempts to verify key
          - If the proof verifies, continue
          - If the proof fails again, the accused (sender guardian) should be evicted and process should be restarted with new guardian.
 14. On receipt of all verifications of `election partial private keys` by all guardians, generate and publish `joint key` from election public keys
 
-\* **Note:** _The confidentiality of this value is now gone, but since the two Guardians are in the dispute, at least one is misbehaving and could be revealing this data._
+
+\* **Note:** _The auxiliary encrypt and decrypt functions can be overridden to allow different encryption mechanisms other than the default._
+
+\*\* **Note:** _The confidentiality of this value is now gone, but since the two Guardians are in the dispute, at least one is misbehaving and could be revealing this data._
 
 ## Files
 
