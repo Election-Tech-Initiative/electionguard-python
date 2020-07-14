@@ -205,6 +205,9 @@ class TestDecryptionMediator(TestCase):
         # Cannot get plaintext tally without a quorum
         self.assertIsNone(subject.get_plaintext_tally())
 
+    def tearDown(self):
+        self.key_ceremony.reset(CeremonyDetails(self.NUMBER_OF_GUARDIANS, self.QUORUM))
+
     def test_compute_selection(self):
         # Arrange
         first_selection = [

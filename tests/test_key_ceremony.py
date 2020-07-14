@@ -4,8 +4,8 @@ from electionguard.data_store import DataStore
 from electionguard.key_ceremony import (
     AuxiliaryPublicKey,
     ElectionPublicKey,
-    generate_elgamal_auxiliary_key_pair,
     generate_election_key_pair,
+    generate_rsa_auxiliary_key_pair,
     generate_election_partial_key_backup,
     verify_election_partial_key_backup,
     generate_election_partial_key_challenge,
@@ -19,16 +19,15 @@ RECIPIENT_GUARDIAN_ID = "Test Guardian 2"
 ALTERNATE_VERIFIER_GUARDIAN_ID = "Test Guardian 3"
 SENDER_SEQUENCE_ORDER = 1
 RECIPIENT_SEQUENCE_ORDER = 2
-AUXILIARY_PUBLIC_KEY = "Test Public Key"
 NUMBER_OF_GUARDIANS = 5
 QUORUM = 3
 
 
 class TestKeyCeremony(TestCase):
-    def test_generate_elgamal_auxiliary_key_pair(self):
+    def test_generate_rsa_auxiliary_key_pair(self):
 
         # Act
-        auxiliary_key_pair = generate_elgamal_auxiliary_key_pair()
+        auxiliary_key_pair = generate_rsa_auxiliary_key_pair()
 
         # Assert
         self.assertIsNotNone(auxiliary_key_pair)
@@ -51,8 +50,11 @@ class TestKeyCeremony(TestCase):
     def test_generate_election_partial_key_backup(self):
         # Arrange
         election_key_pair = generate_election_key_pair(QUORUM)
+        auxiliary_key_pair = generate_rsa_auxiliary_key_pair()
         auxiliary_public_key = AuxiliaryPublicKey(
-            RECIPIENT_GUARDIAN_ID, RECIPIENT_SEQUENCE_ORDER, AUXILIARY_PUBLIC_KEY
+            RECIPIENT_GUARDIAN_ID,
+            RECIPIENT_SEQUENCE_ORDER,
+            auxiliary_key_pair.public_key,
         )
 
         # Act
@@ -72,7 +74,7 @@ class TestKeyCeremony(TestCase):
 
     def test_verify_election_partial_key_backup(self):
         # Arrange
-        recipient_auxiliary_key_pair = generate_elgamal_auxiliary_key_pair()
+        recipient_auxiliary_key_pair = generate_rsa_auxiliary_key_pair()
         sender_election_key_pair = generate_election_key_pair(QUORUM)
         recipient_auxiliary_public_key = AuxiliaryPublicKey(
             RECIPIENT_GUARDIAN_ID,
@@ -99,7 +101,7 @@ class TestKeyCeremony(TestCase):
 
     def test_generate_election_partial_key_challenge(self):
         # Arrange
-        recipient_auxiliary_key_pair = generate_elgamal_auxiliary_key_pair()
+        recipient_auxiliary_key_pair = generate_rsa_auxiliary_key_pair()
         sender_election_key_pair = generate_election_key_pair(QUORUM)
         recipient_auxiliary_public_key = AuxiliaryPublicKey(
             RECIPIENT_GUARDIAN_ID,
@@ -129,7 +131,7 @@ class TestKeyCeremony(TestCase):
 
     def test_verify_election_partial_key_challenge(self):
         # Arrange
-        recipient_auxiliary_key_pair = generate_elgamal_auxiliary_key_pair()
+        recipient_auxiliary_key_pair = generate_rsa_auxiliary_key_pair()
         sender_election_key_pair = generate_election_key_pair(QUORUM)
         recipient_auxiliary_public_key = AuxiliaryPublicKey(
             RECIPIENT_GUARDIAN_ID,
