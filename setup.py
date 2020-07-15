@@ -10,7 +10,7 @@ from setuptools import find_packages
 from setuptools import setup
 
 NAME = "electionguard"
-VERSION = "1.0.0"
+VERSION = "1.1.0"
 LICENSE = "MIT"
 DESCRIPTION = "ElectionGuard: Support for e2e verified elections."
 AUTHOR = "Microsoft Corporation"
