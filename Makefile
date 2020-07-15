@@ -65,7 +65,7 @@ lint:
 	@echo 3.Mypy Static Typing
 	pipenv run mypy bench src stubs tests setup.py
 	@echo 4.Package Metadata
-	pipenv run python setup.py check --strict --metadata --restructuredtext
+	pipenv run python setup.py check --strict --metadata
 	@echo 5.Docstring
 	pipenv run pydocstyle
 	@echo 6.Documentation
