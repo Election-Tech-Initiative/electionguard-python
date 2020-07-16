@@ -72,6 +72,7 @@ Sections:
 - [Design and Architecture]
 - [Build and Run]
 - [Project Workflow]
+- [Sample Election Manifest](Sample_Election_manifest)
 
 Step-by-Step Process:
 
