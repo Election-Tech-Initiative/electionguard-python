@@ -84,8 +84,23 @@ class Guardian(ElectionObjectBase):
     """
 
     def __init__(
-        self, id: str, sequence_order: int, number_of_guardians: int, quorum: int,
+        self,
+        id: str,
+        sequence_order: int,
+        number_of_guardians: int,
+        quorum: int,
+        nonce_seed: Optional[ElementModQ] = None,
     ) -> None:
+        """
+        Initialize a guardian with the specified arguments
+
+        :param id: the unique identifier for the guardian
+        :param sequence_order: a unique number in [0, 256) that identifies this guardian
+        :param number_of_guardians: the total number of guardians that will participate in the election
+        :param quorum: the count of guardians necessary to decrypt
+        :param nonce_seed: an optional `ElementModQ` value that can be used to generate the `ElectionKeyPair`.  
+                           It is recommended to only use this field for testing.
+        """
 
         super().__init__(id)
         self.sequence_order = sequence_order
@@ -105,7 +120,7 @@ class Guardian(ElectionObjectBase):
         ]()
 
         self.generate_auxiliary_key_pair()
-        self.generate_election_key_pair(int_to_q_unchecked(self.sequence_order))
+        self.generate_election_key_pair(nonce_seed if nonce_seed is not None else None)
 
     def reset(self, number_of_guardians: int, quorum: int) -> None:
         """

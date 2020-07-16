@@ -1,5 +1,6 @@
 from datetime import datetime
 import os
+from dataclasses import dataclass
 from typing import TypeVar, Callable, Optional, Tuple, List
 
 from hypothesis.strategies import (
@@ -15,6 +16,7 @@ from electionguard.ballot import PlaintextBallot
 from electionguard.election import (
     BallotStyle,
     CiphertextElectionContext,
+    ElectionConstants,
     ElectionDescription,
     ElectionType,
     InternalElectionDescription,
@@ -35,13 +37,33 @@ from electionguard.election_builder import ElectionBuilder
 
 from electionguard.encrypt import contest_from
 
-from electionguard.group import ElementModP
+from electionguard.group import ElementModP, int_to_q_unchecked
+from electionguard.guardian import Guardian
+from electionguard.key_ceremony import CoefficientValidationSet
+from electionguard.key_ceremony_mediator import KeyCeremonyMediator
 from electionguard.utils import get_optional
 
 _T = TypeVar("_T")
 _DrawType = Callable[[SearchStrategy[_T]], _T]
 
 here = os.path.abspath(os.path.dirname(__file__))
+
+NUMBER_OF_GUARDIANS = 5
+QUORUM = 3
+
+
+@dataclass
+class AllPublicElectionData:
+    description: ElectionDescription
+    metadata: InternalElectionDescription
+    context: CiphertextElectionContext
+    constants: ElectionConstants
+    guardians: List[CoefficientValidationSet]
+
+
+@dataclass
+class AllPrivateElectionData:
+    guardians: List[Guardian]
 
 
 class ElectionFactory(object):
@@ -59,6 +81,54 @@ class ElectionFactory(object):
             target = ElectionDescription.from_json(data)
 
         return target
+
+    def get_hamilton_election_with_encryption_context(
+        self,
+    ) -> Tuple[AllPublicElectionData, AllPrivateElectionData]:
+        guardians: List[Guardian] = []
+        coefficient_validation_sets: List[CoefficientValidationSet] = []
+
+        # Configure the election builder
+        description = self.get_hamilton_election_from_file()
+        builder = ElectionBuilder(NUMBER_OF_GUARDIANS, QUORUM, description)
+
+        # Setup Guardians
+        for i in range(NUMBER_OF_GUARDIANS):
+            guardians.append(
+                Guardian(
+                    "hamilton-county-canvass-board-member-" + str(i),
+                    i,
+                    NUMBER_OF_GUARDIANS,
+                    QUORUM,
+                )
+            )
+
+        # Run the key ceremony
+        mediator = KeyCeremonyMediator(guardians[0].ceremony_details)
+        for guardian in guardians:
+            mediator.announce(guardian)
+        orchestrated = mediator.orchestrate()
+        verified = mediator.verify()
+
+        # Joint Key
+        joint_key = mediator.publish_joint_key()
+
+        # Save Validation Keys
+        for guardian in guardians:
+            coefficient_validation_sets.append(
+                guardian.share_coefficient_validation_set()
+            )
+
+        builder.set_public_key(get_optional(joint_key))
+        metadata, context = get_optional(builder.build())
+        constants = ElectionConstants()
+
+        return (
+            AllPublicElectionData(
+                description, metadata, context, constants, coefficient_validation_sets
+            ),
+            AllPrivateElectionData(guardians),
+        )
 
     def get_fake_election(self) -> ElectionDescription:
         """

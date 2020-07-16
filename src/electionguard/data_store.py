@@ -65,6 +65,9 @@ class DataStore(Generic[T, U], Iterable):
         """
         return self._store.keys()
 
+    def __len__(self) -> int:
+        return self.length()
+
     def length(self) -> int:
         """
         Get length or count of store
