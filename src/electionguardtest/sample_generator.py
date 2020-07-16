@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 from random import randint
+from shutil import rmtree
 from typing import List, Optional
 import uuid
 
@@ -22,7 +23,7 @@ from electionguard.ballot_store import BallotStore
 from electionguard.ballot_box import BallotBox
 from electionguard.decryption_mediator import DecryptionMediator
 from electionguard.encrypt import EncryptionDevice, EncryptionMediator
-from electionguard.publish import publish, publish_private_data
+from electionguard.publish import publish, publish_private_data, RESULTS_DIR
 from electionguard.tally import tally_ballots
 from electionguard.utils import get_optional
 
@@ -51,6 +52,9 @@ class ElectionSampleDataGenerator:
         """
         Generate the sample data set
         """
+
+        rmtree(RESULTS_DIR, ignore_errors=True)
+
         (
             public_data,
             private_data,
