@@ -243,6 +243,7 @@ class Candidate(ElectionObjectBase, CryptoHashable):
     ballot_name: InternationalizedText = field(default=InternationalizedText())
     party_id: Optional[str] = field(default=None)
     image_uri: Optional[str] = field(default=None)
+    is_write_in: Optional[bool] = field(default=None)
 
     def get_candidate_id(self) -> str:
         """
@@ -603,9 +604,9 @@ class ElectionDescription(Serializable, CryptoHashable):
                 candidate.party_id is None or candidate.party_id in party_ids
             )
 
+        candidates_have_valid_length = len(candidate_ids) == len(self.candidates)
         candidates_valid = (
-            len(candidate_ids) == len(self.candidates)
-            and candidates_have_valid_party_ids
+            candidates_have_valid_length and candidates_have_valid_party_ids
         )
 
         # Validate Contests
@@ -646,9 +647,13 @@ class ElectionDescription(Serializable, CryptoHashable):
 
         # TODO: ISSUE #55: verify that the contest sequence order set is in the proper order
 
+        contests_have_valid_object_ids = len(contest_ids) == len(self.contests)
+        contests_have_valid_sequence_ids = len(contest_sequence_ids) == len(
+            self.contests
+        )
         contests_valid = (
-            len(contest_ids) == len(self.contests)
-            and len(contest_sequence_ids) == len(self.contests)
+            contests_have_valid_object_ids
+            and contests_have_valid_sequence_ids
             and contests_validate_their_properties
             and contests_have_valid_electoral_district_id
             and candidate_contests_have_valid_party_ids
@@ -672,8 +677,11 @@ class ElectionDescription(Serializable, CryptoHashable):
                         "ballot_styles_have_valid_gp_unit_ids": ballot_styles_have_valid_gp_unit_ids,
                         "parties_valid": parties_valid,
                         "candidates_valid": candidates_valid,
+                        "candidates_have_valid_length": candidates_have_valid_length,
                         "candidates_have_valid_party_ids": candidates_have_valid_party_ids,
                         "contests_valid": contests_valid,
+                        "contests_have_valid_object_ids": contests_have_valid_object_ids,
+                        "contests_have_valid_sequence_ids": contests_have_valid_sequence_ids,
                         "contests_validate_their_properties": contests_validate_their_properties,
                         "contests_have_valid_electoral_district_id": contests_have_valid_electoral_district_id,
                         "candidate_contests_have_valid_party_ids": candidate_contests_have_valid_party_ids,

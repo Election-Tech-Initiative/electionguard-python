@@ -51,6 +51,15 @@ class ElectionFactory(object):
     def get_simple_election_from_file(self) -> ElectionDescription:
         return self._get_election_from_file(self.simple_election_manifest_file_name)
 
+    def get_hamilton_election_from_file(self) -> ElectionDescription:
+        with open(
+            os.path.join(here, "data", "hamilton-county", "election_manifest.json"), "r"
+        ) as subject:
+            data = subject.read()
+            target = ElectionDescription.from_json(data)
+
+        return target
+
     def get_fake_election(self) -> ElectionDescription:
         """
         Get a single Fake Election object that is manually constructed with default values

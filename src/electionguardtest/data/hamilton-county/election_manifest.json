@@ -50,7 +50,7 @@
             "contactInformation": {
                 "addressLine": [
                     "1234 Samuel Adams Way",
-                    "Jefferson, Hamilton 99999"
+                    "Hamilton, Ozark 99999"
                 ],
                 "name": "Hamilton County Clerk",
                 "email": [
@@ -68,8 +68,8 @@
             }
         },
         {
-            "objectId": "us-congress-district-5",
-            "name": "Us Congressional District 5",
+            "objectId": "congress-district-5",
+            "name": "Congressional District 5",
             "type": "congressional",
             "contactInformation": {
                 "addressLine": [
@@ -77,6 +77,30 @@
                     "Medford, Ozark 999999"
                 ],
                 "name": "Medford Town Hall",
+                "email": [
+                    {
+                        "annotation": "inquiries",
+                        "value": "inquiries@harris-township.gov"
+                    }
+                ],
+                "phone": [
+                    {
+                        "annotation": "domestic",
+                        "value": "123-456-7890"
+                    }
+                ]
+            }
+        },
+        {
+            "objectId": "congress-district-7",
+            "name": "Congressional District 7",
+            "type": "congressional",
+            "contactInformation": {
+                "addressLine": [
+                    "1234 Somerville Gateway",
+                    "Arlington, Ozark 999999"
+                ],
+                "name": "Arlington Town Hall",
                 "email": [
                     {
                         "annotation": "inquiries",
@@ -116,37 +140,13 @@
             }
         },
         {
-            "objectId": "lacroix-township-precinct-2",
-            "name": "LaCroix Township Precinct 2",
-            "type": "precinct",
-            "contactInformation": {
-                "addressLine": [
-                    "1234 Clinton Portis Drive",
-                    "LaCroix, Ozark 99999"
-                ],
-                "name": "Portis Community Center",
-                "email": [
-                    {
-                        "annotation": "inquiries",
-                        "value": "inquiries@lacrox.gov"
-                    }
-                ],
-                "phone": [
-                    {
-                        "annotation": "domestic",
-                        "value": "123-456-7890"
-                    }
-                ]
-            }
-        },
-        {
             "objectId": "lacroix-exeter-utility-district",
             "name": "Exeter Utility District",
             "type": "utility",
             "contactInformation": {
                 "addressLine": [
                     "1234 Watt Drive",
-                    "La Croix, Ozark 99999"
+                    "LaCroix, Ozark 99999"
                 ],
                 "name": "Exeter Utility District coordinator",
                 "email": [
@@ -212,55 +212,7 @@
             }
         },
         {
-            "objectId": "pismo-beach-school-district-precinct-2",
-            "name": "Pismo Beach School District Precinct 2",
-            "type": "school",
-            "contactInformation": {
-                "addressLine": [
-                    "1234 Albuquerque Drive",
-                    "Arlington, Ozark 99999"
-                ],
-                "name": "James Baldwin Middle School",
-                "email": [
-                    {
-                        "annotation": "inquiries",
-                        "value": "inquiries@pismo-beach-school.edu"
-                    }
-                ],
-                "phone": [
-                    {
-                        "annotation": "domestic",
-                        "value": "123-456-7890"
-                    }
-                ]
-            }
-        },
-        {
             "objectId": "somerset-school-district-precinct-1",
-            "name": "Somerset School District",
-            "type": "school",
-            "contactInformation": {
-                "addressLine": [
-                    "1234 Somerset Avenue",
-                    "Arlinton, Ozark 99999"
-                ],
-                "name": "Someset Elementary",
-                "email": [
-                    {
-                        "annotation": "inquiries",
-                        "value": "inquiries@somerset-elementary.edu"
-                    }
-                ],
-                "phone": [
-                    {
-                        "annotation": "domestic",
-                        "value": "123-456-7890"
-                    }
-                ]
-            }
-        },
-        {
-            "objectId": "somerset-school-district-precinct-2",
             "name": "Somerset School District",
             "type": "school",
             "contactInformation": {
@@ -326,7 +278,7 @@
         {
             "objectId": "federalist",
             "abbreviation": "FED",
-            "color": "CCCCCC",
+            "color": "BBBBBB",
             "logoUri": "http://some/path/to/federalist.svg",
             "name": {
                 "text": [
@@ -340,7 +292,7 @@
         {
             "objectId": "peoples",
             "abbreviation": "PPL",
-            "color": "EEEEEE",
+            "color": "CCCCCC",
             "logoUri": "http://some/path/to/people-s.svg",
             "name": {
                 "text": [
@@ -354,7 +306,7 @@
         {
             "objectId": "liberty",
             "abbreviation": "LIB",
-            "color": "EEEEEE",
+            "color": "DDDDDD",
             "logoUri": "http://some/path/to/liberty.svg",
             "name": {
                 "text": [
@@ -382,7 +334,7 @@
         {
             "objectId": "labor",
             "abbreviation": "LBR",
-            "color": "EEEEEE",
+            "color": "FFFFFF",
             "logoUri": "http://some/path/to/laobr.svg",
             "name": {
                 "text": [
@@ -396,7 +348,7 @@
         {
             "objectId": "independent",
             "abbreviation": "IND",
-            "color": "EEEEEE",
+            "color": "000000",
             "logoUri": "http://some/path/to/independent.svg",
             "name": {
                 "text": [
@@ -563,7 +515,7 @@
                     }
                 ]
             },
-            "partyId": "iundependent"
+            "partyId": "independent"
         },
         {
             "objectId": "williams",
@@ -731,7 +683,7 @@
                     }
                 ]
             },
-            "partyId": "inedependent"
+            "partyId": "independent"
         },
         {
             "objectId": "murphy",
@@ -1069,7 +1021,39 @@
             }
         },
         {
-            "objectId": "write-in",
+            "objectId": "write-in-1",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "Write In Candidate",
+                        "language": "en"
+                    },
+                    {
+                        "value": "Escribir en la candidata",
+                        "language": "es"
+                    }
+                ]
+            },
+            "isWriteIn": true
+        },
+        {
+            "objectId": "write-in-2",
+            "ballot_name": {
+                "text": [
+                    {
+                        "value": "Write In Candidate",
+                        "language": "en"
+                    },
+                    {
+                        "value": "Escribir en la candidata",
+                        "language": "es"
+                    }
+                ]
+            },
+            "isWriteIn": true
+        },
+        {
+            "objectId": "write-in-3",
             "ballot_name": {
                 "text": [
                     {
@@ -1140,7 +1124,7 @@
     "contests": [
         {
             "@type": "CandidateContest",
-            "objectId": "us-president",
+            "objectId": "president-vice-president-contest",
             "voteVariation": "one_of_m",
             "electoralDistrictId": "hamilton-county",
             "name": "President and Vice President of the United States",
@@ -1382,9 +1366,9 @@
         },
         {
             "@type": "CandidateContest",
-            "objectId": "us-congress-district-5",
+            "objectId": "congress-district-5-contest",
             "voteVariation": "one_of_m",
-            "electoralDistrictId": "us-congress-district-5",
+            "electoralDistrictId": "congress-district-5",
             "name": "US Congress District 5",
             "numberElected": 1,
             "votesAllowed": 1,
@@ -1448,9 +1432,9 @@
         },
         {
             "@type": "CandidateContest",
-            "objectId": "us-congress-district-7",
+            "objectId": "congress-district-7-contest",
             "voteVariation": "one_of_m",
-            "electoralDistrictId": "hamilton-county",
+            "electoralDistrictId": "congress-district-7",
             "name": "US Congress District 7",
             "numberElected": 1,
             "votesAllowed": 1,
@@ -1514,9 +1498,9 @@
         },
         {
             "@type": "CandidateContest",
-            "objectId": "pismo-beach-school-board",
+            "objectId": "pismo-beach-school-board-contest",
             "voteVariation": "n_of_m",
-            "electoralDistrictId": "pismo-beach-school-disctrict",
+            "electoralDistrictId": "pismo-beach-school-district-precinct-1",
             "name": "Pismo Beach School Board",
             "numberElected": 3,
             "votesAllowed": 3,
@@ -1584,25 +1568,25 @@
                 {
                     "objectId": "write-in-selection-1-pismo-beach-school-board",
                     "sequenceOrder": 7,
-                    "candidateId": "write-in"
+                    "candidateId": "write-in-1"
                 },
                 {
                     "objectId": "write-in-selection-2-pismo-beach-school-board",
                     "sequenceOrder": 8,
-                    "candidateId": "write-in"
+                    "candidateId": "write-in-2"
                 },
                 {
                     "objectId": "write-in-selection-3-pismo-beach-school-board",
                     "sequenceOrder": 9,
-                    "candidateId": "write-in"
+                    "candidateId": "write-in-3"
                 }
             ]
         },
         {
             "@type": "CandidateContest",
-            "objectId": "somerset-school-board",
+            "objectId": "somerset-school-board-contest",
             "voteVariation": "n_of_m",
-            "electoralDistrictId": "somerset-school-district",
+            "electoralDistrictId": "somerset-school-district-precinct-1",
             "name": "Somerset School Board",
             "numberElected": 2,
             "votesAllowed": 2,
@@ -1665,21 +1649,21 @@
                 {
                     "objectId": "write-in-selection-1-somerset-school-board",
                     "sequenceOrder": 6,
-                    "candidateId": "write-in"
+                    "candidateId": "write-in-1"
                 },
                 {
                     "objectId": "write-in-selection-2-somerset-school-board",
                     "sequenceOrder": 7,
-                    "candidateId": "write-in"
+                    "candidateId": "write-in-2"
                 }
             ]
         },
         {
             "@type": "ReferendumContest",
-            "objectId": "ozark-chief-justice-retain-demergue",
+            "objectId": "arlington-chief-justice-retain-demergue",
             "sequenceOrder": 6,
             "voteVariation": "one_of_m",
-            "electoralDistrictId": "hamilton-county",
+            "electoralDistrictId": "arlington-township-precinct-1",
             "name": "Retain Robert Demergue as Chief Justice?",
             "numberElected": 1,
             "votesAllowed": 1,
@@ -1722,10 +1706,10 @@
         },
         {
             "@type": "ReferendumContest",
-            "objectId": "exeter-utility-district-referendum",
-            "sequenceOrder": 1,
+            "objectId": "exeter-utility-district-referendum-contest",
+            "sequenceOrder": 7,
             "voteVariation": "one_of_m",
-            "electoralDistrictId": "exeter-utility-district",
+            "electoralDistrictId": "lacroix-exeter-utility-district",
             "name": "Capital Projects Levy",
             "numberElected": 1,
             "votesAllowed": 1,
@@ -1738,7 +1722,7 @@
                 {
                     "objectId": "exeter-utility-district-referendum-selection",
                     "sequenceOrder": 1,
-                    "candidateId": "exeter-utility-district-referendum"
+                    "candidateId": "exeter-utility-district-referendum-negative"
                 }
             ],
             "ballotTitle": {
@@ -1781,85 +1765,94 @@
     ],
     "ballotStyles": [
         {
-            "objectId": "us-president",
+            "objectId": "congress-district-7-hamilton-county",
             "geopoliticalUnitIds": [
+                "hamilton-county",
+                "congress-district-7"
+            ]
+        },
+        {
+            "objectId": "congress-district-7-lacroix",
+            "geopoliticalUnitIds": [
+                "hamilton-county",
+                "congress-district-7",
+                "lacroix-township-precinct-1"
+            ]
+        },
+        {
+            "objectId": "congress-district-7-lacroix-exeter",
+            "geopoliticalUnitIds": [
+                "hamilton-county",
+                "congress-district-7",
                 "lacroix-township-precinct-1",
-                "lacroix-township-precinct-2",
-                "lacrox-exeter-utility-district",
+                "lacroix-exeter-utility-district"
+            ]
+        },
+        {
+            "objectId": "congress-district-7-arlington",
+            "geopoliticalUnitIds": [
+                "hamilton-county",
+                "congress-district-7",
+                "arlington-township-precinct-1"
+            ]
+        },
+        {
+            "objectId": "congress-district-7-arlington-pismo-beach",
+            "geopoliticalUnitIds": [
+                "hamilton-county",
+                "congress-district-7",
                 "arlington-township-precinct-1",
-                "pismo-beach-school-district-precinct-1",
-                "pismo-beach-school-district-precinct-2",
-                "somerset-school-district-precinct-1",
-                "somerset-school-district-precinct-2",
-                "harris-township"
+                "pismo-beach-school-district-precinct-1"
             ]
         },
         {
-            "objectId": "ozark-governor",
+            "objectId": "congress-district-7-arlington-somerset",
             "geopoliticalUnitIds": [
-                "lacroix-township-precinct-1",
-                "lacroix-township-precinct-2",
-                "lacrox-exeter-utility-district",
+                "hamilton-county",
+                "congress-district-7",
                 "arlington-township-precinct-1",
-                "pismo-beach-school-district-precinct-1",
-                "pismo-beach-school-district-precinct-2",
-                "somerset-school-district-precinct-1",
-                "somerset-school-district-precinct-2",
+                "somerset-school-district-precinct-1"
+            ]
+        },
+        {
+            "objectId": "congress-district-5-hamilton-county",
+            "geopoliticalUnitIds": [
+                "hamilton-county",
+                "congress-district-5"
+            ]
+        },
+        {
+            "objectId": "congress-district-5-lacroix",
+            "geopoliticalUnitIds": [
+                "hamilton-county",
+                "congress-district-5",
+                "lacroix-township-precinct-1"
+            ]
+        },
+        {
+            "objectId": "congress-district-5-harris",
+            "geopoliticalUnitIds": [
+                "hamilton-county",
+                "congress-district-5",
                 "harris-township"
             ]
         },
         {
-            "objectId": "us-congress-district-5",
+            "objectId": "congress-district-5-arlington-pismo-beach",
             "geopoliticalUnitIds": [
-                "lacroix-township-precinct-2",
-                "pismo-beach-school-district-precinct-2",
-                "somerset-school-district-precinct-2",
-                "harris-township"
-            ]
-        },
-        {
-            "objectId": "us-congress-district-7",
-            "geopoliticalUnitIds": [
-                "lacroix-township-precinct-1",
-                "lacrox-exeter-utility-district",
+                "hamilton-county",
+                "congress-district-5",
                 "arlington-township-precinct-1",
-                "pismo-beach-school-district-precinct-1",
-                "somerset-school-district-precinct-1",
-                "harris-township"
+                "pismo-beach-school-district-precinct-1"
             ]
         },
         {
-            "objectId": "pismo-beach-school-board",
+            "objectId": "congress-district-5-arlington-somerset",
             "geopoliticalUnitIds": [
-                "pismo-beach-school-district-precinct-1",
-                "pismo-beach-school-district-precinct-2"
-            ]
-        },
-        {
-            "objectId": "somerset-school-board",
-            "geopoliticalUnitIds": [
-                "somerset-school-district-precinct-1",
-                "somerset-school-district-precinct-2"
-            ]
-        },
-        {
-            "objectId": "ozark-chief-justice-retain-demergue",
-            "geopoliticalUnitIds": [
-                "lacroix-township-precinct-1",
-                "lacroix-township-precinct-2",
-                "lacrox-exeter-utility-district",
+                "hamilton-county",
+                "congress-district-5",
                 "arlington-township-precinct-1",
-                "pismo-beach-school-district-precinct-1",
-                "pismo-beach-school-district-precinct-2",
-                "somerset-school-district-precinct-1",
-                "somerset-school-district-precinct-2",
-                "harris-township"
-            ]
-        },
-        {
-            "objectId": "exeter-utility-district-referendum",
-            "geopoliticalUnitIds": [
-                "lacrox-exeter-utility-district"
+                "somerset-school-district-precinct-1"
             ]
         }
     ]
