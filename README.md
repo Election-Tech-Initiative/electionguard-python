@@ -115,6 +115,6 @@ A huge thank you to those who helped to contribute to this project so far, inclu
 
 <a href="https://github.com/AddressXception"><img src="https://avatars0.githubusercontent.com/u/6232853?s=460&u=8fec95386acad6109ad71a2aad2d097b607ebd6a&v=4" title="AddressXception" width="80" height="80"></a>
 
-**[Dan Wallach](https://twitter.com/danwallach)**
+**[Dan S. Wallach](https://www.cs.rice.edu/~dwallach/) [_(Rice University)_](https://www.rice.edu/)**
 
-<a href="https://github.com/danwallach"><img src="https://avatars2.githubusercontent.com/u/743029?v=4" title="danwallach" width="80" height="80"></a>
+<a href="https://www.cs.rice.edu/~dwallach/"><img src="https://avatars2.githubusercontent.com/u/743029?v=4" title="danwallach" width="80" height="80"></a>
