@@ -17,6 +17,8 @@ JSON_PARSE_ERROR = '{"error": "Object could not be parsed due to json issue"}'
 
 # base10 as string for ElementModP and ElementModQ
 
+# temporarily disabled the KEY_TRANFORMER features because they don't seem to work reliably
+
 
 @dataclass
 class Serializable(Generic[T]):
@@ -36,7 +38,7 @@ class Serializable(Generic[T]):
                     self,
                     strip_privates=True,
                     strip_nulls=True,
-                    key_transformer=KEY_TRANSFORMER_CAMELCASE,
+                    # key_transformer=KEY_TRANSFORMER_CAMELCASE,
                 ),
             )
         except JsonsError:
@@ -53,7 +55,7 @@ class Serializable(Generic[T]):
         """
         Deserialize the provided data string into the specified instance
         """
-        return cast(T, loads(data, cls, key_transformer=KEY_TRANSFORMER_SNAKECASE))
+        return cast(T, loads(data, cls))  # key_transformer=KEY_TRANSFORMER_SNAKECASE
 
 
 def write_json_file(json_data: str, file_name: str, file_path: str = "") -> None:
