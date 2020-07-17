@@ -19,7 +19,7 @@ typish = '*'
 [packages]
 numpy = '==1.18.2'
 jsons = '==1.1.2'
-cryptography = "*"
+cryptography = "==2.9.2"
 
 [requires]
 python_version = "3.8"
