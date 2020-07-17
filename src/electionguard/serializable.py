@@ -1,3 +1,4 @@
+import os
 from dataclasses import dataclass
 from jsons import (
     KEY_TRANSFORMER_CAMELCASE,
@@ -59,6 +60,6 @@ def write_json_file(json_data: str, file_name: str, file_path: str = "") -> None
     """
     Write json data string to json file
     """
-    json_file_path: str = file_path + file_name + JSON_FILE_EXTENSION
+    json_file_path: str = os.path.join(file_path, file_name + JSON_FILE_EXTENSION)
     with open(json_file_path, WRITE) as json_file:
         json_file.write(json_data)
