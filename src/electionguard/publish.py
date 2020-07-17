@@ -1,4 +1,3 @@
-import os
 from os import mkdir, path
 from typing import List
 
@@ -12,9 +11,9 @@ from .key_ceremony import CoefficientValidationSet
 from .tally import CiphertextTally
 
 RESULTS_DIR = "results"
-COEFFICIENTS_DIR = os.path.join(RESULTS_DIR, "coefficients")
-BALLOTS_DIR = os.path.join(RESULTS_DIR, "encrypted_ballots")
-SPOILED_DIR = os.path.join(RESULTS_DIR, "spoiled_ballots")
+COEFFICIENTS_DIR = path.join(RESULTS_DIR, "coefficients")
+BALLOTS_DIR = path.join(RESULTS_DIR, "encrypted_ballots")
+SPOILED_DIR = path.join(RESULTS_DIR, "spoiled_ballots")
 
 DESCRIPTION_FILE_NAME = "description"
 CONTEXT_FILE_NAME = "context"
@@ -54,14 +53,14 @@ def publish(
     make_directory(BALLOTS_DIR)
     for ballot in ciphertext_ballots:
         ballot_name = BALLOT_PREFIX + ballot.object_id
-        ballot_dir = os.path.join(BALLOTS_DIR, ballot.object_id[0:4])
+        ballot_dir = path.join(BALLOTS_DIR, ballot.object_id[0:4])
         make_directory(ballot_dir)
         ballot.to_json_file(ballot_name, ballot_dir)
 
     make_directory(SPOILED_DIR)
     for ballot in ciphertext_tally.spoiled_ballots.values():
         ballot_name = BALLOT_PREFIX + ballot.object_id
-        spoiled_dir = os.path.join(SPOILED_DIR, ballot.object_id[0:4])
+        spoiled_dir = path.join(SPOILED_DIR, ballot.object_id[0:4])
         ballot.to_json_file(ballot_name, spoiled_dir)
 
     ciphertext_tally.to_json_file(ENCRYPTED_TALLY_FILE_NAME, results_directory)
