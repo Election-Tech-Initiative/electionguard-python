@@ -17,7 +17,6 @@ from electionguard.group import (
     g_pow_p,
     ZERO_MOD_Q,
     R,
-    G_INV,
     int_to_p,
     int_to_q,
     add_q,
@@ -84,7 +83,6 @@ class TestModularArithmetic(unittest.TestCase):
         self.assertEqual((R * Q) % P, P - 1)
         self.assertLess(Q, P)
         self.assertLess(G, P)
-        self.assertLess(G_INV, P)
         self.assertLess(R, P)
 
     def test_simple_powers(self):
