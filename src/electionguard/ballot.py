@@ -530,7 +530,7 @@ def make_ciphertext_ballot_contest(
             lambda ag: make_constant_chaum_pedersen(
                 message=_ciphertext_ballot_elgamal_accumulate(ballot_selections),
                 constant=number_elected,
-                r=aggregate,
+                r=ag,
                 k=elgamal_public_key,
                 seed=proof_seed,
             ),
