@@ -1,7 +1,7 @@
 from os import mkdir, path
 from typing import List
 
-from jsons import set_serializer, dump, set_deserializer, set_validator
+from jsons import set_serializer, dump, set_validator, set_deserializer
 
 from .ballot_box import CiphertextBallot
 from .decryption_mediator import PlaintextTally

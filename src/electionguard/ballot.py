@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field, InitVar
 from datetime import datetime
-from enum import Enum
 from distutils import util
+from enum import Enum
 from typing import Optional, List, Any, Sequence
 
 from .chaum_pedersen import (
@@ -16,7 +16,7 @@ from .group import add_q, ElementModP, ElementModQ, ZERO_MOD_Q
 from .hash import CryptoHashCheckable, hash_elems
 from .logs import log_warning
 from .tracker import get_rotating_tracker_hash, tracker_hash_to_words
-from .utils import to_ticks
+from .utils import to_ticks, flatmap_optional
 
 
 def _list_eq(
@@ -168,11 +168,8 @@ class CiphertextBallotSelection(ElectionObjectBase, CryptoHashCheckable):
     # The encrypted representation of the plaintext field
     message: ElGamalCiphertext
 
-    elgamal_public_key: InitVar[ElementModP]
-
-    proof_seed: InitVar[ElementModQ]
-
-    selection_representation: InitVar[int]
+    # The hash of the encrypted values
+    crypto_hash: ElementModQ
 
     # determines if this is a placeholder selection
     is_placeholder_selection: bool = field(default=False)
@@ -181,41 +178,15 @@ class CiphertextBallotSelection(ElectionObjectBase, CryptoHashCheckable):
     # this value is sensitive & should be treated as a secret
     nonce: Optional[ElementModQ] = field(default=None)
 
-    # The hash of the encrypted values
-    crypto_hash: ElementModQ = field(init=False)
-
     # the proof that demonstrates the selection is an encryption of 0 or 1,
     # and was encrypted using the `nonce`
-    proof: Optional[DisjunctiveChaumPedersenProof] = field(init=False, default=None)
+    proof: Optional[DisjunctiveChaumPedersenProof] = field(default=None)
 
     # TODO: ISSUE #35: encrypt/decrypt
     extended_data: Optional[ElGamalCiphertext] = field(default=None)
     """
     encrypted representation of the extended_data field
     """
-
-    def __post_init__(
-        self,
-        elgamal_public_key: ElementModP,
-        proof_seed: ElementModQ,
-        selection_representation: int,
-    ) -> None:
-        object.__setattr__(
-            self, "crypto_hash", self.crypto_hash_with(self.description_hash)
-        )
-
-        if self.nonce is not None:
-            object.__setattr__(
-                self,
-                "proof",
-                make_disjunctive_chaum_pedersen(
-                    self.message,
-                    self.nonce,
-                    elgamal_public_key,
-                    proof_seed,
-                    selection_representation,
-                ),
-            )
 
     def is_valid_encryption(
         self, seed_hash: ElementModQ, elgamal_public_key: ElementModP
@@ -261,8 +232,53 @@ class CiphertextBallotSelection(ElectionObjectBase, CryptoHashCheckable):
 
         In most cases the seed_hash should match the `description_hash`
         """
+        return _ciphertext_ballot_selection_crypto_hash_with(
+            self.object_id, seed_hash, self.message
+        )
 
-        return hash_elems(self.object_id, seed_hash, self.message.crypto_hash())
+
+def _ciphertext_ballot_selection_crypto_hash_with(
+    object_id: str, seed_hash: ElementModQ, message: ElGamalCiphertext
+) -> ElementModQ:
+    return hash_elems(object_id, seed_hash, message.crypto_hash())
+
+
+def make_ciphertext_ballot_selection(
+    object_id: str,
+    description_hash: ElementModQ,
+    message: ElGamalCiphertext,
+    elgamal_public_key: ElementModP,
+    proof_seed: ElementModQ,
+    selection_representation: int,
+    is_placeholder_selection: bool = False,
+    nonce: Optional[ElementModQ] = None,
+    crypto_hash: Optional[ElementModQ] = None,
+    proof: Optional[DisjunctiveChaumPedersenProof] = None,
+    extended_data: Optional[ElGamalCiphertext] = None,
+) -> CiphertextBallotSelection:
+    if crypto_hash is None:
+        crypto_hash = _ciphertext_ballot_selection_crypto_hash_with(
+            object_id, description_hash, message
+        )
+
+    if proof is None:
+        proof = flatmap_optional(
+            nonce,
+            lambda n: make_disjunctive_chaum_pedersen(
+                message, n, elgamal_public_key, proof_seed, selection_representation
+            ),
+        )
+
+    return CiphertextBallotSelection(
+        object_id=object_id,
+        description_hash=description_hash,
+        message=message,
+        is_placeholder_selection=is_placeholder_selection,
+        nonce=nonce,
+        crypto_hash=crypto_hash,
+        proof=proof,
+        extended_data=extended_data,
+    )
 
 
 @dataclass
@@ -364,64 +380,24 @@ class CiphertextBallotContest(ElectionObjectBase, CryptoHashCheckable):
     # collection of ballot selections
     ballot_selections: List[CiphertextBallotSelection]
 
-    elgamal_public_key: InitVar[ElementModP]
-
-    proof_seed: InitVar[ElementModQ]
-
-    number_elected: InitVar[int]
+    # Hash of the encrypted values
+    crypto_hash: ElementModQ
 
     # the nonce used to generate the encryption
     # this value is sensitive & should be treated as a secret
-    nonce: Optional[ElementModQ] = field(default=None)
-
-    # Hash of the encrypted values
-    crypto_hash: ElementModQ = field(init=False)
+    nonce: Optional[ElementModQ] = None
 
     # the proof demonstrates the sum of the selections does not exceed the maximum
     # available selections for the contest, and that the proof was generated with the nonce
-    proof: Optional[ConstantChaumPedersenProof] = field(init=False)
-
-    def __post_init__(
-        self,
-        elgamal_public_key: ElementModP,
-        proof_seed: ElementModQ,
-        number_elected: int,
-    ) -> None:
-        object.__setattr__(
-            self, "crypto_hash", self.crypto_hash_with(self.description_hash)
-        )
-
-        aggregate = self.aggregate_nonce()
-
-        if aggregate is not None:
-            # Generate the proof when the object is created
-            object.__setattr__(
-                self,
-                "proof",
-                make_constant_chaum_pedersen(
-                    message=self.elgamal_accumulate(),
-                    constant=number_elected,
-                    r=aggregate,
-                    k=elgamal_public_key,
-                    seed=proof_seed,
-                ),
-            )
+    proof: Optional[ConstantChaumPedersenProof] = None
 
     def aggregate_nonce(self) -> Optional[ElementModQ]:
         """
         :return: an aggregate nonce for the contest composed of the nonces of the selections
         """
-        selection_nonces: List[ElementModQ] = list()
-        for selection in self.ballot_selections:
-            if selection.nonce is None:
-                log_warning(
-                    f"missing nonce values for contest {self.object_id} cannot calculate aggregate nonce"
-                )
-                return None
-            else:
-                selection_nonces.append(selection.nonce)
-
-        return add_q(*selection_nonces)
+        return _ciphertext_ballot_contest_aggregate_nonce(
+            self.object_id, self.ballot_selections
+        )
 
     def crypto_hash_with(self, seed_hash: ElementModQ) -> ElementModQ:
         """
@@ -434,25 +410,16 @@ class CiphertextBallotContest(ElectionObjectBase, CryptoHashCheckable):
 
         In most cases, the seed_hash is the description_hash
         """
-
-        if len(self.ballot_selections) == 0:
-            log_warning(
-                f"mismatching ballot_selections state: {self.object_id} expected(some), actual(none)"
-            )
-            return ZERO_MOD_Q
-
-        selection_hashes = [
-            selection.crypto_hash for selection in self.ballot_selections
-        ]
-
-        return hash_elems(self.object_id, seed_hash, *selection_hashes)
+        return _ciphertext_ballot_context_crypto_hash(
+            self.object_id, self.ballot_selections, seed_hash
+        )
 
     def elgamal_accumulate(self) -> ElGamalCiphertext:
         """
         Add the individual ballot_selections `message` fields together, suitable for use
         in a Chaum-Pedersen proof.
         """
-        return elgamal_add(*[selection.message for selection in self.ballot_selections])
+        return _ciphertext_ballot_elgamal_accumulate(self.ballot_selections)
 
     def is_valid_encryption(
         self, seed_hash: ElementModQ, elgamal_public_key: ElementModP
@@ -488,6 +455,82 @@ class CiphertextBallotContest(ElectionObjectBase, CryptoHashCheckable):
         # Verify the sum of the selections matches the proof
         elgamal_accumulation = self.elgamal_accumulate()
         return self.proof.is_valid(elgamal_accumulation, elgamal_public_key)
+
+
+def _ciphertext_ballot_elgamal_accumulate(
+    ballot_selections: List[CiphertextBallotSelection],
+) -> ElGamalCiphertext:
+    return elgamal_add(*[selection.message for selection in ballot_selections])
+
+
+def _ciphertext_ballot_context_crypto_hash(
+    object_id: str,
+    ballot_selections: List[CiphertextBallotSelection],
+    seed_hash: ElementModQ,
+) -> ElementModQ:
+    if len(ballot_selections) == 0:
+        log_warning(
+            f"mismatching ballot_selections state: {object_id} expected(some), actual(none)"
+        )
+        return ZERO_MOD_Q
+
+    selection_hashes = [selection.crypto_hash for selection in ballot_selections]
+
+    return hash_elems(object_id, seed_hash, *selection_hashes)
+
+
+def _ciphertext_ballot_contest_aggregate_nonce(
+    object_id: str, ballot_selections: List[CiphertextBallotSelection]
+) -> Optional[ElementModQ]:
+    selection_nonces: List[ElementModQ] = list()
+    for selection in ballot_selections:
+        if selection.nonce is None:
+            log_warning(
+                f"missing nonce values for contest {object_id} cannot calculate aggregate nonce"
+            )
+            return None
+        else:
+            selection_nonces.append(selection.nonce)
+
+    return add_q(*selection_nonces)
+
+
+def make_ciphertext_ballot_contest(
+    object_id: str,
+    description_hash: ElementModQ,
+    ballot_selections: List[CiphertextBallotSelection],
+    elgamal_public_key: ElementModP,
+    proof_seed: ElementModQ,
+    number_elected: int,
+    crypto_hash: Optional[ElementModQ] = None,
+    proof: Optional[ConstantChaumPedersenProof] = None,
+    nonce: Optional[ElementModQ] = None,
+) -> CiphertextBallotContest:
+    if crypto_hash is None:
+        crypto_hash = _ciphertext_ballot_context_crypto_hash(
+            object_id, ballot_selections, description_hash
+        )
+
+    aggregate = _ciphertext_ballot_contest_aggregate_nonce(object_id, ballot_selections)
+    if proof is None:
+        proof = flatmap_optional(
+            aggregate,
+            lambda ag: make_constant_chaum_pedersen(
+                message=_ciphertext_ballot_elgamal_accumulate(ballot_selections),
+                constant=number_elected,
+                r=aggregate,
+                k=elgamal_public_key,
+                seed=proof_seed,
+            ),
+        )
+    return CiphertextBallotContest(
+        object_id=object_id,
+        description_hash=description_hash,
+        ballot_selections=ballot_selections,
+        nonce=nonce,
+        crypto_hash=crypto_hash,
+        proof=proof,
+    )
 
 
 @dataclass
