@@ -15,6 +15,7 @@ pydeps = "*"
 pydocstyle = "*"
 pylint = "*"
 pytest = "*"
+secretstorage = "*"
 twine = "*"
 typish = '*'
 
