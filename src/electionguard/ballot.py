@@ -256,6 +256,12 @@ def make_ciphertext_ballot_selection(
     proof: Optional[DisjunctiveChaumPedersenProof] = None,
     extended_data: Optional[ElGamalCiphertext] = None,
 ) -> CiphertextBallotSelection:
+    """
+    Constructs a `CipherTextBallotSelection` object. Most of the parameters here match up to fields
+    in the class, but this helper function will optionally compute a Chaum-Pedersen proof if the
+    given nonce isn't `None`. Likewise, if a crypto_hash is not provided, it will be derived from
+    the other fields.
+    """
     if crypto_hash is None:
         crypto_hash = _ciphertext_ballot_selection_crypto_hash_with(
             object_id, description_hash, message
@@ -506,6 +512,12 @@ def make_ciphertext_ballot_contest(
     proof: Optional[ConstantChaumPedersenProof] = None,
     nonce: Optional[ElementModQ] = None,
 ) -> CiphertextBallotContest:
+    """
+    Constructs a `CipherTextBallotContest` object. Most of the parameters here match up to fields
+    in the class, but this helper function will optionally compute a Chaum-Pedersen proof if the
+    ballot selections include their encryption nonces. Likewise, if a crypto_hash is not provided,
+    it will be derived from the other fields.
+    """
     if crypto_hash is None:
         crypto_hash = _ciphertext_ballot_context_crypto_hash(
             object_id, ballot_selections, description_hash
