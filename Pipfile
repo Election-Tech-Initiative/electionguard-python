@@ -14,6 +14,7 @@ pydeps = "*"
 pydocstyle = "*"
 pylint = "*"
 pytest = "*"
+twine = "*"
 typish = '*'
 
 [packages]
