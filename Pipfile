@@ -7,7 +7,7 @@ verify_ssl = true
 black = "*"
 coverage = "*"
 docutils = "*"
-hypothesis = "==5.15.1"
+hypothesis = ">=5.15.1"
 jeepney = "*"
 mkdocs = "*"
 mypy = "*"
@@ -20,8 +20,8 @@ twine = "*"
 typish = '*'
 
 [packages]
-numpy = '==1.18.2'
-jsons = '==1.1.2'
+numpy = '>=1.18.2'
+jsons = '>=1.1.2'
 cryptography = "*"
 
 [requires]
