@@ -1,12 +1,5 @@
 import unittest
 
-from electionguard.election import (
-    ContestDescriptionWithPlaceholders,
-    ElectionDescription,
-    InternalElectionDescription,
-    SelectionDescription,
-    VoteVariationType,
-)
 import electionguardtest.election_factory as ElectionFactory
 import electionguardtest.ballot_factory as BallotFactory
 
@@ -26,4 +19,3 @@ class TestHamiltonCountyElection(unittest.TestCase):
 
         # Assert
         self.assertTrue(subject.is_valid())
-
