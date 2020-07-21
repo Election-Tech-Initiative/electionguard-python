@@ -52,7 +52,7 @@ class TestEndToEndElection(TestCase):
     NUMBER_OF_GUARDIANS = 5
     QUORUM = 3
 
-    REMOVE_OUTPUT = True
+    REMOVE_OUTPUT = False
 
     # Step 0 - Configure Election
     description: ElectionDescription

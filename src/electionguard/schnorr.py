@@ -1,4 +1,4 @@
-from typing import NamedTuple
+from dataclasses import dataclass
 
 from .elgamal import ElGamalKeyPair
 from .group import (
@@ -11,9 +11,11 @@ from .group import (
 )
 from .hash import hash_elems
 from .logs import log_warning
+from .proof import Proof, ProofUsage
 
 
-class SchnorrProof(NamedTuple):
+@dataclass(frozen=True)
+class SchnorrProof(Proof):
     """
     Representation of a Schnorr proof
     """
@@ -21,6 +23,10 @@ class SchnorrProof(NamedTuple):
     k: ElementModP
     h: ElementModP
     u: ElementModQ
+    usage: ProofUsage = ProofUsage.SecretValue
+
+    def __post_init__(self) -> None:
+        super().__init__()
 
     def is_valid(self) -> bool:
         """
@@ -29,8 +35,9 @@ class SchnorrProof(NamedTuple):
 
         :return: true if the transcript is valid, false if anything is wrong
         """
-
-        (k, h, u) = self
+        k = self.k
+        h = self.h
+        u = self.u
         valid_public_key = k.is_valid_residue()
         in_bounds_h = h.is_in_bounds()
         in_bounds_u = u.is_in_bounds()

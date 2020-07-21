@@ -10,6 +10,7 @@ from hypothesis.strategies import integers
 
 import electionguardtest.ballot_factory as BallotFactory
 import electionguardtest.election_factory as ElectionFactory
+from electionguard.chaum_pedersen import DisjunctiveChaumPedersenProof
 from electionguard.decrypt_with_secrets import (
     decrypt_selection_with_secret,
     decrypt_selection_with_nonce,
@@ -126,8 +127,16 @@ class TestDecrypt(unittest.TestCase):
 
         # tamper with the proof
         malformed_proof = deepcopy(subject)
-        malformed_disjunctive = malformed_proof.proof._replace(
-            a0=mult_p(subject.proof.a0, TWO_MOD_P)
+        altered_a0 = mult_p(subject.proof.a0, TWO_MOD_P)
+        malformed_disjunctive = DisjunctiveChaumPedersenProof(
+            altered_a0,
+            malformed_proof.proof.b0,
+            malformed_proof.proof.a1,
+            malformed_proof.proof.b1,
+            malformed_proof.proof.c0,
+            malformed_proof.proof.c1,
+            malformed_proof.proof.v0,
+            malformed_proof.proof.v1,
         )
         malformed_proof.proof = malformed_disjunctive
 

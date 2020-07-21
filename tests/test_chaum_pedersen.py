@@ -5,6 +5,7 @@ from hypothesis import given, settings, HealthCheck
 from hypothesis.strategies import integers
 
 from electionguard.chaum_pedersen import (
+    ConstantChaumPedersenProof,
     make_disjunctive_chaum_pedersen_zero,
     make_disjunctive_chaum_pedersen_one,
     make_chaum_pedersen,
@@ -258,5 +259,5 @@ class TestConstantChaumPedersen(TestCase):
         )
         self.assertFalse(proof_bad2.is_valid(message, keypair.public_key))
 
-        proof_bad3 = proof._replace(constant=-1)
+        proof_bad3 = ConstantChaumPedersenProof(proof.a, proof.b, proof.c, proof.v, -1)
         self.assertFalse(proof_bad3.is_valid(message, keypair.public_key))

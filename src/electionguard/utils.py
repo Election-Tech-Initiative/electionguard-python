@@ -1,5 +1,6 @@
 from datetime import datetime
 from os import mkdir, path
+from re import sub
 from typing import Callable, Optional, TypeVar
 
 T = TypeVar("T")
@@ -73,6 +74,15 @@ def to_ticks(date_time: datetime) -> int:
     seconds = int((date_time - t0).total_seconds())
     ticks = seconds * 10 ** 7
     return ticks
+
+
+def space_between_capitals(base: str) -> str:
+    """
+    Return a modified string with spaces between capital letters
+    :param base: base string
+    :return: modified string
+    """
+    return sub(r"(\w)([A-Z])", r"\1 \2", base)
 
 
 def make_directory(directory_path: str) -> None:
