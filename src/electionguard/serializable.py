@@ -24,9 +24,10 @@ class Serializable(Generic[T]):
     Serializable class with methods to convert to json
     """
 
-    def to_json(self, strip_privates=True) -> str:
+    def to_json(self, strip_privates: bool = True) -> str:
         """
         Serialize to json
+        :param strip_privates: strip private variables
         :return: the json representation of this object
         """
         try:
@@ -35,10 +36,13 @@ class Serializable(Generic[T]):
             return JSON_PARSE_ERROR
 
     def to_json_file(
-        self, file_name: str, file_path: str = "", strip_privates=True
+        self, file_name: str, file_path: str = "", strip_privates: bool = True
     ) -> None:
         """
         Serialize an object to a json file
+        :param file_name: File name
+        :param file_path: File path
+        :param strip_privates: Strip private variables
         """
         write_json_file(self.to_json(strip_privates), file_name, file_path)
 

@@ -8,7 +8,6 @@ from .group import (
     ElementModP,
     ElementModQ,
     int_to_q,
-    int_to_q_unchecked,
     mult_p,
     pow_q,
     pow_p,

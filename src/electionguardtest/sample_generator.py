@@ -1,15 +1,8 @@
 #!/usr/bin/env python
 from random import randint
 from shutil import rmtree
-from typing import List, Optional
+from typing import List
 import uuid
-
-from os import (
-    listdir,
-    path,
-)
-
-import sys
 
 from electionguardtest.election_factory import ElectionFactory
 from electionguardtest.ballot_factory import BallotFactory
@@ -17,7 +10,6 @@ from electionguardtest.ballot_factory import BallotFactory
 from electionguard.ballot import (
     CiphertextBallot,
     CiphertextAcceptedBallot,
-    PlaintextBallot,
 )
 from electionguard.ballot_store import BallotStore
 from electionguard.ballot_box import BallotBox

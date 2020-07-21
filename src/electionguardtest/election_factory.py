@@ -37,7 +37,7 @@ from electionguard.election_builder import ElectionBuilder
 
 from electionguard.encrypt import contest_from
 
-from electionguard.group import ElementModP, int_to_q_unchecked
+from electionguard.group import ElementModP
 from electionguard.guardian import Guardian
 from electionguard.key_ceremony import CoefficientValidationSet
 from electionguard.key_ceremony_mediator import KeyCeremonyMediator
