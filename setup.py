@@ -14,7 +14,7 @@ with open(join(current_directory, "README.md"), encoding="utf-8") as readme_file
     LONG_DESCRIPTION = readme_file.read()
 
 NAME = "electionguard"
-VERSION = "1.0.0"
+VERSION = "1.1.0"
 LICENSE = "MIT"
 DESCRIPTION = "ElectionGuard: Support for e2e verified elections."
 LONG_DESCRIPTION_CONTENT_TYPE = "text/markdown"
