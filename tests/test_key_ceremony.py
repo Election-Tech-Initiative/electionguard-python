@@ -22,6 +22,9 @@ RECIPIENT_SEQUENCE_ORDER = 2
 NUMBER_OF_GUARDIANS = 5
 QUORUM = 3
 
+identity_auxiliary_decrypt = lambda message, public_key: message
+identity_auxiliary_encrypt = lambda message, private_key: message
+
 
 class TestKeyCeremony(TestCase):
     def test_generate_rsa_auxiliary_key_pair(self):
@@ -59,7 +62,10 @@ class TestKeyCeremony(TestCase):
 
         # Act
         backup = generate_election_partial_key_backup(
-            SENDER_GUARDIAN_ID, election_key_pair.polynomial, auxiliary_public_key
+            SENDER_GUARDIAN_ID,
+            election_key_pair.polynomial,
+            auxiliary_public_key,
+            identity_auxiliary_encrypt,
         )
 
         # Assert
@@ -85,11 +91,15 @@ class TestKeyCeremony(TestCase):
             SENDER_GUARDIAN_ID,
             sender_election_key_pair.polynomial,
             recipient_auxiliary_public_key,
+            identity_auxiliary_encrypt,
         )
 
         # Act
         verification = verify_election_partial_key_backup(
-            RECIPIENT_GUARDIAN_ID, partial_key_backup, recipient_auxiliary_key_pair
+            RECIPIENT_GUARDIAN_ID,
+            partial_key_backup,
+            recipient_auxiliary_key_pair,
+            identity_auxiliary_decrypt,
         )
 
         # Assert
@@ -112,6 +122,7 @@ class TestKeyCeremony(TestCase):
             SENDER_GUARDIAN_ID,
             sender_election_key_pair.polynomial,
             recipient_auxiliary_public_key,
+            identity_auxiliary_encrypt,
         )
 
         # Act
@@ -142,6 +153,7 @@ class TestKeyCeremony(TestCase):
             SENDER_GUARDIAN_ID,
             sender_election_key_pair.polynomial,
             recipient_auxiliary_public_key,
+            identity_auxiliary_encrypt,
         )
         challenge = generate_election_partial_key_challenge(
             partial_key_backup, sender_election_key_pair.polynomial

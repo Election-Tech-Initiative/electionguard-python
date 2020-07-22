@@ -2,6 +2,7 @@ from multiprocessing import cpu_count
 from multiprocessing.dummy import Pool
 from typing import Dict, Optional, Union
 
+from .auxiliary import AuxiliaryDecrypt
 from .ballot import CiphertextAcceptedBallot, CiphertextBallotSelection
 from .data_store import DataStore
 from .decryption_share import (
@@ -19,6 +20,7 @@ from .group import ElementModP, ElementModQ, mult_p, pow_p
 from .guardian import Guardian
 from .key_ceremony import ElectionPublicKey
 from .logs import log_warning
+from .rsa import rsa_decrypt
 from .tally import (
     CiphertextTally,
     CiphertextTallyContest,
@@ -72,6 +74,7 @@ def compute_compensated_decryption_share(
     missing_guardian_id: str,
     tally: CiphertextTally,
     context: CiphertextElectionContext,
+    decrypt: AuxiliaryDecrypt = rsa_decrypt,
 ) -> Optional[CompensatedTallyDecryptionShare]:
     """
     Compute a compensated decryptions share for a guardian
@@ -84,13 +87,13 @@ def compute_compensated_decryption_share(
     """
 
     contests = compute_compensated_decryption_share_for_cast_contests(
-        guardian, missing_guardian_id, tally, context
+        guardian, missing_guardian_id, tally, context, decrypt
     )
     if contests is None:
         return None
 
     spoiled_ballots = compute_compensated_decryption_share_for_spoiled_ballots(
-        guardian, missing_guardian_id, tally, context
+        guardian, missing_guardian_id, tally, context, decrypt
     )
 
     if spoiled_ballots is None:
@@ -145,6 +148,7 @@ def compute_compensated_decryption_share_for_cast_contests(
     missing_guardian_id: str,
     tally: CiphertextTally,
     context: CiphertextElectionContext,
+    decrypt: AuxiliaryDecrypt = rsa_decrypt,
 ) -> Optional[Dict[CONTEST_ID, CiphertextCompensatedDecryptionContest]]:
     """
     Compute the compensated decryption for all of the cast contests in the Ciphertext Tally
@@ -157,7 +161,7 @@ def compute_compensated_decryption_share_for_cast_contests(
         selection_decryptions = cpu_pool.starmap(
             compute_compensated_decryption_share_for_selection,
             [
-                (guardian, missing_guardian_id, selection, context)
+                (guardian, missing_guardian_id, selection, context, decrypt)
                 for (_, selection) in contest.tally_selections.items()
             ],
         )
@@ -233,6 +237,7 @@ def compute_compensated_decryption_share_for_spoiled_ballots(
     missing_guardian_id: MISSING_GUARDIAN_ID,
     tally: CiphertextTally,
     context: CiphertextElectionContext,
+    decrypt: AuxiliaryDecrypt = rsa_decrypt,
 ) -> Optional[Dict[BALLOT_ID, CompensatedBallotDecryptionShare]]:
     """
     Compute the decryption for all spoiled ballots in the Ciphertext Tally
@@ -249,7 +254,7 @@ def compute_compensated_decryption_share_for_spoiled_ballots(
             selection_decryptions = cpu_pool.starmap(
                 compute_compensated_decryption_share_for_selection,
                 [
-                    (guardian, missing_guardian_id, selection, context)
+                    (guardian, missing_guardian_id, selection, context, decrypt)
                     for selection in contest.ballot_selections
                 ],
             )
@@ -324,6 +329,7 @@ def compute_compensated_decryption_share_for_selection(
     missing_guardian_id: str,
     selection: CiphertextSelection,
     context: CiphertextElectionContext,
+    decrypt: AuxiliaryDecrypt = rsa_decrypt,
 ) -> Optional[CiphertextCompensatedDecryptionSelection]:
     """
     Compute a compensated decryption share for a specific selection using the 
@@ -337,7 +343,10 @@ def compute_compensated_decryption_share_for_selection(
     """
 
     compensated = available_guardian.compensate_decrypt(
-        missing_guardian_id, selection.message, context.crypto_extended_base_hash
+        missing_guardian_id,
+        selection.message,
+        context.crypto_extended_base_hash,
+        decrypt=decrypt,
     )
 
     if compensated is None:
