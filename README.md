@@ -1,4 +1,4 @@
-![Microsoft Defending Democracy Program: ElectionGuard Python](images/electionguard-banner.svg)
+![Microsoft Defending Democracy Program: ElectionGuard Python][Banner Image]
 
 # 🗳 ElectionGuard Python
 
@@ -40,7 +40,7 @@ has its own [installation requirements (native C libraries)](https://gmpy2.readt
 
 ## 🚀 Quick Start
 
-Using [**make**](https://www.gnu.org/software/make/manual/make.html), the entire [GitHub Action workflow](.github/workflows/pull_request.yml) can be run with one command: 
+Using [**make**](https://www.gnu.org/software/make/manual/make.html), the entire [GitHub Action workflow][Pull Request Workflow] can be run with one command: 
 
 ```
 make
@@ -58,7 +58,7 @@ A complete end-to-end election example can be run independently by executing:
 make test-example
 ```
 
-For more detailed build and run options, see the [documentation](docs/Build_and_Run.md).
+For more detailed build and run options, see the [documentation][Build and Run].
 
 ## 📄 Documentation
 
@@ -69,21 +69,21 @@ Overviews:
 
 Sections:
 
-- [Design and Architecture](docs/Design_and_Architecture.md)
-- [Build and Run](docs/Build_and_Run.md)
-- [Project Workflow](docs/Project_Workflow.md)
+- [Design and Architecture]
+- [Build and Run]
+- [Project Workflow]
 
 Step-by-Step Process:
 
-0. [Configure Election](docs/0_Configure_Election.md)
-1. [Key Ceremony](docs/1_Key_Ceremony.md)
-2. [Encrypt Ballots](docs/2_Encrypt_Ballots.md)
-3. [Cast and Spoil](docs/3_Cast_and_Spoil.md)
-4. [Decrypt Tally](docs/4_Decrypt_Tally.md)
+0. [Configure Election]
+1. [Key Ceremony]
+2. [Encrypt Ballots]
+3. [Cast and Spoil]
+4. [Decrypt Tally]
 
 ## Contributing
 
-This project encourages community contributions for development, testing, documentation, code review, and performance analysis, etc.  For more information on how to contribute, see [the contribution guidelines](CONTRIBUTING.md)
+This project encourages community contributions for development, testing, documentation, code review, and performance analysis, etc.  For more information on how to contribute, see [the contribution guidelines][Contributing]
 
 ### Code of Conduct
 
@@ -91,14 +91,14 @@ This project has adopted the [Microsoft Open Source Code of Conduct](https://ope
 
 ### Reporting Issues
 
-Please report any bugs, feature requests, or enhancements using the [GitHub Issue Tracker](https://github.com/microsoft/electionguard-python/issues).  Please do not report any security vulnerabilities using the Issue Tracker.  Instead, please report them to the Microsoft Security Response Center (MSRC) at [https://msrc.microsoft.com/create-report](https://msrc.microsoft.com/create-report).  See the [Security Documentation](SECURITY.md) for more information.
+Please report any bugs, feature requests, or enhancements using the [GitHub Issue Tracker](https://github.com/microsoft/electionguard-python/issues).  Please do not report any security vulnerabilities using the Issue Tracker.  Instead, please report them to the Microsoft Security Response Center (MSRC) at [https://msrc.microsoft.com/create-report](https://msrc.microsoft.com/create-report).  See the [Security Documentation][Security] for more information.
 
 ### Have Questions?
 
 Electionguard would love for you to ask questions out in the open using GitHub Issues. If you really want to email the ElectionGuard team, reach out at electionguard@microsoft.com.
 
 ## License
-This repository is licensed under the [MIT License](LICENSE) 
+This repository is licensed under the [MIT License]
 
 ## Thanks! 🎉
 A huge thank you to those who helped to contribute to this project so far, including:
@@ -118,3 +118,31 @@ A huge thank you to those who helped to contribute to this project so far, inclu
 **[Dan S. Wallach](https://www.cs.rice.edu/~dwallach/) [_(Rice University)_](https://www.rice.edu/)**
 
 <a href="https://www.cs.rice.edu/~dwallach/"><img src="https://avatars2.githubusercontent.com/u/743029?v=4" title="danwallach" width="80" height="80"></a>
+
+
+<!-- Links -->
+[Banner Image]: https://raw.githubusercontent.com/microsoft/electionguard-python/main/images/electionguard-banner.svg
+
+[Pull Request Workflow]: https://github.com/microsoft/electionguard-python/blob/main/.github/workflows/pull_request.yml
+
+[Contributing]: https://github.com/microsoft/electionguard-python/blob/main/CONTRIBUTING.md
+
+[Security]:https://github.com/microsoft/electionguard-python/blob/main/SECURITY.md
+
+[Design and Architecture]: https://github.com/microsoft/electionguard-python/blob/main/docs/Design_and_Architecture.md]
+
+[Build and Run]: https://github.com/microsoft/electionguard-python/blob/main/docs/Build_and_Run.md
+
+[Project Workflow]: https://github.com/microsoft/electionguard-python/blob/main/docs/Project_Workflow.md
+
+[Configure Election]: https://github.com/microsoft/electionguard-python/blob/main/docs/0_Configure_Election.md
+
+[Key Ceremony]: https://github.com/microsoft/electionguard-python/blob/main/docs/1_Key_Ceremony.md
+
+[Encrypt Ballots]: https://github.com/microsoft/electionguard-python/blob/main/docs/2_Encrypt_Ballots.md
+
+[Cast and Spoil]: https://github.com/microsoft/electionguard-python/blob/main/docs/3_Cast_and_Spoil.md
+
+[Decrypt Tally]: https://github.com/microsoft/electionguard-python/blob/main/docs/4_Decrypt_Tally.md
+
+[MIT License]: https://github.com/microsoft/electionguard-python/blob/main/LICENSE
