@@ -8,12 +8,15 @@ black = "*"
 coverage = "*"
 docutils = "*"
 hypothesis = "==5.15.1"
+jeepney = "*"
 mkdocs = "*"
 mypy = "*"
 pydeps = "*"
 pydocstyle = "*"
 pylint = "*"
 pytest = "*"
+secretstorage = "*"
+twine = "*"
 typish = '*'
 
 [packages]
