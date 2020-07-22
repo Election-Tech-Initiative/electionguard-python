@@ -30,7 +30,7 @@ class TestPublish(TestCase):
         context = CiphertextElectionContext(1, 1, ONE_MOD_P, ONE_MOD_Q)
         constants = ElectionConstants()
         devices = []
-        coefficients = [CoefficientValidationSet('', [], [])]
+        coefficients = [CoefficientValidationSet("", [], [])]
         encrypted_ballots = []
         tally = PlaintextTally("", [], [])
 
@@ -54,15 +54,13 @@ class TestPublish(TestCase):
 
     def test_publish_private_data(self) -> None:
         # Arrange
-        plaintext_ballots = [PlaintextBallot('', '', [])]
-        encrypted_ballots = [CiphertextBallot('', '', '', [])]
-        guardians = [Guardian('', 1, 1, 1)]
+        plaintext_ballots = [PlaintextBallot("", "", [])]
+        encrypted_ballots = [CiphertextBallot("", "", "", [])]
+        guardians = [Guardian("", 1, 1, 1)]
 
         # Act
         publish_private_data(
-            plaintext_ballots,
-            encrypted_ballots,
-            guardians,
+            plaintext_ballots, encrypted_ballots, guardians,
         )
 
         # Assert

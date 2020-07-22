@@ -225,8 +225,7 @@ class KeyCeremonyMediator:
         :return: All election public keys for all guardians available
         """
         return (
-            len(self._election_public_keys)
-            == self.ceremony_details.number_of_guardians
+            len(self._election_public_keys) == self.ceremony_details.number_of_guardians
         )
 
     def share_election_public_keys(self) -> Iterable[ElectionPublicKey]:
