@@ -40,7 +40,7 @@ class ElectionSampleDataGenerator:
         self.ballot_factory = BallotFactory()
         self.encryption_device = EncryptionDevice(f"polling-place-{uuid.uuid1}")
 
-    def generate(self):
+    def generate(self, number_of_ballots: int = DEFAULT_NUMBER_OF_BALLOTS):
         """
         Generate the sample data set
         """
@@ -52,7 +52,7 @@ class ElectionSampleDataGenerator:
             private_data,
         ) = self.election_factory.get_hamilton_election_with_encryption_context()
         plaintext_ballots = self.ballot_factory.generate_fake_plaintext_ballots_for_election(
-            public_data.metadata, DEFAULT_NUMBER_OF_BALLOTS
+            public_data.metadata, number_of_ballots
         )
         self.encrypter = EncryptionMediator(
             public_data.metadata, public_data.context, self.encryption_device

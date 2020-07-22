@@ -247,7 +247,7 @@ class DecryptionMediator:
         )
         if (
             missing_decryption_shares is None
-            or len(missing_decryption_shares) != self._missing_guardians.length()
+            or len(missing_decryption_shares) != len(self._missing_guardians)
         ):
             log_warning(f"get plaintext tally failed with missing decryption shares")
             return None

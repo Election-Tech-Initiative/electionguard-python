@@ -223,7 +223,7 @@ class Guardian(ElectionObjectBase):
         :return: All auxiliary public keys backups received
         """
         return (
-            self._guardian_auxiliary_public_keys.length()
+            len(self._guardian_auxiliary_public_keys)
             == self.ceremony_details.number_of_guardians
         )
 
@@ -276,7 +276,7 @@ class Guardian(ElectionObjectBase):
         :return: All election public keys backups received
         """
         return (
-            self._guardian_election_public_keys.length()
+            len(self._guardian_election_public_keys)
             == self.ceremony_details.number_of_guardians
         )
 
@@ -340,7 +340,7 @@ class Guardian(ElectionObjectBase):
         :return: All election partial key backups received
         """
         return (
-            self._guardian_election_partial_key_backups.length()
+            len(self._guardian_election_partial_key_backups)
             == self.ceremony_details.number_of_guardians - 1
         )
 
@@ -403,7 +403,7 @@ class Guardian(ElectionObjectBase):
         :return: All election partial key backups verified
         """
         required = self.ceremony_details.number_of_guardians - 1
-        if self._guardian_election_partial_key_verifications.length() != required:
+        if len(self._guardian_election_partial_key_verifications) != required:
             return False
         for verified in self._guardian_election_partial_key_verifications.values():
             if not verified:

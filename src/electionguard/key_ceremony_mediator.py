@@ -200,7 +200,7 @@ class KeyCeremonyMediator:
         :return: All auxiliary public backups for all guardians available
         """
         return (
-            self._auxiliary_public_keys.length()
+            len(self._auxiliary_public_keys)
             == self.ceremony_details.number_of_guardians
         )
 
@@ -225,7 +225,7 @@ class KeyCeremonyMediator:
         :return: All election public keys for all guardians available
         """
         return (
-            self._election_public_keys.length()
+            len(self._election_public_keys)
             == self.ceremony_details.number_of_guardians
         )
 
@@ -259,7 +259,7 @@ class KeyCeremonyMediator:
         """
         required_backups_per_guardian = self.ceremony_details.number_of_guardians - 1
         return (
-            self._election_partial_key_backups.length()
+            len(self._election_partial_key_backups)
             == required_backups_per_guardian * self.ceremony_details.number_of_guardians
         )
 
@@ -305,7 +305,7 @@ class KeyCeremonyMediator:
             self.ceremony_details.number_of_guardians - 1
         )
         return (
-            self._election_partial_key_verifications.length()
+            len(self._election_partial_key_verifications)
             == required_verifications_per_guardian
             * self.ceremony_details.number_of_guardians
         )

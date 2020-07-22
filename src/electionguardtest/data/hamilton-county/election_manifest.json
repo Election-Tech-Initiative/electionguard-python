@@ -80,7 +80,7 @@
                 "email": [
                     {
                         "annotation": "inquiries",
-                        "value": "inquiries@harris-township.gov"
+                        "value": "inquiries@congressional-district-5.gov"
                     }
                 ],
                 "phone": [
@@ -104,7 +104,7 @@
                 "email": [
                     {
                         "annotation": "inquiries",
-                        "value": "inquiries@harris-township.gov"
+                        "value": "inquiries@congressional-district-7.gov"
                     }
                 ],
                 "phone": [
@@ -1369,18 +1369,18 @@
             "objectId": "congress-district-5-contest",
             "voteVariation": "one_of_m",
             "electoralDistrictId": "congress-district-5",
-            "name": "US Congress District 5",
+            "name": "Congressional District 5",
             "numberElected": 1,
             "votesAllowed": 1,
             "sequenceOrder": 2,
             "ballotTitle": {
                 "text": [
                     {
-                        "value": "United States House of Representatives Congressional District 5",
+                        "value": "House of Representatives Congressional District 5",
                         "language": "en"
                     },
                     {
-                        "value": "Cámara de Representantes de los Estados Unidos Distrito 5 del Congreso de Ozark",
+                        "value": "Cámara de Representantes de Distrito 5 del Congreso de Ozark",
                         "language": "es"
                     }
                 ]
@@ -1435,18 +1435,18 @@
             "objectId": "congress-district-7-contest",
             "voteVariation": "one_of_m",
             "electoralDistrictId": "congress-district-7",
-            "name": "US Congress District 7",
+            "name": "Congressional District 7",
             "numberElected": 1,
             "votesAllowed": 1,
             "sequenceOrder": 3,
             "ballotTitle": {
                 "text": [
                     {
-                        "value": "United States House of Representatives Ozark Congressional District 7",
+                        "value": "House of Representatives Ozark Congressional District 7",
                         "language": "en"
                     },
                     {
-                        "value": "Cámara de Representantes de los Estados Unidos Distrito 7 del Congreso de Ozark",
+                        "value": "Cámara de Representantes de Distrito 7 del Congreso de Ozark",
                         "language": "es"
                     }
                 ]

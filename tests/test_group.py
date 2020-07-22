@@ -8,6 +8,7 @@ from electionguard.group import (
     Q,
     ElementModP,
     ElementModQ,
+    a_minus_b_q,
     mult_inv_p,
     ONE_MOD_P,
     mult_p,
@@ -20,6 +21,9 @@ from electionguard.group import (
     int_to_p,
     int_to_q,
     add_q,
+    div_q,
+    div_p,
+    a_plus_bc_q,
     int_to_p_unchecked,
     int_to_q_unchecked,
 )
@@ -60,6 +64,36 @@ class TestEquality(unittest.TestCase):
 
 
 class TestModularArithmetic(unittest.TestCase):
+    @given(elements_mod_q())
+    def test_add_q(self, q: ElementModQ):
+        as_int = add_q(q, 1)
+        as_elem = add_q(q, ElementModQ(1))
+        self.assertEqual(as_int, as_elem)
+
+    @given(elements_mod_q())
+    def test_a_plus_bc_q(self, q: ElementModQ):
+        as_int = a_plus_bc_q(q, 1, 1)
+        as_elem = a_plus_bc_q(q, ElementModQ(1), ElementModQ(1))
+        self.assertEqual(as_int, as_elem)
+
+    @given(elements_mod_q())
+    def test_a_minus_b_q(self, q: ElementModQ):
+        as_int = a_minus_b_q(q, 1)
+        as_elem = a_minus_b_q(q, ElementModQ(1))
+        self.assertEqual(as_int, as_elem)
+
+    @given(elements_mod_q())
+    def test_div_q(self, q: ElementModQ):
+        as_int = div_q(q, 1)
+        as_elem = div_q(q, ElementModQ(1))
+        self.assertEqual(as_int, as_elem)
+
+    @given(elements_mod_p())
+    def test_div_p(self, p: ElementModQ):
+        as_int = div_p(p, 1)
+        as_elem = div_p(p, ElementModP(1))
+        self.assertEqual(as_int, as_elem)
+
     def test_no_mult_inv_of_zero(self):
         self.assertRaises(Exception, mult_inv_p, ZERO_MOD_P)
 
