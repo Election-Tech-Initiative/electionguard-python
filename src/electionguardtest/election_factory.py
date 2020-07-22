@@ -107,8 +107,8 @@ class ElectionFactory(object):
         mediator = KeyCeremonyMediator(guardians[0].ceremony_details)
         for guardian in guardians:
             mediator.announce(guardian)
-        orchestrated = mediator.orchestrate()
-        verified = mediator.verify()
+        mediator.orchestrate()
+        mediator.verify()
 
         # Joint Key
         joint_key = mediator.publish_joint_key()

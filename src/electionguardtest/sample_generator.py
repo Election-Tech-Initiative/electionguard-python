@@ -83,7 +83,7 @@ class ElectionSampleDataGenerator:
         )
 
         for guardian in private_data.guardians:
-            decryption_share = decrypter.announce(guardian)
+            decrypter.announce(guardian)
 
         plaintext_tally = get_optional(decrypter.get_plaintext_tally())
 
