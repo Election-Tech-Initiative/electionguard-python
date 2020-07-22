@@ -1,20 +1,18 @@
-from typing import List
-from jsons import set_serializer
-from os import mkdir, path
 from jsons import set_serializer, dump
-
+from os import mkdir, path
+from typing import List
 
 from .ballot_box import CiphertextBallot
 from .decryption_mediator import PlaintextTally
 from .election import CiphertextElectionContext, ElectionConstants, ElectionDescription
+from .group import ElementModP, ElementModQ
 from .key_ceremony import CoefficientValidationSet
 from .tally import CiphertextTally
-from .group import ElementModP, ElementModQ
 
-RESULTS_DIR = "results" + path.sep
-COEFFICIENTS_DIR = RESULTS_DIR + "coefficients" + path.sep
-BALLOTS_DIR = RESULTS_DIR + "encrypted_ballots" + path.sep
-SPOILED_DIR = RESULTS_DIR + "spoiled_ballots" + path.sep
+RESULTS_DIR = "results"
+COEFFICIENTS_DIR = path.join(RESULTS_DIR, "coefficients")
+BALLOTS_DIR = path.join(RESULTS_DIR, "encrypted_ballots")
+SPOILED_DIR = path.join(RESULTS_DIR, "spoiled_ballots")
 
 DESCRIPTION_FILE_NAME = "description"
 CONTEXT_FILE_NAME = "context"
