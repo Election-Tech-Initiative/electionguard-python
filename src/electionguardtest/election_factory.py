@@ -46,7 +46,7 @@ from electionguard.utils import get_optional
 _T = TypeVar("_T")
 _DrawType = Callable[[SearchStrategy[_T]], _T]
 
-here = os.path.abspath(os.path.dirname(__file__))
+data = os.path.realpath(os.path.join(__file__, "../../../data"))
 
 NUMBER_OF_GUARDIANS = 5
 QUORUM = 3
@@ -75,10 +75,10 @@ class ElectionFactory(object):
 
     def get_hamilton_election_from_file(self) -> ElectionDescription:
         with open(
-            os.path.join(here, "data", "hamilton-county", "election_manifest.json"), "r"
+            os.path.join(data, "hamilton-county", "election_manifest.json"), "r"
         ) as subject:
-            data = subject.read()
-            target = ElectionDescription.from_json(data)
+            result = subject.read()
+            target = ElectionDescription.from_json(result)
 
         return target
 
@@ -242,9 +242,9 @@ class ElectionFactory(object):
         return fake_ballot
 
     def _get_election_from_file(self, filename: str) -> ElectionDescription:
-        with open(os.path.join(here, "data", filename), "r") as subject:
-            data = subject.read()
-            target = ElectionDescription.from_json(data)
+        with open(os.path.join(data, filename), "r") as subject:
+            result = subject.read()
+            target = ElectionDescription.from_json(result)
 
         return target
 

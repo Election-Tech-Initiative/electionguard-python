@@ -29,7 +29,7 @@ from electionguard.encrypt import selection_from
 _T = TypeVar("_T")
 _DrawType = Callable[[SearchStrategy[_T]], _T]
 
-here = os.path.abspath(os.path.dirname(__file__))
+data = os.path.realpath(os.path.join(__file__, "../../../data"))
 
 
 class BallotFactory(object):
@@ -136,18 +136,18 @@ class BallotFactory(object):
         return self._get_ballots_from_file(self.simple_ballots_filename)
 
     def _get_ballot_from_file(self, filename: str) -> PlaintextBallot:
-        with open(os.path.join(here, "data", filename), "r") as subject:
-            data = subject.read()
-            target = PlaintextBallot.from_json(data)
+        with open(os.path.join(data, filename), "r") as subject:
+            result = subject.read()
+            target = PlaintextBallot.from_json(result)
         return target
 
     def _get_ballots_from_file(self, filename: str) -> List[PlaintextBallot]:
-        with open(os.path.join(here, "data", filename), "r") as subject:
-            data = subject.read()
+        with open(os.path.join(data, filename), "r") as subject:
+            result = subject.read()
             target = cast(
                 List[PlaintextBallot],
                 loads(
-                    data,
+                    result,
                     List[PlaintextBallot],
                     key_transformer=KEY_TRANSFORMER_SNAKECASE,
                 ),
