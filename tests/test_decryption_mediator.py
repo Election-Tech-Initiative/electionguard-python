@@ -57,6 +57,8 @@ from electionguardtest.tally import accumulate_plaintext_ballots
 
 election_factory = ElectionFactory.ElectionFactory()
 ballot_factory = BallotFactory.BallotFactory()
+identity_auxiliary_decrypt = lambda message, public_key: message
+identity_auxiliary_encrypt = lambda message, private_key: message
 
 
 class TestDecryptionMediator(TestCase):
@@ -86,8 +88,8 @@ class TestDecryptionMediator(TestCase):
         for guardian in self.guardians:
             self.key_ceremony.announce(guardian)
 
-        self.key_ceremony.orchestrate()
-        self.key_ceremony.verify()
+        self.key_ceremony.orchestrate(identity_auxiliary_encrypt)
+        self.key_ceremony.verify(identity_auxiliary_decrypt)
 
         self.joint_public_key = self.key_ceremony.publish_joint_key()
         self.assertIsNotNone(self.joint_public_key)
@@ -182,6 +184,9 @@ class TestDecryptionMediator(TestCase):
         # generate encrypted tally
         self.ciphertext_tally = tally_ballots(ballot_store, self.metadata, self.context)
 
+    def tearDown(self):
+        self.key_ceremony.reset(CeremonyDetails(self.NUMBER_OF_GUARDIANS, self.QUORUM))
+
     def test_announce(self):
         # Arrange
         subject = DecryptionMediator(self.metadata, self.context, self.ciphertext_tally)
@@ -204,9 +209,6 @@ class TestDecryptionMediator(TestCase):
 
         # Cannot get plaintext tally without a quorum
         self.assertIsNone(subject.get_plaintext_tally())
-
-    def tearDown(self):
-        self.key_ceremony.reset(CeremonyDetails(self.NUMBER_OF_GUARDIANS, self.QUORUM))
 
     def test_compute_selection(self):
         # Arrange
@@ -246,6 +248,7 @@ class TestDecryptionMediator(TestCase):
             self.guardians[2].object_id,
             first_selection,
             self.context,
+            identity_auxiliary_decrypt,
         )
 
         # Assert
@@ -296,6 +299,7 @@ class TestDecryptionMediator(TestCase):
             self.guardians[2].object_id,
             first_selection,
             self.context,
+            identity_auxiliary_decrypt,
         )
 
         compensation_1 = compute_compensated_decryption_share_for_selection(
@@ -303,6 +307,7 @@ class TestDecryptionMediator(TestCase):
             self.guardians[2].object_id,
             first_selection,
             self.context,
+            identity_auxiliary_decrypt,
         )
 
         self.assertIsNotNone(compensation_0)
@@ -521,7 +526,9 @@ class TestDecryptionMediator(TestCase):
         self.assertIsNotNone(subject.announce(self.guardians[1]))
 
         # explicitly compensate to demonstrate that this is possible, but not required
-        self.assertIsNotNone(subject.compensate(self.guardians[2].object_id))
+        self.assertIsNotNone(
+            subject.compensate(self.guardians[2].object_id, identity_auxiliary_decrypt)
+        )
 
         decrypted_tallies = subject.get_plaintext_tally()
         self.assertIsNotNone(decrypted_tallies)

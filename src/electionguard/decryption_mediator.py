@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Dict, Optional, List
 
+from .auxiliary import AuxiliaryDecrypt
 from .data_store import DataStore
 from .decryption import (
     compute_decryption_share,
@@ -17,6 +18,7 @@ from .election_polynomial import compute_lagrange_coefficient
 from .group import ElementModP, ElementModQ
 from .guardian import Guardian
 from .key_ceremony import ElectionPublicKey
+from .rsa import rsa_decrypt
 from .tally import (
     CiphertextTally,
     PlaintextTally,
@@ -141,7 +143,7 @@ class DecryptionMediator:
         return share
 
     def compensate(
-        self, missing_guardian_id: str
+        self, missing_guardian_id: str, decrypt: AuxiliaryDecrypt = rsa_decrypt
     ) -> Optional[List[CompensatedTallyDecryptionShare]]:
         """
         Compensate for a missing guardian by reconstructing the share using the available guardians.
@@ -183,6 +185,7 @@ class DecryptionMediator:
                 missing_guardian_id,
                 self._ciphertext_tally,
                 self._encryption,
+                decrypt,
             )
             if share is None:
                 log_warning(f"compensation failed for missing: {missing_guardian_id}")
@@ -201,7 +204,9 @@ class DecryptionMediator:
             self._submit_compensated_decryption_shares(compensated_decryptions)
             return compensated_decryptions
 
-    def get_plaintext_tally(self, recompute: bool = False) -> Optional[PlaintextTally]:
+    def get_plaintext_tally(
+        self, recompute: bool = False, decrypt: AuxiliaryDecrypt = rsa_decrypt
+    ) -> Optional[PlaintextTally]:
         """
         Get the plaintext tally for the election by composing each Guardian's 
         decrypted representation of each selection into a decrypted representation
@@ -228,7 +233,7 @@ class DecryptionMediator:
 
         # If missing guardians compensate for the missing guardians
         for missing in self._missing_guardians.keys():
-            compensated_decryptions = self.compensate(missing)
+            compensated_decryptions = self.compensate(missing, decrypt)
             if compensated_decryptions is None:
                 log_warning(f"get plaintext tally failed compensating for {missing}")
                 return None

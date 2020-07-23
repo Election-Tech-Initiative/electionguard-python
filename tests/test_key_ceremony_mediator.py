@@ -8,6 +8,9 @@ from electionguard.key_ceremony import (
 )
 from electionguard.key_ceremony_mediator import KeyCeremonyMediator
 
+identity_auxiliary_decrypt = lambda message, public_key: message
+identity_auxiliary_encrypt = lambda message, private_key: message
+
 NUMBER_OF_GUARDIANS = 2
 QUORUM = 2
 CEREMONY_DETAILS = CeremonyDetails(NUMBER_OF_GUARDIANS, QUORUM)
@@ -20,8 +23,8 @@ VERIFIER = Guardian(VERIFIER_ID, 3, NUMBER_OF_GUARDIANS, QUORUM)
 GUARDIAN_1.save_guardian_public_keys(GUARDIAN_2.share_public_keys())
 GUARDIAN_2.save_guardian_public_keys(GUARDIAN_1.share_public_keys())
 VERIFIER.save_guardian_public_keys(GUARDIAN_2.share_public_keys())
-GUARDIAN_1.generate_election_partial_key_backups()
-GUARDIAN_2.generate_election_partial_key_backups()
+GUARDIAN_1.generate_election_partial_key_backups(identity_auxiliary_encrypt)
+GUARDIAN_2.generate_election_partial_key_backups(identity_auxiliary_encrypt)
 
 
 class TestKeyCeremonyMediator(TestCase):
@@ -167,8 +170,12 @@ class TestKeyCeremonyMediator(TestCase):
         GUARDIAN_2.save_election_partial_key_backup(
             mediator.share_election_partial_key_backups_to_guardian(GUARDIAN_2_ID)[0]
         )
-        verification1 = GUARDIAN_1.verify_election_partial_key_backup(GUARDIAN_2_ID)
-        verification2 = GUARDIAN_2.verify_election_partial_key_backup(GUARDIAN_1_ID)
+        verification1 = GUARDIAN_1.verify_election_partial_key_backup(
+            GUARDIAN_2_ID, identity_auxiliary_decrypt
+        )
+        verification2 = GUARDIAN_2.verify_election_partial_key_backup(
+            GUARDIAN_1_ID, identity_auxiliary_decrypt
+        )
 
         # Act
         mediator.receive_election_partial_key_verification(verification1)
@@ -208,8 +215,12 @@ class TestKeyCeremonyMediator(TestCase):
         GUARDIAN_2.save_election_partial_key_backup(
             mediator.share_election_partial_key_backups_to_guardian(GUARDIAN_2_ID)[0]
         )
-        verification1 = GUARDIAN_1.verify_election_partial_key_backup(GUARDIAN_2_ID)
-        verification2 = GUARDIAN_2.verify_election_partial_key_backup(GUARDIAN_1_ID)
+        verification1 = GUARDIAN_1.verify_election_partial_key_backup(
+            GUARDIAN_2_ID, identity_auxiliary_decrypt
+        )
+        verification2 = GUARDIAN_2.verify_election_partial_key_backup(
+            GUARDIAN_1_ID, identity_auxiliary_decrypt
+        )
 
         # Act
         failed_verification2 = ElectionPartialKeyVerification(

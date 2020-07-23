@@ -1,5 +1,6 @@
 from typing import Iterable, List, Optional
 
+from .auxiliary import AuxiliaryDecrypt, AuxiliaryEncrypt
 from .data_store import DataStore
 from .guardian import Guardian
 from .key_ceremony import (
@@ -15,6 +16,7 @@ from .key_ceremony import (
     combine_election_public_keys,
 )
 from .logs import log_warning
+from .rsa import rsa_decrypt, rsa_encrypt
 from .types import GUARDIAN_ID
 
 
@@ -65,17 +67,21 @@ class KeyCeremonyMediator:
                     if sender.object_id != recipient.object_id:
                         recipient.save_guardian_public_keys(sender.share_public_keys())
 
-    def orchestrate(self) -> Optional[List[Guardian]]:
+    def orchestrate(
+        self, encrypt: AuxiliaryEncrypt = rsa_encrypt
+    ) -> Optional[List[Guardian]]:
         """
         Orchestrate the KLey Ceremony by sharing keys among the anounced guardians
-        :retun: a collection of guardians, or None if there is an error
+
+        :param encrypt: Auxiliary encrypt function
+        :return: a collection of guardians, or None if there is an error
         """
         if not self.all_guardians_in_attendance():
             return None
 
         # Partial Key Backup Generation
         for guardian in self._guardians:
-            guardian.generate_election_partial_key_backups()
+            guardian.generate_election_partial_key_backups(encrypt)
 
         # Share Partial Key Backup
         for sender in self._guardians:
@@ -104,16 +110,17 @@ class KeyCeremonyMediator:
 
         return self._guardians
 
-    def verify(self) -> bool:
+    def verify(self, decrypt: AuxiliaryDecrypt = rsa_decrypt) -> bool:
         """
         Verify that the guardians correctly shared keys
+        :param decrypt: Auxiliary decrypt function
         :return: True if verification succeds, else False
         """
         for recipient in self._guardians:
             for sender in self._guardians:
                 if sender.object_id != recipient.object_id:
                     verification = recipient.verify_election_partial_key_backup(
-                        sender.object_id
+                        sender.object_id, decrypt
                     )
                     if verification is not None:
                         self.receive_election_partial_key_verification(verification)
