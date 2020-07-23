@@ -1,11 +1,11 @@
 {
-    "geopoliticalUnits": [
+    "geopolitical_units": [
         {
-            "objectId": "jefferson-county",
+            "object_id": "jefferson-county",
             "name": "Jefferson County",
             "type": "county",
-            "contactInformation": {
-                "addressLine": [
+            "contact_information": {
+                "address_line": [
                     "1234 Samuel Adams Way",
                     "Jefferson, Hamilton 999999"
                 ],
@@ -25,11 +25,11 @@
             }
         },
         {
-            "objectId": "harrison-township",
+            "object_id": "harrison-township",
             "name": "Harrison Township",
             "type": "township",
-            "contactInformation": {
-                "addressLine": [
+            "contact_information": {
+                "address_line": [
                     "1234 Thorton Drive",
                     "Harrison, Hamilton 999999"
                 ],
@@ -49,11 +49,11 @@
             }
         },
         {
-            "objectId": "harrison-township-precinct-east",
+            "object_id": "harrison-township-precinct-east",
             "name": "Harrison Township Precinct",
             "type": "township",
-            "contactInformation": {
-                "addressLine": [
+            "contact_information": {
+                "address_line": [
                     "1234 Thorton Drive",
                     "Harrison, Hamilton 999999"
                 ],
@@ -73,11 +73,11 @@
             }
         },
         {
-            "objectId": "rutledge-elementary",
+            "object_id": "rutledge-elementary",
             "name": "Rutledge Elementary School district",
             "type": "school",
-            "contactInformation": {
-                "addressLine": [
+            "contact_information": {
+                "address_line": [
                     "1234 Wolcott Parkway",
                     "Harrison, Hamilton 999999"
                 ],
@@ -99,10 +99,10 @@
     ],
     "parties": [
         {
-            "objectId": "whig",
+            "object_id": "whig",
             "abbreviation": "WHI",
             "color": "AAAAAA",
-            "logoUri": "http://some/path/to/whig.svg",
+            "logo_uri": "http://some/path/to/whig.svg",
             "name": {
                 "text": [
                     {
@@ -113,10 +113,10 @@
             }
         },
         {
-            "objectId": "federalist",
+            "object_id": "federalist",
             "abbreviation": "FED",
             "color": "CCCCCC",
-            "logoUri": "http://some/path/to/federalist.svg",
+            "logo_uri": "http://some/path/to/federalist.svg",
             "name": {
                 "text": [
                     {
@@ -127,10 +127,10 @@
             }
         },
         {
-            "objectId": "democratic-republican",
+            "object_id": "democratic-republican",
             "abbreviation": "DEMREP",
             "color": "EEEEEE",
-            "logoUri": "http://some/path/to/democratic-repulbican.svg",
+            "logo_uri": "http://some/path/to/democratic-repulbican.svg",
             "name": {
                 "text": [
                     {
@@ -143,8 +143,8 @@
     ],
     "candidates": [
         {
-            "objectId": "benjamin-franklin",
-            "ballotName": {
+            "object_id": "benjamin-franklin",
+            "ballot_name": {
                 "text": [
                     {
                         "value": "Benjamin Franklin",
@@ -152,11 +152,11 @@
                     }
                 ]
             },
-            "partyId": "whig"
+            "party_id": "whig"
         },
         {
-            "objectId": "john-adams",
-            "ballotName": {
+            "object_id": "john-adams",
+            "ballot_name": {
                 "text": [
                     {
                         "value": "John Adams",
@@ -164,11 +164,11 @@
                     }
                 ]
             },
-            "partyId": "federalist"
+            "party_id": "federalist"
         },
         {
-            "objectId": "john-hancock",
-            "ballotName": {
+            "object_id": "john-hancock",
+            "ballot_name": {
                 "text": [
                     {
                         "value": "John Hancock",
@@ -176,11 +176,11 @@
                     }
                 ]
             },
-            "partyId": "democratic-republican"
+            "party_id": "democratic-republican"
         },
         {
-            "objectId": "write-in",
-            "ballotName": {
+            "object_id": "write-in",
+            "ballot_name": {
                 "text": [
                     {
                         "value": "Write In Candidate",
@@ -192,11 +192,11 @@
                     }
                 ]
             },
-            "isWriteIn": true
+            "is_write_in": true
         },
         {
-            "objectId": "referendum-pineapple-affirmative",
-            "ballotName": {
+            "object_id": "referendum-pineapple-affirmative",
+            "ballot_name": {
                 "text": [
                     {
                         "value": "Pineapple should be banned on pizza",
@@ -206,8 +206,8 @@
             }
         },
         {
-            "objectId": "referendum-pineapple-negative",
-            "ballotName": {
+            "object_id": "referendum-pineapple-negative",
+            "ballot_name": {
                 "text": [
                     {
                         "value": "Pineapple should not be banned on pizza",
@@ -220,31 +220,31 @@
     "contests": [
         {
             "@type": "CandidateContest",
-            "objectId": "justice-supreme-court",
-            "sequenceOrder": 0,
-            "ballotSelections": [
+            "object_id": "justice-supreme-court",
+            "sequence_order": 0,
+            "ballot_selections": [
                 {
-                    "objectId": "john-adams-selection",
-                    "sequenceOrder": 0,
-                    "candidateId": "john-adams"
+                    "object_id": "john-adams-selection",
+                    "sequence_order": 0,
+                    "candidate_id": "john-adams"
                 },
                 {
-                    "objectId": "benjamin-franklin-selection",
-                    "sequenceOrder": 1,
-                    "candidateId": "benjamin-franklin"
+                    "object_id": "benjamin-franklin-selection",
+                    "sequence_order": 1,
+                    "candidate_id": "benjamin-franklin"
                 },
                 {
-                    "objectId": "john-hancock-selection",
-                    "sequenceOrder": 2,
-                    "candidateId": "john-hancock"
+                    "object_id": "john-hancock-selection",
+                    "sequence_order": 2,
+                    "candidate_id": "john-hancock"
                 },
                 {
-                    "objectId": "write-in-selection",
-                    "sequenceOrder": 3,
-                    "candidateId": "write-in"
+                    "object_id": "write-in-selection",
+                    "sequence_order": 3,
+                    "candidate_id": "write-in"
                 }
             ],
-            "ballotTitle": {
+            "ballot_title": {
                 "text": [
                     {
                         "value": "Justice of the Supreme Court",
@@ -256,7 +256,7 @@
                     }
                 ]
             },
-            "ballotSubtitle": {
+            "ballot_subtitle": {
                 "text": [
                     {
                         "value": "Please choose up to two candidates",
@@ -268,33 +268,33 @@
                     }
                 ]
             },
-            "voteVariation": "n_of_m",
-            "electoralDistrictId": "jefferson-county",
+            "vote_variation": "n_of_m",
+            "electoral_district_id": "jefferson-county",
             "name": "Justice of the Supreme Court",
-            "primaryPartyIds": [
+            "primary_party_ids": [
                 "whig",
                 "federalist"
             ],
-            "numberElected": 2,
-            "votesAllowed": 2
+            "number_elected": 2,
+            "votes_allowed": 2
         },
         {
             "@type": "ReferendumContest",
-            "objectId": "referendum-pineapple",
-            "sequenceOrder": 1,
-            "ballotSelections": [
+            "object_id": "referendum-pineapple",
+            "sequence_order": 1,
+            "ballot_selections": [
                 {
-                    "objectId": "referendum-pineapple-affirmative-selection",
-                    "sequenceOrder": 0,
-                    "candidateId": "referendum-pineapple-affirmative"
+                    "object_id": "referendum-pineapple-affirmative-selection",
+                    "sequence_order": 0,
+                    "candidate_id": "referendum-pineapple-affirmative"
                 },
                 {
-                    "objectId": "referendum-pineapple-negative-selection",
-                    "sequenceOrder": 1,
-                    "candidateId": "referendum-pineapple-negative"
+                    "object_id": "referendum-pineapple-negative-selection",
+                    "sequence_order": 1,
+                    "candidate_id": "referendum-pineapple-negative"
                 }
             ],
-            "ballotTitle": {
+            "ballot_title": {
                 "text": [
                     {
                         "value": "Should pineapple be banned on pizza?",
@@ -306,7 +306,7 @@
                     }
                 ]
             },
-            "ballotSubtitle": {
+            "ballot_subtitle": {
                 "text": [
                     {
                         "value": "The township considers this issue to be very important",
@@ -318,30 +318,30 @@
                     }
                 ]
             },
-            "voteVariation": "one_of_m",
-            "electoralDistrictId": "harrison-township",
+            "vote_variation": "one_of_m",
+            "electoral_district_id": "harrison-township",
             "name": "The Pineapple Question",
-            "numberElected": 1,
-            "votesAllowed": 1
+            "number_elected": 1,
+            "votes_allowed": 1
         }
     ],
-    "ballotStyles": [
+    "ballot_styles": [
         {
-            "objectId": "jefferson-county-ballot-style",
-            "geopoliticalUnitIds": [
+            "object_id": "jefferson-county-ballot-style",
+            "geopolitical_unit_ids": [
                 "jefferson-county"
             ]
         },
         {
-            "objectId": "harrison-township-ballot-style",
-            "geopoliticalUnitIds": [
+            "object_id": "harrison-township-ballot-style",
+            "geopolitical_unit_ids": [
                 "jefferson-county",
                 "harrison-township"
             ]
         },
         {
-            "objectId": "harrison-township-precinct-east-ballot-style",
-            "geopoliticalUnitIds": [
+            "object_id": "harrison-township-precinct-east-ballot-style",
+            "geopolitical_unit_ids": [
                 "jefferson-county",
                 "harrison-township",
                 "harrison-township-precinct-east",
@@ -349,8 +349,8 @@
             ]
         },
         {
-            "objectId": "rutledge-elementary-ballot-style",
-            "geopoliticalUnitIds": [
+            "object_id": "rutledge-elementary-ballot-style",
+            "geopolitical_unit_ids": [
                 "jefferson-county",
                 "harrison-township",
                 "rutledge-elementary"
@@ -369,8 +369,8 @@
             }
         ]
     },
-    "contactInformation": {
-        "addressLine": [
+    "contact_information": {
+        "address_line": [
             "1234 Paul Revere Run",
             "Jefferson, Hamilton 999999"
         ],
@@ -396,8 +396,8 @@
             }
         ]
     },
-    "startDate": "2020-03-01T08:00:00-05:00",
-    "endDate": "2020-03-01T20:00:00-05:00",
-    "electionScopeId": "jefferson-county-primary",
+    "start_date": "2020-03-01T08:00:00-05:00",
+    "end_date": "2020-03-01T20:00:00-05:00",
+    "election_scope_id": "jefferson-county-primary",
     "type": "primary"
 }

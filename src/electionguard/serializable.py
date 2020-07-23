@@ -1,8 +1,6 @@
 from os import path
 from dataclasses import dataclass
 from jsons import (
-    KEY_TRANSFORMER_CAMELCASE,
-    KEY_TRANSFORMER_SNAKECASE,
     dumps,
     loads,
     JsonsError,
@@ -14,8 +12,6 @@ T = TypeVar("T")
 JSON_FILE_EXTENSION: str = ".json"
 WRITE: str = "w"
 JSON_PARSE_ERROR = '{"error": "Object could not be parsed due to json issue"}'
-
-# base10 as string for ElementModP and ElementModQ
 
 
 @dataclass
@@ -30,15 +26,7 @@ class Serializable(Generic[T]):
         :return: the json representation of this object
         """
         try:
-            return cast(
-                str,
-                dumps(
-                    self,
-                    strip_privates=True,
-                    strip_nulls=True,
-                    key_transformer=KEY_TRANSFORMER_CAMELCASE,
-                ),
-            )
+            return cast(str, dumps(self, strip_privates=True, strip_nulls=True))
         except JsonsError:
             return JSON_PARSE_ERROR
 
@@ -53,7 +41,7 @@ class Serializable(Generic[T]):
         """
         Deserialize the provided data string into the specified instance
         """
-        return cast(T, loads(data, cls, key_transformer=KEY_TRANSFORMER_SNAKECASE))
+        return cast(T, loads(data, cls))
 
 
 def write_json_file(json_data: str, file_name: str, file_path: str = "") -> None:
