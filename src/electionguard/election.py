@@ -779,10 +779,17 @@ class ElectionConstants(Serializable):
     The constants for mathematical functions during the election. 
     """
 
-    p = P
-    q = Q
-    r = R
-    g = G
+    large_prime = P
+    """large prime or p"""
+
+    small_prime = Q
+    """small prime or q"""
+
+    cofactor = R
+    """cofactor or r"""
+
+    generator = G
+    """generator or g"""
 
 
 @dataclass(frozen=True)
