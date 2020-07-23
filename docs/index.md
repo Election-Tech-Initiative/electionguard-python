@@ -69,7 +69,7 @@ Sections:
 - [Design and Architecture](Design_and_Architecture.md)
 - [Build and Run](Build_and_Run.md)
 - [Project Workflow](Project_Workflow.md)
-- [Election Manifest](Election_Manifest)
+- [Election Manifest](Election_Manifest.md)
 
 Step-by-Step Process:
 
