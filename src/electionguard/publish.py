@@ -15,9 +15,9 @@ DEVICES_DIR = path.join(RESULTS_DIR, "devices")
 COEFFICIENTS_DIR = path.join(RESULTS_DIR, "coefficients")
 BALLOTS_DIR = path.join(RESULTS_DIR, "encrypted_ballots")
 SPOILED_DIR = path.join(RESULTS_DIR, "spoiled_ballots")
-PRIVATE_DIR = RESULTS_DIR + "private" + path.sep
-PLAINTEXT_BALLOTS_DIR = PRIVATE_DIR + "plaintext" + path.sep
-ENCRYPTED_BALLOTS_DIR = PRIVATE_DIR + "encrypted" + path.sep
+PRIVATE_DIR = path.join(RESULTS_DIR, "private")
+PLAINTEXT_BALLOTS_DIR = path.join(PRIVATE_DIR, "plaintext")
+ENCRYPTED_BALLOTS_DIR = path.join(PRIVATE_DIR, "encrypted")
 
 DESCRIPTION_FILE_NAME = "description"
 CONTEXT_FILE_NAME = "context"
