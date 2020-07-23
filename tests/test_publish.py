@@ -13,7 +13,7 @@ from electionguard.election import (
 )
 from electionguard.tally import CiphertextTally
 
-from electionguard.publish import publish, RESULTS_DIR
+from electionguard.publish import publish, RESULTS_DIR, set_deserializers
 
 from electionguard.group import ONE_MOD_Q, ONE_MOD_P
 
@@ -47,3 +47,7 @@ class TestPublish(TestCase):
 
         # Cleanup
         rmtree(RESULTS_DIR)
+
+    def test_setup_deserialization(self) -> None:
+        # Act
+        set_deserializers()
