@@ -320,7 +320,7 @@ class TestDecryptionMediator(TestCase):
         # Check the share proofs
         self.assertTrue(
             compensation_0.proof.is_valid(
-                first_selection.message,
+                first_selection.encrypted_data,
                 get_optional(
                     self.guardians[0].recovery_public_key_for(
                         self.guardians[2].object_id
@@ -333,7 +333,7 @@ class TestDecryptionMediator(TestCase):
 
         self.assertTrue(
             compensation_1.proof.is_valid(
-                first_selection.message,
+                first_selection.encrypted_data,
                 get_optional(
                     self.guardians[1].recovery_public_key_for(
                         self.guardians[2].object_id
@@ -398,7 +398,7 @@ class TestDecryptionMediator(TestCase):
 
         self.assertIsNotNone(result)
         self.assertEqual(
-            result.plaintext, self.expected_plaintext_tally[first_selection.object_id]
+            result.tally, self.expected_plaintext_tally[first_selection.object_id]
         )
 
     def test_decrypt_selection_all_present(self):
@@ -449,7 +449,7 @@ class TestDecryptionMediator(TestCase):
         # assert
         self.assertIsNotNone(result)
         self.assertEqual(
-            self.expected_plaintext_tally[first_selection.object_id], result.plaintext
+            self.expected_plaintext_tally[first_selection.object_id], result.tally
         )
 
     def test_decrypt_spoiled_ballots_all_guardians_present(self):
@@ -489,10 +489,10 @@ class TestDecryptionMediator(TestCase):
                 self.assertEqual(
                     spoiled_ballot[contest.object_id]
                     .selections[selection.object_id]
-                    .plaintext,
+                    .tally,
                     result[self.fake_spoiled_ballot.object_id][contest.object_id]
                     .selections[selection.object_id]
-                    .plaintext,
+                    .tally,
                 )
 
     def test_get_plaintext_tally_all_guardians_present_simple(self):
@@ -605,6 +605,6 @@ class TestDecryptionMediator(TestCase):
         plaintext_selections: Dict[str, int] = {}
         for _, contest in tally.contests.items():
             for selection_id, selection in contest.selections.items():
-                plaintext_selections[selection_id] = selection.plaintext
+                plaintext_selections[selection_id] = selection.tally
 
         return plaintext_selections

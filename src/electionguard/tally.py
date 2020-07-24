@@ -22,7 +22,7 @@ class PlaintextTallySelection(ElectionObjectBase):
     A plaintext Tally Selection is a decrypted selection of a contest
     """
 
-    plaintext: int
+    tally: int
     # g^tally or M in the spec
     value: ElementModP
 
@@ -41,7 +41,9 @@ class CiphertextTallySelection(ElectionObjectBase):
     The SelectionDescription hash
     """
 
-    message: ElGamalCiphertext = field(default=ElGamalCiphertext(ONE_MOD_P, ONE_MOD_P))
+    encrypted_data: ElGamalCiphertext = field(
+        default=ElGamalCiphertext(ONE_MOD_P, ONE_MOD_P)
+    )
     """
     The encrypted representation of the total of all ballots for this selection
     """
@@ -52,9 +54,9 @@ class CiphertextTallySelection(ElectionObjectBase):
         """
         Homomorphically add the specified value to the message
         """
-        new_value = elgamal_add(self.message, elgamal_ciphertext)
-        self.message = new_value
-        return self.message
+        new_value = elgamal_add(self.encrypted_data, elgamal_ciphertext)
+        self.encrypted_data = new_value
+        return self.encrypted_data
 
 
 @dataclass
@@ -127,7 +129,7 @@ class CiphertextTallyContest(ElectionObjectBase):
             if ciphertext is None:
                 return False
             else:
-                self.tally_selections[key].message = ciphertext
+                self.tally_selections[key].encrypted_data = ciphertext
 
         return True
 
@@ -150,7 +152,7 @@ class CiphertextTallyContest(ElectionObjectBase):
             log_warning(f"add cannot accumulate for missing selection {key}")
             return key, None
 
-        return key, selection_tally.elgamal_accumulate(use_selection.message)
+        return key, selection_tally.elgamal_accumulate(use_selection.encrypted_data)
 
 
 @dataclass

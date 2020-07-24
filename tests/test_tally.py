@@ -208,8 +208,8 @@ class TestTally(TestCase):
         plaintext_selections: Dict[str, int] = {}
         for _, contest in tally.cast.items():
             for object_id, selection in contest.tally_selections.items():
-                plaintext = selection.message.decrypt(secret_key)
-                plaintext_selections[object_id] = plaintext
+                plaintext_tally = selection.encrypted_data.decrypt(secret_key)
+                plaintext_selections[object_id] = plaintext_tally
 
         return plaintext_selections
 
