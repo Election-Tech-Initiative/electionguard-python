@@ -628,9 +628,10 @@ class CiphertextBallot(ElectionObjectBase, CryptoHashCheckable):
         """
 
         if self.nonce is None:
-            log_warning(
-                f"missing nonce for ballot {self.object_id} could not derive from null nonce"
-            )
+            if not isinstance(self, CiphertextAcceptedBallot):
+                log_warning(
+                    f"missing nonce for ballot {self.object_id} could not derive from null nonce"
+                )
             return None
 
         return hash_elems(self.description_hash, self.object_id, self.nonce)
