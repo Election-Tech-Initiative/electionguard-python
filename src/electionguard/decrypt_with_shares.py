@@ -69,7 +69,7 @@ def decrypt_selection_with_decryption_shares(
     )
 
     # Calculate 𝑀=𝐵⁄(∏𝑀𝑖) mod 𝑝.
-    decrypted_value = div_p(selection.message.beta, all_shares_product_M)
+    decrypted_value = div_p(selection.message.data, all_shares_product_M)
     d_log = discrete_log(decrypted_value)
     return PlaintextTallySelection(
         selection.object_id, d_log, decrypted_value, selection.message,

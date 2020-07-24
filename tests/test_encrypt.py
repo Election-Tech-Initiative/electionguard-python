@@ -181,8 +181,8 @@ class TestEncrypt(unittest.TestCase):
 
         # tamper with the encryption
         malformed_encryption = deepcopy(result)
-        malformed_message = malformed_encryption.message._replace(
-            alpha=mult_p(result.message.alpha, TWO_MOD_P)
+        malformed_message = malformed_encryption.encrypted_vote._replace(
+            pad=mult_p(result.encrypted_vote.pad, TWO_MOD_P)
         )
         malformed_encryption.message = malformed_message
 

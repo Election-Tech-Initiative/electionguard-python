@@ -32,8 +32,11 @@ class ElGamalCiphertext(NamedTuple):
     Decrypt using one of the supplied instance methods.
     """
 
-    alpha: ElementModP
-    beta: ElementModP
+    pad: ElementModP
+    """pad or alpha"""
+
+    data: ElementModP
+    """encrypted data or beta"""
 
     def decrypt_known_product(self, product: ElementModP) -> int:
         """
@@ -42,7 +45,7 @@ class ElGamalCiphertext(NamedTuple):
         :param product: The known product (blinding factor).
         :return: An exponentially encoded plaintext message.
         """
-        return discrete_log(mult_p(self.beta, mult_inv_p(product)))
+        return discrete_log(mult_p(self.data, mult_inv_p(product)))
 
     def decrypt(self, secret_key: ElementModQ) -> int:
         """
@@ -51,7 +54,7 @@ class ElGamalCiphertext(NamedTuple):
         :param secret_key: The corresponding ElGamal secret key.
         :return: An exponentially encoded plaintext message.
         """
-        return self.decrypt_known_product(pow_p(self.alpha, secret_key))
+        return self.decrypt_known_product(pow_p(self.pad, secret_key))
 
     def decrypt_known_nonce(self, public_key: ElementModP, nonce: ElementModQ) -> int:
         """
@@ -72,13 +75,13 @@ class ElGamalCiphertext(NamedTuple):
         :param secret_key: The corresponding ElGamal secret key.
         :return: An exponentially encoded plaintext message.
         """
-        return pow_p(self.alpha, secret_key)
+        return pow_p(self.pad, secret_key)
 
     def crypto_hash(self) -> ElementModQ:
         """
         Computes a cryptographic hash of this ciphertext.
         """
-        return hash_elems(self.alpha, self.beta)
+        return hash_elems(self.pad, self.data)
 
 
 def elgamal_keypair_from_secret(a: ElementModQ) -> Optional[ElGamalKeyPair]:
@@ -146,7 +149,7 @@ def elgamal_add(*ciphertexts: ElGamalCiphertext) -> ElGamalCiphertext:
     result = ciphertexts[0]
     for c in ciphertexts[1:]:
         result = ElGamalCiphertext(
-            mult_p(result.alpha, c.alpha), mult_p(result.beta, c.beta)
+            mult_p(result.pad, c.pad), mult_p(result.data, c.data)
         )
 
     return result
