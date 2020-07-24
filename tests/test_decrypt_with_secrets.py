@@ -85,9 +85,9 @@ class TestDecrypt(unittest.TestCase):
         self.assertIsNotNone(result_from_key)
         self.assertIsNotNone(result_from_nonce)
         self.assertIsNotNone(result_from_nonce_seed)
-        self.assertEqual(data.plaintext, result_from_key.plaintext)
-        self.assertEqual(data.plaintext, result_from_nonce.plaintext)
-        self.assertEqual(data.plaintext, result_from_nonce_seed.plaintext)
+        self.assertEqual(data.vote, result_from_key.vote)
+        self.assertEqual(data.vote, result_from_nonce.vote)
+        self.assertEqual(data.vote, result_from_nonce_seed.vote)
 
     @settings(
         deadline=timedelta(milliseconds=2000),
@@ -120,10 +120,10 @@ class TestDecrypt(unittest.TestCase):
 
         # tamper with the encryption
         malformed_encryption = deepcopy(subject)
-        malformed_message = malformed_encryption.encrypted_vote._replace(
-            pad=mult_p(subject.encrypted_vote.pad, TWO_MOD_P)
+        malformed_message = malformed_encryption.encrypted_data._replace(
+            pad=mult_p(subject.encrypted_data.pad, TWO_MOD_P)
         )
-        malformed_encryption.message = malformed_message
+        malformed_encryption.encrypted_data = malformed_message
 
         # tamper with the proof
         malformed_proof = deepcopy(subject)
@@ -426,7 +426,9 @@ class TestDecrypt(unittest.TestCase):
         self.assertIsNone(result_from_nonce_seed)
 
         # Tamper with the encryption
-        subject.ballot_selections[0].message = ElGamalCiphertext(TWO_MOD_P, TWO_MOD_P)
+        subject.ballot_selections[0].encrypted_data = ElGamalCiphertext(
+            TWO_MOD_P, TWO_MOD_P
+        )
 
         result_from_key_tampered = decrypt_contest_with_secret(
             subject,

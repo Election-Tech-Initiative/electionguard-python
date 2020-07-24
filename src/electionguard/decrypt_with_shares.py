@@ -59,7 +59,7 @@ def decrypt_selection_with_decryption_shares(
             public_key, decryption = share
             # verify we have a proof or recovered parts
             if not decryption.is_valid(
-                selection.message, public_key, extended_base_hash
+                selection.encrypted_data, public_key, extended_base_hash
             ):
                 return None
 
@@ -69,10 +69,10 @@ def decrypt_selection_with_decryption_shares(
     )
 
     # Calculate 𝑀=𝐵⁄(∏𝑀𝑖) mod 𝑝.
-    decrypted_value = div_p(selection.message.data, all_shares_product_M)
+    decrypted_value = div_p(selection.encrypted_data.data, all_shares_product_M)
     d_log = discrete_log(decrypted_value)
     return PlaintextTallySelection(
-        selection.object_id, d_log, decrypted_value, selection.message,
+        selection.object_id, d_log, decrypted_value, selection.encrypted_data,
     )
 
 

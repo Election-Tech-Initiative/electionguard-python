@@ -47,12 +47,14 @@ def decrypt_selection_with_secret(
     ):
         return None
 
-    plaintext = selection.message.decrypt(secret_key)
+    plaintext_vote = selection.encrypted_data.decrypt(secret_key)
 
     # TODO: ISSUE #47: handle decryption of the extradata field if needed
 
     return PlaintextBallotSelection(
-        selection.object_id, f"{bool(plaintext)}", selection.is_placeholder_selection
+        selection.object_id,
+        f"{bool(plaintext_vote)}",
+        selection.is_placeholder_selection,
     )
 
 
@@ -97,12 +99,14 @@ def decrypt_selection_with_nonce(
         )
         return None
 
-    plaintext = selection.message.decrypt_known_nonce(public_key, nonce)
+    plaintext_vote = selection.encrypted_data.decrypt_known_nonce(public_key, nonce)
 
     # TODO: ISSUE #35: encrypt/decrypt: handle decryption of the extradata field if needed
 
     return PlaintextBallotSelection(
-        selection.object_id, f"{bool(plaintext)}", selection.is_placeholder_selection
+        selection.object_id,
+        f"{bool(plaintext_vote)}",
+        selection.is_placeholder_selection,
     )
 
 

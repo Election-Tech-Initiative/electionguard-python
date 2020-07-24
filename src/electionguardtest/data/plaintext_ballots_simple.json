@@ -8,11 +8,11 @@
                 "ballot_selections": [
                     {
                         "object_id": "john-adams-selection",
-                        "plaintext": "True"
+                        "vote": "True"
                     },
                     {
                         "object_id": "write-in-selection",
-                        "plaintext": "True",
+                        "vote": "True",
                         "extra_data": "Susan B. Anthony"
                     }
                 ]
@@ -28,11 +28,11 @@
                 "ballot_selections": [
                     {
                         "object_id": "john-adams-selection",
-                        "plaintext": "True"
+                        "vote": "True"
                     },
                     {
                         "object_id": "write-in-selection",
-                        "plaintext": "True",
+                        "vote": "True",
                         "extra_data": "Susan B. Anthony"
                     }
                 ]
@@ -48,11 +48,11 @@
                 "ballot_selections": [
                     {
                         "object_id": "john-adams-selection",
-                        "plaintext": "True"
+                        "vote": "True"
                     },
                     {
                         "object_id": "benjamin-franklin-selection",
-                        "plaintext": "True"
+                        "vote": "True"
                     }
                 ]
             }
@@ -67,11 +67,11 @@
                 "ballot_selections": [
                     {
                         "object_id": "john-adams-selection",
-                        "plaintext": "True"
+                        "vote": "True"
                     },
                     {
                         "object_id": "john-hancock-selection",
-                        "plaintext": "True"
+                        "vote": "True"
                     }
                 ]
             }
@@ -86,11 +86,11 @@
                 "ballot_selections": [
                     {
                         "object_id": "john-adams-selection",
-                        "plaintext": "True"
+                        "vote": "True"
                     },
                     {
                         "object_id": "john-hancock-selection",
-                        "plaintext": "True"
+                        "vote": "True"
                     }
                 ]
             },
@@ -99,7 +99,7 @@
                 "ballot_selections": [
                     {
                         "object_id": "referendum-pineapple-affirmative-selection",
-                        "plaintext": "True"
+                        "vote": "True"
                     }
                 ]
             }
@@ -114,11 +114,11 @@
                 "ballot_selections": [
                     {
                         "object_id": "john-adams-selection",
-                        "plaintext": "True"
+                        "vote": "True"
                     },
                     {
                         "object_id": "write-in-selection",
-                        "plaintext": "True",
+                        "vote": "True",
                         "extra_data": "Susan B. Anthony"
                     }
                 ]
@@ -128,7 +128,7 @@
                 "ballot_selections": [
                     {
                         "object_id": "referendum-pineapple-negative-selection",
-                        "plaintext": "True"
+                        "vote": "True"
                     }
                 ]
             }

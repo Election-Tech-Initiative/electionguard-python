@@ -58,7 +58,7 @@ class PlaintextBallotSelection(ElectionObjectBase):
     """
     A BallotSelection represents an individual selection on a ballot.
 
-    This class accepts a `plaintext` string field which has no constraints 
+    This class accepts a `vote` string field which has no constraints
     in the ElectionGuard Data Specification, but is constrained logically
     in the application to resolve to `True` or `False`.  This implies that the
     data specification supports passing any string that can be represented as
@@ -73,7 +73,7 @@ class PlaintextBallotSelection(ElectionObjectBase):
     discarded when encrypting.
     """
 
-    plaintext: str
+    vote: str
 
     # determines if this is a placeholder selection
     is_placeholder_selection: bool = field(default=False)
@@ -113,10 +113,10 @@ class PlaintextBallotSelection(ElectionObjectBase):
 
         as_bool = False
         try:
-            as_bool = util.strtobool(self.plaintext.lower())
+            as_bool = util.strtobool(self.vote.lower())
         except ValueError:
             log_warning(
-                f"to_int could not convert plaintext: {self.plaintext.lower()} to bool"
+                f"to_int could not convert plaintext: {self.vote.lower()} to bool"
             )
 
         # TODO: ISSUE #33: If the boolean coercion above fails, support integer votes
@@ -127,7 +127,7 @@ class PlaintextBallotSelection(ElectionObjectBase):
     def __eq__(self, other: Any) -> bool:
         return (
             isinstance(other, PlaintextBallotSelection)
-            and self.plaintext == other.plaintext
+            and self.vote == other.vote
             and self.is_placeholder_selection == other.is_placeholder_selection
             and self.extended_data == other.extended_data
         )
@@ -141,10 +141,10 @@ class CiphertextBallotSelection(ElectionObjectBase, CryptoHashCheckable):
     """
     A CiphertextBallotSelection represents an individual encrypted selection on a ballot.
 
-    This class accepts a `description_hash` and a `message` as required parameters
+    This class accepts a `description_hash` and a `encrypted_data` as required parameters
     in its constructor.
 
-    When a selection is encrypted, the `description_hash` and `message` required fields must
+    When a selection is encrypted, the `description_hash` and `encrypted_data` required fields must
     be populated at construction however the `nonce` is also usually provided by convention.
 
     After construction, the `crypto_hash` field is populated automatically in the `__post_init__` cycle
@@ -165,8 +165,8 @@ class CiphertextBallotSelection(ElectionObjectBase, CryptoHashCheckable):
     # The SelectionDescription hash
     description_hash: ElementModQ
 
-    # The encrypted representation of the plaintext field
-    message: ElGamalCiphertext
+    # The encrypted representation of the vote field
+    encrypted_data: ElGamalCiphertext
 
     # The hash of the encrypted values
     crypto_hash: ElementModQ
@@ -219,7 +219,7 @@ class CiphertextBallotSelection(ElectionObjectBase, CryptoHashCheckable):
             log_warning(f"no proof exists for: {self.object_id}")
             return False
 
-        return self.proof.is_valid(self.message, elgamal_public_key)
+        return self.proof.is_valid(self.encrypted_data, elgamal_public_key)
 
     def crypto_hash_with(self, seed_hash: ElementModQ) -> ElementModQ:
         """
