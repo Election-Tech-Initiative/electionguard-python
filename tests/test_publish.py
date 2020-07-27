@@ -6,14 +6,13 @@ from datetime import datetime, timezone
 from electionguard.decryption_mediator import PlaintextTally
 from electionguard.election import (
     ElectionType,
-    InternalElectionDescription,
     CiphertextElectionContext,
     ElectionConstants,
     ElectionDescription,
 )
 from electionguard.tally import CiphertextTally
 
-from electionguard.publish import publish, RESULTS_DIR, set_deserializers
+from electionguard.publish import publish, RESULTS_DIR
 
 from electionguard.group import ONE_MOD_Q, ONE_MOD_P
 
@@ -47,7 +46,3 @@ class TestPublish(TestCase):
 
         # Cleanup
         rmtree(RESULTS_DIR)
-
-    def test_setup_deserialization(self) -> None:
-        # Act
-        set_deserializers()

@@ -1,13 +1,12 @@
-from jsons import set_serializer, dump, set_validator, set_deserializer
-from os import mkdir, path
+from os import path
 from typing import List
 
-from .ballot_box import CiphertextBallot
-from .decryption_mediator import PlaintextTally
+from .ballot import CiphertextBallot
 from .election import CiphertextElectionContext, ElectionConstants, ElectionDescription
-from .group import ElementModP, ElementModQ, int_to_p_unchecked, int_to_q_unchecked
 from .key_ceremony import CoefficientValidationSet
-from .tally import CiphertextTally
+from .serializable import set_serializers
+from .tally import CiphertextTally, PlaintextTally
+from .utils import make_directory
 
 RESULTS_DIR = "results"
 COEFFICIENTS_DIR = path.join(RESULTS_DIR, "coefficients")
@@ -61,30 +60,3 @@ def publish(
 
     ciphertext_tally.to_json_file(ENCRYPTED_TALLY_FILE_NAME, results_directory)
     plaintext_tally.to_json_file(TALLY_FILE_NAME, results_directory)
-
-
-def make_directory(directory_path: str) -> None:
-    """Create a directory only if it does not exist"""
-    if not path.exists(directory_path):
-        mkdir(directory_path)
-
-
-def set_serializers() -> None:
-    """Set serializers for jsons to use to cast specific classes"""
-    set_serializer(lambda p, **_: str(p), ElementModP)
-    set_serializer(lambda q, **_: str(q), ElementModQ)
-    set_serializer(lambda tally, **_: dump(tally.cast), CiphertextTally)
-    set_serializer(lambda tally, **_: dump(tally.contests), PlaintextTally)
-
-
-def set_deserializers() -> None:
-    """Set deserializers and validators for json to use to cast specific classes"""
-    set_deserializer(
-        lambda p_as_int, cls, **_: int_to_p_unchecked(p_as_int), ElementModP
-    )
-    set_validator(lambda p: p.is_in_bounds(), ElementModP)
-
-    set_deserializer(
-        lambda q_as_int, cls, **_: int_to_q_unchecked(q_as_int), ElementModQ
-    )
-    set_validator(lambda q: q.is_in_bounds(), ElementModQ)

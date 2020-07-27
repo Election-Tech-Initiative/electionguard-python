@@ -1,4 +1,5 @@
 from datetime import datetime
+from os import mkdir, path
 from typing import Callable, Optional, TypeVar
 
 T = TypeVar("T")
@@ -72,3 +73,9 @@ def to_ticks(date_time: datetime) -> int:
     seconds = int((date_time - t0).total_seconds())
     ticks = seconds * 10 ** 7
     return ticks
+
+
+def make_directory(directory_path: str) -> None:
+    """Create a directory only if it does not exist"""
+    if not path.exists(directory_path):
+        mkdir(directory_path)

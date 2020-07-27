@@ -1,9 +1,13 @@
 from os import path
 from dataclasses import dataclass
 from jsons import (
+    dump,
     dumps,
     loads,
     JsonsError,
+    set_deserializer,
+    set_serializer,
+    set_validator,
 )
 from typing import cast, TypeVar, Generic
 
@@ -51,3 +55,33 @@ def write_json_file(json_data: str, file_name: str, file_path: str = "") -> None
     json_file_path: str = path.join(file_path, file_name + JSON_FILE_EXTENSION)
     with open(json_file_path, WRITE) as json_file:
         json_file.write(json_data)
+
+
+def set_serializers() -> None:
+    """Set serializers for jsons to use to cast specific classes"""
+
+    # Local import to minimize jsons usage across files
+    from .group import ElementModP, ElementModQ
+    from .tally import CiphertextTally, PlaintextTally
+
+    set_serializer(lambda p, **_: str(p), ElementModP)
+    set_serializer(lambda q, **_: str(q), ElementModQ)
+    set_serializer(lambda tally, **_: dump(tally.cast), CiphertextTally)
+    set_serializer(lambda tally, **_: dump(tally.contests), PlaintextTally)
+
+
+def set_deserializers() -> None:
+    """Set deserializers and validators for json to use to cast specific classes"""
+
+    # Local import to minimize jsons usage across files
+    from .group import ElementModP, ElementModQ, int_to_p_unchecked, int_to_q_unchecked
+
+    set_deserializer(
+        lambda p_as_int, cls, **_: int_to_p_unchecked(p_as_int), ElementModP
+    )
+    set_validator(lambda p: p.is_in_bounds(), ElementModP)
+
+    set_deserializer(
+        lambda q_as_int, cls, **_: int_to_q_unchecked(q_as_int), ElementModQ
+    )
+    set_validator(lambda q: q.is_in_bounds(), ElementModQ)
