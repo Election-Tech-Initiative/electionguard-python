@@ -1,4 +1,4 @@
-from collections import Mapping
+from collections.abc import Mapping
 
 from typing import (
     Dict,
@@ -113,3 +113,8 @@ class ReadOnlyDataStore(Generic[T, U], Mapping):
 
     def __iter__(self) -> Iterator:
         return iter(self._data.items())
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, ReadOnlyDataStore):
+            return False
+        return ReadOnlyDataStore.__eq__(self, other)
