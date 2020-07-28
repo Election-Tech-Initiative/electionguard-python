@@ -1,6 +1,5 @@
-from multiprocessing import Pool, cpu_count
 from timeit import default_timer as timer
-from typing import Tuple, NamedTuple, Dict
+from typing import Dict, List, NamedTuple, Tuple
 
 from numpy import average, std
 
@@ -13,7 +12,7 @@ from electionguard.elgamal import (
 )
 from electionguard.group import ElementModQ, int_to_q_unchecked
 from electionguard.nonces import Nonces
-
+from electionguard.scheduler import Scheduler
 from electionguard.utils import get_optional
 
 
@@ -49,11 +48,10 @@ if __name__ == "__main__":
     problem_sizes = (100, 500, 1000, 5000)
     rands = Nonces(int_to_q_unchecked(31337))
     speedup: Dict[int, float] = {}
-    print(f"CPUs detected: {cpu_count()}, launching thread pool")
-    pool = Pool(cpu_count())
 
     # warm up the pool to help get consistent measurements
-    results = pool.map(identity, range(1, 30000))
+    scheduler = Scheduler()
+    results: List[int] = scheduler.schedule_simple(identity, range(1, 30000))
     assert results == list(range(1, 30000))
 
     bench_start = timer()
@@ -87,7 +85,9 @@ if __name__ == "__main__":
 
         # Run in parallel
         start_all_parallel = timer()
-        timing_data_parallel = pool.map(chaum_pedersen_bench, inputs)
+        timing_data_parallel: List[BenchInput] = scheduler.schedule_simple(
+            chaum_pedersen_bench, inputs
+        )
         end_all_parallel = timer()
 
         speedup[size] = (end_all_scalar - start_all_scalar) / (
@@ -100,7 +100,7 @@ if __name__ == "__main__":
     print("Size / Speedup")
     for size in problem_sizes:
         print(f"{size:4d} / {speedup[size]:.3f}x")
-    pool.close()
+    scheduler.close()
 
     bench_end = timer()
     print()

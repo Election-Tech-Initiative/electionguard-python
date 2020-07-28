@@ -2,8 +2,6 @@ from dataclasses import dataclass, field
 from typing import Optional, List, Dict, Set, Tuple
 from collections.abc import Container, Sized
 
-from multiprocessing import Pool, cpu_count
-
 from .ballot import BallotBoxState, CiphertextBallotSelection, CiphertextAcceptedBallot
 from .ballot_store import BallotStore
 from .ballot_validator import ballot_is_valid_for_election
@@ -12,7 +10,7 @@ from .election_object_base import ElectionObjectBase
 from .elgamal import ElGamalCiphertext, elgamal_add
 from .group import ElementModQ, ONE_MOD_P, ElementModP
 from .logs import log_warning
-
+from .scheduler import Scheduler
 from .types import BALLOT_ID, CONTEST_ID, SELECTION_ID
 
 
@@ -110,18 +108,18 @@ class CiphertextTallyContest(ElectionObjectBase):
             )
             return False
 
-        cpu_pool = Pool(cpu_count())
+        scheduler = Scheduler()
 
         # iterate through the tally selections and add the new value to the total
-        results = cpu_pool.starmap(
+        results: List[
+            Tuple[SELECTION_ID, Optional[ElGamalCiphertext]]
+        ] = scheduler.schedule(
             self._accumulate_selections,
             [
                 (key, selection_tally, contest_selections)
                 for (key, selection_tally) in self.tally_selections.items()
             ],
         )
-
-        cpu_pool.close()
 
         for (key, ciphertext) in results:
             if ciphertext is None:
