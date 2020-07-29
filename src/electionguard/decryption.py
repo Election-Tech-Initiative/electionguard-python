@@ -1,9 +1,9 @@
 from multiprocessing import cpu_count
 from multiprocessing.dummy import Pool
-from typing import Dict, Optional, Union
+from typing import Dict, Optional
 
 from .auxiliary import AuxiliaryDecrypt
-from .ballot import CiphertextAcceptedBallot, CiphertextBallotSelection
+from .ballot import CiphertextAcceptedBallot, CiphertextSelection
 from .data_store import DataStore
 from .decryption_share import (
     BallotDecryptionShare,
@@ -24,7 +24,6 @@ from .rsa import rsa_decrypt
 from .tally import (
     CiphertextTally,
     CiphertextTallyContest,
-    CiphertextTallySelection,
 )
 
 from .types import BALLOT_ID, CONTEST_ID, GUARDIAN_ID, SELECTION_ID
@@ -34,8 +33,6 @@ MISSING_GUARDIAN_ID = GUARDIAN_ID
 
 GUARDIAN_PUBLIC_KEY = ElementModP
 ELECTION_PUBLIC_KEY = ElementModP
-
-CiphertextSelection = Union[CiphertextBallotSelection, CiphertextTallySelection]
 
 
 def compute_decryption_share(
@@ -301,11 +298,11 @@ def compute_decryption_share_for_selection(
     """
 
     (decryption, proof) = guardian.partially_decrypt(
-        selection.encrypted_data, context.crypto_extended_base_hash
+        selection.ciphertext, context.crypto_extended_base_hash
     )
 
     if proof.is_valid(
-        selection.encrypted_data,
+        selection.ciphertext,
         guardian.share_election_public_key().key,
         decryption,
         context.crypto_extended_base_hash,
@@ -344,7 +341,7 @@ def compute_compensated_decryption_share_for_selection(
 
     compensated = available_guardian.compensate_decrypt(
         missing_guardian_id,
-        selection.encrypted_data,
+        selection.ciphertext,
         context.crypto_extended_base_hash,
         decrypt=decrypt,
     )
@@ -368,7 +365,7 @@ def compute_compensated_decryption_share_for_selection(
         return None
 
     if proof.is_valid(
-        selection.encrypted_data,
+        selection.ciphertext,
         recovery_public_key,
         decryption,
         context.crypto_extended_base_hash,

@@ -47,7 +47,7 @@ def decrypt_selection_with_secret(
     ):
         return None
 
-    plaintext_vote = selection.encrypted_data.decrypt(secret_key)
+    plaintext_vote = selection.ciphertext.decrypt(secret_key)
 
     # TODO: ISSUE #47: handle decryption of the extradata field if needed
 
@@ -99,7 +99,7 @@ def decrypt_selection_with_nonce(
         )
         return None
 
-    plaintext_vote = selection.encrypted_data.decrypt_known_nonce(public_key, nonce)
+    plaintext_vote = selection.ciphertext.decrypt_known_nonce(public_key, nonce)
 
     # TODO: ISSUE #35: encrypt/decrypt: handle decryption of the extradata field if needed
 

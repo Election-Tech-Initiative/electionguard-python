@@ -120,10 +120,10 @@ class TestDecrypt(unittest.TestCase):
 
         # tamper with the encryption
         malformed_encryption = deepcopy(subject)
-        malformed_message = malformed_encryption.encrypted_data._replace(
-            pad=mult_p(subject.encrypted_data.pad, TWO_MOD_P)
+        malformed_message = malformed_encryption.ciphertext._replace(
+            pad=mult_p(subject.ciphertext.pad, TWO_MOD_P)
         )
-        malformed_encryption.encrypted_data = malformed_message
+        malformed_encryption.ciphertext = malformed_message
 
         # tamper with the proof
         malformed_proof = deepcopy(subject)
@@ -426,7 +426,7 @@ class TestDecrypt(unittest.TestCase):
         self.assertIsNone(result_from_nonce_seed)
 
         # Tamper with the encryption
-        subject.ballot_selections[0].encrypted_data = ElGamalCiphertext(
+        subject.ballot_selections[0].ciphertext = ElGamalCiphertext(
             TWO_MOD_P, TWO_MOD_P
         )
 

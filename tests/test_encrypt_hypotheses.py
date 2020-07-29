@@ -163,5 +163,5 @@ def _accumulate_encrypted_ballots(
                 )  # this should be the same as in the PlaintextBallot!
                 if desc_id not in tally:
                     tally[desc_id] = encrypted_zero
-                tally[desc_id] = elgamal_add(tally[desc_id], selection.encrypted_data)
+                tally[desc_id] = elgamal_add(tally[desc_id], selection.ciphertext)
     return tally

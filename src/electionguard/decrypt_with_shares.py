@@ -1,6 +1,6 @@
-from typing import Dict, Optional, Tuple, Union
+from typing import Dict, Optional, Tuple
 
-from .ballot import CiphertextAcceptedBallot, CiphertextBallotSelection
+from .ballot import CiphertextAcceptedBallot, CiphertextSelection
 from .decryption_share import (
     TallyDecryptionShare,
     CiphertextDecryptionSelection,
@@ -15,7 +15,6 @@ from .tally import (
     PlaintextTally,
     CiphertextTallyContest,
     PlaintextTallyContest,
-    CiphertextTallySelection,
     PlaintextTallySelection,
 )
 from .logs import log_warning
@@ -27,8 +26,6 @@ MISSING_GUARDIAN_ID = GUARDIAN_ID
 GUARDIAN_PUBLIC_KEY = ElementModP
 
 ELECTION_PUBLIC_KEY = ElementModP
-
-CiphertextSelection = Union[CiphertextBallotSelection, CiphertextTallySelection]
 
 # The methods in this file can be used to decrypt values if private keys or nonces are not known
 # and the key ceremony is used to share secrets among a quorum of guardians
@@ -59,7 +56,7 @@ def decrypt_selection_with_decryption_shares(
             public_key, decryption = share
             # verify we have a proof or recovered parts
             if not decryption.is_valid(
-                selection.encrypted_data, public_key, extended_base_hash
+                selection.ciphertext, public_key, extended_base_hash
             ):
                 return None
 
@@ -69,10 +66,10 @@ def decrypt_selection_with_decryption_shares(
     )
 
     # Calculate 𝑀=𝐵⁄(∏𝑀𝑖) mod 𝑝.
-    decrypted_value = div_p(selection.encrypted_data.data, all_shares_product_M)
+    decrypted_value = div_p(selection.ciphertext.data, all_shares_product_M)
     d_log = discrete_log(decrypted_value)
     return PlaintextTallySelection(
-        selection.object_id, d_log, decrypted_value, selection.encrypted_data,
+        selection.object_id, d_log, decrypted_value, selection.ciphertext,
     )
 
 

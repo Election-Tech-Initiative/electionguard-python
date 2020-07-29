@@ -76,7 +76,7 @@ class TestEncrypt(unittest.TestCase):
 
         # Assert
         self.assertIsNotNone(result)
-        self.assertIsNotNone(result.encrypted_data)
+        self.assertIsNotNone(result.ciphertext)
         self.assertTrue(result.is_valid_encryption(hash_context, keypair.public_key))
 
     def test_encrypt_simple_selection_malformed_data_fails(self):
@@ -142,7 +142,7 @@ class TestEncrypt(unittest.TestCase):
 
         # Assert
         self.assertIsNotNone(result)
-        self.assertIsNotNone(result.encrypted_data)
+        self.assertIsNotNone(result.ciphertext)
         self.assertTrue(
             result.is_valid_encryption(description.crypto_hash(), keypair.public_key)
         )
@@ -181,10 +181,10 @@ class TestEncrypt(unittest.TestCase):
 
         # tamper with the encryption
         malformed_encryption = deepcopy(result)
-        malformed_message = malformed_encryption.encrypted_data._replace(
-            pad=mult_p(result.encrypted_data.pad, TWO_MOD_P)
+        malformed_message = malformed_encryption.ciphertext._replace(
+            pad=mult_p(result.ciphertext.pad, TWO_MOD_P)
         )
-        malformed_encryption.encrypted_data = malformed_message
+        malformed_encryption.ciphertext = malformed_message
 
         # tamper with the proof
         malformed_proof = deepcopy(result)
@@ -635,7 +635,7 @@ class TestEncrypt(unittest.TestCase):
 
             # Homomorpically accumulate the selection encryptions
             elgamal_accumulation = elgamal_add(
-                *[selection.encrypted_data for selection in contest.ballot_selections]
+                *[selection.ciphertext for selection in contest.ballot_selections]
             )
             # accumulate the selection nonce's
             aggregate_nonce = add_q(
@@ -656,7 +656,7 @@ class TestEncrypt(unittest.TestCase):
 
             for selection in contest.ballot_selections:
                 # Since we know the nonce, we can decrypt the plaintext
-                representation = selection.encrypted_data.decrypt_known_nonce(
+                representation = selection.ciphertext.decrypt_known_nonce(
                     keypair.public_key, selection.nonce
                 )
 
@@ -664,7 +664,7 @@ class TestEncrypt(unittest.TestCase):
                 # representation = selection.message.decrypt(keypair.secret_key)
 
                 regenerated_disjuctive = make_disjunctive_chaum_pedersen(
-                    selection.encrypted_data,
+                    selection.ciphertext,
                     selection.nonce,
                     keypair.public_key,
                     add_q(selection.nonce, TWO_MOD_Q),
@@ -673,6 +673,6 @@ class TestEncrypt(unittest.TestCase):
 
                 self.assertTrue(
                     regenerated_disjuctive.is_valid(
-                        selection.encrypted_data, keypair.public_key
+                        selection.ciphertext, keypair.public_key
                     )
                 )

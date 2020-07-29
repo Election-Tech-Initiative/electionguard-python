@@ -320,7 +320,7 @@ class TestDecryptionMediator(TestCase):
         # Check the share proofs
         self.assertTrue(
             compensation_0.proof.is_valid(
-                first_selection.encrypted_data,
+                first_selection.ciphertext,
                 get_optional(
                     self.guardians[0].recovery_public_key_for(
                         self.guardians[2].object_id
@@ -333,7 +333,7 @@ class TestDecryptionMediator(TestCase):
 
         self.assertTrue(
             compensation_1.proof.is_valid(
-                first_selection.encrypted_data,
+                first_selection.ciphertext,
                 get_optional(
                     self.guardians[1].recovery_public_key_for(
                         self.guardians[2].object_id

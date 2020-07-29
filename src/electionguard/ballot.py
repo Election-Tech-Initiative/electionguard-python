@@ -2,7 +2,8 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from distutils import util
 from enum import Enum
-from typing import Optional, List, Any, Sequence
+from distutils import util
+from typing import Any, List, Optional, Protocol, runtime_checkable, Sequence
 
 from .chaum_pedersen import (
     ConstantChaumPedersenProof,
@@ -136,15 +137,32 @@ class PlaintextBallotSelection(ElectionObjectBase):
         return not self.__eq__(other)
 
 
+@runtime_checkable
+class CiphertextSelection(Protocol):
+    """
+    Encrypted selection
+    """
+
+    object_id: str
+
+    # The SelectionDescription hash
+    description_hash: ElementModQ
+
+    # The encrypted representation of the selection
+    ciphertext: ElGamalCiphertext
+
+
 @dataclass
-class CiphertextBallotSelection(ElectionObjectBase, CryptoHashCheckable):
+class CiphertextBallotSelection(
+    ElectionObjectBase, CiphertextSelection, CryptoHashCheckable
+):
     """
     A CiphertextBallotSelection represents an individual encrypted selection on a ballot.
 
-    This class accepts a `description_hash` and a `encrypted_data` as required parameters
+    This class accepts a `description_hash` and a `ciphertext` as required parameters
     in its constructor.
 
-    When a selection is encrypted, the `description_hash` and `encrypted_data` required fields must
+    When a selection is encrypted, the `description_hash` and `ciphertext` required fields must
     be populated at construction however the `nonce` is also usually provided by convention.
 
     After construction, the `crypto_hash` field is populated automatically in the `__post_init__` cycle
@@ -166,7 +184,7 @@ class CiphertextBallotSelection(ElectionObjectBase, CryptoHashCheckable):
     description_hash: ElementModQ
 
     # The encrypted representation of the vote field
-    encrypted_data: ElGamalCiphertext
+    ciphertext: ElGamalCiphertext
 
     # The hash of the encrypted values
     crypto_hash: ElementModQ
@@ -219,7 +237,7 @@ class CiphertextBallotSelection(ElectionObjectBase, CryptoHashCheckable):
             log_warning(f"no proof exists for: {self.object_id}")
             return False
 
-        return self.proof.is_valid(self.encrypted_data, elgamal_public_key)
+        return self.proof.is_valid(self.ciphertext, elgamal_public_key)
 
     def crypto_hash_with(self, seed_hash: ElementModQ) -> ElementModQ:
         """
@@ -233,20 +251,20 @@ class CiphertextBallotSelection(ElectionObjectBase, CryptoHashCheckable):
         In most cases the seed_hash should match the `description_hash`
         """
         return _ciphertext_ballot_selection_crypto_hash_with(
-            self.object_id, seed_hash, self.message
+            self.object_id, seed_hash, self.ciphertext
         )
 
 
 def _ciphertext_ballot_selection_crypto_hash_with(
-    object_id: str, seed_hash: ElementModQ, message: ElGamalCiphertext
+    object_id: str, seed_hash: ElementModQ, ciphertext: ElGamalCiphertext
 ) -> ElementModQ:
-    return hash_elems(object_id, seed_hash, message.crypto_hash())
+    return hash_elems(object_id, seed_hash, ciphertext.crypto_hash())
 
 
 def make_ciphertext_ballot_selection(
     object_id: str,
     description_hash: ElementModQ,
-    message: ElGamalCiphertext,
+    ciphertext: ElGamalCiphertext,
     elgamal_public_key: ElementModP,
     proof_seed: ElementModQ,
     selection_representation: int,
@@ -264,21 +282,21 @@ def make_ciphertext_ballot_selection(
     """
     if crypto_hash is None:
         crypto_hash = _ciphertext_ballot_selection_crypto_hash_with(
-            object_id, description_hash, message
+            object_id, description_hash, ciphertext
         )
 
     if proof is None:
         proof = flatmap_optional(
             nonce,
             lambda n: make_disjunctive_chaum_pedersen(
-                message, n, elgamal_public_key, proof_seed, selection_representation
+                ciphertext, n, elgamal_public_key, proof_seed, selection_representation
             ),
         )
 
     return CiphertextBallotSelection(
         object_id=object_id,
         description_hash=description_hash,
-        message=message,
+        ciphertext=ciphertext,
         is_placeholder_selection=is_placeholder_selection,
         nonce=nonce,
         crypto_hash=crypto_hash,
@@ -466,7 +484,7 @@ class CiphertextBallotContest(ElectionObjectBase, CryptoHashCheckable):
 def _ciphertext_ballot_elgamal_accumulate(
     ballot_selections: List[CiphertextBallotSelection],
 ) -> ElGamalCiphertext:
-    return elgamal_add(*[selection.message for selection in ballot_selections])
+    return elgamal_add(*[selection.ciphertext for selection in ballot_selections])
 
 
 def _ciphertext_ballot_context_crypto_hash(

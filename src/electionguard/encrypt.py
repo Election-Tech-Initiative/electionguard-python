@@ -176,7 +176,7 @@ def encrypt_selection(
     encrypted_selection = make_ciphertext_ballot_selection(
         object_id=selection.object_id,
         description_hash=selection_description_hash,
-        encrypted_data=get_optional(elgamal_encryption),
+        ciphertext=get_optional(elgamal_encryption),
         elgamal_public_key=elgamal_public_key,
         proof_seed=disjunctive_chaum_pedersen_nonce,
         selection_representation=selection_representation,
