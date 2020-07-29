@@ -1,7 +1,11 @@
 from unittest import TestCase
 from os import remove
 
-from electionguard.serializable import write_json_file
+from electionguard.serializable import (
+    set_deserializers,
+    set_serializers,
+    write_json_file,
+)
 
 
 class TestSerializable(TestCase):
@@ -20,3 +24,11 @@ class TestSerializable(TestCase):
 
         # Cleanup
         remove(json_file)
+
+    def test_setup_serialization(self) -> None:
+        # Act
+        set_serializers()
+
+    def test_setup_deserialization(self) -> None:
+        # Act
+        set_deserializers()
