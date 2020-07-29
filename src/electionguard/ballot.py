@@ -626,14 +626,6 @@ class CiphertextBallot(ElectionObjectBase, CryptoHashCheckable):
         :return: a hash value derived from the description hash, the object id, and the nonce value
                 suitable for deriving other nonce values on the ballot
         """
-
-        if self.nonce is None:
-            if not isinstance(self, CiphertextAcceptedBallot):
-                log_warning(
-                    f"missing nonce for ballot {self.object_id} could not derive from null nonce"
-                )
-            return None
-
         return hash_elems(self.description_hash, self.object_id, self.nonce)
 
     def generate_tracking_id(self, seed_hash: ElementModQ) -> None:
