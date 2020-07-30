@@ -24,11 +24,12 @@ from .group import ElementModP, ElementModQ, rand_q
 from .hash import hash_elems
 from .logs import log_warning
 from .nonces import Nonces
+from .serializable import Serializable
 from .tracker import get_hash_for_device
 from .utils import get_optional, get_or_else_optional_func
 
 
-class EncryptionDevice(object):
+class EncryptionDevice(Serializable):
     """
     Metadata for encryption device
     """

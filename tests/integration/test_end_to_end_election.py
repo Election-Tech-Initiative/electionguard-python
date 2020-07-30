@@ -389,6 +389,7 @@ class TestEndToEndElection(TestCase):
             self.description,
             self.context,
             self.constants,
+            [self.device],
             self.ciphertext_ballots,
             self.ciphertext_tally,
             self.plaintext_tally,

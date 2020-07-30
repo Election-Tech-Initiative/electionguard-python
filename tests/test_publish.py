@@ -26,6 +26,7 @@ class TestPublish(TestCase):
         )
         context = CiphertextElectionContext(1, 1, ONE_MOD_P, ONE_MOD_Q)
         constants = ElectionConstants()
+        devices = []
         coefficients = []
         encrypted_ballots = []
         tally = PlaintextTally("", [], [])
@@ -35,6 +36,7 @@ class TestPublish(TestCase):
             description,
             context,
             constants,
+            devices,
             encrypted_ballots,
             CiphertextTally("", description, context),
             tally,
