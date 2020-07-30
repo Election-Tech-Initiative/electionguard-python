@@ -526,7 +526,7 @@ class TestEncrypt(unittest.TestCase):
 
         # Assert
         self.assertIsNotNone(result)
-        self.assertIsNotNone(result.tracking_id)
+        self.assertIsNotNone(result.tracking_hash)
         self.assertIsNotNone(tracker_code)
         self.assertIsNotNone(result_from_seed)
         self.assertTrue(

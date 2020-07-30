@@ -76,8 +76,8 @@ class EncryptionMediator(object):
         encrypted_ballot = encrypt_ballot(
             ballot, self._metadata, self._encryption, self._seed_hash
         )
-        if encrypted_ballot is not None and encrypted_ballot.tracking_id is not None:
-            self._seed_hash = encrypted_ballot.tracking_id
+        if encrypted_ballot is not None and encrypted_ballot.tracking_hash is not None:
+            self._seed_hash = encrypted_ballot.tracking_hash
         return encrypted_ballot
 
 
@@ -432,14 +432,12 @@ def encrypt_ballot(
         ballot.object_id,
         ballot.ballot_style,
         context.crypto_extended_base_hash,
+        seed_hash,
         encrypted_contests,
         random_master_nonce,
     )
 
-    # Generate tracking id
-    encrypted_ballot.generate_tracking_id(seed_hash)
-
-    if not encrypted_ballot.tracking_id:
+    if not encrypted_ballot.tracking_hash:
         return None
 
     if not should_verify_proofs:
