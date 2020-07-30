@@ -275,7 +275,7 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
                     self._add_spoiled(ballot)
 
         # cache the cast ballot id's so they are not double counted
-        if self._accumulate(cast_ballot_selections):
+        if self._execute_accumulate(cast_ballot_selections):
             for ballot in ballots:
                 if ballot.state == BallotBoxState.CAST:
                     self._cast_ballot_ids.add(ballot.object_id)
@@ -289,7 +289,7 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
         """
         return len(self._cast_ballot_ids)
 
-    def _accumulate(
+    def _execute_accumulate(
         self,
         ciphertext_selections_by_selection_id: Dict[
             str, Dict[BALLOT_ID, ElGamalCiphertext]
@@ -299,7 +299,7 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
         result_set: List[Tuple[SELECTION_ID, ElGamalCiphertext]]
         scheduler = Scheduler()
         result_set = scheduler.schedule(
-            self._accumulate2,
+            self._accumulate,
             [
                 (selection_id, selections)
                 for (
@@ -320,7 +320,7 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
 
         return True
 
-    def _accumulate2(
+    def _accumulate(
         self, id: str, ballot_selections: Dict[BALLOT_ID, ElGamalCiphertext]
     ) -> Tuple[str, ElGamalCiphertext]:
         return (
