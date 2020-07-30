@@ -4,7 +4,12 @@ from collections.abc import Container, Sized
 
 from multiprocessing import Pool, cpu_count
 
-from .ballot import BallotBoxState, CiphertextBallotSelection, CiphertextAcceptedBallot
+from .ballot import (
+    BallotBoxState,
+    CiphertextBallotSelection,
+    CiphertextAcceptedBallot,
+    CiphertextSelection,
+)
 from .ballot_store import BallotStore
 from .ballot_validator import ballot_is_valid_for_election
 from .election import CiphertextElectionContext, InternalElectionDescription
@@ -22,7 +27,7 @@ class PlaintextTallySelection(ElectionObjectBase):
     A plaintext Tally Selection is a decrypted selection of a contest
     """
 
-    plaintext: int
+    tally: int
     # g^tally or M in the spec
     value: ElementModP
 
@@ -30,7 +35,7 @@ class PlaintextTallySelection(ElectionObjectBase):
 
 
 @dataclass
-class CiphertextTallySelection(ElectionObjectBase):
+class CiphertextTallySelection(ElectionObjectBase, CiphertextSelection):
     """
     a CiphertextTallySelection is a homomorphic accumulation of all of the 
     CiphertextBallotSelection instances for a specific selection in an election.
@@ -41,7 +46,9 @@ class CiphertextTallySelection(ElectionObjectBase):
     The SelectionDescription hash
     """
 
-    message: ElGamalCiphertext = field(default=ElGamalCiphertext(ONE_MOD_P, ONE_MOD_P))
+    ciphertext: ElGamalCiphertext = field(
+        default=ElGamalCiphertext(ONE_MOD_P, ONE_MOD_P)
+    )
     """
     The encrypted representation of the total of all ballots for this selection
     """
@@ -52,9 +59,9 @@ class CiphertextTallySelection(ElectionObjectBase):
         """
         Homomorphically add the specified value to the message
         """
-        new_value = elgamal_add(self.message, elgamal_ciphertext)
-        self.message = new_value
-        return self.message
+        new_value = elgamal_add(self.ciphertext, elgamal_ciphertext)
+        self.ciphertext = new_value
+        return self.ciphertext
 
 
 @dataclass
@@ -127,7 +134,7 @@ class CiphertextTallyContest(ElectionObjectBase):
             if ciphertext is None:
                 return False
             else:
-                self.tally_selections[key].message = ciphertext
+                self.tally_selections[key].ciphertext = ciphertext
 
         return True
 
@@ -150,7 +157,7 @@ class CiphertextTallyContest(ElectionObjectBase):
             log_warning(f"add cannot accumulate for missing selection {key}")
             return key, None
 
-        return key, selection_tally.elgamal_accumulate(use_selection.message)
+        return key, selection_tally.elgamal_accumulate(use_selection.ciphertext)
 
 
 @dataclass
