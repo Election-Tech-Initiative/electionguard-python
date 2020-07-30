@@ -11,8 +11,8 @@
             }
         ]
     },
-    "contactInformation": {
-        "addressLine": [
+    "contact_information": {
+        "address_line": [
             "1234 Paul Revere Run",
             "Hamilton, Ozark 99999"
         ],
@@ -38,17 +38,17 @@
             }
         ]
     },
-    "startDate": "2020-03-01T08:00:00-05:00",
-    "endDate": "2020-03-01T20:00:00-05:00",
-    "electionScopeId": "hamilton-county-general-election",
+    "start_date": "2020-03-01T08:00:00-05:00",
+    "end_date": "2020-03-01T20:00:00-05:00",
+    "election_scope_id": "hamilton-county-general-election",
     "type": "general",
-    "geopoliticalUnits": [
+    "geopolitical_units": [
         {
-            "objectId": "hamilton-county",
+            "object_id": "hamilton-county",
             "name": "Hamilton County",
             "type": "county",
-            "contactInformation": {
-                "addressLine": [
+            "contact_information": {
+                "address_line": [
                     "1234 Samuel Adams Way",
                     "Hamilton, Ozark 99999"
                 ],
@@ -68,11 +68,11 @@
             }
         },
         {
-            "objectId": "congress-district-5",
+            "object_id": "congress-district-5",
             "name": "Congressional District 5",
             "type": "congressional",
-            "contactInformation": {
-                "addressLine": [
+            "contact_information": {
+                "address_line": [
                     "1234 Somerville Gateway",
                     "Medford, Ozark 999999"
                 ],
@@ -92,11 +92,11 @@
             }
         },
         {
-            "objectId": "congress-district-7",
+            "object_id": "congress-district-7",
             "name": "Congressional District 7",
             "type": "congressional",
-            "contactInformation": {
-                "addressLine": [
+            "contact_information": {
+                "address_line": [
                     "1234 Somerville Gateway",
                     "Arlington, Ozark 999999"
                 ],
@@ -116,11 +116,11 @@
             }
         },
         {
-            "objectId": "lacroix-township-precinct-1",
+            "object_id": "lacroix-township-precinct-1",
             "name": "LaCroix Township Precinct 1",
             "type": "precinct",
-            "contactInformation": {
-                "addressLine": [
+            "contact_information": {
+                "address_line": [
                     "1234 Thorton Drive",
                     "LaCroix, Ozark 99999"
                 ],
@@ -140,11 +140,11 @@
             }
         },
         {
-            "objectId": "lacroix-exeter-utility-district",
+            "object_id": "lacroix-exeter-utility-district",
             "name": "Exeter Utility District",
             "type": "utility",
-            "contactInformation": {
-                "addressLine": [
+            "contact_information": {
+                "address_line": [
                     "1234 Watt Drive",
                     "LaCroix, Ozark 99999"
                 ],
@@ -164,11 +164,11 @@
             }
         },
         {
-            "objectId": "arlington-township-precinct-1",
+            "object_id": "arlington-township-precinct-1",
             "name": "Arlington Township Precinct 1",
             "type": "precinct",
-            "contactInformation": {
-                "addressLine": [
+            "contact_information": {
+                "address_line": [
                     "1234 Pahk Avenue",
                     "Arlinton, Ozark 99999"
                 ],
@@ -188,11 +188,11 @@
             }
         },
         {
-            "objectId": "pismo-beach-school-district-precinct-1",
+            "object_id": "pismo-beach-school-district-precinct-1",
             "name": "Pismo Beach School District Precinct 1",
             "type": "school",
-            "contactInformation": {
-                "addressLine": [
+            "contact_information": {
+                "address_line": [
                     "1234 Pismo Beach Elementary",
                     "Arlington, Ozark 99999"
                 ],
@@ -212,11 +212,11 @@
             }
         },
         {
-            "objectId": "somerset-school-district-precinct-1",
+            "object_id": "somerset-school-district-precinct-1",
             "name": "Somerset School District",
             "type": "school",
-            "contactInformation": {
-                "addressLine": [
+            "contact_information": {
+                "address_line": [
                     "1234 Somerset Avenue",
                     "Arlinton, Ozark 99999"
                 ],
@@ -236,11 +236,11 @@
             }
         },
         {
-            "objectId": "harris-township",
+            "object_id": "harris-township",
             "name": "Harris Township",
             "type": "township",
-            "contactInformation": {
-                "addressLine": [
+            "contact_information": {
+                "address_line": [
                     "1234 Pahk Avenue",
                     "Harris, Ozark 99999"
                 ],
@@ -262,10 +262,10 @@
     ],
     "parties": [
         {
-            "objectId": "whig",
+            "object_id": "whig",
             "abbreviation": "WHI",
             "color": "AAAAAA",
-            "logoUri": "http://some/path/to/whig.svg",
+            "logo_uri": "http://some/path/to/whig.svg",
             "name": {
                 "text": [
                     {
@@ -276,10 +276,10 @@
             }
         },
         {
-            "objectId": "federalist",
+            "object_id": "federalist",
             "abbreviation": "FED",
             "color": "BBBBBB",
-            "logoUri": "http://some/path/to/federalist.svg",
+            "logo_uri": "http://some/path/to/federalist.svg",
             "name": {
                 "text": [
                     {
@@ -290,10 +290,10 @@
             }
         },
         {
-            "objectId": "peoples",
+            "object_id": "peoples",
             "abbreviation": "PPL",
             "color": "CCCCCC",
-            "logoUri": "http://some/path/to/people-s.svg",
+            "logo_uri": "http://some/path/to/people-s.svg",
             "name": {
                 "text": [
                     {
@@ -304,10 +304,10 @@
             }
         },
         {
-            "objectId": "liberty",
+            "object_id": "liberty",
             "abbreviation": "LIB",
             "color": "DDDDDD",
-            "logoUri": "http://some/path/to/liberty.svg",
+            "logo_uri": "http://some/path/to/liberty.svg",
             "name": {
                 "text": [
                     {
@@ -318,10 +318,10 @@
             }
         },
         {
-            "objectId": "constitution",
+            "object_id": "constitution",
             "abbreviation": "CONST",
             "color": "EEEEEE",
-            "logoUri": "http://some/path/to/democratic-repulbican.svg",
+            "logo_uri": "http://some/path/to/democratic-repulbican.svg",
             "name": {
                 "text": [
                     {
@@ -332,10 +332,10 @@
             }
         },
         {
-            "objectId": "labor",
+            "object_id": "labor",
             "abbreviation": "LBR",
             "color": "FFFFFF",
-            "logoUri": "http://some/path/to/laobr.svg",
+            "logo_uri": "http://some/path/to/laobr.svg",
             "name": {
                 "text": [
                     {
@@ -346,10 +346,10 @@
             }
         },
         {
-            "objectId": "independent",
+            "object_id": "independent",
             "abbreviation": "IND",
             "color": "000000",
-            "logoUri": "http://some/path/to/independent.svg",
+            "logo_uri": "http://some/path/to/independent.svg",
             "name": {
                 "text": [
                     {
@@ -362,7 +362,7 @@
     ],
     "candidates": [
         {
-            "objectId": "barchi-hallaren",
+            "object_id": "barchi-hallaren",
             "ballot_name": {
                 "text": [
                     {
@@ -371,10 +371,10 @@
                     }
                 ]
             },
-            "partyId": "whig"
+            "party_id": "whig"
         },
         {
-            "objectId": "cramer-vuocolo",
+            "object_id": "cramer-vuocolo",
             "ballot_name": {
                 "text": [
                     {
@@ -383,10 +383,10 @@
                     }
                 ]
             },
-            "partyId": "federalist"
+            "party_id": "federalist"
         },
         {
-            "objectId": "court-blumhardt",
+            "object_id": "court-blumhardt",
             "ballot_name": {
                 "text": [
                     {
@@ -395,10 +395,10 @@
                     }
                 ]
             },
-            "partyId": "peoples"
+            "party_id": "peoples"
         },
         {
-            "objectId": "boone-lian",
+            "object_id": "boone-lian",
             "ballot_name": {
                 "text": [
                     {
@@ -407,10 +407,10 @@
                     }
                 ]
             },
-            "partyId": "liberty"
+            "party_id": "liberty"
         },
         {
-            "objectId": "hildebrand-garritty",
+            "object_id": "hildebrand-garritty",
             "ballot_name": {
                 "text": [
                     {
@@ -419,10 +419,10 @@
                     }
                 ]
             },
-            "partyId": "constitution"
+            "party_id": "constitution"
         },
         {
-            "objectId": "patterson-lariviere",
+            "object_id": "patterson-lariviere",
             "ballot_name": {
                 "text": [
                     {
@@ -431,10 +431,10 @@
                     }
                 ]
             },
-            "partyId": "labor"
+            "party_id": "labor"
         },
         {
-            "objectId": "franz",
+            "object_id": "franz",
             "ballot_name": {
                 "text": [
                     {
@@ -443,10 +443,10 @@
                     }
                 ]
             },
-            "partyId": "federalist"
+            "party_id": "federalist"
         },
         {
-            "objectId": "harris",
+            "object_id": "harris",
             "ballot_name": {
                 "text": [
                     {
@@ -455,10 +455,10 @@
                     }
                 ]
             },
-            "partyId": "peoples"
+            "party_id": "peoples"
         },
         {
-            "objectId": "bargmann",
+            "object_id": "bargmann",
             "ballot_name": {
                 "text": [
                     {
@@ -467,10 +467,10 @@
                     }
                 ]
             },
-            "partyId": "constitution"
+            "party_id": "constitution"
         },
         {
-            "objectId": "abcock",
+            "object_id": "abcock",
             "ballot_name": {
                 "text": [
                     {
@@ -479,10 +479,10 @@
                     }
                 ]
             },
-            "partyId": "liberty"
+            "party_id": "liberty"
         },
         {
-            "objectId": "steel-loy",
+            "object_id": "steel-loy",
             "ballot_name": {
                 "text": [
                     {
@@ -491,10 +491,10 @@
                     }
                 ]
             },
-            "partyId": "labor"
+            "party_id": "labor"
         },
         {
-            "objectId": "sharp",
+            "object_id": "sharp",
             "ballot_name": {
                 "text": [
                     {
@@ -503,10 +503,10 @@
                     }
                 ]
             },
-            "partyId": "constitution"
+            "party_id": "constitution"
         },
         {
-            "objectId": "wallace",
+            "object_id": "wallace",
             "ballot_name": {
                 "text": [
                     {
@@ -515,10 +515,10 @@
                     }
                 ]
             },
-            "partyId": "independent"
+            "party_id": "independent"
         },
         {
-            "objectId": "williams",
+            "object_id": "williams",
             "ballot_name": {
                 "text": [
                     {
@@ -527,10 +527,10 @@
                     }
                 ]
             },
-            "partyId": "peoples"
+            "party_id": "peoples"
         },
         {
-            "objectId": "sharp-althea",
+            "object_id": "sharp-althea",
             "ballot_name": {
                 "text": [
                     {
@@ -539,10 +539,10 @@
                     }
                 ]
             },
-            "partyId": "whig"
+            "party_id": "whig"
         },
         {
-            "objectId": "alpern",
+            "object_id": "alpern",
             "ballot_name": {
                 "text": [
                     {
@@ -551,10 +551,10 @@
                     }
                 ]
             },
-            "partyId": "federalist"
+            "party_id": "federalist"
         },
         {
-            "objectId": "windbeck",
+            "object_id": "windbeck",
             "ballot_name": {
                 "text": [
                     {
@@ -563,10 +563,10 @@
                     }
                 ]
             },
-            "partyId": "peoples"
+            "party_id": "peoples"
         },
         {
-            "objectId": "greher",
+            "object_id": "greher",
             "ballot_name": {
                 "text": [
                     {
@@ -575,10 +575,10 @@
                     }
                 ]
             },
-            "partyId": "constitution"
+            "party_id": "constitution"
         },
         {
-            "objectId": "alexander",
+            "object_id": "alexander",
             "ballot_name": {
                 "text": [
                     {
@@ -587,10 +587,10 @@
                     }
                 ]
             },
-            "partyId": "whig"
+            "party_id": "whig"
         },
         {
-            "objectId": "mitchell",
+            "object_id": "mitchell",
             "ballot_name": {
                 "text": [
                     {
@@ -599,10 +599,10 @@
                     }
                 ]
             },
-            "partyId": "federalist"
+            "party_id": "federalist"
         },
         {
-            "objectId": "lee",
+            "object_id": "lee",
             "ballot_name": {
                 "text": [
                     {
@@ -611,10 +611,10 @@
                     }
                 ]
             },
-            "partyId": "independent"
+            "party_id": "independent"
         },
         {
-            "objectId": "ash",
+            "object_id": "ash",
             "ballot_name": {
                 "text": [
                     {
@@ -623,10 +623,10 @@
                     }
                 ]
             },
-            "partyId": "liberty"
+            "party_id": "liberty"
         },
         {
-            "objectId": "kennedy",
+            "object_id": "kennedy",
             "ballot_name": {
                 "text": [
                     {
@@ -635,10 +635,10 @@
                     }
                 ]
             },
-            "partyId": "independent"
+            "party_id": "independent"
         },
         {
-            "objectId": "jackson",
+            "object_id": "jackson",
             "ballot_name": {
                 "text": [
                     {
@@ -647,10 +647,10 @@
                     }
                 ]
             },
-            "partyId": "labor"
+            "party_id": "labor"
         },
         {
-            "objectId": "brown",
+            "object_id": "brown",
             "ballot_name": {
                 "text": [
                     {
@@ -659,10 +659,10 @@
                     }
                 ]
             },
-            "partyId": "peoples"
+            "party_id": "peoples"
         },
         {
-            "objectId": "teller",
+            "object_id": "teller",
             "ballot_name": {
                 "text": [
                     {
@@ -671,10 +671,10 @@
                     }
                 ]
             },
-            "partyId": "peoples"
+            "party_id": "peoples"
         },
         {
-            "objectId": "ward",
+            "object_id": "ward",
             "ballot_name": {
                 "text": [
                     {
@@ -683,10 +683,10 @@
                     }
                 ]
             },
-            "partyId": "independent"
+            "party_id": "independent"
         },
         {
-            "objectId": "murphy",
+            "object_id": "murphy",
             "ballot_name": {
                 "text": [
                     {
@@ -695,10 +695,10 @@
                     }
                 ]
             },
-            "partyId": "federalist"
+            "party_id": "federalist"
         },
         {
-            "objectId": "newman",
+            "object_id": "newman",
             "ballot_name": {
                 "text": [
                     {
@@ -707,10 +707,10 @@
                     }
                 ]
             },
-            "partyId": "whig"
+            "party_id": "whig"
         },
         {
-            "objectId": "callanann",
+            "object_id": "callanann",
             "ballot_name": {
                 "text": [
                     {
@@ -719,10 +719,10 @@
                     }
                 ]
             },
-            "partyId": "labor"
+            "party_id": "labor"
         },
         {
-            "objectId": "york",
+            "object_id": "york",
             "ballot_name": {
                 "text": [
                     {
@@ -731,10 +731,10 @@
                     }
                 ]
             },
-            "partyId": "labor"
+            "party_id": "labor"
         },
         {
-            "objectId": "chandler",
+            "object_id": "chandler",
             "ballot_name": {
                 "text": [
                     {
@@ -743,10 +743,10 @@
                     }
                 ]
             },
-            "partyId": "labor"
+            "party_id": "labor"
         },
         {
-            "objectId": "solis",
+            "object_id": "solis",
             "ballot_name": {
                 "text": [
                     {
@@ -755,10 +755,10 @@
                     }
                 ]
             },
-            "partyId": "labor"
+            "party_id": "labor"
         },
         {
-            "objectId": "keller",
+            "object_id": "keller",
             "ballot_name": {
                 "text": [
                     {
@@ -767,10 +767,10 @@
                     }
                 ]
             },
-            "partyId": "constitution"
+            "party_id": "constitution"
         },
         {
-            "objectId": "rangel",
+            "object_id": "rangel",
             "ballot_name": {
                 "text": [
                     {
@@ -779,10 +779,10 @@
                     }
                 ]
             },
-            "partyId": "peoples"
+            "party_id": "peoples"
         },
         {
-            "objectId": "argent",
+            "object_id": "argent",
             "ballot_name": {
                 "text": [
                     {
@@ -791,10 +791,10 @@
                     }
                 ]
             },
-            "partyId": "liberty"
+            "party_id": "liberty"
         },
         {
-            "objectId": "witherspoon-smithson",
+            "object_id": "witherspoon-smithson",
             "ballot_name": {
                 "text": [
                     {
@@ -803,10 +803,10 @@
                     }
                 ]
             },
-            "partyId": "independent"
+            "party_id": "independent"
         },
         {
-            "objectId": "bainbridge",
+            "object_id": "bainbridge",
             "ballot_name": {
                 "text": [
                     {
@@ -815,10 +815,10 @@
                     }
                 ]
             },
-            "partyId": "peoples"
+            "party_id": "peoples"
         },
         {
-            "objectId": "hennessey",
+            "object_id": "hennessey",
             "ballot_name": {
                 "text": [
                     {
@@ -827,10 +827,10 @@
                     }
                 ]
             },
-            "partyId": "whig"
+            "party_id": "whig"
         },
         {
-            "objectId": "savoy",
+            "object_id": "savoy",
             "ballot_name": {
                 "text": [
                     {
@@ -839,10 +839,10 @@
                     }
                 ]
             },
-            "partyId": "labor"
+            "party_id": "labor"
         },
         {
-            "objectId": "tawa",
+            "object_id": "tawa",
             "ballot_name": {
                 "text": [
                     {
@@ -851,10 +851,10 @@
                     }
                 ]
             },
-            "partyId": "constitution"
+            "party_id": "constitution"
         },
         {
-            "objectId": "tawa-mary",
+            "object_id": "tawa-mary",
             "ballot_name": {
                 "text": [
                     {
@@ -863,10 +863,10 @@
                     }
                 ]
             },
-            "partyId": "independent"
+            "party_id": "independent"
         },
         {
-            "objectId": "altman",
+            "object_id": "altman",
             "ballot_name": {
                 "text": [
                     {
@@ -875,10 +875,10 @@
                     }
                 ]
             },
-            "partyId": "peoples"
+            "party_id": "peoples"
         },
         {
-            "objectId": "moore",
+            "object_id": "moore",
             "ballot_name": {
                 "text": [
                     {
@@ -889,7 +889,7 @@
             }
         },
         {
-            "objectId": "white",
+            "object_id": "white",
             "ballot_name": {
                 "text": [
                     {
@@ -900,7 +900,7 @@
             }
         },
         {
-            "objectId": "smallberries",
+            "object_id": "smallberries",
             "ballot_name": {
                 "text": [
                     {
@@ -911,7 +911,7 @@
             }
         },
         {
-            "objectId": "warfin",
+            "object_id": "warfin",
             "ballot_name": {
                 "text": [
                     {
@@ -922,7 +922,7 @@
             }
         },
         {
-            "objectId": "norberg",
+            "object_id": "norberg",
             "ballot_name": {
                 "text": [
                     {
@@ -933,7 +933,7 @@
             }
         },
         {
-            "objectId": "parks",
+            "object_id": "parks",
             "ballot_name": {
                 "text": [
                     {
@@ -944,7 +944,7 @@
             }
         },
         {
-            "objectId": "savannah",
+            "object_id": "savannah",
             "ballot_name": {
                 "text": [
                     {
@@ -955,7 +955,7 @@
             }
         },
         {
-            "objectId": "summers",
+            "object_id": "summers",
             "ballot_name": {
                 "text": [
                     {
@@ -966,7 +966,7 @@
             }
         },
         {
-            "objectId": "chase",
+            "object_id": "chase",
             "ballot_name": {
                 "text": [
                     {
@@ -977,7 +977,7 @@
             }
         },
         {
-            "objectId": "osborne",
+            "object_id": "osborne",
             "ballot_name": {
                 "text": [
                     {
@@ -988,7 +988,7 @@
             }
         },
         {
-            "objectId": "rosenberg",
+            "object_id": "rosenberg",
             "ballot_name": {
                 "text": [
                     {
@@ -999,7 +999,7 @@
             }
         },
         {
-            "objectId": "head",
+            "object_id": "head",
             "ballot_name": {
                 "text": [
                     {
@@ -1010,7 +1010,7 @@
             }
         },
         {
-            "objectId": "marsters",
+            "object_id": "marsters",
             "ballot_name": {
                 "text": [
                     {
@@ -1021,7 +1021,7 @@
             }
         },
         {
-            "objectId": "write-in-1",
+            "object_id": "write-in-1",
             "ballot_name": {
                 "text": [
                     {
@@ -1037,7 +1037,7 @@
             "isWriteIn": true
         },
         {
-            "objectId": "write-in-2",
+            "object_id": "write-in-2",
             "ballot_name": {
                 "text": [
                     {
@@ -1053,7 +1053,7 @@
             "isWriteIn": true
         },
         {
-            "objectId": "write-in-3",
+            "object_id": "write-in-3",
             "ballot_name": {
                 "text": [
                     {
@@ -1069,7 +1069,7 @@
             "isWriteIn": true
         },
         {
-            "objectId": "ozark-chief-justice-retain-demergue-affirmative",
+            "object_id": "ozark-chief-justice-retain-demergue-affirmative",
             "ballot_name": {
                 "text": [
                     {
@@ -1084,7 +1084,7 @@
             }
         },
         {
-            "objectId": "ozark-chief-justice-retain-demergue-negative",
+            "object_id": "ozark-chief-justice-retain-demergue-negative",
             "ballot_name": {
                 "text": [
                     {
@@ -1099,7 +1099,7 @@
             }
         },
         {
-            "objectId": "exeter-utility-district-referendum-affirmative",
+            "object_id": "exeter-utility-district-referendum-affirmative",
             "ballot_name": {
                 "text": [
                     {
@@ -1110,7 +1110,7 @@
             }
         },
         {
-            "objectId": "exeter-utility-district-referendum-negative",
+            "object_id": "exeter-utility-district-referendum-negative",
             "ballot_name": {
                 "text": [
                     {
@@ -1124,14 +1124,14 @@
     "contests": [
         {
             "@type": "CandidateContest",
-            "objectId": "president-vice-president-contest",
-            "voteVariation": "one_of_m",
-            "electoralDistrictId": "hamilton-county",
+            "object_id": "president-vice-president-contest",
+            "vote_variation": "one_of_m",
+            "electoral_district_id": "hamilton-county",
             "name": "President and Vice President of the United States",
-            "numberElected": 1,
-            "votesAllowed": 1,
-            "sequenceOrder": 0,
-            "ballotTitle": {
+            "number_elected": 1,
+            "votes_allowed": 1,
+            "sequence_order": 0,
+            "ballot_title": {
                 "text": [
                     {
                         "value": "President and Vice President of the United States",
@@ -1143,7 +1143,7 @@
                     }
                 ]
             },
-            "ballotSubtitle": {
+            "ballot_subtitle": {
                 "text": [
                     {
                         "value": "Vote for one",
@@ -1155,54 +1155,54 @@
                     }
                 ]
             },
-            "ballotSelections": [
+            "ballot_selections": [
                 {
-                    "objectId": "barchi-hallaren-selection",
-                    "sequenceOrder": 0,
-                    "candidateId": "barchi-hallaren"
+                    "object_id": "barchi-hallaren-selection",
+                    "sequence_order": 0,
+                    "candidate_id": "barchi-hallaren"
                 },
                 {
-                    "objectId": "cramer-vuocolo-selection",
-                    "sequenceOrder": 1,
-                    "candidateId": "cramer-vuocolo"
+                    "object_id": "cramer-vuocolo-selection",
+                    "sequence_order": 1,
+                    "candidate_id": "cramer-vuocolo"
                 },
                 {
-                    "objectId": "court-blumhardt-selection",
-                    "sequenceOrder": 2,
-                    "candidateId": "court-blumhardt"
+                    "object_id": "court-blumhardt-selection",
+                    "sequence_order": 2,
+                    "candidate_id": "court-blumhardt"
                 },
                 {
-                    "objectId": "boone-lian-selection",
-                    "sequenceOrder": 3,
-                    "candidateId": "boone-lian"
+                    "object_id": "boone-lian-selection",
+                    "sequence_order": 3,
+                    "candidate_id": "boone-lian"
                 },
                 {
-                    "objectId": "hildebrand-garritty-selection",
-                    "sequenceOrder": 4,
-                    "candidateId": "hildebrand-garritty"
+                    "object_id": "hildebrand-garritty-selection",
+                    "sequence_order": 4,
+                    "candidate_id": "hildebrand-garritty"
                 },
                 {
-                    "objectId": "patterson-lariviere-selection",
-                    "sequenceOrder": 5,
-                    "candidateId": "patterson-lariviere"
+                    "object_id": "patterson-lariviere-selection",
+                    "sequence_order": 5,
+                    "candidate_id": "patterson-lariviere"
                 },
                 {
-                    "objectId": "write-in-selection-president",
-                    "sequenceOrder": 6,
-                    "candidateId": "write-in"
+                    "object_id": "write-in-selection-president",
+                    "sequence_order": 6,
+                    "candidate_id": "write-in"
                 }
             ]
         },
         {
             "@type": "CandidateContest",
-            "objectId": "ozark-governor",
-            "voteVariation": "one_of_m",
-            "electoralDistrictId": "hamilton-county",
+            "object_id": "ozark-governor",
+            "vote_variation": "one_of_m",
+            "electoral_district_id": "hamilton-county",
             "name": "Governor of the Commonwealth of Ozark",
-            "numberElected": 1,
-            "votesAllowed": 1,
-            "sequenceOrder": 1,
-            "ballotTitle": {
+            "number_elected": 1,
+            "votes_allowed": 1,
+            "sequence_order": 1,
+            "ballot_title": {
                 "text": [
                     {
                         "value": "Governor of the Commonwealth of Ozark",
@@ -1214,7 +1214,7 @@
                     }
                 ]
             },
-            "ballotSubtitle": {
+            "ballot_subtitle": {
                 "text": [
                     {
                         "value": "Vote for one",
@@ -1226,154 +1226,154 @@
                     }
                 ]
             },
-            "ballotSelections": [
+            "ballot_selections": [
                 {
-                    "objectId": "franz-selection",
-                    "sequenceOrder": 0,
-                    "candidateId": "franz"
+                    "object_id": "franz-selection",
+                    "sequence_order": 0,
+                    "candidate_id": "franz"
                 },
                 {
-                    "objectId": "harris-selection",
-                    "sequenceOrder": 1,
-                    "candidateId": "harris"
+                    "object_id": "harris-selection",
+                    "sequence_order": 1,
+                    "candidate_id": "harris"
                 },
                 {
-                    "objectId": "bargmann-selection",
-                    "sequenceOrder": 2,
-                    "candidateId": "bargmann"
+                    "object_id": "bargmann-selection",
+                    "sequence_order": 2,
+                    "candidate_id": "bargmann"
                 },
                 {
-                    "objectId": "abcock-selection",
-                    "sequenceOrder": 3,
-                    "candidateId": "abcock"
+                    "object_id": "abcock-selection",
+                    "sequence_order": 3,
+                    "candidate_id": "abcock"
                 },
                 {
-                    "objectId": "steel-loy-selection",
-                    "sequenceOrder": 4,
-                    "candidateId": "steel-loy"
+                    "object_id": "steel-loy-selection",
+                    "sequence_order": 4,
+                    "candidate_id": "steel-loy"
                 },
                 {
-                    "objectId": "sharp-selection",
-                    "sequenceOrder": 5,
-                    "candidateId": "sharp"
+                    "object_id": "sharp-selection",
+                    "sequence_order": 5,
+                    "candidate_id": "sharp"
                 },
                 {
-                    "objectId": "walace-selection",
-                    "sequenceOrder": 6,
-                    "candidateId": "wallace"
+                    "object_id": "walace-selection",
+                    "sequence_order": 6,
+                    "candidate_id": "wallace"
                 },
                 {
-                    "objectId": "williams-selection",
-                    "sequenceOrder": 7,
-                    "candidateId": "williams"
+                    "object_id": "williams-selection",
+                    "sequence_order": 7,
+                    "candidate_id": "williams"
                 },
                 {
-                    "objectId": "alpern-selection",
-                    "sequenceOrder": 9,
-                    "candidateId": "alpern"
+                    "object_id": "alpern-selection",
+                    "sequence_order": 9,
+                    "candidate_id": "alpern"
                 },
                 {
-                    "objectId": "windbeck-selection",
-                    "sequenceOrder": 10,
-                    "candidateId": "windbeck"
+                    "object_id": "windbeck-selection",
+                    "sequence_order": 10,
+                    "candidate_id": "windbeck"
                 },
                 {
-                    "objectId": "sharp-althea-selection",
-                    "sequenceOrder": 11,
-                    "candidateId": "sharp-althea"
+                    "object_id": "sharp-althea-selection",
+                    "sequence_order": 11,
+                    "candidate_id": "sharp-althea"
                 },
                 {
-                    "objectId": "greher-selection",
-                    "sequenceOrder": 12,
-                    "candidateId": "greher"
+                    "object_id": "greher-selection",
+                    "sequence_order": 12,
+                    "candidate_id": "greher"
                 },
                 {
-                    "objectId": "alexander-selection",
-                    "sequenceOrder": 13,
-                    "candidateId": "alexander"
+                    "object_id": "alexander-selection",
+                    "sequence_order": 13,
+                    "candidate_id": "alexander"
                 },
                 {
-                    "objectId": "mitchell-selection",
-                    "sequenceOrder": 14,
-                    "candidateId": "mitchell"
+                    "object_id": "mitchell-selection",
+                    "sequence_order": 14,
+                    "candidate_id": "mitchell"
                 },
                 {
-                    "objectId": "lee-selection",
-                    "sequenceOrder": 15,
-                    "candidateId": "lee"
+                    "object_id": "lee-selection",
+                    "sequence_order": 15,
+                    "candidate_id": "lee"
                 },
                 {
-                    "objectId": "ash-selection",
-                    "sequenceOrder": 16,
-                    "candidateId": "ash"
+                    "object_id": "ash-selection",
+                    "sequence_order": 16,
+                    "candidate_id": "ash"
                 },
                 {
-                    "objectId": "kennedy-selection",
-                    "sequenceOrder": 17,
-                    "candidateId": "kennedy"
+                    "object_id": "kennedy-selection",
+                    "sequence_order": 17,
+                    "candidate_id": "kennedy"
                 },
                 {
-                    "objectId": "jackson-selection",
-                    "sequenceOrder": 18,
-                    "candidateId": "jackson"
+                    "object_id": "jackson-selection",
+                    "sequence_order": 18,
+                    "candidate_id": "jackson"
                 },
                 {
-                    "objectId": "brown-selection",
-                    "sequenceOrder": 19,
-                    "candidateId": "brown"
+                    "object_id": "brown-selection",
+                    "sequence_order": 19,
+                    "candidate_id": "brown"
                 },
                 {
-                    "objectId": "teller-selection",
-                    "sequenceOrder": 20,
-                    "candidateId": "teller"
+                    "object_id": "teller-selection",
+                    "sequence_order": 20,
+                    "candidate_id": "teller"
                 },
                 {
-                    "objectId": "ward-selection",
-                    "sequenceOrder": 21,
-                    "candidateId": "ward"
+                    "object_id": "ward-selection",
+                    "sequence_order": 21,
+                    "candidate_id": "ward"
                 },
                 {
-                    "objectId": "murphy-selection",
-                    "sequenceOrder": 22,
-                    "candidateId": "murphy"
+                    "object_id": "murphy-selection",
+                    "sequence_order": 22,
+                    "candidate_id": "murphy"
                 },
                 {
-                    "objectId": "newman-selection",
-                    "sequenceOrder": 23,
-                    "candidateId": "newman"
+                    "object_id": "newman-selection",
+                    "sequence_order": 23,
+                    "candidate_id": "newman"
                 },
                 {
-                    "objectId": "callanann-selection",
-                    "sequenceOrder": 24,
-                    "candidateId": "callanann"
+                    "object_id": "callanann-selection",
+                    "sequence_order": 24,
+                    "candidate_id": "callanann"
                 },
                 {
-                    "objectId": "york-selection",
-                    "sequenceOrder": 25,
-                    "candidateId": "york"
+                    "object_id": "york-selection",
+                    "sequence_order": 25,
+                    "candidate_id": "york"
                 },
                 {
-                    "objectId": "chandler-selection",
-                    "sequenceOrder": 26,
-                    "candidateId": "chandler"
+                    "object_id": "chandler-selection",
+                    "sequence_order": 26,
+                    "candidate_id": "chandler"
                 },
                 {
-                    "objectId": "write-in-selection-governor",
-                    "sequenceOrder": 27,
-                    "candidateId": "write-in"
+                    "object_id": "write-in-selection-governor",
+                    "sequence_order": 27,
+                    "candidate_id": "write-in"
                 }
             ]
         },
         {
             "@type": "CandidateContest",
-            "objectId": "congress-district-5-contest",
-            "voteVariation": "one_of_m",
-            "electoralDistrictId": "congress-district-5",
+            "object_id": "congress-district-5-contest",
+            "vote_variation": "one_of_m",
+            "electoral_district_id": "congress-district-5",
             "name": "Congressional District 5",
-            "numberElected": 1,
-            "votesAllowed": 1,
-            "sequenceOrder": 2,
-            "ballotTitle": {
+            "number_elected": 1,
+            "votes_allowed": 1,
+            "sequence_order": 2,
+            "ballot_title": {
                 "text": [
                     {
                         "value": "House of Representatives Congressional District 5",
@@ -1385,7 +1385,7 @@
                     }
                 ]
             },
-            "ballotSubtitle": {
+            "ballot_subtitle": {
                 "text": [
                     {
                         "value": "Vote for one",
@@ -1397,49 +1397,49 @@
                     }
                 ]
             },
-            "ballotSelections": [
+            "ballot_selections": [
                 {
-                    "objectId": "soliz-selection",
-                    "sequenceOrder": 0,
-                    "candidateId": "soliz"
+                    "object_id": "soliz-selection",
+                    "sequence_order": 0,
+                    "candidate_id": "soliz"
                 },
                 {
-                    "objectId": "keller-selection",
-                    "sequenceOrder": 1,
-                    "candidateId": "keller"
+                    "object_id": "keller-selection",
+                    "sequence_order": 1,
+                    "candidate_id": "keller"
                 },
                 {
-                    "objectId": "rangel-selection",
-                    "sequenceOrder": 2,
-                    "candidateId": "rengel"
+                    "object_id": "rangel-selection",
+                    "sequence_order": 2,
+                    "candidate_id": "rengel"
                 },
                 {
-                    "objectId": "argent-selection",
-                    "sequenceOrder": 3,
-                    "candidateId": "argent"
+                    "object_id": "argent-selection",
+                    "sequence_order": 3,
+                    "candidate_id": "argent"
                 },
                 {
-                    "objectId": "witherspoon-smithson-selection",
-                    "sequenceOrder": 4,
-                    "candidateId": "witherspoon-smithson"
+                    "object_id": "witherspoon-smithson-selection",
+                    "sequence_order": 4,
+                    "candidate_id": "witherspoon-smithson"
                 },
                 {
-                    "objectId": "write-in-selection-us-congress-district-5",
-                    "sequenceOrder": 5,
-                    "candidateId": "write-in"
+                    "object_id": "write-in-selection-us-congress-district-5",
+                    "sequence_order": 5,
+                    "candidate_id": "write-in"
                 }
             ]
         },
         {
             "@type": "CandidateContest",
-            "objectId": "congress-district-7-contest",
-            "voteVariation": "one_of_m",
-            "electoralDistrictId": "congress-district-7",
+            "object_id": "congress-district-7-contest",
+            "vote_variation": "one_of_m",
+            "electoral_district_id": "congress-district-7",
             "name": "Congressional District 7",
-            "numberElected": 1,
-            "votesAllowed": 1,
-            "sequenceOrder": 3,
-            "ballotTitle": {
+            "number_elected": 1,
+            "votes_allowed": 1,
+            "sequence_order": 3,
+            "ballot_title": {
                 "text": [
                     {
                         "value": "House of Representatives Ozark Congressional District 7",
@@ -1451,7 +1451,7 @@
                     }
                 ]
             },
-            "ballotSubtitle": {
+            "ballot_subtitle": {
                 "text": [
                     {
                         "value": "Vote for one",
@@ -1463,49 +1463,49 @@
                     }
                 ]
             },
-            "ballotSelections": [
+            "ballot_selections": [
                 {
-                    "objectId": "bainbridge-selection",
-                    "sequenceOrder": 0,
-                    "candidateId": "bainbridge"
+                    "object_id": "bainbridge-selection",
+                    "sequence_order": 0,
+                    "candidate_id": "bainbridge"
                 },
                 {
-                    "objectId": "hennessey-selection",
-                    "sequenceOrder": 1,
-                    "candidateId": "hennessey"
+                    "object_id": "hennessey-selection",
+                    "sequence_order": 1,
+                    "candidate_id": "hennessey"
                 },
                 {
-                    "objectId": "savoy-selection",
-                    "sequenceOrder": 2,
-                    "candidateId": "savoy"
+                    "object_id": "savoy-selection",
+                    "sequence_order": 2,
+                    "candidate_id": "savoy"
                 },
                 {
-                    "objectId": "tawa-selection",
-                    "sequenceOrder": 3,
-                    "candidateId": "tawa"
+                    "object_id": "tawa-selection",
+                    "sequence_order": 3,
+                    "candidate_id": "tawa"
                 },
                 {
-                    "objectId": "tawa-mary-selection",
-                    "sequenceOrder": 4,
-                    "candidateId": "tawa-mary"
+                    "object_id": "tawa-mary-selection",
+                    "sequence_order": 4,
+                    "candidate_id": "tawa-mary"
                 },
                 {
-                    "objectId": "write-in-selection-us-congress-district-7",
-                    "sequenceOrder": 5,
-                    "candidateId": "write-in"
+                    "object_id": "write-in-selection-us-congress-district-7",
+                    "sequence_order": 5,
+                    "candidate_id": "write-in"
                 }
             ]
         },
         {
             "@type": "CandidateContest",
-            "objectId": "pismo-beach-school-board-contest",
-            "voteVariation": "n_of_m",
-            "electoralDistrictId": "pismo-beach-school-district-precinct-1",
+            "object_id": "pismo-beach-school-board-contest",
+            "vote_variation": "n_of_m",
+            "electoral_district_id": "pismo-beach-school-district-precinct-1",
             "name": "Pismo Beach School Board",
-            "numberElected": 3,
-            "votesAllowed": 3,
-            "sequenceOrder": 4,
-            "ballotTitle": {
+            "number_elected": 3,
+            "votes_allowed": 3,
+            "sequence_order": 4,
+            "ballot_title": {
                 "text": [
                     {
                         "value": "Pismo Beach School Board",
@@ -1517,7 +1517,7 @@
                     }
                 ]
             },
-            "ballotSubtitle": {
+            "ballot_subtitle": {
                 "text": [
                     {
                         "value": "Vote for up to 3",
@@ -1529,69 +1529,69 @@
                     }
                 ]
             },
-            "ballotSelections": [
+            "ballot_selections": [
                 {
-                    "objectId": "moore-selection",
-                    "sequenceOrder": 0,
-                    "candidateId": "moore"
+                    "object_id": "moore-selection",
+                    "sequence_order": 0,
+                    "candidate_id": "moore"
                 },
                 {
-                    "objectId": "white-selection",
-                    "sequenceOrder": 1,
-                    "candidateId": "white"
+                    "object_id": "white-selection",
+                    "sequence_order": 1,
+                    "candidate_id": "white"
                 },
                 {
-                    "objectId": "smallberries-selection",
-                    "sequenceOrder": 2,
-                    "candidateId": "smallberries"
+                    "object_id": "smallberries-selection",
+                    "sequence_order": 2,
+                    "candidate_id": "smallberries"
                 },
                 {
-                    "objectId": "warfin-selection",
-                    "sequenceOrder": 3,
-                    "candidateId": "warfin"
+                    "object_id": "warfin-selection",
+                    "sequence_order": 3,
+                    "candidate_id": "warfin"
                 },
                 {
-                    "objectId": "norberg-selection",
-                    "sequenceOrder": 4,
-                    "candidateId": "norberg"
+                    "object_id": "norberg-selection",
+                    "sequence_order": 4,
+                    "candidate_id": "norberg"
                 },
                 {
-                    "objectId": "parks-selection",
-                    "sequenceOrder": 5,
-                    "candidateId": "parks"
+                    "object_id": "parks-selection",
+                    "sequence_order": 5,
+                    "candidate_id": "parks"
                 },
                 {
-                    "objectId": "savannah-selection",
-                    "sequenceOrder": 6,
-                    "candidateId": "savannah"
+                    "object_id": "savannah-selection",
+                    "sequence_order": 6,
+                    "candidate_id": "savannah"
                 },
                 {
-                    "objectId": "write-in-selection-1-pismo-beach-school-board",
-                    "sequenceOrder": 7,
-                    "candidateId": "write-in-1"
+                    "object_id": "write-in-selection-1-pismo-beach-school-board",
+                    "sequence_order": 7,
+                    "candidate_id": "write-in-1"
                 },
                 {
-                    "objectId": "write-in-selection-2-pismo-beach-school-board",
-                    "sequenceOrder": 8,
-                    "candidateId": "write-in-2"
+                    "object_id": "write-in-selection-2-pismo-beach-school-board",
+                    "sequence_order": 8,
+                    "candidate_id": "write-in-2"
                 },
                 {
-                    "objectId": "write-in-selection-3-pismo-beach-school-board",
-                    "sequenceOrder": 9,
-                    "candidateId": "write-in-3"
+                    "object_id": "write-in-selection-3-pismo-beach-school-board",
+                    "sequence_order": 9,
+                    "candidate_id": "write-in-3"
                 }
             ]
         },
         {
             "@type": "CandidateContest",
-            "objectId": "somerset-school-board-contest",
-            "voteVariation": "n_of_m",
-            "electoralDistrictId": "somerset-school-district-precinct-1",
+            "object_id": "somerset-school-board-contest",
+            "vote_variation": "n_of_m",
+            "electoral_district_id": "somerset-school-district-precinct-1",
             "name": "Somerset School Board",
-            "numberElected": 2,
-            "votesAllowed": 2,
-            "sequenceOrder": 5,
-            "ballotTitle": {
+            "number_elected": 2,
+            "votes_allowed": 2,
+            "sequence_order": 5,
+            "ballot_title": {
                 "text": [
                     {
                         "value": "Pismo Beach School Board",
@@ -1603,7 +1603,7 @@
                     }
                 ]
             },
-            "ballotSubtitle": {
+            "ballot_subtitle": {
                 "text": [
                     {
                         "value": "Vote for up to 2",
@@ -1615,59 +1615,59 @@
                     }
                 ]
             },
-            "ballotSelections": [
+            "ballot_selections": [
                 {
-                    "objectId": "summers-selection",
-                    "sequenceOrder": 0,
-                    "candidateId": "summers"
+                    "object_id": "summers-selection",
+                    "sequence_order": 0,
+                    "candidate_id": "summers"
                 },
                 {
-                    "objectId": "chase-selection",
-                    "sequenceOrder": 1,
-                    "candidateId": "chase"
+                    "object_id": "chase-selection",
+                    "sequence_order": 1,
+                    "candidate_id": "chase"
                 },
                 {
-                    "objectId": "osborne-selection",
-                    "sequenceOrder": 2,
-                    "candidateId": "osborne"
+                    "object_id": "osborne-selection",
+                    "sequence_order": 2,
+                    "candidate_id": "osborne"
                 },
                 {
-                    "objectId": "rosenberg-selection",
-                    "sequenceOrder": 3,
-                    "candidateId": "rosenberg"
+                    "object_id": "rosenberg-selection",
+                    "sequence_order": 3,
+                    "candidate_id": "rosenberg"
                 },
                 {
-                    "objectId": "head-selection",
-                    "sequenceOrder": 4,
-                    "candidateId": "head"
+                    "object_id": "head-selection",
+                    "sequence_order": 4,
+                    "candidate_id": "head"
                 },
                 {
-                    "objectId": "marsters-selection",
-                    "sequenceOrder": 5,
-                    "candidateId": "marsters"
+                    "object_id": "marsters-selection",
+                    "sequence_order": 5,
+                    "candidate_id": "marsters"
                 },
                 {
-                    "objectId": "write-in-selection-1-somerset-school-board",
-                    "sequenceOrder": 6,
-                    "candidateId": "write-in-1"
+                    "object_id": "write-in-selection-1-somerset-school-board",
+                    "sequence_order": 6,
+                    "candidate_id": "write-in-1"
                 },
                 {
-                    "objectId": "write-in-selection-2-somerset-school-board",
-                    "sequenceOrder": 7,
-                    "candidateId": "write-in-2"
+                    "object_id": "write-in-selection-2-somerset-school-board",
+                    "sequence_order": 7,
+                    "candidate_id": "write-in-2"
                 }
             ]
         },
         {
             "@type": "ReferendumContest",
-            "objectId": "arlington-chief-justice-retain-demergue",
-            "sequenceOrder": 6,
-            "voteVariation": "one_of_m",
-            "electoralDistrictId": "arlington-township-precinct-1",
+            "object_id": "arlington-chief-justice-retain-demergue",
+            "sequence_order": 6,
+            "vote_variation": "one_of_m",
+            "electoral_district_id": "arlington-township-precinct-1",
             "name": "Retain Robert Demergue as Chief Justice?",
-            "numberElected": 1,
-            "votesAllowed": 1,
-            "ballotTitle": {
+            "number_elected": 1,
+            "votes_allowed": 1,
+            "ballot_title": {
                 "text": [
                     {
                         "value": "Retain Robert Demergue as Chief Justice?",
@@ -1679,7 +1679,7 @@
                     }
                 ]
             },
-            "ballotSubtitle": {
+            "ballot_subtitle": {
                 "text": [
                     {
                         "value": "Choose 'Accept' or 'Reject'",
@@ -1691,41 +1691,41 @@
                     }
                 ]
             },
-            "ballotSelections": [
+            "ballot_selections": [
                 {
-                    "objectId": "ozark-chief-justice-retain-demergue-affirmative-selection",
-                    "sequenceOrder": 0,
-                    "candidateId": "ozark-chief-justice-retain-demergue-affirmative"
+                    "object_id": "ozark-chief-justice-retain-demergue-affirmative-selection",
+                    "sequence_order": 0,
+                    "candidate_id": "ozark-chief-justice-retain-demergue-affirmative"
                 },
                 {
-                    "objectId": "ozark-chief-justice-retain-demergue-negative-selection",
-                    "sequenceOrder": 1,
-                    "candidateId": "ozark-chief-justice-retain-demergue-negative"
+                    "object_id": "ozark-chief-justice-retain-demergue-negative-selection",
+                    "sequence_order": 1,
+                    "candidate_id": "ozark-chief-justice-retain-demergue-negative"
                 }
             ]
         },
         {
             "@type": "ReferendumContest",
-            "objectId": "exeter-utility-district-referendum-contest",
-            "sequenceOrder": 7,
-            "voteVariation": "one_of_m",
-            "electoralDistrictId": "lacroix-exeter-utility-district",
+            "object_id": "exeter-utility-district-referendum-contest",
+            "sequence_order": 7,
+            "vote_variation": "one_of_m",
+            "electoral_district_id": "lacroix-exeter-utility-district",
             "name": "Capital Projects Levy",
-            "numberElected": 1,
-            "votesAllowed": 1,
-            "ballotSelections": [
+            "number_elected": 1,
+            "votes_allowed": 1,
+            "ballot_selections": [
                 {
-                    "objectId": "exeter-utility-district-referendum-affirmative-selection",
-                    "sequenceOrder": 0,
-                    "candidateId": "exeter-utility-district-referendum-affirmative"
+                    "object_id": "exeter-utility-district-referendum-affirmative-selection",
+                    "sequence_order": 0,
+                    "candidate_id": "exeter-utility-district-referendum-affirmative"
                 },
                 {
-                    "objectId": "exeter-utility-district-referendum-selection",
-                    "sequenceOrder": 1,
-                    "candidateId": "exeter-utility-district-referendum-negative"
+                    "object_id": "exeter-utility-district-referendum-selection",
+                    "sequence_order": 1,
+                    "candidate_id": "exeter-utility-district-referendum-negative"
                 }
             ],
-            "ballotTitle": {
+            "ballot_title": {
                 "text": [
                     {
                         "value": "Levy Lift to Maintain Public Safety and Other Core Utility Services",
@@ -1737,7 +1737,7 @@
                     }
                 ]
             },
-            "ballotSubtitle": {
+            "ballot_subtitle": {
                 "text": [
                     {
                         "value": "Should this Proposition be approved?",
@@ -1763,25 +1763,25 @@
             }
         }
     ],
-    "ballotStyles": [
+    "ballot_styles": [
         {
-            "objectId": "congress-district-7-hamilton-county",
-            "geopoliticalUnitIds": [
+            "object_id": "congress-district-7-hamilton-county",
+            "geopolitical_unit_ids": [
                 "hamilton-county",
                 "congress-district-7"
             ]
         },
         {
-            "objectId": "congress-district-7-lacroix",
-            "geopoliticalUnitIds": [
+            "object_id": "congress-district-7-lacroix",
+            "geopolitical_unit_ids": [
                 "hamilton-county",
                 "congress-district-7",
                 "lacroix-township-precinct-1"
             ]
         },
         {
-            "objectId": "congress-district-7-lacroix-exeter",
-            "geopoliticalUnitIds": [
+            "object_id": "congress-district-7-lacroix-exeter",
+            "geopolitical_unit_ids": [
                 "hamilton-county",
                 "congress-district-7",
                 "lacroix-township-precinct-1",
@@ -1789,16 +1789,16 @@
             ]
         },
         {
-            "objectId": "congress-district-7-arlington",
-            "geopoliticalUnitIds": [
+            "object_id": "congress-district-7-arlington",
+            "geopolitical_unit_ids": [
                 "hamilton-county",
                 "congress-district-7",
                 "arlington-township-precinct-1"
             ]
         },
         {
-            "objectId": "congress-district-7-arlington-pismo-beach",
-            "geopoliticalUnitIds": [
+            "object_id": "congress-district-7-arlington-pismo-beach",
+            "geopolitical_unit_ids": [
                 "hamilton-county",
                 "congress-district-7",
                 "arlington-township-precinct-1",
@@ -1806,8 +1806,8 @@
             ]
         },
         {
-            "objectId": "congress-district-7-arlington-somerset",
-            "geopoliticalUnitIds": [
+            "object_id": "congress-district-7-arlington-somerset",
+            "geopolitical_unit_ids": [
                 "hamilton-county",
                 "congress-district-7",
                 "arlington-township-precinct-1",
@@ -1815,31 +1815,31 @@
             ]
         },
         {
-            "objectId": "congress-district-5-hamilton-county",
-            "geopoliticalUnitIds": [
+            "object_id": "congress-district-5-hamilton-county",
+            "geopolitical_unit_ids": [
                 "hamilton-county",
                 "congress-district-5"
             ]
         },
         {
-            "objectId": "congress-district-5-lacroix",
-            "geopoliticalUnitIds": [
+            "object_id": "congress-district-5-lacroix",
+            "geopolitical_unit_ids": [
                 "hamilton-county",
                 "congress-district-5",
                 "lacroix-township-precinct-1"
             ]
         },
         {
-            "objectId": "congress-district-5-harris",
-            "geopoliticalUnitIds": [
+            "object_id": "congress-district-5-harris",
+            "geopolitical_unit_ids": [
                 "hamilton-county",
                 "congress-district-5",
                 "harris-township"
             ]
         },
         {
-            "objectId": "congress-district-5-arlington-pismo-beach",
-            "geopoliticalUnitIds": [
+            "object_id": "congress-district-5-arlington-pismo-beach",
+            "geopolitical_unit_ids": [
                 "hamilton-county",
                 "congress-district-5",
                 "arlington-township-precinct-1",
@@ -1847,8 +1847,8 @@
             ]
         },
         {
-            "objectId": "congress-district-5-arlington-somerset",
-            "geopoliticalUnitIds": [
+            "object_id": "congress-district-5-arlington-somerset",
+            "geopolitical_unit_ids": [
                 "hamilton-county",
                 "congress-district-5",
                 "arlington-township-precinct-1",

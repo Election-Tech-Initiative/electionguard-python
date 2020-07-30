@@ -55,7 +55,7 @@ class TestPublish(TestCase):
     def test_publish_private_data(self) -> None:
         # Arrange
         plaintext_ballots = [PlaintextBallot("", "", [])]
-        encrypted_ballots = [CiphertextBallot("", "", "", [])]
+        encrypted_ballots = [CiphertextBallot("", "", "", "", [])]
         guardians = [Guardian("", 1, 1, 1)]
 
         # Act

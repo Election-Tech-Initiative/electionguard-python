@@ -38,7 +38,7 @@ def publish(
     context: CiphertextElectionContext,
     constants: ElectionConstants,
     devices: Iterable[EncryptionDevice],
-    ciphertext_ballots: List[CiphertextAcceptedBallot],
+    ciphertext_ballots: Iterable[CiphertextAcceptedBallot],
     ciphertext_tally: CiphertextTally,
     plaintext_tally: PlaintextTally,
     coefficient_validation_sets: Iterable[CoefficientValidationSet] = None,
@@ -79,9 +79,9 @@ def publish(
 
 
 def publish_private_data(
-    plaintext_ballots: List[PlaintextBallot],
-    ciphertext_ballots: List[CiphertextBallot],
-    guardians: List[Guardian],
+    plaintext_ballots: Iterable[PlaintextBallot],
+    ciphertext_ballots: Iterable[CiphertextBallot],
+    guardians: Iterable[Guardian],
     results_directory: str = RESULTS_DIR,
 ) -> None:
     """
