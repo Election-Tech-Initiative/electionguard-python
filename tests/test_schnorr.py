@@ -46,9 +46,8 @@ class TestSchnorr(unittest.TestCase):
         self, keypair: ElGamalKeyPair, nonce: ElementModQ, other: ElementModQ
     ) -> None:
         proof = make_schnorr_proof(keypair, nonce)
-        (k, h, u) = proof
-        assume(other != u)
-        proof2 = SchnorrProof(k, h, other)
+        assume(other != proof.u)
+        proof2 = SchnorrProof(proof.k, proof.h, other)
         self.assertFalse(proof2.is_valid())
 
     @given(elgamal_keypairs(), elements_mod_q(), elements_mod_p())
@@ -56,9 +55,8 @@ class TestSchnorr(unittest.TestCase):
         self, keypair: ElGamalKeyPair, nonce: ElementModQ, other: ElementModP
     ) -> None:
         proof = make_schnorr_proof(keypair, nonce)
-        (k, h, u) = proof
-        assume(other != h)
-        proof_bad = proof._replace(h=other)
+        assume(other != proof.h)
+        proof_bad = SchnorrProof(proof.k, other, proof.u)
         self.assertFalse(proof_bad.is_valid())
 
     @given(elgamal_keypairs(), elements_mod_q(), elements_mod_p_no_zero())
@@ -66,9 +64,8 @@ class TestSchnorr(unittest.TestCase):
         self, keypair: ElGamalKeyPair, nonce: ElementModQ, other: ElementModP
     ) -> None:
         proof = make_schnorr_proof(keypair, nonce)
-        (k, h, u) = proof
-        assume(other != k)
-        proof2 = SchnorrProof(other, h, u)
+        assume(other != proof.k)
+        proof2 = SchnorrProof(other, proof.h, proof.u)
         self.assertFalse(proof2.is_valid())
 
     @given(elgamal_keypairs(), elements_mod_q())
@@ -76,8 +73,7 @@ class TestSchnorr(unittest.TestCase):
         self, keypair: ElGamalKeyPair, nonce: ElementModQ
     ) -> None:
         proof = make_schnorr_proof(keypair, nonce)
-        (k, h, u) = proof
-        proof2 = SchnorrProof(ZERO_MOD_P, h, u)
-        proof3 = SchnorrProof(int_to_p_unchecked(P), h, u)
+        proof2 = SchnorrProof(ZERO_MOD_P, proof.h, proof.u)
+        proof3 = SchnorrProof(int_to_p_unchecked(P), proof.h, proof.u)
         self.assertFalse(proof2.is_valid())
         self.assertFalse(proof3.is_valid())

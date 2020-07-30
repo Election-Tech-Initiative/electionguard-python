@@ -1,4 +1,4 @@
-from typing import NamedTuple
+from dataclasses import dataclass
 
 from .elgamal import ElGamalCiphertext
 from .group import (
@@ -17,9 +17,11 @@ from .group import (
 from .hash import hash_elems
 from .logs import log_warning
 from .nonces import Nonces
+from .proof import Proof, ProofUsage
 
 
-class DisjunctiveChaumPedersenProof(NamedTuple):
+@dataclass(frozen=True)
+class DisjunctiveChaumPedersenProof(Proof):
     """
     Representation of disjunctive Chaum Pederson proof
     """
@@ -32,6 +34,10 @@ class DisjunctiveChaumPedersenProof(NamedTuple):
     c1: ElementModQ
     v0: ElementModQ
     v1: ElementModQ
+    usage: ProofUsage = ProofUsage.SelectionValue
+
+    def __post_init__(self) -> None:
+        super().__init__()
 
     def is_valid(self, message: ElGamalCiphertext, k: ElementModP) -> bool:
         """
@@ -43,7 +49,14 @@ class DisjunctiveChaumPedersenProof(NamedTuple):
         """
 
         (alpha, beta) = message
-        (a0, b0, a1, b1, c0, c1, v0, v1) = self
+        a0 = self.a0
+        b0 = self.b0
+        a1 = self.a1
+        b1 = self.b1
+        c0 = self.c0
+        c1 = self.c1
+        v0 = self.v0
+        v1 = self.v1
         in_bounds_alpha = alpha.is_valid_residue()
         in_bounds_beta = beta.is_valid_residue()
         in_bounds_a0 = a0.is_valid_residue()
@@ -108,7 +121,8 @@ class DisjunctiveChaumPedersenProof(NamedTuple):
         return success
 
 
-class ChaumPedersenProof(NamedTuple):
+@dataclass(frozen=True)
+class ChaumPedersenProof(Proof):
     """
     Representation of a generic Chaum-Pedersen Zero Knowledge proof 
     """
@@ -117,6 +131,10 @@ class ChaumPedersenProof(NamedTuple):
     b: ElementModP
     c: ElementModQ
     v: ElementModQ
+    usage: ProofUsage = ProofUsage.SecretValue
+
+    def __post_init__(self) -> None:
+        super().__init__()
 
     def is_valid(
         self,
@@ -141,7 +159,10 @@ class ChaumPedersenProof(NamedTuple):
         :return: True if everything is consistent. False otherwise.
         """
         (alpha, beta) = message
-        (a, b, c, v) = self
+        a = self.a
+        b = self.b
+        c = self.c
+        v = self.v
         in_bounds_alpha = alpha.is_valid_residue()
         in_bounds_beta = beta.is_valid_residue()
         in_bounds_k = k.is_valid_residue()
@@ -212,7 +233,8 @@ class ChaumPedersenProof(NamedTuple):
         return success
 
 
-class ConstantChaumPedersenProof(NamedTuple):
+@dataclass(frozen=True)
+class ConstantChaumPedersenProof(Proof):
     """
     Representation of constant Chaum Pederson proof
     """
@@ -222,6 +244,10 @@ class ConstantChaumPedersenProof(NamedTuple):
     c: ElementModQ
     v: ElementModQ
     constant: int
+    usage: ProofUsage = ProofUsage.SelectionLimit
+
+    def __post_init__(self) -> None:
+        super().__init__()
 
     def is_valid(self, message: ElGamalCiphertext, k: ElementModP) -> bool:
         """
@@ -234,7 +260,11 @@ class ConstantChaumPedersenProof(NamedTuple):
         """
 
         (alpha, beta) = message
-        (a, b, c, v, constant) = self
+        a = self.a
+        b = self.b
+        c = self.c
+        v = self.v
+        constant = self.constant
         in_bounds_alpha = alpha.is_valid_residue()
         in_bounds_beta = beta.is_valid_residue()
         in_bounds_a = a.is_valid_residue()

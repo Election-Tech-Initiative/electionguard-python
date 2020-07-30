@@ -45,7 +45,7 @@ class TestTally(TestCase):
         seed_hash = EncryptionDevice("Location").get_hash()
         for ballot in ballots:
             encrypted_ballot = encrypt_ballot(ballot, metadata, context, seed_hash)
-            seed_hash = encrypted_ballot.tracking_id
+            seed_hash = encrypted_ballot.tracking_hash
             self.assertIsNotNone(encrypted_ballot)
             # add to the ballot store
             store.set(
@@ -82,7 +82,7 @@ class TestTally(TestCase):
         seed_hash = EncryptionDevice("Location").get_hash()
         for ballot in ballots:
             encrypted_ballot = encrypt_ballot(ballot, metadata, context, seed_hash)
-            seed_hash = encrypted_ballot.tracking_id
+            seed_hash = encrypted_ballot.tracking_hash
             self.assertIsNotNone(encrypted_ballot)
             # add to the ballot store
             store.set(
@@ -121,7 +121,7 @@ class TestTally(TestCase):
         seed_hash = EncryptionDevice("Location").get_hash()
         for ballot in ballots:
             encrypted_ballot = encrypt_ballot(ballot, metadata, context, seed_hash)
-            seed_hash = encrypted_ballot.tracking_id
+            seed_hash = encrypted_ballot.tracking_hash
             self.assertIsNotNone(encrypted_ballot)
             # add to the ballot store
             store.set(
@@ -208,8 +208,8 @@ class TestTally(TestCase):
         plaintext_selections: Dict[str, int] = {}
         for _, contest in tally.cast.items():
             for object_id, selection in contest.tally_selections.items():
-                plaintext = selection.message.decrypt(secret_key)
-                plaintext_selections[object_id] = plaintext
+                plaintext_tally = selection.ciphertext.decrypt(secret_key)
+                plaintext_selections[object_id] = plaintext_tally
 
         return plaintext_selections
 

@@ -52,7 +52,7 @@ class TestEndToEndElection(TestCase):
     NUMBER_OF_GUARDIANS = 5
     QUORUM = 3
 
-    REMOVE_OUTPUT = True
+    REMOVE_OUTPUT = False
 
     # Step 0 - Configure Election
     description: ElectionDescription
@@ -353,8 +353,8 @@ class TestEndToEndElection(TestCase):
                 expected = expected_plaintext_tally[tally_selection.object_id]
                 self._assert_message(
                     f"   - Selection: {tally_selection.object_id}",
-                    f"expected: {expected}, actual: {tally_selection.plaintext}",
-                    expected == tally_selection.plaintext,
+                    f"expected: {expected}, actual: {tally_selection.tally}",
+                    expected == tally_selection.tally,
                 )
         print(f"\n{'-'*40}\n")
 
@@ -377,8 +377,8 @@ class TestEndToEndElection(TestCase):
                                 ]
                                 self._assert_message(
                                     f"   - Selection: {selection.object_id}",
-                                    f"expected: {expected}, actual: {decrypted_selection.plaintext}",
-                                    expected == decrypted_selection.plaintext,
+                                    f"expected: {expected}, actual: {decrypted_selection.tally}",
+                                    expected == decrypted_selection.tally,
                                 )
 
     def publish_results(self) -> None:

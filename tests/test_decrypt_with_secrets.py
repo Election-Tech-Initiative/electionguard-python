@@ -10,6 +10,7 @@ from hypothesis.strategies import integers
 
 import electionguardtest.ballot_factory as BallotFactory
 import electionguardtest.election_factory as ElectionFactory
+from electionguard.chaum_pedersen import DisjunctiveChaumPedersenProof
 from electionguard.decrypt_with_secrets import (
     decrypt_selection_with_secret,
     decrypt_selection_with_nonce,
@@ -84,9 +85,9 @@ class TestDecrypt(unittest.TestCase):
         self.assertIsNotNone(result_from_key)
         self.assertIsNotNone(result_from_nonce)
         self.assertIsNotNone(result_from_nonce_seed)
-        self.assertEqual(data.plaintext, result_from_key.plaintext)
-        self.assertEqual(data.plaintext, result_from_nonce.plaintext)
-        self.assertEqual(data.plaintext, result_from_nonce_seed.plaintext)
+        self.assertEqual(data.vote, result_from_key.vote)
+        self.assertEqual(data.vote, result_from_nonce.vote)
+        self.assertEqual(data.vote, result_from_nonce_seed.vote)
 
     @settings(
         deadline=timedelta(milliseconds=2000),
@@ -119,15 +120,23 @@ class TestDecrypt(unittest.TestCase):
 
         # tamper with the encryption
         malformed_encryption = deepcopy(subject)
-        malformed_message = malformed_encryption.message._replace(
-            alpha=mult_p(subject.message.alpha, TWO_MOD_P)
+        malformed_message = malformed_encryption.ciphertext._replace(
+            pad=mult_p(subject.ciphertext.pad, TWO_MOD_P)
         )
-        malformed_encryption.message = malformed_message
+        malformed_encryption.ciphertext = malformed_message
 
         # tamper with the proof
         malformed_proof = deepcopy(subject)
-        malformed_disjunctive = malformed_proof.proof._replace(
-            a0=mult_p(subject.proof.a0, TWO_MOD_P)
+        altered_a0 = mult_p(subject.proof.a0, TWO_MOD_P)
+        malformed_disjunctive = DisjunctiveChaumPedersenProof(
+            altered_a0,
+            malformed_proof.proof.b0,
+            malformed_proof.proof.a1,
+            malformed_proof.proof.b1,
+            malformed_proof.proof.c0,
+            malformed_proof.proof.c1,
+            malformed_proof.proof.v0,
+            malformed_proof.proof.v1,
         )
         malformed_proof.proof = malformed_disjunctive
 
@@ -417,7 +426,9 @@ class TestDecrypt(unittest.TestCase):
         self.assertIsNone(result_from_nonce_seed)
 
         # Tamper with the encryption
-        subject.ballot_selections[0].message = ElGamalCiphertext(TWO_MOD_P, TWO_MOD_P)
+        subject.ballot_selections[0].ciphertext = ElGamalCiphertext(
+            TWO_MOD_P, TWO_MOD_P
+        )
 
         result_from_key_tampered = decrypt_contest_with_secret(
             subject,
