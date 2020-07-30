@@ -18,11 +18,18 @@ class TestBallot(unittest.TestCase):
 
         # Act
         subject = factory.get_simple_ballot_from_file()
+        first_contest = subject.contests[0]
+        self.assertIsNotNone(first_contest)
 
         # Assert
         self.assertIsNotNone(subject.object_id)
         self.assertEqual(subject.object_id, "some-external-id-string-123")
         self.assertTrue(subject.is_valid("jefferson-county-ballot-style"))
+        self.assertTrue(first_contest.is_valid("justice-supreme-court", 2, 2))
+        self.assertFalse(first_contest.is_valid("some-other-contest", 2, 2))
+        self.assertFalse(first_contest.is_valid("justice-supreme-court", 1, 2))
+        self.assertFalse(first_contest.is_valid("justice-supreme-court", 2, 1))
+        self.assertFalse(first_contest.is_valid("justice-supreme-court", 2, 2, 1))
 
     @settings(
         deadline=timedelta(milliseconds=2000),

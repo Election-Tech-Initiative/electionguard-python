@@ -24,21 +24,29 @@ class Serializable(Generic[T]):
     Serializable class with methods to convert to json
     """
 
-    def to_json(self) -> str:
+    def to_json(self, strip_privates: bool = True) -> str:
         """
         Serialize to json
+        :param strip_privates: strip private variables
         :return: the json representation of this object
         """
         try:
-            return cast(str, dumps(self, strip_privates=True, strip_nulls=True))
+            return cast(
+                str, dumps(self, strip_privates=strip_privates, strip_nulls=True)
+            )
         except JsonsError:
             return JSON_PARSE_ERROR
 
-    def to_json_file(self, file_name: str, file_path: str = "") -> None:
+    def to_json_file(
+        self, file_name: str, file_path: str = "", strip_privates: bool = True
+    ) -> None:
         """
         Serialize an object to a json file
+        :param file_name: File name
+        :param file_path: File path
+        :param strip_privates: Strip private variables
         """
-        write_json_file(self.to_json(), file_name, file_path)
+        write_json_file(self.to_json(strip_privates), file_name, file_path)
 
     @classmethod
     def from_json(cls, data: str) -> T:
@@ -77,6 +85,7 @@ def set_deserializers() -> None:
 
     # Local import to minimize jsons usage across files
     from .group import ElementModP, ElementModQ, int_to_p_unchecked, int_to_q_unchecked
+    from .proof import ProofUsage
 
     set_deserializer(
         lambda p_as_int, cls, **_: int_to_p_unchecked(p_as_int), ElementModP
@@ -87,3 +96,7 @@ def set_deserializers() -> None:
         lambda q_as_int, cls, **_: int_to_q_unchecked(q_as_int), ElementModQ
     )
     set_validator(lambda q: q.is_in_bounds(), ElementModQ)
+
+    set_deserializer(
+        lambda usage_string, cls, **_: ProofUsage[usage_string], ProofUsage
+    )

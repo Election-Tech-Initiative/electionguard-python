@@ -326,7 +326,7 @@ class PlaintextBallotContest(ElectionObjectBase):
         expected_object_id: str,
         expected_number_selections: int,
         expected_number_elected: int,
-        votes_allowed: Optional[int],
+        votes_allowed: Optional[int] = None,
     ) -> bool:
         """
         Given a PlaintextBallotContest returns true if the state is representative of the expected values.

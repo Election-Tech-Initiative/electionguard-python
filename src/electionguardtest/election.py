@@ -616,7 +616,7 @@ CIPHERTEXT_ELECTIONS_TUPLE_TYPE = Tuple[ElementModQ, CiphertextElectionContext]
 @composite
 def ciphertext_elections(draw: _DrawType, election_description: ElectionDescription):
     """
-    Generates a `CiphertextElectionContext` with a single public-private key pair as the encryptioin context.
+    Generates a `CiphertextElectionContext` with a single public-private key pair as the encryption context.
 
     In a real election, the key ceremony would be used to generate a shared public key.
 

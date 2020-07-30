@@ -65,7 +65,7 @@ class DataStore(Generic[T, U], Iterable):
         """
         return self._store.keys()
 
-    def length(self) -> int:
+    def __len__(self) -> int:
         """
         Get length or count of store
         :return: Count in store
@@ -109,7 +109,7 @@ class ReadOnlyDataStore(Generic[T, U], Mapping):
         return self._data.get(key)
 
     def __len__(self) -> int:
-        return self._data.length()
+        return len(self._data)
 
     def __iter__(self) -> Iterator:
         return iter(self._data.items())
