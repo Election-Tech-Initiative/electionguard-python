@@ -6,7 +6,6 @@ from datetime import datetime, timezone
 from electionguard.decryption_mediator import PlaintextTally
 from electionguard.election import (
     ElectionType,
-    InternalElectionDescription,
     CiphertextElectionContext,
     ElectionConstants,
     ElectionDescription,

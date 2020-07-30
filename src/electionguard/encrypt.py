@@ -8,6 +8,8 @@ from .ballot import (
     PlaintextBallot,
     PlaintextBallotContest,
     PlaintextBallotSelection,
+    make_ciphertext_ballot_contest,
+    make_ciphertext_ballot_selection,
 )
 
 from .election import (
@@ -171,7 +173,7 @@ def encrypt_selection(
     # TODO: ISSUE #35: encrypt/decrypt: encrypt the extended_data field
 
     # Create the return object
-    encrypted_selection = CiphertextBallotSelection(
+    encrypted_selection = make_ciphertext_ballot_selection(
         object_id=selection.object_id,
         description_hash=selection_description_hash,
         message=get_optional(elgamal_encryption),
@@ -327,7 +329,7 @@ def encrypt_contest(
         )
 
     # Create the return object
-    encrypted_contest = CiphertextBallotContest(
+    encrypted_contest = make_ciphertext_ballot_contest(
         object_id=contest.object_id,
         description_hash=contest_description_hash,
         ballot_selections=encrypted_selections,

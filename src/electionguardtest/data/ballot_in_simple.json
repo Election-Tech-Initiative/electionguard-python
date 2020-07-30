@@ -1,18 +1,18 @@
 {
-    "objectId": "some-external-id-string-123",
-    "ballotStyle": "jefferson-county-ballot-style",
+    "object_id": "some-external-id-string-123",
+    "ballot_style": "jefferson-county-ballot-style",
     "contests": [
         {
-            "objectId": "justice-supreme-court",
-            "ballotSelections": [
+            "object_id": "justice-supreme-court",
+            "ballot_selections": [
                 {
-                    "objectId": "john-adams-selection",
+                    "object_id": "john-adams-selection",
                     "plaintext": "True"
                 },
                 {
-                    "objectId": "write-in-selection",
+                    "object_id": "write-in-selection",
                     "plaintext": "True",
-                    "extraData": "some writein value"
+                    "extra_data": "some writein value"
                 }
             ]
         }
