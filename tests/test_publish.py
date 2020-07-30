@@ -3,6 +3,7 @@ from shutil import rmtree
 from unittest import TestCase
 from datetime import datetime, timezone
 
+from electionguard.ballot import PlaintextBallot, CiphertextBallot
 from electionguard.decryption_mediator import PlaintextTally
 from electionguard.election import (
     ElectionType,
@@ -10,9 +11,11 @@ from electionguard.election import (
     ElectionConstants,
     ElectionDescription,
 )
+from electionguard.guardian import Guardian
+from electionguard.key_ceremony import CoefficientValidationSet
 from electionguard.tally import CiphertextTally
 
-from electionguard.publish import publish, RESULTS_DIR
+from electionguard.publish import publish, publish_private_data, RESULTS_DIR
 
 from electionguard.group import ONE_MOD_Q, ONE_MOD_P
 
@@ -27,7 +30,7 @@ class TestPublish(TestCase):
         context = CiphertextElectionContext(1, 1, ONE_MOD_P, ONE_MOD_Q)
         constants = ElectionConstants()
         devices = []
-        coefficients = []
+        coefficients = [CoefficientValidationSet("", [], [])]
         encrypted_ballots = []
         tally = PlaintextTally("", [], [])
 
@@ -41,6 +44,23 @@ class TestPublish(TestCase):
             CiphertextTally("", description, context),
             tally,
             coefficients,
+        )
+
+        # Assert
+        self.assertTrue(path.exists(RESULTS_DIR))
+
+        # Cleanup
+        rmtree(RESULTS_DIR)
+
+    def test_publish_private_data(self) -> None:
+        # Arrange
+        plaintext_ballots = [PlaintextBallot("", "", [])]
+        encrypted_ballots = [CiphertextBallot("", "", "", "", [])]
+        guardians = [Guardian("", 1, 1, 1)]
+
+        # Act
+        publish_private_data(
+            plaintext_ballots, encrypted_ballots, guardians,
         )
 
         # Assert

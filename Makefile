@@ -1,4 +1,4 @@
-.PHONY: all bench environment install install-mac install-linux install-windows lint validate test test-example coverage coverage-html coverage-xml coverage-erase
+.PHONY: all bench environment install install-mac install-linux install-windows lint validate test test-example coverage coverage-html coverage-xml coverage-erase generate-sample-data
 
 CODE_COVERAGE ?= 90
 WINDOWS_32BIT_GMPY2 ?= packages/gmpy2-2.0.8-cp38-cp38-win32.whl
@@ -116,6 +116,10 @@ docs-deploy:
 
 dependency-graph:
 	pipenv run pydeps --max-bacon 2 -o dependency-graph.svg src/electionguard
+
+# Sample Data
+generate-sample-data:
+	pipenv run python src/electionguardtest/sample_generator.py
 
 # Package
 package:

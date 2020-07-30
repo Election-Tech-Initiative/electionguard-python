@@ -177,7 +177,7 @@ class TestEndToEndElection(TestCase):
         self._assert_message(
             KeyCeremonyMediator.verify.__qualname__,
             "Confirms all guardians truthfully executed the ceremony",
-            orchestrated is not None,
+            verified,
         )
 
         self._assert_message(

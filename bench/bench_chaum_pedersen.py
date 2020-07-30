@@ -45,7 +45,7 @@ def identity(x: int) -> int:
 
 
 if __name__ == "__main__":
-    problem_sizes = (100, 500)
+    problem_sizes = (100, 500, 1000, 5000)
     rands = Nonces(int_to_q_unchecked(31337))
     speedup: Dict[int, float] = {}
 

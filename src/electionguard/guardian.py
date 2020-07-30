@@ -8,7 +8,6 @@ from .group import (
     ElementModP,
     ElementModQ,
     int_to_q,
-    int_to_q_unchecked,
     mult_p,
     pow_q,
     pow_p,
@@ -84,8 +83,23 @@ class Guardian(ElectionObjectBase):
     """
 
     def __init__(
-        self, id: str, sequence_order: int, number_of_guardians: int, quorum: int,
+        self,
+        id: str,
+        sequence_order: int,
+        number_of_guardians: int,
+        quorum: int,
+        nonce_seed: Optional[ElementModQ] = None,
     ) -> None:
+        """
+        Initialize a guardian with the specified arguments
+
+        :param id: the unique identifier for the guardian
+        :param sequence_order: a unique number in [0, 256) that identifies this guardian
+        :param number_of_guardians: the total number of guardians that will participate in the election
+        :param quorum: the count of guardians necessary to decrypt
+        :param nonce_seed: an optional `ElementModQ` value that can be used to generate the `ElectionKeyPair`.  
+                           It is recommended to only use this field for testing.
+        """
 
         super().__init__(id)
         self.sequence_order = sequence_order
@@ -105,7 +119,7 @@ class Guardian(ElectionObjectBase):
         ]()
 
         self.generate_auxiliary_key_pair()
-        self.generate_election_key_pair(int_to_q_unchecked(self.sequence_order))
+        self.generate_election_key_pair(nonce_seed if nonce_seed is not None else None)
 
     def reset(self, number_of_guardians: int, quorum: int) -> None:
         """
@@ -209,7 +223,7 @@ class Guardian(ElectionObjectBase):
         :return: All auxiliary public keys backups received
         """
         return (
-            self._guardian_auxiliary_public_keys.length()
+            len(self._guardian_auxiliary_public_keys)
             == self.ceremony_details.number_of_guardians
         )
 
@@ -262,7 +276,7 @@ class Guardian(ElectionObjectBase):
         :return: All election public keys backups received
         """
         return (
-            self._guardian_election_public_keys.length()
+            len(self._guardian_election_public_keys)
             == self.ceremony_details.number_of_guardians
         )
 
@@ -326,7 +340,7 @@ class Guardian(ElectionObjectBase):
         :return: All election partial key backups received
         """
         return (
-            self._guardian_election_partial_key_backups.length()
+            len(self._guardian_election_partial_key_backups)
             == self.ceremony_details.number_of_guardians - 1
         )
 
@@ -389,7 +403,7 @@ class Guardian(ElectionObjectBase):
         :return: All election partial key backups verified
         """
         required = self.ceremony_details.number_of_guardians - 1
-        if self._guardian_election_partial_key_verifications.length() != required:
+        if len(self._guardian_election_partial_key_verifications) != required:
             return False
         for verified in self._guardian_election_partial_key_verifications.values():
             if not verified:

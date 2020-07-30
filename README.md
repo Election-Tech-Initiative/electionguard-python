@@ -72,6 +72,7 @@ Sections:
 - [Design and Architecture]
 - [Build and Run]
 - [Project Workflow]
+- [Election Manifest]
 
 Step-by-Step Process:
 
@@ -134,6 +135,8 @@ A huge thank you to those who helped to contribute to this project so far, inclu
 [Build and Run]: https://github.com/microsoft/electionguard-python/blob/main/docs/Build_and_Run.md
 
 [Project Workflow]: https://github.com/microsoft/electionguard-python/blob/main/docs/Project_Workflow.md
+
+[Election Manifest]: https://github.com/microsoft/electionguard-python/blob/main/docs/Election_Manifest.md
 
 [Configure Election]: https://github.com/microsoft/electionguard-python/blob/main/docs/0_Configure_Election.md
 

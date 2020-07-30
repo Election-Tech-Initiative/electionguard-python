@@ -1,7 +1,8 @@
 import os
 from jsons import KEY_TRANSFORMER_SNAKECASE, loads
-from random import Random
+from random import Random, randint
 from typing import cast, TypeVar, Callable, List, Tuple
+import uuid
 
 from hypothesis.strategies import (
     composite,
@@ -28,7 +29,7 @@ from electionguard.encrypt import selection_from
 _T = TypeVar("_T")
 _DrawType = Callable[[SearchStrategy[_T]], _T]
 
-here = os.path.abspath(os.path.dirname(__file__))
+data = os.path.realpath(os.path.join(__file__, "../../../data"))
 
 
 class BallotFactory(object):
@@ -108,6 +109,26 @@ class BallotFactory(object):
 
         return fake_ballot
 
+    def generate_fake_plaintext_ballots_for_election(
+        self, election: InternalElectionDescription, number_of_ballots: int
+    ) -> List[PlaintextBallot]:
+        ballots: List[PlaintextBallot] = []
+        for i in range(number_of_ballots):
+
+            style_index = randint(0, len(election.ballot_styles) - 1)
+            ballot_style = election.ballot_styles[style_index]
+            ballot_id = f"ballot-{uuid.uuid1()}"
+
+            contests: List[PlaintextBallotContest] = []
+            for contest in election.get_contests_for(ballot_style.object_id):
+                contests.append(
+                    self.get_random_contest_from(contest, Random(), with_trues=True)
+                )
+
+            ballots.append(PlaintextBallot(ballot_id, ballot_style.object_id, contests))
+
+        return ballots
+
     def get_simple_ballot_from_file(self) -> PlaintextBallot:
         return self._get_ballot_from_file(self.simple_ballot_filename)
 
@@ -115,18 +136,18 @@ class BallotFactory(object):
         return self._get_ballots_from_file(self.simple_ballots_filename)
 
     def _get_ballot_from_file(self, filename: str) -> PlaintextBallot:
-        with open(os.path.join(here, "data", filename), "r") as subject:
-            data = subject.read()
-            target = PlaintextBallot.from_json(data)
+        with open(os.path.join(data, filename), "r") as subject:
+            result = subject.read()
+            target = PlaintextBallot.from_json(result)
         return target
 
     def _get_ballots_from_file(self, filename: str) -> List[PlaintextBallot]:
-        with open(os.path.join(here, "data", filename), "r") as subject:
-            data = subject.read()
+        with open(os.path.join(data, filename), "r") as subject:
+            result = subject.read()
             target = cast(
                 List[PlaintextBallot],
                 loads(
-                    data,
+                    result,
                     List[PlaintextBallot],
                     key_transformer=KEY_TRANSFORMER_SNAKECASE,
                 ),
