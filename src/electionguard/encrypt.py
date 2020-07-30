@@ -24,11 +24,12 @@ from .group import ElementModP, ElementModQ, rand_q
 from .hash import hash_elems
 from .logs import log_warning
 from .nonces import Nonces
+from .serializable import Serializable
 from .tracker import get_hash_for_device
 from .utils import get_optional, get_or_else_optional_func
 
 
-class EncryptionDevice(object):
+class EncryptionDevice(Serializable):
     """
     Metadata for encryption device
     """
@@ -76,8 +77,8 @@ class EncryptionMediator(object):
         encrypted_ballot = encrypt_ballot(
             ballot, self._metadata, self._encryption, self._seed_hash
         )
-        if encrypted_ballot is not None and encrypted_ballot.tracking_id is not None:
-            self._seed_hash = encrypted_ballot.tracking_id
+        if encrypted_ballot is not None and encrypted_ballot.tracking_hash is not None:
+            self._seed_hash = encrypted_ballot.tracking_hash
         return encrypted_ballot
 
 
@@ -107,7 +108,7 @@ def selection_from(
 
     return PlaintextBallotSelection(
         description.object_id,
-        plaintext=str(is_affirmative),
+        vote=str(is_affirmative),
         is_placeholder_selection=is_placeholder,
     )
 
@@ -176,7 +177,7 @@ def encrypt_selection(
     encrypted_selection = make_ciphertext_ballot_selection(
         object_id=selection.object_id,
         description_hash=selection_description_hash,
-        message=get_optional(elgamal_encryption),
+        ciphertext=get_optional(elgamal_encryption),
         elgamal_public_key=elgamal_public_key,
         proof_seed=disjunctive_chaum_pedersen_nonce,
         selection_representation=selection_representation,
@@ -432,14 +433,12 @@ def encrypt_ballot(
         ballot.object_id,
         ballot.ballot_style,
         context.crypto_extended_base_hash,
+        seed_hash,
         encrypted_contests,
         random_master_nonce,
     )
 
-    # Generate tracking id
-    encrypted_ballot.generate_tracking_id(seed_hash)
-
-    if not encrypted_ballot.tracking_id:
+    if not encrypted_ballot.tracking_hash:
         return None
 
     if not should_verify_proofs:

@@ -7,11 +7,11 @@
             "ballot_selections": [
                 {
                     "object_id": "john-adams-selection",
-                    "plaintext": "True"
+                    "vote": "True"
                 },
                 {
                     "object_id": "write-in-selection",
-                    "plaintext": "True",
+                    "vote": "True",
                     "extra_data": "some writein value"
                 }
             ]

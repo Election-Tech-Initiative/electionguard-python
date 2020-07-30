@@ -12,6 +12,8 @@ from hypothesis.strategies import integers
 import electionguardtest.ballot_factory as BallotFactory
 import electionguardtest.election_factory as ElectionFactory
 from electionguard.chaum_pedersen import (
+    ConstantChaumPedersenProof,
+    DisjunctiveChaumPedersenProof,
     make_constant_chaum_pedersen,
     make_disjunctive_chaum_pedersen,
 )
@@ -74,7 +76,7 @@ class TestEncrypt(unittest.TestCase):
 
         # Assert
         self.assertIsNotNone(result)
-        self.assertIsNotNone(result.message)
+        self.assertIsNotNone(result.ciphertext)
         self.assertTrue(result.is_valid_encryption(hash_context, keypair.public_key))
 
     def test_encrypt_simple_selection_malformed_data_fails(self):
@@ -140,7 +142,7 @@ class TestEncrypt(unittest.TestCase):
 
         # Assert
         self.assertIsNotNone(result)
-        self.assertIsNotNone(result.message)
+        self.assertIsNotNone(result.ciphertext)
         self.assertTrue(
             result.is_valid_encryption(description.crypto_hash(), keypair.public_key)
         )
@@ -179,15 +181,23 @@ class TestEncrypt(unittest.TestCase):
 
         # tamper with the encryption
         malformed_encryption = deepcopy(result)
-        malformed_message = malformed_encryption.message._replace(
-            alpha=mult_p(result.message.alpha, TWO_MOD_P)
+        malformed_message = malformed_encryption.ciphertext._replace(
+            pad=mult_p(result.ciphertext.pad, TWO_MOD_P)
         )
-        malformed_encryption.message = malformed_message
+        malformed_encryption.ciphertext = malformed_message
 
         # tamper with the proof
         malformed_proof = deepcopy(result)
-        malformed_disjunctive = malformed_proof.proof._replace(
-            a0=mult_p(result.proof.a0, TWO_MOD_P)
+        altered_a0 = mult_p(result.proof.a0, TWO_MOD_P)
+        malformed_disjunctive = DisjunctiveChaumPedersenProof(
+            altered_a0,
+            malformed_proof.proof.b0,
+            malformed_proof.proof.a1,
+            malformed_proof.proof.b1,
+            malformed_proof.proof.c0,
+            malformed_proof.proof.c1,
+            malformed_proof.proof.v0,
+            malformed_proof.proof.v1,
         )
         malformed_proof.proof = malformed_disjunctive
 
@@ -324,8 +334,13 @@ class TestEncrypt(unittest.TestCase):
 
         # tamper with the proof
         malformed_proof = deepcopy(result)
-        malformed_disjunctive = malformed_proof.proof._replace(
-            a=mult_p(result.proof.a, TWO_MOD_P)
+        altered_a = mult_p(result.proof.a, TWO_MOD_P)
+        malformed_disjunctive = ConstantChaumPedersenProof(
+            altered_a,
+            malformed_proof.proof.b,
+            malformed_proof.proof.c,
+            malformed_proof.proof.v,
+            malformed_proof.proof.constant,
         )
         malformed_proof.proof = malformed_disjunctive
 
@@ -511,7 +526,7 @@ class TestEncrypt(unittest.TestCase):
 
         # Assert
         self.assertIsNotNone(result)
-        self.assertIsNotNone(result.tracking_id)
+        self.assertIsNotNone(result.tracking_hash)
         self.assertIsNotNone(tracker_code)
         self.assertIsNotNone(result_from_seed)
         self.assertTrue(
@@ -620,7 +635,7 @@ class TestEncrypt(unittest.TestCase):
 
             # Homomorpically accumulate the selection encryptions
             elgamal_accumulation = elgamal_add(
-                *[selection.message for selection in contest.ballot_selections]
+                *[selection.ciphertext for selection in contest.ballot_selections]
             )
             # accumulate the selection nonce's
             aggregate_nonce = add_q(
@@ -641,7 +656,7 @@ class TestEncrypt(unittest.TestCase):
 
             for selection in contest.ballot_selections:
                 # Since we know the nonce, we can decrypt the plaintext
-                representation = selection.message.decrypt_known_nonce(
+                representation = selection.ciphertext.decrypt_known_nonce(
                     keypair.public_key, selection.nonce
                 )
 
@@ -649,7 +664,7 @@ class TestEncrypt(unittest.TestCase):
                 # representation = selection.message.decrypt(keypair.secret_key)
 
                 regenerated_disjuctive = make_disjunctive_chaum_pedersen(
-                    selection.message,
+                    selection.ciphertext,
                     selection.nonce,
                     keypair.public_key,
                     add_q(selection.nonce, TWO_MOD_Q),
@@ -658,6 +673,6 @@ class TestEncrypt(unittest.TestCase):
 
                 self.assertTrue(
                     regenerated_disjuctive.is_valid(
-                        selection.message, keypair.public_key
+                        selection.ciphertext, keypair.public_key
                     )
                 )

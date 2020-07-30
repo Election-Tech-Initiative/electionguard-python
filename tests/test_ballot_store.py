@@ -35,8 +35,9 @@ class TestBallotStore(TestCase):
             encrypted_ballot.object_id,
             encrypted_ballot.ballot_style,
             encrypted_ballot.description_hash,
+            encrypted_ballot.previous_tracking_hash,
             encrypted_ballot.contests,
-            encrypted_ballot.tracking_id,
+            encrypted_ballot.tracking_hash,
             encrypted_ballot.timestamp,
         )
         data_cast.state = BallotBoxState.CAST
@@ -45,8 +46,9 @@ class TestBallotStore(TestCase):
             encrypted_ballot.object_id,
             encrypted_ballot.ballot_style,
             encrypted_ballot.description_hash,
+            encrypted_ballot.previous_tracking_hash,
             encrypted_ballot.contests,
-            encrypted_ballot.tracking_id,
+            encrypted_ballot.tracking_hash,
             encrypted_ballot.timestamp,
         )
         data_spoiled.state = BallotBoxState.SPOILED
@@ -62,8 +64,9 @@ class TestBallotStore(TestCase):
                     encrypted_ballot.object_id,
                     encrypted_ballot.ballot_style,
                     encrypted_ballot.description_hash,
+                    encrypted_ballot.previous_tracking_hash,
                     encrypted_ballot.contests,
-                    encrypted_ballot.tracking_id,
+                    encrypted_ballot.tracking_hash,
                     encrypted_ballot.timestamp,
                 ),
             )

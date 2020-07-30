@@ -63,11 +63,13 @@ def set_serializers() -> None:
     # Local import to minimize jsons usage across files
     from .group import ElementModP, ElementModQ
     from .tally import CiphertextTally, PlaintextTally
+    from .proof import ProofUsage
 
     set_serializer(lambda p, **_: str(p), ElementModP)
     set_serializer(lambda q, **_: str(q), ElementModQ)
     set_serializer(lambda tally, **_: dump(tally.cast), CiphertextTally)
     set_serializer(lambda tally, **_: dump(tally.contests), PlaintextTally)
+    set_serializer(lambda usage, **_: usage.value, ProofUsage)
 
 
 def set_deserializers() -> None:

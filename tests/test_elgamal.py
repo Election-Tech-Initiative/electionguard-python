@@ -44,13 +44,13 @@ class TestElGamal(unittest.TestCase):
         self.assertEqual(elem, ONE_MOD_P)  # g^0 == 1
 
         ciphertext = get_optional(elgamal_encrypt(0, nonce, keypair.public_key))
-        self.assertEqual(G, ciphertext.alpha.to_int())
+        self.assertEqual(G, ciphertext.pad.to_int())
         self.assertEqual(
-            pow(ciphertext.alpha.to_int(), secret_key.to_int(), P),
+            pow(ciphertext.pad.to_int(), secret_key.to_int(), P),
             pow(public_key.to_int(), nonce.to_int(), P),
         )
         self.assertEqual(
-            ciphertext.beta.to_int(), pow(public_key.to_int(), nonce.to_int(), P),
+            ciphertext.data.to_int(), pow(public_key.to_int(), nonce.to_int(), P),
         )
 
         plaintext = ciphertext.decrypt(keypair.secret_key)
