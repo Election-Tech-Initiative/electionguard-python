@@ -120,12 +120,13 @@ def compute_decryption_share_for_cast_contests(
         selections: Dict[SELECTION_ID, CiphertextDecryptionSelection] = {}
         selection_decryptions: List[
             Optional[CiphertextDecryptionSelection]
-        ] = scheduler.schedule_threads(
+        ] = scheduler.schedule(
             compute_decryption_share_for_selection,
             [
                 (guardian, selection, context)
                 for (_, selection) in contest.tally_selections.items()
             ],
+            with_shared_resources=True,
         )
 
         # verify the decryptions are received and add them to the collection
@@ -160,12 +161,13 @@ def compute_compensated_decryption_share_for_cast_contests(
         selections: Dict[SELECTION_ID, CiphertextCompensatedDecryptionSelection] = {}
         selection_decryptions: List[
             Optional[CiphertextCompensatedDecryptionSelection]
-        ] = scheduler.schedule_threads(
+        ] = scheduler.schedule(
             compute_compensated_decryption_share_for_selection,
             [
                 (guardian, missing_guardian_id, selection, context, decrypt)
                 for (_, selection) in contest.tally_selections.items()
             ],
+            with_shared_resources=True,
         )
 
         # verify the decryptions are received and add them to the collection
@@ -202,12 +204,13 @@ def compute_decryption_share_for_spoiled_ballots(
             selections: Dict[SELECTION_ID, CiphertextDecryptionSelection] = {}
             selection_decryptions: List[
                 Optional[CiphertextDecryptionSelection]
-            ] = scheduler.schedule_threads(
+            ] = scheduler.schedule(
                 compute_decryption_share_for_selection,
                 [
                     (guardian, selection, context)
                     for selection in contest.ballot_selections
                 ],
+                with_shared_resources=True,
             )
             # verify the decryptions are received and add them to the collection
             for decryption in selection_decryptions:
@@ -255,12 +258,13 @@ def compute_compensated_decryption_share_for_spoiled_ballots(
             ] = {}
             selection_decryptions: List[
                 Optional[CiphertextCompensatedDecryptionSelection]
-            ] = scheduler.schedule_threads(
+            ] = scheduler.schedule(
                 compute_compensated_decryption_share_for_selection,
                 [
                     (guardian, missing_guardian_id, selection, context, decrypt)
                     for selection in contest.ballot_selections
                 ],
+                with_shared_resources=True,
             )
             # verify the decryptions are received and add them to the collection
             for decryption in selection_decryptions:

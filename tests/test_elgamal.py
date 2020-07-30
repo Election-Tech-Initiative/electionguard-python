@@ -161,8 +161,9 @@ class TestElGamal(unittest.TestCase):
 
         # Act
         start = timer()
-        keypairs = scheduler.schedule_simple(
-            elgamal_keypair_from_secret, random_secret_keys
+        keypairs = scheduler.schedule(
+            elgamal_keypair_from_secret,
+            [list([secret_key]) for secret_key in random_secret_keys],
         )
         end1 = timer()
 
