@@ -36,7 +36,7 @@ class TestTally(TestCase):
         self, everything: ELECTIONS_AND_BALLOTS_TUPLE_TYPE
     ):
         # Arrange
-        metadata, ballots, secret_key, context = everything
+        election_description, metadata, ballots, secret_key, context = everything
         # Tally the plaintext ballots for comparison later
         plaintext_tallies = accumulate_plaintext_ballots(ballots)
 
@@ -73,7 +73,7 @@ class TestTally(TestCase):
         self, everything: ELECTIONS_AND_BALLOTS_TUPLE_TYPE
     ):
         # Arrange
-        metadata, ballots, secret_key, context = everything
+        election_description, metadata, ballots, secret_key, context = everything
         # Tally the plaintext ballots for comparison later
         plaintext_tallies = accumulate_plaintext_ballots(ballots)
 
@@ -114,7 +114,7 @@ class TestTally(TestCase):
     ):
 
         # Arrange
-        metadata, ballots, secret_key, context = everything
+        election_description, metadata, ballots, secret_key, context = everything
 
         # encrypt each ballot
         store = BallotStore()

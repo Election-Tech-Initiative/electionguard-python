@@ -1,5 +1,8 @@
-from os import path
 from dataclasses import dataclass
+from datetime import datetime
+from os import path
+from typing import cast, TypeVar, Generic
+
 from jsons import (
     dump,
     dumps,
@@ -9,7 +12,6 @@ from jsons import (
     set_serializer,
     set_validator,
 )
-from typing import cast, TypeVar, Generic
 
 T = TypeVar("T")
 
@@ -71,13 +73,12 @@ def set_serializers() -> None:
     # Local import to minimize jsons usage across files
     from .group import ElementModP, ElementModQ
     from .tally import CiphertextTally, PlaintextTally
-    from .proof import ProofUsage
 
     set_serializer(lambda p, **_: str(p), ElementModP)
     set_serializer(lambda q, **_: str(q), ElementModQ)
     set_serializer(lambda tally, **_: dump(tally.cast), CiphertextTally)
     set_serializer(lambda tally, **_: dump(tally.contests), PlaintextTally)
-    set_serializer(lambda usage, **_: usage.value, ProofUsage)
+    set_serializer(lambda dt, **_: dt.isoformat(), datetime)
 
 
 def set_deserializers() -> None:
@@ -85,7 +86,6 @@ def set_deserializers() -> None:
 
     # Local import to minimize jsons usage across files
     from .group import ElementModP, ElementModQ, int_to_p_unchecked, int_to_q_unchecked
-    from .proof import ProofUsage
 
     set_deserializer(
         lambda p_as_int, cls, **_: int_to_p_unchecked(p_as_int), ElementModP
@@ -97,6 +97,4 @@ def set_deserializers() -> None:
     )
     set_validator(lambda q: q.is_in_bounds(), ElementModQ)
 
-    set_deserializer(
-        lambda usage_string, cls, **_: ProofUsage[usage_string], ProofUsage
-    )
+    set_deserializer(lambda dt, cls, **_: datetime.fromisoformat(dt), datetime)

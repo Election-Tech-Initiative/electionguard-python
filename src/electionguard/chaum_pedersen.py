@@ -34,7 +34,7 @@ class DisjunctiveChaumPedersenProof(Proof):
     c1: ElementModQ
     v0: ElementModQ
     v1: ElementModQ
-    usage: ProofUsage = ProofUsage.SelectionValue
+    usage: str = ProofUsage.SelectionValue.name
 
     def __post_init__(self) -> None:
         super().__init__()
@@ -131,7 +131,7 @@ class ChaumPedersenProof(Proof):
     b: ElementModP
     c: ElementModQ
     v: ElementModQ
-    usage: ProofUsage = ProofUsage.SecretValue
+    usage: str = ProofUsage.SecretValue.name
 
     def __post_init__(self) -> None:
         super().__init__()
@@ -244,7 +244,7 @@ class ConstantChaumPedersenProof(Proof):
     c: ElementModQ
     v: ElementModQ
     constant: int
-    usage: ProofUsage = ProofUsage.SelectionLimit
+    usage: str = ProofUsage.SelectionLimit.name
 
     def __post_init__(self) -> None:
         super().__init__()
