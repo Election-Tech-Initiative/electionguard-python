@@ -305,7 +305,7 @@ def decrypt_ballot_with_nonce(
     # Use the hashed representation included in the ballot
     # or override with the provided values
     if nonce is None:
-        nonce_seed = ballot.hashed_ballot_nonce
+        nonce_seed = ballot.hashed_ballot_nonce()
     else:
         nonce_seed = hash_elems(extended_base_hash, ballot.object_id, nonce)
 
