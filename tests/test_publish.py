@@ -10,6 +10,7 @@ from electionguard.election import (
     CiphertextElectionContext,
     ElectionConstants,
     ElectionDescription,
+    make_ciphertext_election_context,
 )
 from electionguard.guardian import Guardian
 from electionguard.key_ceremony import CoefficientValidationSet
@@ -27,7 +28,7 @@ class TestPublish(TestCase):
         description = ElectionDescription(
             "", ElectionType.unknown, now, now, [], [], [], [], [], []
         )
-        context = CiphertextElectionContext(1, 1, ONE_MOD_P, ONE_MOD_Q)
+        context = make_ciphertext_election_context(1, 1, ONE_MOD_P, ONE_MOD_Q)
         constants = ElectionConstants()
         devices = []
         coefficients = [CoefficientValidationSet("", [], [])]
