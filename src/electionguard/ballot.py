@@ -638,7 +638,6 @@ class CiphertextBallot(ElectionObjectBase, CryptoHashCheckable):
         self.timestamp = to_ticks(datetime.utcnow())
         self.generate_tracking(self.previous_tracking_hash)
 
-    @property
     def hashed_ballot_nonce(self) -> Optional[ElementModQ]:
         """
         :return: a hash value derived from the description hash, the object id, and the nonce value
