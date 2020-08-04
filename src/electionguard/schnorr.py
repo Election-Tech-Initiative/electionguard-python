@@ -20,9 +20,14 @@ class SchnorrProof(Proof):
     Representation of a Schnorr proof
     """
 
-    k: ElementModP
-    h: ElementModP
-    u: ElementModQ
+    public_key: ElementModP
+    """k in the spec"""
+    commitment: ElementModP
+    """h in the spec"""
+    challenge: ElementModQ
+    """c in the spec"""
+    response: ElementModQ
+    """u in the spec"""
     usage: ProofUsage = ProofUsage.SecretValue
 
     def __post_init__(self) -> None:
@@ -35,9 +40,9 @@ class SchnorrProof(Proof):
 
         :return: true if the transcript is valid, false if anything is wrong
         """
-        k = self.k
-        h = self.h
-        u = self.u
+        k = self.public_key
+        h = self.commitment
+        u = self.response
         valid_public_key = k.is_valid_residue()
         in_bounds_h = h.is_in_bounds()
         in_bounds_u = u.is_in_bounds()
@@ -75,4 +80,4 @@ def make_schnorr_proof(keypair: ElGamalKeyPair, r: ElementModQ) -> SchnorrProof:
     c = hash_elems(k, h)
     u = a_plus_bc_q(r, keypair.secret_key, c)
 
-    return SchnorrProof(k, h, u)
+    return SchnorrProof(k, h, c, u)

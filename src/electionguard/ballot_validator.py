@@ -22,7 +22,9 @@ def ballot_is_valid_for_election(
         return False
 
     if not ballot.is_valid_encryption(
-        context.crypto_extended_base_hash, context.elgamal_public_key,
+        metadata.description_hash,
+        context.elgamal_public_key,
+        context.crypto_extended_base_hash,
     ):
         log_warning(
             f"ballot_is_valid_for_election: mismatching ballot encryption {ballot.object_id}"

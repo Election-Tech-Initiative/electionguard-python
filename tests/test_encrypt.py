@@ -72,12 +72,16 @@ class TestEncrypt(unittest.TestCase):
         self.assertTrue(subject.is_valid(metadata.object_id))
 
         # Act
-        result = encrypt_selection(subject, metadata, keypair.public_key, nonce)
+        result = encrypt_selection(
+            subject, metadata, keypair.public_key, ONE_MOD_Q, nonce
+        )
 
         # Assert
         self.assertIsNotNone(result)
         self.assertIsNotNone(result.ciphertext)
-        self.assertTrue(result.is_valid_encryption(hash_context, keypair.public_key))
+        self.assertTrue(
+            result.is_valid_encryption(hash_context, keypair.public_key, ONE_MOD_Q)
+        )
 
     def test_encrypt_simple_selection_malformed_data_fails(self):
 
@@ -93,7 +97,9 @@ class TestEncrypt(unittest.TestCase):
         self.assertTrue(subject.is_valid(metadata.object_id))
 
         # Act
-        result = encrypt_selection(subject, metadata, keypair.public_key, nonce)
+        result = encrypt_selection(
+            subject, metadata, keypair.public_key, ONE_MOD_Q, nonce
+        )
 
         # tamper with the description_hash
         malformed_description_hash = deepcopy(result)
@@ -106,11 +112,13 @@ class TestEncrypt(unittest.TestCase):
         # Assert
         self.assertFalse(
             malformed_description_hash.is_valid_encryption(
-                hash_context, keypair.public_key
+                hash_context, keypair.public_key, ONE_MOD_Q
             )
         )
         self.assertFalse(
-            missing_proof.is_valid_encryption(hash_context, keypair.public_key)
+            missing_proof.is_valid_encryption(
+                hash_context, keypair.public_key, ONE_MOD_Q
+            )
         )
 
     @settings(
@@ -138,13 +146,17 @@ class TestEncrypt(unittest.TestCase):
         subject = ballot_factory.get_random_selection_from(description, random)
 
         # Act
-        result = encrypt_selection(subject, description, keypair.public_key, seed)
+        result = encrypt_selection(
+            subject, description, keypair.public_key, ONE_MOD_Q, seed
+        )
 
         # Assert
         self.assertIsNotNone(result)
         self.assertIsNotNone(result.ciphertext)
         self.assertTrue(
-            result.is_valid_encryption(description.crypto_hash(), keypair.public_key)
+            result.is_valid_encryption(
+                description.crypto_hash(), keypair.public_key, ONE_MOD_Q
+            )
         )
 
     @settings(
@@ -173,10 +185,17 @@ class TestEncrypt(unittest.TestCase):
 
         # Act
         result = encrypt_selection(
-            subject, description, keypair.public_key, seed, should_verify_proofs=False
+            subject,
+            description,
+            keypair.public_key,
+            ONE_MOD_Q,
+            seed,
+            should_verify_proofs=False,
         )
         self.assertTrue(
-            result.is_valid_encryption(description.crypto_hash(), keypair.public_key)
+            result.is_valid_encryption(
+                description.crypto_hash(), keypair.public_key, ONE_MOD_Q
+            )
         )
 
         # tamper with the encryption
@@ -188,28 +207,29 @@ class TestEncrypt(unittest.TestCase):
 
         # tamper with the proof
         malformed_proof = deepcopy(result)
-        altered_a0 = mult_p(result.proof.a0, TWO_MOD_P)
+        altered_a0 = mult_p(result.proof.proof_zero_pad, TWO_MOD_P)
         malformed_disjunctive = DisjunctiveChaumPedersenProof(
             altered_a0,
-            malformed_proof.proof.b0,
-            malformed_proof.proof.a1,
-            malformed_proof.proof.b1,
-            malformed_proof.proof.c0,
-            malformed_proof.proof.c1,
-            malformed_proof.proof.v0,
-            malformed_proof.proof.v1,
+            malformed_proof.proof.proof_zero_data,
+            malformed_proof.proof.proof_one_pad,
+            malformed_proof.proof.proof_one_data,
+            malformed_proof.proof.proof_zero_challenge,
+            malformed_proof.proof.proof_one_challenge,
+            malformed_proof.proof.challenge,
+            malformed_proof.proof.proof_zero_response,
+            malformed_proof.proof.proof_one_response,
         )
         malformed_proof.proof = malformed_disjunctive
 
         # Assert
         self.assertFalse(
             malformed_encryption.is_valid_encryption(
-                description.crypto_hash(), keypair.public_key
+                description.crypto_hash(), keypair.public_key, ONE_MOD_Q
             )
         )
         self.assertFalse(
             malformed_proof.is_valid_encryption(
-                description.crypto_hash(), keypair.public_key
+                description.crypto_hash(), keypair.public_key, ONE_MOD_Q
             )
         )
 
@@ -256,11 +276,15 @@ class TestEncrypt(unittest.TestCase):
         )
 
         # Act
-        result = encrypt_contest(subject, metadata, keypair.public_key, nonce)
+        result = encrypt_contest(
+            subject, metadata, keypair.public_key, ONE_MOD_Q, nonce
+        )
 
         # Assert
         self.assertIsNotNone(result)
-        self.assertTrue(result.is_valid_encryption(hash_context, keypair.public_key))
+        self.assertTrue(
+            result.is_valid_encryption(hash_context, keypair.public_key, ONE_MOD_Q)
+        )
 
     @settings(
         deadline=timedelta(milliseconds=2000),
@@ -287,12 +311,16 @@ class TestEncrypt(unittest.TestCase):
         subject = ballot_factory.get_random_contest_from(description, random)
 
         # Act
-        result = encrypt_contest(subject, description, keypair.public_key, nonce_seed)
+        result = encrypt_contest(
+            subject, description, keypair.public_key, ONE_MOD_Q, nonce_seed
+        )
 
         # Assert
         self.assertIsNotNone(result)
         self.assertTrue(
-            result.is_valid_encryption(description.crypto_hash(), keypair.public_key)
+            result.is_valid_encryption(
+                description.crypto_hash(), keypair.public_key, ONE_MOD_Q
+            )
         )
 
         # The encrypted contest should include an entry for each possible selection
@@ -327,19 +355,23 @@ class TestEncrypt(unittest.TestCase):
         subject = ballot_factory.get_random_contest_from(description, random)
 
         # Act
-        result = encrypt_contest(subject, description, keypair.public_key, nonce_seed)
+        result = encrypt_contest(
+            subject, description, keypair.public_key, ONE_MOD_Q, nonce_seed
+        )
         self.assertTrue(
-            result.is_valid_encryption(description.crypto_hash(), keypair.public_key)
+            result.is_valid_encryption(
+                description.crypto_hash(), keypair.public_key, ONE_MOD_Q
+            )
         )
 
         # tamper with the proof
         malformed_proof = deepcopy(result)
-        altered_a = mult_p(result.proof.a, TWO_MOD_P)
+        altered_a = mult_p(result.proof.pad, TWO_MOD_P)
         malformed_disjunctive = ConstantChaumPedersenProof(
             altered_a,
-            malformed_proof.proof.b,
-            malformed_proof.proof.c,
-            malformed_proof.proof.v,
+            malformed_proof.proof.data,
+            malformed_proof.proof.challenge,
+            malformed_proof.proof.response,
             malformed_proof.proof.constant,
         )
         malformed_proof.proof = malformed_disjunctive
@@ -351,12 +383,12 @@ class TestEncrypt(unittest.TestCase):
         # Assert
         self.assertFalse(
             malformed_proof.is_valid_encryption(
-                description.crypto_hash(), keypair.public_key
+                description.crypto_hash(), keypair.public_key, ONE_MOD_Q
             )
         )
         self.assertFalse(
             missing_proof.is_valid_encryption(
-                description.crypto_hash(), keypair.public_key
+                description.crypto_hash(), keypair.public_key, ONE_MOD_Q
             )
         )
 
@@ -399,7 +431,9 @@ class TestEncrypt(unittest.TestCase):
             subject.ballot_selections.append(extra)
 
         # Act
-        result = encrypt_contest(subject, description, keypair.public_key, seed)
+        result = encrypt_contest(
+            subject, description, keypair.public_key, ONE_MOD_Q, seed
+        )
 
         # Assert
         self.assertIsNone(result)
@@ -447,6 +481,7 @@ class TestEncrypt(unittest.TestCase):
             data,
             description_with_placeholders,
             keypair.public_key,
+            ONE_MOD_Q,
             seed,
             should_verify_proofs=True,
         )
@@ -499,7 +534,7 @@ class TestEncrypt(unittest.TestCase):
 
         # Act
         subject = encrypt_contest(
-            data, description_with_placeholders, keypair.public_key, seed
+            data, description_with_placeholders, keypair.public_key, ONE_MOD_Q, seed
         )
         self.assertIsNone(subject)
 
@@ -531,12 +566,16 @@ class TestEncrypt(unittest.TestCase):
         self.assertIsNotNone(result_from_seed)
         self.assertTrue(
             result.is_valid_encryption(
-                context.crypto_extended_base_hash, keypair.public_key
+                metadata.description_hash,
+                keypair.public_key,
+                context.crypto_extended_base_hash,
             )
         )
         self.assertTrue(
             result_from_seed.is_valid_encryption(
-                context.crypto_extended_base_hash, keypair.public_key
+                metadata.description_hash,
+                keypair.public_key,
+                context.crypto_extended_base_hash,
             )
         )
 
@@ -561,7 +600,9 @@ class TestEncrypt(unittest.TestCase):
         self.assertIsNotNone(result)
         self.assertTrue(
             result.is_valid_encryption(
-                context.crypto_extended_base_hash, keypair.public_key
+                metadata.description_hash,
+                keypair.public_key,
+                context.crypto_extended_base_hash,
             )
         )
 
@@ -587,7 +628,9 @@ class TestEncrypt(unittest.TestCase):
         self.assertEqual(data.object_id, result.object_id)
         self.assertTrue(
             result.is_valid_encryption(
-                context.crypto_extended_base_hash, keypair.public_key
+                metadata.description_hash,
+                keypair.public_key,
+                context.crypto_extended_base_hash,
             )
         )
 
@@ -622,7 +665,9 @@ class TestEncrypt(unittest.TestCase):
         result = subject.encrypt(data)
         self.assertTrue(
             result.is_valid_encryption(
-                context.crypto_extended_base_hash, keypair.public_key
+                metadata.description_hash,
+                keypair.public_key,
+                context.crypto_extended_base_hash,
             )
         )
 
@@ -648,10 +693,15 @@ class TestEncrypt(unittest.TestCase):
                 aggregate_nonce,
                 keypair.public_key,
                 add_q(contest.nonce, TWO_MOD_Q),
+                context.crypto_extended_base_hash,
             )
 
             self.assertTrue(
-                regenerated_constant.is_valid(elgamal_accumulation, keypair.public_key)
+                regenerated_constant.is_valid(
+                    elgamal_accumulation,
+                    keypair.public_key,
+                    context.crypto_extended_base_hash,
+                )
             )
 
             for selection in contest.ballot_selections:
@@ -667,12 +717,15 @@ class TestEncrypt(unittest.TestCase):
                     selection.ciphertext,
                     selection.nonce,
                     keypair.public_key,
+                    context.crypto_extended_base_hash,
                     add_q(selection.nonce, TWO_MOD_Q),
                     representation,
                 )
 
                 self.assertTrue(
                     regenerated_disjuctive.is_valid(
-                        selection.ciphertext, keypair.public_key
+                        selection.ciphertext,
+                        keypair.public_key,
+                        context.crypto_extended_base_hash,
                     )
                 )

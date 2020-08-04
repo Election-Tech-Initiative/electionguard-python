@@ -38,15 +38,21 @@ class ElectionSampleDataGenerator:
         """Initialize the class"""
         self.election_factory = ElectionFactory()
         self.ballot_factory = BallotFactory()
-        self.encryption_device = EncryptionDevice(f"polling-place-{uuid.uuid1}")
+        self.encryption_device = EncryptionDevice(f"polling-place-{str(uuid.uuid1())}")
 
-    def generate(self, number_of_ballots: int = DEFAULT_NUMBER_OF_BALLOTS):
+    def generate(
+        self,
+        number_of_ballots: int = DEFAULT_NUMBER_OF_BALLOTS,
+        cast_spoil_ratio: int = CAST_SPOIL_RATIO,
+    ):
         """
         Generate the sample data set
         """
 
+        # Clear the results directory
         rmtree(RESULTS_DIR, ignore_errors=True)
 
+        # Configure the election
         (
             public_data,
             private_data,
@@ -58,6 +64,7 @@ class ElectionSampleDataGenerator:
             public_data.metadata, public_data.context, self.encryption_device
         )
 
+        # Encrypt some ballots
         ciphertext_ballots: List[CiphertextBallot] = []
         for plaintext_ballot in plaintext_ballots:
             ciphertext_ballots.append(
@@ -67,17 +74,20 @@ class ElectionSampleDataGenerator:
         ballot_store = BallotStore()
         ballot_box = BallotBox(public_data.metadata, public_data.context, ballot_store)
 
+        # Randomly cast/spoil the ballots
         accepted_ballots: List[CiphertextAcceptedBallot] = []
         for ballot in ciphertext_ballots:
-            if randint(0, 100) % 10 == 0:
+            if randint(0, 100) % cast_spoil_ratio == 0:
                 accepted_ballots.append(ballot_box.spoil(ballot))
             else:
                 accepted_ballots.append(ballot_box.cast(ballot))
 
+        # Tally
         ciphertext_tally = get_optional(
             tally_ballots(ballot_store, public_data.metadata, public_data.context)
         )
 
+        # Decrypt
         decrypter = DecryptionMediator(
             public_data.metadata, public_data.context, ciphertext_tally
         )
@@ -87,10 +97,12 @@ class ElectionSampleDataGenerator:
 
         plaintext_tally = get_optional(decrypter.get_plaintext_tally())
 
+        # Publish
         publish(
             public_data.description,
             public_data.context,
             public_data.constants,
+            [self.encryption_device],
             accepted_ballots,
             ciphertext_tally,
             plaintext_tally,
