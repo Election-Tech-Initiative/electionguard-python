@@ -3,6 +3,7 @@ from datetime import datetime
 from enum import Enum, unique
 from typing import cast, List, Optional, Set, Any
 
+from .ballot import _list_eq
 from .election_object_base import ElectionObjectBase
 from .group import Q, P, R, G, ElementModQ, ElementModP
 from .hash import CryptoHashable, hash_elems
@@ -337,20 +338,18 @@ class ContestDescription(ElectionObjectBase, CryptoHashable):
     ballot_subtitle: Optional[InternationalizedText] = field(default=None)
 
     def __eq__(self, other: Any) -> bool:
-        if not isinstance(other, ContestDescription):
-            return False
-        t1 = self.electoral_district_id == other.electoral_district_id
-        t2 = self.sequence_order == other.sequence_order
-        t3 = self.votes_allowed == other.votes_allowed
-        t4 = self.number_elected == other.number_elected
-        t5 = self.votes_allowed == other.votes_allowed
-        t6 = self.name == other.name
-        t7 = self.ballot_selections == other.ballot_selections
-        t8 = self.ballot_title == other.ballot_title
-        t9 = self.ballot_subtitle == other.ballot_subtitle
-
-        result = t1 and t2 and t3 and t4 and t5 and t6 and t7 and t8 and t9
-        return result
+        return (
+            isinstance(other, ContestDescription)
+            and self.electoral_district_id == other.electoral_district_id
+            and self.sequence_order == other.sequence_order
+            and self.votes_allowed == other.votes_allowed
+            and self.number_elected == other.number_elected
+            and self.votes_allowed == other.votes_allowed
+            and self.name == other.name
+            and _list_eq(self.ballot_selections, other.ballot_selections)
+            and self.ballot_title == other.ballot_title
+            and self.ballot_subtitle == other.ballot_subtitle
+        )
 
     def crypto_hash(self) -> ElementModQ:
         """
@@ -545,34 +544,20 @@ class ElectionDescription(Serializable, CryptoHashable):
     contact_information: Optional[ContactInformation] = field(default=None)
 
     def __eq__(self, other: Any) -> bool:
-        # for some reason, the auto-generated method from @dataclass(eq=True) didn't work
-        t1 = isinstance(other, ElectionDescription)
-        t2 = self.election_scope_id == other.election_scope_id
-        t3 = self.type == other.type
-        t4 = self.start_date == other.start_date
-        t5 = self.end_date == other.end_date
-        t6 = self.geopolitical_units == other.geopolitical_units
-        t7 = self.parties == other.parties
-        t8 = self.candidates == other.candidates
-        t9 = self.contests == other.contests
-        ta = self.ballot_styles == other.ballot_styles
-        tb = self.name == other.name
-        tc = self.contact_information == other.contact_information
-        result = (
-            t1
-            and t2
-            and t3
-            and t4
-            and t5
-            and t6
-            and t7
-            and t8
-            and t9
-            and ta
-            and tb
-            and tc
+        return (
+            isinstance(other, ElectionDescription)
+            and self.election_scope_id == other.election_scope_id
+            and self.type == other.type
+            and self.start_date == other.start_date
+            and self.end_date == other.end_date
+            and _list_eq(self.geopolitical_units, other.geopolitical_units)
+            and _list_eq(self.parties, other.parties)
+            and _list_eq(self.candidates, other.candidates)
+            and _list_eq(self.contests, other.contests)
+            and _list_eq(self.ballot_styles, other.ballot_styles)
+            and self.name == other.name
+            and self.contact_information == other.contact_information
         )
-        return result
 
     def crypto_hash(self) -> ElementModQ:
         """
