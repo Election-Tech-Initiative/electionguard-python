@@ -17,7 +17,7 @@ class Proof(Serializable):
     """Base class for proofs with name and usage case"""
 
     name: str = "Proof"
-    usage: str = ProofUsage.Unknown.name
+    usage: str = ProofUsage.Unknown.value
 
     def __init__(self) -> None:
         object.__setattr__(

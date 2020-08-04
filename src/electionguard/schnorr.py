@@ -23,7 +23,7 @@ class SchnorrProof(Proof):
     k: ElementModP
     h: ElementModP
     u: ElementModQ
-    usage: str = ProofUsage.SecretValue.name
+    usage: str = ProofUsage.SecretValue.value
 
     def __post_init__(self) -> None:
         super().__init__()
