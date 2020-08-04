@@ -51,7 +51,7 @@ class Scheduler(Singleton, AbstractContextManager):
 
     def cpu_count(self) -> int:
         """Get CPU count"""
-        return cpu_count(logical=False)
+        return int(cpu_count(logical=False))
 
     def schedule(
         self,
