@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional
 
 from .auxiliary import AuxiliaryDecrypt
 from .ballot import CiphertextAcceptedBallot, CiphertextSelection
