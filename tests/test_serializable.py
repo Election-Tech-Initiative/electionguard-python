@@ -12,6 +12,7 @@ from electionguard.ballot import (
     from_ciphertext_ballot,
     BallotBoxState,
     CiphertextAcceptedBallot,
+    _list_eq,
 )
 from electionguard.election import (
     CiphertextElectionContext,
@@ -73,11 +74,14 @@ class TestSerializable(TestCase):
     def test_eg_serialization(
         self, everything: ELECTIONS_AND_BALLOTS_TUPLE_TYPE, seed_hash: ElementModQ,
     ):
-        # The purpose of this test is to generate a few encrypted ballots, write them and their
-        # associated context out to the filesystem, then read them all back in again, to make
-        # sure that what we get back is equal to what we wrote out.
+        # This test generates a few encrypted ballots, writes them and their associated
+        # metadata out to the filesystem, then reads them all back in again. The goal is
+        # to make sure that writing data out and reading it back yields the original data.
 
-        # This test exercises the invertibility of our serialization process.
+        # This exercises serialization / deserialization as well as the equality methods.
+
+        # Not here: any exercise of CiphertextTally or related classes. That should be
+        # a separate test.
 
         election_description, ied, ballots, secret_key, context = everything
 
@@ -155,7 +159,7 @@ class TestSerializable(TestCase):
             _load_helper(".", s, CiphertextAcceptedBallot, file_suffix="")
             for s in ballot_files
         ]
-        self.assertEqual(encrypted_ballots, encrypted_ballots2)
+        self.assertTrue(_list_eq(encrypted_ballots, encrypted_ballots2))
 
         # final cleanup: delete the directory used for the tests
         try:

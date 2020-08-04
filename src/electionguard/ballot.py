@@ -32,7 +32,7 @@ def _list_eq(
     )
 
 
-@dataclass(unsafe_hash=True)
+@dataclass(eq=True, unsafe_hash=True)
 class ExtendedData(object):
     """
     ExtendedData represents any arbitrary data expressible as a string with a length.
@@ -42,16 +42,6 @@ class ExtendedData(object):
 
     value: str
     length: int
-
-    def __eq__(self, other: Any) -> bool:
-        return (
-            isinstance(other, ExtendedData)
-            and self.value == other.value
-            and self.length == other.length
-        )
-
-    def __ne__(self, other: Any) -> bool:
-        return not self.__eq__(other)
 
 
 @dataclass(unsafe_hash=True)
@@ -424,6 +414,9 @@ class CiphertextBallotContest(ElectionObjectBase, CryptoHashCheckable):
             and self.proof == other.proof
         )
 
+    def __ne__(self, other: Any) -> bool:
+        return not self.__eq__(other)
+
     def aggregate_nonce(self) -> Optional[ElementModQ]:
         """
         :return: an aggregate nonce for the contest composed of the nonces of the selections
@@ -660,6 +653,9 @@ class CiphertextBallot(ElectionObjectBase, CryptoHashCheckable):
             and self.nonce == other.nonce
         )
 
+    def __ne__(self, other: Any) -> bool:
+        return not self.__eq__(other)
+
     @property
     def hashed_ballot_nonce(self) -> Optional[ElementModQ]:
         """
@@ -778,24 +774,17 @@ class CiphertextAcceptedBallot(CiphertextBallot):
     Do not make this class directly. Use `make_ciphertext_accepted_ballot` or `from_ciphertext_ballot` instead.
     """
 
-    tracking_hash: Optional[ElementModQ]
-    timestamp: int
     state: BallotBoxState
 
     def __eq__(self, other: Any) -> bool:
         return (
             isinstance(other, CiphertextAcceptedBallot)
-            and self.object_id == other.object_id
-            and self.ballot_style == other.ballot_style
-            and self.description_hash == other.description_hash
-            and self.previous_tracking_hash == other.previous_tracking_hash
-            and _list_eq(self.contests, other.contests)
-            and self.tracking_hash == other.tracking_hash
-            and self.timestamp == other.timestamp
-            and self.crypto_hash == other.crypto_hash
-            and self.nonce == other.nonce
+            and super.__eq__(self, other)
             and self.state == other.state
         )
+
+    def __ne__(self, other: Any) -> bool:
+        return not self.__eq__(other)
 
 
 def make_ciphertext_ballot(
@@ -873,6 +862,7 @@ def make_ciphertext_accepted_ballot(
     if len(contests) == 0:
         log_warning(f"ciphertext ballot with no contests")
 
+    # TODO: there's overlap with this code and code in make_ciphertext_ballot: refactor this out
     contest_hashes = [contest.crypto_hash for contest in contests]
     contest_hash = hash_elems(object_id, description_hash, *contest_hashes)
 
