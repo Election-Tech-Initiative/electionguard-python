@@ -1,5 +1,4 @@
-import dataclasses
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import datetime
 from distutils import util
 from enum import Enum
@@ -878,12 +877,9 @@ def make_ciphertext_accepted_ballot(
     new_contests: List[CiphertextBallotContest] = []
     for contest in contests:
         new_selections = [
-            dataclasses.replace(selection, nonce=None)
-            for selection in contest.ballot_selections
+            replace(selection, nonce=None) for selection in contest.ballot_selections
         ]
-        new_contest = dataclasses.replace(
-            contest, nonce=None, ballot_selections=new_selections
-        )
+        new_contest = replace(contest, nonce=None, ballot_selections=new_selections)
         new_contests.append(new_contest)
 
     return CiphertextAcceptedBallot(
