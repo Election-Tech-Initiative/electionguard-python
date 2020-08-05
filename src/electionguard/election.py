@@ -1,8 +1,9 @@
 from dataclasses import dataclass, field, InitVar
 from datetime import datetime
 from enum import Enum, unique
-from typing import cast, List, Optional, Set
+from typing import cast, List, Optional, Set, Any
 
+from .ballot import _list_eq
 from .election_object_base import ElectionObjectBase
 from .group import Q, P, R, G, ElementModQ, ElementModP
 from .hash import CryptoHashable, hash_elems
@@ -88,7 +89,7 @@ class VoteVariationType(Enum):
     other = 12
 
 
-@dataclass
+@dataclass(eq=True, unsafe_hash=True)
 class AnnotatedString(Serializable, CryptoHashable):
     """
     Use this as a type for character strings.
@@ -105,7 +106,7 @@ class AnnotatedString(Serializable, CryptoHashable):
         return hash_elems(self.annotation, self.value)
 
 
-@dataclass
+@dataclass(eq=True, unsafe_hash=True)
 class Language(Serializable, CryptoHashable):
     """
     The ISO-639 language
@@ -122,7 +123,7 @@ class Language(Serializable, CryptoHashable):
         return hash_elems(self.value, self.language)
 
 
-@dataclass
+@dataclass(eq=True, unsafe_hash=True)
 class InternationalizedText(Serializable, CryptoHashable):
     """
     Data entity used to represent multi-national text. Use when text on a ballot contains multi-national text.
@@ -138,7 +139,7 @@ class InternationalizedText(Serializable, CryptoHashable):
         return hash_elems(self.text)
 
 
-@dataclass
+@dataclass(eq=True, unsafe_hash=True)
 class ContactInformation(Serializable, CryptoHashable):
     """
     For defining contact information about objects such as persons, boards of authorities, and organizations.
@@ -157,7 +158,7 @@ class ContactInformation(Serializable, CryptoHashable):
         return hash_elems(self.name, self.address_line, self.email, self.phone)
 
 
-@dataclass
+@dataclass(eq=True, unsafe_hash=True)
 class GeopoliticalUnit(ElectionObjectBase, CryptoHashable):
     """
     Use this entity for defining geopolitical units such as cities, districts, jurisdictions, or precincts, 
@@ -178,7 +179,7 @@ class GeopoliticalUnit(ElectionObjectBase, CryptoHashable):
         )
 
 
-@dataclass
+@dataclass(eq=True, unsafe_hash=True)
 class BallotStyle(ElectionObjectBase, CryptoHashable):
     """
     A BallotStyle works as a key to uniquely specify a set of contests. See also `ContestDescription`.
@@ -197,7 +198,7 @@ class BallotStyle(ElectionObjectBase, CryptoHashable):
         )
 
 
-@dataclass
+@dataclass(eq=True, unsafe_hash=True)
 class Party(ElectionObjectBase, CryptoHashable):
     """
     Use this entity to describe a political party that can then be referenced from other entities.
@@ -228,7 +229,7 @@ class Party(ElectionObjectBase, CryptoHashable):
         )
 
 
-@dataclass
+@dataclass(eq=True, unsafe_hash=True)
 class Candidate(ElectionObjectBase, CryptoHashable):
     """
     Entity describing information about a candidate in a contest. 
@@ -260,7 +261,7 @@ class Candidate(ElectionObjectBase, CryptoHashable):
         )
 
 
-@dataclass
+@dataclass(eq=True, unsafe_hash=True)
 class SelectionDescription(ElectionObjectBase, CryptoHashable):
     """
     Data entity for the ballot selections in a contest, 
@@ -291,7 +292,7 @@ class SelectionDescription(ElectionObjectBase, CryptoHashable):
         return hash_elems(self.object_id, self.sequence_order, self.candidate_id)
 
 
-@dataclass
+@dataclass(unsafe_hash=True)
 class ContestDescription(ElectionObjectBase, CryptoHashable):
     """
     Use this data entity for describing a contest and linking the contest 
@@ -335,6 +336,20 @@ class ContestDescription(ElectionObjectBase, CryptoHashable):
 
     # Subtitle of the contest as it appears on the ballot.
     ballot_subtitle: Optional[InternationalizedText] = field(default=None)
+
+    def __eq__(self, other: Any) -> bool:
+        return (
+            isinstance(other, ContestDescription)
+            and self.electoral_district_id == other.electoral_district_id
+            and self.sequence_order == other.sequence_order
+            and self.votes_allowed == other.votes_allowed
+            and self.number_elected == other.number_elected
+            and self.votes_allowed == other.votes_allowed
+            and self.name == other.name
+            and _list_eq(self.ballot_selections, other.ballot_selections)
+            and self.ballot_title == other.ballot_title
+            and self.ballot_subtitle == other.ballot_subtitle
+        )
 
     def crypto_hash(self) -> ElementModQ:
         """
@@ -423,7 +438,7 @@ class ContestDescription(ElectionObjectBase, CryptoHashable):
         return success
 
 
-@dataclass
+@dataclass(eq=True, unsafe_hash=True)
 class CandidateContestDescription(ContestDescription):
     """
     Use this entity to describe a contest that involves selecting one or more candidates.
@@ -435,7 +450,7 @@ class CandidateContestDescription(ContestDescription):
     primary_party_ids: List[str] = field(default_factory=lambda: [])
 
 
-@dataclass
+@dataclass(eq=True, unsafe_hash=True)
 class ReferendumContestDescription(ContestDescription):
     """
     Use this entity to describe a contest that involves selecting exactly one 'candidate'.
@@ -447,7 +462,7 @@ class ReferendumContestDescription(ContestDescription):
     pass
 
 
-@dataclass
+@dataclass(eq=True, unsafe_hash=True)
 class ContestDescriptionWithPlaceholders(ContestDescription):
     """
     ContestDescriptionWithPlaceholders is a `ContestDescription` with ElectionGuard `placeholder_selections`.
@@ -501,7 +516,7 @@ class ContestDescriptionWithPlaceholders(ContestDescription):
             return None
 
 
-@dataclass
+@dataclass(unsafe_hash=True)
 class ElectionDescription(Serializable, CryptoHashable):
     """
     Use this entity for defining the structure of the election and associated 
@@ -527,6 +542,22 @@ class ElectionDescription(Serializable, CryptoHashable):
     ballot_styles: List[BallotStyle]
     name: Optional[InternationalizedText] = field(default=None)
     contact_information: Optional[ContactInformation] = field(default=None)
+
+    def __eq__(self, other: Any) -> bool:
+        return (
+            isinstance(other, ElectionDescription)
+            and self.election_scope_id == other.election_scope_id
+            and self.type == other.type
+            and self.start_date == other.start_date
+            and self.end_date == other.end_date
+            and _list_eq(self.geopolitical_units, other.geopolitical_units)
+            and _list_eq(self.parties, other.parties)
+            and _list_eq(self.candidates, other.candidates)
+            and _list_eq(self.contests, other.contests)
+            and _list_eq(self.ballot_styles, other.ballot_styles)
+            and self.name == other.name
+            and self.contact_information == other.contact_information
+        )
 
     def crypto_hash(self) -> ElementModQ:
         """
@@ -691,7 +722,7 @@ class ElectionDescription(Serializable, CryptoHashable):
         return success
 
 
-@dataclass(frozen=True)
+@dataclass(eq=True, unsafe_hash=True)
 class InternalElectionDescription(object):
     """
     `InternalElectionDescription` is a subset of the `ElectionDescription` structure that specifies
@@ -781,7 +812,7 @@ class InternalElectionDescription(object):
         return contests
 
 
-@dataclass(frozen=True)
+@dataclass(eq=True, unsafe_hash=True)
 class ElectionConstants(Serializable):
     """
     The constants for mathematical functions during the election. 
@@ -800,7 +831,7 @@ class ElectionConstants(Serializable):
     """generator or g"""
 
 
-@dataclass(frozen=True)
+@dataclass(eq=True, unsafe_hash=True)
 class CiphertextElectionContext(Serializable):
     """
     `CiphertextElectionContext` is the ElectionGuard representation of a specific election

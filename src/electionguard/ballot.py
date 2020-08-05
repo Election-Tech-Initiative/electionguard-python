@@ -31,7 +31,7 @@ def _list_eq(
     )
 
 
-@dataclass
+@dataclass(eq=True, unsafe_hash=True)
 class ExtendedData(object):
     """
     ExtendedData represents any arbitrary data expressible as a string with a length.
@@ -42,18 +42,8 @@ class ExtendedData(object):
     value: str
     length: int
 
-    def __eq__(self, other: Any) -> bool:
-        return (
-            isinstance(other, ExtendedData)
-            and self.value == other.value
-            and self.length == other.length
-        )
 
-    def __ne__(self, other: Any) -> bool:
-        return not self.__eq__(other)
-
-
-@dataclass
+@dataclass(unsafe_hash=True)
 class PlaintextBallotSelection(ElectionObjectBase):
     """
     A BallotSelection represents an individual selection on a ballot.
@@ -127,6 +117,7 @@ class PlaintextBallotSelection(ElectionObjectBase):
     def __eq__(self, other: Any) -> bool:
         return (
             isinstance(other, PlaintextBallotSelection)
+            and self.object_id == other.object_id
             and self.vote == other.vote
             and self.is_placeholder_selection == other.is_placeholder_selection
             and self.extended_data == other.extended_data
@@ -151,7 +142,7 @@ class CiphertextSelection(Protocol):
     """The encrypted representation of the selection"""
 
 
-@dataclass
+@dataclass(eq=True, unsafe_hash=True)
 class CiphertextBallotSelection(
     ElectionObjectBase, CiphertextSelection, CryptoHashCheckable
 ):
@@ -311,7 +302,7 @@ def make_ciphertext_ballot_selection(
     )
 
 
-@dataclass
+@dataclass(unsafe_hash=True)
 class PlaintextBallotContest(ElectionObjectBase):
     """
     A PlaintextBallotContest represents the selections made by a voter for a specific ContestDescription
@@ -387,7 +378,7 @@ class PlaintextBallotContest(ElectionObjectBase):
         return not self.__eq__(other)
 
 
-@dataclass
+@dataclass(unsafe_hash=True)
 class CiphertextBallotContest(ElectionObjectBase, CryptoHashCheckable):
     """
     A CiphertextBallotContest represents the selections made by a voter for a specific ContestDescription
@@ -421,6 +412,20 @@ class CiphertextBallotContest(ElectionObjectBase, CryptoHashCheckable):
     The proof demonstrates the sum of the selections does not exceed the maximum
     available selections for the contest, and that the proof was generated with the nonce
     """
+
+    def __eq__(self, other: Any) -> bool:
+        return (
+            isinstance(other, CiphertextBallotContest)
+            and self.object_id == other.object_id
+            and _list_eq(self.ballot_selections, other.ballot_selections)
+            and self.description_hash == other.description_hash
+            and self.crypto_hash == other.crypto_hash
+            and self.nonce == other.nonce
+            and self.proof == other.proof
+        )
+
+    def __ne__(self, other: Any) -> bool:
+        return not self.__eq__(other)
 
     def aggregate_nonce(self) -> Optional[ElementModQ]:
         """
@@ -577,7 +582,7 @@ def make_ciphertext_ballot_contest(
     )
 
 
-@dataclass
+@dataclass(unsafe_hash=True)
 class PlaintextBallot(ElectionObjectBase):
     """
     A PlaintextBallot represents a voters selections for a given ballot and ballot style
@@ -615,7 +620,7 @@ class PlaintextBallot(ElectionObjectBase):
         return not self.__eq__(other)
 
 
-@dataclass
+@dataclass(unsafe_hash=True)
 class CiphertextBallot(ElectionObjectBase, CryptoHashCheckable):
     """
     A CiphertextBallot represents a voters encrypted selections for a given ballot and ballot style.
@@ -652,10 +657,22 @@ class CiphertextBallot(ElectionObjectBase, CryptoHashCheckable):
     nonce: Optional[ElementModQ]
     """The nonce used to encrypt this ballot. Sensitive & should be treated as a secret"""
 
-    def __post_init__(self) -> None:
-        self.crypto_hash = self.crypto_hash_with(self.description_hash)
-        self.timestamp = to_ticks(datetime.utcnow())
-        self.generate_tracking(self.previous_tracking_hash)
+    def __eq__(self, other: Any) -> bool:
+        return (
+            isinstance(other, CiphertextBallot)
+            and self.object_id == other.object_id
+            and self.ballot_style == other.ballot_style
+            and self.description_hash == other.description_hash
+            and self.previous_tracking_hash == other.previous_tracking_hash
+            and _list_eq(self.contests, other.contests)
+            and self.tracking_hash == other.tracking_hash
+            and self.timestamp == other.timestamp
+            and self.crypto_hash == other.crypto_hash
+            and self.nonce == other.nonce
+        )
+
+    def __ne__(self, other: Any) -> bool:
+        return not self.__eq__(other)
 
     @staticmethod
     def nonce_seed(
@@ -778,7 +795,7 @@ class BallotBoxState(Enum):
     """
 
 
-@dataclass
+@dataclass(unsafe_hash=True)
 class CiphertextAcceptedBallot(CiphertextBallot):
     """
     A `CiphertextAcceptedBallot` represents a ballot that is accepted for inclusion in election results.
@@ -793,6 +810,15 @@ class CiphertextAcceptedBallot(CiphertextBallot):
 
     state: BallotBoxState
 
+    def __eq__(self, other: Any) -> bool:
+        return (
+            isinstance(other, CiphertextAcceptedBallot)
+            and super.__eq__(self, other)
+            and self.state == other.state
+        )
+
+    def __ne__(self, other: Any) -> bool:
+        return not self.__eq__(other)
 
 
 def make_ciphertext_ballot(
