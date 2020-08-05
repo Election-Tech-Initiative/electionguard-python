@@ -287,7 +287,7 @@ class TestEncrypt(unittest.TestCase):
         )
 
     @settings(
-        deadline=timedelta(milliseconds=2000),
+        deadline=timedelta(milliseconds=4000),
         suppress_health_check=[HealthCheck.too_slow],
         max_examples=10,
     )
@@ -635,7 +635,7 @@ class TestEncrypt(unittest.TestCase):
         )
 
     @settings(
-        deadline=timedelta(milliseconds=2000),
+        deadline=timedelta(milliseconds=4000),
         suppress_health_check=[HealthCheck.too_slow],
         max_examples=10,
     )
