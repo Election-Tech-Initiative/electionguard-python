@@ -91,8 +91,7 @@ class CiphertextTallyContest(ElectionObjectBase):
     A collection of CiphertextTallySelection mapped by SelectionDescription.object_id
     """
 
-    # TODO: rename accumulate ballot
-    def elgamal_accumulate(
+    def accumulate_contest(
         self,
         contest_selections: List[CiphertextBallotSelection],
         scheduler: Optional[Scheduler] = None,
@@ -290,6 +289,70 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
         """
         return len(self._cast_ballot_ids)
 
+    @staticmethod
+    def _accumulate(
+        id: str, ballot_selections: Dict[BALLOT_ID, ElGamalCiphertext]
+    ) -> Tuple[str, ElGamalCiphertext]:
+        return (
+            id,
+            elgamal_add(*[ciphertext for ciphertext in ballot_selections.values()]),
+        )
+
+    def _add_cast(self, ballot: CiphertextAcceptedBallot) -> bool:
+        """
+        Add a cast ballot to the tally, synchronously
+        """
+
+        # iterate through the contests and elgamal add
+        for contest in ballot.contests:
+            # This should never happen since the ballot is validated against the election metadata
+            # but it's possible the local dictionary was modified so we double check.
+            if not contest.object_id in self.cast:
+                log_warning(
+                    f"add cast missing contest in valid set {contest.object_id}"
+                )
+                return False
+
+            use_contest = self.cast[contest.object_id]
+            if not use_contest.accumulate_contest(contest.ballot_selections):
+                return False
+
+            self.cast[contest.object_id] = use_contest
+        self._cast_ballot_ids.add(ballot.object_id)
+        return True
+
+    def _add_spoiled(self, ballot: CiphertextAcceptedBallot) -> bool:
+        """
+        Add a spoiled ballot
+        """
+
+        self.spoiled_ballots[ballot.object_id] = ballot
+        return True
+
+    @staticmethod
+    def _build_tally_collection(
+        description: InternalElectionDescription,
+    ) -> Dict[CONTEST_ID, CiphertextTallyContest]:
+        """
+        Build the object graph for the tally from the InternalElectionDescription
+        """
+
+        cast_collection: Dict[str, CiphertextTallyContest] = {}
+        for contest in description.contests:
+            # build a collection of valid selections for the contest description
+            # note: we explicitly ignore the Placeholder Selections.
+            contest_selections: Dict[str, CiphertextTallySelection] = {}
+            for selection in contest.ballot_selections:
+                contest_selections[selection.object_id] = CiphertextTallySelection(
+                    selection.object_id, selection.crypto_hash()
+                )
+
+            cast_collection[contest.object_id] = CiphertextTallyContest(
+                contest.object_id, contest.crypto_hash(), contest_selections
+            )
+
+        return cast_collection
+
     def _execute_accumulate(
         self,
         ciphertext_selections_by_selection_id: Dict[
@@ -320,68 +383,6 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
                     selection.elgamal_accumulate(result_dict[selection_id])
 
         return True
-
-    def _accumulate(
-        self, id: str, ballot_selections: Dict[BALLOT_ID, ElGamalCiphertext]
-    ) -> Tuple[str, ElGamalCiphertext]:
-        return (
-            id,
-            elgamal_add(*[ciphertext for ciphertext in ballot_selections.values()]),
-        )
-
-    def _add_cast(self, ballot: CiphertextAcceptedBallot) -> bool:
-        """
-        Add a cast ballot to the tally, synchronously
-        """
-
-        # iterate through the contests and elgamal add
-        for contest in ballot.contests:
-            # This should never happen since the ballot is validated against the election metadata
-            # but it's possible the local dictionary was modified so we double check.
-            if not contest.object_id in self.cast:
-                log_warning(
-                    f"add cast missing contest in valid set {contest.object_id}"
-                )
-                return False
-
-            use_contest = self.cast[contest.object_id]
-            if not use_contest.elgamal_accumulate(contest.ballot_selections):
-                return False
-
-            self.cast[contest.object_id] = use_contest
-        self._cast_ballot_ids.add(ballot.object_id)
-        return True
-
-    def _add_spoiled(self, ballot: CiphertextAcceptedBallot) -> bool:
-        """
-        Add a spoiled ballot
-        """
-
-        self.spoiled_ballots[ballot.object_id] = ballot
-        return True
-
-    def _build_tally_collection(
-        self, description: InternalElectionDescription
-    ) -> Dict[CONTEST_ID, CiphertextTallyContest]:
-        """
-        Build the object graph for the tally from the InternalElectionDescription
-        """
-
-        cast_collection: Dict[str, CiphertextTallyContest] = {}
-        for contest in description.contests:
-            # build a collection of valid selections for the contest description
-            # note: we explicitly ignore the Placeholder Selections.
-            contest_selections: Dict[str, CiphertextTallySelection] = {}
-            for selection in contest.ballot_selections:
-                contest_selections[selection.object_id] = CiphertextTallySelection(
-                    selection.object_id, selection.crypto_hash()
-                )
-
-            cast_collection[contest.object_id] = CiphertextTallyContest(
-                contest.object_id, contest.crypto_hash(), contest_selections
-            )
-
-        return cast_collection
 
 
 def tally_ballot(
