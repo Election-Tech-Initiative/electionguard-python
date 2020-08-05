@@ -1,5 +1,8 @@
-from os import path
 from dataclasses import dataclass
+from datetime import datetime
+from os import path
+from typing import cast, TypeVar, Generic
+
 from jsons import (
     dump,
     dumps,
@@ -9,7 +12,6 @@ from jsons import (
     set_serializer,
     set_validator,
 )
-from typing import cast, TypeVar, Generic
 
 T = TypeVar("T")
 
@@ -78,6 +80,7 @@ def set_serializers() -> None:
     set_serializer(lambda tally, **_: dump(tally.cast), CiphertextTally)
     set_serializer(lambda tally, **_: dump(tally.contests), PlaintextTally)
     set_serializer(lambda usage, **_: usage.value, ProofUsage)
+    set_serializer(lambda dt, **_: dt.isoformat(), datetime)
 
 
 def set_deserializers() -> None:
@@ -96,6 +99,8 @@ def set_deserializers() -> None:
         lambda q_as_int, cls, **_: int_to_q_unchecked(q_as_int), ElementModQ
     )
     set_validator(lambda q: q.is_in_bounds(), ElementModQ)
+
+    set_deserializer(lambda dt, cls, **_: datetime.fromisoformat(dt), datetime)
 
     set_deserializer(
         lambda usage_string, cls, **_: ProofUsage[usage_string], ProofUsage
