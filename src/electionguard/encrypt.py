@@ -21,7 +21,6 @@ from .election import (
 )
 from .elgamal import elgamal_encrypt
 from .group import ElementModP, ElementModQ, rand_q
-from .hash import hash_elems
 from .logs import log_warning
 from .nonces import Nonces
 from .serializable import Serializable

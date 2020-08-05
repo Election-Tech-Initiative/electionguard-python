@@ -14,7 +14,6 @@ from .election import (
     SelectionDescription,
 )
 from .group import ElementModP, ElementModQ
-from .hash import hash_elems
 from .logs import log_warning
 from .nonces import Nonces
 
