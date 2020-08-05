@@ -261,5 +261,7 @@ class TestConstantChaumPedersen(TestCase):
         )
         self.assertFalse(proof_bad2.is_valid(message, keypair.public_key, ONE_MOD_Q))
 
-        proof_bad3 = ConstantChaumPedersenProof(proof.pad, proof.data, proof.challenge, proof.response, -1)
+        proof_bad3 = ConstantChaumPedersenProof(
+            proof.pad, proof.data, proof.challenge, proof.response, -1
+        )
         self.assertFalse(proof_bad3.is_valid(message, keypair.public_key, ONE_MOD_Q))

@@ -83,7 +83,7 @@ class Scheduler(Singleton, AbstractContextManager):
                 f"safe_starmap({task}, {arguments}) exception ValueError({str(e)})"
             )
             return []
-        except:
+        except Exception:
             log_warning(
                 f"safe_starmap({task}, {arguments}) failed with \n {traceback.format_exc()}"
             )
@@ -96,7 +96,7 @@ class Scheduler(Singleton, AbstractContextManager):
         except ValueError as e:
             log_warning(f"safe_map({task}, {arguments}) exception ValueError({str(e)})")
             return []
-        except:
+        except Exception:
             log_warning(
                 f"safe_starmap({task}, {arguments}) failed with \n {traceback.format_exc()}"
             )

@@ -47,7 +47,9 @@ class TestSchnorr(unittest.TestCase):
     ) -> None:
         proof = make_schnorr_proof(keypair, nonce)
         assume(other != proof.response)
-        proof2 = SchnorrProof(proof.public_key, proof.commitment, proof.challenge, other)
+        proof2 = SchnorrProof(
+            proof.public_key, proof.commitment, proof.challenge, other
+        )
         self.assertFalse(proof2.is_valid())
 
     @given(elgamal_keypairs(), elements_mod_q(), elements_mod_p())
@@ -56,7 +58,9 @@ class TestSchnorr(unittest.TestCase):
     ) -> None:
         proof = make_schnorr_proof(keypair, nonce)
         assume(other != proof.commitment)
-        proof_bad = SchnorrProof(proof.public_key, other, proof.challenge, proof.response)
+        proof_bad = SchnorrProof(
+            proof.public_key, other, proof.challenge, proof.response
+        )
         self.assertFalse(proof_bad.is_valid())
 
     @given(elgamal_keypairs(), elements_mod_q(), elements_mod_p_no_zero())
@@ -73,7 +77,11 @@ class TestSchnorr(unittest.TestCase):
         self, keypair: ElGamalKeyPair, nonce: ElementModQ
     ) -> None:
         proof = make_schnorr_proof(keypair, nonce)
-        proof2 = SchnorrProof(ZERO_MOD_P, proof.commitment, proof.challenge, proof.response)
-        proof3 = SchnorrProof(int_to_p_unchecked(P), proof.commitment, proof.challenge, proof.response)
+        proof2 = SchnorrProof(
+            ZERO_MOD_P, proof.commitment, proof.challenge, proof.response
+        )
+        proof3 = SchnorrProof(
+            int_to_p_unchecked(P), proof.commitment, proof.challenge, proof.response
+        )
         self.assertFalse(proof2.is_valid())
         self.assertFalse(proof3.is_valid())

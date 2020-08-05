@@ -10,7 +10,7 @@ from electionguard.elgamal import (
     ElGamalKeyPair,
     elgamal_encrypt,
 )
-from electionguard.group import ElementModQ, int_to_q_unchecked
+from electionguard.group import ElementModQ, int_to_q_unchecked, ONE_MOD_Q
 from electionguard.nonces import Nonces
 from electionguard.scheduler import Scheduler
 from electionguard.utils import get_optional
@@ -30,7 +30,9 @@ def chaum_pedersen_bench(bi: BenchInput) -> Tuple[float, float]:
     (keypair, r, s) = bi
     ciphertext = get_optional(elgamal_encrypt(0, r, keypair.public_key))
     start1 = timer()
-    proof = make_disjunctive_chaum_pedersen_zero(ciphertext, r, keypair.public_key, s)
+    proof = make_disjunctive_chaum_pedersen_zero(
+        ciphertext, r, keypair.public_key, ONE_MOD_Q, s
+    )
     end1 = timer()
     valid = proof.is_valid(ciphertext, keypair.public_key)
     end2 = timer()
