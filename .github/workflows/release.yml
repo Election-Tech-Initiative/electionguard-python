@@ -49,7 +49,7 @@ jobs:
         run: make environment
       - name: Install Module
         run: make install validate
-      - name: Test
+      - name: Full Test & Coverage
         run: make coverage
 
   mac_check:
@@ -68,8 +68,8 @@ jobs:
         run: make environment
       - name: Install Module
         run: make install validate
-      - name: Test
-        run: make coverage
+      - name: Integration Tests
+        run: make test-integration
 
   windows_check:
     name: Windows Check
@@ -89,9 +89,8 @@ jobs:
         run: make environment
       - name: Install Module
         run: make install validate
-      - name: Test
-        continue-on-error: true #TODO Remove Window tests bypass
-        run: make test
+      - name: Integration Tests
+        run: make test-integration
 
   release:
     name: Release

@@ -89,6 +89,10 @@ test-example:
 	@echo ✅ TEST Example
 	pipenv run python -m pytest -s tests/integration/test_end_to_end_election.py
 
+test-integration:
+	@echo ✅ INTEGRATION TESTS
+	pipenv run pytest tests/integration
+
 # Coverage
 coverage:
 	@echo ✅ COVERAGE
