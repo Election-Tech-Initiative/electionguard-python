@@ -21,7 +21,6 @@ from .election import (
 )
 from .elgamal import elgamal_encrypt
 from .group import ElementModP, ElementModQ, rand_q
-from .hash import hash_elems
 from .logs import log_warning
 from .nonces import Nonces
 from .serializable import Serializable
@@ -134,6 +133,7 @@ def encrypt_selection(
     selection: PlaintextBallotSelection,
     selection_description: SelectionDescription,
     elgamal_public_key: ElementModP,
+    crypto_extended_base_hash: ElementModQ,
     nonce_seed: ElementModQ,
     is_placeholder: bool = False,
     should_verify_proofs: bool = True,
@@ -144,6 +144,7 @@ def encrypt_selection(
     :param selection: the selection in the valid input form
     :param selection_description: the `SelectionDescription` from the `ContestDescription` which defines this selection's structure
     :param elgamal_public_key: the public key (K) used to encrypt the ballot
+    :param crypto_extended_base_hash: the extended base hash of the election
     :param nonce_seed: an `ElementModQ` used as a header to seed the `Nonce` generated for this selection.
                  this value can be (or derived from) the BallotContest nonce, but no relationship is required
     :param is_placeholder: specifies if this is a placeholder selection
@@ -179,6 +180,7 @@ def encrypt_selection(
         description_hash=selection_description_hash,
         ciphertext=get_optional(elgamal_encryption),
         elgamal_public_key=elgamal_public_key,
+        crypto_extended_base_hash=crypto_extended_base_hash,
         proof_seed=disjunctive_chaum_pedersen_nonce,
         selection_representation=selection_representation,
         is_placeholder_selection=is_placeholder,
@@ -194,7 +196,7 @@ def encrypt_selection(
 
     # verify the selection.
     if encrypted_selection.is_valid_encryption(
-        selection_description_hash, elgamal_public_key
+        selection_description_hash, elgamal_public_key, crypto_extended_base_hash
     ):
         return encrypted_selection
     else:
@@ -208,6 +210,7 @@ def encrypt_contest(
     contest: PlaintextBallotContest,
     contest_description: ContestDescriptionWithPlaceholders,
     elgamal_public_key: ElementModP,
+    crypto_extended_base_hash: ElementModQ,
     nonce_seed: ElementModQ,
     should_verify_proofs: bool = True,
 ) -> Optional[CiphertextBallotContest]:
@@ -222,6 +225,7 @@ def encrypt_contest(
     :param contest: the contest in the valid input form
     :param contest_description: the `ContestDescriptionWithPlaceholders` from the `ContestDescription` which defines this contest's structure
     :param elgamal_public_key: the public key (k) used to encrypt the ballot
+    :param crypto_extended_base_hash: the extended base hash of the election
     :param nonce_seed: an `ElementModQ` used as a header to seed the `Nonce` generated for this contest.
                  this value can be (or derived from) the Ballot nonce, but no relationship is required
     :param should_verify_proofs: specify if the proofs should be verified prior to returning (default True)
@@ -271,7 +275,11 @@ def encrypt_contest(
                 has_selection = True
                 selection_count += selection.to_int()
                 encrypted_selection = encrypt_selection(
-                    selection, description, elgamal_public_key, contest_nonce
+                    selection,
+                    description,
+                    elgamal_public_key,
+                    crypto_extended_base_hash,
+                    contest_nonce,
                 )
                 break
 
@@ -282,6 +290,7 @@ def encrypt_contest(
                 selection_from(description),
                 description,
                 elgamal_public_key,
+                crypto_extended_base_hash,
                 contest_nonce,
             )
 
@@ -311,6 +320,7 @@ def encrypt_contest(
             ),
             selection_description=placeholder,
             elgamal_public_key=elgamal_public_key,
+            crypto_extended_base_hash=crypto_extended_base_hash,
             nonce_seed=contest_nonce,
             is_placeholder=True,
             should_verify_proofs=True,
@@ -335,6 +345,7 @@ def encrypt_contest(
         description_hash=contest_description_hash,
         ballot_selections=encrypted_selections,
         elgamal_public_key=elgamal_public_key,
+        crypto_extended_base_hash=crypto_extended_base_hash,
         proof_seed=chaum_pedersen_nonce,
         number_elected=contest_description.number_elected,
         nonce=contest_nonce,
@@ -348,7 +359,7 @@ def encrypt_contest(
 
     # Verify the proof
     if encrypted_contest.is_valid_encryption(
-        contest_description_hash, elgamal_public_key
+        contest_description_hash, elgamal_public_key, crypto_extended_base_hash
     ):
         return encrypted_contest
     else:
@@ -403,8 +414,8 @@ def encrypt_ballot(
 
     # Include a representation of the election and the external Id in the nonce's used
     # to derive other nonce values on the ballot
-    nonce_seed = hash_elems(
-        context.crypto_extended_base_hash, ballot.object_id, random_master_nonce,
+    nonce_seed = CiphertextBallot.nonce_seed(
+        election_metadata.description_hash, ballot.object_id, random_master_nonce,
     )
 
     encrypted_contests: List[CiphertextBallotContest] = list()
@@ -421,7 +432,11 @@ def encrypt_ballot(
             use_contest = contest_from(description)
 
         encrypted_contest = encrypt_contest(
-            use_contest, description, context.elgamal_public_key, nonce_seed,
+            use_contest,
+            description,
+            context.elgamal_public_key,
+            context.crypto_extended_base_hash,
+            nonce_seed,
         )
 
         if encrypted_contest is None:
@@ -432,7 +447,7 @@ def encrypt_ballot(
     encrypted_ballot = CiphertextBallot(
         ballot.object_id,
         ballot.ballot_style,
-        context.crypto_extended_base_hash,
+        election_metadata.description_hash,
         seed_hash,
         encrypted_contests,
         random_master_nonce,
@@ -446,7 +461,9 @@ def encrypt_ballot(
 
     # Verify the proofs
     if encrypted_ballot.is_valid_encryption(
-        context.crypto_extended_base_hash, context.elgamal_public_key,
+        election_metadata.description_hash,
+        context.elgamal_public_key,
+        context.crypto_extended_base_hash,
     ):
         return encrypted_ballot
     else:

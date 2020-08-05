@@ -31,23 +31,23 @@ class TestDisjunctiveChaumPedersen(TestCase):
         seed = TWO_MOD_Q
         message0 = get_optional(elgamal_encrypt(0, nonce, keypair.public_key))
         proof0 = make_disjunctive_chaum_pedersen_zero(
-            message0, nonce, keypair.public_key, seed
+            message0, nonce, keypair.public_key, ONE_MOD_Q, seed
         )
         proof0bad = make_disjunctive_chaum_pedersen_one(
-            message0, nonce, keypair.public_key, seed
+            message0, nonce, keypair.public_key, ONE_MOD_Q, seed
         )
-        self.assertTrue(proof0.is_valid(message0, keypair.public_key))
-        self.assertFalse(proof0bad.is_valid(message0, keypair.public_key))
+        self.assertTrue(proof0.is_valid(message0, keypair.public_key, ONE_MOD_Q))
+        self.assertFalse(proof0bad.is_valid(message0, keypair.public_key, ONE_MOD_Q))
 
         message1 = get_optional(elgamal_encrypt(1, nonce, keypair.public_key))
         proof1 = make_disjunctive_chaum_pedersen_one(
-            message1, nonce, keypair.public_key, seed
+            message1, nonce, keypair.public_key, ONE_MOD_Q, seed
         )
         proof1bad = make_disjunctive_chaum_pedersen_zero(
-            message1, nonce, keypair.public_key, seed
+            message1, nonce, keypair.public_key, ONE_MOD_Q, seed
         )
-        self.assertTrue(proof1.is_valid(message1, keypair.public_key))
-        self.assertFalse(proof1bad.is_valid(message1, keypair.public_key))
+        self.assertTrue(proof1.is_valid(message1, keypair.public_key, ONE_MOD_Q))
+        self.assertFalse(proof1bad.is_valid(message1, keypair.public_key, ONE_MOD_Q))
 
     def test_djcp_proof_invalid_inputs(self):
         # this is here to push up our coverage
@@ -76,13 +76,13 @@ class TestDisjunctiveChaumPedersen(TestCase):
     ):
         message = get_optional(elgamal_encrypt(0, nonce, keypair.public_key))
         proof = make_disjunctive_chaum_pedersen_zero(
-            message, nonce, keypair.public_key, seed
+            message, nonce, keypair.public_key, ONE_MOD_Q, seed
         )
         proof_bad = make_disjunctive_chaum_pedersen_one(
-            message, nonce, keypair.public_key, seed
+            message, nonce, keypair.public_key, ONE_MOD_Q, seed
         )
-        self.assertTrue(proof.is_valid(message, keypair.public_key))
-        self.assertFalse(proof_bad.is_valid(message, keypair.public_key))
+        self.assertTrue(proof.is_valid(message, keypair.public_key, ONE_MOD_Q))
+        self.assertFalse(proof_bad.is_valid(message, keypair.public_key, ONE_MOD_Q))
 
     @settings(
         deadline=timedelta(milliseconds=2000),
@@ -95,13 +95,13 @@ class TestDisjunctiveChaumPedersen(TestCase):
     ):
         message = get_optional(elgamal_encrypt(1, nonce, keypair.public_key))
         proof = make_disjunctive_chaum_pedersen_one(
-            message, nonce, keypair.public_key, seed
+            message, nonce, keypair.public_key, ONE_MOD_Q, seed
         )
         proof_bad = make_disjunctive_chaum_pedersen_zero(
-            message, nonce, keypair.public_key, seed
+            message, nonce, keypair.public_key, ONE_MOD_Q, seed
         )
-        self.assertTrue(proof.is_valid(message, keypair.public_key))
-        self.assertFalse(proof_bad.is_valid(message, keypair.public_key))
+        self.assertTrue(proof.is_valid(message, keypair.public_key, ONE_MOD_Q))
+        self.assertFalse(proof_bad.is_valid(message, keypair.public_key, ONE_MOD_Q))
 
     @settings(
         deadline=timedelta(milliseconds=2000),
@@ -116,14 +116,14 @@ class TestDisjunctiveChaumPedersen(TestCase):
         message = get_optional(elgamal_encrypt(0, nonce, keypair.public_key))
         message_bad = get_optional(elgamal_encrypt(2, nonce, keypair.public_key))
         proof = make_disjunctive_chaum_pedersen_zero(
-            message, nonce, keypair.public_key, seed
+            message, nonce, keypair.public_key, ONE_MOD_Q, seed
         )
         proof_bad = make_disjunctive_chaum_pedersen_zero(
-            message_bad, nonce, keypair.public_key, seed
+            message_bad, nonce, keypair.public_key, ONE_MOD_Q, seed
         )
 
-        self.assertFalse(proof_bad.is_valid(message_bad, keypair.public_key))
-        self.assertFalse(proof.is_valid(message_bad, keypair.public_key))
+        self.assertFalse(proof_bad.is_valid(message_bad, keypair.public_key, ONE_MOD_Q))
+        self.assertFalse(proof.is_valid(message_bad, keypair.public_key, ONE_MOD_Q))
 
 
 class TestChaumPedersen(TestCase):
@@ -192,13 +192,13 @@ class TestConstantChaumPedersen(TestCase):
         seed = TWO_MOD_Q
         message = get_optional(elgamal_encrypt(0, nonce, keypair.public_key))
         proof = make_constant_chaum_pedersen(
-            message, 0, nonce, keypair.public_key, seed
+            message, 0, nonce, keypair.public_key, seed, ONE_MOD_Q
         )
         bad_proof = make_constant_chaum_pedersen(
-            message, 1, nonce, keypair.public_key, seed
+            message, 1, nonce, keypair.public_key, seed, ONE_MOD_Q
         )
-        self.assertTrue(proof.is_valid(message, keypair.public_key))
-        self.assertFalse(bad_proof.is_valid(message, keypair.public_key))
+        self.assertTrue(proof.is_valid(message, keypair.public_key, ONE_MOD_Q))
+        self.assertFalse(bad_proof.is_valid(message, keypair.public_key, ONE_MOD_Q))
 
     def test_ccp_proofs_simple_encryption_of_one(self):
         keypair = elgamal_keypair_from_secret(TWO_MOD_Q)
@@ -206,13 +206,13 @@ class TestConstantChaumPedersen(TestCase):
         seed = TWO_MOD_Q
         message = get_optional(elgamal_encrypt(1, nonce, keypair.public_key))
         proof = make_constant_chaum_pedersen(
-            message, 1, nonce, keypair.public_key, seed
+            message, 1, nonce, keypair.public_key, seed, ONE_MOD_Q
         )
         bad_proof = make_constant_chaum_pedersen(
-            message, 0, nonce, keypair.public_key, seed
+            message, 0, nonce, keypair.public_key, seed, ONE_MOD_Q
         )
-        self.assertTrue(proof.is_valid(message, keypair.public_key))
-        self.assertFalse(bad_proof.is_valid(message, keypair.public_key))
+        self.assertTrue(proof.is_valid(message, keypair.public_key, ONE_MOD_Q))
+        self.assertFalse(bad_proof.is_valid(message, keypair.public_key, ONE_MOD_Q))
 
     @settings(
         deadline=timedelta(milliseconds=2000),
@@ -245,19 +245,23 @@ class TestConstantChaumPedersen(TestCase):
         )
 
         proof = make_constant_chaum_pedersen(
-            message, constant, nonce, keypair.public_key, seed
+            message, constant, nonce, keypair.public_key, seed, ONE_MOD_Q
         )
-        self.assertTrue(proof.is_valid(message, keypair.public_key))
+        self.assertTrue(proof.is_valid(message, keypair.public_key, ONE_MOD_Q))
 
         proof_bad1 = make_constant_chaum_pedersen(
-            message_bad, constant, nonce, keypair.public_key, seed
+            message_bad, constant, nonce, keypair.public_key, seed, ONE_MOD_Q
         )
-        self.assertFalse(proof_bad1.is_valid(message_bad, keypair.public_key))
+        self.assertFalse(
+            proof_bad1.is_valid(message_bad, keypair.public_key, ONE_MOD_Q)
+        )
 
         proof_bad2 = make_constant_chaum_pedersen(
-            message, bad_constant, nonce, keypair.public_key, seed
+            message, bad_constant, nonce, keypair.public_key, seed, ONE_MOD_Q
         )
-        self.assertFalse(proof_bad2.is_valid(message, keypair.public_key))
+        self.assertFalse(proof_bad2.is_valid(message, keypair.public_key, ONE_MOD_Q))
 
-        proof_bad3 = ConstantChaumPedersenProof(proof.a, proof.b, proof.c, proof.v, -1)
-        self.assertFalse(proof_bad3.is_valid(message, keypair.public_key))
+        proof_bad3 = ConstantChaumPedersenProof(
+            proof.pad, proof.data, proof.challenge, proof.response, -1
+        )
+        self.assertFalse(proof_bad3.is_valid(message, keypair.public_key, ONE_MOD_Q))

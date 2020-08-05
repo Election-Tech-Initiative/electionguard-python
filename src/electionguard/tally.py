@@ -10,6 +10,7 @@ from .ballot import (
 )
 from .ballot_store import BallotStore
 from .ballot_validator import ballot_is_valid_for_election
+from .decryption_share import CiphertextDecryptionSelection
 from .election import CiphertextElectionContext, InternalElectionDescription
 from .election_object_base import ElectionObjectBase
 from .elgamal import ElGamalCiphertext, elgamal_add
@@ -30,6 +31,8 @@ class PlaintextTallySelection(ElectionObjectBase):
     value: ElementModP
 
     message: ElGamalCiphertext
+
+    shares: List[CiphertextDecryptionSelection]
 
 
 @dataclass

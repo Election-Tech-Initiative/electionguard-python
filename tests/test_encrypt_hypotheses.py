@@ -90,7 +90,7 @@ class TestElections(unittest.TestCase):
             decrypted_ballot = decrypt_ballot_with_secret(
                 ballot=encrypted_ballot,
                 election_metadata=metadata,
-                extended_base_hash=context.crypto_extended_base_hash,
+                crypto_extended_base_hash=context.crypto_extended_base_hash,
                 public_key=context.elgamal_public_key,
                 secret_key=secret_key,
                 remove_placeholders=True,

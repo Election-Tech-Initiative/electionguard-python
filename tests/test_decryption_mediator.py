@@ -160,7 +160,9 @@ class TestDecryptionMediator(TestCase):
         self.assertIsNotNone(encrypted_fake_spoiled_ballot)
         self.assertTrue(
             encrypted_fake_cast_ballot.is_valid_encryption(
-                self.context.crypto_extended_base_hash, self.joint_public_key
+                self.metadata.description_hash,
+                self.joint_public_key,
+                self.context.crypto_extended_base_hash,
             )
         )
 

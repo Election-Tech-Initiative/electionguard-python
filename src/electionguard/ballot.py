@@ -203,7 +203,10 @@ class CiphertextBallotSelection(
     """encrypted representation of the extended_data field"""
 
     def is_valid_encryption(
-        self, seed_hash: ElementModQ, elgamal_public_key: ElementModP
+        self,
+        seed_hash: ElementModQ,
+        elgamal_public_key: ElementModP,
+        crypto_extended_base_hash: ElementModQ,
     ) -> bool:
         """
         Given an encrypted BallotSelection, validates the encryption state against a specific seed hash and public key.
@@ -233,7 +236,9 @@ class CiphertextBallotSelection(
             log_warning(f"no proof exists for: {self.object_id}")
             return False
 
-        return self.proof.is_valid(self.ciphertext, elgamal_public_key)
+        return self.proof.is_valid(
+            self.ciphertext, elgamal_public_key, crypto_extended_base_hash
+        )
 
     def crypto_hash_with(self, seed_hash: ElementModQ) -> ElementModQ:
         """
@@ -262,6 +267,7 @@ def make_ciphertext_ballot_selection(
     description_hash: ElementModQ,
     ciphertext: ElGamalCiphertext,
     elgamal_public_key: ElementModP,
+    crypto_extended_base_hash: ElementModQ,
     proof_seed: ElementModQ,
     selection_representation: int,
     is_placeholder_selection: bool = False,
@@ -285,7 +291,12 @@ def make_ciphertext_ballot_selection(
         proof = flatmap_optional(
             nonce,
             lambda n: make_disjunctive_chaum_pedersen(
-                ciphertext, n, elgamal_public_key, proof_seed, selection_representation
+                ciphertext,
+                n,
+                elgamal_public_key,
+                crypto_extended_base_hash,
+                proof_seed,
+                selection_representation,
             ),
         )
 
@@ -443,7 +454,10 @@ class CiphertextBallotContest(ElectionObjectBase, CryptoHashCheckable):
         return _ciphertext_ballot_elgamal_accumulate(self.ballot_selections)
 
     def is_valid_encryption(
-        self, seed_hash: ElementModQ, elgamal_public_key: ElementModP
+        self,
+        seed_hash: ElementModQ,
+        elgamal_public_key: ElementModP,
+        crypto_extended_base_hash: ElementModQ,
     ) -> bool:
         """
         Given an encrypted BallotContest, validates the encryption state against a specific seed hash and public key
@@ -475,7 +489,9 @@ class CiphertextBallotContest(ElectionObjectBase, CryptoHashCheckable):
 
         # Verify the sum of the selections matches the proof
         elgamal_accumulation = self.elgamal_accumulate()
-        return self.proof.is_valid(elgamal_accumulation, elgamal_public_key)
+        return self.proof.is_valid(
+            elgamal_accumulation, elgamal_public_key, crypto_extended_base_hash
+        )
 
 
 def _ciphertext_ballot_elgamal_accumulate(
@@ -521,6 +537,7 @@ def make_ciphertext_ballot_contest(
     description_hash: ElementModQ,
     ballot_selections: List[CiphertextBallotSelection],
     elgamal_public_key: ElementModP,
+    crypto_extended_base_hash: ElementModQ,
     proof_seed: ElementModQ,
     number_elected: int,
     crypto_hash: Optional[ElementModQ] = None,
@@ -548,6 +565,7 @@ def make_ciphertext_ballot_contest(
                 r=ag,
                 k=elgamal_public_key,
                 seed=proof_seed,
+                hash_header=crypto_extended_base_hash,
             ),
         )
     return CiphertextBallotContest(
@@ -606,7 +624,7 @@ class CiphertextBallot(ElectionObjectBase, CryptoHashCheckable):
     When a ballot is in it's complete, encrypted state, the `nonce` is the master nonce
     from which all other nonces can be derived to encrypt the ballot.  Allong with the `nonce`
     fields on `Ballotcontest` and `BallotSelection`, this value is sensitive.
-     :field object_id: A unique Ballot ID that is relevant to the external system
+    :field object_id: A unique Ballot ID that is relevant to the external system
     """
 
     ballot_style: str
@@ -638,7 +656,16 @@ class CiphertextBallot(ElectionObjectBase, CryptoHashCheckable):
         self.timestamp = to_ticks(datetime.utcnow())
         self.generate_tracking(self.previous_tracking_hash)
 
-    @property
+    @staticmethod
+    def nonce_seed(
+        description_hash: ElementModQ, object_id: str, nonce: ElementModQ
+    ) -> ElementModQ:
+        """
+        :return: a representation of the election and the external Id in the nonce's used
+        to derive other nonce values on the ballot
+        """
+        return hash_elems(description_hash, object_id, nonce)
+
     def hashed_ballot_nonce(self) -> Optional[ElementModQ]:
         """
         :return: a hash value derived from the description hash, the object id, and the nonce value
@@ -651,7 +678,7 @@ class CiphertextBallot(ElectionObjectBase, CryptoHashCheckable):
             )
             return None
 
-        return hash_elems(self.description_hash, self.object_id, self.nonce)
+        return self.nonce_seed(self.description_hash, self.object_id, self.nonce)
 
     def generate_tracking(self, seed_hash: ElementModQ) -> None:
         """
@@ -691,7 +718,10 @@ class CiphertextBallot(ElectionObjectBase, CryptoHashCheckable):
         return hash_elems(self.object_id, seed_hash, *contest_hashes)
 
     def is_valid_encryption(
-        self, seed_hash: ElementModQ, elgamal_public_key: ElementModP
+        self,
+        seed_hash: ElementModQ,
+        elgamal_public_key: ElementModP,
+        crypto_extended_base_hash: ElementModQ,
     ) -> bool:
         """
         Given an encrypted Ballot, validates the encryption state against a specific seed hash and public key
@@ -723,12 +753,16 @@ class CiphertextBallot(ElectionObjectBase, CryptoHashCheckable):
             for selection in contest.ballot_selections:
                 valid_proofs.append(
                     selection.is_valid_encryption(
-                        selection.description_hash, elgamal_public_key
+                        selection.description_hash,
+                        elgamal_public_key,
+                        crypto_extended_base_hash,
                     )
                 )
             valid_proofs.append(
                 contest.is_valid_encryption(
-                    contest.description_hash, elgamal_public_key
+                    contest.description_hash,
+                    elgamal_public_key,
+                    crypto_extended_base_hash,
                 )
             )
         return all(valid_proofs)

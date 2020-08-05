@@ -69,7 +69,11 @@ def decrypt_selection_with_decryption_shares(
     decrypted_value = div_p(selection.ciphertext.data, all_shares_product_M)
     d_log = discrete_log(decrypted_value)
     return PlaintextTallySelection(
-        selection.object_id, d_log, decrypted_value, selection.ciphertext,
+        selection.object_id,
+        d_log,
+        decrypted_value,
+        selection.ciphertext,
+        [share for (guardian_id, (public_key, share)) in shares.items()],
     )
 
 

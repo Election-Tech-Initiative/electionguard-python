@@ -26,37 +26,52 @@ class DisjunctiveChaumPedersenProof(Proof):
     Representation of disjunctive Chaum Pederson proof
     """
 
-    a0: ElementModP
-    b0: ElementModP
-    a1: ElementModP
-    b1: ElementModP
-    c0: ElementModQ
-    c1: ElementModQ
-    v0: ElementModQ
-    v1: ElementModQ
+    proof_zero_pad: ElementModP
+    """a0 in the spec"""
+    proof_zero_data: ElementModP
+    """b0 in the spec"""
+    proof_one_pad: ElementModP
+    """a1 in the spec"""
+    proof_one_data: ElementModP
+    """b1 in the spec"""
+    proof_zero_challenge: ElementModQ
+    """c0 in the spec"""
+    proof_one_challenge: ElementModQ
+    """c1 in the spec"""
+    challenge: ElementModQ
+    """c in the spec"""
+    proof_zero_response: ElementModQ
+    """proof_zero_response in the spec"""
+    proof_one_response: ElementModQ
+    """proof_one_response in the spec"""
     usage: ProofUsage = ProofUsage.SelectionValue
+    """a description of how to use this proof"""
 
     def __post_init__(self) -> None:
         super().__init__()
 
-    def is_valid(self, message: ElGamalCiphertext, k: ElementModP) -> bool:
+    def is_valid(
+        self, message: ElGamalCiphertext, k: ElementModP, q: ElementModQ
+    ) -> bool:
         """
         Validates a "disjunctive" Chaum-Pedersen (zero or one) proof.
 
         :param message: The ciphertext message
         :param k: The public key of the election
+        :param q: The extended base hash of the election
         :return: True if everything is consistent. False otherwise.
         """
 
         (alpha, beta) = message
-        a0 = self.a0
-        b0 = self.b0
-        a1 = self.a1
-        b1 = self.b1
-        c0 = self.c0
-        c1 = self.c1
-        v0 = self.v0
-        v1 = self.v1
+        a0 = self.proof_zero_pad
+        b0 = self.proof_zero_data
+        a1 = self.proof_one_pad
+        b1 = self.proof_one_data
+        c0 = self.proof_zero_challenge
+        c1 = self.proof_one_challenge
+        c = self.challenge
+        v0 = self.proof_zero_response
+        v1 = self.proof_one_response
         in_bounds_alpha = alpha.is_valid_residue()
         in_bounds_beta = beta.is_valid_residue()
         in_bounds_a0 = a0.is_valid_residue()
@@ -67,7 +82,7 @@ class DisjunctiveChaumPedersenProof(Proof):
         in_bounds_c1 = c1.is_in_bounds()
         in_bounds_v0 = v0.is_in_bounds()
         in_bounds_v1 = v1.is_in_bounds()
-        consistent_c = add_q(c0, c1) == hash_elems(alpha, beta, a0, b0, a1, b1)
+        consistent_c = add_q(c0, c1) == c == hash_elems(q, alpha, beta, a0, b0, a1, b1)
         consistent_gv0 = g_pow_p(v0) == mult_p(a0, pow_p(alpha, c0))
         consistent_gv1 = g_pow_p(v1) == mult_p(a1, pow_p(alpha, c1))
         consistent_kv0 = pow_p(k, v0) == mult_p(b0, pow_p(beta, c0))
@@ -127,11 +142,16 @@ class ChaumPedersenProof(Proof):
     Representation of a generic Chaum-Pedersen Zero Knowledge proof 
     """
 
-    a: ElementModP
-    b: ElementModP
-    c: ElementModQ
-    v: ElementModQ
+    pad: ElementModP
+    """a in the spec"""
+    data: ElementModP
+    """b in the spec"""
+    challenge: ElementModQ
+    """c in the spec"""
+    response: ElementModQ
+    """v in the spec"""
     usage: ProofUsage = ProofUsage.SecretValue
+    """a description of how to use this proof"""
 
     def __post_init__(self) -> None:
         super().__init__()
@@ -159,10 +179,10 @@ class ChaumPedersenProof(Proof):
         :return: True if everything is consistent. False otherwise.
         """
         (alpha, beta) = message
-        a = self.a
-        b = self.b
-        c = self.c
-        v = self.v
+        a = self.pad
+        b = self.data
+        c = self.challenge
+        v = self.response
         in_bounds_alpha = alpha.is_valid_residue()
         in_bounds_beta = beta.is_valid_residue()
         in_bounds_k = k.is_valid_residue()
@@ -239,31 +259,40 @@ class ConstantChaumPedersenProof(Proof):
     Representation of constant Chaum Pederson proof
     """
 
-    a: ElementModP
-    b: ElementModP
-    c: ElementModQ
-    v: ElementModQ
+    pad: ElementModP
+    """a in the spec"""
+    data: ElementModP
+    "b in the spec"
+    challenge: ElementModQ
+    "c in the spec"
+    response: ElementModQ
+    "v in the spec"
     constant: int
+    """constant value"""
     usage: ProofUsage = ProofUsage.SelectionLimit
+    """a description of how to use this proof"""
 
     def __post_init__(self) -> None:
         super().__init__()
 
-    def is_valid(self, message: ElGamalCiphertext, k: ElementModP) -> bool:
+    def is_valid(
+        self, message: ElGamalCiphertext, k: ElementModP, q: ElementModQ
+    ) -> bool:
         """
         Validates a "constant" Chaum-Pedersen proof.
         e.g. that the equations 𝑔𝑉 = 𝑎𝐴𝐶 mod 𝑝 and 𝑔𝐿𝐾𝑣 = 𝑏𝐵𝐶 mod 𝑝 are satisfied.
 
         :param message: The ciphertext message
         :param K: The public key of the election
+        :param q: The extended base hash of the election
         :return: True if everything is consistent. False otherwise.
         """
 
         (alpha, beta) = message
-        a = self.a
-        b = self.b
-        c = self.c
-        v = self.v
+        a = self.pad
+        b = self.data
+        c = self.challenge
+        v = self.response
         constant = self.constant
         in_bounds_alpha = alpha.is_valid_residue()
         in_bounds_beta = beta.is_valid_residue()
@@ -282,7 +311,7 @@ class ConstantChaumPedersenProof(Proof):
         # this is an arbitrary constant check to verify that decryption will be performant
         # in some use cases this value may need to be increased
         sane_constant = 0 <= constant < 1_000_000_000
-        same_c = c == hash_elems(alpha, beta, a, b)
+        same_c = c == hash_elems(q, alpha, beta, a, b)
         consistent_gv = (
             in_bounds_v
             and in_bounds_a
@@ -339,6 +368,7 @@ def make_disjunctive_chaum_pedersen(
     message: ElGamalCiphertext,
     r: ElementModQ,
     k: ElementModP,
+    q: ElementModQ,
     seed: ElementModQ,
     plaintext: int,
 ) -> DisjunctiveChaumPedersenProof:
@@ -350,6 +380,8 @@ def make_disjunctive_chaum_pedersen(
     :param message: An ElGamal ciphertext
     :param r: The nonce used creating the ElGamal ciphertext
     :param k: The ElGamal public key for the election
+    :param q: A value used when generating the challenge, 
+                        usually the election extended base hash (𝑄')
     :param seed: Used to generate other random values here
     :param plaintext: Zero or one
     """
@@ -358,13 +390,17 @@ def make_disjunctive_chaum_pedersen(
         0 <= plaintext <= 1
     ), "make_disjunctive_chaum_pedersen only supports plaintexts of 0 or 1"
     if plaintext == 0:
-        return make_disjunctive_chaum_pedersen_zero(message, r, k, seed)
+        return make_disjunctive_chaum_pedersen_zero(message, r, k, q, seed)
     else:
-        return make_disjunctive_chaum_pedersen_one(message, r, k, seed)
+        return make_disjunctive_chaum_pedersen_one(message, r, k, q, seed)
 
 
 def make_disjunctive_chaum_pedersen_zero(
-    message: ElGamalCiphertext, r: ElementModQ, k: ElementModP, seed: ElementModQ
+    message: ElGamalCiphertext,
+    r: ElementModQ,
+    k: ElementModP,
+    q: ElementModQ,
+    seed: ElementModQ,
 ) -> DisjunctiveChaumPedersenProof:
     """
     Produces a "disjunctive" proof that an encryption of zero is either an encrypted zero or one.
@@ -372,6 +408,8 @@ def make_disjunctive_chaum_pedersen_zero(
     :param message: An ElGamal ciphertext
     :param r: The nonce used creating the ElGamal ciphertext
     :param k: The ElGamal public key for the election
+    :param q: A value used when generating the challenge, 
+                        usually the election extended base hash (𝑄')
     :param seed: Used to generate other random values here
     """
     (alpha, beta) = message
@@ -385,15 +423,19 @@ def make_disjunctive_chaum_pedersen_zero(
     q_minus_c1 = negate_q(c1)
     a1 = mult_p(g_pow_p(v1), pow_p(alpha, q_minus_c1))
     b1 = mult_p(pow_p(k, v1), g_pow_p(c1), pow_p(beta, q_minus_c1))
-    c = hash_elems(alpha, beta, a0, b0, a1, b1)
+    c = hash_elems(q, alpha, beta, a0, b0, a1, b1)
     c0 = a_minus_b_q(c, c1)
     v0 = a_plus_bc_q(u0, c0, r)
 
-    return DisjunctiveChaumPedersenProof(a0, b0, a1, b1, c0, c1, v0, v1)
+    return DisjunctiveChaumPedersenProof(a0, b0, a1, b1, c0, c1, c, v0, v1)
 
 
 def make_disjunctive_chaum_pedersen_one(
-    message: ElGamalCiphertext, r: ElementModQ, k: ElementModP, seed: ElementModQ
+    message: ElGamalCiphertext,
+    r: ElementModQ,
+    k: ElementModP,
+    q: ElementModQ,
+    seed: ElementModQ,
 ) -> DisjunctiveChaumPedersenProof:
     """
     Produces a "disjunctive" proof that an encryption of one is either an encrypted zero or one.
@@ -401,6 +443,8 @@ def make_disjunctive_chaum_pedersen_one(
     :param message: An ElGamal ciphertext
     :param r: The nonce used creating the ElGamal ciphertext
     :param k: The ElGamal public key for the election
+    :param q: A value used when generating the challenge, 
+                        usually the election extended base hash (𝑄')
     :param seed: Used to generate other random values here
     """
     (alpha, beta) = message
@@ -414,11 +458,11 @@ def make_disjunctive_chaum_pedersen_one(
     b0 = mult_p(pow_p(k, v0), pow_p(beta, q_minus_c0))
     a1 = g_pow_p(u1)
     b1 = pow_p(k, u1)
-    c = hash_elems(alpha, beta, a0, b0, a1, b1)
+    c = hash_elems(q, alpha, beta, a0, b0, a1, b1)
     c1 = a_minus_b_q(c, c0)
     v1 = a_plus_bc_q(u1, c1, r)
 
-    return DisjunctiveChaumPedersenProof(a0, b0, a1, b1, c0, c1, v0, v1)
+    return DisjunctiveChaumPedersenProof(a0, b0, a1, b1, c0, c1, c, v0, v1)
 
 
 def make_chaum_pedersen(
@@ -457,6 +501,7 @@ def make_constant_chaum_pedersen(
     r: ElementModQ,
     k: ElementModP,
     seed: ElementModQ,
+    hash_header: ElementModQ,
 ) -> ConstantChaumPedersenProof:
     """
     Produces a proof that a given encryption corresponds to a specific total value.
@@ -466,6 +511,8 @@ def make_constant_chaum_pedersen(
     :param r: The aggregate nonce used creating the ElGamal ciphertext
     :param k: The ElGamal public key for the election
     :param seed: Used to generate other random values here
+    :param hash_header: A value used when generating the challenge,
+                        usually the election extended base hash (𝑄')
     """
     (alpha, beta) = message
 
@@ -473,7 +520,7 @@ def make_constant_chaum_pedersen(
     u = Nonces(seed, "constant-chaum-pedersen-proof")[0]
     a = g_pow_p(u)  # 𝑔^𝑢𝑖 mod 𝑝
     b = pow_p(k, u)  # 𝐴^𝑢𝑖 mod 𝑝
-    c = hash_elems(alpha, beta, a, b)  # sha256(𝑄', A, B, a, b)
+    c = hash_elems(hash_header, alpha, beta, a, b)  # sha256(𝑄', A, B, a, b)
     v = a_plus_bc_q(u, c, r)
 
     return ConstantChaumPedersenProof(a, b, c, v, constant)

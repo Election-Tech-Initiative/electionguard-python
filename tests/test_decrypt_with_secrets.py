@@ -32,7 +32,13 @@ from electionguard.encrypt import (
     EncryptionDevice,
     EncryptionMediator,
 )
-from electionguard.group import ElementModQ, TWO_MOD_P, mult_p, int_to_q_unchecked
+from electionguard.group import (
+    ElementModQ,
+    TWO_MOD_P,
+    ONE_MOD_Q,
+    mult_p,
+    int_to_q_unchecked,
+)
 from electionguardtest.elgamal import elgamal_keypairs
 from electionguardtest.group import elements_mod_q_no_zero
 
@@ -68,17 +74,19 @@ class TestDecrypt(unittest.TestCase):
         data = ballot_factory.get_random_selection_from(description, random)
 
         # Act
-        subject = encrypt_selection(data, description, keypair.public_key, nonce_seed)
+        subject = encrypt_selection(
+            data, description, keypair.public_key, ONE_MOD_Q, nonce_seed
+        )
         self.assertIsNotNone(subject)
 
         result_from_key = decrypt_selection_with_secret(
-            subject, description, keypair.public_key, keypair.secret_key
+            subject, description, keypair.public_key, keypair.secret_key, ONE_MOD_Q
         )
         result_from_nonce = decrypt_selection_with_nonce(
-            subject, description, keypair.public_key
+            subject, description, keypair.public_key, ONE_MOD_Q
         )
         result_from_nonce_seed = decrypt_selection_with_nonce(
-            subject, description, keypair.public_key, nonce_seed
+            subject, description, keypair.public_key, ONE_MOD_Q, nonce_seed
         )
 
         # Assert
@@ -116,7 +124,9 @@ class TestDecrypt(unittest.TestCase):
         data = ballot_factory.get_random_selection_from(description, random)
 
         # Act
-        subject = encrypt_selection(data, description, keypair.public_key, seed)
+        subject = encrypt_selection(
+            data, description, keypair.public_key, ONE_MOD_Q, seed
+        )
 
         # tamper with the encryption
         malformed_encryption = deepcopy(subject)
@@ -127,32 +137,41 @@ class TestDecrypt(unittest.TestCase):
 
         # tamper with the proof
         malformed_proof = deepcopy(subject)
-        altered_a0 = mult_p(subject.proof.a0, TWO_MOD_P)
+        altered_a0 = mult_p(subject.proof.proof_zero_pad, TWO_MOD_P)
         malformed_disjunctive = DisjunctiveChaumPedersenProof(
             altered_a0,
-            malformed_proof.proof.b0,
-            malformed_proof.proof.a1,
-            malformed_proof.proof.b1,
-            malformed_proof.proof.c0,
-            malformed_proof.proof.c1,
-            malformed_proof.proof.v0,
-            malformed_proof.proof.v1,
+            malformed_proof.proof.proof_zero_data,
+            malformed_proof.proof.proof_one_pad,
+            malformed_proof.proof.proof_one_data,
+            malformed_proof.proof.proof_zero_challenge,
+            malformed_proof.proof.proof_one_challenge,
+            malformed_proof.proof.challenge,
+            malformed_proof.proof.proof_zero_response,
+            malformed_proof.proof.proof_one_response,
         )
         malformed_proof.proof = malformed_disjunctive
 
         result_from_key_malformed_encryption = decrypt_selection_with_secret(
-            malformed_encryption, description, keypair.public_key, keypair.secret_key
+            malformed_encryption,
+            description,
+            keypair.public_key,
+            keypair.secret_key,
+            ONE_MOD_Q,
         )
 
         result_from_key_malformed_proof = decrypt_selection_with_secret(
-            malformed_proof, description, keypair.public_key, keypair.secret_key
+            malformed_proof,
+            description,
+            keypair.public_key,
+            keypair.secret_key,
+            ONE_MOD_Q,
         )
 
         result_from_nonce_malformed_encryption = decrypt_selection_with_nonce(
-            malformed_encryption, description, keypair.public_key
+            malformed_encryption, description, keypair.public_key, ONE_MOD_Q
         )
         result_from_nonce_malformed_proof = decrypt_selection_with_nonce(
-            malformed_proof, description, keypair.public_key
+            malformed_proof, description, keypair.public_key, ONE_MOD_Q
         )
 
         # Assert
@@ -188,14 +207,16 @@ class TestDecrypt(unittest.TestCase):
         data = ballot_factory.get_random_selection_from(description, random)
 
         # Act
-        subject = encrypt_selection(data, description, keypair.public_key, nonce_seed)
+        subject = encrypt_selection(
+            data, description, keypair.public_key, ONE_MOD_Q, nonce_seed
+        )
         self.assertIsNotNone(subject)
 
         # Tamper with the nonce by setting it to an aribtrary value
         subject.nonce = nonce_seed
 
         result_from_nonce_seed = decrypt_selection_with_nonce(
-            subject, description, keypair.public_key, nonce_seed
+            subject, description, keypair.public_key, ONE_MOD_Q, nonce_seed
         )
 
         # Assert
@@ -238,7 +259,11 @@ class TestDecrypt(unittest.TestCase):
 
         # Act
         subject = encrypt_contest(
-            data, description_with_placeholders, keypair.public_key, nonce_seed
+            data,
+            description_with_placeholders,
+            keypair.public_key,
+            ONE_MOD_Q,
+            nonce_seed,
         )
         self.assertIsNotNone(subject)
 
@@ -249,18 +274,21 @@ class TestDecrypt(unittest.TestCase):
             description_with_placeholders,
             keypair.public_key,
             keypair.secret_key,
+            ONE_MOD_Q,
             remove_placeholders=False,
         )
         result_from_nonce = decrypt_contest_with_nonce(
             subject,
             description_with_placeholders,
             keypair.public_key,
+            ONE_MOD_Q,
             remove_placeholders=False,
         )
         result_from_nonce_seed = decrypt_contest_with_nonce(
             subject,
             description_with_placeholders,
             keypair.public_key,
+            ONE_MOD_Q,
             nonce_seed,
             remove_placeholders=False,
         )
@@ -400,7 +428,11 @@ class TestDecrypt(unittest.TestCase):
 
         # Act
         subject = encrypt_contest(
-            data, description_with_placeholders, keypair.public_key, nonce_seed
+            data,
+            description_with_placeholders,
+            keypair.public_key,
+            ONE_MOD_Q,
+            nonce_seed,
         )
         self.assertIsNotNone(subject)
 
@@ -411,12 +443,14 @@ class TestDecrypt(unittest.TestCase):
             subject,
             description_with_placeholders,
             keypair.public_key,
+            ONE_MOD_Q,
             remove_placeholders=False,
         )
         result_from_nonce_seed = decrypt_contest_with_nonce(
             subject,
             description_with_placeholders,
             keypair.public_key,
+            ONE_MOD_Q,
             nonce_seed,
             remove_placeholders=False,
         )
@@ -435,18 +469,21 @@ class TestDecrypt(unittest.TestCase):
             description_with_placeholders,
             keypair.public_key,
             keypair.secret_key,
+            ONE_MOD_Q,
             remove_placeholders=False,
         )
         result_from_nonce_tampered = decrypt_contest_with_nonce(
             subject,
             description_with_placeholders,
             keypair.public_key,
+            ONE_MOD_Q,
             remove_placeholders=False,
         )
         result_from_nonce_seed_tampered = decrypt_contest_with_nonce(
             subject,
             description_with_placeholders,
             keypair.public_key,
+            ONE_MOD_Q,
             nonce_seed,
             remove_placeholders=False,
         )
