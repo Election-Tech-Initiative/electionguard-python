@@ -9,7 +9,6 @@ __dlog_cache: Dict[ElementModP, int] = {ONE_MOD_P: 0}
 __dlog_max_elem = ONE_MOD_P
 __dlog_max_exp = 0
 
-# initialized inside __discrete_log_internal
 __dlog_lock: Optional[asyncio.Lock] = None
 
 
@@ -41,15 +40,7 @@ async def __discrete_log_internal(e: ElementModP) -> int:
     global __dlog_lock
 
     if __dlog_lock is None:
-        # We cannot run asyncio.Lock() if we don't have an "event loop", which
-        # can happen if we're running in certain environments. The solution
-        # is to put this bit of initialization into an async function, which
-        # is where we happen to be right now. With Python's relatively simple
-        # concurrency model, we don't have to worry about multiple threads
-        # arriving here simultaneously. This code will run exactly once. If
-        # you're using one of the many multiprocessing libraries, this will
-        # run exactly once per process.
-
+        # Initialize the lock on on first function call per process
         __dlog_lock = asyncio.Lock()
 
     async with __dlog_lock:
