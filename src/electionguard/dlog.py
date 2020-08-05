@@ -1,14 +1,15 @@
 # support for computing discrete logs, with a cache so they're never recomputed
 
 import asyncio
-from typing import Dict
+from typing import Dict, Optional
 
 from .group import G, ElementModP, ONE_MOD_P, mult_p, int_to_p_unchecked
 
 __dlog_cache: Dict[ElementModP, int] = {ONE_MOD_P: 0}
 __dlog_max_elem = ONE_MOD_P
 __dlog_max_exp = 0
-__dlog_lock = asyncio.Lock()
+
+__dlog_lock: Optional[asyncio.Lock] = None
 
 
 def discrete_log(e: ElementModP) -> int:
@@ -37,6 +38,10 @@ async def __discrete_log_internal(e: ElementModP) -> int:
     global __dlog_max_elem
     global __dlog_max_exp
     global __dlog_lock
+
+    if __dlog_lock is None:
+        # Initialize the lock on on first function call per process
+        __dlog_lock = asyncio.Lock()
 
     async with __dlog_lock:
         g = int_to_p_unchecked(G)
