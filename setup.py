@@ -62,5 +62,11 @@ setup(
     classifiers=CLASSIFIERS,
     project_urls=PROJECT_URLS,
     python_requires="~=3.8",
-    install_requires=["gmpy2>=2.0.8", "numpy>=1.18.2", "jsons>=1.1.2", "cryptography",],
+    install_requires=[
+        "gmpy2>=2.0.8",
+        "numpy>=1.18.2",
+        "jsons>=1.1.2",
+        "cryptography",
+        "psutil>=5.7.2",
+    ],
 )

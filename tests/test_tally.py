@@ -151,7 +151,7 @@ class TestTally(TestCase):
         # Verify accumulation fails if the selection collection is empty
         if first_ballot.state == BallotBoxState.CAST:
             self.assertFalse(
-                subject.cast[first_ballot.object_id].elgamal_accumulate([])
+                subject.cast[first_ballot.object_id].accumulate_contest([])
             )
 
         # pop the cast ballot
@@ -235,7 +235,7 @@ class TestTally(TestCase):
         if ballot.state == BallotBoxState.CAST:
             first_tally = subject.cast[first_contest.object_id]
             self.assertFalse(
-                first_tally.elgamal_accumulate(ballot.contests[0].ballot_selections)
+                first_tally.accumulate_contest(ballot.contests[0].ballot_selections)
             )
 
             key, bad_accumulation = first_tally._accumulate_selections(
@@ -275,7 +275,7 @@ class TestTally(TestCase):
         # Verify accumulation fails if the selection object id does not match
         if ballot.state == BallotBoxState.CAST:
             self.assertFalse(
-                subject.cast[ballot.contests[0].object_id].elgamal_accumulate(
+                subject.cast[ballot.contests[0].object_id].accumulate_contest(
                     ballot.contests[0].ballot_selections
                 )
             )

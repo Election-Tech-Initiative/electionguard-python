@@ -1,8 +1,6 @@
 from dataclasses import dataclass, field
-from typing import Optional, List, Dict, Set, Tuple
+from typing import Iterable, Optional, List, Dict, Set, Tuple
 from collections.abc import Container, Sized
-
-from multiprocessing import Pool, cpu_count
 
 from .ballot import (
     BallotBoxState,
@@ -17,7 +15,7 @@ from .election_object_base import ElectionObjectBase
 from .elgamal import ElGamalCiphertext, elgamal_add
 from .group import ElementModQ, ONE_MOD_P, ElementModP
 from .logs import log_warning
-
+from .scheduler import Scheduler
 from .types import BALLOT_ID, CONTEST_ID, SELECTION_ID
 
 
@@ -90,13 +88,23 @@ class CiphertextTallyContest(ElectionObjectBase):
     A collection of CiphertextTallySelection mapped by SelectionDescription.object_id
     """
 
-    def elgamal_accumulate(
-        self, contest_selections: List[CiphertextBallotSelection]
+    def accumulate_contest(
+        self,
+        contest_selections: List[CiphertextBallotSelection],
+        scheduler: Optional[Scheduler] = None,
     ) -> bool:
         """
-        Accumulate the contest selections into this tally
+        Accumulate the contest selections of an individual ballot into this tally
         """
 
+        if len(contest_selections) == 0:
+            log_warning(
+                f"accumulate cannot add missing selections for contest {self.object_id}"
+            )
+            return False
+
+        # Validate the input data by comparing the selection id's provided
+        # to the valid selection id's for this tally contest
         selection_ids = set(
             [
                 selection.object_id
@@ -105,30 +113,25 @@ class CiphertextTallyContest(ElectionObjectBase):
             ]
         )
 
-        if len(contest_selections) == 0:
-            log_warning(
-                f"accumulate cannot add missing selections for contest {self.object_id}"
-            )
-            return False
-
         if any(set(self.tally_selections).difference(selection_ids)):
             log_warning(
                 f"accumulate cannot add mismatched selections for contest {self.object_id}"
             )
             return False
 
-        cpu_pool = Pool(cpu_count())
+        if scheduler is None:
+            scheduler = Scheduler()
 
         # iterate through the tally selections and add the new value to the total
-        results = cpu_pool.starmap(
+        results: List[
+            Tuple[SELECTION_ID, Optional[ElGamalCiphertext]]
+        ] = scheduler.schedule(
             self._accumulate_selections,
             [
                 (key, selection_tally, contest_selections)
                 for (key, selection_tally) in self.tally_selections.items()
             ],
         )
-
-        cpu_pool.close()
 
         for (key, ciphertext) in results:
             if ciphertext is None:
@@ -150,9 +153,9 @@ class CiphertextTallyContest(ElectionObjectBase):
                 use_selection = selection
                 break
 
-        # we did not find a selection on the ballot that is required
+        # a selection on the ballot that is required was not found
         # this should never happen when using the `CiphertextTally`
-        # but we check anyway
+        # but sanity check anyway
         if not use_selection:
             log_warning(f"add cannot accumulate for missing selection {key}")
             return key, None
@@ -217,7 +220,7 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
 
     def append(self, ballot: CiphertextAcceptedBallot) -> bool:
         """
-        Append a ballot to the tally
+        Append a ballot to the tally and recalculate the tally.
         """
         if ballot.state == BallotBoxState.UNKNOWN:
             log_warning(f"append cannot add {ballot.object_id} with invalid state")
@@ -239,15 +242,62 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
         log_warning(f"append cannot add {ballot.object_id}")
         return False
 
+    SELECTION_ID = str
+
+    def batch_append(self, ballots: Iterable[CiphertextAcceptedBallot]) -> bool:
+        """
+        Append a collection of Ballots to the tally and recalculate
+        """
+        cast_ballot_selections: Dict[
+            SELECTION_ID, Dict[BALLOT_ID, ElGamalCiphertext]
+        ] = {}
+        for ballot in ballots:
+            if not self.__contains__(ballot) and ballot_is_valid_for_election(
+                ballot, self._metadata, self._encryption
+            ):
+                if ballot.state == BallotBoxState.CAST:
+
+                    # collect the selections so they can can be accumulated in parallel
+                    for contest in ballot.contests:
+                        for selection in contest.ballot_selections:
+                            if selection.object_id not in cast_ballot_selections:
+                                cast_ballot_selections[selection.object_id] = {}
+
+                            cast_ballot_selections[selection.object_id][
+                                ballot.object_id
+                            ] = selection.ciphertext
+
+                # just append the spoiled ballots
+                elif ballot.state == BallotBoxState.SPOILED:
+                    self._add_spoiled(ballot)
+
+        # cache the cast ballot id's so they are not double counted
+        if self._execute_accumulate(cast_ballot_selections):
+            for ballot in ballots:
+                if ballot.state == BallotBoxState.CAST:
+                    self._cast_ballot_ids.add(ballot.object_id)
+            return True
+
+        return False
+
     def count(self) -> int:
         """
         Get a Count of the cast ballots
         """
         return len(self._cast_ballot_ids)
 
+    @staticmethod
+    def _accumulate(
+        id: str, ballot_selections: Dict[BALLOT_ID, ElGamalCiphertext]
+    ) -> Tuple[str, ElGamalCiphertext]:
+        return (
+            id,
+            elgamal_add(*[ciphertext for ciphertext in ballot_selections.values()]),
+        )
+
     def _add_cast(self, ballot: CiphertextAcceptedBallot) -> bool:
         """
-        Add a cast ballot to the tally
+        Add a cast ballot to the tally, synchronously
         """
 
         # iterate through the contests and elgamal add
@@ -261,7 +311,7 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
                 return False
 
             use_contest = self.cast[contest.object_id]
-            if not use_contest.elgamal_accumulate(contest.ballot_selections):
+            if not use_contest.accumulate_contest(contest.ballot_selections):
                 return False
 
             self.cast[contest.object_id] = use_contest
@@ -276,8 +326,9 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
         self.spoiled_ballots[ballot.object_id] = ballot
         return True
 
+    @staticmethod
     def _build_tally_collection(
-        self, description: InternalElectionDescription
+        description: InternalElectionDescription,
     ) -> Dict[CONTEST_ID, CiphertextTallyContest]:
         """
         Build the object graph for the tally from the InternalElectionDescription
@@ -298,6 +349,37 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
             )
 
         return cast_collection
+
+    def _execute_accumulate(
+        self,
+        ciphertext_selections_by_selection_id: Dict[
+            str, Dict[BALLOT_ID, ElGamalCiphertext]
+        ],
+    ) -> bool:
+
+        result_set: List[Tuple[SELECTION_ID, ElGamalCiphertext]]
+        scheduler = Scheduler()
+        result_set = scheduler.schedule(
+            self._accumulate,
+            [
+                (selection_id, selections)
+                for (
+                    selection_id,
+                    selections,
+                ) in ciphertext_selections_by_selection_id.items()
+            ],
+        )
+
+        result_dict = {
+            selection_id: ciphertext for (selection_id, ciphertext) in result_set
+        }
+
+        for contest_id, contest in self.cast.items():
+            for selection_id, selection in contest.tally_selections.items():
+                if selection_id in result_dict:
+                    selection.elgamal_accumulate(result_dict[selection_id])
+
+        return True
 
 
 def tally_ballot(
@@ -331,9 +413,6 @@ def tally_ballots(
     """
     # TODO: ISSUE #14: unique Id for the tally
     tally: CiphertextTally = CiphertextTally("election-results", metadata, context)
-    for ballot in store:
-        if ballot is None:
-            return None
-        if tally_ballot(ballot, tally) is None:
-            return None
-    return tally
+    if tally.batch_append(store):
+        return tally
+    return None

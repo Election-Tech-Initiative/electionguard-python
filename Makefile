@@ -1,4 +1,4 @@
-.PHONY: all environment install install-mac install-linux install-windows lint validate test test-example coverage coverage-html coverage-xml coverage-erase generate-sample-data
+.PHONY: all bench environment install install-mac install-linux install-windows lint validate test test-example coverage coverage-html coverage-xml coverage-erase generate-sample-data
 
 CODE_COVERAGE ?= 90
 WINDOWS_32BIT_GMPY2 ?= packages/gmpy2-2.0.8-cp38-cp38-win32.whl
@@ -7,6 +7,10 @@ OS ?= $(shell python -c 'import platform; print(platform.system())')
 IS_64_BIT ?= $(shell python -c 'from sys import maxsize; print(maxsize > 2**32)')
 
 all: environment install validate lint coverage
+
+bench:
+	@echo 📊 BENCHMARKS
+	pipenv run python -s bench/bench_chaum_pedersen.py
 
 environment:
 	@echo 🔧 PIPENV SETUP

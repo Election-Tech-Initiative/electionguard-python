@@ -1,5 +1,4 @@
 import unittest
-from multiprocessing import Pool, cpu_count
 from timeit import default_timer as timer
 
 from hypothesis import given
@@ -27,6 +26,7 @@ from electionguard.group import (
 )
 from electionguard.logs import log_info
 from electionguard.nonces import Nonces
+from electionguard.scheduler import Scheduler
 from electionguard.utils import get_optional
 from electionguardtest.elgamal import elgamal_keypairs
 from tests.test_group import elements_mod_q_no_zero
@@ -145,31 +145,34 @@ class TestElGamal(unittest.TestCase):
         self.assertNotEqual(joint_key, random_keypair.public_key)
         self.assertNotEqual(joint_key, random_keypair_two.public_key)
 
-    # test whether running lots of parallel exponentiations yields the
-    # correct answer. This verifies that nothing weird is happening
-    # in the GMPY2 library
     def test_gmpy2_parallelism_is_safe(self):
-        cpus = cpu_count()
+        """
+        Ensures running lots of parallel exponentiations still yields the correct answer. 
+        This verifies that nothing incorrect is happening in the GMPY2 library
+        """
+
+        # Arrange
+        scheduler = Scheduler()
         problem_size = 1000
-        secret_keys = Nonces(int_to_q_unchecked(3))[
-            0:problem_size
-        ]  # list of 1000 might-as-well-be-random Q's
+        random_secret_keys = Nonces(int_to_q_unchecked(3))[0:problem_size]
         log_info(
-            f"testing GMPY2 powmod parallelism safety (cpus = {cpus}, problem_size = {problem_size})"
+            f"testing GMPY2 powmod parallelism safety (cpus = {scheduler.cpu_count}, problem_size = {problem_size})"
         )
 
-        # compute in parallel
+        # Act
         start = timer()
-        p = Pool(cpus)
-        keypairs = p.map(elgamal_keypair_from_secret, secret_keys)
+        keypairs = scheduler.schedule(
+            elgamal_keypair_from_secret,
+            [list([secret_key]) for secret_key in random_secret_keys],
+        )
         end1 = timer()
 
-        # verify scalar
+        # Assert
         for keypair in keypairs:
             self.assertEqual(
                 keypair.public_key,
                 elgamal_keypair_from_secret(keypair.secret_key).public_key,
             )
         end2 = timer()
-        p.close()  # apparently necessary to avoid warnings from the Pool system
+        scheduler.close()
         log_info(f"Parallelism speedup: {(end2 - end1) / (end1 - start):.3f}")

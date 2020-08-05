@@ -1,6 +1,4 @@
-from multiprocessing import cpu_count
-from multiprocessing.dummy import Pool
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 from .auxiliary import AuxiliaryDecrypt
 from .ballot import CiphertextAcceptedBallot, CiphertextSelection
@@ -21,6 +19,7 @@ from .guardian import Guardian
 from .key_ceremony import ElectionPublicKey
 from .logs import log_warning
 from .rsa import rsa_decrypt
+from .scheduler import Scheduler
 from .tally import (
     CiphertextTally,
     CiphertextTallyContest,
@@ -111,17 +110,20 @@ def compute_decryption_share_for_cast_contests(
     """
     Compute the decryption for all of the cast contests in the Ciphertext Tally
     """
-    cpu_pool = Pool(cpu_count())
     contests: Dict[CONTEST_ID, CiphertextDecryptionContest] = {}
+    scheduler = Scheduler()
 
     for contest in tally.cast.values():
         selections: Dict[SELECTION_ID, CiphertextDecryptionSelection] = {}
-        selection_decryptions = cpu_pool.starmap(
+        selection_decryptions: List[
+            Optional[CiphertextDecryptionSelection]
+        ] = scheduler.schedule(
             compute_decryption_share_for_selection,
             [
                 (guardian, selection, context)
                 for (_, selection) in contest.tally_selections.items()
             ],
+            with_shared_resources=True,
         )
 
         # verify the decryptions are received and add them to the collection
@@ -136,7 +138,6 @@ def compute_decryption_share_for_cast_contests(
         contests[contest.object_id] = CiphertextDecryptionContest(
             contest.object_id, guardian.object_id, contest.description_hash, selections
         )
-    cpu_pool.close()
     return contests
 
 
@@ -150,17 +151,20 @@ def compute_compensated_decryption_share_for_cast_contests(
     """
     Compute the compensated decryption for all of the cast contests in the Ciphertext Tally
     """
-    cpu_pool = Pool(cpu_count())
+    scheduler = Scheduler()
     contests: Dict[CONTEST_ID, CiphertextCompensatedDecryptionContest] = {}
 
     for contest in tally.cast.values():
         selections: Dict[SELECTION_ID, CiphertextCompensatedDecryptionSelection] = {}
-        selection_decryptions = cpu_pool.starmap(
+        selection_decryptions: List[
+            Optional[CiphertextCompensatedDecryptionSelection]
+        ] = scheduler.schedule(
             compute_compensated_decryption_share_for_selection,
             [
                 (guardian, missing_guardian_id, selection, context, decrypt)
                 for (_, selection) in contest.tally_selections.items()
             ],
+            with_shared_resources=True,
         )
 
         # verify the decryptions are received and add them to the collection
@@ -179,7 +183,6 @@ def compute_compensated_decryption_share_for_cast_contests(
             contest.description_hash,
             selections,
         )
-    cpu_pool.close()
     return contests
 
 
@@ -189,19 +192,22 @@ def compute_decryption_share_for_spoiled_ballots(
     """
     Compute the decryption for all spoiled ballots in the Ciphertext Tally
     """
-    cpu_pool = Pool(cpu_count())
     spoiled_ballots: Dict[BALLOT_ID, BallotDecryptionShare] = {}
+    scheduler = Scheduler()
 
     for spoiled_ballot in tally.spoiled_ballots.values():
         contests: Dict[CONTEST_ID, CiphertextDecryptionContest] = {}
         for contest in spoiled_ballot.contests:
             selections: Dict[SELECTION_ID, CiphertextDecryptionSelection] = {}
-            selection_decryptions = cpu_pool.starmap(
+            selection_decryptions: List[
+                Optional[CiphertextDecryptionSelection]
+            ] = scheduler.schedule(
                 compute_decryption_share_for_selection,
                 [
                     (guardian, selection, context)
                     for selection in contest.ballot_selections
                 ],
+                with_shared_resources=True,
             )
             # verify the decryptions are received and add them to the collection
             for decryption in selection_decryptions:
@@ -225,7 +231,6 @@ def compute_decryption_share_for_spoiled_ballots(
             spoiled_ballot.object_id,
             contests,
         )
-    cpu_pool.close()
     return spoiled_ballots
 
 
@@ -239,8 +244,8 @@ def compute_compensated_decryption_share_for_spoiled_ballots(
     """
     Compute the decryption for all spoiled ballots in the Ciphertext Tally
     """
-    cpu_pool = Pool(cpu_count())
     spoiled_ballots: Dict[BALLOT_ID, CompensatedBallotDecryptionShare] = {}
+    scheduler = Scheduler()
 
     for spoiled_ballot in tally.spoiled_ballots.values():
         contests: Dict[CONTEST_ID, CiphertextCompensatedDecryptionContest] = {}
@@ -248,12 +253,15 @@ def compute_compensated_decryption_share_for_spoiled_ballots(
             selections: Dict[
                 SELECTION_ID, CiphertextCompensatedDecryptionSelection
             ] = {}
-            selection_decryptions = cpu_pool.starmap(
+            selection_decryptions: List[
+                Optional[CiphertextCompensatedDecryptionSelection]
+            ] = scheduler.schedule(
                 compute_compensated_decryption_share_for_selection,
                 [
                     (guardian, missing_guardian_id, selection, context, decrypt)
                     for selection in contest.ballot_selections
                 ],
+                with_shared_resources=True,
             )
             # verify the decryptions are received and add them to the collection
             for decryption in selection_decryptions:
@@ -279,7 +287,6 @@ def compute_compensated_decryption_share_for_spoiled_ballots(
             spoiled_ballot.object_id,
             contests,
         )
-    cpu_pool.close()
     return spoiled_ballots
 
 
