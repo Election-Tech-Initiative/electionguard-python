@@ -9,6 +9,7 @@ IS_64_BIT ?= $(shell python -c 'from sys import maxsize; print(maxsize > 2**32)'
 all: environment install validate lint coverage
 
 bench:
+	@echo 📊 BENCHMARKS
 	pipenv run python -s bench/bench_chaum_pedersen.py
 
 environment:

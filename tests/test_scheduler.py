@@ -13,19 +13,25 @@ def _exception_callable(something: int):
 
 class TestScheduler(TestCase):
     def test_schedule_callable_throws(self):
+        # Arrange
         subject = Scheduler()
 
+        # Act
         result = subject.schedule(_exception_callable, [list([1]), list([2])])
+
+        # Assert
         self.assertIsNotNone(result)
         self.assertIsInstance(result, List)
         subject.close()
 
     def test_safe_map(self):
+        # Arrange
         from multiprocessing import Pool
 
         process_pool = Pool(1)
         subject = Scheduler()
 
+        # Act
         result = subject.safe_map(process_pool, _callable, [1])
         self.assertEqual(result, [1])
 
