@@ -119,8 +119,18 @@ docs-deploy:
 	@echo 🚀 DEPLOY to Github Pages
 	pipenv run mkdocs gh-deploy --force
 
+docs-deploy-ci:
+	@echo 🚀 DEPLOY to Github Pages
+	pip install mkdocs
+	mkdocs gh-deploy --force
+
 dependency-graph:
-	pipenv run pydeps --max-bacon 2 -o dependency-graph.svg src/electionguard
+	pipenv run pydeps --noshow --max-bacon 2 -o dependency-graph.svg src/electionguard
+
+dependency-graph-ci:
+	sudo apt install graphviz
+	pip install pydeps
+	pydeps --noshow --max-bacon 2 -o dependency-graph.svg src/electionguard
 
 # Sample Data
 generate-sample-data:
@@ -134,20 +144,34 @@ package:
 	python setup.py sdist bdist_wheel
 
 package-upload:
-	python3 -m pip install --user --upgrade twine
+	python -m pip install --user --upgrade twine
 	python -m twine upload dist/*
 
+package-upload-ci:
+	python -m pip install --user --upgrade twine
+	python -m twine upload --username __token__ --password $(PYPI_TOKEN) dist/*
+
 package-upload-test:
-	python3 -m pip install --user --upgrade twine
+	python -m pip install --user --upgrade twine
 	python -m twine upload --repository testpypi dist/*
+
+package-upload-test-ci:
+	python -m pip install --user --upgrade twine
+	python -m twine upload --repository testpypi --username __token__ --password $(TEST_PYPI_TOKEN) dist/*
 
 package-validate:	
 	@echo ✅ VALIDATE
 	python -m pip install --no-deps electionguard
 	python -c 'import electionguard'
 
-
 package-validate-test:	
 	@echo ✅ VALIDATE
 	python -m pip install --index-url https://test.pypi.org/simple/ --no-deps electionguard
 	python -c 'import electionguard'
+
+# Release
+release-zip-ci:
+	@echo 📁 ZIP RELEASE ARTIFACTS
+	mv dist electionguard
+	mv dependency-graph.svg electionguard
+	zip -r electionguard.zip electionguard
