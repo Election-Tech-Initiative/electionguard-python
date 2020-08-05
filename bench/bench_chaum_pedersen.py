@@ -34,7 +34,7 @@ def chaum_pedersen_bench(bi: BenchInput) -> Tuple[float, float]:
         ciphertext, r, keypair.public_key, ONE_MOD_Q, s
     )
     end1 = timer()
-    valid = proof.is_valid(ciphertext, keypair.public_key)
+    valid = proof.is_valid(ciphertext, keypair.public_key, ONE_MOD_Q)
     end2 = timer()
     if not valid:
         raise Exception("Wasn't expecting an invalid proof during a benchmark!")
