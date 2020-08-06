@@ -390,7 +390,7 @@ class TestEndToEndElection(TestCase):
             self.context,
             self.constants,
             [self.device],
-            self.ciphertext_ballots,
+            self.ballot_store.all(),
             self.ciphertext_tally,
             self.plaintext_tally,
             self.coefficient_validation_sets,
