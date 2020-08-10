@@ -18,6 +18,8 @@ JSON_FILE_EXTENSION: str = ".json"
 WRITE: str = "w"
 READ: str = "r"
 JSON_PARSE_ERROR = '{"error": "Object could not be parsed due to json issue"}'
+# TODO Issue #??: Jsons library incorrectly dumps class method
+FROM_JSON_FILE = '"from_json_file": {}, '
 
 
 @dataclass
@@ -36,7 +38,7 @@ class Serializable(Generic[T]):
         try:
             return cast(
                 str, dumps(self, strip_privates=strip_privates, strip_nulls=True)
-            )
+            ).replace(FROM_JSON_FILE, "")
         except JsonsError:
             return JSON_PARSE_ERROR
 
