@@ -4,7 +4,6 @@ from os import path
 from typing import cast, TypeVar, Generic
 
 from jsons import (
-    dump,
     dumps,
     loads,
     JsonsError,
@@ -17,6 +16,7 @@ T = TypeVar("T")
 
 JSON_FILE_EXTENSION: str = ".json"
 WRITE: str = "w"
+READ: str = "r"
 JSON_PARSE_ERROR = '{"error": "Object could not be parsed due to json issue"}'
 
 
@@ -32,6 +32,7 @@ class Serializable(Generic[T]):
         :param strip_privates: strip private variables
         :return: the json representation of this object
         """
+        set_serializers()
         try:
             return cast(
                 str, dumps(self, strip_privates=strip_privates, strip_nulls=True)
@@ -51,10 +52,22 @@ class Serializable(Generic[T]):
         write_json_file(self.to_json(strip_privates), file_name, file_path)
 
     @classmethod
+    def from_json_file(cls, file_name: str, file_path: str = "") -> T:
+        """
+        Deserialize the provided file into the specified instance
+        """
+        json_file_path: str = path.join(file_path, file_name + JSON_FILE_EXTENSION)
+        with open(json_file_path, READ) as json_file:
+            data = json_file.read()
+            target = cls.from_json(data)
+        return target
+
+    @classmethod
     def from_json(cls, data: str) -> T:
         """
         Deserialize the provided data string into the specified instance
         """
+        set_deserializers()
         return cast(T, loads(data, cls))
 
 
@@ -72,12 +85,9 @@ def set_serializers() -> None:
 
     # Local import to minimize jsons usage across files
     from .group import ElementModP, ElementModQ
-    from .tally import CiphertextTally, PlaintextTally
 
     set_serializer(lambda p, **_: str(p), ElementModP)
     set_serializer(lambda q, **_: str(q), ElementModQ)
-    set_serializer(lambda tally, **_: dump(tally.cast), CiphertextTally)
-    set_serializer(lambda tally, **_: dump(tally.contests), PlaintextTally)
     set_serializer(lambda dt, **_: dt.isoformat(), datetime)
 
 
