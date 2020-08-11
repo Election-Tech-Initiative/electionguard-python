@@ -5,11 +5,14 @@ from typing import cast, TypeVar, Generic
 
 from jsons import (
     dumps,
+    NoneType,
     loads,
     JsonsError,
     set_deserializer,
     set_serializer,
     set_validator,
+    suppress_warnings,
+    default_nonetype_deserializer,
 )
 
 T = TypeVar("T")
@@ -35,6 +38,7 @@ class Serializable(Generic[T]):
         :return: the json representation of this object
         """
         set_serializers()
+        suppress_warnings()
         try:
             return cast(
                 str, dumps(self, strip_privates=strip_privates, strip_nulls=True)
@@ -108,5 +112,12 @@ def set_deserializers() -> None:
         lambda q_as_int, cls, **_: int_to_q_unchecked(q_as_int), ElementModQ
     )
     set_validator(lambda q: q.is_in_bounds(), ElementModQ)
+
+    set_deserializer(
+        lambda none, cls, **_: None
+        if none == "None"
+        else default_nonetype_deserializer(none),
+        NoneType,
+    )
 
     set_deserializer(lambda dt, cls, **_: datetime.fromisoformat(dt), datetime)
