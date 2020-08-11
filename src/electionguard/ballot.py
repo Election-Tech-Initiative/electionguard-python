@@ -1,8 +1,7 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import datetime
 from distutils import util
 from enum import Enum
-from distutils import util
 from typing import Any, List, Optional, Protocol, runtime_checkable, Sequence
 
 from .chaum_pedersen import (
@@ -619,11 +618,13 @@ class PlaintextBallot(ElectionObjectBase):
 @dataclass
 class CiphertextBallot(ElectionObjectBase, CryptoHashCheckable):
     """
-    A CiphertextBallot represents a voters encrypted selections for a given ballot and ballot style
+    A CiphertextBallot represents a voters encrypted selections for a given ballot and ballot style.
 
     When a ballot is in it's complete, encrypted state, the `nonce` is the master nonce
     from which all other nonces can be derived to encrypt the ballot.  Allong with the `nonce`
     fields on `Ballotcontest` and `BallotSelection`, this value is sensitive.
+
+    Don't make this directly. Use `make_ciphertext_ballot` instead.
     :field object_id: A unique Ballot ID that is relevant to the external system
     """
 
@@ -639,16 +640,16 @@ class CiphertextBallot(ElectionObjectBase, CryptoHashCheckable):
     contests: List[CiphertextBallotContest]
     """List of contests for this ballot"""
 
-    tracking_hash: Optional[ElementModQ] = field(init=False)
+    tracking_hash: Optional[ElementModQ]
     """Unique ballot tracking hash for this ballot"""
 
-    timestamp: int = field(init=False)
+    timestamp: int
     """Timestamp at which the ballot encryption is generated in tick"""
 
-    crypto_hash: ElementModQ = field(init=False)
+    crypto_hash: ElementModQ
     """The hash of the encrypted ballot representation"""
 
-    nonce: Optional[ElementModQ] = field(default=None)
+    nonce: Optional[ElementModQ]
     """The nonce used to encrypt this ballot. Sensitive & should be treated as a secret"""
 
     def __post_init__(self) -> None:
@@ -679,16 +680,6 @@ class CiphertextBallot(ElectionObjectBase, CryptoHashCheckable):
             return None
 
         return self.nonce_seed(self.description_hash, self.object_id, self.nonce)
-
-    def generate_tracking(self, seed_hash: ElementModQ) -> None:
-        """
-        Generate a tracking hash from given hash and existing ballot hash
-        :param seed_hash: Seed hash whether starting or previous
-        """
-        self.previous_tracking_hash = seed_hash
-        self.tracking_hash = get_rotating_tracker_hash(
-            self.previous_tracking_hash, self.timestamp, self.crypto_hash
-        )
 
     def get_tracker_code(self) -> Optional[str]:
         """
@@ -790,48 +781,142 @@ class BallotBoxState(Enum):
 @dataclass
 class CiphertextAcceptedBallot(CiphertextBallot):
     """
-    a `CiphertextAcceptedBallot` represents a ballot that is accepted for inclusion in election results.
-    an accepted ballot is or is about to be either cast or spoiled.
+    A `CiphertextAcceptedBallot` represents a ballot that is accepted for inclusion in election results.
+    An accepted ballot is or is about to be either cast or spoiled.
     The state supports the `BallotBoxState.UNKNOWN` enumeration to indicate that this object is mutable
     and has not yet been explicitly assigned a specific state.
 
-    note, additionally, this ballot includes all proofs but no nonces
+    Note, additionally, this ballot includes all proofs but no nonces.
+
+    Do not make this class directly. Use `make_ciphertext_accepted_ballot` or `from_ciphertext_ballot` instead.
     """
 
-    tracking_hash: Optional[ElementModQ] = None
-    timestamp: int = 0
-    state: BallotBoxState = field(default=BallotBoxState.UNKNOWN)
+    state: BallotBoxState
+
+
+
+def make_ciphertext_ballot(
+    object_id: str,
+    ballot_style: str,
+    description_hash: ElementModQ,
+    previous_tracking_hash: Optional[ElementModQ],
+    contests: List[CiphertextBallotContest],
+    nonce: Optional[ElementModQ] = None,
+    timestamp: Optional[int] = None,
+    tracking_hash: Optional[ElementModQ] = None,
+) -> CiphertextBallot:
     """
-    the state of the ballot
+    Makes a `CiphertextBallot`, initially in the state where it's neither been cast nor spoiled.
+
+    :param object_id: the object_id of this specific ballot
+    :param ballot_style: The `object_id` of the `BallotStyle` in the `Election` Manifest
+    :param description_hash: Hash of the election metadata
+    :param crypto_base_hash: Hash of the cryptographic election context
+    :param contests: List of contests for this ballot
+    :param timestamp: Timestamp at which the ballot encryption is generated in tick
+    :param previous_tracking_hash: Previous tracking hash or seed hash
+    :param nonce: optional nonce used as part of the encryption process
     """
 
-    def __post_init__(self,) -> None:
-        super().__post_init__()
+    if len(contests) == 0:
+        log_warning(f"ciphertext ballot with no contests")
 
-        # HACK: ISSUE: #45: Accepted ballots should not have a nonce assoiciated with them
+    contest_hashes = [contest.crypto_hash for contest in contests]
+    contest_hash = hash_elems(object_id, description_hash, *contest_hashes)
 
-        for contest in self.contests:
-            for selection in contest.ballot_selections:
-                selection.nonce = None
-            contest.nonce = None
+    timestamp = to_ticks(datetime.utcnow()) if timestamp is None else timestamp
+    if previous_tracking_hash is None:
+        previous_tracking_hash = description_hash
+    if tracking_hash is None:
+        tracking_hash = get_rotating_tracker_hash(
+            previous_tracking_hash, timestamp, contest_hash
+        )
 
-        self.nonce = None
+    return CiphertextBallot(
+        object_id=object_id,
+        ballot_style=ballot_style,
+        description_hash=description_hash,
+        previous_tracking_hash=previous_tracking_hash,
+        contests=contests,
+        tracking_hash=tracking_hash,
+        timestamp=timestamp,
+        nonce=nonce,
+        crypto_hash=contest_hash,
+    )
+
+
+def make_ciphertext_accepted_ballot(
+    object_id: str,
+    ballot_style: str,
+    description_hash: ElementModQ,
+    previous_tracking_hash: Optional[ElementModQ],
+    contests: List[CiphertextBallotContest],
+    tracking_hash: Optional[ElementModQ],
+    timestamp: Optional[int] = None,
+    state: BallotBoxState = BallotBoxState.UNKNOWN,
+) -> CiphertextAcceptedBallot:
+    """
+    Makes a `CiphertextAcceptedBallot`, ensuring that no nonces are part of the contests.
+
+    :param object_id: the object_id of this specific ballot
+    :param ballot_style: The `object_id` of the `BallotStyle` in the `Election` Manifest
+    :param description_hash: Hash of the election metadata
+    :param previous_tracking_hash: Previous tracking hash or seed hash
+    :param contests: List of contests for this ballot
+    :param timestamp: Timestamp at which the ballot encryption is generated in tick
+    :param state: ballot box state
+    """
+
+    if len(contests) == 0:
+        log_warning(f"ciphertext ballot with no contests")
+
+    contest_hashes = [contest.crypto_hash for contest in contests]
+    contest_hash = hash_elems(object_id, description_hash, *contest_hashes)
+
+    timestamp = to_ticks(datetime.utcnow()) if timestamp is None else timestamp
+    if previous_tracking_hash is None:
+        previous_tracking_hash = description_hash
+    if tracking_hash is None:
+        tracking_hash = get_rotating_tracker_hash(
+            previous_tracking_hash, timestamp, contest_hash
+        )
+
+    # copy the contests and selections, removing all nonces
+    new_contests: List[CiphertextBallotContest] = []
+    for contest in contests:
+        new_selections = [
+            replace(selection, nonce=None) for selection in contest.ballot_selections
+        ]
+        new_contest = replace(contest, nonce=None, ballot_selections=new_selections)
+        new_contests.append(new_contest)
+
+    return CiphertextAcceptedBallot(
+        object_id=object_id,
+        ballot_style=ballot_style,
+        description_hash=description_hash,
+        previous_tracking_hash=previous_tracking_hash,
+        contests=new_contests,
+        tracking_hash=tracking_hash,
+        timestamp=timestamp,
+        crypto_hash=contest_hash,
+        nonce=None,
+        state=state,
+    )
 
 
 def from_ciphertext_ballot(
-    ballot: CiphertextBallot, state: BallotBoxState
+    ballot: CiphertextBallot, state: BallotBoxState = BallotBoxState.UNKNOWN
 ) -> CiphertextAcceptedBallot:
     """
-    Convert a `CiphertextBallot` into a `CiphertextAcceptedBallot` with the correct state
+    Convert a `CiphertextBallot` into a `CiphertextAcceptedBallot`, with all nonces removed.
     """
-
-    return CiphertextAcceptedBallot(
+    return make_ciphertext_accepted_ballot(
         object_id=ballot.object_id,
         ballot_style=ballot.ballot_style,
         description_hash=ballot.description_hash,
-        previous_tracking_hash=ballot.previous_tracking_hash,
         contests=ballot.contests,
-        tracking_hash=ballot.tracking_hash,
         timestamp=ballot.timestamp,
+        previous_tracking_hash=ballot.previous_tracking_hash,
+        tracking_hash=ballot.tracking_hash,
         state=state,
     )
