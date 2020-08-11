@@ -37,6 +37,8 @@ install-mac:
 	@echo 🍎 MACOS INSTALL
 # gmpy2 requirements
 	brew install gmp || true
+	brew install mpfr || true
+	brew install libmpc || true
 # install module
 	pipenv run python -m pip install -e .
 
