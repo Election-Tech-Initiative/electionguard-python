@@ -59,7 +59,7 @@ class TestElections(unittest.TestCase):
         encryption context.  It also manually verifies that homomorphic accumulation works as expected.
         """
         # Arrange
-        metadata, ballots, secret_key, context = everything
+        election_description, metadata, ballots, secret_key, context = everything
 
         # Tally the plaintext ballots for comparison later
         plaintext_tallies = accumulate_plaintext_ballots(ballots)
