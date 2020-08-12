@@ -178,6 +178,20 @@ class PlaintextTally(ElectionObjectBase):
 
 
 @dataclass
+class PublishedPlaintextTally(ElectionObjectBase):
+    """
+    The published plaintext representation of all contests in the election
+    """
+
+    contests: Dict[CONTEST_ID, PlaintextTallyContest]
+
+
+def publish_plaintext_tally(tally: PlaintextTally) -> PublishedPlaintextTally:
+    """Publish a plaintext tally with simpler format"""
+    return PublishedPlaintextTally(tally.object_id, tally.contests)
+
+
+@dataclass
 class CiphertextTally(ElectionObjectBase, Container, Sized):
     """
     A `CiphertextTally` accepts cast and spoiled ballots and accumulates a tally on the cast ballots
@@ -383,6 +397,20 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
                     selection.elgamal_accumulate(result_dict[selection_id])
 
         return True
+
+
+@dataclass
+class PublishedCiphertextTally(ElectionObjectBase):
+    """
+    The published plaintext representation of all contests in the election
+    """
+
+    cast: Dict[CONTEST_ID, CiphertextTallyContest]
+
+
+def publish_ciphertext_tally(tally: CiphertextTally) -> PublishedCiphertextTally:
+    """Publish a ciphertext tally with simpler format"""
+    return PublishedCiphertextTally(tally.object_id, tally.cast)
 
 
 def tally_ballot(

@@ -81,6 +81,7 @@ Step-by-Step Process:
 2. [Encrypt Ballots]
 3. [Cast and Spoil]
 4. [Decrypt Tally]
+5. [Publish and Verify]
 
 ## Contributing
 
@@ -147,5 +148,7 @@ A huge thank you to those who helped to contribute to this project so far, inclu
 [Cast and Spoil]: https://github.com/microsoft/electionguard-python/blob/main/docs/3_Cast_and_Spoil.md
 
 [Decrypt Tally]: https://github.com/microsoft/electionguard-python/blob/main/docs/4_Decrypt_Tally.md
+
+[Publish and Verify]: https://github.com/microsoft/electionguard-python/blob/main/docs/5_Publish_and_Verify.md)
 
 [MIT License]: https://github.com/microsoft/electionguard-python/blob/main/LICENSE

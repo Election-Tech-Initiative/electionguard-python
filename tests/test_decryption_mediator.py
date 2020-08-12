@@ -21,8 +21,8 @@ from electionguard.decryption import (
 )
 from electionguard.decryption_mediator import DecryptionMediator
 from electionguard.decryption_share import (
-    CiphertextDecryptionSelection,
     TallyDecryptionShare,
+    create_ciphertext_decryption_selection,
 )
 from electionguard.election import (
     CiphertextElectionContext,
@@ -365,7 +365,7 @@ class TestDecryptionMediator(TestCase):
         print("\nRECONSTRUCTED SHARE\n")
         print(reconstructed_share)
 
-        share_2 = CiphertextDecryptionSelection(
+        share_2 = create_ciphertext_decryption_selection(
             first_selection.object_id,
             self.guardians[2].object_id,
             first_selection.description_hash,

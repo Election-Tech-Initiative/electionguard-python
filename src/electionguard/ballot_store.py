@@ -39,11 +39,11 @@ class BallotStore(Iterable):
         self._ballot_store[ballot_id] = ballot
         return True
 
-    def all(self) -> List[Optional[CiphertextAcceptedBallot]]:
+    def all(self) -> List[CiphertextAcceptedBallot]:
         """
         Get all `CiphertextAcceptedBallot` from the store
         """
-        return list(self._ballot_store.values())
+        return [ballot for ballot in self._ballot_store.values() if ballot is not None]
 
     def get(self, ballot_id: str) -> Optional[CiphertextAcceptedBallot]:
         """

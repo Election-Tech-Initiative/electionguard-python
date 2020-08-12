@@ -125,19 +125,20 @@ ElementModQorInt = Union[ElementModQ, int]
 ElementModPorInt = Union[ElementModP, int]
 
 
-def int_to_q(i: int) -> Optional[ElementModQ]:
+def int_to_q(input: Union[str, int]) -> Optional[ElementModQ]:
     """
     Given a Python integer, returns an ElementModQ.
     Returns `None` if the number is out of the allowed
     [0,Q) range.
     """
+    i = int(input)
     if 0 <= i < Q:
         return ElementModQ(mpz(i))
     else:
         return None
 
 
-def int_to_q_unchecked(i: int) -> ElementModQ:
+def int_to_q_unchecked(i: Union[str, int]) -> ElementModQ:
     """
     Given a Python integer, returns an ElementModQ. Allows
     for the input to be out-of-bounds, and thus creating an invalid
@@ -145,29 +146,32 @@ def int_to_q_unchecked(i: int) -> ElementModQ:
     you're absolutely, positively, certain the input is in-bounds.
     """
 
-    return ElementModQ(mpz(i))
+    m = mpz(int(i))
+    return ElementModQ(m)
 
 
-def int_to_p(i: int) -> Optional[ElementModP]:
+def int_to_p(input: Union[str, int]) -> Optional[ElementModP]:
     """
     Given a Python integer, returns an ElementModP.
     Returns `None` if the number is out of the allowed
     [0,P) range.
     """
+    i = int(input)
     if 0 <= i < P:
         return ElementModP(mpz(i))
     else:
         return None
 
 
-def int_to_p_unchecked(i: int) -> ElementModP:
+def int_to_p_unchecked(i: Union[str, int]) -> ElementModP:
     """
     Given a Python integer, returns an ElementModP. Allows
     for the input to be out-of-bounds, and thus creating an invalid
     element (i.e., outside of [0,P)). Useful for tests or if
     you're absolutely, positively, certain the input is in-bounds.
     """
-    return ElementModP(mpz(i))
+    m = mpz(int(i))
+    return ElementModP(m)
 
 
 def q_to_bytes(e: ElementModQ) -> bytes:

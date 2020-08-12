@@ -12,6 +12,7 @@ from .decryption_share import (
     CiphertextCompensatedDecryptionContest,
     TallyDecryptionShare,
     CompensatedTallyDecryptionShare,
+    create_ciphertext_decryption_selection,
 )
 from .election import CiphertextElectionContext
 from .group import ElementModP, ElementModQ, mult_p, pow_p
@@ -314,7 +315,7 @@ def compute_decryption_share_for_selection(
         decryption,
         context.crypto_extended_base_hash,
     ):
-        return CiphertextDecryptionSelection(
+        return create_ciphertext_decryption_selection(
             selection.object_id,
             guardian.object_id,
             selection.description_hash,
@@ -497,7 +498,7 @@ def reconstruct_decryption_contests(
 
             reconstructed_share = mult_p(*share_pow_p)
 
-            selections[selection_id] = CiphertextDecryptionSelection(
+            selections[selection_id] = create_ciphertext_decryption_selection(
                 selection_id,
                 missing_guardian_id,
                 tally_selection.description_hash,
@@ -555,7 +556,9 @@ def reconstruct_decryption_ballots(
                         for available_guardian_id, share in compensated_selection_shares.items()
                     ]
                 )
-                selections[selection.object_id] = CiphertextDecryptionSelection(
+                selections[
+                    selection.object_id
+                ] = create_ciphertext_decryption_selection(
                     selection.object_id,
                     missing_guardian_id,
                     selection.description_hash,

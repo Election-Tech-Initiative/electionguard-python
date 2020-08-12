@@ -27,7 +27,12 @@ from electionguard.key_ceremony import CoefficientValidationSet
 from electionguard.key_ceremony_mediator import KeyCeremonyMediator
 
 # Step 2 - Encrypt Votes
-from electionguard.ballot import BallotBoxState, CiphertextBallot, PlaintextBallot
+from electionguard.ballot import (
+    BallotBoxState,
+    CiphertextBallot,
+    PlaintextBallot,
+    CiphertextAcceptedBallot,
+)
 from electionguard.encrypt import EncryptionDevice
 from electionguard.encrypt import EncryptionMediator
 
@@ -36,11 +41,33 @@ from electionguard.ballot_store import BallotStore
 from electionguard.ballot_box import BallotBox
 
 # Step 4 - Decrypt Tally
-from electionguard.tally import tally_ballots, CiphertextTally
+from electionguard.tally import (
+    tally_ballots,
+    CiphertextTally,
+    PublishedCiphertextTally,
+    PublishedPlaintextTally,
+    publish_ciphertext_tally,
+    publish_plaintext_tally,
+)
 from electionguard.decryption_mediator import DecryptionMediator, PlaintextTally
 
-# Publish
-from electionguard.publish import publish, RESULTS_DIR
+# Step 5 - Publish and Verify
+from electionguard.publish import (
+    publish,
+    DEVICE_PREFIX,
+    COEFFICIENTS_DIR,
+    COEFFICIENT_PREFIX,
+    DEVICES_DIR,
+    RESULTS_DIR,
+    CONSTANTS_FILE_NAME,
+    DESCRIPTION_FILE_NAME,
+    CONTEXT_FILE_NAME,
+    ENCRYPTED_TALLY_FILE_NAME,
+    TALLY_FILE_NAME,
+    SPOILED_DIR,
+    BALLOTS_DIR,
+    BALLOT_PREFIX,
+)
 
 
 class TestEndToEndElection(TestCase):
@@ -90,8 +117,7 @@ class TestEndToEndElection(TestCase):
         self.step_2_encrypt_votes()
         self.step_3_cast_and_spoil()
         self.step_4_decrypt_tally()
-        self.compare_results()
-        self.publish_results()
+        self.step_5_publish_and_verify()
 
     def step_0_configure_election(self) -> None:
         """
@@ -313,6 +339,7 @@ class TestEndToEndElection(TestCase):
         )
 
         # Now, compare the results
+        self.compare_results()
 
     def compare_results(self) -> None:
         """
@@ -381,6 +408,14 @@ class TestEndToEndElection(TestCase):
                                     expected == decrypted_selection.tally,
                                 )
 
+    def step_5_publish_and_verify(self) -> None:
+        """Publish and verify steps of the election"""
+        self.publish_results()
+        self.verify_results()
+
+        if self.REMOVE_OUTPUT:
+            rmtree(RESULTS_DIR)
+
     def publish_results(self) -> None:
         """
         Publish results/artifacts of the election
@@ -390,9 +425,10 @@ class TestEndToEndElection(TestCase):
             self.context,
             self.constants,
             [self.device],
-            self.ciphertext_ballots,
-            self.ciphertext_tally,
-            self.plaintext_tally,
+            self.ballot_store.all(),
+            self.ciphertext_tally.spoiled_ballots.values(),
+            publish_ciphertext_tally(self.ciphertext_tally),
+            publish_plaintext_tally(self.plaintext_tally),
             self.coefficient_validation_sets,
         )
         self._assert_message(
@@ -401,8 +437,68 @@ class TestEndToEndElection(TestCase):
             path.exists(RESULTS_DIR),
         )
 
-        if self.REMOVE_OUTPUT:
-            rmtree(RESULTS_DIR)
+    def verify_results(self) -> None:
+        """Verify results of election"""
+
+        # Deserialize
+        description_from_file = ElectionDescription.from_json_file(
+            DESCRIPTION_FILE_NAME, RESULTS_DIR
+        )
+        self.assertEqual(self.description, description_from_file)
+
+        context_from_file = CiphertextElectionContext.from_json_file(
+            CONTEXT_FILE_NAME, RESULTS_DIR
+        )
+        self.assertEqual(self.context, context_from_file)
+
+        constants_from_file = ElectionConstants.from_json_file(
+            CONSTANTS_FILE_NAME, RESULTS_DIR
+        )
+        self.assertEqual(self.constants, constants_from_file)
+
+        device_name = DEVICE_PREFIX + str(self.device.uuid)
+        device_from_file = EncryptionDevice.from_json_file(device_name, DEVICES_DIR)
+        self.assertEqual(self.device, device_from_file)
+
+        ciphertext_ballots: List[CiphertextAcceptedBallot] = []
+        for ballot in self.ballot_store.all():
+            ballot_name = BALLOT_PREFIX + ballot.object_id
+            ballot_from_file = CiphertextAcceptedBallot.from_json_file(
+                ballot_name, BALLOTS_DIR
+            )
+            self.assertEqual(ballot, ballot_from_file)
+
+        spoiled_ballots: List[CiphertextAcceptedBallot] = []
+        for spoiled_ballot in self.ciphertext_tally.spoiled_ballots.values():
+            ballot_name = BALLOT_PREFIX + spoiled_ballot.object_id
+            spoiled_ballot_from_file = CiphertextAcceptedBallot.from_json_file(
+                ballot_name, SPOILED_DIR
+            )
+            self.assertEqual(spoiled_ballot, spoiled_ballot_from_file)
+
+        ciphertext_tally_from_file = PublishedCiphertextTally.from_json_file(
+            ENCRYPTED_TALLY_FILE_NAME, RESULTS_DIR
+        )
+        self.assertEqual(
+            publish_ciphertext_tally(self.ciphertext_tally), ciphertext_tally_from_file
+        )
+
+        plainttext_tally_from_file = PublishedPlaintextTally.from_json_file(
+            TALLY_FILE_NAME, RESULTS_DIR
+        )
+        self.assertEqual(
+            publish_plaintext_tally(self.plaintext_tally), plainttext_tally_from_file
+        )
+
+        coefficient_validation_sets: List[CoefficientValidationSet] = []
+        for coefficient_validation_set in self.coefficient_validation_sets:
+            set_name = COEFFICIENT_PREFIX + coefficient_validation_set.owner_id
+            coefficient_validation_set_from_file = CoefficientValidationSet.from_json_file(
+                set_name, COEFFICIENTS_DIR
+            )
+            self.assertEqual(
+                coefficient_validation_set, coefficient_validation_set_from_file
+            )
 
     def _assert_message(
         self, name: str, message: str, condition: Union[Callable, bool] = True

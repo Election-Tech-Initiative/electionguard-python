@@ -10,6 +10,7 @@ from .ballot import (
     PlaintextBallotSelection,
     make_ciphertext_ballot_contest,
     make_ciphertext_ballot_selection,
+    make_ciphertext_ballot,
 )
 
 from .election import (
@@ -444,7 +445,7 @@ def encrypt_ballot(
         encrypted_contests.append(get_optional(encrypted_contest))
 
     # Create the return object
-    encrypted_ballot = CiphertextBallot(
+    encrypted_ballot = make_ciphertext_ballot(
         ballot.object_id,
         ballot.ballot_style,
         election_metadata.description_hash,
