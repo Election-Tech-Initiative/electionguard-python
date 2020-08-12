@@ -4,7 +4,7 @@ from shutil import rmtree
 from typing import List
 import uuid
 
-from electionguardtest.election_factory import ElectionFactory
+from electionguardtest.election_factory import ElectionFactory, QUORUM
 from electionguardtest.ballot_factory import BallotFactory
 
 from electionguard.ballot import (
@@ -19,8 +19,9 @@ from electionguard.publish import publish, publish_private_data, RESULTS_DIR
 from electionguard.tally import tally_ballots
 from electionguard.utils import get_optional
 
-DEFAULT_NUMBER_OF_BALLOTS = 100
-CAST_SPOIL_RATIO = 10
+DEFAULT_NUMBER_OF_BALLOTS = 5
+CAST_SPOIL_RATIO = 50
+THRESHOLD_ONLY = True
 
 
 class ElectionSampleDataGenerator:
@@ -92,8 +93,9 @@ class ElectionSampleDataGenerator:
             public_data.metadata, public_data.context, ciphertext_tally
         )
 
-        for guardian in private_data.guardians:
-            decrypter.announce(guardian)
+        for i, guardian in enumerate(private_data.guardians):
+            if i < QUORUM or not THRESHOLD_ONLY:
+                decrypter.announce(guardian)
 
         plaintext_tally = get_optional(decrypter.get_plaintext_tally())
 
