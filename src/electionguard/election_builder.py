@@ -7,6 +7,7 @@ from .election import (
     CiphertextElectionContext,
     ElectionDescription,
     InternalElectionDescription,
+    make_ciphertext_election_context,
 )
 from .group import ElementModP
 from .utils import get_optional
@@ -61,7 +62,7 @@ class ElectionBuilder(object):
 
         return (
             self.internal_description,
-            CiphertextElectionContext(
+            make_ciphertext_election_context(
                 self.number_of_guardians,
                 self.quorum,
                 get_optional(self.elgamal_public_key),

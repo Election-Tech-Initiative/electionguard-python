@@ -78,6 +78,7 @@ Step-by-Step Process:
 2. [Encrypt Ballots](2_Encrypt_Ballots.md)
 3. [Cast and Spoil](3_Cast_and_Spoil.md)
 4. [Decrypt Tally](4_Decrypt_Tally.md)
+5. [Publish and Verify](5_Publish_and_Verify.md)
 
 ## ❓Questions
 

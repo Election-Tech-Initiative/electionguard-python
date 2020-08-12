@@ -36,6 +36,7 @@ from electionguard.election import (
     CiphertextElectionContext,
     SelectionDescription,
     ContestDescription,
+    make_ciphertext_election_context,
 )
 from electionguard.encrypt import selection_from
 from electionguard.group import ElementModQ
@@ -535,7 +536,7 @@ def election_descriptions(
     end_date = start_date
 
     return ElectionDescription(
-        election_scope_id=draw(languages()),
+        election_scope_id=draw(emails()),
         type=ElectionType.general,  # good enough for now
         start_date=start_date,
         end_date=end_date,
@@ -627,7 +628,7 @@ def ciphertext_elections(draw: _DrawType, election_description: ElectionDescript
     secret_key, public_key = draw(elgamal_keypairs())
     ciphertext_election_with_secret: CIPHERTEXT_ELECTIONS_TUPLE_TYPE = (
         secret_key,
-        CiphertextElectionContext(
+        make_ciphertext_election_context(
             number_of_guardians=1,
             quorum=1,
             elgamal_public_key=public_key,
@@ -638,6 +639,7 @@ def ciphertext_elections(draw: _DrawType, election_description: ElectionDescript
 
 
 ELECTIONS_AND_BALLOTS_TUPLE_TYPE = Tuple[
+    ElectionDescription,
     InternalElectionDescription,
     List[PlaintextBallot],
     ElementModQ,
@@ -659,16 +661,18 @@ def elections_and_ballots(draw: _DrawType, num_ballots: int = 3):
     """
     assert num_ballots >= 0, "You're asking for a negative number of ballots?"
     election_description = draw(election_descriptions())
-    election_metadata = InternalElectionDescription(election_description)
+    internal_election_description = InternalElectionDescription(election_description)
 
     ballots = [
-        draw(plaintext_voted_ballots(election_metadata)) for _ in range(num_ballots)
+        draw(plaintext_voted_ballots(internal_election_description))
+        for _ in range(num_ballots)
     ]
 
     secret_key, context = draw(ciphertext_elections(election_description))
 
     mock_election: ELECTIONS_AND_BALLOTS_TUPLE_TYPE = (
-        election_metadata,
+        election_description,
+        internal_election_description,
         ballots,
         secret_key,
         context,

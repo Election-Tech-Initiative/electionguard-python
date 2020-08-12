@@ -6,8 +6,7 @@ from .guardian import Guardian
 from .election import CiphertextElectionContext, ElectionConstants, ElectionDescription
 from .encrypt import EncryptionDevice
 from .key_ceremony import CoefficientValidationSet
-from .serializable import set_serializers
-from .tally import CiphertextTally, PlaintextTally
+from .tally import PublishedPlaintextTally, PublishedCiphertextTally
 from .utils import make_directory
 
 RESULTS_DIR = "results"
@@ -39,14 +38,13 @@ def publish(
     constants: ElectionConstants,
     devices: Iterable[EncryptionDevice],
     ciphertext_ballots: Iterable[CiphertextAcceptedBallot],
-    ciphertext_tally: CiphertextTally,
-    plaintext_tally: PlaintextTally,
+    spoiled_ballots: Iterable[CiphertextAcceptedBallot],
+    ciphertext_tally: PublishedCiphertextTally,
+    plaintext_tally: PublishedPlaintextTally,
     coefficient_validation_sets: Iterable[CoefficientValidationSet] = None,
     results_directory: str = RESULTS_DIR,
 ) -> None:
     """Publishes the election record as json"""
-
-    set_serializers()
 
     make_directory(results_directory)
     description.to_json_file(DESCRIPTION_FILE_NAME, results_directory)
@@ -70,7 +68,7 @@ def publish(
         ballot.to_json_file(ballot_name, BALLOTS_DIR)
 
     make_directory(SPOILED_DIR)
-    for ballot in ciphertext_tally.spoiled_ballots.values():
+    for ballot in spoiled_ballots:
         ballot_name = BALLOT_PREFIX + ballot.object_id
         ballot.to_json_file(ballot_name, SPOILED_DIR)
 
@@ -89,7 +87,7 @@ def publish_private_data(
     Useful for generating sample data sets.  
     Do not use this in a production application.
     """
-    set_serializers()
+
     make_directory(results_directory)
     make_directory(PRIVATE_DIR)
 
