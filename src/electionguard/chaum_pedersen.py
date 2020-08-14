@@ -13,6 +13,7 @@ from .group import (
     negate_q,
     int_to_q,
     ZERO_MOD_Q,
+    mult_inv_p,
 )
 from .hash import hash_elems
 from .logs import log_warning
@@ -524,3 +525,123 @@ def make_constant_chaum_pedersen(
     v = a_plus_bc_q(u, c, r)
 
     return ConstantChaumPedersenProof(a, b, c, v, constant)
+
+
+@dataclass
+class ChaumPedersenProofGeneric:
+    a: ElementModP
+    """a = g^w"""
+
+    b: ElementModP
+    """b = h^w"""
+
+    c: ElementModQ
+    """c = hash(a, b)"""
+
+    r: ElementModQ
+    """r = w + xc"""
+
+    def is_valid(
+        self, g: ElementModP, gx: ElementModP, h: ElementModP, hx: ElementModP
+    ) -> bool:
+        # TODO: which of these also need to be valid residues?
+        in_bounds_a = self.a.is_in_bounds()
+        in_bounds_b = self.b.is_in_bounds()
+        in_bounds_g = g.is_in_bounds()
+        in_bounds_gx = gx.is_in_bounds()
+        in_bounds_h = h.is_in_bounds()
+        in_bounds_hx = hx.is_in_bounds()
+        # hash_good = self.c == hash_elems(self.a, self.b)
+        hash_good = True
+
+        agxc = mult_p(self.a, pow_p(gx, self.c))  # should yield g^{w + xc}
+        gr = pow_p(g, self.r)  # should also yield g^{w + xc}
+
+        good_g = agxc == gr
+
+        bhxc = mult_p(self.b, pow_p(hx, self.c))
+        hr = pow_p(h, self.r)
+
+        good_h = bhxc == hr
+
+        success = (
+            hash_good
+            and in_bounds_a
+            and in_bounds_b
+            and in_bounds_g
+            and in_bounds_gx
+            and in_bounds_h
+            and in_bounds_hx
+            and good_g
+            and good_h
+        )
+
+        if not success:
+            log_warning(
+                "found an invalid Chaum-Pedersen proof: "
+                + str(
+                    {
+                        "hash_good": hash_good,
+                        "in_bounds_a": in_bounds_a,
+                        "in_bounds_b": in_bounds_b,
+                        "in_bounds_g": in_bounds_g,
+                        "in_bounds_gx": in_bounds_gx,
+                        "in_bounds_h": in_bounds_h,
+                        "in_bounds_hx": in_bounds_hx,
+                        "good_g": good_g,
+                        "good_h": good_h,
+                    }
+                )
+            )
+        return success
+
+
+def make_chaum_pedersen_generic(
+    g: ElementModP, h: ElementModP, x: ElementModQ, seed: ElementModQ,
+) -> ChaumPedersenProofGeneric:
+    """
+    Produces a generic Chaum-Pedersen proof that two tuples share an exponent, i.e., that
+    for (g, g^x) and (h, h^x), it's the same value of x, but without revealing x. This
+    generic proof can be used as a building-block for many other proofs.
+
+    The seed is used for generating the random numbers used in the proof.
+
+    There's no need for g^x and h^x in this particular computation.
+    """
+
+    # w = int_to_q(3)
+    w = Nonces(seed, "generic-chaum-pedersen-proof")[0]
+    a = pow_p(g, w)
+    b = pow_p(h, w)
+    # c = int_to_q(9)
+    c = hash_elems(a, b)
+    r = a_plus_bc_q(w, x, c)
+
+    return ChaumPedersenProofGeneric(a, b, c, r)
+
+
+def make_fake_chaum_pedersen_generic(
+    g: ElementModP,
+    gx: ElementModP,
+    h: ElementModP,
+    hx: ElementModP,
+    c: ElementModQ,
+    seed: ElementModQ,
+) -> ChaumPedersenProofGeneric:
+    """
+    Produces a generic "fake" Chaum-Pedersen proof that two tuples share an exponent, i.e., that
+    for (g, g^x) and (h, h^x), it's the same value of x, but without revealing x. Unlike
+    the regular Chaum-Pedersen proof, this version allows the challenge `c` to be specified,
+    which allows everything to be faked.
+
+    The seed is used for generating the random numbers used in the proof.
+    """
+
+    # fake R
+    r = Nonces(seed, "generic-chaum-pedersen-proof")[0]
+    gr = pow_p(g, r)
+    hr = pow_p(h, r)
+    a = mult_p(gr, mult_inv_p(pow_p(gx, c)))
+    b = mult_p(hr, mult_inv_p(pow_p(hx, c)))
+
+    return ChaumPedersenProofGeneric(a, b, c, r)

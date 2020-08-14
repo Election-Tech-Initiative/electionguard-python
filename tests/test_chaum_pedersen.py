@@ -1,5 +1,5 @@
-from unittest import TestCase
 from datetime import timedelta
+from unittest import TestCase
 
 from hypothesis import given, settings, HealthCheck
 from hypothesis.strategies import integers
@@ -11,16 +11,32 @@ from electionguard.chaum_pedersen import (
     make_chaum_pedersen,
     make_constant_chaum_pedersen,
     make_disjunctive_chaum_pedersen,
+    make_chaum_pedersen_generic,
 )
 from electionguard.elgamal import (
     ElGamalKeyPair,
     elgamal_encrypt,
     elgamal_keypair_from_secret,
 )
-from electionguard.group import ElementModQ, TWO_MOD_Q, ONE_MOD_Q, int_to_p
-from electionguardtest.elgamal import elgamal_keypairs
-from electionguardtest.group import elements_mod_q_no_zero, elements_mod_q
+from electionguard.group import (
+    ElementModQ,
+    TWO_MOD_Q,
+    ONE_MOD_Q,
+    int_to_p,
+    ElementModP,
+    pow_p,
+    int_to_q,
+    add_q,
+    ONE_MOD_P,
+    TWO_MOD_P,
+)
 from electionguard.utils import get_optional
+from electionguardtest.elgamal import elgamal_keypairs
+from electionguardtest.group import (
+    elements_mod_q_no_zero,
+    elements_mod_q,
+    elements_mod_p_no_zero,
+)
 
 
 class TestDisjunctiveChaumPedersen(TestCase):
@@ -265,3 +281,63 @@ class TestConstantChaumPedersen(TestCase):
             proof.pad, proof.data, proof.challenge, proof.response, -1
         )
         self.assertFalse(proof_bad3.is_valid(message, keypair.public_key, ONE_MOD_Q))
+
+
+class TestGenericChaumPedersen(TestCase):
+    @settings(
+        deadline=timedelta(milliseconds=2000),
+        suppress_health_check=[HealthCheck.too_slow],
+        max_examples=10,
+    )
+    @given(
+        elements_mod_p_no_zero(),
+        elements_mod_p_no_zero(),
+        elements_mod_q_no_zero(),
+        elements_mod_q_no_zero(),
+        elements_mod_q(),
+    )
+    def test_gcp_proof(
+        self,
+        g: ElementModP,
+        h: ElementModP,
+        x: ElementModQ,
+        notx: ElementModQ,
+        seed: ElementModQ,
+    ):
+        # simple/fast way to exclude bad values for g, h, and x
+        # - we need g and h to be at least two, otherwise degeneracies
+        # - we need x != notx, since that's kind of the whole idea
+        if g == ONE_MOD_P:
+            g = TWO_MOD_P
+        if h == ONE_MOD_P:
+            h = TWO_MOD_P
+        if x == notx:
+            notx = add_q(x, 1)
+
+        gx = pow_p(g, x)
+        hx = pow_p(h, x)
+        gnotx = pow_p(g, notx)
+        hnotx = pow_p(h, notx)
+        proof = make_chaum_pedersen_generic(g, h, x, seed)
+        self.assertTrue(proof.is_valid(g, gx, h, hx))
+        self.assertFalse(proof.is_valid(g, gnotx, h, hx))
+        self.assertFalse(proof.is_valid(g, gx, h, hnotx))
+        self.assertFalse(proof.is_valid(g, gnotx, h, hnotx))
+
+    def test_gcp_proof_simple(self):
+        g = int_to_p(2)
+        h = int_to_p(3)
+        x = int_to_q(5)
+        notx = int_to_q(2)
+        seed = int_to_q(0)
+
+        gx = pow_p(g, x)
+        hx = pow_p(h, x)
+        gnotx = pow_p(g, notx)
+        hnotx = pow_p(h, notx)
+
+        proof = make_chaum_pedersen_generic(g, h, x, seed)
+        self.assertTrue(proof.is_valid(g, gx, h, hx))
+        self.assertFalse(proof.is_valid(g, gnotx, h, hx))
+        self.assertFalse(proof.is_valid(g, gx, h, hnotx))
+        self.assertFalse(proof.is_valid(g, gnotx, h, hnotx))

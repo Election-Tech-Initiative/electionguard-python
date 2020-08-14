@@ -11,6 +11,7 @@ class ProofUsage(Enum):
     SecretValue = "Prove knowledge of secret value"
     SelectionLimit = "Prove value within selection's limit"
     SelectionValue = "Prove selection's value (0 or 1)"
+    CorrectDecryption = "Prove decryption is consistent with the encryption"
 
 
 class Proof(Serializable):
