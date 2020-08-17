@@ -10,9 +10,7 @@ from hypothesis.strategies import integers
 
 import electionguardtest.ballot_factory as BallotFactory
 import electionguardtest.election_factory as ElectionFactory
-from electionguard.chaum_pedersen import (
-    DisjunctiveChaumPedersenProof,
-)
+from electionguard.chaum_pedersen import DisjunctiveChaumPedersenProof
 from electionguard.decrypt_with_secrets import (
     decrypt_selection_with_secret,
     decrypt_selection_with_nonce,
@@ -21,7 +19,7 @@ from electionguard.decrypt_with_secrets import (
     decrypt_ballot_with_nonce,
     decrypt_ballot_with_secret,
     decrypt_ballot_with_secret_and_proofs,
-    ciphertextballot_to_dict,
+    ciphertext_ballot_to_dict,
 )
 from electionguard.election import (
     ContestDescription,
@@ -527,7 +525,7 @@ class TestDecrypt(unittest.TestCase):
         subject = operator.encrypt(data)
         self.assertIsNotNone(subject)
 
-        id_to_ciphertext = ciphertextballot_to_dict(subject)
+        id_to_ciphertext = ciphertext_ballot_to_dict(subject)
 
         result_from_key = decrypt_ballot_with_secret(
             subject,

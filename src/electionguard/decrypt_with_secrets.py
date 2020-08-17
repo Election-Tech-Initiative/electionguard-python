@@ -35,7 +35,9 @@ ELECTION_PUBLIC_KEY = ElementModP
 # The Methods in this file can be used to decrypt values if private keys or nonces are known
 
 
-def ciphertextballot_to_dict(cballot: CiphertextBallot) -> Dict[str, ElGamalCiphertext]:
+def ciphertext_ballot_to_dict(
+    cballot: CiphertextBallot,
+) -> Dict[str, ElGamalCiphertext]:
     """
     Given a `CiphertextBallot`, constructs a dict from selection object_ids to the corresponding
     ciphertexts.
