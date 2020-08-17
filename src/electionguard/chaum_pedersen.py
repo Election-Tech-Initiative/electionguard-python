@@ -678,6 +678,7 @@ class ChaumPedersenDecryptionProof:
     corresponds to an ElGamal ciphertext). See `decrypt_ciphertext_with_proof` for how to
     create this.
     """
+
     proof: ChaumPedersenProofGeneric
     """
     Internal proof object.
