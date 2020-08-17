@@ -535,7 +535,7 @@ class TestDecrypt(unittest.TestCase):
             keypair.secret_key,
             remove_placeholders=False,
         )
-        result_from_key2, decryption_proofs = decrypt_ballot_with_secret_and_proofs(
+        proven_results = decrypt_ballot_with_secret_and_proofs(
             subject,
             metadata,
             context.crypto_extended_base_hash,
@@ -543,6 +543,10 @@ class TestDecrypt(unittest.TestCase):
             keypair.secret_key,
             remove_placeholders=False,
         )
+        self.assertIsNotNone(proven_results)
+        result_from_key2 = proven_results.ballot
+        decryption_proofs = proven_results.proofs
+
         result_from_nonce = decrypt_ballot_with_nonce(
             subject,
             metadata,

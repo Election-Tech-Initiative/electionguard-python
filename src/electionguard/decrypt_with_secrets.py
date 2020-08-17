@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import List, Optional, Tuple, Dict
 
 from .ballot import (
@@ -28,6 +29,7 @@ from .group import (
 )
 from .logs import log_warning
 from .nonces import Nonces
+from .serializable import Serializable
 from .utils import get_optional
 
 ELECTION_PUBLIC_KEY = ElementModP
@@ -403,6 +405,23 @@ def decrypt_contest_with_nonce(
     return PlaintextBallotContest(contest.object_id, plaintext_selections)
 
 
+@dataclass
+class ProvenPlaintextBallot(Serializable):
+    """
+    When decrypting a ballot with proofs, the result is an instance of this class.
+    """
+
+    ballot: PlaintextBallot
+    """
+    The decrypted ballot.
+    """
+
+    proofs: Dict[str, ChaumPedersenDecryptionProof]
+    """
+    A dictionary mapping from selection object_ids to the corresponding Chaum-Pedersen proof of its correct decryption.
+    """
+
+
 def decrypt_ballot_with_secret_and_proofs(
     ballot: CiphertextBallot,
     election_metadata: InternalElectionDescription,
@@ -411,9 +430,7 @@ def decrypt_ballot_with_secret_and_proofs(
     secret_key: ElementModQ,
     suppress_validity_check: bool = False,
     remove_placeholders: bool = True,
-) -> Tuple[
-    Optional[PlaintextBallot], Optional[Dict[str, ChaumPedersenDecryptionProof]]
-]:
+) -> Optional[ProvenPlaintextBallot]:
     """
     Decrypt the specified `CiphertextBallot` within the context of the specified election.
 
@@ -430,7 +447,7 @@ def decrypt_ballot_with_secret_and_proofs(
     if not suppress_validity_check and not ballot.is_valid_encryption(
         election_metadata.description_hash, public_key, crypto_extended_base_hash
     ):
-        return None, None
+        return None
 
     plaintext_contests: List[PlaintextBallotContest] = list()
     selection_proofs: Dict[str, ChaumPedersenDecryptionProof] = {}
@@ -453,9 +470,9 @@ def decrypt_ballot_with_secret_and_proofs(
             log_warning(
                 f"decryption with nonce failed for ballot: {ballot.object_id} selection: {contest.object_id}"
             )
-            return None, None
+            return None
 
-    return (
+    return ProvenPlaintextBallot(
         PlaintextBallot(ballot.object_id, ballot.ballot_style, plaintext_contests),
         selection_proofs,
     )
