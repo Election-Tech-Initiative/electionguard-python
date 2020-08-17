@@ -52,6 +52,19 @@ def ciphertext_ballot_to_dict(
     return result
 
 
+def plaintext_ballot_to_dict(pballot: PlaintextBallot) -> Dict[str, int]:
+    """
+    Given a `PlaintextBallot`, constructs a dict from selection object_ids to the corresponding
+    plaintext integer value.
+    """
+    result: Dict[str, int] = {}
+    for c in pballot.contests:
+        for s in c.ballot_selections:
+            if not s.is_placeholder_selection:
+                result[s.object_id] = s.to_int()
+    return result
+
+
 def decrypt_ciphertext_with_proof(
     ciphertext: ElGamalCiphertext,
     keypair: ElGamalKeyPair,
