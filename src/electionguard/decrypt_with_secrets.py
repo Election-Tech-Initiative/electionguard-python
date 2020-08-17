@@ -28,7 +28,6 @@ from .group import (
 )
 from .logs import log_warning
 from .nonces import Nonces
-
 from .utils import get_optional
 
 ELECTION_PUBLIC_KEY = ElementModP
