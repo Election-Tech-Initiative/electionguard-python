@@ -13,6 +13,7 @@ from electionguard.chaum_pedersen import (
     make_disjunctive_chaum_pedersen,
     make_chaum_pedersen_generic,
     make_fake_chaum_pedersen_generic,
+    decrypt_ciphertext_with_proof,
 )
 from electionguard.elgamal import (
     ElGamalKeyPair,
@@ -383,4 +384,36 @@ class TestGenericChaumPedersen(TestCase):
         self.assertFalse(
             bad_proof.is_valid(g, gx, h, hnotx, True),
             "if we do check c, the proof will not validate",
+        )
+
+
+class TestChaumPedersenDecryption(TestCase):
+    @settings(
+        deadline=timedelta(milliseconds=2000),
+        suppress_health_check=[HealthCheck.too_slow],
+    )
+    @given(
+        integers(0, 10000),
+        integers(1, 10000),
+        elgamal_keypairs(),
+        elements_mod_q_no_zero(),
+        elements_mod_q(),
+    )
+    def test_cp_decryption_proof(
+        self,
+        plaintext: int,
+        delta: int,
+        keypair: ElGamalKeyPair,
+        nonce: ElementModQ,
+        seed: ElementModQ,
+    ):
+        ciphertext = elgamal_encrypt(plaintext, nonce, keypair.public_key)
+        self.assertIsNotNone(ciphertext)
+        decryption = ciphertext.decrypt(keypair.secret_key)
+        decryption2, proof = decrypt_ciphertext_with_proof(ciphertext, keypair, seed)
+
+        self.assertEqual(decryption, decryption2)
+        self.assertTrue(proof.is_valid(decryption, ciphertext, keypair.public_key))
+        self.assertFalse(
+            proof.is_valid(decryption + delta, ciphertext, keypair.public_key)
         )

@@ -1,6 +1,8 @@
 from dataclasses import dataclass
+from typing import Tuple
 
-from .elgamal import ElGamalCiphertext
+from .dlog import discrete_log
+from .elgamal import ElGamalCiphertext, ElGamalKeyPair
 from .group import (
     ElementModQ,
     ElementModP,
@@ -14,6 +16,9 @@ from .group import (
     int_to_q,
     ZERO_MOD_Q,
     mult_inv_p,
+    G,
+    int_to_p_unchecked,
+    int_to_p,
 )
 from .hash import hash_elems
 from .logs import log_warning
@@ -593,7 +598,7 @@ class ChaumPedersenProofGeneric:
 
         if not success:
             log_warning(
-                "found an invalid Chaum-Pedersen proof: "
+                "Invalid generic Chaum-Pedersen proof: "
                 + str(
                     {
                         "hash_good": hash_good,
@@ -645,12 +650,13 @@ def make_fake_chaum_pedersen_generic(
     Produces a generic "fake" Chaum-Pedersen proof that two tuples share an exponent, i.e., that
     for (g, g^x) and (h, h^x), it's the same value of x, but without revealing x. Unlike
     the regular Chaum-Pedersen proof, this version allows the challenge `c` to be specified,
-    which allows everything to be faked.
+    which allows everything to be faked. See the `is_valid` method on the resulting proof
+    object. By default, the challenge is validated by hashing elements of the proof, which
+    prevents these "fake" proofs from passing validation.
 
     The seed is used for generating the random numbers used in the proof.
     """
 
-    # fake R
     r = Nonces(seed, "generic-chaum-pedersen-proof")[0]
     gr = pow_p(g, r)
     hr = pow_p(h, r)
@@ -658,3 +664,80 @@ def make_fake_chaum_pedersen_generic(
     b = mult_p(hr, mult_inv_p(pow_p(hx, c)))
 
     return ChaumPedersenProofGeneric(a, b, c, r)
+
+
+@dataclass
+class ChaumPedersenDecryptionProof:
+    proof: ChaumPedersenProofGeneric
+
+    def is_valid(
+        self, plaintext: int, ciphertext: ElGamalCiphertext, public_key: ElementModP
+    ) -> bool:
+        """
+        Checks that this proof validates that `plaintext` is the proper decryption of `ciphertext`.
+
+        :param plaintext: The decryption (and then discrete_log) of the ciphertext that we're validating.
+        :param ciphertext: The ElGamal ciphertext we're validating.
+        :param public_key: The ElGamal public key used for this election.
+        :return: True if the proof is valid for the decryption.
+        """
+
+        plaintext_p = int_to_p(plaintext)
+        if plaintext_p is None:
+            return False
+
+        g_exp_plaintext = g_pow_p(plaintext_p)
+        blinder = mult_p(ciphertext.data, mult_inv_p(g_exp_plaintext))
+
+        valid_proof = self.proof.is_valid(
+            int_to_p_unchecked(G), public_key, ciphertext.pad, blinder
+        )
+        if not valid_proof:
+            log_warning(
+                "Invalid Chaum-Pedersen decryption proof: "
+                + str(
+                    {
+                        "plaintext": plaintext,
+                        "ciphertext": ciphertext,
+                        "public_key": public_key,
+                        "proof": self.proof,
+                    }
+                )
+            )
+
+        return valid_proof
+
+
+def decrypt_ciphertext_with_proof(
+    ciphertext: ElGamalCiphertext, keypair: ElGamalKeyPair, seed: ElementModQ
+) -> Tuple[int, ChaumPedersenDecryptionProof]:
+    """
+    Decrypts an ElGamal ciphertext, returning both the plaintext as well as a Chaum-Pedersen proof
+    that proves the decryption coresponds to the ciphertext.
+    :param ciphertext: Any ElGamal ciphertext
+    :param keypair: The public / secret key pair used for the election.
+    :param seed: Used to randomize the generation of the Chaum-Pedersen proof.
+    :return: a tuple of the plaintext and the proof
+    """
+
+    # Ciphertext:
+    #     pad = g ^ nonce
+    #     data = (g ^ plaintext) * public_key ^ nonce
+    #          = (g ^ plaintext) * (g^secret_key) ^ nonce
+    #          = (g ^ {plaintext + secret_key * nonce} )
+
+    # We can also define:
+    #     blinder = data / { g ^ plaintext }
+    #             = g ^ { secret_key * nonce }
+
+    # And, then we want to generate a Chaum-Pedersen proof that (g, public_key), (pad, blinder) have
+    # a shared exponent (the secret).
+
+    blinder = pow_p(ciphertext.pad, keypair.secret_key)
+    g_exp_plaintext = mult_p(ciphertext.data, mult_inv_p(blinder))
+    plaintext = discrete_log(g_exp_plaintext)
+
+    proof = make_chaum_pedersen_generic(
+        int_to_p_unchecked(G), ciphertext.pad, keypair.secret_key, seed
+    )
+    return plaintext, ChaumPedersenDecryptionProof(proof)
