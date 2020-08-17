@@ -534,6 +534,11 @@ def make_constant_chaum_pedersen(
 
 @dataclass
 class ChaumPedersenProofGeneric:
+    """
+    General-purpose Chaum-Pedersen proof object, demonstrating that the prover knows the exponent
+    x for two tuples (g, g^x) and (h, h^x). This is used as a component in other proofs.
+    """
+
     a: ElementModP
     """a = g^w"""
 
@@ -668,7 +673,15 @@ def make_fake_chaum_pedersen_generic(
 
 @dataclass
 class ChaumPedersenDecryptionProof:
+    """
+    Representation of a Chaum-Pedersen decryption proof (i.e., a proof that a plaintext value
+    corresponds to an ElGamal ciphertext). See `decrypt_ciphertext_with_proof` for how to
+    create this.
+    """
     proof: ChaumPedersenProofGeneric
+    """
+    Internal proof object.
+    """
 
     def is_valid(
         self, plaintext: int, ciphertext: ElGamalCiphertext, public_key: ElementModP
