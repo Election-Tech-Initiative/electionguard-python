@@ -1,8 +1,9 @@
 from datetime import timedelta
+from typing import Optional
 from unittest import TestCase
 
 from hypothesis import given, settings, HealthCheck
-from hypothesis.strategies import integers
+from hypothesis.strategies import integers, one_of, just
 
 from electionguard.chaum_pedersen import (
     ConstantChaumPedersenProof,
@@ -298,6 +299,7 @@ class TestGenericChaumPedersen(TestCase):
         elements_mod_q(),
         elements_mod_q(),
         elements_mod_q(),
+        elements_mod_q(),
     )
     def test_gcp_proof(
         self,
@@ -306,19 +308,22 @@ class TestGenericChaumPedersen(TestCase):
         x: ElementModQ,
         notx: ElementModQ,
         seed: ElementModQ,
+        hash_header: ElementModQ,
     ):
         # We need x != notx, and using assume() would slow down Hypothesis.
         if x == notx:
             notx = add_q(x, 1)
 
-        self._helper_test_gcp(q1, q2, x, notx, seed)
+        self._helper_test_gcp(q1, q2, x, notx, seed, hash_header)
 
     def test_gcp_proof_simple(self) -> None:
         # Runs faster than the the Hypothesis version; useful when debugging.
         self._helper_test_gcp(
-            TWO_MOD_Q, int_to_q(3), int_to_q(5), TWO_MOD_Q, ZERO_MOD_Q
+            TWO_MOD_Q, int_to_q(3), int_to_q(5), TWO_MOD_Q, ZERO_MOD_Q, None
         )
-        self._helper_test_gcp(ONE_MOD_Q, ONE_MOD_Q, ZERO_MOD_Q, ONE_MOD_Q, ZERO_MOD_Q)
+        self._helper_test_gcp(
+            ONE_MOD_Q, ONE_MOD_Q, ZERO_MOD_Q, ONE_MOD_Q, ZERO_MOD_Q, None
+        )
 
     def _helper_test_gcp(
         self,
@@ -327,6 +332,7 @@ class TestGenericChaumPedersen(TestCase):
         x: ElementModQ,
         notx: ElementModQ,
         seed: ElementModQ,
+        hash_header: Optional[ElementModQ],
     ) -> None:
         g = g_pow_p(q1)
         h = g_pow_p(q2)
@@ -335,17 +341,17 @@ class TestGenericChaumPedersen(TestCase):
         gnotx = pow_p(g, notx)
         hnotx = pow_p(h, notx)
 
-        proof = make_chaum_pedersen_generic(g, h, x, seed)
-        self.assertTrue(proof.is_valid(g, gx, h, hx))
+        proof = make_chaum_pedersen_generic(g, h, x, seed, hash_header)
+        self.assertTrue(proof.is_valid(g, gx, h, hx, hash_header))
 
         if gx != gnotx and hx != hnotx:
             # In the degenerate case where q1 or q2 == 0, then we'd have a problem:
             # g = 1, gx = 1, and gnotx = 1. Same thing for h, hx, hnotx. This means
             # swapping in gnotx for gx doesn't actually do anything.
 
-            self.assertFalse(proof.is_valid(g, gnotx, h, hx))
-            self.assertFalse(proof.is_valid(g, gx, h, hnotx))
-            self.assertFalse(proof.is_valid(g, gnotx, h, hnotx))
+            self.assertFalse(proof.is_valid(g, gnotx, h, hx, hash_header))
+            self.assertFalse(proof.is_valid(g, gx, h, hnotx, hash_header))
+            self.assertFalse(proof.is_valid(g, gnotx, h, hnotx, hash_header))
 
     @settings(
         deadline=timedelta(milliseconds=2000),
@@ -354,6 +360,7 @@ class TestGenericChaumPedersen(TestCase):
     @given(
         elements_mod_q_no_zero(),
         elements_mod_q_no_zero(),
+        elements_mod_q(),
         elements_mod_q(),
         elements_mod_q(),
         elements_mod_q(),
@@ -367,6 +374,7 @@ class TestGenericChaumPedersen(TestCase):
         notx: ElementModQ,
         c: ElementModQ,
         seed: ElementModQ,
+        hash_header: ElementModQ,
     ):
         if x == notx:
             notx = add_q(x, 1)
@@ -378,11 +386,11 @@ class TestGenericChaumPedersen(TestCase):
 
         bad_proof = make_fake_chaum_pedersen_generic(g, gx, h, hnotx, c, seed)
         self.assertTrue(
-            bad_proof.is_valid(g, gx, h, hnotx, False),
+            bad_proof.is_valid(g, gx, h, hnotx, hash_header, check_c=False),
             "if we don't check c, the proof will validate",
         )
         self.assertFalse(
-            bad_proof.is_valid(g, gx, h, hnotx, True),
+            bad_proof.is_valid(g, gx, h, hnotx, hash_header, check_c=True),
             "if we do check c, the proof will not validate",
         )
 
@@ -398,6 +406,7 @@ class TestChaumPedersenDecryption(TestCase):
         elgamal_keypairs(),
         elements_mod_q_no_zero(),
         elements_mod_q(),
+        one_of(just(None), elements_mod_q()),
     )
     def test_cp_decryption_proof(
         self,
@@ -406,14 +415,21 @@ class TestChaumPedersenDecryption(TestCase):
         keypair: ElGamalKeyPair,
         nonce: ElementModQ,
         seed: ElementModQ,
+        hash_header: Optional[ElementModQ],
     ):
         ciphertext = elgamal_encrypt(plaintext, nonce, keypair.public_key)
         self.assertIsNotNone(ciphertext)
         decryption = ciphertext.decrypt(keypair.secret_key)
-        decryption2, proof = decrypt_ciphertext_with_proof(ciphertext, keypair, seed)
+        decryption2, proof = decrypt_ciphertext_with_proof(
+            ciphertext, keypair, seed, hash_header
+        )
 
         self.assertEqual(decryption, decryption2)
-        self.assertTrue(proof.is_valid(decryption, ciphertext, keypair.public_key))
+        self.assertTrue(
+            proof.is_valid(decryption, ciphertext, keypair.public_key, hash_header)
+        )
         self.assertFalse(
-            proof.is_valid(decryption + delta, ciphertext, keypair.public_key)
+            proof.is_valid(
+                decryption + delta, ciphertext, keypair.public_key, hash_header
+            )
         )
