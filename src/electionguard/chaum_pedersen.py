@@ -1,8 +1,7 @@
 from dataclasses import dataclass
-from typing import Tuple, Optional
+from typing import Optional
 
-from .dlog import discrete_log
-from .elgamal import ElGamalCiphertext, ElGamalKeyPair
+from .elgamal import ElGamalCiphertext
 from .group import (
     ElementModQ,
     ElementModP,
@@ -752,43 +751,3 @@ class ChaumPedersenDecryptionProof(Proof):
             )
 
         return valid_proof
-
-
-def decrypt_ciphertext_with_proof(
-    ciphertext: ElGamalCiphertext,
-    keypair: ElGamalKeyPair,
-    seed: ElementModQ,
-    hash_header: Optional[ElementModQ] = None,
-) -> Tuple[int, ChaumPedersenDecryptionProof]:
-    """
-    Decrypts an ElGamal ciphertext, returning both the plaintext as well as a Chaum-Pedersen proof
-    that proves the decryption coresponds to the ciphertext.
-    :param ciphertext: Any ElGamal ciphertext
-    :param keypair: The public / secret key pair used for the election.
-    :param seed: Used to randomize the generation of the Chaum-Pedersen proof.
-    :param hash_header: A value used when generating the challenge,
-                        usually the election extended base hash (𝑄')
-    :return: a tuple of the plaintext and the proof
-    """
-
-    # Ciphertext:
-    #     pad = g ^ nonce
-    #     data = (g ^ plaintext) * public_key ^ nonce
-    #          = (g ^ plaintext) * (g^secret_key) ^ nonce
-    #          = (g ^ {plaintext + secret_key * nonce} )
-
-    # We can also define:
-    #     blinder = data / { g ^ plaintext }
-    #             = g ^ { secret_key * nonce }
-
-    # And, then we want to generate a Chaum-Pedersen proof that (g, public_key), (pad, blinder) have
-    # a shared exponent (the secret).
-
-    blinder = pow_p(ciphertext.pad, keypair.secret_key)
-    g_exp_plaintext = mult_p(ciphertext.data, mult_inv_p(blinder))
-    plaintext = discrete_log(g_exp_plaintext)
-
-    proof = make_chaum_pedersen_generic(
-        int_to_p_unchecked(G), ciphertext.pad, keypair.secret_key, seed, hash_header
-    )
-    return plaintext, ChaumPedersenDecryptionProof(proof)

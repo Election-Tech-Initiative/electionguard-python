@@ -10,7 +10,10 @@ from hypothesis.strategies import integers
 
 import electionguardtest.ballot_factory as BallotFactory
 import electionguardtest.election_factory as ElectionFactory
-from electionguard.chaum_pedersen import DisjunctiveChaumPedersenProof
+from electionguard.chaum_pedersen import (
+    DisjunctiveChaumPedersenProof,
+    ChaumPedersenDecryptionProof,
+)
 from electionguard.decrypt_with_secrets import (
     decrypt_selection_with_secret,
     decrypt_selection_with_nonce,
@@ -18,6 +21,8 @@ from electionguard.decrypt_with_secrets import (
     decrypt_contest_with_nonce,
     decrypt_ballot_with_nonce,
     decrypt_ballot_with_secret,
+    decrypt_ballot_with_secret_and_proofs,
+    ciphertextballot_to_dict,
 )
 from electionguard.election import (
     ContestDescription,
@@ -523,7 +528,17 @@ class TestDecrypt(unittest.TestCase):
         subject = operator.encrypt(data)
         self.assertIsNotNone(subject)
 
+        id_to_ciphertext = ciphertextballot_to_dict(subject)
+
         result_from_key = decrypt_ballot_with_secret(
+            subject,
+            metadata,
+            context.crypto_extended_base_hash,
+            keypair.public_key,
+            keypair.secret_key,
+            remove_placeholders=False,
+        )
+        result_from_key2, decryption_proofs = decrypt_ballot_with_secret_and_proofs(
             subject,
             metadata,
             context.crypto_extended_base_hash,
@@ -549,12 +564,15 @@ class TestDecrypt(unittest.TestCase):
 
         # Assert
         self.assertIsNotNone(result_from_key)
+        self.assertIsNotNone(result_from_key2)
+        self.assertIsNotNone(decryption_proofs)
         self.assertIsNotNone(result_from_nonce)
         self.assertIsNotNone(result_from_nonce_seed)
         self.assertEqual(data.object_id, subject.object_id)
         self.assertEqual(data.object_id, result_from_key.object_id)
         self.assertEqual(data.object_id, result_from_nonce.object_id)
         self.assertEqual(data.object_id, result_from_nonce_seed.object_id)
+        self.assertEqual(result_from_key, result_from_key2)
 
         for description in metadata.get_contests_for(data.ballot_style):
 
@@ -659,6 +677,21 @@ class TestDecrypt(unittest.TestCase):
                 )
                 self.assertTrue(
                     seed_selection.is_valid(selection_description.object_id)
+                )
+
+                key_id = key_selection.object_id
+                self.assertIn(key_id, decryption_proofs)
+                self.assertIn(key_id, id_to_ciphertext)
+
+                selection_proof = decryption_proofs[key_id]
+
+                self.assertTrue(
+                    selection_proof.is_valid(
+                        key_selection.to_int(),
+                        id_to_ciphertext[key_id],
+                        operator._encryption.elgamal_public_key,
+                        operator._encryption.crypto_extended_base_hash,
+                    )
                 )
 
     @settings(

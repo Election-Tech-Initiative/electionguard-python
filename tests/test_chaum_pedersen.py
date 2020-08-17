@@ -14,8 +14,8 @@ from electionguard.chaum_pedersen import (
     make_disjunctive_chaum_pedersen,
     make_chaum_pedersen_generic,
     make_fake_chaum_pedersen_generic,
-    decrypt_ciphertext_with_proof,
 )
+from electionguard.decrypt_with_secrets import decrypt_ciphertext_with_proof
 from electionguard.elgamal import (
     ElGamalKeyPair,
     elgamal_encrypt,
