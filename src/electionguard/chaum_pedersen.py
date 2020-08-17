@@ -542,17 +542,32 @@ class ChaumPedersenProofGeneric:
     """r = w + xc"""
 
     def is_valid(
-        self, g: ElementModP, gx: ElementModP, h: ElementModP, hx: ElementModP
+        self,
+        g: ElementModP,
+        gx: ElementModP,
+        h: ElementModP,
+        hx: ElementModP,
+        check_c: bool = True,
     ) -> bool:
-        # TODO: which of these also need to be valid residues?
-        in_bounds_a = self.a.is_in_bounds()
-        in_bounds_b = self.b.is_in_bounds()
-        in_bounds_g = g.is_in_bounds()
-        in_bounds_gx = gx.is_in_bounds()
-        in_bounds_h = h.is_in_bounds()
-        in_bounds_hx = hx.is_in_bounds()
-        # hash_good = self.c == hash_elems(self.a, self.b)
-        hash_good = True
+        """
+        Checks that this Chaum-Pedersen proof certifies that the prover knew an x, such that (g, g^x) and (h, h^x)
+        share the same exponent x, without revealing x. Part of the proof is a challenge constant. By suppressing
+        this check, "fake" proofs can be validated. Useful when doing disjunctive proofs.
+        :param g: See above.
+        :param gx: See above.
+        :param h: See above.
+        :param hx: See above.
+        :param check_c: If False, the challenge constant is not verified. (default: True)
+        :return: True if the proof is valid.
+        """
+        in_bounds_a = self.a.is_valid_residue()
+        in_bounds_b = self.b.is_valid_residue()
+        in_bounds_g = g.is_valid_residue()
+        in_bounds_gx = gx.is_valid_residue()
+        in_bounds_h = h.is_valid_residue()
+        in_bounds_hx = hx.is_valid_residue()
+
+        hash_good = (self.c == hash_elems(self.a, self.b)) or (not check_c)
 
         agxc = mult_p(self.a, pow_p(gx, self.c))  # should yield g^{w + xc}
         gr = pow_p(g, self.r)  # should also yield g^{w + xc}
@@ -609,11 +624,9 @@ def make_chaum_pedersen_generic(
     There's no need for g^x and h^x in this particular computation.
     """
 
-    # w = int_to_q(3)
     w = Nonces(seed, "generic-chaum-pedersen-proof")[0]
     a = pow_p(g, w)
     b = pow_p(h, w)
-    # c = int_to_q(9)
     c = hash_elems(a, b)
     r = a_plus_bc_q(w, x, c)
 
