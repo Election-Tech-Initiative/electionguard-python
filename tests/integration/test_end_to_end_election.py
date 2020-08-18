@@ -45,11 +45,10 @@ from electionguard.tally import (
     tally_ballots,
     CiphertextTally,
     PublishedCiphertextTally,
-    PublishedPlaintextTally,
+    PlaintextTally,
     publish_ciphertext_tally,
-    publish_plaintext_tally,
 )
-from electionguard.decryption_mediator import DecryptionMediator, PlaintextTally
+from electionguard.decryption_mediator import DecryptionMediator
 
 # Step 5 - Publish and Verify
 from electionguard.publish import (
@@ -428,7 +427,7 @@ class TestEndToEndElection(TestCase):
             self.ballot_store.all(),
             self.ciphertext_tally.spoiled_ballots.values(),
             publish_ciphertext_tally(self.ciphertext_tally),
-            publish_plaintext_tally(self.plaintext_tally),
+            self.plaintext_tally,
             self.coefficient_validation_sets,
         )
         self._assert_message(
@@ -483,12 +482,10 @@ class TestEndToEndElection(TestCase):
             publish_ciphertext_tally(self.ciphertext_tally), ciphertext_tally_from_file
         )
 
-        plainttext_tally_from_file = PublishedPlaintextTally.from_json_file(
+        plainttext_tally_from_file = PlaintextTally.from_json_file(
             TALLY_FILE_NAME, RESULTS_DIR
         )
-        self.assertEqual(
-            publish_plaintext_tally(self.plaintext_tally), plainttext_tally_from_file
-        )
+        self.assertEqual(self.plaintext_tally, plainttext_tally_from_file)
 
         coefficient_validation_sets: List[CoefficientValidationSet] = []
         for coefficient_validation_set in self.coefficient_validation_sets:
