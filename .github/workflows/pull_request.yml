@@ -49,6 +49,8 @@ jobs:
         run: make install validate
       - name: Full Test & Coverage
         run: make coverage
+      - name: Generate Sample Data
+        run: make generate-sample-data
 
   mac_check:
     name: MacOS Check
