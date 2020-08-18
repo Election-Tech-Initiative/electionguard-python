@@ -52,16 +52,16 @@ def ciphertext_ballot_to_dict(
     return result
 
 
-def plaintext_ballot_to_dict(pballot: PlaintextBallot) -> Dict[str, int]:
+def plaintext_ballot_to_dict(pballot: PlaintextBallot) -> Dict[str, PlaintextBallotSelection]:
     """
     Given a `PlaintextBallot`, constructs a dict from selection object_ids to the corresponding
-    plaintext integer value.
+    plaintext selection.
     """
-    result: Dict[str, int] = {}
+    result: Dict[str, PlaintextBallotSelection] = {}
     for c in pballot.contests:
         for s in c.ballot_selections:
             if not s.is_placeholder_selection:
-                result[s.object_id] = s.to_int()
+                result[s.object_id] = s
     return result
 
 
