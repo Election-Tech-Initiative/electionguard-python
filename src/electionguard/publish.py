@@ -6,7 +6,7 @@ from .guardian import Guardian
 from .election import CiphertextElectionContext, ElectionConstants, ElectionDescription
 from .encrypt import EncryptionDevice
 from .key_ceremony import CoefficientValidationSet
-from .tally import PublishedPlaintextTally, PublishedCiphertextTally
+from .tally import PlaintextTally, PublishedCiphertextTally
 from .utils import make_directory
 
 RESULTS_DIR = "results"
@@ -31,7 +31,7 @@ BALLOT_PREFIX = "ballot_"
 PLAINTEXT_BALLOT_PREFIX = "plaintext_ballot_"
 GUARDIAN_PREFIX = "guardian_"
 
-
+# TODO #148 Revert PlaintextTally to PublishedPlaintextTally after moving spoiled info
 def publish(
     description: ElectionDescription,
     context: CiphertextElectionContext,
@@ -40,7 +40,7 @@ def publish(
     ciphertext_ballots: Iterable[CiphertextAcceptedBallot],
     spoiled_ballots: Iterable[CiphertextAcceptedBallot],
     ciphertext_tally: PublishedCiphertextTally,
-    plaintext_tally: PublishedPlaintextTally,
+    plaintext_tally: PlaintextTally,
     coefficient_validation_sets: Iterable[CoefficientValidationSet] = None,
     results_directory: str = RESULTS_DIR,
 ) -> None:
