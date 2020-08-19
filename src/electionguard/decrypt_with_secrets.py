@@ -52,7 +52,9 @@ def ciphertext_ballot_to_dict(
     return result
 
 
-def plaintext_ballot_to_dict(pballot: PlaintextBallot) -> Dict[str, PlaintextBallotSelection]:
+def plaintext_ballot_to_dict(
+    pballot: PlaintextBallot,
+) -> Dict[str, PlaintextBallotSelection]:
     """
     Given a `PlaintextBallot`, constructs a dict from selection object_ids to the corresponding
     plaintext selection.
