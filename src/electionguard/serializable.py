@@ -90,14 +90,14 @@ def write_json_file(json_data: str, file_name: str, file_path: str = "") -> None
 ENCODE_THRESHOLD: Final[int] = 100_000_000
 
 
-def int_to_base64_maybe(i: int) -> Union[str, int]:
+def int_to_maybe_base64(i: int) -> Union[str, int]:
     """
     Given a non-negative integer, returns a big-endian base64 encoding of the integer,
     if it's bigger than `ENCODE_THRESHOLD`, otherwise the input integer is returned.
     :param i: any non-negative integer
     :return: a string in base-64 or just the input integer, if it's "small".
     """
-    assert i >= 0, "int_to_base64 does not accept negative numbers"
+    assert i >= 0, "int_to_maybe_base64 does not accept negative numbers"
 
     # Coercing mpz integers to vanilla integers, because we want consistent behavior.
     i = int(i)
@@ -131,9 +131,9 @@ def set_serializers() -> None:
     # Local import to minimize jsons usage across files
     from .group import ElementModP, ElementModQ
 
-    set_serializer(lambda p, **_: int_to_base64_maybe(p.to_int()), ElementModP)
-    set_serializer(lambda q, **_: int_to_base64_maybe(q.to_int()), ElementModQ)
-    set_serializer(lambda i, **_: int_to_base64_maybe(i), int)
+    set_serializer(lambda p, **_: int_to_maybe_base64(p.to_int()), ElementModP)
+    set_serializer(lambda q, **_: int_to_maybe_base64(q.to_int()), ElementModQ)
+    set_serializer(lambda i, **_: int_to_maybe_base64(i), int)
     set_serializer(lambda dt, **_: dt.isoformat(), datetime)
 
 

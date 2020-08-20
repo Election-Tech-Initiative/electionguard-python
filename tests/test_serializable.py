@@ -12,7 +12,7 @@ from electionguard.serializable import (
     set_serializers,
     write_json_file,
     maybe_base64_to_int,
-    int_to_base64_maybe,
+    int_to_maybe_base64,
     Serializable,
     ENCODE_THRESHOLD,
 )
@@ -49,7 +49,7 @@ class TestSerializable(TestCase):
     @given(elements_mod_p())
     def test_base64_conversions(self, p: ElementModP) -> None:
         i = p.to_int()
-        self.assertEqual(i, maybe_base64_to_int(int_to_base64_maybe(i)))
+        self.assertEqual(i, maybe_base64_to_int(int_to_maybe_base64(i)))
 
     def test_election_constants_serialization(self) -> None:
         # ElectionConstants has large integers that we want to encode
