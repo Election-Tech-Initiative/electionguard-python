@@ -97,7 +97,9 @@ def int_to_maybe_base64(i: int) -> Union[str, int]:
     :param i: any non-negative integer
     :return: a string in base64 or just the input integer, if it's "small".
     """
-    assert i >= 0, "int_to_maybe_base64 does not accept negative numbers"
+
+    if i < 0:
+        raise ValueError("int_to_maybe_base64 does not accept negative numbers")
 
     # Coercing mpz integers to vanilla integers, because we want consistent behavior.
     i = int(i)
