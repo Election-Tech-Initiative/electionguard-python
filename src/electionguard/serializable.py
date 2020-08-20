@@ -112,8 +112,9 @@ def int_to_maybe_base64(i: int) -> Union[str, int]:
 
 def maybe_base64_to_int(i: Union[str, int]) -> int:
     """
-    Given a maybe-encoded big-endian base64-encoded non-negative integer, such as
-    might have been returned by `int_to_base_64_maybe`, returns that integer, decoded.
+    Given a maybe-encoded big-endian base64 non-negative integer, or just a regular
+    integer, such as might have been returned by `int_to_maybe_base64`, returns
+    that integer, decoded.
     :param i: a base64-encode integer, or just an integer
     :return: an integer
     """
