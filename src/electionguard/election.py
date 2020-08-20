@@ -3,9 +3,10 @@ from datetime import datetime
 from enum import Enum, unique
 from typing import cast, List, Optional, Set, Any
 
+from gmpy2 import mpz
 from .ballot import _list_eq
 from .election_object_base import ElectionObjectBase
-from .group import Q, P, R, G, ElementModQ, ElementModP
+from .group import Q, P, R, G, ElementModQ, ElementModP, int_to_p_unchecked
 from .hash import CryptoHashable, hash_elems
 from .logs import log_warning
 from .serializable import Serializable
@@ -818,16 +819,21 @@ class ElectionConstants(Serializable):
     The constants for mathematical functions during the election. 
     """
 
-    large_prime = P
+    # While having large_prime=P isn't a valid member of the integers mod P, doing
+    # it this way will ensure that ElectionConstants's members serialize as strings rather
+    # than as integers. That will improve compatibility with languages where integers
+    # aren't automatically bigints.
+
+    large_prime = int_to_p_unchecked(P)
     """large prime or p"""
 
-    small_prime = Q
+    small_prime = int_to_p_unchecked(Q)
     """small prime or q"""
 
-    cofactor = R
+    cofactor = int_to_p_unchecked(R)
     """cofactor or r"""
 
-    generator = G
+    generator = int_to_p_unchecked(G)
     """generator or g"""
 
 
