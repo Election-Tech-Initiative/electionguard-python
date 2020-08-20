@@ -3,7 +3,6 @@ from datetime import datetime
 from enum import Enum, unique
 from typing import cast, List, Optional, Set, Any
 
-from gmpy2 import mpz
 from .ballot import _list_eq
 from .election_object_base import ElectionObjectBase
 from .group import Q, P, R, G, ElementModQ, ElementModP, int_to_p_unchecked
