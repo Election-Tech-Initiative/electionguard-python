@@ -95,7 +95,7 @@ def int_to_maybe_base64(i: int) -> Union[str, int]:
     Given a non-negative integer, returns a big-endian base64 encoding of the integer,
     if it's bigger than `ENCODE_THRESHOLD`, otherwise the input integer is returned.
     :param i: any non-negative integer
-    :return: a string in base-64 or just the input integer, if it's "small".
+    :return: a string in base64 or just the input integer, if it's "small".
     """
     assert i >= 0, "int_to_maybe_base64 does not accept negative numbers"
 
@@ -115,7 +115,7 @@ def maybe_base64_to_int(i: Union[str, int]) -> int:
     Given a maybe-encoded big-endian base64 non-negative integer, or just a regular
     integer, such as might have been returned by `int_to_maybe_base64`, returns
     that integer, decoded.
-    :param i: a base64-encode integer, or just an integer
+    :param i: a base64-encoded integer, or just an integer
     :return: an integer
     """
 
