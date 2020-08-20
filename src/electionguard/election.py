@@ -818,11 +818,6 @@ class ElectionConstants(Serializable):
     The constants for mathematical functions during the election. 
     """
 
-    # While having large_prime=P isn't a valid member of the integers mod P, doing
-    # it this way will ensure that ElectionConstants's members serialize as strings rather
-    # than as integers. That will improve compatibility with languages where integers
-    # aren't automatically bigints.
-
     large_prime = P
     """large prime or p"""
 
