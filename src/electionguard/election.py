@@ -5,7 +5,7 @@ from typing import cast, List, Optional, Set, Any
 
 from .ballot import _list_eq
 from .election_object_base import ElectionObjectBase
-from .group import Q, P, R, G, ElementModQ, ElementModP, int_to_p_unchecked
+from .group import Q, P, R, G, ElementModQ, ElementModP
 from .hash import CryptoHashable, hash_elems
 from .logs import log_warning
 from .serializable import Serializable
@@ -823,16 +823,16 @@ class ElectionConstants(Serializable):
     # than as integers. That will improve compatibility with languages where integers
     # aren't automatically bigints.
 
-    large_prime = int_to_p_unchecked(P)
+    large_prime = P
     """large prime or p"""
 
-    small_prime = int_to_p_unchecked(Q)
+    small_prime = Q
     """small prime or q"""
 
-    cofactor = int_to_p_unchecked(R)
+    cofactor = R
     """cofactor or r"""
 
-    generator = int_to_p_unchecked(G)
+    generator = G
     """generator or g"""
 
 
