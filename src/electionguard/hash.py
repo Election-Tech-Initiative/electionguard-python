@@ -80,15 +80,15 @@ def hash_elems(*a: CRYPTO_HASHABLE_ALL) -> ElementModQ:
             hash_me = "null"
 
         elif isinstance(x, ElementModP) or isinstance(x, ElementModQ):
-            hash_me = str(x.to_int())
+            hash_me = x.to_hex()
         elif isinstance(x, CryptoHashable):
-            hash_me = str(x.crypto_hash().to_int())
+            hash_me = x.crypto_hash().to_hex()
         elif isinstance(x, str):
             # strings are iterable, so it's important to handle them before the following check
             hash_me = x
         elif isinstance(x, Sequence):
             # The simplest way to deal with lists, tuples, and such are to crunch them recursively.
-            hash_me = str(hash_elems(*x).to_int())
+            hash_me = hash_elems(*x).to_hex()
         else:
             hash_me = str(x)
         h.update((hash_me + "|").encode("utf-8"))

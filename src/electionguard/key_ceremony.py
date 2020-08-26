@@ -19,7 +19,7 @@ from .elgamal import (
     elgamal_combine_public_keys,
     elgamal_keypair_random,
 )
-from .group import int_to_q, rand_q, ElementModP, ElementModQ
+from .group import hex_to_q, rand_q, ElementModP, ElementModQ
 from .rsa import rsa_keypair, rsa_decrypt, rsa_encrypt
 from .schnorr import SchnorrProof, make_schnorr_proof
 from .serializable import Serializable
@@ -131,7 +131,7 @@ class ElectionPartialKeyChallenge(NamedTuple):
     The sequence order of the designated guardian
     """
 
-    value: int
+    value: str
     coefficient_commitments: List[ElementModP]
     coefficient_proofs: List[SchnorrProof]
 
@@ -143,8 +143,8 @@ def generate_elgamal_auxiliary_key_pair() -> AuxiliaryKeyPair:
     """
     elgamal_key_pair = elgamal_keypair_random()
     return AuxiliaryKeyPair(
-        str(elgamal_key_pair.secret_key.to_int()),
-        str(elgamal_key_pair.public_key.to_int()),
+        elgamal_key_pair.secret_key.to_hex(),
+        elgamal_key_pair.public_key.to_hex(),
     )
 
 
@@ -190,7 +190,7 @@ def generate_election_partial_key_backup(
     value = compute_polynomial_coordinate(
         auxiliary_public_key.sequence_order, polynomial
     )
-    encrypted_value = encrypt(str(value.to_int()), auxiliary_public_key.key)
+    encrypted_value = encrypt(value.to_hex(), auxiliary_public_key.key)
     if encrypted_value is None:
         return None
     return ElectionPartialKeyBackup(
@@ -240,7 +240,7 @@ def verify_election_partial_key_backup(
         return ElectionPartialKeyVerification(
             backup.owner_id, backup.designated_id, verifier_id, False
         )
-    value = get_optional(int_to_q(int(decrypted_value)))
+    value = get_optional(hex_to_q(decrypted_value))
     return ElectionPartialKeyVerification(
         backup.owner_id,
         backup.designated_id,
@@ -266,7 +266,7 @@ def generate_election_partial_key_challenge(
         backup.designated_sequence_order,
         compute_polynomial_coordinate(
             backup.designated_sequence_order, polynomial
-        ).to_int(),
+        ).to_hex(),
         backup.coefficient_commitments,
         backup.coefficient_proofs,
     )
@@ -286,7 +286,7 @@ def verify_election_partial_key_challenge(
         challenge.designated_id,
         verifier_id,
         verify_polynomial_coordinate(
-            get_optional(int_to_q(challenge.value)),
+            get_optional(hex_to_q(challenge.value)),
             challenge.designated_sequence_order,
             challenge.coefficient_commitments,
         ),

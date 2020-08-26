@@ -23,6 +23,9 @@ class ElementModQ(NamedTuple):
 
     elem: mpz
 
+    def to_hex(self) -> str:
+        return format(self.elem, '02x')
+
     def to_int(self) -> int:
         """
         Converts from the element to a regular integer. This is preferable to directly
@@ -64,6 +67,9 @@ class ElementModP(NamedTuple):
     """An element of the larger `mod p` space, i.e., in [0, P), where P is a 4096-bit prime."""
 
     elem: mpz
+
+    def to_hex(self) -> str:
+        return format(self.elem, '02x')
 
     def to_int(self) -> int:
         """
@@ -123,6 +129,13 @@ ElementModPOrQ = Union[ElementModP, ElementModQ]
 ElementModPOrQorInt = Union[ElementModP, ElementModQ, int]
 ElementModQorInt = Union[ElementModQ, int]
 ElementModPorInt = Union[ElementModP, int]
+
+def hex_to_q(input: str) -> Optional[ElementModQ]:
+    i = int(input, 16)
+    if 0 <= i < Q:
+        return ElementModQ(mpz(i))
+    else:
+        return None
 
 
 def int_to_q(input: Union[str, int]) -> Optional[ElementModQ]:
