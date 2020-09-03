@@ -24,7 +24,10 @@ class ElementModQ(NamedTuple):
     elem: mpz
 
     def to_hex(self) -> str:
-        return format(self.elem, '02x')
+        h = format(self.elem, '02x')
+        if len(h) % 2:
+            h = '0' + h
+        return h
 
     def to_int(self) -> int:
         """
@@ -69,7 +72,10 @@ class ElementModP(NamedTuple):
     elem: mpz
 
     def to_hex(self) -> str:
-        return format(self.elem, '02x')
+        h = format(self.elem, '02x')
+        if len(h) % 2:
+            h = '0' + h
+        return h
 
     def to_int(self) -> int:
         """
