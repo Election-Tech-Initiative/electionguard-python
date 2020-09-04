@@ -5,6 +5,8 @@ WINDOWS_32BIT_GMPY2 ?= packages/gmpy2-2.0.8-cp38-cp38-win32.whl
 WINDOWS_64BIT_GMPY2 ?= packages/gmpy2-2.0.8-cp38-cp38-win_amd64.whl
 OS ?= $(shell python -c 'import platform; print(platform.system())')
 IS_64_BIT ?= $(shell python -c 'from sys import maxsize; print(maxsize > 2**32)')
+SAMPLE_BALLOT_COUNT ?= 5
+SAMPLE_BALLOT_SPOIL_RATE ?= 50
 
 all: environment install validate lint coverage
 
@@ -136,7 +138,7 @@ dependency-graph-ci:
 
 # Sample Data
 generate-sample-data:
-	pipenv run python src/electionguardtest/sample_generator.py
+	pipenv run python src/electionguardtest/sample_generator.py -n $(SAMPLE_BALLOT_COUNT) -s $(SAMPLE_BALLOT_SPOIL_RATE)
 
 # Package
 package:

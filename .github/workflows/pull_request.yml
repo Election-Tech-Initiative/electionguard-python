@@ -50,7 +50,8 @@ jobs:
       - name: Full Test & Coverage
         run: make coverage
       - name: Generate Sample Data
-        run: make generate-sample-data
+        # TODO: Issue #152
+        run: make generate-sample-data SAMPLE_BALLOT_SPOIL_RATE=0
 
   mac_check:
     name: MacOS Check
