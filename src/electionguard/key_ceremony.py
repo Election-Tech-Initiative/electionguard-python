@@ -143,8 +143,7 @@ def generate_elgamal_auxiliary_key_pair() -> AuxiliaryKeyPair:
     """
     elgamal_key_pair = elgamal_keypair_random()
     return AuxiliaryKeyPair(
-        elgamal_key_pair.secret_key.to_hex(),
-        elgamal_key_pair.public_key.to_hex(),
+        elgamal_key_pair.secret_key.to_hex(), elgamal_key_pair.public_key.to_hex(),
     )
 
 

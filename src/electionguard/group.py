@@ -24,9 +24,13 @@ class ElementModQ(NamedTuple):
     elem: mpz
 
     def to_hex(self) -> str:
-        h = format(self.elem, '02x')
+        """
+        Converts from the element to the hex representation of bytes. This is preferable to directly
+        accessing `elem`, whose representation might change.
+        """
+        h = format(self.elem, "02x")
         if len(h) % 2:
-            h = '0' + h
+            h = "0" + h
         return h
 
     def to_int(self) -> int:
@@ -72,9 +76,13 @@ class ElementModP(NamedTuple):
     elem: mpz
 
     def to_hex(self) -> str:
-        h = format(self.elem, '02x')
+        """
+        Converts from the element to the hex representation of bytes. This is preferable to directly
+        accessing `elem`, whose representation might change.
+        """
+        h = format(self.elem, "02x")
         if len(h) % 2:
-            h = '0' + h
+            h = "0" + h
         return h
 
     def to_int(self) -> int:
@@ -135,6 +143,7 @@ ElementModPOrQ = Union[ElementModP, ElementModQ]
 ElementModPOrQorInt = Union[ElementModP, ElementModQ, int]
 ElementModQorInt = Union[ElementModQ, int]
 ElementModPorInt = Union[ElementModP, int]
+
 
 def hex_to_q(input: str) -> Optional[ElementModQ]:
     i = int(input, 16)
