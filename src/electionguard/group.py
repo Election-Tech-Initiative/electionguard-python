@@ -146,6 +146,11 @@ ElementModPorInt = Union[ElementModP, int]
 
 
 def hex_to_q(input: str) -> Optional[ElementModQ]:
+    """
+    Given a hex string representing bytes, returns an ElementModQ.
+    Returns `None` if the number is out of the allowed
+    [0,Q) range.
+    """
     i = int(input, 16)
     if 0 <= i < Q:
         return ElementModQ(mpz(i))
