@@ -20,8 +20,8 @@ from electionguard.tally import tally_ballots, publish_ciphertext_tally
 from electionguard.utils import get_optional
 
 DEFAULT_NUMBER_OF_BALLOTS = 5
-CAST_SPOIL_RATIO = 50
-THRESHOLD_ONLY = True
+DEFAULT_SPOIL_RATE = 50
+DEFAULT_USE_ALL_GUARDIANS = False
 
 
 class ElectionSampleDataGenerator:
@@ -44,7 +44,8 @@ class ElectionSampleDataGenerator:
     def generate(
         self,
         number_of_ballots: int = DEFAULT_NUMBER_OF_BALLOTS,
-        cast_spoil_ratio: int = CAST_SPOIL_RATIO,
+        spoil_rate: int = DEFAULT_SPOIL_RATE,
+        use_all_guardians: bool = DEFAULT_USE_ALL_GUARDIANS,
     ):
         """
         Generate the sample data set
@@ -78,7 +79,7 @@ class ElectionSampleDataGenerator:
         # Randomly cast/spoil the ballots
         accepted_ballots: List[CiphertextAcceptedBallot] = []
         for ballot in ciphertext_ballots:
-            if randint(0, 100) % cast_spoil_ratio == 0:
+            if randint(0, 100) < spoil_rate:
                 accepted_ballots.append(ballot_box.spoil(ballot))
             else:
                 accepted_ballots.append(ballot_box.cast(ballot))
@@ -94,7 +95,7 @@ class ElectionSampleDataGenerator:
         )
 
         for i, guardian in enumerate(private_data.guardians):
-            if i < QUORUM or not THRESHOLD_ONLY:
+            if use_all_guardians or i < QUORUM:
                 decrypter.announce(guardian)
 
         plaintext_tally = get_optional(decrypter.get_plaintext_tally())
@@ -118,4 +119,37 @@ class ElectionSampleDataGenerator:
 
 
 if __name__ == "__main__":
-    ElectionSampleDataGenerator().generate()
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="Generate sample ballot data",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    parser.add_argument(
+        "-n",
+        "--number-of-ballots",
+        metavar="<count>",
+        default=DEFAULT_NUMBER_OF_BALLOTS,
+        type=int,
+        help="The number of ballots to generate.",
+    )
+    parser.add_argument(
+        "-s",
+        "--spoil-rate",
+        metavar="<rate>",
+        default=DEFAULT_SPOIL_RATE,
+        type=int,
+        help="The approximate percentage of total ballots to spoil instead of cast. Provide a number from 0-100.",
+    )
+    parser.add_argument(
+        "-a",
+        "--all-guardians",
+        default=DEFAULT_USE_ALL_GUARDIANS,
+        action="store_true",
+        help="If specified, all guardians will be included.  Otherwise, only the threshold number will be included.",
+    )
+    args = parser.parse_args()
+
+    ElectionSampleDataGenerator().generate(
+        args.number_of_ballots, args.spoil_rate, args.all_guardians
+    )
