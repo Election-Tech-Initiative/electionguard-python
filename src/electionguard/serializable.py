@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 from os import path
-from typing import Any, cast, TypeVar, Generic
+from typing import Any, cast, Type, TypeVar, Generic
 
 from jsons import (
     dump,
@@ -167,6 +167,44 @@ def write_json_file(
     json_file_path: str = path.join(file_path, file_name + JSON_FILE_EXTENSION)
     with open(json_file_path, WRITE) as json_file:
         json_file.write(write_json(object_to_write, strip_privates))
+
+
+def read_json(data: Any, class_out: Type[T]) -> T:
+    """
+    Deserialize json file to object
+    :param data: Json file data
+    :param class_out: Object type
+    :return: Deserialized object
+    """
+    set_deserializers()
+    return cast(T, loads(data, class_out))
+
+
+def read_json_object(data: Any, class_out: Type[T]) -> T:
+    """
+    Deserialize json file to object
+    :param data: Json file data
+    :param class_out: Object type
+    :return: Deserialized object
+    """
+    set_deserializers()
+    return cast(T, load(data, class_out))
+
+
+def read_json_file(class_out: Type[T], file_name: str, file_path: str = "") -> T:
+    """
+    Deserialize json file to object
+    :param class_out: Object type
+    :param file_name: File name
+    :param file_path: File path
+    :return: Deserialized object
+    """
+    set_deserializers()
+    json_file_path: str = path.join(file_path, file_name + JSON_FILE_EXTENSION)
+    with open(json_file_path, READ) as json_file:
+        data = json_file.read()
+        target: T = read_json(data, class_out)
+    return target
 
 
 def set_serializers() -> None:
