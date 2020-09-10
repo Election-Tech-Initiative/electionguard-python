@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 from os import path
-from typing import Any, cast, Type, TypeVar, Generic
+from typing import Any, cast, Type, TypeVar
 
 from jsons import (
     dump,
@@ -17,6 +17,7 @@ from jsons import (
     default_nonetype_deserializer,
 )
 
+S = TypeVar("S", bound="Serializable")
 T = TypeVar("T")
 
 JSON_FILE_EXTENSION: str = ".json"
@@ -28,7 +29,7 @@ KEYS_TO_REMOVE = ["from_json", "from_json_file", "from_json_object"]
 
 
 @dataclass
-class Serializable(Generic[T]):
+class Serializable:
     """
     Serializable class with methods to convert to json
     """
@@ -61,35 +62,29 @@ class Serializable(Generic[T]):
         write_json_file(self, file_name, file_path, strip_privates)
 
     @classmethod
-    def from_json(cls, data: str) -> T:
+    def from_json(cls: Type[S], data: str) -> S:
         """
         Deserialize the provided data string into the specified instance
         :param data: JSON string
         """
-        set_deserializers()
-        return cast(T, loads(data, cls))
+        return read_json(data, cls)
 
     @classmethod
-    def from_json_object(cls, data: object) -> T:
+    def from_json_object(cls: Type[S], data: object) -> S:
         """
         Deserialize the provided data object into the specified instance
         :param data: JSON object
         """
-        set_deserializers()
-        return cast(T, load(data, cls))
+        return read_json_object(data, cls)
 
     @classmethod
-    def from_json_file(cls, file_name: str, file_path: str = "") -> T:
+    def from_json_file(cls: Type[S], file_name: str, file_path: str = "") -> S:
         """
         Deserialize the provided file into the specified instance
         :param file_name: File name
         :param file_path: File path
         """
-        json_file_path: str = path.join(file_path, file_name + JSON_FILE_EXTENSION)
-        with open(json_file_path, READ) as json_file:
-            data = json_file.read()
-            target = cls.from_json(data)
-        return target
+        return read_json_file(cls, file_name, file_path)
 
 
 def _remove_key(obj: Any, key_to_remove: str) -> Any:
