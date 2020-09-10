@@ -2,9 +2,10 @@ from typing import Dict, Optional, Tuple
 
 from .ballot import CiphertextAcceptedBallot, CiphertextSelection
 from .decryption_share import (
-    TallyDecryptionShare,
+    BallotDecryptionShare,
     CiphertextDecryptionSelection,
-    get_spoiled_shares_for_selection,
+    TallyDecryptionShare,
+    get_ballot_shares_for_selection,
     get_tally_shares_for_selection,
 )
 from .dlog import discrete_log
@@ -156,28 +157,52 @@ def decrypt_spoiled_ballots(
     ] = {}
 
     for spoiled_ballot in spoiled_ballots.values():
-        contests: Dict[CONTEST_ID, PlaintextTallyContest] = {}
-        for contest in spoiled_ballot.contests:
-            selections: Dict[SELECTION_ID, PlaintextTallySelection] = {}
-            for selection in contest.ballot_selections:
-                spoiled_shares = get_spoiled_shares_for_selection(
-                    spoiled_ballot.object_id, selection.object_id, shares
-                )
-                plaintext_selection = decrypt_selection_with_decryption_shares(
-                    selection, spoiled_shares, extended_base_hash
-                )
+        ballot_shares: Dict[AVAILABLE_GUARDIAN_ID, BallotDecryptionShare] = {
+            guardian_id: share.spoiled_ballots[spoiled_ballot.object_id]
+            for guardian_id, share in shares.items()
+        }
 
-                # verify the plaintext values are received and add them to the collection
-                if plaintext_selection is None:
-                    log_warning(
-                        f"could not decrypt spoiled ballot {spoiled_ballot.object_id} for contest {contest.object_id} selection {selection.object_id}"
-                    )
-                    return None
-                selections[plaintext_selection.object_id] = plaintext_selection
-
-            contests[contest.object_id] = PlaintextTallyContest(
-                contest.object_id, selections
-            )
-        plaintext_spoiled_ballots[spoiled_ballot.object_id] = contests
+        decrypted_ballot = decrypt_ballot(
+            spoiled_ballot, ballot_shares, extended_base_hash
+        )
+        if decrypted_ballot:
+            plaintext_spoiled_ballots[spoiled_ballot.object_id] = decrypted_ballot
+        else:
+            return None
 
     return plaintext_spoiled_ballots
+
+
+def decrypt_ballot(
+    ballot: CiphertextAcceptedBallot,
+    shares: Dict[AVAILABLE_GUARDIAN_ID, BallotDecryptionShare],
+    extended_base_hash: ElementModQ,
+) -> Optional[Dict[CONTEST_ID, PlaintextTallyContest]]:
+    """
+    Try to decrypt a single ballot using the provided decryption shares
+    """
+
+    contests: Dict[CONTEST_ID, PlaintextTallyContest] = {}
+    for contest in ballot.contests:
+        selections: Dict[SELECTION_ID, PlaintextTallySelection] = {}
+        for selection in contest.ballot_selections:
+            selection_shares = get_ballot_shares_for_selection(
+                selection.object_id, shares
+            )
+            plaintext_selection = decrypt_selection_with_decryption_shares(
+                selection, selection_shares, extended_base_hash
+            )
+
+            # verify the plaintext values are received and add them to the collection
+            if plaintext_selection is None:
+                log_warning(
+                    f"could not decrypt ballot {ballot.object_id} for contest {contest.object_id} selection {selection.object_id}"
+                )
+                return None
+            selections[plaintext_selection.object_id] = plaintext_selection
+
+        contests[contest.object_id] = PlaintextTallyContest(
+            contest.object_id, selections
+        )
+
+    return contests

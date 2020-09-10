@@ -1,7 +1,10 @@
 from typing import Dict, List, Optional
 
 from .auxiliary import AuxiliaryDecrypt
-from .ballot import CiphertextAcceptedBallot, CiphertextSelection
+from .ballot import (
+    CiphertextAcceptedBallot,
+    CiphertextSelection,
+)
 from .data_store import DataStore
 from .decryption_share import (
     BallotDecryptionShare,
@@ -15,8 +18,9 @@ from .decryption_share import (
     create_ciphertext_decryption_selection,
 )
 from .election import CiphertextElectionContext
+from .election_polynomial import compute_lagrange_coefficient
 from .group import ElementModP, ElementModQ, mult_p, pow_p
-from .guardian import Guardian
+from .guardian import Guardian, PublicKeySet
 from .key_ceremony import ElectionPublicKey
 from .logs import log_warning
 from .rsa import rsa_decrypt
@@ -139,6 +143,7 @@ def compute_decryption_share_for_cast_contests(
         contests[contest.object_id] = CiphertextDecryptionContest(
             contest.object_id, guardian.object_id, contest.description_hash, selections
         )
+
     return contests
 
 
@@ -197,42 +202,55 @@ def compute_decryption_share_for_spoiled_ballots(
     scheduler = Scheduler()
 
     for spoiled_ballot in tally.spoiled_ballots.values():
-        contests: Dict[CONTEST_ID, CiphertextDecryptionContest] = {}
-        for contest in spoiled_ballot.contests:
-            selections: Dict[SELECTION_ID, CiphertextDecryptionSelection] = {}
-            selection_decryptions: List[
-                Optional[CiphertextDecryptionSelection]
-            ] = scheduler.schedule(
-                compute_decryption_share_for_selection,
-                [
-                    (guardian, selection, context)
-                    for selection in contest.ballot_selections
-                ],
-                with_shared_resources=True,
-            )
-            # verify the decryptions are received and add them to the collection
-            for decryption in selection_decryptions:
-                if decryption is None:
-                    log_warning(
-                        f"could not compute spoiled ballot share for guardian {guardian.object_id} contest {contest.object_id}"
-                    )
-                    return None
-                selections[decryption.object_id] = decryption
-
-            contests[contest.object_id] = CiphertextDecryptionContest(
-                contest.object_id,
-                guardian.object_id,
-                contest.description_hash,
-                selections,
-            )
-
-        spoiled_ballots[spoiled_ballot.object_id] = BallotDecryptionShare(
-            guardian.object_id,
-            guardian.share_election_public_key().key,
-            spoiled_ballot.object_id,
-            contests,
+        computed_share = compute_decryption_share_for_ballot(
+            guardian, spoiled_ballot, context, scheduler
         )
+
+        if computed_share:
+            spoiled_ballots[spoiled_ballot.object_id] = computed_share
+        else:
+            return None
+
     return spoiled_ballots
+
+
+def compute_decryption_share_for_ballot(
+    guardian: Guardian,
+    ballot: CiphertextAcceptedBallot,
+    context: CiphertextElectionContext,
+    scheduler: Scheduler = Scheduler(),
+) -> Optional[BallotDecryptionShare]:
+    """
+    Compute the decryption for a single ballot
+    """
+    contests: Dict[CONTEST_ID, CiphertextDecryptionContest] = {}
+    for contest in ballot.contests:
+        selections: Dict[SELECTION_ID, CiphertextDecryptionSelection] = {}
+        selection_decryptions: List[
+            Optional[CiphertextDecryptionSelection]
+        ] = scheduler.schedule(
+            compute_decryption_share_for_selection,
+            [(guardian, selection, context) for selection in contest.ballot_selections],
+            with_shared_resources=True,
+        )
+        # verify the decryptions are received and add them to the collection
+        for decryption in selection_decryptions:
+            if decryption is None:
+                log_warning(
+                    f"could not compute spoiled ballot share for guardian {guardian.object_id} contest {contest.object_id}"
+                )
+                return None
+            selections[decryption.object_id] = decryption
+
+        contests[contest.object_id] = CiphertextDecryptionContest(
+            contest.object_id, guardian.object_id, contest.description_hash, selections,
+        )
+    return BallotDecryptionShare(
+        guardian.object_id,
+        guardian.share_election_public_key().key,
+        ballot.object_id,
+        contests,
+    )
 
 
 def compute_compensated_decryption_share_for_spoiled_ballots(
@@ -250,45 +268,64 @@ def compute_compensated_decryption_share_for_spoiled_ballots(
 
     for spoiled_ballot in tally.spoiled_ballots.values():
         contests: Dict[CONTEST_ID, CiphertextCompensatedDecryptionContest] = {}
-        for contest in spoiled_ballot.contests:
-            selections: Dict[
-                SELECTION_ID, CiphertextCompensatedDecryptionSelection
-            ] = {}
-            selection_decryptions: List[
-                Optional[CiphertextCompensatedDecryptionSelection]
-            ] = scheduler.schedule(
-                compute_compensated_decryption_share_for_selection,
-                [
-                    (guardian, missing_guardian_id, selection, context, decrypt)
-                    for selection in contest.ballot_selections
-                ],
-                with_shared_resources=True,
-            )
-            # verify the decryptions are received and add them to the collection
-            for decryption in selection_decryptions:
-                if decryption is None:
-                    log_warning(
-                        f"could not compute compensated spoiled ballot share for guardian {guardian.object_id} missing: {missing_guardian_id} contest {contest.object_id}"
-                    )
-                    return None
-                selections[decryption.object_id] = decryption
+        compensated_ballot = compute_compensated_decryption_share_for_ballot(
+            guardian, missing_guardian_id, spoiled_ballot, context, decrypt, scheduler
+        )
 
-            contests[contest.object_id] = CiphertextCompensatedDecryptionContest(
-                contest.object_id,
-                guardian.object_id,
-                missing_guardian_id,
-                contest.description_hash,
-                selections,
-            )
+        if compensated_ballot:
+            spoiled_ballots[spoiled_ballot.object_id] = compensated_ballot
+        else:
+            return None
+    return spoiled_ballots
 
-        spoiled_ballots[spoiled_ballot.object_id] = CompensatedBallotDecryptionShare(
+
+def compute_compensated_decryption_share_for_ballot(
+    guardian: Guardian,
+    missing_guardian_id: MISSING_GUARDIAN_ID,
+    ballot: CiphertextAcceptedBallot,
+    context: CiphertextElectionContext,
+    decrypt: AuxiliaryDecrypt = rsa_decrypt,
+    scheduler: Scheduler = Scheduler(),
+) -> Optional[CompensatedBallotDecryptionShare]:
+    """
+    Compute the decryption for a single ballot
+    """
+    contests: Dict[CONTEST_ID, CiphertextCompensatedDecryptionContest] = {}
+    for contest in ballot.contests:
+        selections: Dict[SELECTION_ID, CiphertextCompensatedDecryptionSelection] = {}
+        selection_decryptions: List[
+            Optional[CiphertextCompensatedDecryptionSelection]
+        ] = scheduler.schedule(
+            compute_compensated_decryption_share_for_selection,
+            [
+                (guardian, missing_guardian_id, selection, context, decrypt)
+                for selection in contest.ballot_selections
+            ],
+            with_shared_resources=True,
+        )
+        # verify the decryptions are received and add them to the collection
+        for decryption in selection_decryptions:
+            if decryption is None:
+                log_warning(
+                    f"could not compute compensated spoiled ballot share for guardian {guardian.object_id} missing: {missing_guardian_id} contest {contest.object_id}"
+                )
+                return None
+            selections[decryption.object_id] = decryption
+
+        contests[contest.object_id] = CiphertextCompensatedDecryptionContest(
+            contest.object_id,
             guardian.object_id,
             missing_guardian_id,
-            guardian.share_election_public_key().key,
-            spoiled_ballot.object_id,
-            contests,
+            contest.description_hash,
+            selections,
         )
-    return spoiled_ballots
+    return CompensatedBallotDecryptionShare(
+        guardian.object_id,
+        missing_guardian_id,
+        guardian.share_election_public_key().key,
+        ballot.object_id,
+        contests,
+    )
 
 
 def compute_decryption_share_for_selection(
@@ -395,6 +432,36 @@ def compute_compensated_decryption_share_for_selection(
         return None
 
 
+def compute_lagrange_coefficients_for_guardian(
+    all_available_guardian_keys: List[PublicKeySet], guardian_keys: PublicKeySet
+) -> ElementModQ:
+    """
+    Produce a Lagrange coefficient for a single Guardian, to be used when reconstructing a missing share.
+    """
+    other_guardian_orders = [
+        g.sequence_order
+        for g in all_available_guardian_keys
+        if g.owner_id != guardian_keys.owner_id
+    ]
+    return compute_lagrange_coefficient(
+        guardian_keys.sequence_order, *other_guardian_orders,
+    )
+
+
+def compute_lagrange_coefficients_for_guardians(
+    all_available_guardian_keys: List[PublicKeySet],
+) -> Dict[AVAILABLE_GUARDIAN_ID, ElementModQ]:
+    """
+    Produce all Lagrange coefficients for a collection of available Guardians, to be used when reconstructing a missing share.
+    """
+    return {
+        guardian_keys.owner_id: compute_lagrange_coefficients_for_guardian(
+            all_available_guardian_keys, guardian_keys
+        )
+        for guardian_keys in all_available_guardian_keys
+    }
+
+
 def reconstruct_missing_tally_decryption_shares(
     ciphertext_tally: CiphertextTally,
     missing_guardians: DataStore[MISSING_GUARDIAN_ID, ElectionPublicKey],
@@ -475,6 +542,12 @@ def reconstruct_decryption_contests(
     # iterate through the tallies and accumulate all of the shares for this guardian
     contests: Dict[CONTEST_ID, CiphertextDecryptionContest] = {}
     for contest_id, tally_contest in cast_tally.items():
+        contest_shares: Dict[
+            AVAILABLE_GUARDIAN_ID, CiphertextCompensatedDecryptionContest
+        ] = {
+            available_guardian_id: compensated_share.contests[tally_contest.object_id]
+            for available_guardian_id, compensated_share in shares.items()
+        }
 
         selections: Dict[SELECTION_ID, CiphertextDecryptionSelection] = {}
         for (selection_id, tally_selection,) in tally_contest.tally_selections.items():
@@ -483,11 +556,8 @@ def reconstruct_decryption_contests(
             compensated_selection_shares: Dict[
                 AVAILABLE_GUARDIAN_ID, CiphertextCompensatedDecryptionSelection
             ] = {
-                available_guardian_id: compensated_selection
-                for available_guardian_id, compensated_share in shares.items()
-                for compensated_contest_id, compensated_contest in compensated_share.contests.items()
-                for compensated_selection_id, compensated_selection in compensated_contest.selections.items()
-                if compensated_selection_id == selection_id
+                available_guardian_id: compensated_contest.selections[selection_id]
+                for available_guardian_id, compensated_contest in contest_shares.items()
             }
 
             share_pow_p = []
@@ -531,48 +601,82 @@ def reconstruct_decryption_ballots(
     spoiled_ballot_shares: Dict[BALLOT_ID, BallotDecryptionShare] = {}
     for ballot_id, spoiled_ballot in spoiled_ballots.items():
         # iterate through the tallies and accumulate all of the shares for this guardian
-        contests: Dict[CONTEST_ID, CiphertextDecryptionContest] = {}
-        for contest in spoiled_ballot.contests:
-
-            selections: Dict[SELECTION_ID, CiphertextDecryptionSelection] = {}
-            for selection in contest.ballot_selections:
-
-                # collect all of the shares generated for each selection
-                compensated_selection_shares: Dict[
-                    AVAILABLE_GUARDIAN_ID, CiphertextCompensatedDecryptionSelection
-                ] = {
-                    available_guardian_id: compensated_selection
-                    for available_guardian_id, compensated_share in shares.items()
-                    for compensated_ballot_id, compensated_ballot in compensated_share.spoiled_ballots.items()
-                    for compensated_contest_id, compensated_contest in compensated_ballot.contests.items()
-                    for compensated_selection_id, compensated_selection in compensated_contest.selections.items()
-                    if compensated_selection_id == selection.object_id
-                }
-
-                # compute the reconstructed share
-                reconstructed_share = mult_p(
-                    *[
-                        pow_p(share.share, lagrange_coefficients[available_guardian_id])
-                        for available_guardian_id, share in compensated_selection_shares.items()
-                    ]
-                )
-                selections[
-                    selection.object_id
-                ] = create_ciphertext_decryption_selection(
-                    selection.object_id,
-                    missing_guardian_id,
-                    selection.description_hash,
-                    reconstructed_share,
-                    compensated_selection_shares,
-                )
-            contests[contest.object_id] = CiphertextDecryptionContest(
-                contest.object_id,
-                missing_guardian_id,
-                contest.description_hash,
-                selections,
-            )
-        spoiled_ballot_shares[spoiled_ballot.object_id] = BallotDecryptionShare(
-            missing_guardian_id, public_key.key, spoiled_ballot.object_id, contests,
+        shares_for_ballot: Dict[GUARDIAN_ID, CompensatedBallotDecryptionShare] = {
+            available_guardian_id: compensated_ballot
+            for available_guardian_id, compensated_share in shares.items()
+            for compensated_ballot_id, compensated_ballot in compensated_share.spoiled_ballots.items()
+            if compensated_ballot_id == ballot_id
+        }
+        ballot_share = reconstruct_decryption_ballot(
+            missing_guardian_id,
+            public_key,
+            spoiled_ballot,
+            shares_for_ballot,
+            lagrange_coefficients,
         )
 
+        spoiled_ballot_shares[spoiled_ballot.object_id] = ballot_share
     return spoiled_ballot_shares
+
+
+def reconstruct_decryption_ballot(
+    missing_guardian_id: MISSING_GUARDIAN_ID,
+    public_key: ElectionPublicKey,
+    ballot: CiphertextAcceptedBallot,
+    shares: Dict[AVAILABLE_GUARDIAN_ID, CompensatedBallotDecryptionShare],
+    lagrange_coefficients: Dict[AVAILABLE_GUARDIAN_ID, ElementModQ],
+) -> BallotDecryptionShare:
+    """
+    Reconstruct a missing ballot Decryption share for a missing guardian from the collection of compensated decryption shares
+
+    :param missing_guardian_id: The guardian id for the missing guardian
+    :param public_key: the public key for the missing guardian
+    :param ballots: The `CiphertextAcceptedBallot` to reconstruct
+    :shares: the collection of `CompensatedBallotDecryptionShare` for the missing guardian, each keyed by the ID of the guardian that produced it
+    :lagrange_coefficients: the lagrange coefficients corresponding to the available guardians that provided shares
+    """
+    contests: Dict[CONTEST_ID, CiphertextDecryptionContest] = {}
+    for contest in ballot.contests:
+        contest_shares: Dict[
+            AVAILABLE_GUARDIAN_ID, CiphertextCompensatedDecryptionContest
+        ] = {
+            available_guardian_id: compensated_ballot.contests[contest.object_id]
+            for available_guardian_id, compensated_ballot in shares.items()
+        }
+
+        selections: Dict[SELECTION_ID, CiphertextDecryptionSelection] = {}
+        for selection in contest.ballot_selections:
+
+            # collect all of the shares generated for each selection
+            compensated_selection_shares: Dict[
+                AVAILABLE_GUARDIAN_ID, CiphertextCompensatedDecryptionSelection
+            ] = {
+                available_guardian_id: compensated_contest.selections[
+                    selection.object_id
+                ]
+                for available_guardian_id, compensated_contest in contest_shares.items()
+            }
+
+            # compute the reconstructed share
+            reconstructed_share = mult_p(
+                *[
+                    pow_p(share.share, lagrange_coefficients[available_guardian_id])
+                    for available_guardian_id, share in compensated_selection_shares.items()
+                ]
+            )
+            selections[selection.object_id] = create_ciphertext_decryption_selection(
+                selection.object_id,
+                missing_guardian_id,
+                selection.description_hash,
+                reconstructed_share,
+                compensated_selection_shares,
+            )
+        contests[contest.object_id] = CiphertextDecryptionContest(
+            contest.object_id,
+            missing_guardian_id,
+            contest.description_hash,
+            selections,
+        )
+    return BallotDecryptionShare(
+        missing_guardian_id, public_key.key, ballot.object_id, contests,
+    )
