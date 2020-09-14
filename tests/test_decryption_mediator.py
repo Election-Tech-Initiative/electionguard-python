@@ -13,11 +13,16 @@ from electionguard.ballot_box import BallotBox, BallotBoxState
 from electionguard.decrypt_with_shares import (
     decrypt_selection_with_decryption_shares,
     decrypt_spoiled_ballots,
+    decrypt_ballot,
 )
 from electionguard.decryption import (
     compute_decryption_share,
+    compute_decryption_share_for_ballot,
     compute_decryption_share_for_selection,
+    compute_compensated_decryption_share_for_ballot,
     compute_compensated_decryption_share_for_selection,
+    compute_lagrange_coefficients_for_guardians,
+    reconstruct_decryption_ballot,
 )
 from electionguard.decryption_mediator import DecryptionMediator
 from electionguard.decryption_share import (
@@ -29,8 +34,8 @@ from electionguard.election import (
     InternalElectionDescription,
 )
 from electionguard.election_builder import ElectionBuilder
-from electionguard.encrypt import EncryptionDevice, EncryptionMediator, encrypt_ballot
 from electionguard.election_polynomial import compute_lagrange_coefficient
+from electionguard.encrypt import EncryptionDevice, EncryptionMediator, encrypt_ballot
 
 from electionguard.group import (
     int_to_q_unchecked,
@@ -122,6 +127,13 @@ class TestDecryptionMediator(TestCase):
         self.fake_spoiled_ballot = ballot_factory.get_fake_ballot(
             self.metadata, "some-unique-ballot-id-spoiled"
         )
+        self.more_fake_spoiled_ballots = []
+        for i in range(2):
+            self.more_fake_spoiled_ballots.append(
+                ballot_factory.get_fake_ballot(
+                    self.metadata, f"some-unique-ballot-id-spoiled{i}"
+                )
+            )
         self.assertTrue(
             self.fake_cast_ballot.is_valid(self.metadata.ballot_styles[0].object_id)
         )
@@ -150,16 +162,16 @@ class TestDecryptionMediator(TestCase):
             self.expected_plaintext_tally[id] = 0
 
         # Encrypt
-        encrypted_fake_cast_ballot = self.ballot_marking_device.encrypt(
+        self.encrypted_fake_cast_ballot = self.ballot_marking_device.encrypt(
             self.fake_cast_ballot
         )
-        encrypted_fake_spoiled_ballot = self.ballot_marking_device.encrypt(
+        self.encrypted_fake_spoiled_ballot = self.ballot_marking_device.encrypt(
             self.fake_spoiled_ballot
         )
-        self.assertIsNotNone(encrypted_fake_cast_ballot)
-        self.assertIsNotNone(encrypted_fake_spoiled_ballot)
+        self.assertIsNotNone(self.encrypted_fake_cast_ballot)
+        self.assertIsNotNone(self.encrypted_fake_spoiled_ballot)
         self.assertTrue(
-            encrypted_fake_cast_ballot.is_valid_encryption(
+            self.encrypted_fake_cast_ballot.is_valid_encryption(
                 self.metadata.description_hash,
                 self.joint_public_key,
                 self.context.crypto_extended_base_hash,
@@ -172,16 +184,25 @@ class TestDecryptionMediator(TestCase):
             self.more_fake_encrypted_ballots.append(
                 self.ballot_marking_device.encrypt(fake_ballot)
             )
+        # encrypt some more fake ballots
+        self.more_fake_encrypted_spoiled_ballots = []
+        for fake_ballot in self.more_fake_spoiled_ballots:
+            self.more_fake_encrypted_spoiled_ballots.append(
+                self.ballot_marking_device.encrypt(fake_ballot)
+            )
 
         # configure the ballot box
         ballot_store = BallotStore()
         ballot_box = BallotBox(self.metadata, self.context, ballot_store)
-        ballot_box.cast(encrypted_fake_cast_ballot)
-        ballot_box.spoil(encrypted_fake_spoiled_ballot)
+        ballot_box.cast(self.encrypted_fake_cast_ballot)
+        ballot_box.spoil(self.encrypted_fake_spoiled_ballot)
 
         # Cast some more fake ballots
         for fake_ballot in self.more_fake_encrypted_ballots:
             ballot_box.cast(fake_ballot)
+        # Spoil some more fake ballots
+        for fake_ballot in self.more_fake_encrypted_spoiled_ballots:
+            ballot_box.spoil(fake_ballot)
 
         # generate encrypted tally
         self.ciphertext_tally = tally_ballots(ballot_store, self.metadata, self.context)
@@ -454,6 +475,95 @@ class TestDecryptionMediator(TestCase):
             self.expected_plaintext_tally[first_selection.object_id], result.tally
         )
 
+    def test_decrypt_ballot_compensate_all_guardians_present(self):
+        # Arrange
+        # precompute decryption shares for the guardians
+        plaintext_ballot = self.fake_cast_ballot
+        encrypted_ballot = self.encrypted_fake_cast_ballot
+        shares = {
+            guardian.object_id: compute_decryption_share_for_ballot(
+                guardian, encrypted_ballot, self.context
+            )
+            for guardian in self.guardians[0:3]
+        }
+
+        # act
+        result = decrypt_ballot(
+            encrypted_ballot, shares, self.context.crypto_extended_base_hash,
+        )
+
+        # assert
+        self.assertIsNotNone(result)
+
+        for contest in plaintext_ballot.contests:
+            for selection in contest.ballot_selections:
+                expected_tally = 0 if selection.vote == "False" else 1
+                actual_tally = (
+                    result[contest.object_id].selections[selection.object_id].tally
+                )
+                self.assertEqual(expected_tally, actual_tally)
+
+    def test_decrypt_ballot_compensate_missing_guardians(self):
+        # Arrange
+        # precompute decryption shares for the guardians
+        plaintext_ballot = self.fake_cast_ballot
+        encrypted_ballot = self.encrypted_fake_cast_ballot
+        available_guardians = self.guardians[0:2]
+        missing_guardian = self.guardians[2]
+        missing_guardian_id = missing_guardian.object_id
+
+        shares = {
+            guardian.object_id: compute_decryption_share_for_ballot(
+                guardian, encrypted_ballot, self.context
+            )
+            for guardian in available_guardians
+        }
+        compensated_shares = {
+            guardian.object_id: compute_compensated_decryption_share_for_ballot(
+                guardian,
+                missing_guardian_id,
+                encrypted_ballot,
+                self.context,
+                identity_auxiliary_decrypt,
+            )
+            for guardian in available_guardians
+        }
+
+        lagrange_coefficients = compute_lagrange_coefficients_for_guardians(
+            [guardian.share_public_keys() for guardian in available_guardians]
+        )
+        public_key = (
+            available_guardians[0]
+            .guardian_election_public_keys()
+            .get(missing_guardian_id)
+        )
+
+        reconstructed_share = reconstruct_decryption_ballot(
+            missing_guardian_id,
+            public_key,
+            encrypted_ballot,
+            compensated_shares,
+            lagrange_coefficients,
+        )
+
+        all_shares = {**shares, missing_guardian_id: reconstructed_share}
+
+        # act
+        result = decrypt_ballot(
+            encrypted_ballot, all_shares, self.context.crypto_extended_base_hash,
+        )
+
+        # assert
+        self.assertIsNotNone(result)
+
+        for contest in plaintext_ballot.contests:
+            for selection in contest.ballot_selections:
+                expected_tally = 0 if selection.vote == "False" else 1
+                actual_tally = (
+                    result[contest.object_id].selections[selection.object_id].tally
+                )
+                self.assertEqual(expected_tally, actual_tally)
+
     def test_decrypt_spoiled_ballots_all_guardians_present(self):
         # Arrange
         # precompute decryption shares for the guardians
@@ -471,8 +581,6 @@ class TestDecryptionMediator(TestCase):
             self.guardians[1].object_id: second_share,
             self.guardians[2].object_id: third_share,
         }
-
-        subject = DecryptionMediator(self.metadata, self.context, self.ciphertext_tally)
 
         # act
         result = decrypt_spoiled_ballots(
