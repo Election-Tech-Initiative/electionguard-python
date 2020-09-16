@@ -1,4 +1,5 @@
 import unittest
+import pickle
 from typing import Optional
 
 from hypothesis import given
@@ -192,3 +193,13 @@ class TestOptionalFunctions(unittest.TestCase):
 
         self.assertEqual(5, get_optional(flatmap_optional(good, lambda x: x + 2)))
         self.assertIsNone(flatmap_optional(bad, lambda x: x + 2))
+
+
+class TestPickling(unittest.TestCase):
+    @given(elements_mod_p())
+    def test_pickle_p(self, p: ElementModP):
+        self.assertEqual(p, pickle.loads(pickle.dumps(p)))
+
+    @given(elements_mod_q())
+    def test_pickle_q(self, q: ElementModQ):
+        self.assertEqual(q, pickle.loads(pickle.dumps(q)))

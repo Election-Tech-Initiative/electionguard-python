@@ -1,9 +1,10 @@
 # Support for basic modular math in ElectionGuard. This code's primary purpose is to be "correct",
 # in the sense that performance may be less than hand-optimized C code, and no guarantees are
 # made about timing or other side-channels.
-
-from typing import Any, Final, NamedTuple, Optional, Union
+from dataclasses import dataclass
 from secrets import randbelow
+from typing import Any, Final, Optional, Union
+
 from gmpy2 import mpz, powmod, invert, to_binary, from_binary
 
 # Constants used by ElectionGuard
@@ -18,7 +19,8 @@ G: Final[
 Q_MINUS_ONE: Final[int] = Q - 1
 
 
-class ElementModQ(NamedTuple):
+@dataclass
+class ElementModQ:
     """An element of the smaller `mod q` space, i.e., in [0, Q), where Q is a 256-bit prime."""
 
     elem: mpz
@@ -59,8 +61,25 @@ class ElementModQ(NamedTuple):
     def __str__(self) -> str:
         return self.elem.digits()
 
+    def __hash__(self) -> int:
+        return hash(int(self.elem))
 
-class ElementModP(NamedTuple):
+    # __getstate__ and __setstate__ are here to support pickle and other serialization libraries.
+    # These are intended for use in "trusted" environments (e.g., running on a computational cluster)
+    # but should not be used when reading possibly untrusted data from a file. For that, use functions
+    # like int_to_p(), which will return None if there's an error.
+
+    def __getstate__(self) -> dict:
+        return {"elem": int(self.elem)}
+
+    def __setstate__(self, state: dict) -> None:
+        if "elem" not in state or not isinstance(state["elem"], int):
+            raise AttributeError("couldn't restore state, malformed input")
+        self.elem = mpz(state["elem"])
+
+
+@dataclass
+class ElementModP:
     """An element of the larger `mod p` space, i.e., in [0, P), where P is a 4096-bit prime."""
 
     elem: mpz
@@ -108,6 +127,17 @@ class ElementModP(NamedTuple):
 
     def __str__(self) -> str:
         return self.elem.digits()
+
+    def __hash__(self) -> int:
+        return hash(int(self.elem))
+
+    def __getstate__(self) -> dict:
+        return {"elem": int(self.elem)}
+
+    def __setstate__(self, state: dict) -> None:
+        if "elem" not in state or not isinstance(state["elem"], int):
+            raise AttributeError("couldn't restore state, malformed input")
+        self.elem = mpz(state["elem"])
 
 
 # Common constants
