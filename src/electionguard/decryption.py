@@ -218,11 +218,14 @@ def compute_decryption_share_for_ballot(
     guardian: Guardian,
     ballot: CiphertextAcceptedBallot,
     context: CiphertextElectionContext,
-    scheduler: Scheduler = Scheduler(),
+    scheduler: Optional[Scheduler] = None,
 ) -> Optional[BallotDecryptionShare]:
     """
     Compute the decryption for a single ballot
     """
+    if not scheduler:
+        scheduler = Scheduler()
+
     contests: Dict[CONTEST_ID, CiphertextDecryptionContest] = {}
     for contest in ballot.contests:
         selections: Dict[SELECTION_ID, CiphertextDecryptionSelection] = {}
@@ -285,11 +288,14 @@ def compute_compensated_decryption_share_for_ballot(
     ballot: CiphertextAcceptedBallot,
     context: CiphertextElectionContext,
     decrypt: AuxiliaryDecrypt = rsa_decrypt,
-    scheduler: Scheduler = Scheduler(),
+    scheduler: Optional[Scheduler] = None,
 ) -> Optional[CompensatedBallotDecryptionShare]:
     """
     Compute the decryption for a single ballot
     """
+    if not scheduler:
+        scheduler = Scheduler()
+
     contests: Dict[CONTEST_ID, CiphertextCompensatedDecryptionContest] = {}
     for contest in ballot.contests:
         selections: Dict[SELECTION_ID, CiphertextCompensatedDecryptionSelection] = {}
