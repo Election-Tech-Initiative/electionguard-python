@@ -23,6 +23,16 @@ class ElementModQ(NamedTuple):
 
     elem: mpz
 
+    def to_hex(self) -> str:
+        """
+        Converts from the element to the hex representation of bytes. This is preferable to directly
+        accessing `elem`, whose representation might change.
+        """
+        h = format(self.elem, "02x")
+        if len(h) % 2:
+            h = "0" + h
+        return h
+
     def to_int(self) -> int:
         """
         Converts from the element to a regular integer. This is preferable to directly
@@ -64,6 +74,16 @@ class ElementModP(NamedTuple):
     """An element of the larger `mod p` space, i.e., in [0, P), where P is a 4096-bit prime."""
 
     elem: mpz
+
+    def to_hex(self) -> str:
+        """
+        Converts from the element to the hex representation of bytes. This is preferable to directly
+        accessing `elem`, whose representation might change.
+        """
+        h = format(self.elem, "02x")
+        if len(h) % 2:
+            h = "0" + h
+        return h
 
     def to_int(self) -> int:
         """
@@ -123,6 +143,19 @@ ElementModPOrQ = Union[ElementModP, ElementModQ]
 ElementModPOrQorInt = Union[ElementModP, ElementModQ, int]
 ElementModQorInt = Union[ElementModQ, int]
 ElementModPorInt = Union[ElementModP, int]
+
+
+def hex_to_q(input: str) -> Optional[ElementModQ]:
+    """
+    Given a hex string representing bytes, returns an ElementModQ.
+    Returns `None` if the number is out of the allowed
+    [0,Q) range.
+    """
+    i = int(input, 16)
+    if 0 <= i < Q:
+        return ElementModQ(mpz(i))
+    else:
+        return None
 
 
 def int_to_q(input: Union[str, int]) -> Optional[ElementModQ]:

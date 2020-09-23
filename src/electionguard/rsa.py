@@ -68,11 +68,9 @@ def rsa_encrypt(message: str, public_key: str) -> Optional[str]:
     """
     data = bytes(public_key, ISO_ENCODING)
     rsa_public_key: RSAPublicKey = load_pem_public_key(data, backend=default_backend())
-    integer = int(message)
-    bits = count_set_bits(integer)
-    if bits > MAX_BITS:
+    plaintext = bytes.fromhex(message)
+    if len(plaintext) > MAX_BITS:
         return None
-    plaintext = integer.to_bytes(bits, BYTE_ORDER)
     ciphertext = rsa_public_key.encrypt(plaintext, PKCS1v15())
     return str(ciphertext, ISO_ENCODING)
 
@@ -95,8 +93,8 @@ def rsa_decrypt(encrypted_message: str, private_key: str) -> Optional[str]:
         plaintext = rsa_private_key.decrypt(ciphertext, PKCS1v15())
     except ValueError:
         return None
-    integer = int.from_bytes(plaintext, BYTE_ORDER)
-    return str(integer)
+    hex_str = plaintext.hex()
+    return hex_str
 
 
 def count_set_bits(n: int) -> int:

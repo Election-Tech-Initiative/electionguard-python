@@ -7,7 +7,7 @@ from .elgamal import ElGamalCiphertext
 from .group import (
     ElementModP,
     ElementModQ,
-    int_to_q,
+    hex_to_q,
     mult_p,
     pow_q,
     pow_p,
@@ -498,7 +498,7 @@ class Guardian(ElectionObjectBase):
                 f"compensate decrypt guardian {self.object_id} failed decryption for {missing_guardian_id}"
             )
             return None
-        partial_secret_key = get_optional(int_to_q(int(decrypted_value)))
+        partial_secret_key = get_optional(hex_to_q(decrypted_value))
 
         # 𝑀_{𝑖,l} = 𝐴^P𝑖_{l}
         partial_decryption = elgamal.partial_decrypt(partial_secret_key)
