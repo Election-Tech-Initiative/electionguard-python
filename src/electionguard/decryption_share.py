@@ -390,3 +390,24 @@ def get_spoiled_shares_for_selection(
                                 selection,
                             )
     return spoiled_shares
+
+
+def get_ballot_shares_for_selection(
+    selection_id: str, shares: Dict[GUARDIAN_ID, BallotDecryptionShare],
+) -> Dict[GUARDIAN_ID, Tuple[ELECTION_PUBLIC_KEY, CiphertextDecryptionSelection]]:
+    """
+    Get the ballot shares for a given selection, in the context of a specific ballot
+    """
+    ballot_shares: Dict[
+        GUARDIAN_ID, Tuple[ELECTION_PUBLIC_KEY, CiphertextDecryptionSelection]
+    ] = {}
+    for ballot_share in shares.values():
+        for contest_share in ballot_share.contests.values():
+            for selection_share in contest_share.selections.values():
+                if selection_share.object_id == selection_id:
+                    ballot_shares[ballot_share.guardian_id] = (
+                        ballot_share.public_key,
+                        selection_share,
+                    )
+
+    return ballot_shares

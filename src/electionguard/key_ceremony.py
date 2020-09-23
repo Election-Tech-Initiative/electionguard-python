@@ -131,7 +131,7 @@ class ElectionPartialKeyChallenge(NamedTuple):
     The sequence order of the designated guardian
     """
 
-    value: str
+    value: ElementModQ
     coefficient_commitments: List[ElementModP]
     coefficient_proofs: List[SchnorrProof]
 
@@ -263,9 +263,7 @@ def generate_election_partial_key_challenge(
         backup.owner_id,
         backup.designated_id,
         backup.designated_sequence_order,
-        compute_polynomial_coordinate(
-            backup.designated_sequence_order, polynomial
-        ).to_hex(),
+        compute_polynomial_coordinate(backup.designated_sequence_order, polynomial),
         backup.coefficient_commitments,
         backup.coefficient_proofs,
     )
@@ -285,7 +283,7 @@ def verify_election_partial_key_challenge(
         challenge.designated_id,
         verifier_id,
         verify_polynomial_coordinate(
-            get_optional(hex_to_q(challenge.value)),
+            challenge.value,
             challenge.designated_sequence_order,
             challenge.coefficient_commitments,
         ),
