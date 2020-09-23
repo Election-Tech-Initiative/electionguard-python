@@ -573,7 +573,6 @@ class ElectionDescription(Serializable, CryptoHashable):
             self.contact_information,
             self.geopolitical_units,
             self.parties,
-            self.parties,
             self.contests,
             self.ballot_styles,
         )
