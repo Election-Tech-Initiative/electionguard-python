@@ -18,7 +18,7 @@ from jsons import (
 )
 
 S = TypeVar("S", bound="Serializable")
-T = TypeVar("T")
+_T = TypeVar("_T")
 
 JSON_FILE_EXTENSION: str = ".json"
 WRITE: str = "w"
@@ -164,7 +164,7 @@ def write_json_file(
         json_file.write(write_json(object_to_write, strip_privates))
 
 
-def read_json(data: Any, class_out: Type[T]) -> T:
+def read_json(data: Any, class_out: Type[_T]) -> _T:
     """
     Deserialize json file to object
     :param data: Json file data
@@ -172,10 +172,10 @@ def read_json(data: Any, class_out: Type[T]) -> T:
     :return: Deserialized object
     """
     set_deserializers()
-    return cast(T, loads(data, class_out))
+    return cast(_T, loads(data, class_out))
 
 
-def read_json_object(data: Any, class_out: Type[T]) -> T:
+def read_json_object(data: Any, class_out: Type[_T]) -> _T:
     """
     Deserialize json file to object
     :param data: Json file data
@@ -183,10 +183,10 @@ def read_json_object(data: Any, class_out: Type[T]) -> T:
     :return: Deserialized object
     """
     set_deserializers()
-    return cast(T, load(data, class_out))
+    return cast(_T, load(data, class_out))
 
 
-def read_json_file(class_out: Type[T], file_name: str, file_path: str = "") -> T:
+def read_json_file(class_out: Type[_T], file_name: str, file_path: str = "") -> _T:
     """
     Deserialize json file to object
     :param class_out: Object type
@@ -198,7 +198,7 @@ def read_json_file(class_out: Type[T], file_name: str, file_path: str = "") -> T
     json_file_path: str = path.join(file_path, file_name + JSON_FILE_EXTENSION)
     with open(json_file_path, READ) as json_file:
         data = json_file.read()
-        target: T = read_json(data, class_out)
+        target: _T = read_json(data, class_out)
     return target
 
 
