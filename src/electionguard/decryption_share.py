@@ -371,7 +371,10 @@ def get_tally_shares_for_selection(
 
 
 def get_spoiled_shares_for_selection(
-    ballot_id: str, selection_id: str, shares: Dict[GUARDIAN_ID, TallyDecryptionShare],
+    ballot_id: str,
+    contest_id: str,
+    selection_id: str,
+    shares: Dict[GUARDIAN_ID, TallyDecryptionShare],
 ) -> Dict[GUARDIAN_ID, Tuple[ELECTION_PUBLIC_KEY, CiphertextDecryptionSelection]]:
     """
     Get the spoiled shares for a given selection
@@ -383,12 +386,13 @@ def get_spoiled_shares_for_selection(
         for ballot in share.spoiled_ballots.values():
             if ballot.ballot_id == ballot_id:
                 for contest in ballot.contests.values():
-                    for selection in contest.selections.values():
-                        if selection.object_id == selection_id:
-                            spoiled_shares[share.guardian_id] = (
-                                share.public_key,
-                                selection,
-                            )
+                    if contest.object_id == contest_id:
+                        for selection in contest.selections.values():
+                            if selection.object_id == selection_id:
+                                spoiled_shares[share.guardian_id] = (
+                                    share.public_key,
+                                    selection,
+                                )
     return spoiled_shares
 
 
