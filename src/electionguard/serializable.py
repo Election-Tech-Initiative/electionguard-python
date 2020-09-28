@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
+import re
 from os import path
 from typing import Any, cast, Type, TypeVar
 
@@ -236,4 +237,14 @@ def set_deserializers() -> None:
         NoneType,
     )
 
-    set_deserializer(lambda dt, cls, **_: datetime.fromisoformat(dt), datetime)
+    set_deserializer(lambda dt, cls, **_: _deserialize_datetime(dt), datetime)
+
+
+def _deserialize_datetime(value: str) -> datetime:
+    """
+    The `fromisoformat` function doesn't recognize the Z (Zulu) suffix
+    to indicate UTC.  For compatibility with more external clients, we
+    should allow it.
+    """
+    tz_corrected = re.sub("Z$", "+00:00", value)
+    return datetime.fromisoformat(tz_corrected)
