@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from unittest import TestCase
 from typing import Any, List, Optional
 from os import remove
@@ -30,21 +31,48 @@ class DataModel:
     test: int
     nested: NestedModel
     array: List[NestedModel]
+    datetime: datetime
     from_json_file: Optional[Any] = None
 
 
 JSON_DATA: DataModel = DataModel(
-    test=1, nested=NestedModel(test=1), array=[NestedModel(test=1)]
+    test=1,
+    nested=NestedModel(test=1),
+    datetime=datetime(2020, 9, 28, 20, 11, 31, tzinfo=timezone.utc),
+    array=[NestedModel(test=1)],
 )
-EXPECTED_JSON_STRING = '{"array": [{"test": 1}], "nested": {"test": 1}, "test": 1}'
+EXPECTED_JSON_STRING = '{"array": [{"test": 1}], "datetime": "2020-09-28T20:11:31+00:00", "nested": {"test": 1}, "test": 1}'
 EXPECTED_JSON_OBJECT = {
     "test": 1,
+    "datetime": "2020-09-28T20:11:31+00:00",
     "nested": {"test": 1},
     "array": [{"test": 1}],
 }
 
 
 class TestSerializable(TestCase):
+    def test_read_iso_date(self) -> None:
+        # Arrange
+        target_date = datetime(2020, 9, 28, 20, 11, 31, tzinfo=timezone.utc)
+        representations = [
+            # UTC
+            '"2020-09-28T20:11:31+00:00"',
+            '"2020-09-28T20:11:31.000+00:00"',
+            '"2020-09-28T20:11:31.000Z"',
+            '"2020-09-28T20:11:31Z"',
+            # Other time zone
+            '"2020-09-28T21:11:31+01:00"',
+            '"2020-09-28T21:11:31.000+01:00"',
+        ]
+
+        # Act
+        results = [read_json(value, datetime) for value in representations]
+
+        # Assert
+        # expected_timestamp = target_date.timestamp()
+        for result in results:
+            self.assertEqual(target_date, result)
+
     def test_read_and_write_json(self) -> None:
         # Act
         json_string = write_json(JSON_DATA)
