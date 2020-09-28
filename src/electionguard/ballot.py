@@ -850,7 +850,7 @@ def make_ciphertext_ballot(
     contest_hashes = [contest.crypto_hash for contest in contests]
     contest_hash = hash_elems(object_id, description_hash, *contest_hashes)
 
-    timestamp = to_ticks(datetime.utcnow()) if timestamp is None else timestamp
+    timestamp = to_ticks(datetime.now()) if timestamp is None else timestamp
     if previous_tracking_hash is None:
         previous_tracking_hash = description_hash
     if tracking_hash is None:
