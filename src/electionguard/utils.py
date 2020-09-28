@@ -72,12 +72,12 @@ def to_ticks(date_time: datetime) -> int:
     :return: number of ticks
     """
 
-    epoch_milliseconds = (
+    ticks = (
         date_time.timestamp()
         if date_time.tzinfo
         else date_time.astimezone(timezone.utc).timestamp()
     )
-    return int(epoch_milliseconds)
+    return int(ticks)
 
 
 def space_between_capitals(base: str) -> str:
