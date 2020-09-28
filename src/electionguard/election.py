@@ -9,7 +9,7 @@ from .group import Q, P, R, G, ElementModQ, ElementModP
 from .hash import CryptoHashable, hash_elems
 from .logs import log_warning
 from .serializable import Serializable
-from .utils import get_optional
+from .utils import get_optional, to_ticks
 
 
 @unique
@@ -567,8 +567,8 @@ class ElectionDescription(Serializable, CryptoHashable):
         return hash_elems(
             self.election_scope_id,
             str(self.type),
-            self.start_date.isoformat(),
-            self.end_date.isoformat(),
+            to_ticks(self.start_date),
+            to_ticks(self.end_date),
             self.name,
             self.contact_information,
             self.geopolitical_units,

@@ -1,4 +1,5 @@
 import unittest
+from datetime import datetime
 
 from electionguard.election import (
     ContestDescriptionWithPlaceholders,
@@ -9,6 +10,7 @@ from electionguard.election import (
 )
 import electionguardtest.election_factory as ElectionFactory
 import electionguardtest.ballot_factory as BallotFactory
+from electionguard.serializable import read_json
 
 election_factory = ElectionFactory.ElectionFactory()
 ballot_factory = BallotFactory.BallotFactory()
@@ -45,6 +47,25 @@ class TestElection(unittest.TestCase):
 
         # Assert
         self.assertEqual(subject1.crypto_hash(), subject2.crypto_hash())
+
+    def test_election_hash_is_consistent_regardless_of_format(self):
+
+        # Act
+        subject1 = election_factory.get_simple_election_from_file()
+        subject1.start_date = read_json('"2020-03-01T08:00:00-05:00"', datetime)
+
+        subject2 = election_factory.get_simple_election_from_file()
+        subject2.start_date = read_json('"2020-03-01T13:00:00-00:00"', datetime)
+
+        subject3 = election_factory.get_simple_election_from_file()
+        subject3.start_date = read_json('"2020-03-01T13:00:00.000-00:00"', datetime)
+
+        subjects = [subject1, subject2, subject3]
+
+        # Assert
+        hashes = [subject.crypto_hash() for subject in subjects]
+        for other_hash in hashes[1:]:
+            self.assertEqual(hashes[0], other_hash)
 
     def test_election_from_file_generates_consistent_internal_description_contest_hashes(
         self,
