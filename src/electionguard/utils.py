@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from os import mkdir, path
 from re import sub
 from typing import Callable, Optional, TypeVar
@@ -66,14 +66,18 @@ def flatmap_optional(optional: Optional[T], mapper: Callable[[T], U]) -> Optiona
 
 def to_ticks(date_time: datetime) -> int:
     """
-    Return the number of ticks for a date time
+    Return the number of ticks for a date time.
+    Ticks are defined here as number of seconds since the unix epoch (00:00:00 UTC on 1 January 1970)
     :param date_time: Date time to convert
     :return: number of ticks
     """
-    t0 = datetime(1, 1, 1)
-    seconds = int((date_time - t0).total_seconds())
-    ticks = seconds * 10 ** 7
-    return ticks
+
+    ticks = (
+        date_time.timestamp()
+        if date_time.tzinfo
+        else date_time.astimezone(timezone.utc).timestamp()
+    )
+    return int(ticks)
 
 
 def space_between_capitals(base: str) -> str:

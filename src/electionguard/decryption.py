@@ -40,7 +40,10 @@ ELECTION_PUBLIC_KEY = ElementModP
 
 
 def compute_decryption_share(
-    guardian: Guardian, tally: CiphertextTally, context: CiphertextElectionContext,
+    guardian: Guardian,
+    tally: CiphertextTally,
+    context: CiphertextElectionContext,
+    scheduler: Optional[Scheduler] = None,
 ) -> Optional[TallyDecryptionShare]:
     """
     Compute a decryptions share for a guardian
@@ -51,12 +54,17 @@ def compute_decryption_share(
     :return: a `TallyDecryptionShare` or `None` if there is an error
     """
 
-    contests = compute_decryption_share_for_cast_contests(guardian, tally, context)
+    if not scheduler:
+        scheduler = Scheduler()
+
+    contests = compute_decryption_share_for_cast_contests(
+        guardian, tally, context, scheduler
+    )
     if contests is None:
         return None
 
     spoiled_ballots = compute_decryption_share_for_spoiled_ballots(
-        guardian, tally, context
+        guardian, tally, context, scheduler
     )
 
     if spoiled_ballots is None:
@@ -76,6 +84,7 @@ def compute_compensated_decryption_share(
     tally: CiphertextTally,
     context: CiphertextElectionContext,
     decrypt: AuxiliaryDecrypt = rsa_decrypt,
+    scheduler: Optional[Scheduler] = None,
 ) -> Optional[CompensatedTallyDecryptionShare]:
     """
     Compute a compensated decryptions share for a guardian
@@ -86,15 +95,17 @@ def compute_compensated_decryption_share(
     :context: The public election encryption context
     :return: a `TallyDecryptionShare` or `None` if there is an error
     """
+    if not scheduler:
+        scheduler = Scheduler()
 
     contests = compute_compensated_decryption_share_for_cast_contests(
-        guardian, missing_guardian_id, tally, context, decrypt
+        guardian, missing_guardian_id, tally, context, decrypt, scheduler
     )
     if contests is None:
         return None
 
     spoiled_ballots = compute_compensated_decryption_share_for_spoiled_ballots(
-        guardian, missing_guardian_id, tally, context, decrypt
+        guardian, missing_guardian_id, tally, context, decrypt, scheduler
     )
 
     if spoiled_ballots is None:
@@ -110,13 +121,17 @@ def compute_compensated_decryption_share(
 
 
 def compute_decryption_share_for_cast_contests(
-    guardian: Guardian, tally: CiphertextTally, context: CiphertextElectionContext,
+    guardian: Guardian,
+    tally: CiphertextTally,
+    context: CiphertextElectionContext,
+    scheduler: Optional[Scheduler] = None,
 ) -> Optional[Dict[CONTEST_ID, CiphertextDecryptionContest]]:
     """
     Compute the decryption for all of the cast contests in the Ciphertext Tally
     """
     contests: Dict[CONTEST_ID, CiphertextDecryptionContest] = {}
-    scheduler = Scheduler()
+    if not scheduler:
+        scheduler = Scheduler()
 
     for contest in tally.cast.values():
         selections: Dict[SELECTION_ID, CiphertextDecryptionSelection] = {}
@@ -153,11 +168,13 @@ def compute_compensated_decryption_share_for_cast_contests(
     tally: CiphertextTally,
     context: CiphertextElectionContext,
     decrypt: AuxiliaryDecrypt = rsa_decrypt,
+    scheduler: Optional[Scheduler] = None,
 ) -> Optional[Dict[CONTEST_ID, CiphertextCompensatedDecryptionContest]]:
     """
     Compute the compensated decryption for all of the cast contests in the Ciphertext Tally
     """
-    scheduler = Scheduler()
+    if not scheduler:
+        scheduler = Scheduler()
     contests: Dict[CONTEST_ID, CiphertextCompensatedDecryptionContest] = {}
 
     for contest in tally.cast.values():
@@ -193,13 +210,17 @@ def compute_compensated_decryption_share_for_cast_contests(
 
 
 def compute_decryption_share_for_spoiled_ballots(
-    guardian: Guardian, tally: CiphertextTally, context: CiphertextElectionContext,
+    guardian: Guardian,
+    tally: CiphertextTally,
+    context: CiphertextElectionContext,
+    scheduler: Optional[Scheduler] = None,
 ) -> Optional[Dict[BALLOT_ID, BallotDecryptionShare]]:
     """
     Compute the decryption for all spoiled ballots in the Ciphertext Tally
     """
     spoiled_ballots: Dict[BALLOT_ID, BallotDecryptionShare] = {}
-    scheduler = Scheduler()
+    if not scheduler:
+        scheduler = Scheduler()
 
     for spoiled_ballot in tally.spoiled_ballots.values():
         computed_share = compute_decryption_share_for_ballot(
@@ -262,15 +283,16 @@ def compute_compensated_decryption_share_for_spoiled_ballots(
     tally: CiphertextTally,
     context: CiphertextElectionContext,
     decrypt: AuxiliaryDecrypt = rsa_decrypt,
+    scheduler: Optional[Scheduler] = None,
 ) -> Optional[Dict[BALLOT_ID, CompensatedBallotDecryptionShare]]:
     """
     Compute the decryption for all spoiled ballots in the Ciphertext Tally
     """
     spoiled_ballots: Dict[BALLOT_ID, CompensatedBallotDecryptionShare] = {}
-    scheduler = Scheduler()
+    if not scheduler:
+        scheduler = Scheduler()
 
     for spoiled_ballot in tally.spoiled_ballots.values():
-        contests: Dict[CONTEST_ID, CiphertextCompensatedDecryptionContest] = {}
         compensated_ballot = compute_compensated_decryption_share_for_ballot(
             guardian, missing_guardian_id, spoiled_ballot, context, decrypt, scheduler
         )
@@ -380,7 +402,7 @@ def compute_compensated_decryption_share_for_selection(
     decrypt: AuxiliaryDecrypt = rsa_decrypt,
 ) -> Optional[CiphertextCompensatedDecryptionSelection]:
     """
-    Compute a compensated decryption share for a specific selection using the 
+    Compute a compensated decryption share for a specific selection using the
     avialable guardian's share of the missing guardian's private key polynomial
 
     :param available_guardian: The available guardian that will partially decrypt the selection
@@ -537,7 +559,7 @@ def reconstruct_decryption_contests(
     lagrange_coefficients: Dict[AVAILABLE_GUARDIAN_ID, ElementModQ],
 ) -> Dict[CONTEST_ID, CiphertextDecryptionContest]:
     """
-    Recontruct the missing Decryption Share for a missing guardian 
+    Recontruct the missing Decryption Share for a missing guardian
     from the collection of compensated decryption shares
 
     :param missing_guardian_id: The guardian id for the missing guardian
