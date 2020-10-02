@@ -1,8 +1,7 @@
 from typing import List, Optional
-from binascii import hexlify
 from .hash import hash_elems
-from .group import ElementModQ, q_to_bytes, bytes_to_q
-from .words import get_word, get_index_from_word
+from .group import ElementModQ
+from .words import get_word
 
 DEFAULT_SEPERATOR = "-"
 
