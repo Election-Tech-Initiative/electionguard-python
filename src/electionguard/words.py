@@ -14,7 +14,7 @@ def get_word(index: int) -> Optional[str]:
         return None
     if index > MAX_INDEX:
         return None
-    return words[index]
+    return words[index & 0xFFF]
 
 
 def get_index_from_word(word: str) -> Optional[int]:
