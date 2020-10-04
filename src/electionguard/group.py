@@ -25,6 +25,10 @@ class ElementModQ(NamedTuple):
     elem: mpz
 
     def to_bytes(self) -> bytes:
+        """
+        Converts from the element to the representation of bytes by first going through hex. 
+        This is preferable to directly accessing `elem`, whose representation might change.
+        """
         return b16decode(self.to_hex())
 
     def to_hex(self) -> str:
