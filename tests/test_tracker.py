@@ -6,7 +6,6 @@ from electionguard.group import ZERO_MOD_Q, ONE_MOD_Q, TWO_MOD_Q
 
 from electionguard.tracker import (
     tracker_hash_to_words,
-    tracker_words_to_hash,
     get_rotating_tracker_hash,
     get_hash_for_device,
 )
@@ -56,11 +55,25 @@ class TestTracker(TestCase):
         device_words = tracker_hash_to_words(device_hash)
         tracker_words = tracker_hash_to_words(tracker_hash)
         tracker_different_words = tracker_hash_to_words(tracker_hash_different)
-        tracker_hash_from_words = tracker_words_to_hash(tracker_words)
 
         # Assert
         self.assertIsNotNone(device_words)
         self.assertIsNotNone(tracker_words)
         self.assertNotEqual(device_words, tracker_words)
         self.assertNotEqual(tracker_different_words, tracker_words)
-        self.assertEqual(tracker_hash, tracker_hash_from_words)
+
+    def test_tracker_converts_to_known_words(self):
+        expected_hash = (
+            "325AB2622D35311DB0320C9F3B421EE93017D16B9E4C7FEF06704EDA4FA5E30B"
+        )
+        expected_words = "change-AB262-cart-5311D-ladder-20C9F-cloudburst-21EE9-cellar-7D16B-illegal-C7FEF-alias-04EDA-curriculum-5E30B"
+
+        device_hash = ONE_MOD_Q
+        ballot_hash = TWO_MOD_Q
+        timestamp = 1000
+
+        tracker_hash = get_rotating_tracker_hash(device_hash, timestamp, ballot_hash)
+        tracker_words = tracker_hash_to_words(tracker_hash)
+
+        self.assertEqual(tracker_hash.to_hex(), expected_hash)
+        self.assertEqual(tracker_words, expected_words)
