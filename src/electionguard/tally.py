@@ -8,7 +8,7 @@ from .ballot import (
     CiphertextAcceptedBallot,
     CiphertextSelection,
 )
-from .ballot_store import BallotStore
+from .data_store import DataStore
 from .ballot_validator import ballot_is_valid_for_election
 from .decryption_share import CiphertextDecryptionSelection
 from .election import CiphertextElectionContext, InternalElectionDescription
@@ -434,7 +434,7 @@ def tally_ballot(
 
 
 def tally_ballots(
-    store: BallotStore,
+    store: DataStore,
     metadata: InternalElectionDescription,
     context: CiphertextElectionContext,
 ) -> Optional[CiphertextTally]:
