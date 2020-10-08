@@ -275,6 +275,8 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
             SELECTION_ID, Dict[BALLOT_ID, ElGamalCiphertext]
         ] = {}
         for ballot in ballots:
+            # get the value of the dict
+            ballot = ballot[1]
             if not self.__contains__(ballot) and ballot_is_valid_for_election(
                 ballot, self._metadata, self._encryption
             ):
