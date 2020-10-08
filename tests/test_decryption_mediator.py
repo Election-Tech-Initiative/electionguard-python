@@ -7,7 +7,7 @@ from hypothesis import given, HealthCheck, settings, Phase
 from hypothesis.strategies import integers, data
 
 from electionguard.ballot import PlaintextBallot, from_ciphertext_ballot
-from electionguard.ballot_store import BallotStore
+from electionguard.data_store import DataStore
 
 from electionguard.ballot_box import BallotBox, BallotBoxState
 from electionguard.decrypt_with_shares import (
@@ -192,7 +192,7 @@ class TestDecryptionMediator(TestCase):
             )
 
         # configure the ballot box
-        ballot_store = BallotStore()
+        ballot_store = DataStore()
         ballot_box = BallotBox(self.metadata, self.context, ballot_store)
         ballot_box.cast(self.encrypted_fake_cast_ballot)
         ballot_box.spoil(self.encrypted_fake_spoiled_ballot)
@@ -291,10 +291,12 @@ class TestDecryptionMediator(TestCase):
 
         # Compute lagrange coefficients for the guardians that are present
         lagrange_0 = compute_lagrange_coefficient(
-            self.guardians[0].sequence_order, *[self.guardians[1].sequence_order],
+            self.guardians[0].sequence_order,
+            *[self.guardians[1].sequence_order],
         )
         lagrange_1 = compute_lagrange_coefficient(
-            self.guardians[1].sequence_order, *[self.guardians[0].sequence_order],
+            self.guardians[1].sequence_order,
+            *[self.guardians[0].sequence_order],
         )
 
         print(
@@ -489,7 +491,9 @@ class TestDecryptionMediator(TestCase):
 
         # act
         result = decrypt_ballot(
-            encrypted_ballot, shares, self.context.crypto_extended_base_hash,
+            encrypted_ballot,
+            shares,
+            self.context.crypto_extended_base_hash,
         )
 
         # assert
@@ -550,7 +554,9 @@ class TestDecryptionMediator(TestCase):
 
         # act
         result = decrypt_ballot(
-            encrypted_ballot, all_shares, self.context.crypto_extended_base_hash,
+            encrypted_ballot,
+            all_shares,
+            self.context.crypto_extended_base_hash,
         )
 
         # assert
@@ -695,7 +701,7 @@ class TestDecryptionMediator(TestCase):
     ) -> CiphertextTally:
 
         # encrypt each ballot
-        store = BallotStore()
+        store = DataStore()
         for ballot in ballots:
             encrypted_ballot = encrypt_ballot(
                 ballot, metadata, context, int_to_q_unchecked(1)
