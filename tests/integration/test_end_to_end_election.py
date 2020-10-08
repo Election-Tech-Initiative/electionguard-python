@@ -72,7 +72,7 @@ from electionguard.publish import (
 class TestEndToEndElection(TestCase):
     """
     Test a complete simple example of executing an End-to-End encrypted election.
-    In a real world scenario all of these steps would not be completed on the same machine.
+    In a real world scenario all of these steps would not be completed on the same machine. 
     """
 
     NUMBER_OF_GUARDIANS = 5
@@ -273,8 +273,8 @@ class TestEndToEndElection(TestCase):
 
     def step_3_cast_and_spoil(self) -> None:
         """
-        Accept each ballot by marking it as either cast or spoiled.
-        This example demonstrates one way to accept ballots using the `BallotBox` class
+        Accept each ballot by marking it as either cast or spoiled.  
+        This example demonstrates one way to accept ballots using the `BallotBox` class 
         """
 
         # Configure the Ballot Box
@@ -394,11 +394,13 @@ class TestEndToEndElection(TestCase):
                             print(f"\n Contest: {contest.object_id}")
                             for selection in contest.ballot_selections:
                                 expected = selection.to_int()
-                                decrypted_selection = (
-                                    self.plaintext_tally.spoiled_ballots[ballot_id][
-                                        contest.object_id
-                                    ].selections[selection.object_id]
-                                )
+                                decrypted_selection = self.plaintext_tally.spoiled_ballots[
+                                    ballot_id
+                                ][
+                                    contest.object_id
+                                ].selections[
+                                    selection.object_id
+                                ]
                                 self._assert_message(
                                     f"   - Selection: {selection.object_id}",
                                     f"expected: {expected}, actual: {decrypted_selection.tally}",
@@ -488,8 +490,8 @@ class TestEndToEndElection(TestCase):
         coefficient_validation_sets: List[CoefficientValidationSet] = []
         for coefficient_validation_set in self.coefficient_validation_sets:
             set_name = COEFFICIENT_PREFIX + coefficient_validation_set.owner_id
-            coefficient_validation_set_from_file = (
-                CoefficientValidationSet.from_json_file(set_name, COEFFICIENTS_DIR)
+            coefficient_validation_set_from_file = CoefficientValidationSet.from_json_file(
+                set_name, COEFFICIENTS_DIR
             )
             self.assertEqual(
                 coefficient_validation_set, coefficient_validation_set_from_file
