@@ -3,6 +3,7 @@
 # made about timing or other side-channels.
 
 from typing import Any, Final, NamedTuple, Optional, Union
+from base64 import b16decode
 from secrets import randbelow
 from gmpy2 import mpz, powmod, invert, to_binary, from_binary
 
@@ -23,12 +24,19 @@ class ElementModQ(NamedTuple):
 
     elem: mpz
 
+    def to_bytes(self) -> bytes:
+        """
+        Converts from the element to the representation of bytes by first going through hex. 
+        This is preferable to directly accessing `elem`, whose representation might change.
+        """
+        return b16decode(self.to_hex())
+
     def to_hex(self) -> str:
         """
         Converts from the element to the hex representation of bytes. This is preferable to directly
         accessing `elem`, whose representation might change.
         """
-        h = format(self.elem, "02x")
+        h = format(self.elem, "02X")
         if len(h) % 2:
             h = "0" + h
         return h
@@ -80,7 +88,7 @@ class ElementModP(NamedTuple):
         Converts from the element to the hex representation of bytes. This is preferable to directly
         accessing `elem`, whose representation might change.
         """
-        h = format(self.elem, "02x")
+        h = format(self.elem, "02X")
         if len(h) % 2:
             h = "0" + h
         return h
