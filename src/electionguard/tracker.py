@@ -1,8 +1,7 @@
 from typing import List, Optional
-
 from .hash import hash_elems
-from .group import ElementModQ, q_to_bytes, bytes_to_q
-from .words import get_word, get_index_from_word
+from .group import ElementModQ
+from .words import get_word
 
 DEFAULT_SEPERATOR = "-"
 
@@ -39,32 +38,29 @@ def tracker_hash_to_words(
     :return: Human readable tracker string or None
     """
 
-    segments = q_to_bytes(tracker_hash)
+    segments = tracker_hash.to_bytes()
     words: List[str] = []
-    for value in segments:
-        word = get_word(value)
-        if word is None:
+    for i in range(0, len(segments), 4):
+        # Select 4 bytes for the segment
+        first = segments[i]
+        second = segments[i + 1]
+        third = segments[i + 2]
+        fourth = segments[i + 3]
+
+        # word is byte(1) + 1/2 of byte(2)
+        word_part = get_word((first * 16 + (second >> 4)))
+
+        # hex is other 1/2 of byte(2) + byte(3) + byte(4)
+        hex_part = [
+            format((second & 0x0F) >> 0, "1X"),
+            format((third & 0xF0) >> 4, "1X"),
+            format((third & 0x0F) >> 0, "1X"),
+            format((fourth & 0xF0) >> 4, "1X"),
+            format((fourth & 0x0F) >> 0, "1X"),
+        ]
+        if word_part is None:
             return None
-        words.append(word)
+        words.append(word_part)
+        words.append("".join(hex_part))
     # FIXME ISSUE #82 Minimize length of tracker
     return seperator.join(words)
-
-
-def tracker_words_to_hash(
-    tracker_words: str, seperator: str = DEFAULT_SEPERATOR
-) -> Optional[ElementModQ]:
-    """
-    Convert tracker from human readable / friendly words to hash
-    :param tracker_words: Tracker words
-    :param seperator: Seperator used between words
-    :return: Tracker hash or None
-    """
-    words = tracker_words.split(seperator)
-    int_values: List[int] = []
-    for word in words:
-        index = get_index_from_word(word)
-        if index is None:
-            return None
-        int_values.append(index)
-    value = bytes(int_values)
-    return bytes_to_q(value)
