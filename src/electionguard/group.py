@@ -88,7 +88,7 @@ class ElementModP(NamedTuple):
         Converts from the element to the hex representation of bytes. This is preferable to directly
         accessing `elem`, whose representation might change.
         """
-        h = format(self.elem, "02x")
+        h = format(self.elem, "02X")
         if len(h) % 2:
             h = "0" + h
         return h
