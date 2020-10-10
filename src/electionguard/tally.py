@@ -235,7 +235,9 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
 
         return False
 
-    def append(self, ballot: CiphertextAcceptedBallot) -> bool:
+    def append(
+        self, ballot: CiphertextAcceptedBallot, scheduler: Optional[Scheduler] = None
+    ) -> bool:
         """
         Append a ballot to the tally and recalculate the tally.
         """
@@ -251,7 +253,7 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
             return False
 
         if ballot.state == BallotBoxState.CAST:
-            return self._add_cast(ballot)
+            return self._add_cast(ballot, scheduler)
 
         if ballot.state == BallotBoxState.SPOILED:
             return self._add_spoiled(ballot)
@@ -261,7 +263,11 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
 
     SELECTION_ID = str
 
-    def batch_append(self, ballots: Iterable[CiphertextAcceptedBallot]) -> bool:
+    def batch_append(
+        self,
+        ballots: Iterable[CiphertextAcceptedBallot],
+        scheduler: Optional[Scheduler] = None,
+    ) -> bool:
         """
         Append a collection of Ballots to the tally and recalculate
         """
@@ -289,7 +295,7 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
                     self._add_spoiled(ballot)
 
         # cache the cast ballot id's so they are not double counted
-        if self._execute_accumulate(cast_ballot_selections):
+        if self._execute_accumulate(cast_ballot_selections, scheduler):
             for ballot in ballots:
                 if ballot.state == BallotBoxState.CAST:
                     self._cast_ballot_ids.add(ballot.object_id)
@@ -312,7 +318,9 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
             elgamal_add(*[ciphertext for ciphertext in ballot_selections.values()]),
         )
 
-    def _add_cast(self, ballot: CiphertextAcceptedBallot) -> bool:
+    def _add_cast(
+        self, ballot: CiphertextAcceptedBallot, scheduler: Optional[Scheduler] = None
+    ) -> bool:
         """
         Add a cast ballot to the tally, synchronously
         """
@@ -328,7 +336,7 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
                 return False
 
             use_contest = self.cast[contest.object_id]
-            if not use_contest.accumulate_contest(contest.ballot_selections):
+            if not use_contest.accumulate_contest(contest.ballot_selections, scheduler):
                 return False
 
             self.cast[contest.object_id] = use_contest
@@ -372,10 +380,12 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
         ciphertext_selections_by_selection_id: Dict[
             str, Dict[BALLOT_ID, ElGamalCiphertext]
         ],
+        scheduler: Optional[Scheduler] = None,
     ) -> bool:
 
         result_set: List[Tuple[SELECTION_ID, ElGamalCiphertext]]
-        scheduler = Scheduler()
+        if not scheduler:
+            scheduler = Scheduler()
         result_set = scheduler.schedule(
             self._accumulate,
             [
