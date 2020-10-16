@@ -161,7 +161,7 @@ class ContactInformation(Serializable, CryptoHashable):
 @dataclass(eq=True, unsafe_hash=True)
 class GeopoliticalUnit(ElectionObjectBase, CryptoHashable):
     """
-    Use this entity for defining geopolitical units such as cities, districts, jurisdictions, or precincts, 
+    Use this entity for defining geopolitical units such as cities, districts, jurisdictions, or precincts,
     for the purpose of associating contests, offices, vote counts, or other information with the geographies.
     See: https://developers.google.com/elections-data/reference/gp-unit
     """
@@ -205,7 +205,7 @@ class Party(ElectionObjectBase, CryptoHashable):
     See: https://developers.google.com/elections-data/reference/party
     """
 
-    ballot_name: InternationalizedText = field(default=InternationalizedText())
+    name: InternationalizedText = field(default=InternationalizedText())
     abbreviation: Optional[str] = field(default=None)
     color: Optional[str] = field(default=None)
     logo_uri: Optional[str] = field(default=None)
@@ -222,7 +222,7 @@ class Party(ElectionObjectBase, CryptoHashable):
         """
         return hash_elems(
             self.object_id,
-            self.ballot_name,
+            self.name,
             self.abbreviation,
             self.color,
             self.logo_uri,
@@ -232,16 +232,16 @@ class Party(ElectionObjectBase, CryptoHashable):
 @dataclass(eq=True, unsafe_hash=True)
 class Candidate(ElectionObjectBase, CryptoHashable):
     """
-    Entity describing information about a candidate in a contest. 
+    Entity describing information about a candidate in a contest.
     See: https://developers.google.com/elections-data/reference/candidate
-    Note: The ElectionGuard Data Spec deviates from the NIST model in that 
+    Note: The ElectionGuard Data Spec deviates from the NIST model in that
     selections for any contest type are considered a "candidate".
     for instance, on a yes-no referendum contest, two `candidate` objects
     would be included in the model to represent the `affirmative` and `negative`
     selections for the contest.  See the wiki, readme's, and tests in this repo for more info
     """
 
-    ballot_name: InternationalizedText = field(default=InternationalizedText())
+    name: InternationalizedText = field(default=InternationalizedText())
     party_id: Optional[str] = field(default=None)
     image_uri: Optional[str] = field(default=None)
     is_write_in: Optional[bool] = field(default=None)
@@ -256,21 +256,19 @@ class Candidate(ElectionObjectBase, CryptoHashable):
         """
         A hash representation of the object
         """
-        return hash_elems(
-            self.object_id, self.ballot_name, self.party_id, self.image_uri
-        )
+        return hash_elems(self.object_id, self.name, self.party_id, self.image_uri)
 
 
 @dataclass(eq=True, unsafe_hash=True)
 class SelectionDescription(ElectionObjectBase, CryptoHashable):
     """
-    Data entity for the ballot selections in a contest, 
+    Data entity for the ballot selections in a contest,
     for example linking candidates and parties to their vote counts.
     See: https://developers.google.com/elections-data/reference/ballot-selection
     Note: The ElectionGuard Data Spec deviates from the NIST model in that
-    there is no difference for different types of selections. 
+    there is no difference for different types of selections.
     The ElectionGuard Data Spec deviates from the NIST model in that
-    `sequence_order` is a required field since it is used for ordering selections 
+    `sequence_order` is a required field since it is used for ordering selections
     in a contest to ensure various encryption primitives are deterministic.
     For a given election, the sequence of selections displayed to a user may be different
     however that information is not captured by default when encrypting a specific ballot.
@@ -295,11 +293,11 @@ class SelectionDescription(ElectionObjectBase, CryptoHashable):
 @dataclass(unsafe_hash=True)
 class ContestDescription(ElectionObjectBase, CryptoHashable):
     """
-    Use this data entity for describing a contest and linking the contest 
+    Use this data entity for describing a contest and linking the contest
     to the associated candidates and parties.
     See: https://developers.google.com/elections-data/reference/contest
     Note: The ElectionGuard Data Spec deviates from the NIST model in that
-    `sequence_order` is a required field since it is used for ordering selections 
+    `sequence_order` is a required field since it is used for ordering selections
     in a contest to ensure various encryption primitives are deterministic.
     For a given election, the sequence of contests displayed to a user may be different
     however that information is not captured by default when encrypting a specific ballot.
@@ -444,7 +442,7 @@ class CandidateContestDescription(ContestDescription):
     Use this entity to describe a contest that involves selecting one or more candidates.
     See: https://developers.google.com/elections-data/reference/contest
     Note: The ElectionGuard Data Spec deviates from the NIST model in that
-    this subclass is used purely for convenience 
+    this subclass is used purely for convenience
     """
 
     primary_party_ids: List[str] = field(default_factory=lambda: [])
@@ -519,7 +517,7 @@ class ContestDescriptionWithPlaceholders(ContestDescription):
 @dataclass(unsafe_hash=True)
 class ElectionDescription(Serializable, CryptoHashable):
     """
-    Use this entity for defining the structure of the election and associated 
+    Use this entity for defining the structure of the election and associated
     information such as candidates, contests, and vote counts.  This class is
     based on the NIST Election Common Standard Data Specification.  Some deviations
     from the standard exist.
@@ -794,7 +792,7 @@ class InternalElectionDescription(object):
         self, description: ElectionDescription
     ) -> List[ContestDescriptionWithPlaceholders]:
         """
-        For each contest, append the `number_elected` number 
+        For each contest, append the `number_elected` number
         of placeholder selections to the end of the contest collection
         """
         contests: List[ContestDescriptionWithPlaceholders] = list()
@@ -814,7 +812,7 @@ class InternalElectionDescription(object):
 @dataclass(eq=True, unsafe_hash=True)
 class ElectionConstants(Serializable):
     """
-    The constants for mathematical functions during the election. 
+    The constants for mathematical functions during the election.
     """
 
     large_prime = P

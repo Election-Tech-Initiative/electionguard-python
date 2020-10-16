@@ -144,7 +144,7 @@
     "candidates": [
         {
             "object_id": "benjamin-franklin",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Benjamin Franklin",
@@ -156,7 +156,7 @@
         },
         {
             "object_id": "john-adams",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "John Adams",
@@ -168,7 +168,7 @@
         },
         {
             "object_id": "john-hancock",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "John Hancock",
@@ -180,7 +180,7 @@
         },
         {
             "object_id": "write-in",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Write In Candidate",
@@ -196,7 +196,7 @@
         },
         {
             "object_id": "referendum-pineapple-affirmative",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Pineapple should be banned on pizza",
@@ -207,7 +207,7 @@
         },
         {
             "object_id": "referendum-pineapple-negative",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Pineapple should not be banned on pizza",

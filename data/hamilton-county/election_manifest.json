@@ -363,7 +363,7 @@
     "candidates": [
         {
             "object_id": "barchi-hallaren",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Joseph Barchi and Joseph Hallaren",
@@ -375,7 +375,7 @@
         },
         {
             "object_id": "cramer-vuocolo",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Adam Cramer and Greg Vuocolo",
@@ -387,7 +387,7 @@
         },
         {
             "object_id": "court-blumhardt",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Daniel Court and Amy Blumhardt",
@@ -399,7 +399,7 @@
         },
         {
             "object_id": "boone-lian",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Alvin Boone and James Lian",
@@ -411,7 +411,7 @@
         },
         {
             "object_id": "hildebrand-garritty",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Ashley Hildebrand-McDougall and James Garritty",
@@ -423,7 +423,7 @@
         },
         {
             "object_id": "patterson-lariviere",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Martin Patterson and Clay Lariviere",
@@ -435,7 +435,7 @@
         },
         {
             "object_id": "franz",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Charlene Franz",
@@ -447,7 +447,7 @@
         },
         {
             "object_id": "harris",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Gerald Harris",
@@ -459,7 +459,7 @@
         },
         {
             "object_id": "bargmann",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Linda Bargmann",
@@ -471,7 +471,7 @@
         },
         {
             "object_id": "abcock",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Barbara Abcock",
@@ -483,7 +483,7 @@
         },
         {
             "object_id": "steel-loy",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Carrie Steel-Loy",
@@ -495,7 +495,7 @@
         },
         {
             "object_id": "sharp",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Frederick Sharp",
@@ -507,7 +507,7 @@
         },
         {
             "object_id": "wallace",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Alex Wallace",
@@ -519,7 +519,7 @@
         },
         {
             "object_id": "williams",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Barbara Williams",
@@ -531,7 +531,7 @@
         },
         {
             "object_id": "sharp-althea",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Althea Sharp",
@@ -543,7 +543,7 @@
         },
         {
             "object_id": "alpern",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Douglas Alpern",
@@ -555,7 +555,7 @@
         },
         {
             "object_id": "windbeck",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Ann Windbeck",
@@ -567,7 +567,7 @@
         },
         {
             "object_id": "greher",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Mike Greher",
@@ -579,7 +579,7 @@
         },
         {
             "object_id": "alexander",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Patricia Alexander",
@@ -591,7 +591,7 @@
         },
         {
             "object_id": "mitchell",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Kenneth Mitchell",
@@ -603,7 +603,7 @@
         },
         {
             "object_id": "lee",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Stan Lee",
@@ -615,7 +615,7 @@
         },
         {
             "object_id": "ash",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Henry Ash",
@@ -627,7 +627,7 @@
         },
         {
             "object_id": "kennedy",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Karen Kennedy",
@@ -639,7 +639,7 @@
         },
         {
             "object_id": "jackson",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Van Jackson",
@@ -651,7 +651,7 @@
         },
         {
             "object_id": "brown",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Debbie Brown",
@@ -663,7 +663,7 @@
         },
         {
             "object_id": "teller",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Joseph Teller",
@@ -675,7 +675,7 @@
         },
         {
             "object_id": "ward",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Greg Ward",
@@ -687,7 +687,7 @@
         },
         {
             "object_id": "murphy",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Lou Murphy",
@@ -699,7 +699,7 @@
         },
         {
             "object_id": "newman",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Jane Newman",
@@ -711,7 +711,7 @@
         },
         {
             "object_id": "callanann",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Jack Callanann",
@@ -723,7 +723,7 @@
         },
         {
             "object_id": "york",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Esther York",
@@ -735,7 +735,7 @@
         },
         {
             "object_id": "chandler",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Glenn Chandler",
@@ -747,7 +747,7 @@
         },
         {
             "object_id": "solis",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Andrea Solis",
@@ -759,7 +759,7 @@
         },
         {
             "object_id": "keller",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Amos Keller",
@@ -771,7 +771,7 @@
         },
         {
             "object_id": "rangel",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Davitra Rangel",
@@ -783,7 +783,7 @@
         },
         {
             "object_id": "argent",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Camille Argent",
@@ -795,7 +795,7 @@
         },
         {
             "object_id": "witherspoon-smithson",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Chloe Witherspoon-Smithson",
@@ -807,7 +807,7 @@
         },
         {
             "object_id": "bainbridge",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Clayton Bainbridge",
@@ -819,7 +819,7 @@
         },
         {
             "object_id": "hennessey",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Charlene Hennessey",
@@ -831,7 +831,7 @@
         },
         {
             "object_id": "savoy",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Eric Savoy",
@@ -843,7 +843,7 @@
         },
         {
             "object_id": "tawa",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Susan Tawa",
@@ -855,7 +855,7 @@
         },
         {
             "object_id": "tawa-mary",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Mary Tawa",
@@ -867,7 +867,7 @@
         },
         {
             "object_id": "altman",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Valarie Altman",
@@ -879,7 +879,7 @@
         },
         {
             "object_id": "moore",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Helen Moore",
@@ -890,7 +890,7 @@
         },
         {
             "object_id": "white",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "John White",
@@ -901,7 +901,7 @@
         },
         {
             "object_id": "smallberries",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "John Smallberries",
@@ -912,7 +912,7 @@
         },
         {
             "object_id": "warfin",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "John Warfin",
@@ -923,7 +923,7 @@
         },
         {
             "object_id": "norberg",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Chris Norberg",
@@ -934,7 +934,7 @@
         },
         {
             "object_id": "parks",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Abigail Parks",
@@ -945,7 +945,7 @@
         },
         {
             "object_id": "savannah",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Harmony Savannah",
@@ -956,7 +956,7 @@
         },
         {
             "object_id": "summers",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Buffy Summers",
@@ -967,7 +967,7 @@
         },
         {
             "object_id": "chase",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Cordelia Chase",
@@ -978,7 +978,7 @@
         },
         {
             "object_id": "osborne",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Daniel Osborne",
@@ -989,7 +989,7 @@
         },
         {
             "object_id": "rosenberg",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Willow Rosenberg",
@@ -1000,7 +1000,7 @@
         },
         {
             "object_id": "head",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Anthony Stewart Head",
@@ -1011,7 +1011,7 @@
         },
         {
             "object_id": "marsters",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "James Marsters",
@@ -1022,7 +1022,7 @@
         },
         {
             "object_id": "write-in-1",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Write In Candidate",
@@ -1038,7 +1038,7 @@
         },
         {
             "object_id": "write-in-2",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Write In Candidate",
@@ -1054,7 +1054,7 @@
         },
         {
             "object_id": "write-in-3",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Write In Candidate",
@@ -1070,7 +1070,7 @@
         },
         {
             "object_id": "ozark-chief-justice-retain-demergue-affirmative",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Retain",
@@ -1085,7 +1085,7 @@
         },
         {
             "object_id": "ozark-chief-justice-retain-demergue-negative",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Reject",
@@ -1100,7 +1100,7 @@
         },
         {
             "object_id": "exeter-utility-district-referendum-affirmative",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "Yes",
@@ -1111,7 +1111,7 @@
         },
         {
             "object_id": "exeter-utility-district-referendum-negative",
-            "ballot_name": {
+            "name": {
                 "text": [
                     {
                         "value": "No",

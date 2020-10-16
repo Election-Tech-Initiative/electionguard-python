@@ -64,13 +64,13 @@ def publish(
 
     make_directory(BALLOTS_DIR)
     for ballot in ciphertext_ballots:
-        ballot_name = BALLOT_PREFIX + ballot.object_id
-        ballot.to_json_file(ballot_name, BALLOTS_DIR)
+        name = BALLOT_PREFIX + ballot.object_id
+        ballot.to_json_file(name, BALLOTS_DIR)
 
     make_directory(SPOILED_DIR)
     for ballot in spoiled_ballots:
-        ballot_name = BALLOT_PREFIX + ballot.object_id
-        ballot.to_json_file(ballot_name, SPOILED_DIR)
+        name = BALLOT_PREFIX + ballot.object_id
+        ballot.to_json_file(name, SPOILED_DIR)
 
     ciphertext_tally.to_json_file(ENCRYPTED_TALLY_FILE_NAME, results_directory)
     plaintext_tally.to_json_file(TALLY_FILE_NAME, results_directory)
@@ -83,8 +83,8 @@ def publish_private_data(
     results_directory: str = RESULTS_DIR,
 ) -> None:
     """
-    Publish the private data for an election.  
-    Useful for generating sample data sets.  
+    Publish the private data for an election.
+    Useful for generating sample data sets.
     Do not use this in a production application.
     """
 
@@ -97,10 +97,10 @@ def publish_private_data(
 
     make_directory(PLAINTEXT_BALLOTS_DIR)
     for plaintext_ballot in plaintext_ballots:
-        ballot_name = PLAINTEXT_BALLOT_PREFIX + plaintext_ballot.object_id
-        plaintext_ballot.to_json_file(ballot_name, PLAINTEXT_BALLOTS_DIR)
+        name = PLAINTEXT_BALLOT_PREFIX + plaintext_ballot.object_id
+        plaintext_ballot.to_json_file(name, PLAINTEXT_BALLOTS_DIR)
 
     make_directory(ENCRYPTED_BALLOTS_DIR)
     for ciphertext_ballot in ciphertext_ballots:
-        ballot_name = BALLOT_PREFIX + ciphertext_ballot.object_id
-        ciphertext_ballot.to_json_file(ballot_name, ENCRYPTED_BALLOTS_DIR)
+        name = BALLOT_PREFIX + ciphertext_ballot.object_id
+        ciphertext_ballot.to_json_file(name, ENCRYPTED_BALLOTS_DIR)
