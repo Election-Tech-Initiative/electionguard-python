@@ -24,7 +24,9 @@ class TestElectionPolynomial(TestCase):
     def test_compute_polynomial_coordinate(self):
         # Arrange
         polynomial = ElectionPolynomial(
-            [ONE_MOD_Q, TWO_MOD_Q], [ONE_MOD_P, TWO_MOD_P], [],
+            [ONE_MOD_Q, TWO_MOD_Q],
+            [ONE_MOD_P, TWO_MOD_P],
+            [],
         )
 
         # Act

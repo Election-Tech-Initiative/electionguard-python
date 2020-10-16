@@ -47,10 +47,13 @@ class TestElections(unittest.TestCase):
         phases=[Phase.explicit, Phase.reuse, Phase.generate, Phase.target],
     )
     @given(
-        integers(1, 3).flatmap(lambda n: elections_and_ballots(n)), elements_mod_q(),
+        integers(1, 3).flatmap(lambda n: elections_and_ballots(n)),
+        elements_mod_q(),
     )
     def test_accumulation_encryption_decryption(
-        self, everything: ELECTIONS_AND_BALLOTS_TUPLE_TYPE, nonce: ElementModQ,
+        self,
+        everything: ELECTIONS_AND_BALLOTS_TUPLE_TYPE,
+        nonce: ElementModQ,
     ):
         """
         Tests that decryption is the inverse of encryption over arbitrarily generated elections and ballots.

@@ -139,7 +139,7 @@ class DisjunctiveChaumPedersenProof(Proof):
 @dataclass(frozen=True)
 class ChaumPedersenProof(Proof):
     """
-    Representation of a generic Chaum-Pedersen Zero Knowledge proof 
+    Representation of a generic Chaum-Pedersen Zero Knowledge proof
     """
 
     pad: ElementModP
@@ -170,9 +170,9 @@ class ChaumPedersenProof(Proof):
         - The given values 𝑎𝑖 and 𝑏𝑖 are both in the set Z𝑞^𝑟
         - The challenge value 𝑐 satisfies 𝑐 = 𝐻(𝑄, (𝐴, 𝐵), (𝑎 , 𝑏 ), 𝑀 ).
         - that the equations 𝑔^𝑣𝑖 = 𝑎𝑖𝐾^𝑐𝑖 mod 𝑝 and 𝐴^𝑣𝑖 = 𝑏𝑖𝑀𝑖^𝑐𝑖 mod 𝑝 are satisfied.
-        
+
         :param message: The ciphertext message
-        :param k: The public key corresponding to the private key used to encrypt 
+        :param k: The public key corresponding to the private key used to encrypt
                   (e.g. the Guardian public election key)
         :param m: The value being checked for validity
         :param q: The extended base hash of the election
@@ -380,7 +380,7 @@ def make_disjunctive_chaum_pedersen(
     :param message: An ElGamal ciphertext
     :param r: The nonce used creating the ElGamal ciphertext
     :param k: The ElGamal public key for the election
-    :param q: A value used when generating the challenge, 
+    :param q: A value used when generating the challenge,
                         usually the election extended base hash (𝑄')
     :param seed: Used to generate other random values here
     :param plaintext: Zero or one
@@ -408,7 +408,7 @@ def make_disjunctive_chaum_pedersen_zero(
     :param message: An ElGamal ciphertext
     :param r: The nonce used creating the ElGamal ciphertext
     :param k: The ElGamal public key for the election
-    :param q: A value used when generating the challenge, 
+    :param q: A value used when generating the challenge,
                         usually the election extended base hash (𝑄')
     :param seed: Used to generate other random values here
     """
@@ -443,7 +443,7 @@ def make_disjunctive_chaum_pedersen_one(
     :param message: An ElGamal ciphertext
     :param r: The nonce used creating the ElGamal ciphertext
     :param k: The ElGamal public key for the election
-    :param q: A value used when generating the challenge, 
+    :param q: A value used when generating the challenge,
                         usually the election extended base hash (𝑄')
     :param seed: Used to generate other random values here
     """
@@ -480,7 +480,7 @@ def make_chaum_pedersen(
     :param s: The nonce or secret used to derive the value
     :param m: The value we are trying to prove
     :param seed: Used to generate other random values here
-    :param hash_header: A value used when generating the challenge, 
+    :param hash_header: A value used when generating the challenge,
                         usually the election extended base hash (𝑄')
     """
     (alpha, beta) = message
