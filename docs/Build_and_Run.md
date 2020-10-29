@@ -34,7 +34,7 @@ _**Determine if 64-bit:**_
 
 _This code snippet will read `true` for 64 bit._
 
-`python -c 'from sys import maxsize; print(maxsize > 2**32)`
+`python -c 'from sys import maxsize; print(maxsize > 2**32)'`
 
 _**Install module with link**_
 
