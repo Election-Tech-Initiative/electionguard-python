@@ -83,8 +83,8 @@ def publish_private_data(
     results_directory: str = RESULTS_DIR,
 ) -> None:
     """
-    Publish the private data for an election.  
-    Useful for generating sample data sets.  
+    Publish the private data for an election.
+    Useful for generating sample data sets.
     Do not use this in a production application.
     """
 

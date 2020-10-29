@@ -25,7 +25,7 @@ class ElectionPolynomial(NamedTuple):
     """
     A polynomial defined by coefficients
 
-    The 0-index coefficient is used for a secret key which can 
+    The 0-index coefficient is used for a secret key which can
     be discovered by a quorum of n guardians corresponding to n coefficients.
     """
 
@@ -93,7 +93,7 @@ def compute_lagrange_coefficient(coordinate: int, *degrees: int) -> ElementModQ:
     """
     Compute the lagrange coefficient for a specific coordinate against N degrees.
     :param coordinate: the coordinate to plot, uisually a Guardian's Sequence Order
-    :param degrees: the degrees across which to plot, usually the collection of 
+    :param degrees: the degrees across which to plot, usually the collection of
                     available Guardians' Sequence Orders
     """
 
