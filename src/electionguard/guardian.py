@@ -97,7 +97,7 @@ class Guardian(ElectionObjectBase):
         :param sequence_order: a unique number in [0, 256) that identifies this guardian
         :param number_of_guardians: the total number of guardians that will participate in the election
         :param quorum: the count of guardians necessary to decrypt
-        :param nonce_seed: an optional `ElementModQ` value that can be used to generate the `ElectionKeyPair`.  
+        :param nonce_seed: an optional `ElementModQ` value that can be used to generate the `ElectionKeyPair`.
                            It is recommended to only use this field for testing.
         """
 
@@ -346,12 +346,14 @@ class Guardian(ElectionObjectBase):
 
     # Verification
     def verify_election_partial_key_backup(
-        self, guardian_id: GUARDIAN_ID, decrypt: AuxiliaryDecrypt = rsa_decrypt,
+        self,
+        guardian_id: GUARDIAN_ID,
+        decrypt: AuxiliaryDecrypt = rsa_decrypt,
     ) -> Optional[ElectionPartialKeyVerification]:
         """
         Verify election partial key backup value is in polynomial
         :param guardian_id: Owner of backup to verify
-        :param decrypt: 
+        :param decrypt:
         :return: Election partial key verification or None
         """
         backup = self._guardian_election_partial_key_backups.get(guardian_id)
@@ -366,7 +368,7 @@ class Guardian(ElectionObjectBase):
     ) -> Optional[ElectionPartialKeyChallenge]:
         """
         Publish election backup challenge of election partial key verification
-        :param guardian_id: Owner of election key 
+        :param guardian_id: Owner of election key
         :return: Election partial key challenge or None
         """
         backup_in_question = self._backups_to_share.get(guardian_id)
@@ -382,7 +384,7 @@ class Guardian(ElectionObjectBase):
         """
         Verify challenge of previous verification of election partial key
         :param challenge: Election partial key challenge
-        :return: Election partial key verification 
+        :return: Election partial key verification
         """
         return verify_election_partial_key_challenge(self.object_id, challenge)
 
@@ -432,7 +434,7 @@ class Guardian(ElectionObjectBase):
         Compute a partial decryption of an elgamal encryption
 
         :param elgamal: the `ElGamalCiphertext` that will be partially decrypted
-        :param extended_base_hash: the extended base hash of the election that 
+        :param extended_base_hash: the extended base hash of the election that
                                    was used to generate t he ElGamal Ciphertext
         :param nonce_seed: an optional value used to generate the `ChaumPedersenProof`
                            if no value is provided, a random number will be used.
@@ -468,12 +470,12 @@ class Guardian(ElectionObjectBase):
         decrypt: AuxiliaryDecrypt = rsa_decrypt,
     ) -> Optional[Tuple[ElementModP, ChaumPedersenProof]]:
         """
-        Compute a compensated partial decryption of an elgamal encryption 
+        Compute a compensated partial decryption of an elgamal encryption
         on behalf of the missing guardian
 
-        :param missing_guardian_id: the guardian 
+        :param missing_guardian_id: the guardian
         :param elgamal: the `ElGamalCiphertext` that will be partially decrypted
-        :param extended_base_hash: the extended base hash of the election that 
+        :param extended_base_hash: the extended base hash of the election that
                                    was used to generate t he ElGamal Ciphertext
         :param nonce_seed: an optional value used to generate the `ChaumPedersenProof`
                            if no value is provided, a random number will be used.

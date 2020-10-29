@@ -489,7 +489,7 @@ class TestEncrypt(unittest.TestCase):
 
     def test_encrypt_contest_duplicate_selection_object_ids_fails(self):
         """
-        This is an example test of a failing test where the contest description 
+        This is an example test of a failing test where the contest description
         is malformed
         """
         random_seed = 0

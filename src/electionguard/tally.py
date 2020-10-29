@@ -38,7 +38,7 @@ class PlaintextTallySelection(ElectionObjectBase):
 @dataclass
 class CiphertextTallySelection(ElectionObjectBase, CiphertextSelection):
     """
-    a CiphertextTallySelection is a homomorphic accumulation of all of the 
+    a CiphertextTallySelection is a homomorphic accumulation of all of the
     CiphertextBallotSelection instances for a specific selection in an election.
     """
 
