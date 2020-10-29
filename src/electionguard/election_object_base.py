@@ -6,7 +6,7 @@ from .serializable import Serializable
 @dataclass
 class ElectionObjectBase(Serializable):
     """
-    A base object to derive other election objects 
+    A base object to derive other election objects
     that is both serializable and identifiable by object_id
     """
 

@@ -54,7 +54,7 @@ class BallotFactory(object):
         with_trues=False,
     ) -> PlaintextBallotContest:
         """
-        Get a randomly filled contest for the given description that 
+        Get a randomly filled contest for the given description that
         may be undervoted and may include explicitly false votes.
         Since this is only used for testing, the random number generator
         (`random`) must be provided to make this function deterministic.
