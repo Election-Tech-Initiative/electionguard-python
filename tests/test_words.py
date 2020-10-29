@@ -20,9 +20,9 @@ class TestWord(TestCase):
 
         # Assert
         self.assertEqual(word_min, "aardvark")
-        self.assertEqual(word_random_1, "alfalfa")
-        self.assertEqual(word_random_2, "column")
-        self.assertEqual(word_max, "prospect")
+        self.assertEqual(word_random_1, "algorithm")
+        self.assertEqual(word_random_2, "coordination")
+        self.assertEqual(word_max, "seagull")
         self.assertEqual(INDEX_RANDOM_1, reverse_find_of_index_random_1)
 
     def test_get_word_when_out_of_range(self):
