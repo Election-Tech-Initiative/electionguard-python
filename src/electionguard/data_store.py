@@ -12,18 +12,18 @@ from typing import (
 )
 
 
-T = TypeVar("T")
-U = TypeVar("U")
+_T = TypeVar("_T")
+_U = TypeVar("_U")
 
 
-class DataStore(Generic[T, U], Iterable):
+class DataStore(Generic[_T, _U], Iterable):
     """
     A lightweight convenience wrapper around a dictionary for data storage.
     This implementation defines the common interface used to access stored
     state elements.
     """
 
-    _store: Dict[T, U]
+    _store: Dict[_T, _U]
 
     def __init__(self) -> None:
         self._store = {}
@@ -31,7 +31,7 @@ class DataStore(Generic[T, U], Iterable):
     def __iter__(self) -> Iterator:
         return iter(self._store.items())
 
-    def all(self) -> List[Optional[U]]:
+    def all(self) -> List[Optional[_U]]:
         """
         Get all `CiphertextAcceptedBallot` from the store
         """
@@ -43,7 +43,7 @@ class DataStore(Generic[T, U], Iterable):
         """
         self._store.clear()
 
-    def get(self, key: T) -> Optional[U]:
+    def get(self, key: _T) -> Optional[_U]:
         """
         Get value in store
         :param key: key
@@ -51,14 +51,14 @@ class DataStore(Generic[T, U], Iterable):
         """
         return self._store.get(key)
 
-    def items(self) -> Iterable[Tuple[T, U]]:
+    def items(self) -> Iterable[Tuple[_T, _U]]:
         """
         Gets all items in store as list
         :return: List of (key, value)
         """
         return self._store.items()
 
-    def keys(self) -> Iterable[T]:
+    def keys(self) -> Iterable[_T]:
         """
         Gets all keys in store as list
         :return: List of keys
@@ -72,7 +72,7 @@ class DataStore(Generic[T, U], Iterable):
         """
         return len(self._store)
 
-    def pop(self, key: T) -> Optional[U]:
+    def pop(self, key: _T) -> Optional[_U]:
         """
         Pop an object from the store if it exists.
         :param key: key
@@ -81,7 +81,7 @@ class DataStore(Generic[T, U], Iterable):
             return self._store.pop(key)
         return None
 
-    def set(self, key: T, value: U) -> None:
+    def set(self, key: _T, value: _U) -> None:
         """
         Create or update a new value in store
         :param key: key
@@ -89,7 +89,7 @@ class DataStore(Generic[T, U], Iterable):
         """
         self._store[key] = value
 
-    def values(self) -> Iterable[U]:
+    def values(self) -> Iterable[_U]:
         """
         Gets all values in store as list
         :return: List of values
@@ -97,15 +97,15 @@ class DataStore(Generic[T, U], Iterable):
         return self._store.values()
 
 
-class ReadOnlyDataStore(Generic[T, U], Mapping):
+class ReadOnlyDataStore(Generic[_T, _U], Mapping):
     """
     A readonly view to a Data store
     """
 
-    def __init__(self, data: DataStore[T, U]):
-        self._data: DataStore[T, U] = data
+    def __init__(self, data: DataStore[_T, _U]):
+        self._data: DataStore[_T, _U] = data
 
-    def __getitem__(self, key: T) -> Optional[U]:
+    def __getitem__(self, key: _T) -> Optional[_U]:
         return self._data.get(key)
 
     def __len__(self) -> int:
