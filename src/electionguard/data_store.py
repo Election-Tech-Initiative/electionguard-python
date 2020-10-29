@@ -20,7 +20,7 @@ class DataStore(Generic[_T, _U], Iterable):
     """
     A lightweight convenience wrapper around a dictionary for data storage.
     This implementation defines the common interface used to access stored
-    state elements.  
+    state elements.
     """
 
     _store: Dict[_T, _U]

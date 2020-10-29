@@ -50,7 +50,8 @@ class TestElGamal(unittest.TestCase):
             pow(public_key.to_int(), nonce.to_int(), P),
         )
         self.assertEqual(
-            ciphertext.data.to_int(), pow(public_key.to_int(), nonce.to_int(), P),
+            ciphertext.data.to_int(),
+            pow(public_key.to_int(), nonce.to_int(), P),
         )
 
         plaintext = ciphertext.decrypt(keypair.secret_key)
@@ -147,7 +148,7 @@ class TestElGamal(unittest.TestCase):
 
     def test_gmpy2_parallelism_is_safe(self):
         """
-        Ensures running lots of parallel exponentiations still yields the correct answer. 
+        Ensures running lots of parallel exponentiations still yields the correct answer.
         This verifies that nothing incorrect is happening in the GMPY2 library
         """
 

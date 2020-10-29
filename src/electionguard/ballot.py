@@ -158,13 +158,13 @@ class CiphertextBallotSelection(
     After construction, the `crypto_hash` field is populated automatically in the `__post_init__` cycle
 
     A consumer of this object has the option to discard the `nonce` and/or discard the `proof`,
-    or keep both values.  
-    
+    or keep both values.
+
     By discarding the `nonce`, the encrypted representation and `proof`
     can only be regenerated if the nonce was derived from the ballot's master nonce.  If the nonce
     used for this selection is truly random, and it is discarded, then the proofs cannot be regenerated.
 
-    By keeping the `nonce`, or deriving the selection nonce from the ballot nonce, an external system can 
+    By keeping the `nonce`, or deriving the selection nonce from the ballot nonce, an external system can
     regenerate the proofs on demand.  This is useful for storage or memory constrained systems.
 
     By keeping the `proof` the nonce is not required fotor verify the encrypted selection.
@@ -202,9 +202,9 @@ class CiphertextBallotSelection(
         Given an encrypted BallotSelection, validates the encryption state against a specific seed hash and public key.
         Calling this function expects that the object is in a well-formed encrypted state
         with the elgamal encrypted `message` field populated along with the DisjunctiveChaumPedersenProof `proof` populated.
-        the ElementModQ `description_hash` and the ElementModQ `crypto_hash` are also checked. 
+        the ElementModQ `description_hash` and the ElementModQ `crypto_hash` are also checked.
 
-        :param seed_hash: the hash of the SelectionDescription, or 
+        :param seed_hash: the hash of the SelectionDescription, or
                           whatever `ElementModQ` was used to populate the `description_hash` field.
         :param elgamal_public_key: The election public key
         """
@@ -310,10 +310,10 @@ class PlaintextBallotContest(ElectionObjectBase):
     this class can be either a partial or a complete representation of a contest dataset.  Specifically,
     a partial representation must include at a minimum the "affirmative" selections of a contest.
     A complete representation of a ballot must include both affirmative and negative selections of
-    the contest, AND the placeholder selections necessary to satisfy the ConstantChaumPedersen proof 
+    the contest, AND the placeholder selections necessary to satisfy the ConstantChaumPedersen proof
     in the CiphertextBallotContest.
 
-    Typically partial contests are passed into Electionguard for memory constrained systems, 
+    Typically partial contests are passed into Electionguard for memory constrained systems,
     while complete contests are passed into ElectionGuard when running encryption on an existing dataset.
     """
 
@@ -385,12 +385,12 @@ class CiphertextBallotContest(ElectionObjectBase, CryptoHashCheckable):
 
     CiphertextBallotContest can only be a complete representation of a contest dataset.  While
     PlaintextBallotContest supports a partial representation, a CiphertextBallotContest includes all data
-    necessary for a verifier to verify the contest.  Specifically, it includes both explicit affirmative 
+    necessary for a verifier to verify the contest.  Specifically, it includes both explicit affirmative
     and negative selections of the contest, as well as the placeholder selections that satisfy
     the ConstantChaumPedersen proof.
 
     Similar to `CiphertextBallotSelection` the consuming application can choose to discard or keep both
-    the `nonce` and the `proof` in some circumstances.  For deterministic nonce's derived from the 
+    the `nonce` and the `proof` in some circumstances.  For deterministic nonce's derived from the
     master nonce, both values can be regenerated.  If the `nonce` for this contest is completely random,
     then it is required in order to regenerate the proof.
     """
@@ -468,8 +468,8 @@ class CiphertextBallotContest(ElectionObjectBase, CryptoHashCheckable):
         by verifying the accumulated sum of selections match the proof.
         Calling this function expects that the object is in a well-formed encrypted state
         with the `ballot_selections` populated with valid encrypted ballot selections,
-        the ElementModQ `description_hash`, the ElementModQ `crypto_hash`, and the ConstantChaumPedersenProof all populated. 
-        Specifically, the seed hash in this context is the hash of the ContestDescription, 
+        the ElementModQ `description_hash`, the ElementModQ `crypto_hash`, and the ConstantChaumPedersenProof all populated.
+        Specifically, the seed hash in this context is the hash of the ContestDescription,
         or whatever `ElementModQ` was used to populate the `description_hash` field.
         """
         if seed_hash != self.description_hash:
@@ -737,7 +737,7 @@ class CiphertextBallot(ElectionObjectBase, CryptoHashCheckable):
         Calling this function expects that the object is in a well-formed encrypted state
         with the `contests` populated with valid encrypted ballot selections,
         and the ElementModQ `description_hash` also populated.
-        Specifically, the seed hash in this context is the hash of the Election Manifest, 
+        Specifically, the seed hash in this context is the hash of the Election Manifest,
         or whatever `ElementModQ` was used to populate the `description_hash` field.
         """
 

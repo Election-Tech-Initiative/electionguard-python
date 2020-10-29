@@ -22,7 +22,7 @@ from .types import GUARDIAN_ID
 
 class KeyCeremonyMediator:
     """
-    KeyCeremonyMediator for assisting communication between guardians 
+    KeyCeremonyMediator for assisting communication between guardians
     """
 
     ceremony_details: CeremonyDetails
@@ -359,7 +359,7 @@ class KeyCeremonyMediator:
     ) -> List[ElectionPartialKeyChallenge]:
         """
         Share all open election partial key challenges with guardians
-        :return: List of open election partial key challenges 
+        :return: List of open election partial key challenges
         """
         return list(self._election_partial_key_challenges.values())
 

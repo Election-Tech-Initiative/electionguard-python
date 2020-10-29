@@ -143,7 +143,8 @@ def generate_elgamal_auxiliary_key_pair() -> AuxiliaryKeyPair:
     """
     elgamal_key_pair = elgamal_keypair_random()
     return AuxiliaryKeyPair(
-        elgamal_key_pair.secret_key.to_hex(), elgamal_key_pair.public_key.to_hex(),
+        elgamal_key_pair.secret_key.to_hex(),
+        elgamal_key_pair.public_key.to_hex(),
     )
 
 
@@ -203,11 +204,14 @@ def generate_election_partial_key_backup(
 
 
 def get_coefficient_validation_set(
-    owner_id: GUARDIAN_ID, polynomial: ElectionPolynomial,
+    owner_id: GUARDIAN_ID,
+    polynomial: ElectionPolynomial,
 ) -> CoefficientValidationSet:
     """Get coefficient validation set from polynomial"""
     return CoefficientValidationSet(
-        owner_id, polynomial.coefficient_commitments, polynomial.coefficient_proofs,
+        owner_id,
+        polynomial.coefficient_commitments,
+        polynomial.coefficient_proofs,
     )
 
 
@@ -216,7 +220,9 @@ def get_coefficient_validation_set_from_backup(
 ) -> CoefficientValidationSet:
     """Get coefficient validation set from a election partial key backup"""
     return CoefficientValidationSet(
-        backup.owner_id, backup.coefficient_commitments, backup.coefficient_proofs,
+        backup.owner_id,
+        backup.coefficient_commitments,
+        backup.coefficient_proofs,
     )
 
 
@@ -251,7 +257,8 @@ def verify_election_partial_key_backup(
 
 
 def generate_election_partial_key_challenge(
-    backup: ElectionPartialKeyBackup, polynomial: ElectionPolynomial,
+    backup: ElectionPartialKeyBackup,
+    polynomial: ElectionPolynomial,
 ) -> ElectionPartialKeyChallenge:
     """
     Generate challenge to a previous verification of a partial key backup

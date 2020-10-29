@@ -15,7 +15,7 @@ _T = TypeVar("_T")
 
 class Scheduler(Singleton, AbstractContextManager):
     """
-    Worker that wraps Multprocessing and allows 
+    Worker that wraps Multprocessing and allows
     for shared context or spawning processes.
     Implemented as a singleton to guarantee there is only one set
     of tread and process pools in use throughout the library.

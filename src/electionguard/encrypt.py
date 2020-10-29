@@ -416,7 +416,9 @@ def encrypt_ballot(
     # Include a representation of the election and the external Id in the nonce's used
     # to derive other nonce values on the ballot
     nonce_seed = CiphertextBallot.nonce_seed(
-        election_metadata.description_hash, ballot.object_id, random_master_nonce,
+        election_metadata.description_hash,
+        ballot.object_id,
+        random_master_nonce,
     )
 
     encrypted_contests: List[CiphertextBallotContest] = list()
