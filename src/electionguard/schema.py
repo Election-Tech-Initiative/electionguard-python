@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Tuple
 from os.path import join, dirname, realpath
 from json import load
 from jsonschema import validate
@@ -20,10 +20,10 @@ election_description_schema = _load_schema("election_description_schema.json")
 def validate_json_schema(
     json_data: Any,
     json_schema: Any,
-) -> bool:
+) -> Tuple[bool, str]:
     """Validate json schema"""
     try:
         validate(instance=json_data, schema=json_schema)
     except ValidationError as err:
-        return False
-    return True
+        return (False, err.message)
+    return (True, "Json schema validated")
