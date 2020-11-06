@@ -66,6 +66,7 @@ setup(
         "gmpy2>=2.0.8",
         "numpy>=1.18.2",
         "jsons>=1.1.2",
+        "jsonschema>=3.2",
         "cryptography",
         "psutil>=5.7.2",
     ],
