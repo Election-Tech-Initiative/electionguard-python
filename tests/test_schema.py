@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from electionguard.schema import election_description_schema, validate_json_schema
+from electionguard.schema import get_election_description_schema, validate_json_schema
 import electionguardtest.election_factory as ElectionFactory
 
 election_factory = ElectionFactory.ElectionFactory()
@@ -21,6 +21,7 @@ class TestSchema(TestCase):
         )
 
         # Act
+        election_description_schema = get_election_description_schema()
         simple_election_validates = validate_json_schema(
             simple_election, election_description_schema
         )
@@ -29,5 +30,6 @@ class TestSchema(TestCase):
         )
 
         # Assert
+        self.assertIsNotNone(election_description_schema)
         self.assertTrue(simple_election_validates)
         self.assertTrue(hamilton_election_validates)

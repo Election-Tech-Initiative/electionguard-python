@@ -4,7 +4,7 @@ from json import load
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
 
-__all__ = ["election_description_schema", "validate_json_schema"]
+__all__ = ["get_election_description_schema", "validate_json_schema"]
 
 
 def _load_schema(json_schema_file_name: str) -> Any:
@@ -14,7 +14,9 @@ def _load_schema(json_schema_file_name: str) -> Any:
     return schema
 
 
-election_description_schema = _load_schema("election_description_schema.json")
+def get_election_description_schema() -> Any:
+    """Get default schema for election description schema"""
+    return _load_schema("election_description_schema.json")
 
 
 def validate_json_schema(
