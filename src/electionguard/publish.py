@@ -38,7 +38,7 @@ def publish(
     constants: ElectionConstants,
     devices: Iterable[EncryptionDevice],
     ciphertext_ballots: Iterable[CiphertextAcceptedBallot],
-    spoiled_ballots: Iterable[CiphertextAcceptedBallot],
+    spoiled_ballots: Iterable[PlaintextBallot],
     ciphertext_tally: PublishedCiphertextTally,
     plaintext_tally: PlaintextTally,
     coefficient_validation_sets: Iterable[CoefficientValidationSet] = None,

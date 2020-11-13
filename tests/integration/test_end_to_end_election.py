@@ -423,7 +423,11 @@ class TestEndToEndElection(TestCase):
             self.constants,
             [self.device],
             self.ballot_store.all(),
-            self.ciphertext_tally.spoiled_ballots.values(),
+            [
+                place
+                for spoiled in self.plaintext_tally.spoiled_ballots.values()
+                for place in spoiled.values()
+            ],
             publish_ciphertext_tally(self.ciphertext_tally),
             self.plaintext_tally,
             self.coefficient_validation_sets,
