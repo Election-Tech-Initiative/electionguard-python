@@ -1,7 +1,7 @@
 from unittest import TestCase
 
 from electionguard.ballot import BallotBoxState
-from electionguard.ballot_store import BallotStore
+from electionguard.data_store import DataStore
 
 from electionguard.ballot_box import (
     BallotBox,
@@ -29,7 +29,7 @@ class TestBallotBox(TestCase):
         metadata, context = election_factory.get_fake_ciphertext_election(
             election, keypair.public_key
         )
-        store = BallotStore()
+        store = DataStore()
         source = election_factory.get_fake_ballot(metadata)
         self.assertTrue(source.is_valid(metadata.ballot_styles[0].object_id))
 
@@ -56,7 +56,7 @@ class TestBallotBox(TestCase):
         metadata, context = election_factory.get_fake_ciphertext_election(
             election, keypair.public_key
         )
-        store = BallotStore()
+        store = DataStore()
         source = election_factory.get_fake_ballot(metadata)
         self.assertTrue(source.is_valid(metadata.ballot_styles[0].object_id))
 
@@ -82,7 +82,7 @@ class TestBallotBox(TestCase):
         metadata, context = election_factory.get_fake_ciphertext_election(
             election, keypair.public_key
         )
-        store = BallotStore()
+        store = DataStore()
         source = election_factory.get_fake_ballot(metadata)
         self.assertTrue(source.is_valid(metadata.ballot_styles[0].object_id))
 
@@ -111,7 +111,7 @@ class TestBallotBox(TestCase):
         metadata, context = election_factory.get_fake_ciphertext_election(
             election, keypair.public_key
         )
-        store = BallotStore()
+        store = DataStore()
         source = election_factory.get_fake_ballot(metadata)
         self.assertTrue(source.is_valid(metadata.ballot_styles[0].object_id))
 
