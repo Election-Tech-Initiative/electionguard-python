@@ -120,7 +120,13 @@ def write_json(object_to_write: object, strip_privates: bool = True) -> str:
     try:
         json_object = write_json_object(object_to_write, strip_privates)
         json_string = cast(
-            str, dumps(json_object, strip_privates=strip_privates, strip_nulls=True)
+            str,
+            dumps(
+                json_object,
+                strip_privates=strip_privates,
+                strip_nulls=True,
+                ensure_ascii=False,
+            ),
         )
         return json_string
     except JsonsError:
@@ -138,7 +144,10 @@ def write_json_object(object_to_write: object, strip_privates: bool = True) -> o
     suppress_warnings()
     try:
         json_object = dump(
-            object_to_write, strip_privates=strip_privates, strip_nulls=True
+            object_to_write,
+            strip_privates=strip_privates,
+            strip_nulls=True,
+            ensure_ascii=False,
         )
         for key in KEYS_TO_REMOVE:
             _remove_key(json_object, key)
