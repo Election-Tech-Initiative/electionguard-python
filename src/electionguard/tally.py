@@ -7,6 +7,7 @@ from .ballot import (
     CiphertextBallotSelection,
     CiphertextAcceptedBallot,
     CiphertextSelection,
+    PlaintextBallot,
 )
 from .data_store import DataStore
 from .ballot_validator import ballot_is_valid_for_election
@@ -461,3 +462,15 @@ def tally_ballots(
     if tally.batch_append(store):
         return tally
     return None
+
+
+def create_plaintext_ballot_from_contests(
+    ballot_id: str,
+    contests: List[PlaintextTallyContest],
+    ballot_style: str = ""
+) -> PlaintextBallot:
+    return PlaintextBallot(
+        ballot_id,
+        ballot_style,
+        contests,
+    )

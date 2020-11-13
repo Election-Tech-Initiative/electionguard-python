@@ -47,6 +47,7 @@ from electionguard.tally import (
     PublishedCiphertextTally,
     PlaintextTally,
     publish_ciphertext_tally,
+    create_plaintext_ballot_from_contests,
 )
 from electionguard.decryption_mediator import DecryptionMediator
 
@@ -423,7 +424,10 @@ class TestEndToEndElection(TestCase):
             self.constants,
             [self.device],
             self.ballot_store.all(),
-            self.ciphertext_tally.spoiled_ballots.values(),
+            [
+                create_plaintext_ballot_from_contests(ballot_id, contests.values())
+                for ballot_id, contests in self.plaintext_tally.spoiled_ballots.items()
+            ],
             publish_ciphertext_tally(self.ciphertext_tally),
             self.plaintext_tally,
             self.coefficient_validation_sets,
@@ -466,12 +470,13 @@ class TestEndToEndElection(TestCase):
             self.assertEqual(ballot, ballot_from_file)
 
         spoiled_ballots: List[CiphertextAcceptedBallot] = []
-        for spoiled_ballot in self.ciphertext_tally.spoiled_ballots.values():
-            ballot_name = BALLOT_PREFIX + spoiled_ballot.object_id
-            spoiled_ballot_from_file = CiphertextAcceptedBallot.from_json_file(
-                ballot_name, SPOILED_DIR
-            )
-            self.assertEqual(spoiled_ballot, spoiled_ballot_from_file)
+        for contest in self.plaintext_tally.spoiled_ballots.values():
+            for spoiled_ballot in contest.values():
+                ballot_name = BALLOT_PREFIX + spoiled_ballot.object_id
+                spoiled_ballot_from_file = PlaintextBallot.from_json_file(
+                    ballot_name, SPOILED_DIR
+                )
+                self.assertEqual(spoiled_ballot, spoiled_ballot_from_file)
 
         ciphertext_tally_from_file = PublishedCiphertextTally.from_json_file(
             ENCRYPTED_TALLY_FILE_NAME, RESULTS_DIR
