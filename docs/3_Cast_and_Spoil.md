@@ -39,7 +39,7 @@ Once all of the ballots are marked as _cast_ or _spoiled_, all of the encryption
 1. Each ballot is loaded into memory (if it is not already).
 2. Each ballot is verified to be correct according to the specific election metadata and encryption context.
 3. Each ballot is `accepted` and identified as either being `cast` or `spoiled`.
-4. The collection of cast and spoiled ballots is cached in the `BallotStore`.
+4. The collection of cast and spoiled ballots is cached in the `DataStore`.
 5. All ballots are tallied.  The `cast` ballots are combined to create a `CiphertextTally` The spoiled ballots are cached for decryption later.
 
 ## Ballot Box
@@ -58,7 +58,7 @@ from electionguard.ballot_box import BallotBox
 
 metadata: InternalElectionDescription
 encryption: CiphertextElection
-store: BallotStore
+store: DataStore
 ballots_to_cast: List[CiphertextBallot]
 ballots_to_spoil: List[CiphertextBallot]
 
@@ -85,7 +85,7 @@ from electionguard.ballot_box import accept_ballot
 
 metadata: InternalElectionDescription
 encryption: CiphertextElection
-store: BallotStore
+store: DataStore
 ballots_to_cast: List[CiphertextBallot]
 ballots_to_spoil: List[CiphertextBallot]
 
@@ -105,7 +105,7 @@ for ballot in ballots_to_spoil:
 
 Generating the encrypted `CiphertextTally` can be completed by creating a `CiphertextTally` stateful class and manually marshalling each cast and spoiled ballot.  Using this method is preferable when the collection of ballots is very large
 
-For convenience, stateless functions are also provided to automatically generate the `CiphertextTally` from a `BallotStore`.  This method is preferred when the collection of ballots is arbitrarily small, or when the `BallotStore` is overloaded with a custom implementation.
+For convenience, stateless functions are also provided to automatically generate the `CiphertextTally` from a `DataStore`.  This method is preferred when the collection of ballots is arbitrarily small, or when the `DataStore` is overloaded with a custom implementation.
 
 ### Using the Stateful Class
 
@@ -129,7 +129,7 @@ for ballot in ballots:
 
 metadata: InternalElectionDescription
 context: CiphertextElectionContext
-store: BallotStore
+store: DataStore
 
 tally = tally_ballots(store, metadata, context)
 assert(tally is not None)

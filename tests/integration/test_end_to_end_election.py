@@ -37,7 +37,7 @@ from electionguard.encrypt import EncryptionDevice
 from electionguard.encrypt import EncryptionMediator
 
 # Step 3 - Cast and Spoil
-from electionguard.ballot_store import BallotStore
+from electionguard.data_store import DataStore
 from electionguard.ballot_box import BallotBox
 
 # Step 4 - Decrypt Tally
@@ -99,7 +99,7 @@ class TestEndToEndElection(TestCase):
     ciphertext_ballots: List[CiphertextBallot] = []
 
     # Step 3 - Cast and Spoil
-    ballot_store: BallotStore
+    ballot_store: DataStore
     ballot_box: BallotBox
 
     # Step 4 - Decrypt Tally
@@ -278,7 +278,7 @@ class TestEndToEndElection(TestCase):
         """
 
         # Configure the Ballot Box
-        self.ballot_store = BallotStore()
+        self.ballot_store = DataStore()
         self.ballot_box = BallotBox(self.metadata, self.context, self.ballot_store)
 
         # Randomly cast or spoil the ballots
