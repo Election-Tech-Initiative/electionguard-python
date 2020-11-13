@@ -73,7 +73,9 @@ class TestPublish(TestCase):
 
         # Act
         publish_private_data(
-            plaintext_ballots, encrypted_ballots, guardians,
+            plaintext_ballots,
+            encrypted_ballots,
+            guardians,
         )
 
         # Assert

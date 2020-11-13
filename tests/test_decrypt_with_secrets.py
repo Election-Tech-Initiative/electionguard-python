@@ -691,7 +691,10 @@ class TestDecryptWithSecrets(unittest.TestCase):
         missing_nonce_value = None
 
         result_from_nonce = decrypt_ballot_with_nonce(
-            subject, metadata, context.crypto_extended_base_hash, keypair.public_key,
+            subject,
+            metadata,
+            context.crypto_extended_base_hash,
+            keypair.public_key,
         )
         result_from_nonce_seed = decrypt_ballot_with_nonce(
             subject,

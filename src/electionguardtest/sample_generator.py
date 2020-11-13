@@ -59,8 +59,10 @@ class ElectionSampleDataGenerator:
             public_data,
             private_data,
         ) = self.election_factory.get_hamilton_election_with_encryption_context()
-        plaintext_ballots = self.ballot_factory.generate_fake_plaintext_ballots_for_election(
-            public_data.metadata, number_of_ballots
+        plaintext_ballots = (
+            self.ballot_factory.generate_fake_plaintext_ballots_for_election(
+                public_data.metadata, number_of_ballots
+            )
         )
         self.encrypter = EncryptionMediator(
             public_data.metadata, public_data.context, self.encryption_device

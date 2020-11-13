@@ -291,10 +291,12 @@ class TestDecryptionMediator(TestCase):
 
         # Compute lagrange coefficients for the guardians that are present
         lagrange_0 = compute_lagrange_coefficient(
-            self.guardians[0].sequence_order, *[self.guardians[1].sequence_order],
+            self.guardians[0].sequence_order,
+            *[self.guardians[1].sequence_order],
         )
         lagrange_1 = compute_lagrange_coefficient(
-            self.guardians[1].sequence_order, *[self.guardians[0].sequence_order],
+            self.guardians[1].sequence_order,
+            *[self.guardians[0].sequence_order],
         )
 
         print(
@@ -489,7 +491,9 @@ class TestDecryptionMediator(TestCase):
 
         # act
         result = decrypt_ballot(
-            encrypted_ballot, shares, self.context.crypto_extended_base_hash,
+            encrypted_ballot,
+            shares,
+            self.context.crypto_extended_base_hash,
         )
 
         # assert
@@ -550,7 +554,9 @@ class TestDecryptionMediator(TestCase):
 
         # act
         result = decrypt_ballot(
-            encrypted_ballot, all_shares, self.context.crypto_extended_base_hash,
+            encrypted_ballot,
+            all_shares,
+            self.context.crypto_extended_base_hash,
         )
 
         # assert

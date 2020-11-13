@@ -35,7 +35,7 @@ GUARDIAN_PUBLIC_KEY = ElementModP
 @dataclass
 class DecryptionMediator:
     """
-    The Decryption Mediator composes partial decryptions from each Guardian 
+    The Decryption Mediator composes partial decryptions from each Guardian
     to form a decrypted representation of an election tally
     """
 
@@ -81,7 +81,7 @@ class DecryptionMediator:
 
     def announce(self, guardian: Guardian) -> Optional[TallyDecryptionShare]:
         """
-        Announce that a Guardian is present and participating in the decryption.  
+        Announce that a Guardian is present and participating in the decryption.
         A Decryption Share will be generated for the Guardian
 
         :param guardian: The guardian who will participate in the decryption.
@@ -208,7 +208,7 @@ class DecryptionMediator:
         self, recompute: bool = False, decrypt: AuxiliaryDecrypt = rsa_decrypt
     ) -> Optional[PlaintextTally]:
         """
-        Get the plaintext tally for the election by composing each Guardian's 
+        Get the plaintext tally for the election by composing each Guardian's
         decrypted representation of each selection into a decrypted representation
 
         :param recompute: Specify if the function should recompute the result, even if one already exists.
