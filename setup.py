@@ -14,7 +14,7 @@ with open(join(current_directory, "README.md"), encoding="utf-8") as readme_file
     LONG_DESCRIPTION = readme_file.read()
 
 NAME = "electionguard"
-VERSION = "1.1.11"
+VERSION = "1.1.15"
 LICENSE = "MIT"
 DESCRIPTION = "ElectionGuard: Support for e2e verified elections."
 LONG_DESCRIPTION_CONTENT_TYPE = "text/markdown"
@@ -55,6 +55,7 @@ setup(
     author_email=AUTHOR_EMAIL,
     url=URL,
     packages=find_packages("src"),
+    package_data={"electionguard": ["*.json"]},
     package_dir={"": "src"},
     py_modules=[splitext(basename(path))[0] for path in glob("src/*.py")],
     include_package_data=True,
@@ -66,6 +67,7 @@ setup(
         "gmpy2>=2.0.8",
         "numpy>=1.18.2",
         "jsons>=1.1.2",
+        "jsonschema>=3.2",
         "cryptography",
         "psutil>=5.7.2",
     ],

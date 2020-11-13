@@ -66,7 +66,7 @@ class TestTracker(TestCase):
         expected_hash = (
             "325AB2622D35311DB0320C9F3B421EE93017D16B9E4C7FEF06704EDA4FA5E30B"
         )
-        expected_words = "civilian-AB262-championship-5311D-maybe-20C9F-configuration-21EE9-chipmunk-7D16B-lambkin-C7FEF-allergist-04EDA-disclosure-5E30B"
+        expected_words = "cover-AB262-conscience-5311D-peacock-20C9F-diagram-21EE9-coordinator-7D16B-nature-C7FEF-altar-04EDA-fax-5E30B"
 
         device_hash = ONE_MOD_Q
         ballot_hash = TWO_MOD_Q
