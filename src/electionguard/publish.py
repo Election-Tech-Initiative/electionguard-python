@@ -68,9 +68,9 @@ def publish(
         ballot.to_json_file(ballot_name, BALLOTS_DIR)
 
     make_directory(SPOILED_DIR)
-    for ballot in spoiled_ballots:
-        ballot_name = BALLOT_PREFIX + ballot.object_id
-        ballot.to_json_file(ballot_name, SPOILED_DIR)
+    for spoiled_ballot in spoiled_ballots:
+        ballot_name = BALLOT_PREFIX + spoiled_ballot.object_id
+        spoiled_ballot.to_json_file(ballot_name, SPOILED_DIR)
 
     ciphertext_tally.to_json_file(ENCRYPTED_TALLY_FILE_NAME, results_directory)
     plaintext_tally.to_json_file(TALLY_FILE_NAME, results_directory)

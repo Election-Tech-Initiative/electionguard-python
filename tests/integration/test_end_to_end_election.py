@@ -470,13 +470,15 @@ class TestEndToEndElection(TestCase):
             self.assertEqual(ballot, ballot_from_file)
 
         spoiled_ballots: List[CiphertextAcceptedBallot] = []
-        for contest in self.plaintext_tally.spoiled_ballots.values():
-            for spoiled_ballot in contest.values():
-                ballot_name = BALLOT_PREFIX + spoiled_ballot.object_id
-                spoiled_ballot_from_file = PlaintextBallot.from_json_file(
-                    ballot_name, SPOILED_DIR
-                )
-                self.assertEqual(spoiled_ballot, spoiled_ballot_from_file)
+        for ballot_id, contests in self.plaintext_tally.spoiled_ballots.items():
+            spoiled_ballot = create_plaintext_ballot_from_contests(
+                ballot_id, contests.values()
+            )
+            ballot_name = BALLOT_PREFIX + ballot_id
+            spoiled_ballot_from_file = PlaintextBallot.from_json_file(
+                ballot_name, SPOILED_DIR
+            )
+            self.assertEqual(spoiled_ballot, spoiled_ballot_from_file)
 
         ciphertext_tally_from_file = PublishedCiphertextTally.from_json_file(
             ENCRYPTED_TALLY_FILE_NAME, RESULTS_DIR

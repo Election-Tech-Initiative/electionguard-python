@@ -8,6 +8,8 @@ from .ballot import (
     CiphertextAcceptedBallot,
     CiphertextSelection,
     PlaintextBallot,
+    PlaintextBallotContest,
+    PlaintextBallotSelection,
 )
 from .data_store import DataStore
 from .ballot_validator import ballot_is_valid_for_election
@@ -206,7 +208,7 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
 
     cast: Dict[CONTEST_ID, CiphertextTallyContest] = field(init=False)
     """
-    A collection of each contest and selection in an election.  
+    A collection of each contest and selection in an election.
     Retains an encrypted representation of a tally for each selection
     """
 
@@ -465,12 +467,29 @@ def tally_ballots(
 
 
 def create_plaintext_ballot_from_contests(
-    ballot_id: str,
-    contests: List[PlaintextTallyContest],
-    ballot_style: str = ""
+    ballot_id: str, contests: List[PlaintextTallyContest], ballot_style: str = ""
 ) -> PlaintextBallot:
+    """
+    Return a PlaintextBallot given a ballot_style and list of
+    PlaintextTallyContest.
+    """
+    ballot_contests = []
+    for tally_contest in contests:
+        ballot_selections = []
+        for selection_id, selection in tally_contest.selections.items():
+            ballot_selections.append(
+                PlaintextBallotSelection(
+                    selection_id,
+                    "?",
+                )
+            )
+        ballot_contest = PlaintextBallotContest(
+            ballot_id,
+            ballot_selections,
+        )
+        ballot_contests.append(ballot_contest)
     return PlaintextBallot(
         ballot_id,
         ballot_style,
-        contests,
+        ballot_contests,
     )
