@@ -7,7 +7,7 @@ from hypothesis import given, HealthCheck, settings, Phase
 from hypothesis.strategies import integers, data
 
 from electionguard.ballot import PlaintextBallot, from_ciphertext_ballot
-from electionguard.ballot_store import BallotStore
+from electionguard.data_store import DataStore
 
 from electionguard.ballot_box import BallotBox, BallotBoxState
 from electionguard.decrypt_with_shares import (
@@ -192,7 +192,7 @@ class TestDecryptionMediator(TestCase):
             )
 
         # configure the ballot box
-        ballot_store = BallotStore()
+        ballot_store = DataStore()
         ballot_box = BallotBox(self.metadata, self.context, ballot_store)
         ballot_box.cast(self.encrypted_fake_cast_ballot)
         ballot_box.spoil(self.encrypted_fake_spoiled_ballot)
@@ -701,7 +701,7 @@ class TestDecryptionMediator(TestCase):
     ) -> CiphertextTally:
 
         # encrypt each ballot
-        store = BallotStore()
+        store = DataStore()
         for ballot in ballots:
             encrypted_ballot = encrypt_ballot(
                 ballot, metadata, context, int_to_q_unchecked(1)

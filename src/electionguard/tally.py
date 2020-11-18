@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Iterable, Optional, List, Dict, Set, Tuple
+from typing import Iterable, Optional, List, Dict, Set, Tuple, Any
 from collections.abc import Container, Sized
 
 from .ballot import (
@@ -8,7 +8,7 @@ from .ballot import (
     CiphertextAcceptedBallot,
     CiphertextSelection,
 )
-from .ballot_store import BallotStore
+from .data_store import DataStore
 from .ballot_validator import ballot_is_valid_for_election
 from .decryption_share import CiphertextDecryptionSelection
 from .election import CiphertextElectionContext, InternalElectionDescription
@@ -265,7 +265,7 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
 
     def batch_append(
         self,
-        ballots: Iterable[CiphertextAcceptedBallot],
+        ballots: Iterable[Tuple[Any, CiphertextAcceptedBallot]],
         scheduler: Optional[Scheduler] = None,
     ) -> bool:
         """
@@ -275,30 +275,34 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
             SELECTION_ID, Dict[BALLOT_ID, ElGamalCiphertext]
         ] = {}
         for ballot in ballots:
+            # get the value of the dict
+            ballot_value = ballot[1]
             if not self.__contains__(ballot) and ballot_is_valid_for_election(
-                ballot, self._metadata, self._encryption
+                ballot_value, self._metadata, self._encryption
             ):
-                if ballot.state == BallotBoxState.CAST:
+                if ballot_value.state == BallotBoxState.CAST:
 
                     # collect the selections so they can can be accumulated in parallel
-                    for contest in ballot.contests:
+                    for contest in ballot_value.contests:
                         for selection in contest.ballot_selections:
                             if selection.object_id not in cast_ballot_selections:
                                 cast_ballot_selections[selection.object_id] = {}
 
                             cast_ballot_selections[selection.object_id][
-                                ballot.object_id
+                                ballot_value.object_id
                             ] = selection.ciphertext
 
                 # just append the spoiled ballots
-                elif ballot.state == BallotBoxState.SPOILED:
-                    self._add_spoiled(ballot)
+                elif ballot_value.state == BallotBoxState.SPOILED:
+                    self._add_spoiled(ballot_value)
 
         # cache the cast ballot id's so they are not double counted
         if self._execute_accumulate(cast_ballot_selections, scheduler):
             for ballot in ballots:
-                if ballot.state == BallotBoxState.CAST:
-                    self._cast_ballot_ids.add(ballot.object_id)
+                # get the value of the dict
+                ballot_value = ballot[1]
+                if ballot_value.state == BallotBoxState.CAST:
+                    self._cast_ballot_ids.add(ballot_value.object_id)
             return True
 
         return False
@@ -444,7 +448,7 @@ def tally_ballot(
 
 
 def tally_ballots(
-    store: BallotStore,
+    store: DataStore,
     metadata: InternalElectionDescription,
     context: CiphertextElectionContext,
 ) -> Optional[CiphertextTally]:

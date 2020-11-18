@@ -7,7 +7,7 @@ from .ballot import (
     CiphertextAcceptedBallot,
     from_ciphertext_ballot,
 )
-from .ballot_store import BallotStore
+from .data_store import DataStore
 
 from .election import CiphertextElectionContext, InternalElectionDescription
 from .logs import log_warning
@@ -22,7 +22,7 @@ class BallotBox(object):
 
     _metadata: InternalElectionDescription = field()
     _encryption: CiphertextElectionContext = field()
-    _store: BallotStore = field(default_factory=lambda: BallotStore())
+    _store: DataStore = field(default_factory=lambda: DataStore())
 
     def cast(self, ballot: CiphertextBallot) -> Optional[CiphertextAcceptedBallot]:
         """
@@ -50,7 +50,7 @@ def accept_ballot(
     state: BallotBoxState,
     metadata: InternalElectionDescription,
     context: CiphertextElectionContext,
-    store: BallotStore,
+    store: DataStore,
 ) -> Optional[CiphertextAcceptedBallot]:
     """
     Accept a ballot within the context of a specified election and against an existing data store
@@ -61,8 +61,8 @@ def accept_ballot(
     if not ballot_is_valid_for_election(ballot, metadata, context):
         return None
 
-    ballot_exists, existing_ballot = store.exists(ballot.object_id)
-    if ballot_exists and existing_ballot is not None:
+    existing_ballot = store.get(ballot.object_id)
+    if existing_ballot is not None:
         log_warning(
             f"error accepting ballot, {ballot.object_id} already exists with state: {existing_ballot.state}"
         )

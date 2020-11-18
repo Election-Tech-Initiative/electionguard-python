@@ -29,7 +29,7 @@ from electionguard.nonces import Nonces
 from electionguard.scheduler import Scheduler
 from electionguard.utils import get_optional
 from electionguardtest.elgamal import elgamal_keypairs
-from tests.test_group import elements_mod_q_no_zero
+from tests.property.test_group import elements_mod_q_no_zero
 
 
 class TestElGamal(unittest.TestCase):
