@@ -1,5 +1,5 @@
 from unittest import TestCase
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 
 from electionguard.utils import to_ticks
 

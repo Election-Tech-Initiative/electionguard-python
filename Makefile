@@ -90,9 +90,24 @@ validate:
 	@pipenv run python -c 'import electionguard; print(electionguard.__package__ + " successfully imported")'
 
 # Test
+unit-tests:
+	@echo ✅ UNIT TESTS
+	pipenv run pytest tests/unit
+
+property-tests:
+	@echo ✅ PROPERTY TESTS
+	pipenv run pytest tests/test_decryption_mediator.py
+	pipenv run pytest tests/property
+
+integration-tests:
+	@echo ✅ INTEGRATION TESTS
+	pipenv run pytest tests/integration
+
 test: 
-	@echo ✅ TEST
-	pipenv run pytest . -x
+	@echo ✅ ALL TESTS
+	make unit-tests
+	make property-tests
+	make integration-tests
 
 test-example:
 	@echo ✅ TEST Example
