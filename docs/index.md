@@ -42,7 +42,7 @@ has its own [installation requirements (native C libraries)](https://gmpy2.readt
 
 ## 🚀 Quick Start
 
-Using [**make**](https://www.gnu.org/software/make/manual/make.html), the entire [GitHub Action workflow](https://github.com/microsoft/electionguard-python/.github/workflows/pull_request.yml) can be run with one command: 
+Using [**make**](https://www.gnu.org/software/make/manual/make.html), the entire [GitHub Action workflow](https://github.com/microsoft/electionguard-python/blob/main/.github/workflows/pull_request.yml) can be run with one command:
 
 ```
 make

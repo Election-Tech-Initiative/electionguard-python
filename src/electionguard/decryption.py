@@ -267,7 +267,10 @@ def compute_decryption_share_for_ballot(
             selections[decryption.object_id] = decryption
 
         contests[contest.object_id] = CiphertextDecryptionContest(
-            contest.object_id, guardian.object_id, contest.description_hash, selections,
+            contest.object_id,
+            guardian.object_id,
+            contest.description_hash,
+            selections,
         )
     return BallotDecryptionShare(
         guardian.object_id,
@@ -472,7 +475,8 @@ def compute_lagrange_coefficients_for_guardian(
         if g.owner_id != guardian_keys.owner_id
     ]
     return compute_lagrange_coefficient(
-        guardian_keys.sequence_order, *other_guardian_orders,
+        guardian_keys.sequence_order,
+        *other_guardian_orders,
     )
 
 
@@ -578,7 +582,10 @@ def reconstruct_decryption_contests(
         }
 
         selections: Dict[SELECTION_ID, CiphertextDecryptionSelection] = {}
-        for (selection_id, tally_selection,) in tally_contest.tally_selections.items():
+        for (
+            selection_id,
+            tally_selection,
+        ) in tally_contest.tally_selections.items():
 
             # collect all of the shares generated for each selection
             compensated_selection_shares: Dict[
@@ -604,7 +611,10 @@ def reconstruct_decryption_contests(
                 compensated_selection_shares,
             )
         contests[contest_id] = CiphertextDecryptionContest(
-            contest_id, missing_guardian_id, tally_contest.description_hash, selections,
+            contest_id,
+            missing_guardian_id,
+            tally_contest.description_hash,
+            selections,
         )
 
     return contests
@@ -706,5 +716,8 @@ def reconstruct_decryption_ballot(
             selections,
         )
     return BallotDecryptionShare(
-        missing_guardian_id, public_key.key, ballot.object_id, contests,
+        missing_guardian_id,
+        public_key.key,
+        ballot.object_id,
+        contests,
     )

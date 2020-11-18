@@ -5,16 +5,17 @@ from multiprocessing.dummy import Pool as ThreadPool
 from multiprocessing.pool import Pool
 from psutil import cpu_count
 import traceback
-from typing import Any, Callable, Iterable, List
+from typing import Any, Callable, Iterable, List, TypeVar
 
 from .logs import log_warning
 from .singleton import Singleton
-from .utils import T
+
+_T = TypeVar("_T")
 
 
 class Scheduler(Singleton, AbstractContextManager):
     """
-    Worker that wraps Multprocessing and allows 
+    Worker that wraps Multprocessing and allows
     for shared context or spawning processes.
     Implemented as a singleton to guarantee there is only one set
     of tread and process pools in use throughout the library.
@@ -58,7 +59,7 @@ class Scheduler(Singleton, AbstractContextManager):
         task: Callable,
         arguments: Iterable[Iterable[Any]],
         with_shared_resources: bool = False,
-    ) -> List[T]:
+    ) -> List[_T]:
         """
         Schedule tasks with list of arguments
         :param task: the callable task to execute
@@ -74,7 +75,7 @@ class Scheduler(Singleton, AbstractContextManager):
 
     def safe_starmap(
         self, pool: Pool, task: Callable, arguments: Iterable[Iterable[Any]]
-    ) -> List[T]:
+    ) -> List[_T]:
         """Safe wrapper around starmap to ensure pool is open"""
         try:
             return pool.starmap(task, arguments)
@@ -89,7 +90,9 @@ class Scheduler(Singleton, AbstractContextManager):
             )
             return []
 
-    def safe_map(self, pool: Pool, task: Callable, arguments: Iterable[Any]) -> List[T]:
+    def safe_map(
+        self, pool: Pool, task: Callable, arguments: Iterable[Any]
+    ) -> List[_T]:
         """Safe wrapper around starmap to ensure pool is open"""
         try:
             return pool.map(task, arguments)

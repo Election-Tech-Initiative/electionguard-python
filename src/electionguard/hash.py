@@ -51,7 +51,8 @@ CRYPTO_HASHABLE_T = Union[CryptoHashable, ElementModPOrQ, str, int, None]
 # because Sequences are read-only, and thus safely covariant. All this really means is that
 # we promise never to mutate any list that you pass to hash_elems.
 CRYPTO_HASHABLE_ALL = Union[
-    Sequence[CRYPTO_HASHABLE_T], CRYPTO_HASHABLE_T,
+    Sequence[CRYPTO_HASHABLE_T],
+    CRYPTO_HASHABLE_T,
 ]
 
 

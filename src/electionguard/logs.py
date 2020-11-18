@@ -2,7 +2,7 @@ import inspect
 import logging
 import os.path
 import sys
-from typing import Any, Tuple
+from typing import Any, List, Tuple
 from logging.handlers import RotatingFileHandler
 
 from .singleton import Singleton
@@ -21,8 +21,7 @@ class ElectionGuardLog(Singleton):
         super(ElectionGuardLog, self).__init__()
 
         self.__logger = logging.getLogger("electionguard")
-        self.__logger.addHandler(self._get_file_handler())
-        self.__logger.addHandler(self._get_stream_handler())
+        self.__logger.addHandler(get_stream_handler())
 
     @staticmethod
     def __get_call_info() -> Tuple[str, str, int]:
@@ -45,30 +44,23 @@ class ElectionGuardLog(Singleton):
         message = f"{os.path.basename(filename)}.{funcname}:#L{line}: {message}"
         return message
 
-    def _get_stream_handler(self) -> logging.StreamHandler:
+    def add_handler(self, handler: logging.Handler) -> None:
         """
-        Get a Stream Handler, sends only warnings and errors to stdout.
+        Adds a logger handler
         """
-        stream_handler = logging.StreamHandler(sys.stdout)
-        stream_handler.setLevel(logging.WARNING)
-        stream_handler.setFormatter(logging.Formatter(FORMAT))
-        return stream_handler
+        self.__logger.addHandler(handler)
 
-    def _get_file_handler(self) -> logging.FileHandler:
+    def remove_handler(self, handler: logging.Handler) -> None:
         """
-        Get a File System Handler, sends verbose logging to a file, `electionguard.log`.
-        When that file gets too large, the logs will rotate, creating files with names
-        like `electionguard.log.1`.
+        Removes a logger handler
         """
+        self.__logger.removeHandler(handler)
 
-        # TODO: add file compression, save a bunch of space.
-        #   https://medium.com/@rahulraghu94/overriding-pythons-timedrotatingfilehandler-to-compress-your-log-files-iot-c766a4ace240
-        file_handler = RotatingFileHandler(
-            "electionguard.log", "a", maxBytes=10_000_000, backupCount=10
-        )
-        file_handler.setLevel(logging.DEBUG)
-        file_handler.setFormatter(logging.Formatter(FORMAT))
-        return file_handler
+    def handlers(self) -> List[logging.Handler]:
+        """
+        Returns all logging handlers
+        """
+        return self.__logger.handlers
 
     def debug(self, message: str, *args: Any, **kwargs: Any) -> None:
         """
@@ -101,7 +93,55 @@ class ElectionGuardLog(Singleton):
         self.__logger.critical(self.__formatted_message(message), *args, **kwargs)
 
 
+def get_stream_handler() -> logging.StreamHandler:
+    """
+    Get a Stream Handler, sends only warnings and errors to stdout.
+    """
+    stream_handler = logging.StreamHandler(sys.stdout)
+    stream_handler.setLevel(logging.WARNING)
+    stream_handler.setFormatter(logging.Formatter(FORMAT))
+    return stream_handler
+
+
+def get_file_handler() -> logging.FileHandler:
+    """
+    Get a File System Handler, sends verbose logging to a file, `electionguard.log`.
+    When that file gets too large, the logs will rotate, creating files with names
+    like `electionguard.log.1`.
+    """
+
+    # TODO: add file compression, save a bunch of space.
+    #   https://medium.com/@rahulraghu94/overriding-pythons-timedrotatingfilehandler-to-compress-your-log-files-iot-c766a4ace240
+    file_handler = RotatingFileHandler(
+        "electionguard.log", "a", maxBytes=10_000_000, backupCount=10
+    )
+    file_handler.setLevel(logging.DEBUG)
+    file_handler.setFormatter(logging.Formatter(FORMAT))
+    return file_handler
+
+
 LOG = ElectionGuardLog()
+
+
+def log_add_handler(handler: logging.Handler) -> None:
+    """
+    Adds a handler to the logger
+    """
+    LOG.add_handler(handler)
+
+
+def log_remove_handler(handler: logging.Handler) -> None:
+    """
+    Removes a handler from the logger
+    """
+    LOG.remove_handler(handler)
+
+
+def log_handlers() -> List[logging.Handler]:
+    """
+    Returns all logger handlers
+    """
+    return LOG.handlers()
 
 
 def log_debug(msg: str, *args: Any, **kwargs: Any) -> None:

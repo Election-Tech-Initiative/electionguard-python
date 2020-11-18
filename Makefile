@@ -1,4 +1,4 @@
-.PHONY: all bench environment install install-mac install-linux install-windows lint validate test test-example coverage coverage-html coverage-xml coverage-erase generate-sample-data
+.PHONY: all bench environment install install-mac install-linux install-windows auto-lint validate test test-example coverage coverage-html coverage-xml coverage-erase generate-sample-data
 
 CODE_COVERAGE ?= 90
 WINDOWS_32BIT_GMPY2 ?= packages/gmpy2-2.0.8-cp38-cp38-win32.whl
@@ -8,7 +8,7 @@ IS_64_BIT ?= $(shell python -c 'from sys import maxsize; print(maxsize > 2**32)'
 SAMPLE_BALLOT_COUNT ?= 5
 SAMPLE_BALLOT_SPOIL_RATE ?= 50
 
-all: environment install validate lint coverage
+all: environment install validate auto-lint coverage
 
 bench:
 	@echo 📊 BENCHMARKS
@@ -63,7 +63,12 @@ ifeq ($(IS_64_BIT), False)
 	pipenv run python -m pip install -f $(WINDOWS_32BIT_GMPY2) -e . 
 endif
 	
-
+auto-lint:
+	@echo 💚 AUTO LINT
+	@echo Reformatting using Black
+	pipenv run black .
+	make lint
+	
 lint:
 	@echo 💚 LINT
 	@echo 1.Pylint
@@ -85,9 +90,24 @@ validate:
 	@pipenv run python -c 'import electionguard; print(electionguard.__package__ + " successfully imported")'
 
 # Test
+unit-tests:
+	@echo ✅ UNIT TESTS
+	pipenv run pytest tests/unit
+
+property-tests:
+	@echo ✅ PROPERTY TESTS
+	pipenv run pytest tests/test_decryption_mediator.py
+	pipenv run pytest tests/property
+
+integration-tests:
+	@echo ✅ INTEGRATION TESTS
+	pipenv run pytest tests/integration
+
 test: 
-	@echo ✅ TEST
-	pipenv run pytest . -x
+	@echo ✅ ALL TESTS
+	make unit-tests
+	make property-tests
+	make integration-tests
 
 test-example:
 	@echo ✅ TEST Example

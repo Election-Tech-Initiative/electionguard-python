@@ -1,5 +1,5 @@
 from unittest import TestCase
-from typing import Any, Callable, Iterable, List
+from typing import List
 from electionguard.scheduler import Scheduler
 
 

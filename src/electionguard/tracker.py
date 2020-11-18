@@ -20,7 +20,7 @@ def get_rotating_tracker_hash(
     prev_hash: ElementModQ, timestamp: int, ballot_hash: ElementModQ
 ) -> ElementModQ:
     """
-    Get the rotated tracker hash for a particular ballot. 
+    Get the rotated tracker hash for a particular ballot.
     :param prev_hash: Previous hash or starting hash from device
     :param timestamp: Timestamp in ticks
     :param ballot_hash: Hash of ballot to track
