@@ -17,8 +17,8 @@ from electionguard.schnorr import (
     SchnorrProof,
 )
 from electionguard.utils import get_optional
-from tests.test_elgamal import elgamal_keypairs
-from tests.test_group import (
+from tests.property.test_elgamal import elgamal_keypairs
+from tests.property.test_group import (
     elements_mod_q,
     elements_mod_p_no_zero,
     elements_mod_p,
