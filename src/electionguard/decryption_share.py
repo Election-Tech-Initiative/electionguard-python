@@ -95,7 +95,7 @@ class CiphertextDecryptionSelection(ElectionObjectBase):
         Dict[GUARDIAN_ID, CiphertextCompensatedDecryptionSelection]
     ] = field(init=True, default=None)
     """
-    the rovered parts of the dectyption provided by available guardians,
+    the recovered parts of the decryption provided by available guardians,
     if the guardian was missing from decryption
     """
 
