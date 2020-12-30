@@ -427,7 +427,7 @@ class TestEncrypt(unittest.TestCase):
             extra = ballot_factory.get_random_selection_from(
                 description.ballot_selections[0], random
             )
-            extra.sequence_order = highest_sequence + i + 1
+            extra.sequence_order = highest_sequence + i + 1 # LOOK! there is no extra.sequence_order field
             subject.ballot_selections.append(extra)
 
         # Act

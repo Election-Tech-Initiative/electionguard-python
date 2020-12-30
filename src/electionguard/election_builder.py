@@ -18,6 +18,7 @@ class ElectionBuilder(object):
     """
     `ElectionBuilder` is a stateful builder object that constructs `CiphertextElectionContext` objects
     following the initialization process that ElectionGuard Expects.
+    SUGGESTION Perhaps move to test package.
     """
 
     number_of_guardians: int

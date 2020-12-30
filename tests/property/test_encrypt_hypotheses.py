@@ -72,7 +72,7 @@ class TestElections(unittest.TestCase):
         self.assertEqual(len(nonces), num_ballots)
         self.assertTrue(len(metadata.contests) > 0)
 
-        # Generatea valid encryption of zero
+        # Generate a valid encryption of zero
         encrypted_zero = elgamal_encrypt(0, zero_nonce, context.elgamal_public_key)
 
         # Act
@@ -100,7 +100,7 @@ class TestElections(unittest.TestCase):
             )
             self.assertEqual(ballots[i], decrypted_ballot)
 
-        # homomorphically accumualte the encrypted ballot representations
+        # homomorphically accumulate the encrypted ballot representations
         encrypted_tallies = _accumulate_encrypted_ballots(
             encrypted_zero, encrypted_ballots
         )

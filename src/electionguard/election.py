@@ -342,7 +342,7 @@ class ContestDescription(ElectionObjectBase, CryptoHashable):
             isinstance(other, ContestDescription)
             and self.electoral_district_id == other.electoral_district_id
             and self.sequence_order == other.sequence_order
-            and self.votes_allowed == other.votes_allowed
+            and self.votes_allowed == other.votes_allowed       # LOOK! should be vote_variation
             and self.number_elected == other.number_elected
             and self.votes_allowed == other.votes_allowed
             and self.name == other.name
@@ -764,6 +764,7 @@ class InternalElectionDescription(object):
         else:
             return None
 
+    # SUGGEST should return Optional
     def get_ballot_style(self, ballot_style_id: str) -> BallotStyle:
         """
         Get a ballot style for a specified ballot_style_id

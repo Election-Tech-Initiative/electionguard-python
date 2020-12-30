@@ -17,7 +17,7 @@ from electionguard.elgamal import (
     elgamal_encrypt,
     elgamal_keypair_from_secret,
 )
-from electionguard.group import ElementModQ, TWO_MOD_Q, ONE_MOD_Q, int_to_p
+from electionguard.group import ElementModQ, TWO_MOD_Q, ONE_MOD_Q, int_to_p, TWO_MOD_P
 from electionguardtest.elgamal import elgamal_keypairs
 from electionguardtest.group import elements_mod_q_no_zero, elements_mod_q
 from electionguard.utils import get_optional
@@ -137,7 +137,7 @@ class TestChaumPedersen(TestCase):
             message, keypair.secret_key, decryption, seed, ONE_MOD_Q
         )
         bad_proof = make_chaum_pedersen(
-            message, keypair.secret_key, TWO_MOD_Q, seed, ONE_MOD_Q
+            message, keypair.secret_key, TWO_MOD_P, seed, ONE_MOD_Q
         )
         self.assertTrue(
             proof.is_valid(message, keypair.public_key, decryption, ONE_MOD_Q)
