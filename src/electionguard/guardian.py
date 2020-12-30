@@ -408,7 +408,7 @@ class Guardian(ElectionObjectBase):
         if len(self._guardian_election_partial_key_verifications) != required:
             return False
         for verified in self._guardian_election_partial_key_verifications.values():
-            if not verified: # LOOK! should be verified.verified() ?
+            if not verified:  # LOOK! should be verified.verified() ?
                 return False
         return True
 
