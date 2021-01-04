@@ -26,7 +26,7 @@ WRITE: str = "w"
 READ: str = "r"
 JSON_PARSE_ERROR = '{"error": "Object could not be parsed due to json issue"}'
 # TODO Issue #??: Jsons library incorrectly dumps class method
-KEYS_TO_REMOVE = ["from_json", "from_json_file", "from_json_object"]
+KEYS_TO_REMOVE = ["from_json", "from_json_file", "from_json_object", "_is_protocol_"]
 
 
 @dataclass
