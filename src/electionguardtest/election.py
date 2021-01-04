@@ -290,7 +290,7 @@ def party_lists(draw: _DrawType, num_parties: int):
     return [
         Party(
             object_id=str(draw(uuids())),
-            ballot_name=InternationalizedText([Language(party_names[i], "en")]),
+            name=InternationalizedText([Language(party_names[i], "en")]),
             abbreviation=party_abbrvs[i],
             color=None,
             logo_uri=draw(urls()),

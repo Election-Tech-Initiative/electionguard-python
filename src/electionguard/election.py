@@ -205,7 +205,7 @@ class Party(ElectionObjectBase, CryptoHashable):
     See: https://developers.google.com/elections-data/reference/party
     """
 
-    ballot_name: InternationalizedText = field(default=InternationalizedText())
+    name: InternationalizedText = field(default=InternationalizedText())
     abbreviation: Optional[str] = field(default=None)
     color: Optional[str] = field(default=None)
     logo_uri: Optional[str] = field(default=None)
@@ -222,7 +222,7 @@ class Party(ElectionObjectBase, CryptoHashable):
         """
         return hash_elems(
             self.object_id,
-            self.ballot_name,
+            self.name,
             self.abbreviation,
             self.color,
             self.logo_uri,
@@ -241,7 +241,7 @@ class Candidate(ElectionObjectBase, CryptoHashable):
     selections for the contest.  See the wiki, readme's, and tests in this repo for more info
     """
 
-    ballot_name: InternationalizedText = field(default=InternationalizedText())
+    name: InternationalizedText = field(default=InternationalizedText())
     party_id: Optional[str] = field(default=None)
     image_uri: Optional[str] = field(default=None)
     is_write_in: Optional[bool] = field(default=None)
@@ -256,9 +256,7 @@ class Candidate(ElectionObjectBase, CryptoHashable):
         """
         A hash representation of the object
         """
-        return hash_elems(
-            self.object_id, self.ballot_name, self.party_id, self.image_uri
-        )
+        return hash_elems(self.object_id, self.name, self.party_id, self.image_uri)
 
 
 @dataclass(eq=True, unsafe_hash=True)
