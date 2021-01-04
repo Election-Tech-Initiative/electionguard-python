@@ -459,17 +459,17 @@ class TestEndToEndElection(TestCase):
 
         ciphertext_ballots: List[CiphertextAcceptedBallot] = []
         for ballot in self.ballot_store.all():
-            ballot_name = BALLOT_PREFIX + ballot.object_id
+            name = BALLOT_PREFIX + ballot.object_id
             ballot_from_file = CiphertextAcceptedBallot.from_json_file(
-                ballot_name, BALLOTS_DIR
+                name, BALLOTS_DIR
             )
             self.assertEqual(ballot, ballot_from_file)
 
         spoiled_ballots: List[CiphertextAcceptedBallot] = []
         for spoiled_ballot in self.ciphertext_tally.spoiled_ballots.values():
-            ballot_name = BALLOT_PREFIX + spoiled_ballot.object_id
+            name = BALLOT_PREFIX + spoiled_ballot.object_id
             spoiled_ballot_from_file = CiphertextAcceptedBallot.from_json_file(
-                ballot_name, SPOILED_DIR
+                name, SPOILED_DIR
             )
             self.assertEqual(spoiled_ballot, spoiled_ballot_from_file)
 
