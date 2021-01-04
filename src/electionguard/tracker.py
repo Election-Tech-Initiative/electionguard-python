@@ -33,8 +33,8 @@ def tracker_hash_to_words(
     tracker_hash: ElementModQ, seperator: str = DEFAULT_SEPERATOR
 ) -> Optional[str]:
     """
-    Convert tracker has to human readable / friendly words
-    :param hash: Tracker hash
+    Convert tracker hash to human readable / friendly words
+    :param tracker_hash: Tracker hash
     :return: Human readable tracker string or None
     """
 

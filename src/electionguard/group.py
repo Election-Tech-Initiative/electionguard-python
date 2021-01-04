@@ -336,7 +336,7 @@ def pow_p(b: ElementModPOrQorInt, e: ElementModPOrQorInt) -> ElementModP:
 
 def pow_q(b: ElementModQorInt, e: ElementModQorInt) -> ElementModQ:
     """
-    Computes b^e mod p.
+    Computes b^e mod q.
 
     :param b: An element in [0,Q).
     :param e: An element in [0,Q).
@@ -368,7 +368,7 @@ def mult_q(*elems: ElementModPOrQorInt) -> ElementModQ:
     """
     Computes the product, mod q, of all elements.
 
-    :param elems: Zero or more elements in [0,P).
+    :param elems: Zero or more elements in [0,Q).
     """
     product = mpz(1)
     for x in elems:

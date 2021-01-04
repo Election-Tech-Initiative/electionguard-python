@@ -407,8 +407,8 @@ class Guardian(ElectionObjectBase):
         required = self.ceremony_details.number_of_guardians - 1
         if len(self._guardian_election_partial_key_verifications) != required:
             return False
-        for verified in self._guardian_election_partial_key_verifications.values():
-            if not verified:
+        for verification in self._guardian_election_partial_key_verifications.values():
+            if not verification.verified:
                 return False
         return True
 
