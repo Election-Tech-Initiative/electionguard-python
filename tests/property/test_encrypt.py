@@ -429,7 +429,7 @@ class TestEncrypt(unittest.TestCase):
             )
             extra.sequence_order = (
                 highest_sequence + i + 1
-            )  # LOOK! there is no extra.sequence_order field
+            )  # LOOK! there is no extra.sequence_order field AFAICT
             subject.ballot_selections.append(extra)
 
         # Act

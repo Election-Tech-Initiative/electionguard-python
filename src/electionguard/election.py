@@ -338,10 +338,9 @@ class ContestDescription(ElectionObjectBase, CryptoHashable):
     def __eq__(self, other: Any) -> bool:
         return (
             isinstance(other, ContestDescription)
-            and self.electoral_district_id == other.electoral_district_id
+            and self.electoral_district_id == other.electoral_district_idpipfile.lock
             and self.sequence_order == other.sequence_order
-            # LOOK! should be vote_variation
-            and self.votes_allowed == other.votes_allowed
+            and self.vote_variation == other.vote_variation
             and self.number_elected == other.number_elected
             and self.votes_allowed == other.votes_allowed
             and self.name == other.name
