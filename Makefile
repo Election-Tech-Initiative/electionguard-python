@@ -1,8 +1,8 @@
 .PHONY: all bench environment install install-mac install-linux install-windows auto-lint validate test test-example coverage coverage-html coverage-xml coverage-erase generate-sample-data
 
 CODE_COVERAGE ?= 90
-WINDOWS_32BIT_GMPY2 ?= packages/gmpy2-2.0.8-cp38-cp38-win32.whl
-WINDOWS_64BIT_GMPY2 ?= packages/gmpy2-2.0.8-cp38-cp38-win_amd64.whl
+WINDOWS_32BIT_GMPY2 ?= packages\gmpy2-2.0.8-cp38-cp38-win32.whl
+WINDOWS_64BIT_GMPY2 ?= packages\gmpy2-2.0.8-cp38-cp38-win_amd64.whl
 OS ?= $(shell python -c 'import platform; print(platform.system())')
 IS_64_BIT ?= $(shell python -c 'from sys import maxsize; print(maxsize > 2**32)')
 SAMPLE_BALLOT_COUNT ?= 5
@@ -57,10 +57,10 @@ install-windows:
 	@echo 🏁 WINDOWS INSTALL
 # install module with local gmpy2 package
 ifeq ($(IS_64_BIT), True)
-	pipenv run python -m pip install -f $(WINDOWS_64BIT_GMPY2) -e . 
+	pipenv run python -m pip install --find-links=$(WINDOWS_64BIT_GMPY2) -e . 
 endif
 ifeq ($(IS_64_BIT), False)
-	pipenv run python -m pip install -f $(WINDOWS_32BIT_GMPY2) -e . 
+	pipenv run python -m pip install --find-links=$(WINDOWS_32BIT_GMPY2) -e . 
 endif
 	
 auto-lint:
