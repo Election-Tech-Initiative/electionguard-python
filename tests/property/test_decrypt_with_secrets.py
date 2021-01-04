@@ -212,7 +212,7 @@ class TestDecryptWithSecrets(unittest.TestCase):
         )
         self.assertIsNotNone(subject)
 
-        # Tamper with the nonce by setting it to an aribtrary value
+        # Tamper with the nonce by setting it to an arbitrary value
         subject.nonce = nonce_seed
 
         result_from_nonce_seed = decrypt_selection_with_nonce(
@@ -696,6 +696,8 @@ class TestDecryptWithSecrets(unittest.TestCase):
             context.crypto_extended_base_hash,
             keypair.public_key,
         )
+
+        # SUGGEST this test is the same as the one above
         result_from_nonce_seed = decrypt_ballot_with_nonce(
             subject,
             metadata,

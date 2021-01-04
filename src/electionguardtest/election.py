@@ -517,7 +517,7 @@ def election_descriptions(
     parties: List[Party] = draw(party_lists(num_parties))
     num_contests: int = draw(integers(1, max_num_contests))
 
-    # generate a collection candidates mapped to contest descritpions
+    # generate a collection candidates mapped to contest descriptions
     candidate_contests: List[Tuple[List[Candidate], ContestDescription]] = [
         draw(contest_descriptions(i, parties, geo_units)) for i in range(num_contests)
     ]

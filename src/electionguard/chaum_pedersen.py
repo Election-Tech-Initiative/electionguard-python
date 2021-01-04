@@ -198,7 +198,6 @@ class ChaumPedersenProof(Proof):
             in_bounds_v
             and in_bounds_a
             and in_bounds_c
-            and in_bounds_v
             # The equation 𝑔^𝑣𝑖 = 𝑎𝑖𝐾^𝑐𝑖
             and g_pow_p(v) == mult_p(a, pow_p(k, c))
         )
@@ -283,7 +282,7 @@ class ConstantChaumPedersenProof(Proof):
         e.g. that the equations 𝑔𝑉 = 𝑎𝐴𝐶 mod 𝑝 and 𝑔𝐿𝐾𝑣 = 𝑏𝐵𝐶 mod 𝑝 are satisfied.
 
         :param message: The ciphertext message
-        :param K: The public key of the election
+        :param k: The public key of the election
         :param q: The extended base hash of the election
         :return: True if everything is consistent. False otherwise.
         """

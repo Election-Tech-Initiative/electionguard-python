@@ -416,7 +416,7 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
 @dataclass
 class PublishedCiphertextTally(ElectionObjectBase):
     """
-    The published plaintext representation of all contests in the election
+    The published ciphertext representation of all contests in the election
     """
 
     cast: Dict[CONTEST_ID, CiphertextTallyContest]
