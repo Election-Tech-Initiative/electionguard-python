@@ -54,19 +54,20 @@ from electionguard.decryption_mediator import DecryptionMediator
 from electionguard.publish import (
     publish,
     DEVICE_PREFIX,
-    COEFFICIENTS_DIR,
     COEFFICIENT_PREFIX,
-    DEVICES_DIR,
-    RESULTS_DIR,
     CONSTANTS_FILE_NAME,
     DESCRIPTION_FILE_NAME,
     CONTEXT_FILE_NAME,
     ENCRYPTED_TALLY_FILE_NAME,
     TALLY_FILE_NAME,
-    SPOILED_DIR,
-    BALLOTS_DIR,
     BALLOT_PREFIX,
 )
+
+RESULTS_DIR = "test-results"
+DEVICES_DIR = path.join(RESULTS_DIR, "devices")
+COEFFICIENTS_DIR = path.join(RESULTS_DIR, "coefficients")
+BALLOTS_DIR = path.join(RESULTS_DIR, "encrypted_ballots")
+SPOILED_DIR = path.join(RESULTS_DIR, "spoiled_ballots")
 
 
 class TestEndToEndElection(TestCase):
@@ -308,7 +309,7 @@ class TestEndToEndElection(TestCase):
         self._assert_message(
             tally_ballots.__qualname__,
             f"""
-            - cast: {self.ciphertext_tally.count()} 
+            - cast: {self.ciphertext_tally.count()}
             - spoiled: {len(self.ciphertext_tally.spoiled_ballots)}
             Total: {len(self.ciphertext_tally)}
             """,
@@ -427,6 +428,7 @@ class TestEndToEndElection(TestCase):
             publish_ciphertext_tally(self.ciphertext_tally),
             self.plaintext_tally,
             self.coefficient_validation_sets,
+            RESULTS_DIR,
         )
         self._assert_message(
             "Publish",
