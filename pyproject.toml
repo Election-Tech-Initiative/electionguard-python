@@ -109,7 +109,6 @@ disable = '''
   unnecessary-comprehension,
   unnecessary-lambda,
   unnecessary-pass,
-  unsubscriptable-object,
   '''
 
 [tool.coverage.run]
