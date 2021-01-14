@@ -114,7 +114,7 @@ class BallotFactory(object):
         self, election: InternalElectionDescription, number_of_ballots: int
     ) -> List[PlaintextBallot]:
         ballots: List[PlaintextBallot] = []
-        for i in range(number_of_ballots):
+        for _i in range(number_of_ballots):
 
             style_index = randint(0, len(election.ballot_styles) - 1)
             ballot_style = election.ballot_styles[style_index]

@@ -36,7 +36,7 @@ class TestTally(TestCase):
         self, everything: ELECTIONS_AND_BALLOTS_TUPLE_TYPE
     ):
         # Arrange
-        election_description, metadata, ballots, secret_key, context = everything
+        _election_description, metadata, ballots, secret_key, context = everything
         # Tally the plaintext ballots for comparison later
         plaintext_tallies = accumulate_plaintext_ballots(ballots)
 
@@ -73,7 +73,7 @@ class TestTally(TestCase):
         self, everything: ELECTIONS_AND_BALLOTS_TUPLE_TYPE
     ):
         # Arrange
-        election_description, metadata, ballots, secret_key, context = everything
+        _election_description, metadata, ballots, secret_key, context = everything
         # Tally the plaintext ballots for comparison later
         plaintext_tallies = accumulate_plaintext_ballots(ballots)
 
@@ -114,7 +114,7 @@ class TestTally(TestCase):
     ):
 
         # Arrange
-        election_description, metadata, ballots, secret_key, context = everything
+        _election_description, metadata, ballots, _secret_key, context = everything
 
         # encrypt each ballot
         store = DataStore()
@@ -238,7 +238,7 @@ class TestTally(TestCase):
                 first_tally.accumulate_contest(ballot.contests[0].ballot_selections)
             )
 
-            key, bad_accumulation = first_tally._accumulate_selections(
+            _key, bad_accumulation = first_tally._accumulate_selections(
                 first_selection.object_id,
                 first_tally.tally_selections[first_selection.object_id],
                 ballot.contests[0].ballot_selections,

@@ -111,7 +111,6 @@ disable = '''
   unnecessary-lambda,
   unnecessary-pass,
   unsubscriptable-object,
-  unused-variable,
   '''
 
 [tool.coverage.run]

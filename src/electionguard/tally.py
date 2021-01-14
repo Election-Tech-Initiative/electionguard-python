@@ -405,7 +405,7 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
             selection_id: ciphertext for (selection_id, ciphertext) in result_set
         }
 
-        for contest_id, contest in self.cast.items():
+        for _contest_id, contest in self.cast.items():
             for selection_id, selection in contest.tally_selections.items():
                 if selection_id in result_dict:
                     selection.elgamal_accumulate(result_dict[selection_id])

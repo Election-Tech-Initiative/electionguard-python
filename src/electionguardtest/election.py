@@ -560,7 +560,7 @@ def plaintext_voted_ballots(
     if count == 1:
         return draw(plaintext_voted_ballot(metadata))
     ballots: List[PlaintextBallot] = []
-    for i in range(count):
+    for _i in range(count):
         ballots.append(draw(plaintext_voted_ballot(metadata)))
     return ballots
 

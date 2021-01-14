@@ -139,7 +139,7 @@ class CiphertextDecryptionSelection(ElectionObjectBase):
 
         if self.recovered_parts is not None:
             for (
-                compensating_guardian_id,
+                _compensating_guardian_id,
                 part,
             ) in self.recovered_parts.items():
                 if not part.proof.is_valid(

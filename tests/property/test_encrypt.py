@@ -494,7 +494,6 @@ class TestEncrypt(unittest.TestCase):
         This is an example test of a failing test where the contest description
         is malformed
         """
-        random_seed = 0
 
         description = ContestDescription(
             object_id="0@A.com-contest",

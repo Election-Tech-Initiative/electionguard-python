@@ -53,7 +53,7 @@ def decrypt_selection_with_decryption_shares(
 
     if not suppress_validity_check:
         # Verify that all of the shares are computed correctly
-        for guardian_id, share in shares.items():
+        for _guardian_id, share in shares.items():
             public_key, decryption = share
             # verify we have a proof or recovered parts
             if not decryption.is_valid(

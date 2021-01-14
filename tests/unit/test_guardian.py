@@ -391,12 +391,7 @@ class TestGuardian(TestCase):
             NUMBER_OF_GUARDIANS,
             QUORUM,
         )
-        alternate_guardian = Guardian(
-            ALTERNATE_VERIFIER_GUARDIAN_ID,
-            ALTERNATE_VERIFIER_SEQUENCE_ORDER,
-            NUMBER_OF_GUARDIANS,
-            QUORUM,
-        )
+        
         guardian.save_auxiliary_public_key(
             recipient_guardian.share_auxiliary_public_key()
         )

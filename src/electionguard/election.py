@@ -584,7 +584,6 @@ class ElectionDescription(Serializable, CryptoHashable):
         party_ids: Set[str] = set()
         candidate_ids: Set[str] = set()
         contest_ids: Set[str] = set()
-        selection_ids: Set[str] = set()
 
         # Validate GP Units
         for gp_unit in self.geopolitical_units:
