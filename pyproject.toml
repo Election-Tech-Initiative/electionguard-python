@@ -1,20 +1,137 @@
+[tool.poetry]
+name = "electionguard"
+version = "1.1.16"
+description = "ElectionGuard: Support for e2e verified elections."
+license = "MIT"
+authors = ["Microsoft <electionguard@microsoft.com>"]
+maintainers = []
+readme = "README.md"
+homepage = "https://microsoft.github.io/electionguard-python"
+repository = "https://github.com/microsoft/electionguard-python"
+documentation = "https://microsoft.github.io/electionguard-python"
+keywords = []
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: Unix",
+    "Operating System :: POSIX",
+    "Operating System :: MacOS",
+    "Operating System :: Microsoft :: Windows",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Topic :: Utilities"]
+packages = [{ include = "electionguard", from = "src" }]
+
+[tool.poetry.urls]
+"GitHub Pages" = "https://microsoft.github.io/electionguard-python"
+"Read the Docs" = "https://electionguard-python.readthedocs.io"
+"Releases" = "https://github.com/microsoft/electionguard-python/releases"
+"Milestones" = "https://github.com/microsoft/electionguard-python/milestones"
+"Issue Tracker" = "https://github.com/microsoft/electionguard-python/issues"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+gmpy2 = ">=2.0.8"
+# For Windows Builds
+# gmpy2 = { path = "./packages/gmpy2-2.0.8-cp38-cp38-win_amd64.whl" } # 64 bit
+# gmpy2 = { path = "./packages/gmpy2-2.0.8-cp38-cp38-win32.whl" } # 32 bit
+numpy = ">=1.18.2"
+jsons = ">=1.1.2"
+jsonschema = ">=3.2"
+cryptography = ">=3.2"
+psutil = ">=5.7.2"
+
+[tool.poetry.dev-dependencies]
+atomicwrites = "*"
+black = "20.8b1"
+coverage = "*"
+docutils = "*"
+hypothesis = ">=5.15.1"
+jeepney = "*"
+mkdocs = "*"
+mypy = "^0.782"
+pydeps = "*"
+pylint = "*"
+pytest = "*"
+secretstorage = "*"
+twine = "*"
+typish = '*'
+
 [tool.black]
 target-version = ['py38']
-include = '\.pyi?$'
-exclude = '''
-(
-  /(
-      \.eggs         # exclude a few common directories in the
-    | \.git          # root of the project
-    | \.github
-    | \.hg
-    | \.mypy_cache
-    | \.tox
-    | \.venv
-    | \.vscode
-    | build
-    | dist
-    | stubs
-  )/
-)
-'''
+
+# FIXME: Pylint should not require this many exceptions
+[tool.pylint.'MESSAGES CONTROL']
+disable = '''
+  broad-except,
+  cell-var-from-loop,
+  chained-comparison,
+  consider-iterating-dictionary,
+  consider-merging-isinstance,
+  consider-using-set-comprehension,
+  duplicate-code,
+  fixme,
+  f-string-without-interpolation,
+  global-statement,
+  import-outside-toplevel,
+  inherit-non-class,
+  invalid-name,
+  isinstance-second-argument-not-valid-type,
+  line-too-long,
+  logging-fstring-interpolation,
+  missing-module-docstring,
+  missing-class-docstring,
+  missing-function-docstring,
+  no-else-break,
+  no-else-return,
+  no-name-in-module,
+  no-self-use,
+  no-value-for-parameter,
+  protected-access,
+  redefined-builtin,
+  redefined-outer-name,
+  super-init-not-called,
+  super-with-arguments,
+  too-few-public-methods,
+  too-many-arguments,
+  too-many-branches,
+  too-many-function-args,
+  too-many-lines,
+  too-many-locals,
+  too-many-instance-attributes,
+  too-many-nested-blocks,
+  too-many-public-methods,
+  too-many-return-statements,
+  trailing-whitespace,
+  useless-object-inheritance,
+  ungrouped-imports,
+  unnecessary-comprehension,
+  unnecessary-lambda,
+  unnecessary-pass,
+  unsubscriptable-object,
+  unused-variable,
+  using-constant-test,
+  wrong-import-order
+  '''
+
+[tool.coverage.run]
+branch = true
+source = "src/electionguard"
+
+[tool.coverage.html]
+directory = "coverage_html_report"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+# Not officially supported
+[mypy]
+python_version = 3.8
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+ignore_missing_imports = true
+show_column_numbers = true
