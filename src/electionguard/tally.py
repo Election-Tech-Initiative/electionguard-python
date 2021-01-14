@@ -205,7 +205,7 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
 
     cast: Dict[CONTEST_ID, CiphertextTallyContest] = field(init=False)
     """
-    A collection of each contest and selection in an election.  
+    A collection of each contest and selection in an election.
     Retains an encrypted representation of a tally for each selection
     """
 

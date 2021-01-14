@@ -103,7 +103,6 @@ disable = '''
   too-many-nested-blocks,
   too-many-public-methods,
   too-many-return-statements,
-  trailing-whitespace,
   useless-object-inheritance,
   ungrouped-imports,
   unnecessary-comprehension,

@@ -391,7 +391,7 @@ class TestGuardian(TestCase):
             NUMBER_OF_GUARDIANS,
             QUORUM,
         )
-        
+
         guardian.save_auxiliary_public_key(
             recipient_guardian.share_auxiliary_public_key()
         )

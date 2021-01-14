@@ -279,7 +279,7 @@ class SelectionDescription(ElectionObjectBase, CryptoHashable):
     """
     Used for ordering selections in a contest to ensure various encryption primitives are deterministic.
     The sequence order must be unique and should be representative of how the contests are represnted
-    on a "master" ballot in an external system.  The sequence order is not required to be in the order 
+    on a "master" ballot in an external system.  The sequence order is not required to be in the order
     in which they are displayed to a voter.  Any acceptable range of integer values may be provided.
     """
 
@@ -308,7 +308,7 @@ class ContestDescription(ElectionObjectBase, CryptoHashable):
     """
     Used for ordering contests in a ballot to ensure various encryption primitives are deterministic.
     The sequence order must be unique and should be representative of how the contests are represnted
-    on a "master" ballot in an external system.  The sequence order is not required to be in the order 
+    on a "master" ballot in an external system.  The sequence order is not required to be in the order
     in which they are displayed to a voter.  Any acceptable range of integer values may be provided.
     """
 
