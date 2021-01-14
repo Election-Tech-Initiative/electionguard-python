@@ -108,7 +108,6 @@ disable = '''
   ungrouped-imports,
   unnecessary-comprehension,
   unnecessary-lambda,
-  unnecessary-pass,
   '''
 
 [tool.coverage.run]

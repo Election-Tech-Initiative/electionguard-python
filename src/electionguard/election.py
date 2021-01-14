@@ -457,7 +457,6 @@ class ReferendumContestDescription(ContestDescription):
     this subclass is used purely for convenience
     """
 
-    pass
 
 
 @dataclass(eq=True, unsafe_hash=True)
