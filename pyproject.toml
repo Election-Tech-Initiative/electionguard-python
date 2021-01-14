@@ -113,7 +113,6 @@ disable = '''
   unsubscriptable-object,
   unused-variable,
   using-constant-test,
-  wrong-import-order
   '''
 
 [tool.coverage.run]

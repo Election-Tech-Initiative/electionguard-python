@@ -1,11 +1,11 @@
 from __future__ import annotations
+import traceback
+from typing import Any, Callable, Iterable, List, TypeVar
 from contextlib import AbstractContextManager
 from multiprocessing import Pool as ProcessPool
 from multiprocessing.dummy import Pool as ThreadPool
 from multiprocessing.pool import Pool
 from psutil import cpu_count
-import traceback
-from typing import Any, Callable, Iterable, List, TypeVar
 
 from .logs import log_warning
 from .singleton import Singleton
