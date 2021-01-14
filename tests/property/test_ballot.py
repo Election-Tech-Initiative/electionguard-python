@@ -49,7 +49,7 @@ class TestBallot(unittest.TestCase):
 
         # Assert
         self.assertTrue(is_valid)
-        self.assertTrue(as_int >= 0 and as_int <= 1)
+        self.assertTrue(0 <= as_int <= 1)
 
     @settings(
         deadline=timedelta(milliseconds=2000),
@@ -70,7 +70,7 @@ class TestBallot(unittest.TestCase):
 
         # Assert
         self.assertFalse(is_valid)
-        self.assertTrue(as_int >= 0 and as_int <= 1)
+        self.assertTrue(0 <= as_int <= 1)
 
 
 if __name__ == "__main__":
