@@ -100,7 +100,7 @@ class KeyCeremonyMediator:
                         return None
 
         # Save the backups
-        if self.all_election_partial_key_backups_available:
+        if self.all_election_partial_key_backups_available():
             for recipient_guardian in self._guardians:
                 backups = self.share_election_partial_key_backups_to_guardian(
                     recipient_guardian.object_id

@@ -112,7 +112,6 @@ disable = '''
   unnecessary-pass,
   unsubscriptable-object,
   unused-variable,
-  using-constant-test,
   '''
 
 [tool.coverage.run]
