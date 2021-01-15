@@ -73,7 +73,6 @@ disable = '''
   f-string-without-interpolation,
   global-statement,
   import-outside-toplevel,
-  inherit-non-class,
   invalid-name,
   line-too-long,
   logging-fstring-interpolation,

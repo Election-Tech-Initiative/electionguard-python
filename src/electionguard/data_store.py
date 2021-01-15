@@ -16,7 +16,7 @@ _T = TypeVar("_T")
 _U = TypeVar("_U")
 
 
-class DataStore(Generic[_T, _U], Iterable):
+class DataStore(Generic[_T, _U]):
     """
     A lightweight convenience wrapper around a dictionary for data storage.
     This implementation defines the common interface used to access stored
