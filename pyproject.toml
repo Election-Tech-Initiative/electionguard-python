@@ -67,7 +67,6 @@ target-version = ['py38']
 disable = '''
   duplicate-code,
   fixme,
-  f-string-without-interpolation,
   global-statement,
   import-outside-toplevel,
   invalid-name,

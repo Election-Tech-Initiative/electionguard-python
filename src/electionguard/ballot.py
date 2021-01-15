@@ -845,7 +845,7 @@ def make_ciphertext_ballot(
     """
 
     if len(contests) == 0:
-        log_warning(f"ciphertext ballot with no contests")
+        log_warning("ciphertext ballot with no contests")
 
     contest_hashes = [contest.crypto_hash for contest in contests]
     contest_hash = hash_elems(object_id, description_hash, *contest_hashes)
@@ -894,7 +894,7 @@ def make_ciphertext_accepted_ballot(
     """
 
     if len(contests) == 0:
-        log_warning(f"ciphertext ballot with no contests")
+        log_warning("ciphertext ballot with no contests")
 
     contest_hashes = [contest.crypto_hash for contest in contests]
     contest_hash = hash_elems(object_id, description_hash, *contest_hashes)

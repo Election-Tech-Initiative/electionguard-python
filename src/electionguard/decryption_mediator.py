@@ -248,7 +248,7 @@ class DecryptionMediator:
         if missing_decryption_shares is None or len(missing_decryption_shares) != len(
             self._missing_guardians
         ):
-            log_warning(f"get plaintext tally failed with missing decryption shares")
+            log_warning("get plaintext tally failed with missing decryption shares")
             return None
 
         merged_decryption_shares: Dict[str, TallyDecryptionShare] = {}
@@ -260,7 +260,7 @@ class DecryptionMediator:
             merged_decryption_shares[missing] = share
 
         if len(merged_decryption_shares) != self._encryption.number_of_guardians:
-            log_warning(f"get plaintext tally failed with share length mismatch")
+            log_warning("get plaintext tally failed with share length mismatch")
             return None
 
         return decrypt_tally(

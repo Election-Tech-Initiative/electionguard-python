@@ -507,5 +507,5 @@ class TestEndToEndElection(TestCase):
 
 
 if __name__ == "__main__":
-    print(f"Welcome to the ElectionGuard end-to-end test")
+    print("Welcome to the ElectionGuard end-to-end test")
     TestEndToEndElection().test_end_to_end_election()
