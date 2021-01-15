@@ -106,7 +106,7 @@ class TestElections(unittest.TestCase):
         )
 
         decrypted_tallies = {}
-        for object_id in encrypted_tallies.keys():
+        for object_id in encrypted_tallies:
             decrypted_tallies[object_id] = encrypted_tallies[object_id].decrypt(
                 secret_key
             )
