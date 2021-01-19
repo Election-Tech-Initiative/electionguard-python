@@ -1,3 +1,4 @@
+# pylint: disable=global-statement
 # support for computing discrete logs, with a cache so they're never recomputed
 
 import asyncio
