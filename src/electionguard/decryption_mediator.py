@@ -193,8 +193,7 @@ class DecryptionMediator:
             if share is None:
                 log_warning(f"compensation failed for missing: {missing_guardian_id}")
                 break
-            else:
-                compensated_decryptions.append(share)
+            compensated_decryptions.append(share)
 
         # Verify generated the correct number of partials
         if len(compensated_decryptions) != len(self._available_guardians):
