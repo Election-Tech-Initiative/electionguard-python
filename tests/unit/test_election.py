@@ -8,9 +8,10 @@ from electionguard.election import (
     SelectionDescription,
     VoteVariationType,
 )
+from electionguard.serializable import read_json
 import electionguardtest.election_factory as ElectionFactory
 import electionguardtest.ballot_factory as BallotFactory
-from electionguard.serializable import read_json
+
 
 election_factory = ElectionFactory.ElectionFactory()
 ballot_factory = BallotFactory.BallotFactory()
