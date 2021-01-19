@@ -676,7 +676,9 @@ class TestEncrypt(unittest.TestCase):
         for contest in result.contests:
             # Find the contest description
             contest_description = list(
-                filter(lambda i: i.object_id == contest.object_id, metadata.contests)
+                filter(
+                    lambda i, c=contest: i.object_id == c.object_id, metadata.contests
+                )
             )[0]
 
             # Homomorpically accumulate the selection encryptions

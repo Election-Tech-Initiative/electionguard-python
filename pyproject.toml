@@ -65,7 +65,6 @@ target-version = ['py38']
 # FIXME: Pylint should not require this many exceptions
 [tool.pylint.'MESSAGES CONTROL']
 disable = '''
-  cell-var-from-loop,
   chained-comparison,
   consider-iterating-dictionary,
   consider-merging-isinstance,
