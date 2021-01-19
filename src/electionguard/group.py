@@ -1,3 +1,4 @@
+# pylint: disable=no-name-in-module
 # Support for basic modular math in ElectionGuard. This code's primary purpose is to be "correct",
 # in the sense that performance may be less than hand-optimized C code, and no guarantees are
 # made about timing or other side-channels.
