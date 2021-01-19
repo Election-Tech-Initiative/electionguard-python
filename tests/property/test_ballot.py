@@ -12,6 +12,8 @@ import electionguardtest.ballot_factory as BallotFactory
 
 
 class TestBallot(unittest.TestCase):
+    """Ballot tests"""
+
     def test_ballot_is_valid(self):
         # Arrange
         factory = BallotFactory.BallotFactory()

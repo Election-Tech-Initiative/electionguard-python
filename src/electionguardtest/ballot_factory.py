@@ -34,6 +34,8 @@ data = os.path.realpath(os.path.join(__file__, "../../../data"))
 
 
 class BallotFactory(object):
+    """Factory to create ballots"""
+
     simple_ballot_filename = "ballot_in_simple.json"
     simple_ballots_filename = "plaintext_ballots_simple.json"
 

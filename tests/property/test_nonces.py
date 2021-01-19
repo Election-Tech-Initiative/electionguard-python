@@ -10,6 +10,8 @@ from electionguardtest.group import elements_mod_q
 
 
 class TestNonces(unittest.TestCase):
+    """Nonces tests"""
+
     @given(elements_mod_q())
     def test_nonces_iterable(self, seed: ElementModQ):
         n = Nonces(seed)

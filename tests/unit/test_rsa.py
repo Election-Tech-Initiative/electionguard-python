@@ -4,6 +4,8 @@ from electionguard.rsa import rsa_decrypt, rsa_encrypt, rsa_keypair
 
 
 class TestRSA(TestCase):
+    """RSA encryption tests"""
+
     def test_rsa_encrypt(self) -> None:
         # Arrange
         message = (

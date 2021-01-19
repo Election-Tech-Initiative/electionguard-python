@@ -24,6 +24,8 @@ from electionguardtest.tally import accumulate_plaintext_ballots
 
 
 class TestTally(TestCase):
+    """Tally tests"""
+
     @settings(
         deadline=timedelta(milliseconds=10000),
         suppress_health_check=[HealthCheck.too_slow],

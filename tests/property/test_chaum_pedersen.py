@@ -24,6 +24,8 @@ from electionguard.utils import get_optional
 
 
 class TestDisjunctiveChaumPedersen(TestCase):
+    """Disjunctive Chaum Pedersen tests"""
+
     def test_djcp_proofs_simple(self):
         # doesn't get any simpler than this
         keypair = elgamal_keypair_from_secret(TWO_MOD_Q)
@@ -127,6 +129,8 @@ class TestDisjunctiveChaumPedersen(TestCase):
 
 
 class TestChaumPedersen(TestCase):
+    """Chaum Pedersen tests"""
+
     def test_cp_proofs_simple(self):
         keypair = elgamal_keypair_from_secret(TWO_MOD_Q)
         nonce = ONE_MOD_Q
@@ -186,6 +190,8 @@ class TestChaumPedersen(TestCase):
 
 
 class TestConstantChaumPedersen(TestCase):
+    """Constant Chaum Pedersen tests"""
+
     def test_ccp_proofs_simple_encryption_of_zero(self):
         keypair = elgamal_keypair_from_secret(TWO_MOD_Q)
         nonce = ONE_MOD_Q

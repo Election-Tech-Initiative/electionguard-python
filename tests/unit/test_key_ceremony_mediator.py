@@ -28,6 +28,8 @@ GUARDIAN_2.generate_election_partial_key_backups(identity_auxiliary_encrypt)
 
 
 class TestKeyCeremonyMediator(TestCase):
+    """Key ceremony mediator tests"""
+
     def test_reset(self):
         # Arrange
         mediator = KeyCeremonyMediator(CEREMONY_DETAILS)

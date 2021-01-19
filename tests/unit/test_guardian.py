@@ -18,6 +18,8 @@ identity_auxiliary_encrypt = lambda message, private_key: message
 
 
 class TestGuardian(TestCase):
+    """Guardian tests"""
+
     def test_reset(self):
         guardian = Guardian(
             SENDER_GUARDIAN_ID, SENDER_SEQUENCE_ORDER, NUMBER_OF_GUARDIANS, QUORUM

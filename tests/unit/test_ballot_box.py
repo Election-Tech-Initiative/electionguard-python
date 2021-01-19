@@ -22,6 +22,8 @@ SEED_HASH = EncryptionDevice("Location").get_hash()
 
 
 class TestBallotBox(TestCase):
+    """Ballot box tests"""
+
     def test_ballot_box_cast_ballot(self):
         # Arrange
         keypair = elgamal_keypair_from_secret(int_to_q(2))

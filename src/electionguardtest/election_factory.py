@@ -54,6 +54,8 @@ QUORUM = 3
 
 @dataclass
 class AllPublicElectionData:
+    """All public data for election"""
+
     description: ElectionDescription
     metadata: InternalElectionDescription
     context: CiphertextElectionContext
@@ -63,10 +65,13 @@ class AllPublicElectionData:
 
 @dataclass
 class AllPrivateElectionData:
+    """All private data for election"""
+
     guardians: List[Guardian]
 
 
 class ElectionFactory(object):
+    """Factory to create elections"""
 
     simple_election_manifest_file_name = "election_manifest_simple.json"
 

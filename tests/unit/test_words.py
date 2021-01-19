@@ -4,6 +4,8 @@ from electionguard.words import get_word, get_index_from_word
 
 
 class TestWord(TestCase):
+    """Words for tracker tests"""
+
     def test_get_word(self):
         # Arrange
         INDEX_MIN = 0

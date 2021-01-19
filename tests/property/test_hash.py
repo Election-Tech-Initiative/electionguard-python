@@ -8,6 +8,8 @@ from tests.property.test_group import elements_mod_p, elements_mod_q
 
 
 class TestHash(unittest.TestCase):
+    """Hash tests"""
+
     @given(elements_mod_p(), elements_mod_q())
     def test_same_answer_twice_in_a_row(self, a: ElementModQ, b: ElementModQ):
         # if this doesn't work, then our hash function isn't a function

@@ -17,6 +17,8 @@ ballot_factory = BallotFactory.BallotFactory()
 
 
 class TestElection(unittest.TestCase):
+    """Election tests"""
+
     def test_simple_election_is_valid(self):
 
         # Act

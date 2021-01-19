@@ -3,6 +3,8 @@ from electionguard.singleton import Singleton
 
 
 class TestSingleton(TestCase):
+    """Singleton tests"""
+
     def test_singleton(self):
         singleton = Singleton()
         same_instance = singleton.get_instance()

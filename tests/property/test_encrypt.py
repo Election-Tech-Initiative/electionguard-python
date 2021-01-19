@@ -58,6 +58,8 @@ SEED_HASH = EncryptionDevice("Location").get_hash()
 
 
 class TestEncrypt(unittest.TestCase):
+    """Encryption tests"""
+
     def test_encrypt_simple_selection_succeeds(self):
 
         # Arrange

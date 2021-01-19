@@ -55,6 +55,8 @@ EXPECTED_JSON_OBJECT = {
 
 
 class TestSerializable(TestCase):
+    """Serializing tests"""
+
     def test_read_iso_date(self) -> None:
         # Arrange
         target_date = datetime(2020, 9, 28, 20, 11, 31, tzinfo=timezone.utc)

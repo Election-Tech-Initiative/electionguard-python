@@ -12,6 +12,8 @@ from electionguard.tracker import (
 
 
 class TestTracker(TestCase):
+    """Tracker tests"""
+
     def test_tracker_hash_rotates(self):
         # Arrange
         device = EncryptionDevice("Location")

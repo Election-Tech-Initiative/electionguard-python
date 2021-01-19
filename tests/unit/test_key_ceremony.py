@@ -27,6 +27,8 @@ identity_auxiliary_encrypt = lambda message, private_key: message
 
 
 class TestKeyCeremony(TestCase):
+    """Key ceremony tests"""
+
     def test_generate_rsa_auxiliary_key_pair(self):
 
         # Act

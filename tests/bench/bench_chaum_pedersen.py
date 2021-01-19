@@ -17,6 +17,8 @@ from electionguard.utils import get_optional
 
 
 class BenchInput(NamedTuple):
+    """Input for benchmark"""
+
     keypair: ElGamalKeyPair
     r: ElementModQ
     s: ElementModQ

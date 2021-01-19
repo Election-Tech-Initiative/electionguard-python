@@ -13,6 +13,8 @@ from electionguard.logs import (
 
 
 class TestLogs(TestCase):
+    """Logging tests"""
+
     def test_log_methods(self):
         # Arrange
         message = "test log message"

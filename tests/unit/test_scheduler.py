@@ -13,6 +13,8 @@ def _exception_callable(something: int):
 
 
 class TestScheduler(TestCase):
+    """Scheduler tests"""
+
     def test_schedule_callable_throws(self):
         # Arrange
         subject = Scheduler()
