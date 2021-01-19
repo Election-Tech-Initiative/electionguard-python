@@ -91,7 +91,6 @@ disable = '''
   too-many-return-statements,
   useless-object-inheritance,
   ungrouped-imports,
-  unnecessary-comprehension,
   unnecessary-lambda,
   '''
 

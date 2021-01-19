@@ -778,6 +778,7 @@ class InternalElectionDescription(object):
         style = self.get_ballot_style(ballot_style_id)
         if style.geopolitical_unit_ids is None:
             return list()
+        # pylint: disable=unnecessary-comprehension
         gp_unit_ids = [gp_unit_id for gp_unit_id in style.geopolitical_unit_ids]
         contests = list(
             filter(lambda i: i.electoral_district_id in gp_unit_ids, self.contests)

@@ -1,3 +1,4 @@
+# pylint: disable=unnecessary-comprehension
 from dataclasses import dataclass, field
 from typing import Iterable, Optional, List, Dict, Set, Tuple, Any
 from collections.abc import Container, Sized
