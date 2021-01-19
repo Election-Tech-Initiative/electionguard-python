@@ -71,7 +71,6 @@ disable = '''
   duplicate-code,
   fixme,
   invalid-name,
-  logging-fstring-interpolation,
   missing-module-docstring,
   missing-function-docstring,
   no-else-break,
