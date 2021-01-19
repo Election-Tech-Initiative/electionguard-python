@@ -1,11 +1,7 @@
 from abc import abstractmethod
+from collections.abc import Sequence
 from hashlib import sha256
-from typing import (
-    Union,
-    Protocol,
-    runtime_checkable,
-    Sequence,
-)
+from typing import Union, Protocol, runtime_checkable, Sequence as TypedSequence
 
 from .group import (
     ElementModPOrQ,
@@ -51,7 +47,7 @@ CRYPTO_HASHABLE_T = Union[CryptoHashable, ElementModPOrQ, str, int, None]
 # because Sequences are read-only, and thus safely covariant. All this really means is that
 # we promise never to mutate any list that you pass to hash_elems.
 CRYPTO_HASHABLE_ALL = Union[
-    Sequence[CRYPTO_HASHABLE_T],
+    TypedSequence[CRYPTO_HASHABLE_T],
     CRYPTO_HASHABLE_T,
 ]
 

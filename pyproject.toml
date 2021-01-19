@@ -75,7 +75,6 @@ disable = '''
   import-outside-toplevel,
   inherit-non-class,
   invalid-name,
-  isinstance-second-argument-not-valid-type,
   line-too-long,
   logging-fstring-interpolation,
   missing-module-docstring,

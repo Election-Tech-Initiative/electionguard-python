@@ -177,7 +177,7 @@ def create_ciphertext_decryption_selection(
         return CiphertextDecryptionSelection(
             object_id, guardian_id, description_hash, share, proof=proof_or_recovery
         )
-    elif isinstance(proof_or_recovery, Dict):
+    elif isinstance(proof_or_recovery, dict):
         return CiphertextDecryptionSelection(
             object_id,
             guardian_id,
