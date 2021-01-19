@@ -201,11 +201,10 @@ def encrypt_selection(
         selection_description_hash, elgamal_public_key, crypto_extended_base_hash
     ):
         return encrypted_selection
-    else:
-        log_warning(
-            f"mismatching selection proof for selection {encrypted_selection.object_id}"
-        )
-        return None
+    log_warning(
+        f"mismatching selection proof for selection {encrypted_selection.object_id}"
+    )
+    return None
 
 
 def encrypt_contest(
@@ -365,11 +364,8 @@ def encrypt_contest(
         contest_description_hash, elgamal_public_key, crypto_extended_base_hash
     ):
         return encrypted_contest
-    else:
-        log_warning(
-            f"mismatching contest proof for contest {encrypted_contest.object_id}"
-        )
-        return None
+    log_warning(f"mismatching contest proof for contest {encrypted_contest.object_id}")
+    return None
 
 
 # TODO: ISSUE #57: add the device hash to the function interface so it can be propagated with the ballot.
@@ -471,5 +467,4 @@ def encrypt_ballot(
         context.crypto_extended_base_hash,
     ):
         return encrypted_ballot
-    else:
-        return None  # log will have happened earlier
+    return None  # log will have happened earlier

@@ -137,8 +137,7 @@ class CiphertextTallyContest(ElectionObjectBase):
         for (key, ciphertext) in results:
             if ciphertext is None:
                 return False
-            else:
-                self.tally_selections[key].ciphertext = ciphertext
+            self.tally_selections[key].ciphertext = ciphertext
 
         return True
 

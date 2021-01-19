@@ -189,7 +189,7 @@ def create_ciphertext_decryption_selection(
         return CiphertextDecryptionSelection(
             object_id, guardian_id, description_hash, share, proof=proof_or_recovery
         )
-    elif isinstance(proof_or_recovery, dict):
+    if isinstance(proof_or_recovery, dict):
         return CiphertextDecryptionSelection(
             object_id,
             guardian_id,
@@ -197,14 +197,13 @@ def create_ciphertext_decryption_selection(
             share,
             recovered_parts=proof_or_recovery,
         )
-    else:
-        log_warning(f"decryption share cannot assign {proof_or_recovery}")
-        return CiphertextDecryptionSelection(
-            object_id,
-            guardian_id,
-            description_hash,
-            share,
-        )
+    log_warning(f"decryption share cannot assign {proof_or_recovery}")
+    return CiphertextDecryptionSelection(
+        object_id,
+        guardian_id,
+        description_hash,
+        share,
+    )
 
 
 @dataclass

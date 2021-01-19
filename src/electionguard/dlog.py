@@ -30,8 +30,7 @@ def discrete_log(e: ElementModP) -> int:
     # no need for mutually exclusive access when reading from the cache
     if e in __dlog_cache:
         return __dlog_cache[e]
-    else:
-        return asyncio.run(__discrete_log_internal(e))
+    return asyncio.run(__discrete_log_internal(e))
 
 
 async def __discrete_log_internal(e: ElementModP) -> int:

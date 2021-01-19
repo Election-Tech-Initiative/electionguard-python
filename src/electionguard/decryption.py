@@ -396,11 +396,10 @@ def compute_decryption_share_for_selection(
             decryption,
             proof,
         )
-    else:
-        log_warning(
-            f"compute decryption share proof failed for {guardian.object_id} {selection.object_id} with invalid proof"
-        )
-        return None
+    log_warning(
+        f"compute decryption share proof failed for {guardian.object_id} {selection.object_id} with invalid proof"
+    )
+    return None
 
 
 def compute_compensated_decryption_share_for_selection(
@@ -468,14 +467,13 @@ def compute_compensated_decryption_share_for_selection(
             proof,
         )
         return share
-    else:
-        log_warning(
-            (
-                f"compute compensated decryption share proof failed for {available_guardian.object_id} "
-                f"missing: {missing_guardian_id} {selection.object_id}"
-            )
+    log_warning(
+        (
+            f"compute compensated decryption share proof failed for {available_guardian.object_id} "
+            f"missing: {missing_guardian_id} {selection.object_id}"
         )
-        return None
+    )
+    return None
 
 
 def compute_lagrange_coefficients_for_guardian(

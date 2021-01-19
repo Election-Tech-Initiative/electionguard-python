@@ -390,8 +390,7 @@ def make_disjunctive_chaum_pedersen(
     ), "make_disjunctive_chaum_pedersen only supports plaintexts of 0 or 1"
     if plaintext == 0:
         return make_disjunctive_chaum_pedersen_zero(message, r, k, q, seed)
-    else:
-        return make_disjunctive_chaum_pedersen_one(message, r, k, q, seed)
+    return make_disjunctive_chaum_pedersen_one(message, r, k, q, seed)
 
 
 def make_disjunctive_chaum_pedersen_zero(

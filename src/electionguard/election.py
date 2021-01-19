@@ -508,8 +508,7 @@ class ContestDescriptionWithPlaceholders(ContestDescription):
 
         if any(matching_placeholders):
             return matching_placeholders[0]
-        else:
-            return None
+        return None
 
 
 @dataclass(unsafe_hash=True)
@@ -756,8 +755,7 @@ class InternalElectionDescription(object):
 
         if any(matching_contests):
             return matching_contests[0]
-        else:
-            return None
+        return None
 
     # SUGGEST should return Optional
     def get_ballot_style(self, ballot_style_id: str) -> BallotStyle:

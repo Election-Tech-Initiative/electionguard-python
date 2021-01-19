@@ -550,8 +550,7 @@ def _ciphertext_ballot_contest_aggregate_nonce(
                 f"missing nonce values for contest {object_id} cannot calculate aggregate nonce"
             )
             return None
-        else:
-            selection_nonces.append(selection.nonce)
+        selection_nonces.append(selection.nonce)
 
     return add_q(*selection_nonces)
 

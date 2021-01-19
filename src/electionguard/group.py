@@ -158,8 +158,7 @@ def hex_to_q(input: str) -> Optional[ElementModQ]:
     i = int(input, 16)
     if 0 <= i < Q:
         return ElementModQ(mpz(i))
-    else:
-        return None
+    return None
 
 
 def int_to_q(input: Union[str, int]) -> Optional[ElementModQ]:
@@ -171,8 +170,7 @@ def int_to_q(input: Union[str, int]) -> Optional[ElementModQ]:
     i = int(input)
     if 0 <= i < Q:
         return ElementModQ(mpz(i))
-    else:
-        return None
+    return None
 
 
 def int_to_q_unchecked(i: Union[str, int]) -> ElementModQ:
@@ -196,8 +194,7 @@ def int_to_p(input: Union[str, int]) -> Optional[ElementModP]:
     i = int(input)
     if 0 <= i < P:
         return ElementModP(mpz(i))
-    else:
-        return None
+    return None
 
 
 def int_to_p_unchecked(i: Union[str, int]) -> ElementModP:

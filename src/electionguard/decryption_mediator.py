@@ -201,10 +201,9 @@ class DecryptionMediator:
                 f"compensate mismatch partial decryptions for missing guardian {missing_guardian_id}"
             )
             return None
-        else:
-            self._lagrange_coefficients[missing_guardian_id] = lagrange_coefficients
-            self._submit_compensated_decryption_shares(compensated_decryptions)
-            return compensated_decryptions
+        self._lagrange_coefficients[missing_guardian_id] = lagrange_coefficients
+        self._submit_compensated_decryption_shares(compensated_decryptions)
+        return compensated_decryptions
 
     def get_plaintext_tally(
         self, recompute: bool = False, decrypt: AuxiliaryDecrypt = rsa_decrypt
