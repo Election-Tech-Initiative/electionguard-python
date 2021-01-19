@@ -1,3 +1,4 @@
+from multiprocessing import Pool
 from unittest import TestCase
 from typing import List
 from electionguard.scheduler import Scheduler
@@ -26,8 +27,6 @@ class TestScheduler(TestCase):
 
     def test_safe_map(self):
         # Arrange
-        from multiprocessing import Pool
-
         process_pool = Pool(1)
         subject = Scheduler()
 

@@ -70,7 +70,6 @@ max-line-length = 120
 disable = '''
   duplicate-code,
   fixme,
-  import-outside-toplevel,
   invalid-name,
   logging-fstring-interpolation,
   missing-module-docstring,
