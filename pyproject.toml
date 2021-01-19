@@ -65,7 +65,6 @@ target-version = ['py38']
 # FIXME: Pylint should not require this many exceptions
 [tool.pylint.'MESSAGES CONTROL']
 disable = '''
-  consider-using-set-comprehension,
   duplicate-code,
   fixme,
   f-string-without-interpolation,

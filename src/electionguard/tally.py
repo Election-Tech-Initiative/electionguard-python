@@ -108,13 +108,11 @@ class CiphertextTallyContest(ElectionObjectBase):
 
         # Validate the input data by comparing the selection id's provided
         # to the valid selection id's for this tally contest
-        selection_ids = set(
-            [
-                selection.object_id
-                for selection in contest_selections
-                if not selection.is_placeholder_selection
-            ]
-        )
+        selection_ids = {
+            selection.object_id
+            for selection in contest_selections
+            if not selection.is_placeholder_selection
+        }
 
         if any(set(self.tally_selections).difference(selection_ids)):
             log_warning(

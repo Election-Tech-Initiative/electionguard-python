@@ -146,13 +146,11 @@ class TestDecryptionMediator(TestCase):
 
         # Fill in the expected values with any missing selections
         # that were not made on any ballots
-        selection_ids = set(
-            [
-                selection.object_id
-                for contest in self.metadata.contests
-                for selection in contest.ballot_selections
-            ]
-        )
+        selection_ids = {
+            selection.object_id
+            for contest in self.metadata.contests
+            for selection in contest.ballot_selections
+        }
 
         missing_selection_ids = selection_ids.difference(
             set(self.expected_plaintext_tally)
