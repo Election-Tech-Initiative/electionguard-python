@@ -65,9 +65,10 @@ class Scheduler(Singleton, AbstractContextManager):
         :param task: the callable task to execute
         :param arguments: the list of lists passed to the task using starmap
         :param with_shared_resources: flag to use threads instead of processes
-                                      allowing resources to be shared.  note
-                                      when using the threadpool, execution is bound
-                                      by default to the [global interpreter lock](https://docs.python.org/3.8/glossary.html#term-global-interpreter-lock)
+            allowing resources to be shared.  note
+            when using the threadpool, execution is bound
+            by default to the [global interpreter lock]
+            (https://docs.python.org/3.8/glossary.html#term-global-interpreter-lock)
         """
         if with_shared_resources:
             return self.safe_starmap(self.__thread_pool, task, arguments)

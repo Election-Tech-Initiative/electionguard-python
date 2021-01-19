@@ -41,7 +41,11 @@ JSON_DATA: DataModel = DataModel(
     datetime=datetime(2020, 9, 28, 20, 11, 31, tzinfo=timezone.utc),
     array=[NestedModel(test=1)],
 )
-EXPECTED_JSON_STRING = '{"array": [{"test": 1}], "datetime": "2020-09-28T20:11:31+00:00", "nested": {"test": 1}, "test": 1}'
+EXPECTED_JSON_STRING = (
+    '{"array": [{"test": 1}], '
+    '"datetime": "2020-09-28T20:11:31+00:00", '
+    '"nested": {"test": 1}, "test": 1}'
+)
 EXPECTED_JSON_OBJECT = {
     "test": 1,
     "datetime": "2020-09-28T20:11:31+00:00",

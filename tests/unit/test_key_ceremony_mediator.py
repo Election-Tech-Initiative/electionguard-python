@@ -197,7 +197,8 @@ class TestKeyCeremonyMediator(TestCase):
     def test_partial_key_backup_verification_failure(self):
         """
         In this case, the recipient guardian does not correctly verify the sent key backup.
-        This failed verificaton requires the sender create a challenge and a new verifier aka another guardian must verify this challenge.
+        This failed verificaton requires the sender create a challenge and a new verifier
+        aka another guardian must verify this challenge.
         """
         # Arrange
         mediator = KeyCeremonyMediator(CEREMONY_DETAILS)

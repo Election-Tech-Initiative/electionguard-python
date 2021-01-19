@@ -116,13 +116,19 @@ class CiphertextDecryptionSelection(ElectionObjectBase):
         # verify we have a proof or recovered parts
         if self.proof is None and self.recovered_parts is None:
             log_warning(
-                f"CiphertextDecryptionSelection is_valid failed for guardian: {self.guardian_id} selection: {self.object_id} with missing data"
+                (
+                    f"CiphertextDecryptionSelection is_valid failed for guardian: {self.guardian_id} "
+                    f"selection: {self.object_id} with missing data"
+                )
             )
             return False
 
         if self.proof is not None and self.recovered_parts is not None:
             log_warning(
-                f"CiphertextDecryptionSelection is_valid failed for guardian: {self.guardian_id} selection: {self.object_id} cannot have proof and recovery"
+                (
+                    f"CiphertextDecryptionSelection is_valid failed for guardian: {self.guardian_id} "
+                    f"selection: {self.object_id} cannot have proof and recovery"
+                )
             )
             return False
 
@@ -133,7 +139,10 @@ class CiphertextDecryptionSelection(ElectionObjectBase):
             extended_base_hash,
         ):
             log_warning(
-                f"CiphertextDecryptionSelection is_valid failed for guardian: {self.guardian_id} selection: {self.object_id} with invalid proof"
+                (
+                    f"CiphertextDecryptionSelection is_valid failed for guardian: {self.guardian_id} "
+                    f"selection: {self.object_id} with invalid proof"
+                )
             )
             return False
 
@@ -150,7 +159,10 @@ class CiphertextDecryptionSelection(ElectionObjectBase):
                 ):
 
                     log_warning(
-                        f"CiphertextDecryptionSelection is_valid failed for guardian: {self.guardian_id} selection: {self.object_id} with invalid partial proof"
+                        (
+                            f"CiphertextDecryptionSelection is_valid failed for guardian: {self.guardian_id} "
+                            f"selection: {self.object_id} with invalid partial proof"
+                        )
                     )
                     return False
 

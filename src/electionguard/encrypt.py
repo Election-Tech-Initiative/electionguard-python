@@ -143,7 +143,8 @@ def encrypt_selection(
     Encrypt a specific `BallotSelection` in the context of a specific `BallotContest`
 
     :param selection: the selection in the valid input form
-    :param selection_description: the `SelectionDescription` from the `ContestDescription` which defines this selection's structure
+    :param selection_description: the `SelectionDescription` from the
+        `ContestDescription` which defines this selection's structure
     :param elgamal_public_key: the public key (K) used to encrypt the ballot
     :param crypto_extended_base_hash: the extended base hash of the election
     :param nonce_seed: an `ElementModQ` used as a header to seed the `Nonce` generated for this selection.
@@ -224,7 +225,8 @@ def encrypt_contest(
     votes
 
     :param contest: the contest in the valid input form
-    :param contest_description: the `ContestDescriptionWithPlaceholders` from the `ContestDescription` which defines this contest's structure
+    :param contest_description: the `ContestDescriptionWithPlaceholders`
+        from the `ContestDescription` which defines this contest's structure
     :param elgamal_public_key: the public key (k) used to encrypt the ballot
     :param crypto_extended_base_hash: the extended base hash of the election
     :param nonce_seed: an `ElementModQ` used as a header to seed the `Nonce` generated for this contest.

@@ -134,7 +134,10 @@ class DecryptionMediator:
             if guardian_id in self._missing_guardians.keys():
                 if self._missing_guardians.get(guardian_id) != public_key:
                     log_warning(
-                        f"announce guardian: {guardian.object_id} expected public key mismatch for missing {guardian_id}"
+                        (
+                            f"announce guardian: {guardian.object_id} "
+                            f"expected public key mismatch for missing {guardian_id}"
+                        )
                     )
                     return None
             else:
@@ -301,7 +304,10 @@ class DecryptionMediator:
             in self._compensated_decryption_shares[share.missing_guardian_id]
         ):
             log_warning(
-                f"cannot submit compensated share for guardian {share.guardian_id} on behalf of {share.missing_guardian_id} that already compensated"
+                (
+                    f"cannot submit compensated share for guardian {share.guardian_id} "
+                    f"on behalf of {share.missing_guardian_id} that already compensated"
+                )
             )
             return False
 

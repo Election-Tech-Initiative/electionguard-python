@@ -62,6 +62,9 @@ typish = '*'
 [tool.black]
 target-version = ['py38']
 
+[tool.pylint.'FORMAT']
+max-line-length = 120
+
 # FIXME: Pylint should not require this many exceptions
 [tool.pylint.'MESSAGES CONTROL']
 disable = '''
@@ -70,7 +73,6 @@ disable = '''
   global-statement,
   import-outside-toplevel,
   invalid-name,
-  line-too-long,
   logging-fstring-interpolation,
   missing-module-docstring,
   missing-class-docstring,

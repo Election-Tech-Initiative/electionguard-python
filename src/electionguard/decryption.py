@@ -261,7 +261,10 @@ def compute_decryption_share_for_ballot(
         for decryption in selection_decryptions:
             if decryption is None:
                 log_warning(
-                    f"could not compute spoiled ballot share for guardian {guardian.object_id} contest {contest.object_id}"
+                    (
+                        f"could not compute spoiled ballot share for guardian {guardian.object_id} "
+                        f"contest {contest.object_id}"
+                    )
                 )
                 return None
             selections[decryption.object_id] = decryption
@@ -338,7 +341,10 @@ def compute_compensated_decryption_share_for_ballot(
         for decryption in selection_decryptions:
             if decryption is None:
                 log_warning(
-                    f"could not compute compensated spoiled ballot share for guardian {guardian.object_id} missing: {missing_guardian_id} contest {contest.object_id}"
+                    (
+                        f"could not compute compensated spoiled ballot share for guardian {guardian.object_id} "
+                        f"missing: {missing_guardian_id} contest {contest.object_id}"
+                    )
                 )
                 return None
             selections[decryption.object_id] = decryption
@@ -424,7 +430,10 @@ def compute_compensated_decryption_share_for_selection(
 
     if compensated is None:
         log_warning(
-            f"compute compensated decryption share failed for {available_guardian.object_id} missing: {missing_guardian_id} {selection.object_id}"
+            (
+                f"compute compensated decryption share failed for {available_guardian.object_id} "
+                f"missing: {missing_guardian_id} {selection.object_id}"
+            )
         )
         return None
 
@@ -436,7 +445,10 @@ def compute_compensated_decryption_share_for_selection(
 
     if recovery_public_key is None:
         log_warning(
-            f"compute compensated decryption share failed for {available_guardian.object_id} missing recovery key: {missing_guardian_id} {selection.object_id}"
+            (
+                f"compute compensated decryption share failed for {available_guardian.object_id} "
+                f"missing recovery key: {missing_guardian_id} {selection.object_id}"
+            )
         )
         return None
 
@@ -458,7 +470,10 @@ def compute_compensated_decryption_share_for_selection(
         return share
     else:
         log_warning(
-            f"compute compensated decryption share proof failed for {available_guardian.object_id} missing: {missing_guardian_id} {selection.object_id}"
+            (
+                f"compute compensated decryption share proof failed for {available_guardian.object_id} "
+                f"missing: {missing_guardian_id} {selection.object_id}"
+            )
         )
         return None
 
@@ -484,7 +499,8 @@ def compute_lagrange_coefficients_for_guardians(
     all_available_guardian_keys: List[PublicKeySet],
 ) -> Dict[AVAILABLE_GUARDIAN_ID, ElementModQ]:
     """
-    Produce all Lagrange coefficients for a collection of available Guardians, to be used when reconstructing a missing share.
+    Produce all Lagrange coefficients for a collection of available
+    Guardians, to be used when reconstructing a missing share.
     """
     return {
         guardian_keys.owner_id: compute_lagrange_coefficients_for_guardian(
@@ -665,12 +681,14 @@ def reconstruct_decryption_ballot(
     lagrange_coefficients: Dict[AVAILABLE_GUARDIAN_ID, ElementModQ],
 ) -> BallotDecryptionShare:
     """
-    Reconstruct a missing ballot Decryption share for a missing guardian from the collection of compensated decryption shares
+    Reconstruct a missing ballot Decryption share for a missing guardian
+    from the collection of compensated decryption shares
 
     :param missing_guardian_id: The guardian id for the missing guardian
     :param public_key: the public key for the missing guardian
     :param ballots: The `CiphertextAcceptedBallot` to reconstruct
-    :shares: the collection of `CompensatedBallotDecryptionShare` for the missing guardian, each keyed by the ID of the guardian that produced it
+    :shares: the collection of `CompensatedBallotDecryptionShare` for
+        the missing guardian, each keyed by the ID of the guardian that produced it
     :lagrange_coefficients: the lagrange coefficients corresponding to the available guardians that provided shares
     """
     contests: Dict[CONTEST_ID, CiphertextDecryptionContest] = {}

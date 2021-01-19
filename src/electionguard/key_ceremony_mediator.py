@@ -95,7 +95,10 @@ class KeyCeremonyMediator:
                         self.receive_election_partial_key_backup(backup)
                     else:
                         log_warning(
-                            f"orchestrate failed sender {sender.object_id} could not share backup with recipient: {recipient.object_id}"
+                            (
+                                f"orchestrate failed sender {sender.object_id} could not share backup with "
+                                f"recipient: {recipient.object_id}"
+                            )
                         )
                         return None
 
@@ -126,7 +129,10 @@ class KeyCeremonyMediator:
                         self.receive_election_partial_key_verification(verification)
                     else:
                         log_warning(
-                            f"verify failed recipient {recipient.object_id} could not verify backup from sender: {sender.object_id}"
+                            (
+                                f"verify failed recipient {recipient.object_id} could not verify backup "
+                                f"from sender: {sender.object_id}"
+                            )
                         )
                         return False
 

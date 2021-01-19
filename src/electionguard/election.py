@@ -458,7 +458,6 @@ class ReferendumContestDescription(ContestDescription):
     """
 
 
-
 @dataclass(eq=True, unsafe_hash=True)
 class ContestDescriptionWithPlaceholders(ContestDescription):
     """
@@ -963,7 +962,8 @@ def generate_placeholder_selections_from(
     contest: ContestDescription, count: int
 ) -> List[SelectionDescription]:
     """
-    Generates the specified number of placeholder selections in ascending sequence order from the max selection sequence orderf
+    Generates the specified number of placeholder selections in
+    ascending sequence order from the max selection sequence orderf
 
     :param contest: ContestDescription for input
     :param count: optionally specify a number of placeholders to generate

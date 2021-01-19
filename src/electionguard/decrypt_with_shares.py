@@ -196,7 +196,10 @@ def decrypt_ballot(
             # verify the plaintext values are received and add them to the collection
             if plaintext_selection is None:
                 log_warning(
-                    f"could not decrypt ballot {ballot.object_id} for contest {contest.object_id} selection {selection.object_id}"
+                    (
+                        f"could not decrypt ballot {ballot.object_id} "
+                        f"for contest {contest.object_id} selection {selection.object_id}"
+                    )
                 )
                 return None
             selections[plaintext_selection.object_id] = plaintext_selection
