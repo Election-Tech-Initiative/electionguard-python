@@ -126,10 +126,12 @@ class TestSerializable(TestCase):
         # Cleanup
         remove(json_file)
 
+    # pylint: disable=no-self-use
     def test_setup_serialization(self) -> None:
         # Act
         set_serializers()
 
+    # pylint: disable=no-self-use
     def test_setup_deserialization(self) -> None:
         # Act
         set_deserializers()

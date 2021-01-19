@@ -25,6 +25,9 @@ class TestLogs(TestCase):
         log_info(message)
         log_warning(message)
 
+        # Assert
+        self.assertIsNotNone(message)
+
     def test_log_handlers(self):
         # Arrange
 

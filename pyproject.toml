@@ -73,7 +73,6 @@ disable = '''
   invalid-name,
   missing-module-docstring,
   missing-function-docstring,
-  no-self-use,
   no-value-for-parameter,
   protected-access,
   redefined-builtin,

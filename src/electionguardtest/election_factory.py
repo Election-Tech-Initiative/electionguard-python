@@ -78,7 +78,8 @@ class ElectionFactory(object):
     def get_simple_election_from_file(self) -> ElectionDescription:
         return self._get_election_from_file(self.simple_election_manifest_file_name)
 
-    def get_hamilton_election_from_file(self) -> ElectionDescription:
+    @staticmethod
+    def get_hamilton_election_from_file() -> ElectionDescription:
         with open(
             os.path.join(data, "hamilton-county", "election_manifest.json"), "r"
         ) as subject:
@@ -135,7 +136,8 @@ class ElectionFactory(object):
             AllPrivateElectionData(guardians),
         )
 
-    def get_fake_election(self) -> ElectionDescription:
+    @staticmethod
+    def get_fake_election() -> ElectionDescription:
         """
         Get a single Fake Election object that is manually constructed with default values
         """
@@ -215,8 +217,9 @@ class ElectionFactory(object):
 
         return fake_election
 
+    @staticmethod
     def get_fake_ciphertext_election(
-        self, description: ElectionDescription, elgamal_public_key: ElementModP
+        description: ElectionDescription, elgamal_public_key: ElementModP
     ) -> Tuple[InternalElectionDescription, CiphertextElectionContext]:
         builder = ElectionBuilder(
             number_of_guardians=1, quorum=1, description=description
@@ -246,7 +249,8 @@ class ElectionFactory(object):
 
         return fake_ballot
 
-    def _get_election_from_file(self, filename: str) -> ElectionDescription:
+    @staticmethod
+    def _get_election_from_file(filename: str) -> ElectionDescription:
         with open(os.path.join(data, filename), "r") as subject:
             result = subject.read()
             target = ElectionDescription.from_json(result)

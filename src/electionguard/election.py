@@ -784,8 +784,9 @@ class InternalElectionDescription(object):
         )
         return contests
 
+    @staticmethod
     def _generate_contests_with_placeholders(
-        self, description: ElectionDescription
+        description: ElectionDescription,
     ) -> List[ContestDescriptionWithPlaceholders]:
         """
         For each contest, append the `number_elected` number

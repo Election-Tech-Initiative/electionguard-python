@@ -39,8 +39,8 @@ class BallotFactory(object):
     simple_ballot_filename = "ballot_in_simple.json"
     simple_ballots_filename = "plaintext_ballots_simple.json"
 
+    @staticmethod
     def get_random_selection_from(
-        self,
         description: SelectionDescription,
         random_source: Random,
         is_placeholder=False,
@@ -138,13 +138,15 @@ class BallotFactory(object):
     def get_simple_ballots_from_file(self) -> List[PlaintextBallot]:
         return self._get_ballots_from_file(self.simple_ballots_filename)
 
-    def _get_ballot_from_file(self, filename: str) -> PlaintextBallot:
+    @staticmethod
+    def _get_ballot_from_file(filename: str) -> PlaintextBallot:
         with open(os.path.join(data, filename), "r") as subject:
             result = subject.read()
             target = PlaintextBallot.from_json(result)
         return target
 
-    def _get_ballots_from_file(self, filename: str) -> List[PlaintextBallot]:
+    @staticmethod
+    def _get_ballots_from_file(filename: str) -> List[PlaintextBallot]:
         with open(os.path.join(data, filename), "r") as subject:
             result = subject.read()
             target = cast(

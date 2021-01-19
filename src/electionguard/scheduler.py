@@ -50,7 +50,8 @@ class Scheduler(Singleton, AbstractContextManager):
         self.__process_pool.close()
         self.__thread_pool.close()
 
-    def cpu_count(self) -> int:
+    @staticmethod
+    def cpu_count() -> int:
         """Get CPU count"""
         return int(cpu_count(logical=False))
 
@@ -74,8 +75,9 @@ class Scheduler(Singleton, AbstractContextManager):
             return self.safe_starmap(self.__thread_pool, task, arguments)
         return self.safe_starmap(self.__process_pool, task, arguments)
 
+    @staticmethod
     def safe_starmap(
-        self, pool: Pool, task: Callable, arguments: Iterable[Iterable[Any]]
+        pool: Pool, task: Callable, arguments: Iterable[Iterable[Any]]
     ) -> List[_T]:
         """Safe wrapper around starmap to ensure pool is open"""
         try:
@@ -91,9 +93,8 @@ class Scheduler(Singleton, AbstractContextManager):
             )
             return []
 
-    def safe_map(
-        self, pool: Pool, task: Callable, arguments: Iterable[Any]
-    ) -> List[_T]:
+    @staticmethod
+    def safe_map(pool: Pool, task: Callable, arguments: Iterable[Any]) -> List[_T]:
         """Safe wrapper around starmap to ensure pool is open"""
         try:
             return pool.map(task, arguments)

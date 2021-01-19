@@ -201,8 +201,9 @@ class TestTally(TestCase):
         first_ballot.state = BallotBoxState.SPOILED
         self.assertFalse(subject.append(first_ballot))
 
+    @staticmethod
     def _decrypt_with_secret(
-        self, tally: CiphertextTally, secret_key: ElementModQ
+        tally: CiphertextTally, secret_key: ElementModQ
     ) -> Dict[str, int]:
         """
         Demonstrates how to decrypt a tally with a known secret key

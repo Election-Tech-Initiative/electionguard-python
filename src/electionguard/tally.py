@@ -141,8 +141,8 @@ class CiphertextTallyContest(ElectionObjectBase):
 
         return True
 
+    @staticmethod
     def _accumulate_selections(
-        self,
         key: SELECTION_ID,
         selection_tally: CiphertextTallySelection,
         contest_selections: List[CiphertextBallotSelection],
