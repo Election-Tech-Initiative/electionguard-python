@@ -64,15 +64,13 @@ class ElementModQ(NamedTuple):
 
     # overload != (not equal to) operator
     def __ne__(self, other: Any) -> bool:
-        return (
-            isinstance(other, ElementModP) or isinstance(other, ElementModQ)
-        ) and not eq_elems(self, other)
+        return (isinstance(other, (ElementModP, ElementModQ))) and not eq_elems(
+            self, other
+        )
 
     # overload == (equal to) operator
     def __eq__(self, other: Any) -> bool:
-        return (
-            isinstance(other, ElementModP) or isinstance(other, ElementModQ)
-        ) and eq_elems(self, other)
+        return (isinstance(other, (ElementModP, ElementModQ))) and eq_elems(self, other)
 
     def __str__(self) -> str:
         return self.elem.digits()
@@ -124,15 +122,13 @@ class ElementModP(NamedTuple):
 
     # overload != (not equal to) operator
     def __ne__(self, other: Any) -> bool:
-        return (
-            isinstance(other, ElementModP) or isinstance(other, ElementModQ)
-        ) and not eq_elems(self, other)
+        return (isinstance(other, (ElementModP, ElementModQ))) and not eq_elems(
+            self, other
+        )
 
     # overload == (equal to) operator
     def __eq__(self, other: Any) -> bool:
-        return (
-            isinstance(other, ElementModP) or isinstance(other, ElementModQ)
-        ) and eq_elems(self, other)
+        return (isinstance(other, (ElementModP, ElementModQ))) and eq_elems(self, other)
 
     def __str__(self) -> str:
         return self.elem.digits()

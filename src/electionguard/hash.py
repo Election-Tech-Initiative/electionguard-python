@@ -76,7 +76,7 @@ def hash_elems(*a: CRYPTO_HASHABLE_ALL) -> ElementModQ:
             # so we'll go with the more JSON-ish "null".
             hash_me = "null"
 
-        elif isinstance(x, ElementModP) or isinstance(x, ElementModQ):
+        elif isinstance(x, (ElementModP, ElementModQ)):
             hash_me = x.to_hex()
         elif isinstance(x, CryptoHashable):
             hash_me = x.crypto_hash().to_hex()
