@@ -26,7 +26,7 @@ class Scheduler(Singleton, AbstractContextManager):
     __thread_pool: Pool
 
     def __init__(self) -> None:
-        super(Scheduler, self).__init__()
+        super().__init__()
         self._open()
 
     def __enter__(self) -> Scheduler:

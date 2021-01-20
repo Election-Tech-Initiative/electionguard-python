@@ -18,7 +18,7 @@ class ElectionGuardLog(Singleton):
     __logger: logging.Logger
 
     def __init__(self) -> None:
-        super(ElectionGuardLog, self).__init__()
+        super().__init__()
 
         self.__logger = logging.getLogger("electionguard")
         self.__logger.addHandler(get_stream_handler())
