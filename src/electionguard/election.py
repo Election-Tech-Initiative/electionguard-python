@@ -716,7 +716,7 @@ class ElectionDescription(Serializable, CryptoHashable):
 
 
 @dataclass(eq=True, unsafe_hash=True)
-class InternalElectionDescription(object):
+class InternalElectionDescription:
     """
     `InternalElectionDescription` is a subset of the `ElectionDescription` structure that specifies
     the components that ElectionGuard uses for conducting an election.  The key component is the

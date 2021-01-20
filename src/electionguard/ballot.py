@@ -32,7 +32,7 @@ def _list_eq(
 
 
 @dataclass(eq=True, unsafe_hash=True)
-class ExtendedData(object):
+class ExtendedData:
     """
     ExtendedData represents any arbitrary data expressible as a string with a length.
 

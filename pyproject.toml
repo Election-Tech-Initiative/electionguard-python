@@ -89,7 +89,6 @@ disable = '''
   too-many-nested-blocks,
   too-many-public-methods,
   too-many-return-statements,
-  useless-object-inheritance,
   unnecessary-lambda,
   '''
 

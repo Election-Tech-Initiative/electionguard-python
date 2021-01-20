@@ -70,7 +70,7 @@ class AllPrivateElectionData:
     guardians: List[Guardian]
 
 
-class ElectionFactory(object):
+class ElectionFactory:
     """Factory to create elections"""
 
     simple_election_manifest_file_name = "election_manifest_simple.json"

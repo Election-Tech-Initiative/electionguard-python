@@ -14,7 +14,7 @@ from .utils import get_optional
 
 
 @dataclass
-class ElectionBuilder(object):
+class ElectionBuilder:
     """
     `ElectionBuilder` is a stateful builder object that constructs `CiphertextElectionContext` objects
     following the initialization process that ElectionGuard Expects.

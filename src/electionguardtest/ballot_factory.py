@@ -33,7 +33,7 @@ _DrawType = Callable[[SearchStrategy[_T]], _T]
 data = os.path.realpath(os.path.join(__file__, "../../../data"))
 
 
-class BallotFactory(object):
+class BallotFactory:
     """Factory to create ballots"""
 
     simple_ballot_filename = "ballot_in_simple.json"

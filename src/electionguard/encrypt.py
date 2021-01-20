@@ -49,7 +49,7 @@ class EncryptionDevice(Serializable):
         return get_hash_for_device(self.uuid, self.location)
 
 
-class EncryptionMediator(object):
+class EncryptionMediator:
     """
     An object for caching election and encryption state.
 
