@@ -77,7 +77,6 @@ disable = '''
   protected-access,
   redefined-builtin,
   redefined-outer-name,
-  super-init-not-called,
   super-with-arguments,
   too-few-public-methods,
   too-many-arguments,
