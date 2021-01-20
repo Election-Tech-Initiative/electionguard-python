@@ -75,7 +75,6 @@ disable = '''
   missing-function-docstring,
   no-value-for-parameter,
   redefined-builtin,
-  redefined-outer-name,
   too-few-public-methods,
   too-many-arguments,
   too-many-branches,

@@ -262,12 +262,12 @@ class ElectionFactory:
 def get_selection_description_well_formed(
     draw: _DrawType,
     ints=integers(1, 20),
-    emails=emails(),
+    email_addresses=emails(),
     candidate_id: Optional[str] = None,
     sequence_order: Optional[int] = None,
 ) -> Tuple[str, SelectionDescription]:
     if candidate_id is None:
-        candidate_id = draw(emails)
+        candidate_id = draw(email_addresses)
 
     object_id = f"{candidate_id}-selection"
 
@@ -281,19 +281,19 @@ def get_selection_description_well_formed(
 def get_contest_description_well_formed(
     draw: _DrawType,
     ints=integers(1, 20),
-    text=text(),
-    emails=emails(),
+    txt=text(),
+    email_addresses=emails(),
     selections=get_selection_description_well_formed(),
     sequence_order: Optional[int] = None,
     electoral_district_id: Optional[str] = None,
 ) -> Tuple[str, ContestDescription]:
-    object_id = f"{draw(emails)}-contest"
+    object_id = f"{draw(email_addresses)}-contest"
 
     if sequence_order is None:
         sequence_order = draw(ints)
 
     if electoral_district_id is None:
-        electoral_district_id = f"{draw(emails)}-gp-unit"
+        electoral_district_id = f"{draw(email_addresses)}-gp-unit"
 
     first_int = draw(ints)
     second_int = draw(ints)
@@ -316,7 +316,7 @@ def get_contest_description_well_formed(
         VoteVariationType.n_of_m,
         number_elected,
         votes_allowed,
-        draw(text),
+        draw(txt),
         selection_descriptions,
     )
 

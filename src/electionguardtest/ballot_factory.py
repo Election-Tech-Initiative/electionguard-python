@@ -162,14 +162,14 @@ class BallotFactory:
 
 @composite
 def get_selection_well_formed(
-    draw: _DrawType, uuids=uuids(), bools=booleans(), text=text()
+    draw: _DrawType, ids=uuids(), bools=booleans(), txt=text()
 ) -> Tuple[str, PlaintextBallotSelection]:
     use_none = draw(bools)
     if use_none:
         extra_data = None
     else:
-        extra_data = draw(text)
-    object_id = f"selection-{draw(uuids)}"
+        extra_data = draw(txt)
+    object_id = f"selection-{draw(ids)}"
     return (
         object_id,
         PlaintextBallotSelection(object_id, f"{draw(bools)}", draw(bools), extra_data),
@@ -178,15 +178,15 @@ def get_selection_well_formed(
 
 @composite
 def get_selection_poorly_formed(
-    draw: _DrawType, uuids=uuids(), bools=booleans(), text=text()
+    draw: _DrawType, ids=uuids(), bools=booleans(), txt=text()
 ) -> Tuple[str, PlaintextBallotSelection]:
     use_none = draw(bools)
     if use_none:
         extra_data = None
     else:
-        extra_data = draw(text)
-    object_id = f"selection-{draw(uuids)}"
+        extra_data = draw(txt)
+    object_id = f"selection-{draw(ids)}"
     return (
         object_id,
-        PlaintextBallotSelection(object_id, f"{draw(text)}", draw(bools), extra_data),
+        PlaintextBallotSelection(object_id, f"{draw(txt)}", draw(bools), extra_data),
     )
