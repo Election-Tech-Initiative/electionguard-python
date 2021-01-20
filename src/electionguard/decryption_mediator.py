@@ -31,7 +31,7 @@ MISSING_GUARDIAN_ID = GUARDIAN_ID
 
 GUARDIAN_PUBLIC_KEY = ElementModP
 
-
+# pylint: disable=too-many-instance-attributes
 @dataclass
 class DecryptionMediator:
     """

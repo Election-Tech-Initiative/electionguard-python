@@ -642,6 +642,7 @@ class PlaintextBallot(ElectionObjectBase):
         return not self.__eq__(other)
 
 
+# pylint: disable=too-many-instance-attributes
 @dataclass(unsafe_hash=True)
 class CiphertextBallot(ElectionObjectBase, CryptoHashCheckable):
     """

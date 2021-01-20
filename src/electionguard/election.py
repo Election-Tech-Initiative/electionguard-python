@@ -290,6 +290,7 @@ class SelectionDescription(ElectionObjectBase, CryptoHashable):
         return hash_elems(self.object_id, self.sequence_order, self.candidate_id)
 
 
+# pylint: disable=too-many-instance-attributes
 @dataclass(unsafe_hash=True)
 class ContestDescription(ElectionObjectBase, CryptoHashable):
     """
@@ -511,6 +512,7 @@ class ContestDescriptionWithPlaceholders(ContestDescription):
         return None
 
 
+# pylint: disable=too-many-instance-attributes
 @dataclass(unsafe_hash=True)
 class ElectionDescription(Serializable, CryptoHashable):
     """

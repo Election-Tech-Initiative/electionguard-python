@@ -43,7 +43,7 @@ from .rsa import rsa_encrypt, rsa_decrypt
 from .types import GUARDIAN_ID
 from .utils import get_optional
 
-
+# pylint: disable=too-many-instance-attributes
 class Guardian(ElectionObjectBase):
     """
     Guardian of election responsible for safeguarding information and decrypting results

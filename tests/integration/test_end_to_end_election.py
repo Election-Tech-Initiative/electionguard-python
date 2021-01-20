@@ -69,7 +69,7 @@ COEFFICIENTS_DIR = path.join(RESULTS_DIR, "coefficients")
 BALLOTS_DIR = path.join(RESULTS_DIR, "encrypted_ballots")
 SPOILED_DIR = path.join(RESULTS_DIR, "spoiled_ballots")
 
-
+# pylint: disable=too-many-instance-attributes
 class TestEndToEndElection(TestCase):
     """
     Test a complete simple example of executing an End-to-End encrypted election.

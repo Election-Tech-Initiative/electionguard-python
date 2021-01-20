@@ -83,7 +83,6 @@ disable = '''
   too-many-function-args,
   too-many-lines,
   too-many-locals,
-  too-many-instance-attributes,
   too-many-nested-blocks,
   unnecessary-lambda,
   '''
