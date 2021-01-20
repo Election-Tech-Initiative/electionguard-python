@@ -74,7 +74,6 @@ disable = '''
   missing-module-docstring,
   missing-function-docstring,
   no-value-for-parameter,
-  protected-access,
   redefined-builtin,
   redefined-outer-name,
   too-few-public-methods,

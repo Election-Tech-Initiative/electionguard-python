@@ -156,6 +156,7 @@ class TestTally(TestCase):
                 subject.cast[first_ballot.object_id].accumulate_contest([])
             )
 
+        # pylint: disable=protected-access
         # pop the cast ballot
         subject._cast_ballot_ids.pop()
 
@@ -241,6 +242,7 @@ class TestTally(TestCase):
                 first_tally.accumulate_contest(ballot.contests[0].ballot_selections)
             )
 
+            # pylint: disable=protected-access
             _key, bad_accumulation = first_tally._accumulate_selections(
                 first_selection.object_id,
                 first_tally.tally_selections[first_selection.object_id],
