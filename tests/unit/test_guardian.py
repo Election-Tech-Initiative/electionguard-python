@@ -1,3 +1,5 @@
+# pylint: disable=too-many-public-methods
+
 from unittest import TestCase
 
 from electionguard.guardian import Guardian

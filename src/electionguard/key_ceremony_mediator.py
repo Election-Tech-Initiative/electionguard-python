@@ -1,3 +1,4 @@
+# pylint: disable=too-many-public-methods
 from typing import Iterable, List, Optional
 
 from .auxiliary import AuxiliaryDecrypt, AuxiliaryEncrypt

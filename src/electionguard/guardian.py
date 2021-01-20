@@ -1,3 +1,4 @@
+# pylint: disable=too-many-public-methods
 from typing import Callable, Optional, Tuple
 
 from .chaum_pedersen import ChaumPedersenProof, make_chaum_pedersen

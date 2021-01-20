@@ -87,7 +87,6 @@ disable = '''
   too-many-locals,
   too-many-instance-attributes,
   too-many-nested-blocks,
-  too-many-public-methods,
   unnecessary-lambda,
   '''
 
