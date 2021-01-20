@@ -207,6 +207,7 @@ def encrypt_selection(
     return None
 
 
+# pylint: disable=too-many-return-statements
 def encrypt_contest(
     contest: PlaintextBallotContest,
     contest_description: ContestDescriptionWithPlaceholders,

@@ -205,6 +205,7 @@ class DecryptionMediator:
         self._submit_compensated_decryption_shares(compensated_decryptions)
         return compensated_decryptions
 
+    # pylint: disable=too-many-return-statements
     def get_plaintext_tally(
         self, recompute: bool = False, decrypt: AuxiliaryDecrypt = rsa_decrypt
     ) -> Optional[PlaintextTally]:
