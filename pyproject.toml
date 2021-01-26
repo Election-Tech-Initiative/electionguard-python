@@ -118,7 +118,7 @@ disable = '''
 
 [tool.coverage.run]
 branch = true
-source = "src/electionguard"
+source = ["src/electionguard"]
 
 [tool.coverage.html]
 directory = "coverage_html_report"

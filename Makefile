@@ -1,107 +1,113 @@
-.PHONY: all bench environment install install-mac install-linux install-windows auto-lint validate test test-example coverage coverage-html coverage-xml coverage-erase generate-sample-data
+.PHONY: all openssl-fix install install-gmp install-gmp-mac install-gmp-linux install-gmp-windows install-poetry install-mkdocs auto-lint validate test test-example bench coverage coverage-html coverage-xml coverage-erase generate-sample-data
 
 CODE_COVERAGE ?= 90
-WINDOWS_32BIT_GMPY2 ?= packages\gmpy2-2.0.8-cp38-cp38-win32.whl
-WINDOWS_64BIT_GMPY2 ?= packages\gmpy2-2.0.8-cp38-cp38-win_amd64.whl
 OS ?= $(shell python -c 'import platform; print(platform.system())')
 IS_64_BIT ?= $(shell python -c 'from sys import maxsize; print(maxsize > 2**32)')
 SAMPLE_BALLOT_COUNT ?= 5
 SAMPLE_BALLOT_SPOIL_RATE ?= 50
 
-all: environment install validate auto-lint coverage
-
-bench:
-	@echo 📊 BENCHMARKS
-	pipenv run python -s bench/bench_chaum_pedersen.py
+all: environment install build validate auto-lint coverage
 
 environment:
-	@echo 🔧 PIPENV SETUP
-	pip install pipenv
-	pipenv install --dev
+	@echo 🔧 ENVIRONMENT SETUP
+	make install-gmp
+	make install-poetry
+	make install-mkdocs
+	@echo 🚨 Be sure to add poetry to PATH
 
 install:
-	@echo 📦 Install Module
+	@echo 🔧 INSTALL
+	poetry install
+
+build:
+	@echo 🔨 BUILD
+	poetry build
+	poetry install 
+
+openssl-fix:
+	export LDFLAGS=-L/usr/local/opt/openssl/lib
+	export CPPFLAGS=-I/usr/local/opt/openssl/include 
+
+install-gmp:
+	@echo 📦 Install gmp
 	@echo Operating System identified as $(OS)
 ifeq ($(OS), Linux)
-	make install-linux
+	make install-gmp-linux
 endif
 ifeq ($(OS), Darwin)
-	make install-mac
+	make install-gmp-mac
 endif
 ifeq ($(OS), Windows)
-	make install-windows
+	make install-gmp-windows
 endif
 ifeq ($(OS), Windows_NT)
-	make install-windows
+	make install-gmp-windows
 endif
 
-install-mac:
+install-gmp-mac:
 	@echo 🍎 MACOS INSTALL
-# gmpy2 requirements
 	brew install gmp || true
 	brew install mpfr || true
 	brew install libmpc || true
-# install module
-	pipenv run python -m pip install -e .
 
-install-linux:
+install-gmp-linux:
 	@echo 🐧 LINUX INSTALL
-# gmpy2 requirements
 	sudo apt-get install libgmp-dev
 	sudo apt-get install libmpfr-dev
 	sudo apt-get install libmpc-dev
-# install module
-	pipenv run python -m pip install -e .
 
-install-windows:
+install-gmp-windows:
 	@echo 🏁 WINDOWS INSTALL
+	@echo 🚨 Ensure pyproject.toml has been modified to include appropriate local gmpy2 package 🚨 
 # install module with local gmpy2 package
 ifeq ($(IS_64_BIT), True)
-	pipenv run python -m pip install --find-links=$(WINDOWS_64BIT_GMPY2) -e . 
+	@echo 64 bit system detected
 endif
 ifeq ($(IS_64_BIT), False)
-	pipenv run python -m pip install --find-links=$(WINDOWS_32BIT_GMPY2) -e . 
+	@echo 32 bit system detected
 endif
-	
-auto-lint:
-	@echo 💚 AUTO LINT
-	@echo Reformatting using Black
-	pipenv run black .
-	make lint
-	
+
+install-poetry:
+	@echo 📦 Install poetry
+	curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
+
 lint:
 	@echo 💚 LINT
 	@echo 1.Pylint
-	pipenv run pylint ./src/**/*.py ./tests/**/*.py ./bench/**/*.py
+	poetry run pylint ./src/**/*.py ./tests/**/*.py
 	@echo 2.Black Formatting
-	pipenv run black --check .
+	poetry run black --check .
 	@echo 3.Mypy Static Typing
-	pipenv run mypy bench src stubs tests setup.py
+	poetry run mypy --config-file "pyproject.toml" src/electionguard stubs
 	@echo 4.Package Metadata
-	pipenv run python setup.py --quiet sdist bdist_wheel
-	pipenv run twine check dist/*
-	@echo 5.Docstring
-	pipenv run pydocstyle
-	@echo 6.Documentation
-	pipenv run mkdocs build --strict
+	poetry build
+	poetry run twine check dist/*
+	@echo 5.Documentation
+	mkdocs build --strict
 
+auto-lint:
+	@echo 💚 AUTO LINT
+	@echo Reformatting using Black
+	poetry run black .
+	make lint
+	
 validate: 
 	@echo ✅ VALIDATE
-	@pipenv run python -c 'import electionguard; print(electionguard.__package__ + " successfully imported")'
+	@poetry run python -c 'import electionguard; print(electionguard.__package__ + " successfully imported")'
 
 # Test
 unit-tests:
 	@echo ✅ UNIT TESTS
-	pipenv run pytest tests/unit
+	poetry run pytest tests/unit
 
 property-tests:
 	@echo ✅ PROPERTY TESTS
-	pipenv run pytest tests/test_decryption_mediator.py
-	pipenv run pytest tests/property
+	poetry run pytest tests/test_decryption_mediator.py
+	poetry run pytest tests/property
 
 integration-tests:
 	@echo ✅ INTEGRATION TESTS
-	pipenv run pytest tests/integration
+	poetry run pytest tests/integration
 
 test: 
 	@echo ✅ ALL TESTS
@@ -111,37 +117,45 @@ test:
 
 test-example:
 	@echo ✅ TEST Example
-	pipenv run python -m pytest -s tests/integration/test_end_to_end_election.py
+	poetry run python -m pytest -s tests/integration/test_end_to_end_election.py
 
 test-integration:
 	@echo ✅ INTEGRATION TESTS
-	pipenv run pytest tests/integration
+	poetry run pytest tests/integration
 
 # Coverage
 coverage:
 	@echo ✅ COVERAGE
-	pipenv run coverage run -m pytest
-	pipenv run coverage report --fail-under=$(CODE_COVERAGE)
+	poetry run coverage run -m pytest
+	poetry run coverage report --fail-under=$(CODE_COVERAGE)
 
 coverage-html:
-	pipenv run coverage html -d coverage
+	poetry run coverage html -d coverage
 
 coverage-xml:
-	pipenv run coverage xml
+	poetry run coverage xml
 
 coverage-erase:
-	@pipenv run coverage erase
+	@poetry run coverage erase
+
+# Benchmark
+bench:
+	@echo 📊 BENCHMARKS
+	poetry run python -s tests/bench/bench_chaum_pedersen.py
 
 # Documentation
+install-mkdocs:
+	pip install mkdocs
+
 docs-serve:
-	pipenv run mkdocs serve
+	mkdocs serve
 
 docs-build:
-	pipenv run mkdocs build
+	mkdocs build
 
 docs-deploy:
 	@echo 🚀 DEPLOY to Github Pages
-	pipenv run mkdocs gh-deploy --force
+	mkdocs gh-deploy --force
 
 docs-deploy-ci:
 	@echo 🚀 DEPLOY to Github Pages
@@ -149,7 +163,7 @@ docs-deploy-ci:
 	mkdocs gh-deploy --force
 
 dependency-graph:
-	pipenv run pydeps --noshow --max-bacon 2 -o dependency-graph.svg src/electionguard
+	poetry run pydeps --noshow --max-bacon 2 -o dependency-graph.svg src/electionguard
 
 dependency-graph-ci:
 	sudo apt install graphviz
@@ -158,37 +172,29 @@ dependency-graph-ci:
 
 # Sample Data
 generate-sample-data:
-	pipenv run python src/electionguardtest/sample_generator.py -n $(SAMPLE_BALLOT_COUNT) -s $(SAMPLE_BALLOT_SPOIL_RATE)
+	poetry run python src/electionguardtest/sample_generator.py -n $(SAMPLE_BALLOT_COUNT) -s $(SAMPLE_BALLOT_SPOIL_RATE)
 
-# Package
-package:
-	@echo ⬇️ INSTALL WHEEL
-	python -m pip install --user --upgrade setuptools wheel
-	@echo 📦 PACKAGE
-	python setup.py sdist bdist_wheel
+# Publish
+publish:
+	poetry publish
 
-package-upload:
-	python -m pip install --user --upgrade twine
-	python -m twine upload dist/*
+publish-ci:
+	@echo 🚀 PUBLISH
+	poetry publish --username __token__ --password $(PYPI_TOKEN)
 
-package-upload-ci:
-	python -m pip install --user --upgrade twine
-	python -m twine upload --username __token__ --password $(PYPI_TOKEN) dist/*
+publish-test:
+	poetry publish --repository testpypi
 
-package-upload-test:
-	python -m pip install --user --upgrade twine
-	python -m twine upload --repository testpypi dist/*
+publish-test-ci:
+	@echo 🚀 PUBLISH TEST
+	poetry publish --repository testpypi --username __token__ --password $(TEST_PYPI_TOKEN)
 
-package-upload-test-ci:
-	python -m pip install --user --upgrade twine
-	python -m twine upload --repository testpypi --username __token__ --password $(TEST_PYPI_TOKEN) dist/*
-
-package-validate:	
+publish-validate:	
 	@echo ✅ VALIDATE
 	python -m pip install --no-deps electionguard
 	python -c 'import electionguard'
 
-package-validate-test:	
+publish-validate-test:	
 	@echo ✅ VALIDATE
 	python -m pip install --index-url https://test.pypi.org/simple/ --no-deps electionguard
 	python -c 'import electionguard'
