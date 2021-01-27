@@ -140,3 +140,4 @@ cov.xml
 
 # File output
 results/
+test-results/

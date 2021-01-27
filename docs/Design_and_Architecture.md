@@ -58,7 +58,7 @@ The library contains a `Pipfile` that can be used with `pipenv`to ensure the cor
 
 #### Folder Structure
 
-The folder structure is kept to a bare minimum. The ElectionGuard library is located in `src/electionguard` and tests are in `tests`. Standalone applications or other pieces should be in separate subdirectories. For example, the `bench` directory contains a simple Chaum-Pedersen proof computation benchmark.
+The folder structure is kept to a bare minimum. The ElectionGuard library is located in `src/electionguard` and tests are in `tests`. Standalone applications or other pieces should be in separate subdirectories. For example, the `tests/bench` directory contains a simple Chaum-Pedersen proof computation benchmark.
 
 #### Commands
 

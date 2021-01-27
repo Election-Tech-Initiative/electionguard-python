@@ -4,6 +4,8 @@ on: [pull_request, repository_dispatch]
 
 env:
   PYTHON_VERSION: 3.8
+  POETRY_PATH: "$HOME/.poetry/bin" 
+  
 
 jobs:
   code_analysis: 
@@ -15,11 +17,16 @@ jobs:
       - name: Set up Python ${{ env.PYTHON_VERSION }}
         uses: actions/setup-python@v1
         with:
+          setup-python-dependencies: false
           python-version: ${{ env.PYTHON_VERSION }}
       - name: Change Directory
         run: cd ${{ github.workspace }}
       - name: Setup Environment
         run: make environment
+      - name: Add Poetry Path
+        run: echo ${{ env.POETRY_PATH }} >> $GITHUB_PATH
+      - name: Install Dependencies
+        run: make install
       - name: Lint
         run: make lint
       - name: Initialize CodeQL
@@ -40,18 +47,20 @@ jobs:
       - name: Set up Python ${{ env.PYTHON_VERSION }}
         uses: actions/setup-python@v1
         with:
+          setup-python-dependencies: false
           python-version: ${{ env.PYTHON_VERSION }}
       - name: Change Directory
         run: cd ${{ github.workspace }}
       - name: Setup Environment
         run: make environment
-      - name: Install Module
-        run: make install validate
-      - name: Full Test & Coverage
+      - name: Add Poetry Path
+        run: echo ${{ env.POETRY_PATH }} >> $GITHUB_PATH
+      - name: Install Dependencies
+        run: make install
+      - name: Build
+        run: make build validate
+      - name: Full Test Suite & Coverage
         run: make coverage
-      - name: Generate Sample Data
-        # TODO: Issue #152
-        run: make generate-sample-data SAMPLE_BALLOT_SPOIL_RATE=0
 
   mac_check:
     name: MacOS Check
@@ -62,33 +71,17 @@ jobs:
       - name: Set up Python ${{ env.PYTHON_VERSION }}
         uses: actions/setup-python@v1
         with:
+          setup-python-dependencies: false
           python-version: ${{ env.PYTHON_VERSION }}
       - name: Change Directory
         run: cd ${{ github.workspace }}
       - name: Setup Environment
         run: make environment
-      - name: Install Module
-        run: make install validate
-      - name: Integration Tests
-        run: make test-integration
-
-  windows_check:
-    name: Windows Check
-    runs-on: windows-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v2
-      - name: Set up Python ${{ env.PYTHON_VERSION }}
-        uses: actions/setup-python@v1
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-      - name: Pip Upgrade
-        run: python -m pip install -U pip
-      - name: Change Directory
-        run: cd ${{ github.workspace }}
-      - name: Setup Environment
-        run: make environment
-      - name: Install Module
-        run: make install validate
+      - name: Add Poetry Path
+        run: echo ${{ env.POETRY_PATH }} >> $GITHUB_PATH
+      - name: Install Dependencies
+        run: make install
+      - name: Build
+        run: make build validate
       - name: Integration Tests
         run: make test-integration

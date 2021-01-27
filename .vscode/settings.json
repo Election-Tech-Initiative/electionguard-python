@@ -1,6 +1,7 @@
 {
   "python.formatting.provider": "black",
   "python.linting.mypyEnabled": true,
+  "python.linting.mypyArgs": ["--config-file", "pyproject.toml", "src/electionguard", "stubs"],
   "python.linting.pylintEnabled": true,
   "python.linting.pylintUseMinimalCheckers": false,
   "python.linting.pydocstyleEnabled": true,
@@ -17,5 +18,6 @@
     "**/.mypy_cache": true,
     "**/.pytest_cache": true,
     "**/**.egg-info": true
-  }
+  },
+  "python.pythonPath": "/Users/keithrfung/Library/Caches/pypoetry/virtualenvs/electionguard-mzun8bSM-py3.9/bin/python",
 }
