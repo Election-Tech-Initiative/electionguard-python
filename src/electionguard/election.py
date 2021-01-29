@@ -529,6 +529,7 @@ class ElectionDescription(Serializable, CryptoHashable):
     """
 
     election_scope_id: str
+    spec_version: str
     type: ElectionType
     start_date: datetime
     end_date: datetime
