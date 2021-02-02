@@ -1,4 +1,5 @@
 {
+    "spec_version": "v0.95",
     "geopolitical_units": [
         {
             "object_id": "jefferson-county",

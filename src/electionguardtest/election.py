@@ -540,6 +540,7 @@ def election_descriptions(
 
     return ElectionDescription(
         election_scope_id=draw(emails()),
+        spec_version="v0.95",
         type=ElectionType.general,  # good enough for now
         start_date=start_date,
         end_date=end_date,
