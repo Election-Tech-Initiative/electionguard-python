@@ -143,7 +143,10 @@ def human_names(draw: _DrawType):
     Generates a string with a human first and last name.
     :param draw: Hidden argument, used by Hypothesis.
     """
-    return f"{_first_names[draw(integers(0, len(_first_names) - 1))]} {_last_names[draw(integers(0, len(_last_names) - 1))]}"
+    return (
+        f"{_first_names[draw(integers(0, len(_first_names) - 1))]} "
+        f"{_last_names[draw(integers(0, len(_last_names) - 1))]}"
+    )
 
 
 @composite
@@ -560,7 +563,7 @@ def plaintext_voted_ballots(
     if count == 1:
         return draw(plaintext_voted_ballot(metadata))
     ballots: List[PlaintextBallot] = []
-    for i in range(count):
+    for _i in range(count):
         ballots.append(draw(plaintext_voted_ballot(metadata)))
     return ballots
 
@@ -622,7 +625,8 @@ def ciphertext_elections(draw: _DrawType, election_description: ElectionDescript
     In a real election, the key ceremony would be used to generate a shared public key.
 
     :param draw: Hidden argument, used by Hypothesis.
-    :param election_description: An `ElectionDescription` object, with which the `CiphertextElectionContext` will be associated
+    :param election_description: An `ElectionDescription` object, with
+    which the `CiphertextElectionContext` will be associated
     :return: a tuple of a `CiphertextElectionContext` and the secret key associated with it
     """
     secret_key, public_key = draw(elgamal_keypairs())

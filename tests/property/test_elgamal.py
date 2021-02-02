@@ -33,6 +33,8 @@ from tests.property.test_group import elements_mod_q_no_zero
 
 
 class TestElGamal(unittest.TestCase):
+    """ElGamal tests"""
+
     def test_simple_elgamal_encryption_decryption(self):
         nonce = ONE_MOD_Q
         secret_key = TWO_MOD_Q

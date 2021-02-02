@@ -27,8 +27,7 @@ def match_optional(
     """
     if optional is None:
         return none_func()
-    else:
-        return some_func(optional)
+    return some_func(optional)
 
 
 def get_or_else_optional(optional: Optional[_T], alt_value: _T) -> _T:
@@ -38,8 +37,7 @@ def get_or_else_optional(optional: Optional[_T], alt_value: _T) -> _T:
     """
     if optional is None:
         return alt_value
-    else:
-        return optional
+    return optional
 
 
 def get_or_else_optional_func(optional: Optional[_T], func: Callable[[], _T]) -> _T:
@@ -49,8 +47,7 @@ def get_or_else_optional_func(optional: Optional[_T], func: Callable[[], _T]) ->
     """
     if optional is None:
         return func()
-    else:
-        return optional
+    return optional
 
 
 def flatmap_optional(
@@ -62,8 +59,7 @@ def flatmap_optional(
     """
     if optional is None:
         return None
-    else:
-        return mapper(optional)
+    return mapper(optional)
 
 
 def to_ticks(date_time: datetime) -> int:

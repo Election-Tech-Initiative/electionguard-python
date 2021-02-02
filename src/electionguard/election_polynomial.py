@@ -89,6 +89,7 @@ def compute_polynomial_coordinate(
     return computed_value
 
 
+# pylint: disable=unnecessary-comprehension
 def compute_lagrange_coefficient(coordinate: int, *degrees: int) -> ElementModQ:
     """
     Compute the lagrange coefficient for a specific coordinate against N degrees.

@@ -1,3 +1,4 @@
+# pylint: disable=unnecessary-comprehension
 from dataclasses import dataclass, field
 from typing import Iterable, Optional, List, Dict, Set, Tuple, Any
 from collections.abc import Container, Sized
@@ -108,13 +109,11 @@ class CiphertextTallyContest(ElectionObjectBase):
 
         # Validate the input data by comparing the selection id's provided
         # to the valid selection id's for this tally contest
-        selection_ids = set(
-            [
-                selection.object_id
-                for selection in contest_selections
-                if not selection.is_placeholder_selection
-            ]
-        )
+        selection_ids = {
+            selection.object_id
+            for selection in contest_selections
+            if not selection.is_placeholder_selection
+        }
 
         if any(set(self.tally_selections).difference(selection_ids)):
             log_warning(
@@ -139,13 +138,12 @@ class CiphertextTallyContest(ElectionObjectBase):
         for (key, ciphertext) in results:
             if ciphertext is None:
                 return False
-            else:
-                self.tally_selections[key].ciphertext = ciphertext
+            self.tally_selections[key].ciphertext = ciphertext
 
         return True
 
+    @staticmethod
     def _accumulate_selections(
-        self,
         key: SELECTION_ID,
         selection_tally: CiphertextTallySelection,
         contest_selections: List[CiphertextBallotSelection],
@@ -205,7 +203,7 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
 
     cast: Dict[CONTEST_ID, CiphertextTallyContest] = field(init=False)
     """
-    A collection of each contest and selection in an election.  
+    A collection of each contest and selection in an election.
     Retains an encrypted representation of a tally for each selection
     """
 
@@ -405,7 +403,7 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
             selection_id: ciphertext for (selection_id, ciphertext) in result_set
         }
 
-        for contest_id, contest in self.cast.items():
+        for _contest_id, contest in self.cast.items():
             for selection_id, selection in contest.tally_selections.items():
                 if selection_id in result_dict:
                     selection.elgamal_accumulate(result_dict[selection_id])

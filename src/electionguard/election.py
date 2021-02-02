@@ -279,7 +279,7 @@ class SelectionDescription(ElectionObjectBase, CryptoHashable):
     """
     Used for ordering selections in a contest to ensure various encryption primitives are deterministic.
     The sequence order must be unique and should be representative of how the contests are represnted
-    on a "master" ballot in an external system.  The sequence order is not required to be in the order 
+    on a "master" ballot in an external system.  The sequence order is not required to be in the order
     in which they are displayed to a voter.  Any acceptable range of integer values may be provided.
     """
 
@@ -290,6 +290,7 @@ class SelectionDescription(ElectionObjectBase, CryptoHashable):
         return hash_elems(self.object_id, self.sequence_order, self.candidate_id)
 
 
+# pylint: disable=too-many-instance-attributes
 @dataclass(unsafe_hash=True)
 class ContestDescription(ElectionObjectBase, CryptoHashable):
     """
@@ -308,7 +309,7 @@ class ContestDescription(ElectionObjectBase, CryptoHashable):
     """
     Used for ordering contests in a ballot to ensure various encryption primitives are deterministic.
     The sequence order must be unique and should be representative of how the contests are represnted
-    on a "master" ballot in an external system.  The sequence order is not required to be in the order 
+    on a "master" ballot in an external system.  The sequence order is not required to be in the order
     in which they are displayed to a voter.  Any acceptable range of integer values may be provided.
     """
 
@@ -457,8 +458,6 @@ class ReferendumContestDescription(ContestDescription):
     this subclass is used purely for convenience
     """
 
-    pass
-
 
 @dataclass(eq=True, unsafe_hash=True)
 class ContestDescriptionWithPlaceholders(ContestDescription):
@@ -510,10 +509,10 @@ class ContestDescriptionWithPlaceholders(ContestDescription):
 
         if any(matching_placeholders):
             return matching_placeholders[0]
-        else:
-            return None
+        return None
 
 
+# pylint: disable=too-many-instance-attributes
 @dataclass(unsafe_hash=True)
 class ElectionDescription(Serializable, CryptoHashable):
     """
@@ -584,7 +583,6 @@ class ElectionDescription(Serializable, CryptoHashable):
         party_ids: Set[str] = set()
         candidate_ids: Set[str] = set()
         contest_ids: Set[str] = set()
-        selection_ids: Set[str] = set()
 
         # Validate GP Units
         for gp_unit in self.geopolitical_units:
@@ -720,7 +718,7 @@ class ElectionDescription(Serializable, CryptoHashable):
 
 
 @dataclass(eq=True, unsafe_hash=True)
-class InternalElectionDescription(object):
+class InternalElectionDescription:
     """
     `InternalElectionDescription` is a subset of the `ElectionDescription` structure that specifies
     the components that ElectionGuard uses for conducting an election.  The key component is the
@@ -759,8 +757,7 @@ class InternalElectionDescription(object):
 
         if any(matching_contests):
             return matching_contests[0]
-        else:
-            return None
+        return None
 
     # SUGGEST should return Optional
     def get_ballot_style(self, ballot_style_id: str) -> BallotStyle:
@@ -783,14 +780,16 @@ class InternalElectionDescription(object):
         style = self.get_ballot_style(ballot_style_id)
         if style.geopolitical_unit_ids is None:
             return list()
+        # pylint: disable=unnecessary-comprehension
         gp_unit_ids = [gp_unit_id for gp_unit_id in style.geopolitical_unit_ids]
         contests = list(
             filter(lambda i: i.electoral_district_id in gp_unit_ids, self.contests)
         )
         return contests
 
+    @staticmethod
     def _generate_contests_with_placeholders(
-        self, description: ElectionDescription
+        description: ElectionDescription,
     ) -> List[ContestDescriptionWithPlaceholders]:
         """
         For each contest, append the `number_elected` number
@@ -965,7 +964,8 @@ def generate_placeholder_selections_from(
     contest: ContestDescription, count: int
 ) -> List[SelectionDescription]:
     """
-    Generates the specified number of placeholder selections in ascending sequence order from the max selection sequence orderf
+    Generates the specified number of placeholder selections in
+    ascending sequence order from the max selection sequence orderf
 
     :param contest: ContestDescription for input
     :param count: optionally specify a number of placeholders to generate

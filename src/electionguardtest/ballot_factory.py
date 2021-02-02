@@ -1,8 +1,9 @@
-import os
-from jsons import KEY_TRANSFORMER_SNAKECASE, loads
-from random import Random, randint
 from typing import cast, TypeVar, Callable, List, Tuple
+import os
+from random import Random, randint
 import uuid
+
+from jsons import KEY_TRANSFORMER_SNAKECASE, loads
 
 from hypothesis.strategies import (
     composite,
@@ -32,12 +33,14 @@ _DrawType = Callable[[SearchStrategy[_T]], _T]
 data = os.path.realpath(os.path.join(__file__, "../../../data"))
 
 
-class BallotFactory(object):
+class BallotFactory:
+    """Factory to create ballots"""
+
     simple_ballot_filename = "ballot_in_simple.json"
     simple_ballots_filename = "plaintext_ballots_simple.json"
 
+    @staticmethod
     def get_random_selection_from(
-        self,
         description: SelectionDescription,
         random_source: Random,
         is_placeholder=False,
@@ -113,7 +116,7 @@ class BallotFactory(object):
         self, election: InternalElectionDescription, number_of_ballots: int
     ) -> List[PlaintextBallot]:
         ballots: List[PlaintextBallot] = []
-        for i in range(number_of_ballots):
+        for _i in range(number_of_ballots):
 
             style_index = randint(0, len(election.ballot_styles) - 1)
             ballot_style = election.ballot_styles[style_index]
@@ -135,13 +138,15 @@ class BallotFactory(object):
     def get_simple_ballots_from_file(self) -> List[PlaintextBallot]:
         return self._get_ballots_from_file(self.simple_ballots_filename)
 
-    def _get_ballot_from_file(self, filename: str) -> PlaintextBallot:
+    @staticmethod
+    def _get_ballot_from_file(filename: str) -> PlaintextBallot:
         with open(os.path.join(data, filename), "r") as subject:
             result = subject.read()
             target = PlaintextBallot.from_json(result)
         return target
 
-    def _get_ballots_from_file(self, filename: str) -> List[PlaintextBallot]:
+    @staticmethod
+    def _get_ballots_from_file(filename: str) -> List[PlaintextBallot]:
         with open(os.path.join(data, filename), "r") as subject:
             result = subject.read()
             target = cast(
@@ -157,14 +162,14 @@ class BallotFactory(object):
 
 @composite
 def get_selection_well_formed(
-    draw: _DrawType, uuids=uuids(), bools=booleans(), text=text()
+    draw: _DrawType, ids=uuids(), bools=booleans(), txt=text()
 ) -> Tuple[str, PlaintextBallotSelection]:
     use_none = draw(bools)
     if use_none:
         extra_data = None
     else:
-        extra_data = draw(text)
-    object_id = f"selection-{draw(uuids)}"
+        extra_data = draw(txt)
+    object_id = f"selection-{draw(ids)}"
     return (
         object_id,
         PlaintextBallotSelection(object_id, f"{draw(bools)}", draw(bools), extra_data),
@@ -173,15 +178,15 @@ def get_selection_well_formed(
 
 @composite
 def get_selection_poorly_formed(
-    draw: _DrawType, uuids=uuids(), bools=booleans(), text=text()
+    draw: _DrawType, ids=uuids(), bools=booleans(), txt=text()
 ) -> Tuple[str, PlaintextBallotSelection]:
     use_none = draw(bools)
     if use_none:
         extra_data = None
     else:
-        extra_data = draw(text)
-    object_id = f"selection-{draw(uuids)}"
+        extra_data = draw(txt)
+    object_id = f"selection-{draw(ids)}"
     return (
         object_id,
-        PlaintextBallotSelection(object_id, f"{draw(text)}", draw(bools), extra_data),
+        PlaintextBallotSelection(object_id, f"{draw(txt)}", draw(bools), extra_data),
     )

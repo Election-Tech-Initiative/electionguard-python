@@ -31,7 +31,7 @@ MISSING_GUARDIAN_ID = GUARDIAN_ID
 
 GUARDIAN_PUBLIC_KEY = ElementModP
 
-
+# pylint: disable=too-many-instance-attributes
 @dataclass
 class DecryptionMediator:
     """
@@ -134,7 +134,10 @@ class DecryptionMediator:
             if guardian_id in self._missing_guardians.keys():
                 if self._missing_guardians.get(guardian_id) != public_key:
                     log_warning(
-                        f"announce guardian: {guardian.object_id} expected public key mismatch for missing {guardian_id}"
+                        (
+                            f"announce guardian: {guardian.object_id} "
+                            f"expected public key mismatch for missing {guardian_id}"
+                        )
                     )
                     return None
             else:
@@ -190,8 +193,7 @@ class DecryptionMediator:
             if share is None:
                 log_warning(f"compensation failed for missing: {missing_guardian_id}")
                 break
-            else:
-                compensated_decryptions.append(share)
+            compensated_decryptions.append(share)
 
         # Verify generated the correct number of partials
         if len(compensated_decryptions) != len(self._available_guardians):
@@ -199,11 +201,11 @@ class DecryptionMediator:
                 f"compensate mismatch partial decryptions for missing guardian {missing_guardian_id}"
             )
             return None
-        else:
-            self._lagrange_coefficients[missing_guardian_id] = lagrange_coefficients
-            self._submit_compensated_decryption_shares(compensated_decryptions)
-            return compensated_decryptions
+        self._lagrange_coefficients[missing_guardian_id] = lagrange_coefficients
+        self._submit_compensated_decryption_shares(compensated_decryptions)
+        return compensated_decryptions
 
+    # pylint: disable=too-many-return-statements
     def get_plaintext_tally(
         self, recompute: bool = False, decrypt: AuxiliaryDecrypt = rsa_decrypt
     ) -> Optional[PlaintextTally]:
@@ -248,7 +250,7 @@ class DecryptionMediator:
         if missing_decryption_shares is None or len(missing_decryption_shares) != len(
             self._missing_guardians
         ):
-            log_warning(f"get plaintext tally failed with missing decryption shares")
+            log_warning("get plaintext tally failed with missing decryption shares")
             return None
 
         merged_decryption_shares: Dict[str, TallyDecryptionShare] = {}
@@ -260,7 +262,7 @@ class DecryptionMediator:
             merged_decryption_shares[missing] = share
 
         if len(merged_decryption_shares) != self._encryption.number_of_guardians:
-            log_warning(f"get plaintext tally failed with share length mismatch")
+            log_warning("get plaintext tally failed with share length mismatch")
             return None
 
         return decrypt_tally(
@@ -301,7 +303,10 @@ class DecryptionMediator:
             in self._compensated_decryption_shares[share.missing_guardian_id]
         ):
             log_warning(
-                f"cannot submit compensated share for guardian {share.guardian_id} on behalf of {share.missing_guardian_id} that already compensated"
+                (
+                    f"cannot submit compensated share for guardian {share.guardian_id} "
+                    f"on behalf of {share.missing_guardian_id} that already compensated"
+                )
             )
             return False
 

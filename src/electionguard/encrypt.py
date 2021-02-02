@@ -49,7 +49,7 @@ class EncryptionDevice(Serializable):
         return get_hash_for_device(self.uuid, self.location)
 
 
-class EncryptionMediator(object):
+class EncryptionMediator:
     """
     An object for caching election and encryption state.
 
@@ -143,7 +143,8 @@ def encrypt_selection(
     Encrypt a specific `BallotSelection` in the context of a specific `BallotContest`
 
     :param selection: the selection in the valid input form
-    :param selection_description: the `SelectionDescription` from the `ContestDescription` which defines this selection's structure
+    :param selection_description: the `SelectionDescription` from the
+        `ContestDescription` which defines this selection's structure
     :param elgamal_public_key: the public key (K) used to encrypt the ballot
     :param crypto_extended_base_hash: the extended base hash of the election
     :param nonce_seed: an `ElementModQ` used as a header to seed the `Nonce` generated for this selection.
@@ -200,13 +201,13 @@ def encrypt_selection(
         selection_description_hash, elgamal_public_key, crypto_extended_base_hash
     ):
         return encrypted_selection
-    else:
-        log_warning(
-            f"mismatching selection proof for selection {encrypted_selection.object_id}"
-        )
-        return None
+    log_warning(
+        f"mismatching selection proof for selection {encrypted_selection.object_id}"
+    )
+    return None
 
 
+# pylint: disable=too-many-return-statements
 def encrypt_contest(
     contest: PlaintextBallotContest,
     contest_description: ContestDescriptionWithPlaceholders,
@@ -224,7 +225,8 @@ def encrypt_contest(
     votes
 
     :param contest: the contest in the valid input form
-    :param contest_description: the `ContestDescriptionWithPlaceholders` from the `ContestDescription` which defines this contest's structure
+    :param contest_description: the `ContestDescriptionWithPlaceholders`
+        from the `ContestDescription` which defines this contest's structure
     :param elgamal_public_key: the public key (k) used to encrypt the ballot
     :param crypto_extended_base_hash: the extended base hash of the election
     :param nonce_seed: an `ElementModQ` used as a header to seed the `Nonce` generated for this contest.
@@ -363,11 +365,8 @@ def encrypt_contest(
         contest_description_hash, elgamal_public_key, crypto_extended_base_hash
     ):
         return encrypted_contest
-    else:
-        log_warning(
-            f"mismatching contest proof for contest {encrypted_contest.object_id}"
-        )
-        return None
+    log_warning(f"mismatching contest proof for contest {encrypted_contest.object_id}")
+    return None
 
 
 # TODO: ISSUE #57: add the device hash to the function interface so it can be propagated with the ballot.
@@ -469,5 +468,4 @@ def encrypt_ballot(
         context.crypto_extended_base_hash,
     ):
         return encrypted_ballot
-    else:
-        return None  # log will have happened earlier
+    return None  # log will have happened earlier

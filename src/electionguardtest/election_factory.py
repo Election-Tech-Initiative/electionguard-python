@@ -54,6 +54,8 @@ QUORUM = 3
 
 @dataclass
 class AllPublicElectionData:
+    """All public data for election"""
+
     description: ElectionDescription
     metadata: InternalElectionDescription
     context: CiphertextElectionContext
@@ -63,17 +65,21 @@ class AllPublicElectionData:
 
 @dataclass
 class AllPrivateElectionData:
+    """All private data for election"""
+
     guardians: List[Guardian]
 
 
-class ElectionFactory(object):
+class ElectionFactory:
+    """Factory to create elections"""
 
     simple_election_manifest_file_name = "election_manifest_simple.json"
 
     def get_simple_election_from_file(self) -> ElectionDescription:
         return self._get_election_from_file(self.simple_election_manifest_file_name)
 
-    def get_hamilton_election_from_file(self) -> ElectionDescription:
+    @staticmethod
+    def get_hamilton_election_from_file() -> ElectionDescription:
         with open(
             os.path.join(data, "hamilton-county", "election_manifest.json"), "r"
         ) as subject:
@@ -130,7 +136,8 @@ class ElectionFactory(object):
             AllPrivateElectionData(guardians),
         )
 
-    def get_fake_election(self) -> ElectionDescription:
+    @staticmethod
+    def get_fake_election() -> ElectionDescription:
         """
         Get a single Fake Election object that is manually constructed with default values
         """
@@ -210,8 +217,9 @@ class ElectionFactory(object):
 
         return fake_election
 
+    @staticmethod
     def get_fake_ciphertext_election(
-        self, description: ElectionDescription, elgamal_public_key: ElementModP
+        description: ElectionDescription, elgamal_public_key: ElementModP
     ) -> Tuple[InternalElectionDescription, CiphertextElectionContext]:
         builder = ElectionBuilder(
             number_of_guardians=1, quorum=1, description=description
@@ -241,7 +249,8 @@ class ElectionFactory(object):
 
         return fake_ballot
 
-    def _get_election_from_file(self, filename: str) -> ElectionDescription:
+    @staticmethod
+    def _get_election_from_file(filename: str) -> ElectionDescription:
         with open(os.path.join(data, filename), "r") as subject:
             result = subject.read()
             target = ElectionDescription.from_json(result)
@@ -253,12 +262,12 @@ class ElectionFactory(object):
 def get_selection_description_well_formed(
     draw: _DrawType,
     ints=integers(1, 20),
-    emails=emails(),
+    email_addresses=emails(),
     candidate_id: Optional[str] = None,
     sequence_order: Optional[int] = None,
 ) -> Tuple[str, SelectionDescription]:
     if candidate_id is None:
-        candidate_id = draw(emails)
+        candidate_id = draw(email_addresses)
 
     object_id = f"{candidate_id}-selection"
 
@@ -272,19 +281,19 @@ def get_selection_description_well_formed(
 def get_contest_description_well_formed(
     draw: _DrawType,
     ints=integers(1, 20),
-    text=text(),
-    emails=emails(),
+    txt=text(),
+    email_addresses=emails(),
     selections=get_selection_description_well_formed(),
     sequence_order: Optional[int] = None,
     electoral_district_id: Optional[str] = None,
 ) -> Tuple[str, ContestDescription]:
-    object_id = f"{draw(emails)}-contest"
+    object_id = f"{draw(email_addresses)}-contest"
 
     if sequence_order is None:
         sequence_order = draw(ints)
 
     if electoral_district_id is None:
-        electoral_district_id = f"{draw(emails)}-gp-unit"
+        electoral_district_id = f"{draw(email_addresses)}-gp-unit"
 
     first_int = draw(ints)
     second_int = draw(ints)
@@ -307,7 +316,7 @@ def get_contest_description_well_formed(
         VoteVariationType.n_of_m,
         number_elected,
         votes_allowed,
-        draw(text),
+        draw(txt),
         selection_descriptions,
     )
 

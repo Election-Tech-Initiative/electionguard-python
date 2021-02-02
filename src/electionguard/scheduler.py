@@ -1,11 +1,11 @@
 from __future__ import annotations
+import traceback
+from typing import Any, Callable, Iterable, List, TypeVar
 from contextlib import AbstractContextManager
 from multiprocessing import Pool as ProcessPool
 from multiprocessing.dummy import Pool as ThreadPool
 from multiprocessing.pool import Pool
 from psutil import cpu_count
-import traceback
-from typing import Any, Callable, Iterable, List, TypeVar
 
 from .logs import log_warning
 from .singleton import Singleton
@@ -26,7 +26,7 @@ class Scheduler(Singleton, AbstractContextManager):
     __thread_pool: Pool
 
     def __init__(self) -> None:
-        super(Scheduler, self).__init__()
+        super().__init__()
         self._open()
 
     def __enter__(self) -> Scheduler:
@@ -50,7 +50,8 @@ class Scheduler(Singleton, AbstractContextManager):
         self.__process_pool.close()
         self.__thread_pool.close()
 
-    def cpu_count(self) -> int:
+    @staticmethod
+    def cpu_count() -> int:
         """Get CPU count"""
         return int(cpu_count(logical=False))
 
@@ -65,16 +66,18 @@ class Scheduler(Singleton, AbstractContextManager):
         :param task: the callable task to execute
         :param arguments: the list of lists passed to the task using starmap
         :param with_shared_resources: flag to use threads instead of processes
-                                      allowing resources to be shared.  note
-                                      when using the threadpool, execution is bound
-                                      by default to the [global interpreter lock](https://docs.python.org/3.8/glossary.html#term-global-interpreter-lock)
+            allowing resources to be shared.  note
+            when using the threadpool, execution is bound
+            by default to the [global interpreter lock]
+            (https://docs.python.org/3.8/glossary.html#term-global-interpreter-lock)
         """
         if with_shared_resources:
             return self.safe_starmap(self.__thread_pool, task, arguments)
         return self.safe_starmap(self.__process_pool, task, arguments)
 
+    @staticmethod
     def safe_starmap(
-        self, pool: Pool, task: Callable, arguments: Iterable[Iterable[Any]]
+        pool: Pool, task: Callable, arguments: Iterable[Iterable[Any]]
     ) -> List[_T]:
         """Safe wrapper around starmap to ensure pool is open"""
         try:
@@ -84,22 +87,21 @@ class Scheduler(Singleton, AbstractContextManager):
                 f"safe_starmap({task}, {arguments}) exception ValueError({str(e)})"
             )
             return []
-        except Exception:
+        except Exception:  # pylint: disable=broad-except
             log_warning(
                 f"safe_starmap({task}, {arguments}) failed with \n {traceback.format_exc()}"
             )
             return []
 
-    def safe_map(
-        self, pool: Pool, task: Callable, arguments: Iterable[Any]
-    ) -> List[_T]:
+    @staticmethod
+    def safe_map(pool: Pool, task: Callable, arguments: Iterable[Any]) -> List[_T]:
         """Safe wrapper around starmap to ensure pool is open"""
         try:
             return pool.map(task, arguments)
         except ValueError as e:
             log_warning(f"safe_map({task}, {arguments}) exception ValueError({str(e)})")
             return []
-        except Exception:
+        except Exception:  # pylint: disable=broad-except
             log_warning(
                 f"safe_starmap({task}, {arguments}) failed with \n {traceback.format_exc()}"
             )

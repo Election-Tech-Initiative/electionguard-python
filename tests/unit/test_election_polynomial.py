@@ -14,6 +14,8 @@ TEST_POLYNOMIAL_DEGREE = 3
 
 
 class TestElectionPolynomial(TestCase):
+    """Election polynomial tests"""
+
     def test_generate_polynomial(self):
         # Act
         polynomial = generate_polynomial(TEST_POLYNOMIAL_DEGREE)

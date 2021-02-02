@@ -15,7 +15,7 @@ from .ballot_validator import ballot_is_valid_for_election
 
 
 @dataclass
-class BallotBox(object):
+class BallotBox:
     """
     A stateful convenience wrapper to cache election data
     """

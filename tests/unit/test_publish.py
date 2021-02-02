@@ -25,6 +25,8 @@ from electionguard.tally import (
 
 
 class TestPublish(TestCase):
+    """Publishing tests"""
+
     def test_publish(self) -> None:
         # Arrange
         now = datetime.now(timezone.utc)

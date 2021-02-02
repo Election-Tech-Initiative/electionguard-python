@@ -175,7 +175,7 @@ python-versions = "*"
 
 [[package]]
 name = "hypothesis"
-version = "6.0.1"
+version = "6.0.2"
 description = "A library for property-based testing"
 category = "dev"
 optional = false
@@ -463,7 +463,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
 [[package]]
 name = "pkginfo"
-version = "1.6.1"
+version = "1.7.0"
 description = "Query metadatdata from sdists / bdists / installed packages."
 category = "dev"
 optional = false
@@ -973,8 +973,8 @@ gmpy2 = [
     {file = "gmpy2-2.0.8.zip", hash = "sha256:dd233e3288b90f21b0bb384bcc7a7e73557bb112ccf0032ad52aa614eb373d3f"},
 ]
 hypothesis = [
-    {file = "hypothesis-6.0.1-py3-none-any.whl", hash = "sha256:7e7371cd0a06da727cecf923f249e92e4efa5fef5d9ce27559990752dc92b6c3"},
-    {file = "hypothesis-6.0.1.tar.gz", hash = "sha256:f420000a275d858abe5733cc85e7f89c926297a67299650c1c3684790c336f61"},
+    {file = "hypothesis-6.0.2-py3-none-any.whl", hash = "sha256:58ecc8e368be95688d01b1dee788f5b1c1e3d0f31043dc19f014f241f40fa187"},
+    {file = "hypothesis-6.0.2.tar.gz", hash = "sha256:ae616551c8ebe897454e2de5183e325f6a109f70d45b7380154ed974ce8d4772"},
 ]
 idna = [
     {file = "idna-2.10-py2.py3-none-any.whl", hash = "sha256:b97d804b1e9b523befed77c48dacec60e6dcb0b5391d57af6a65a312a90648c0"},
@@ -1156,8 +1156,8 @@ pathspec = [
     {file = "pathspec-0.8.1.tar.gz", hash = "sha256:86379d6b86d75816baba717e64b1a3a3469deb93bb76d613c9ce79edc5cb68fd"},
 ]
 pkginfo = [
-    {file = "pkginfo-1.6.1-py2.py3-none-any.whl", hash = "sha256:ce14d7296c673dc4c61c759a0b6c14bae34e34eb819c0017bb6ca5b7292c56e9"},
-    {file = "pkginfo-1.6.1.tar.gz", hash = "sha256:a6a4ac943b496745cec21f14f021bbd869d5e9b4f6ec06918cffea5a2f4b9193"},
+    {file = "pkginfo-1.7.0-py2.py3-none-any.whl", hash = "sha256:9fdbea6495622e022cc72c2e5e1b735218e4ffb2a2a69cde2694a6c1f16afb75"},
+    {file = "pkginfo-1.7.0.tar.gz", hash = "sha256:029a70cb45c6171c329dfc890cde0879f8c52d6f3922794796e06f577bb03db4"},
 ]
 pluggy = [
     {file = "pluggy-0.13.1-py2.py3-none-any.whl", hash = "sha256:966c145cd83c96502c3c3868f50408687b38434af77734af1e9ca461a4081d2d"},

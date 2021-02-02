@@ -32,7 +32,7 @@ def _list_eq(
 
 
 @dataclass(eq=True, unsafe_hash=True)
-class ExtendedData(object):
+class ExtendedData:
     """
     ExtendedData represents any arbitrary data expressible as a string with a length.
 
@@ -201,7 +201,8 @@ class CiphertextBallotSelection(
         """
         Given an encrypted BallotSelection, validates the encryption state against a specific seed hash and public key.
         Calling this function expects that the object is in a well-formed encrypted state
-        with the elgamal encrypted `message` field populated along with the DisjunctiveChaumPedersenProof `proof` populated.
+        with the elgamal encrypted `message` field populated along with
+        the DisjunctiveChaumPedersenProof`proof` populated.
         the ElementModQ `description_hash` and the ElementModQ `crypto_hash` are also checked.
 
         :param seed_hash: the hash of the SelectionDescription, or
@@ -211,14 +212,20 @@ class CiphertextBallotSelection(
 
         if seed_hash != self.description_hash:
             log_warning(
-                f"mismatching selection hash: {self.object_id} expected({str(seed_hash)}), actual({str(self.description_hash)})"
+                (
+                    f"mismatching selection hash: {self.object_id} expected({str(seed_hash)}), "
+                    f"actual({str(self.description_hash)})"
+                )
             )
             return False
 
         recalculated_crypto_hash = self.crypto_hash_with(seed_hash)
         if self.crypto_hash != recalculated_crypto_hash:
             log_warning(
-                f"mismatching crypto hash: {self.object_id} expected({str(recalculated_crypto_hash)}), actual({str(self.crypto_hash)})"
+                (
+                    f"mismatching crypto hash: {self.object_id} expected({str(recalculated_crypto_hash)}), "
+                    f"actual({str(self.crypto_hash)})"
+                )
             )
             return False
 
@@ -337,13 +344,19 @@ class PlaintextBallotContest(ElectionObjectBase):
 
         if self.object_id != expected_object_id:
             log_warning(
-                f"invalid object_id: expected({expected_object_id}) actual({self.object_id})"
+                (
+                    f"invalid object_id: expected({expected_object_id}) "
+                    f"actual({self.object_id})"
+                )
             )
             return False
 
         if len(self.ballot_selections) > expected_number_selections:
             log_warning(
-                f"invalid number_selections: expected({expected_number_selections}) actual({len(self.ballot_selections)})"
+                (
+                    f"invalid number_selections: expected({expected_number_selections}) "
+                    f"actual({len(self.ballot_selections)})"
+                )
             )
             return False
 
@@ -468,20 +481,27 @@ class CiphertextBallotContest(ElectionObjectBase, CryptoHashCheckable):
         by verifying the accumulated sum of selections match the proof.
         Calling this function expects that the object is in a well-formed encrypted state
         with the `ballot_selections` populated with valid encrypted ballot selections,
-        the ElementModQ `description_hash`, the ElementModQ `crypto_hash`, and the ConstantChaumPedersenProof all populated.
+        the ElementModQ `description_hash`, the ElementModQ `crypto_hash`,
+        and the ConstantChaumPedersenProof all populated.
         Specifically, the seed hash in this context is the hash of the ContestDescription,
         or whatever `ElementModQ` was used to populate the `description_hash` field.
         """
         if seed_hash != self.description_hash:
             log_warning(
-                f"mismatching contest hash: {self.object_id} expected({str(seed_hash)}), actual({str(self.description_hash)})"
+                (
+                    f"mismatching contest hash: {self.object_id} expected({str(seed_hash)}), "
+                    f"actual({str(self.description_hash)})"
+                )
             )
             return False
 
         recalculated_crypto_hash = self.crypto_hash_with(seed_hash)
         if self.crypto_hash != recalculated_crypto_hash:
             log_warning(
-                f"mismatching crypto hash: {self.object_id} expected({str(recalculated_crypto_hash)}), actual({str(self.crypto_hash)})"
+                (
+                    f"mismatching crypto hash: {self.object_id} expected({str(recalculated_crypto_hash)}), "
+                    f"actual({str(self.crypto_hash)})"
+                )
             )
             return False
 
@@ -530,8 +550,7 @@ def _ciphertext_ballot_contest_aggregate_nonce(
                 f"missing nonce values for contest {object_id} cannot calculate aggregate nonce"
             )
             return None
-        else:
-            selection_nonces.append(selection.nonce)
+        selection_nonces.append(selection.nonce)
 
     return add_q(*selection_nonces)
 
@@ -603,7 +622,10 @@ class PlaintextBallot(ElectionObjectBase):
         """
         if self.ballot_style != expected_ballot_style_id:
             log_warning(
-                f"invalid ballot_style: for: {self.object_id} expected({expected_ballot_style_id}) actual({self.ballot_style})"
+                (
+                    f"invalid ballot_style: for: {self.object_id} expected({expected_ballot_style_id}) "
+                    f"actual({self.ballot_style})"
+                )
             )
             return False
 
@@ -620,6 +642,7 @@ class PlaintextBallot(ElectionObjectBase):
         return not self.__eq__(other)
 
 
+# pylint: disable=too-many-instance-attributes
 @dataclass(unsafe_hash=True)
 class CiphertextBallot(ElectionObjectBase, CryptoHashCheckable):
     """
@@ -743,14 +766,20 @@ class CiphertextBallot(ElectionObjectBase, CryptoHashCheckable):
 
         if seed_hash != self.description_hash:
             log_warning(
-                f"mismatching ballot hash: {self.object_id} expected({str(seed_hash)}), actual({str(self.description_hash)})"
+                (
+                    f"mismatching ballot hash: {self.object_id} expected({str(seed_hash)}), "
+                    f"actual({str(self.description_hash)})"
+                )
             )
             return False
 
         recalculated_crypto_hash = self.crypto_hash_with(seed_hash)
         if self.crypto_hash != recalculated_crypto_hash:
             log_warning(
-                f"mismatching crypto hash: {self.object_id} expected({str(recalculated_crypto_hash)}), actual({str(self.crypto_hash)})"
+                (
+                    f"mismatching crypto hash: {self.object_id} expected({str(recalculated_crypto_hash)}), "
+                    f"actual({str(self.crypto_hash)})"
+                )
             )
             return False
 
@@ -845,7 +874,7 @@ def make_ciphertext_ballot(
     """
 
     if len(contests) == 0:
-        log_warning(f"ciphertext ballot with no contests")
+        log_warning("ciphertext ballot with no contests")
 
     contest_hashes = [contest.crypto_hash for contest in contests]
     contest_hash = hash_elems(object_id, description_hash, *contest_hashes)
@@ -894,7 +923,7 @@ def make_ciphertext_accepted_ballot(
     """
 
     if len(contests) == 0:
-        log_warning(f"ciphertext ballot with no contests")
+        log_warning("ciphertext ballot with no contests")
 
     contest_hashes = [contest.crypto_hash for contest in contests]
     contest_hash = hash_elems(object_id, description_hash, *contest_hashes)

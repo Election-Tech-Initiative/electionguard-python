@@ -146,13 +146,11 @@ class TestDecryptionMediator(TestCase):
 
         # Fill in the expected values with any missing selections
         # that were not made on any ballots
-        selection_ids = set(
-            [
-                selection.object_id
-                for contest in self.metadata.contests
-                for selection in contest.ballot_selections
-            ]
-        )
+        selection_ids = {
+            selection.object_id
+            for contest in self.metadata.contests
+            for selection in contest.ballot_selections
+        }
 
         missing_selection_ids = selection_ids.difference(
             set(self.expected_plaintext_tally)
@@ -300,7 +298,10 @@ class TestDecryptionMediator(TestCase):
         )
 
         print(
-            f"lagrange: sequence_orders: ({self.guardians[0].sequence_order}, {self.guardians[1].sequence_order}, {self.guardians[2].sequence_order})\n"
+            (
+                f"lagrange: sequence_orders: ({self.guardians[0].sequence_order}, "
+                f"{self.guardians[1].sequence_order}, {self.guardians[2].sequence_order})\n"
+            )
         )
 
         print(lagrange_0)

@@ -24,6 +24,8 @@ from electionguardtest.tally import accumulate_plaintext_ballots
 
 
 class TestTally(TestCase):
+    """Tally tests"""
+
     @settings(
         deadline=timedelta(milliseconds=10000),
         suppress_health_check=[HealthCheck.too_slow],
@@ -36,7 +38,7 @@ class TestTally(TestCase):
         self, everything: ELECTIONS_AND_BALLOTS_TUPLE_TYPE
     ):
         # Arrange
-        election_description, metadata, ballots, secret_key, context = everything
+        _election_description, metadata, ballots, secret_key, context = everything
         # Tally the plaintext ballots for comparison later
         plaintext_tallies = accumulate_plaintext_ballots(ballots)
 
@@ -73,7 +75,7 @@ class TestTally(TestCase):
         self, everything: ELECTIONS_AND_BALLOTS_TUPLE_TYPE
     ):
         # Arrange
-        election_description, metadata, ballots, secret_key, context = everything
+        _election_description, metadata, ballots, secret_key, context = everything
         # Tally the plaintext ballots for comparison later
         plaintext_tallies = accumulate_plaintext_ballots(ballots)
 
@@ -114,7 +116,7 @@ class TestTally(TestCase):
     ):
 
         # Arrange
-        election_description, metadata, ballots, secret_key, context = everything
+        _election_description, metadata, ballots, _secret_key, context = everything
 
         # encrypt each ballot
         store = DataStore()
@@ -154,6 +156,7 @@ class TestTally(TestCase):
                 subject.cast[first_ballot.object_id].accumulate_contest([])
             )
 
+        # pylint: disable=protected-access
         # pop the cast ballot
         subject._cast_ballot_ids.pop()
 
@@ -199,8 +202,9 @@ class TestTally(TestCase):
         first_ballot.state = BallotBoxState.SPOILED
         self.assertFalse(subject.append(first_ballot))
 
+    @staticmethod
     def _decrypt_with_secret(
-        self, tally: CiphertextTally, secret_key: ElementModQ
+        tally: CiphertextTally, secret_key: ElementModQ
     ) -> Dict[str, int]:
         """
         Demonstrates how to decrypt a tally with a known secret key
@@ -238,7 +242,8 @@ class TestTally(TestCase):
                 first_tally.accumulate_contest(ballot.contests[0].ballot_selections)
             )
 
-            key, bad_accumulation = first_tally._accumulate_selections(
+            # pylint: disable=protected-access
+            _key, bad_accumulation = first_tally._accumulate_selections(
                 first_selection.object_id,
                 first_tally.tally_selections[first_selection.object_id],
                 ballot.contests[0].ballot_selections,

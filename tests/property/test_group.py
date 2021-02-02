@@ -42,6 +42,8 @@ from electionguardtest.group import (
 
 
 class TestEquality(unittest.TestCase):
+    """Math equality tests"""
+
     @given(elements_mod_q(), elements_mod_q())
     def testPsNotEqualToQs(self, q: ElementModQ, q2: ElementModQ):
         p = int_to_p_unchecked(q.to_int())
@@ -64,6 +66,8 @@ class TestEquality(unittest.TestCase):
 
 
 class TestModularArithmetic(unittest.TestCase):
+    """Math Modular Arithmetic tests"""
+
     @given(elements_mod_q())
     def test_add_q(self, q: ElementModQ):
         as_int = add_q(q, 1)
@@ -165,6 +169,8 @@ class TestModularArithmetic(unittest.TestCase):
 
 
 class TestOptionalFunctions(unittest.TestCase):
+    """Math Optional Functions tests"""
+
     def test_unwrap(self):
         good: Optional[int] = 3
         bad: Optional[int] = None
