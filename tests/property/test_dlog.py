@@ -30,6 +30,8 @@ def _discrete_log_uncached(e: ElementModP) -> int:
 
 
 class TestDLog(unittest.TestCase):
+    """Discrete log tests"""
+
     @given(integers(0, 100))
     def test_uncached(self, exp: int):
         plaintext = get_optional(int_to_q(exp))

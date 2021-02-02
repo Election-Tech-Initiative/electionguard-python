@@ -47,6 +47,8 @@ ballot_factory = BallotFactory.BallotFactory()
 
 
 class TestDecryptWithSecrets(unittest.TestCase):
+    """Decrypting with secrets tests"""
+
     @settings(
         deadline=timedelta(milliseconds=2000),
         suppress_health_check=[HealthCheck.too_slow],

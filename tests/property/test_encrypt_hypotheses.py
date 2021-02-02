@@ -25,6 +25,8 @@ SEED_HASH = EncryptionDevice("Location").get_hash()
 
 
 class TestElections(unittest.TestCase):
+    """Election hypothesis encryption tests"""
+
     @settings(
         deadline=timedelta(milliseconds=2000),
         suppress_health_check=[HealthCheck.too_slow],
@@ -62,7 +64,7 @@ class TestElections(unittest.TestCase):
         encryption context.  It also manually verifies that homomorphic accumulation works as expected.
         """
         # Arrange
-        election_description, metadata, ballots, secret_key, context = everything
+        _election_description, metadata, ballots, secret_key, context = everything
 
         # Tally the plaintext ballots for comparison later
         plaintext_tallies = accumulate_plaintext_ballots(ballots)
@@ -106,7 +108,7 @@ class TestElections(unittest.TestCase):
         )
 
         decrypted_tallies = {}
-        for object_id in encrypted_tallies.keys():
+        for object_id in encrypted_tallies:
             decrypted_tallies[object_id] = encrypted_tallies[object_id].decrypt(
                 secret_key
             )

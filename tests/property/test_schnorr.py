@@ -26,6 +26,8 @@ from tests.property.test_group import (
 
 
 class TestSchnorr(unittest.TestCase):
+    """Schnorr tests"""
+
     def test_schnorr_proofs_simple(self) -> None:
         # doesn't get any simpler than this
         keypair = get_optional(elgamal_keypair_from_secret(TWO_MOD_Q))

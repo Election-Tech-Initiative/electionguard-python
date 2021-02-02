@@ -1,3 +1,4 @@
+from typing import Optional, NamedTuple
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric.rsa import (
     generate_private_key,
@@ -14,7 +15,6 @@ from cryptography.hazmat.primitives.serialization import (
     PrivateFormat,
     PublicFormat,
 )
-from typing import Optional, NamedTuple
 
 
 PUBLIC_EXPONENT = 65537

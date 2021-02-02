@@ -45,7 +45,10 @@ def selection_is_valid_for_style(
     """
     if selection.description_hash != description.crypto_hash():
         log_warning(
-            f"ballot is not valid for style: mismatched selection description hash {selection.description_hash} for selection {description.object_id} hash {description.crypto_hash()}"
+            (
+                f"ballot is not valid for style: mismatched selection description hash {selection.description_hash} "
+                f"for selection {description.object_id} hash {description.crypto_hash()}"
+            )
         )
         return False
 
@@ -64,7 +67,10 @@ def contest_is_valid_for_style(
     # verify the hash matches
     if contest.description_hash != description.crypto_hash():
         log_warning(
-            f"ballot is not valid for style: mismatched description hash {contest.description_hash} for contest {description.object_id} hash {description.crypto_hash()}"
+            (
+                f"ballot is not valid for style: mismatched description hash {contest.description_hash} "
+                f"for contest {description.object_id} hash {description.crypto_hash()}"
+            )
         )
         return False
 

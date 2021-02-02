@@ -31,7 +31,7 @@ class AuxiliaryPublicKey(NamedTuple):
 
     key: PUBLIC_KEY
     """
-    A string representation of the Auxiliary public key.  
+    A string representation of the Auxiliary public key.
     It is up to the external `AuxiliaryEncrypt` function to know how to parse this value
     """
 

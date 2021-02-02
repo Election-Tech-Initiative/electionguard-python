@@ -1,3 +1,5 @@
+# pylint: disable=too-many-public-methods
+
 from unittest import TestCase
 
 from electionguard.guardian import Guardian
@@ -18,6 +20,8 @@ identity_auxiliary_encrypt = lambda message, private_key: message
 
 
 class TestGuardian(TestCase):
+    """Guardian tests"""
+
     def test_reset(self):
         guardian = Guardian(
             SENDER_GUARDIAN_ID, SENDER_SEQUENCE_ORDER, NUMBER_OF_GUARDIANS, QUORUM
@@ -391,12 +395,7 @@ class TestGuardian(TestCase):
             NUMBER_OF_GUARDIANS,
             QUORUM,
         )
-        alternate_guardian = Guardian(
-            ALTERNATE_VERIFIER_GUARDIAN_ID,
-            ALTERNATE_VERIFIER_SEQUENCE_ORDER,
-            NUMBER_OF_GUARDIANS,
-            QUORUM,
-        )
+
         guardian.save_auxiliary_public_key(
             recipient_guardian.share_auxiliary_public_key()
         )

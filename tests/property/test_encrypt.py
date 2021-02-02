@@ -58,6 +58,8 @@ SEED_HASH = EncryptionDevice("Location").get_hash()
 
 
 class TestEncrypt(unittest.TestCase):
+    """Encryption tests"""
+
     def test_encrypt_simple_selection_succeeds(self):
 
         # Arrange
@@ -494,7 +496,6 @@ class TestEncrypt(unittest.TestCase):
         This is an example test of a failing test where the contest description
         is malformed
         """
-        random_seed = 0
 
         description = ContestDescription(
             object_id="0@A.com-contest",
@@ -677,7 +678,9 @@ class TestEncrypt(unittest.TestCase):
         for contest in result.contests:
             # Find the contest description
             contest_description = list(
-                filter(lambda i: i.object_id == contest.object_id, metadata.contests)
+                filter(
+                    lambda i, c=contest: i.object_id == c.object_id, metadata.contests
+                )
             )[0]
 
             # Homomorpically accumulate the selection encryptions

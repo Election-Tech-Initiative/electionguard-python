@@ -62,58 +62,27 @@ typish = '*'
 [tool.black]
 target-version = ['py38']
 
+[tool.pylint.'FORMAT']
+max-line-length = 120
+
 # FIXME: Pylint should not require this many exceptions
 [tool.pylint.'MESSAGES CONTROL']
 disable = '''
-  broad-except,
-  cell-var-from-loop,
-  chained-comparison,
-  consider-iterating-dictionary,
-  consider-merging-isinstance,
-  consider-using-set-comprehension,
   duplicate-code,
   fixme,
-  f-string-without-interpolation,
-  global-statement,
-  import-outside-toplevel,
-  inherit-non-class,
   invalid-name,
-  isinstance-second-argument-not-valid-type,
-  line-too-long,
-  logging-fstring-interpolation,
   missing-module-docstring,
-  missing-class-docstring,
   missing-function-docstring,
-  no-else-break,
-  no-else-return,
-  no-name-in-module,
-  no-self-use,
   no-value-for-parameter,
-  protected-access,
   redefined-builtin,
-  redefined-outer-name,
-  super-init-not-called,
-  super-with-arguments,
   too-few-public-methods,
   too-many-arguments,
   too-many-branches,
   too-many-function-args,
   too-many-lines,
   too-many-locals,
-  too-many-instance-attributes,
   too-many-nested-blocks,
-  too-many-public-methods,
-  too-many-return-statements,
-  trailing-whitespace,
-  useless-object-inheritance,
-  ungrouped-imports,
-  unnecessary-comprehension,
   unnecessary-lambda,
-  unnecessary-pass,
-  unsubscriptable-object,
-  unused-variable,
-  using-constant-test,
-  wrong-import-order
   '''
 
 [tool.coverage.run]

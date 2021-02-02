@@ -5,6 +5,8 @@ from electionguard.utils import to_ticks
 
 
 class TestUtils(TestCase):
+    """Utility tests"""
+
     def test_conversion_to_ticks_from_utc(self):
         # Act
         ticks = to_ticks(datetime.now(timezone.utc))

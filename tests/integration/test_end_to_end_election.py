@@ -69,7 +69,7 @@ COEFFICIENTS_DIR = path.join(RESULTS_DIR, "coefficients")
 BALLOTS_DIR = path.join(RESULTS_DIR, "encrypted_ballots")
 SPOILED_DIR = path.join(RESULTS_DIR, "spoiled_ballots")
 
-
+# pylint: disable=too-many-instance-attributes
 class TestEndToEndElection(TestCase):
     """
     Test a complete simple example of executing an End-to-End encrypted election.
@@ -459,7 +459,6 @@ class TestEndToEndElection(TestCase):
         device_from_file = EncryptionDevice.from_json_file(device_name, DEVICES_DIR)
         self.assertEqual(self.device, device_from_file)
 
-        ciphertext_ballots: List[CiphertextAcceptedBallot] = []
         for ballot in self.ballot_store.all():
             name = BALLOT_PREFIX + ballot.object_id
             ballot_from_file = CiphertextAcceptedBallot.from_json_file(
@@ -467,7 +466,6 @@ class TestEndToEndElection(TestCase):
             )
             self.assertEqual(ballot, ballot_from_file)
 
-        spoiled_ballots: List[CiphertextAcceptedBallot] = []
         for spoiled_ballot in self.ciphertext_tally.spoiled_ballots.values():
             name = BALLOT_PREFIX + spoiled_ballot.object_id
             spoiled_ballot_from_file = CiphertextAcceptedBallot.from_json_file(
@@ -487,7 +485,6 @@ class TestEndToEndElection(TestCase):
         )
         self.assertEqual(self.plaintext_tally, plainttext_tally_from_file)
 
-        coefficient_validation_sets: List[CoefficientValidationSet] = []
         for coefficient_validation_set in self.coefficient_validation_sets:
             set_name = COEFFICIENT_PREFIX + coefficient_validation_set.owner_id
             coefficient_validation_set_from_file = (
@@ -510,5 +507,5 @@ class TestEndToEndElection(TestCase):
 
 
 if __name__ == "__main__":
-    print(f"Welcome to the ElectionGuard end-to-end test")
+    print("Welcome to the ElectionGuard end-to-end test")
     TestEndToEndElection().test_end_to_end_election()

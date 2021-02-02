@@ -18,7 +18,7 @@ class ElectionGuardLog(Singleton):
     __logger: logging.Logger
 
     def __init__(self) -> None:
-        super(ElectionGuardLog, self).__init__()
+        super().__init__()
 
         self.__logger = logging.getLogger("electionguard")
         self.__logger.addHandler(get_stream_handler())
@@ -111,7 +111,7 @@ def get_file_handler() -> logging.FileHandler:
     """
 
     # TODO: add file compression, save a bunch of space.
-    #   https://medium.com/@rahulraghu94/overriding-pythons-timedrotatingfilehandler-to-compress-your-log-files-iot-c766a4ace240
+    #   https://medium.com/@rahulraghu94/overriding-pythons-timedrotatingfilehandler-to-compress-your-log-files-iot-c766a4ace240 # pylint: disable=line-too-long
     file_handler = RotatingFileHandler(
         "electionguard.log", "a", maxBytes=10_000_000, backupCount=10
     )
