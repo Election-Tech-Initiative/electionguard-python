@@ -194,6 +194,7 @@ class ElectionFactory:
         )
 
         fake_election = ElectionDescription(
+            spec_version="v0.95",
             election_scope_id="some-scope-id",
             type=ElectionType.unknown,
             start_date=datetime.now(),

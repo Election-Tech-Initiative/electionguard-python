@@ -29,6 +29,11 @@
                 }
             }
         },
+        "spec_version": {
+            "title": "Specification Version",
+            "type": "string",
+            "maxLength": 256
+        },
         "contact_information": {
             "title": "Contact Information",
             "type": [
