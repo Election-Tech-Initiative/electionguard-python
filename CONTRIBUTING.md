@@ -1,7 +1,16 @@
 ## Contributing
 
-This project welcomes contributions and suggestions. Before you get started, you should
-read the [readme](README.md) and [the design and architecture notes](docs/Design_and_Architecture.md), which describe design & architecture goals of the code and tools & techniques used.
+This project welcomes contributions and suggestions. Before you get started, you should read the [readme](README.md) and [the design and architecture notes](docs/Design_and_Architecture.md), which describe design & architecture goals of the code and tools & techniques used.
+
+- 🤔 **CONSIDER** adding a unit test if your PR resolves an issue.
+- ✅ **DO** check open PR's to avoid duplicates.
+- ✅ **DO** keep pull requests small so they can be easily reviewed.
+- ✅ **DO** build locally before pushing.
+- ✅ **DO** make sure tests pass.
+- ✅ **DO** make sure any new changes are documented.
+- ✅ **DO** make sure not to introduce any compiler warnings.
+- ❌**AVOID** breaking the continuous integration build.
+- ❌**AVOID** making significant changes to the overall architecture.
 
 Open source contributions require you to agree to a standard Microsoft Contributor License Agreement (CLA) declaring that you grant us the rights to use your contribution. For details, visit https://cla.opensource.microsoft.com.
 
