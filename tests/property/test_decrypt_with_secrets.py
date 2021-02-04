@@ -338,10 +338,7 @@ class TestDecryptWithSecrets(unittest.TestCase):
             [selection.vote for selection in result_from_nonce.ballot_selections]
         )
         seed_selected = sum(
-            [
-                selection.vote
-                for selection in result_from_nonce_seed.ballot_selections
-            ]
+            [selection.vote for selection in result_from_nonce_seed.ballot_selections]
         )
 
         self.assertEqual(key_selected, nonce_selected)
@@ -376,15 +373,9 @@ class TestDecryptWithSecrets(unittest.TestCase):
             # It's possible there are no selections in the original data collection
             # since it is valid to pass in a ballot that is not complete
             if any(data_selections_exist):
-                self.assertTrue(
-                    data_selections_exist[0].vote == key_selection.vote
-                )
-                self.assertTrue(
-                    data_selections_exist[0].vote == nonce_selection.vote
-                )
-                self.assertTrue(
-                    data_selections_exist[0].vote == seed_selection.vote
-                )
+                self.assertTrue(data_selections_exist[0].vote == key_selection.vote)
+                self.assertTrue(data_selections_exist[0].vote == nonce_selection.vote)
+                self.assertTrue(data_selections_exist[0].vote == seed_selection.vote)
 
             # TODO: also check edge cases such as:
             # - placeholder selections are true for under votes

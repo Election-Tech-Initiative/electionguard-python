@@ -1,6 +1,5 @@
 from dataclasses import dataclass, field, replace
 from datetime import datetime
-from distutils import util
 from enum import Enum
 from typing import Any, List, Optional, Protocol, runtime_checkable, Sequence
 
@@ -344,7 +343,7 @@ class PlaintextBallotContest(ElectionObjectBase):
 
         # Verify the selections are well-formed
         for selection in self.ballot_selections:
-            votes +=  selection.vote
+            votes += selection.vote
             if selection.vote >= 1:
                 number_elected += 1
 

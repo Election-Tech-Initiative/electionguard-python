@@ -163,7 +163,7 @@ class BallotFactory:
 
 @composite
 def get_selection_well_formed(
-    draw: _DrawType, ids=uuids(), bools=booleans(), txt=text(), vote=integers(0,1)
+    draw: _DrawType, ids=uuids(), bools=booleans(), txt=text(), vote=integers(0, 1)
 ) -> Tuple[str, PlaintextBallotSelection]:
     use_none = draw(bools)
     if use_none:
