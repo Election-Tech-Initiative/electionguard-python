@@ -8,6 +8,7 @@ from jsons import KEY_TRANSFORMER_SNAKECASE, loads
 from hypothesis.strategies import (
     composite,
     booleans,
+    integers,
     text,
     uuids,
     SearchStrategy,
@@ -72,8 +73,8 @@ class BallotFactory:
         for selection_description in description.ballot_selections:
             selection = self.get_random_selection_from(selection_description, random)
             # the caller may force a true value
-            voted += selection.to_int()
-            if voted <= 1 and selection.to_int() and with_trues:
+            voted += selection.vote
+            if voted <= 1 and selection.vote and with_trues:
                 selections.append(selection)
                 continue
 
@@ -162,7 +163,7 @@ class BallotFactory:
 
 @composite
 def get_selection_well_formed(
-    draw: _DrawType, ids=uuids(), bools=booleans(), txt=text()
+    draw: _DrawType, ids=uuids(), bools=booleans(), txt=text(), vote=integers(0,1)
 ) -> Tuple[str, PlaintextBallotSelection]:
     use_none = draw(bools)
     if use_none:
@@ -172,13 +173,13 @@ def get_selection_well_formed(
     object_id = f"selection-{draw(ids)}"
     return (
         object_id,
-        PlaintextBallotSelection(object_id, f"{draw(bools)}", draw(bools), extra_data),
+        PlaintextBallotSelection(object_id, draw(vote), draw(bools), extra_data),
     )
 
 
 @composite
 def get_selection_poorly_formed(
-    draw: _DrawType, ids=uuids(), bools=booleans(), txt=text()
+    draw: _DrawType, ids=uuids(), bools=booleans(), txt=text(), vote=integers(0, 1)
 ) -> Tuple[str, PlaintextBallotSelection]:
     use_none = draw(bools)
     if use_none:
@@ -188,5 +189,5 @@ def get_selection_poorly_formed(
     object_id = f"selection-{draw(ids)}"
     return (
         object_id,
-        PlaintextBallotSelection(object_id, f"{draw(txt)}", draw(bools), extra_data),
+        PlaintextBallotSelection(object_id, draw(vote), draw(bools), extra_data),
     )
