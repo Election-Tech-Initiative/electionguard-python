@@ -95,12 +95,3 @@ def rsa_decrypt(encrypted_message: str, private_key: str) -> Optional[str]:
         return None
     hex_str = plaintext.hex()
     return hex_str
-
-
-def count_set_bits(n: int) -> int:
-    """Count set bits for a particular integer"""
-    count = 0
-    while n:
-        count += n & 1
-        n >>= 1
-    return count
