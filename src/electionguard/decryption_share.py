@@ -30,11 +30,6 @@ class CiphertextCompensatedDecryptionSelection(ElectionObjectBase):
     The Missing Guardian for whom this share is calculated on behalf of
     """
 
-    description_hash: ElementModQ
-    """
-    The SelectionDescription hash
-    """
-
     share: ElementModP
     """
     The Share of the decryption of a selection. `M_{i,l} in the spec`
@@ -73,11 +68,6 @@ class CiphertextDecryptionSelection(ElectionObjectBase):
     guardian_id: GUARDIAN_ID
     """
     The Available Guardian that this share belongs to
-    """
-
-    description_hash: ElementModQ
-    """
-    The SelectionDescription hash
     """
 
     share: ElementModP
@@ -172,7 +162,6 @@ class CiphertextDecryptionSelection(ElectionObjectBase):
 def create_ciphertext_decryption_selection(
     object_id: str,
     guardian_id: GUARDIAN_ID,
-    description_hash: ElementModQ,
     share: ElementModP,
     proof_or_recovery: ProofOrRecovery,
 ) -> CiphertextDecryptionSelection:
@@ -187,13 +176,12 @@ def create_ciphertext_decryption_selection(
     """
     if isinstance(proof_or_recovery, ChaumPedersenProof):
         return CiphertextDecryptionSelection(
-            object_id, guardian_id, description_hash, share, proof=proof_or_recovery
+            object_id, guardian_id, share, proof=proof_or_recovery
         )
     if isinstance(proof_or_recovery, dict):
         return CiphertextDecryptionSelection(
             object_id,
             guardian_id,
-            description_hash,
             share,
             recovered_parts=proof_or_recovery,
         )
@@ -201,7 +189,6 @@ def create_ciphertext_decryption_selection(
     return CiphertextDecryptionSelection(
         object_id,
         guardian_id,
-        description_hash,
         share,
     )
 
