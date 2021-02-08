@@ -141,3 +141,6 @@ cov.xml
 # File output
 results/
 test-results/
+
+# VS Code
+.vscode/settings.json
