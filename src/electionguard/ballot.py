@@ -514,7 +514,6 @@ class CiphertextBallotContest(ElectionObjectBase, CryptoHashCheckable):
             log_warning(f"no proof exists for: {self.object_id}")
             return False
 
-        
         elgamal_accumulation = self.elgamal_accumulate()
 
         # Verify that the contest ciphertext matches the elgamal accumulation of all selections
