@@ -518,7 +518,9 @@ class CiphertextBallotContest(ElectionObjectBase, CryptoHashCheckable):
 
         # Verify that the contest ciphertext matches the elgamal accumulation of all selections
         if self.ciphertext != elgamal_accumulation:
-            log_warning(f"ciphertext does not equal elgamal accumulation for : {self.object_id}")
+            log_warning(
+                f"ciphertext does not equal elgamal accumulation for : {self.object_id}"
+            )
             return False
 
         # Verify the sum of the selections matches the proof
