@@ -9,7 +9,7 @@ from .decryption import (
     reconstruct_missing_tally_decryption_shares,
 )
 from .decryption_share import TallyDecryptionShare, CompensatedTallyDecryptionShare
-from .decrypt_with_shares import decrypt_tally
+from .decrypt_with_shares import decrypt_spoiled_ballots, decrypt_tally
 from .election import (
     CiphertextElectionContext,
     InternalElectionDescription,
@@ -44,11 +44,7 @@ class DecryptionMediator:
 
     _ciphertext_tally: CiphertextTally
     _plaintext_tally: Optional[PlaintextTally] = field(default=None)
-
-    # Since spoiled ballots are decrypted, they are just a special case of a tally
-    _plaintext_spoiled_ballots: Dict[BALLOT_ID, Optional[PlaintextTally]] = field(
-        default_factory=lambda: {}
-    )
+    _spoiled_ballots: Optional[Dict[BALLOT_ID, PlaintextTally]] = field(default=None)
 
     _available_guardians: Dict[AVAILABLE_GUARDIAN_ID, Guardian] = field(
         default_factory=lambda: {}
@@ -207,18 +203,14 @@ class DecryptionMediator:
 
     # pylint: disable=too-many-return-statements
     def get_plaintext_tally(
-        self, recompute: bool = False, decrypt: AuxiliaryDecrypt = rsa_decrypt
+        self, decrypt: AuxiliaryDecrypt = rsa_decrypt
     ) -> Optional[PlaintextTally]:
         """
         Get the plaintext tally for the election by composing each Guardian's
         decrypted representation of each selection into a decrypted representation
 
-        :param recompute: Specify if the function should recompute the result, even if one already exists.
         :return: a `PlaintextTally` or `None`
         """
-
-        if self._plaintext_tally is not None and not recompute:
-            return self._plaintext_tally
 
         # Make sure a Quorum of Guardians have announced
         if len(self._available_guardians) < self._encryption.quorum:
@@ -267,6 +259,70 @@ class DecryptionMediator:
 
         return decrypt_tally(
             self._ciphertext_tally, merged_decryption_shares, self._encryption
+        )
+
+    def get_plaintext_spoiled_ballots(
+        self, decrypt: AuxiliaryDecrypt = rsa_decrypt
+    ) -> Optional[Dict[BALLOT_ID, PlaintextTally]]:
+        """
+        Get the plaintext spoiled ballots for the election by composing each Guardian's
+        decrypted representation of each selection into a decrypted representation
+
+        :param recompute: Specify if the function should recompute the result, even if one already exists.
+        :return: a Plaintext Spoiled Ballots or `None`
+        """
+
+        # Make sure a Quorum of Guardians have announced
+        if len(self._available_guardians) < self._encryption.quorum:
+            log_warning(
+                "cannot get plaintext tally with less than quorum available guardians"
+            )
+            return None
+
+        # If all Guardians are present decrypt the tally
+        if len(self._available_guardians) == self._encryption.number_of_guardians:
+            return decrypt_spoiled_ballots(
+                self._ciphertext_tally.spoiled_ballots,
+                self._decryption_shares,
+                self._encryption.crypto_extended_base_hash,
+            )
+
+        # If missing guardians compensate for the missing guardians
+        for missing in self._missing_guardians.keys():
+            compensated_decryptions = self.compensate(missing, decrypt)
+            if compensated_decryptions is None:
+                log_warning(f"get plaintext tally failed compensating for {missing}")
+                return None
+
+        # Reconstruct the missing partial decryptions from the compensation shares
+        missing_decryption_shares = reconstruct_missing_tally_decryption_shares(
+            self._ciphertext_tally,
+            self._missing_guardians,
+            self._compensated_decryption_shares,
+            self._lagrange_coefficients,
+        )
+        if missing_decryption_shares is None or len(missing_decryption_shares) != len(
+            self._missing_guardians
+        ):
+            log_warning("get plaintext tally failed with missing decryption shares")
+            return None
+
+        merged_decryption_shares: Dict[str, TallyDecryptionShare] = {}
+
+        for available, share in self._decryption_shares.items():
+            merged_decryption_shares[available] = share
+
+        for missing, share in missing_decryption_shares.items():
+            merged_decryption_shares[missing] = share
+
+        if len(merged_decryption_shares) != self._encryption.number_of_guardians:
+            log_warning("get plaintext tally failed with share length mismatch")
+            return None
+
+        return decrypt_spoiled_ballots(
+            self._ciphertext_tally.spoiled_ballots,
+            self._decryption_shares,
+            self._encryption.crypto_extended_base_hash,
         )
 
     def _submit_decryption_share(self, share: TallyDecryptionShare) -> bool:

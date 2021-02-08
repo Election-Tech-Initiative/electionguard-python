@@ -101,6 +101,9 @@ class ElectionSampleDataGenerator:
                 decrypter.announce(guardian)
 
         plaintext_tally = get_optional(decrypter.get_plaintext_tally())
+        plaintext_spoiled_ballots = get_optional(
+            decrypter.get_plaintext_spoiled_ballots()
+        )
 
         # Publish
         publish(
@@ -109,7 +112,7 @@ class ElectionSampleDataGenerator:
             public_data.constants,
             [self.encryption_device],
             accepted_ballots,
-            ciphertext_tally.spoiled_ballots.values(),
+            plaintext_spoiled_ballots.values(),
             publish_ciphertext_tally(ciphertext_tally),
             plaintext_tally,
             public_data.guardians,

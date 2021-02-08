@@ -222,6 +222,8 @@ class TestDecryptionMediator(TestCase):
         # Can only announce once
         self.assertIsNotNone(subject.announce(self.guardians[0]))
 
+        subject.announce(self.guardians[1])
+
         # Cannot submit another share internally
         self.assertFalse(
             subject._submit_decryption_share(
@@ -229,8 +231,9 @@ class TestDecryptionMediator(TestCase):
             )
         )
 
-        # Cannot get plaintext tally without a quorum
+        # Cannot get plaintext tally or spoiled ballots without a quorum
         self.assertIsNone(subject.get_plaintext_tally())
+        self.assertIsNone(subject.get_plaintext_spoiled_ballots())
 
     def test_compute_selection(self):
         # Arrange
@@ -504,7 +507,9 @@ class TestDecryptionMediator(TestCase):
             for selection in contest.ballot_selections:
                 expected_tally = selection.vote
                 actual_tally = (
-                    result[contest.object_id].selections[selection.object_id].tally
+                    result.contests[contest.object_id]
+                    .selections[selection.object_id]
+                    .tally
                 )
                 self.assertEqual(expected_tally, actual_tally)
 
@@ -567,7 +572,9 @@ class TestDecryptionMediator(TestCase):
             for selection in contest.ballot_selections:
                 expected_tally = selection.vote
                 actual_tally = (
-                    result[contest.object_id].selections[selection.object_id].tally
+                    result.contests[contest.object_id]
+                    .selections[selection.object_id]
+                    .tally
                 )
                 self.assertEqual(expected_tally, actual_tally)
 
@@ -604,10 +611,11 @@ class TestDecryptionMediator(TestCase):
         for contest in self.fake_spoiled_ballot.contests:
             for selection in contest.ballot_selections:
                 self.assertEqual(
-                    spoiled_ballot[contest.object_id]
+                    spoiled_ballot.contests[contest.object_id]
                     .selections[selection.object_id]
                     .tally,
-                    result[self.fake_spoiled_ballot.object_id][contest.object_id]
+                    result[self.fake_spoiled_ballot.object_id]
+                    .contests[contest.object_id]
                     .selections[selection.object_id]
                     .tally,
                 )
@@ -621,10 +629,12 @@ class TestDecryptionMediator(TestCase):
             self.assertIsNotNone(subject.announce(guardian))
 
         decrypted_tallies = subject.get_plaintext_tally()
+        spoiled_ballots = subject.get_plaintext_spoiled_ballots()
         result = self._convert_to_selections(decrypted_tallies)
 
         # assert
         self.assertIsNotNone(result)
+        self.assertIsNotNone(spoiled_ballots)
         self.assertEqual(self.expected_plaintext_tally, result)
 
         # Verify we get the same tally back if we call again
@@ -692,10 +702,12 @@ class TestDecryptionMediator(TestCase):
             self.assertIsNotNone(subject.announce(guardian))
 
         decrypted_tallies = subject.get_plaintext_tally()
+        spoiled_ballots = subject.get_plaintext_spoiled_ballots()
         result = self._convert_to_selections(decrypted_tallies)
 
         # assert
         self.assertIsNotNone(result)
+        self.assertIsNotNone(spoiled_ballots)
         self.assertEqual(plaintext_tallies, result)
 
     def _generate_encrypted_tally(

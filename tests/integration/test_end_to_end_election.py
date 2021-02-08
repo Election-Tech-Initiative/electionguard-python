@@ -106,6 +106,7 @@ class TestEndToEndElection(TestCase):
     # Step 4 - Decrypt Tally
     ciphertext_tally: CiphertextTally
     plaintext_tally: PlaintextTally
+    plaintext_spoiled_ballots: Dict[str, PlaintextTally]
     decrypter: DecryptionMediator
 
     def test_end_to_end_election(self) -> None:
@@ -341,6 +342,15 @@ class TestEndToEndElection(TestCase):
             self.plaintext_tally is not None,
         )
 
+        self.plaintext_spoiled_ballots = get_optional(
+            self.decrypter.get_plaintext_spoiled_ballots()
+        )
+        self._assert_message(
+            DecryptionMediator.get_plaintext_spoiled_ballots.__qualname__,
+            "Spoiled Ballots Decrypted",
+            self.plaintext_tally is not None,
+        )
+
         # Now, compare the results
         self.compare_results()
 
@@ -397,9 +407,9 @@ class TestEndToEndElection(TestCase):
                             for selection in contest.ballot_selections:
                                 expected = selection.vote
                                 decrypted_selection = (
-                                    self.plaintext_tally.spoiled_ballots[ballot_id][
-                                        contest.object_id
-                                    ].selections[selection.object_id]
+                                    self.plaintext_spoiled_ballots[ballot_id]
+                                    .contests[contest.object_id]
+                                    .selections[selection.object_id]
                                 )
                                 self._assert_message(
                                     f"   - Selection: {selection.object_id}",
@@ -425,7 +435,7 @@ class TestEndToEndElection(TestCase):
             self.constants,
             [self.device],
             self.ballot_store.all(),
-            self.ciphertext_tally.spoiled_ballots.values(),
+            self.plaintext_spoiled_ballots.values(),
             publish_ciphertext_tally(self.ciphertext_tally),
             self.plaintext_tally,
             self.coefficient_validation_sets,
@@ -467,11 +477,9 @@ class TestEndToEndElection(TestCase):
             )
             self.assertEqual(ballot, ballot_from_file)
 
-        for spoiled_ballot in self.ciphertext_tally.spoiled_ballots.values():
+        for spoiled_ballot in self.plaintext_spoiled_ballots.values():
             name = BALLOT_PREFIX + spoiled_ballot.object_id
-            spoiled_ballot_from_file = CiphertextAcceptedBallot.from_json_file(
-                name, SPOILED_DIR
-            )
+            spoiled_ballot_from_file = PlaintextTally.from_json_file(name, SPOILED_DIR)
             self.assertEqual(spoiled_ballot, spoiled_ballot_from_file)
 
         ciphertext_tally_from_file = PublishedCiphertextTally.from_json_file(

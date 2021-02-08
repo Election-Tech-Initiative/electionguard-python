@@ -172,22 +172,6 @@ class PlaintextTally(ElectionObjectBase):
 
     contests: Dict[CONTEST_ID, PlaintextTallyContest]
 
-    spoiled_ballots: Dict[BALLOT_ID, Dict[CONTEST_ID, PlaintextTallyContest]]
-
-
-@dataclass
-class PublishedPlaintextTally(ElectionObjectBase):
-    """
-    The published plaintext representation of all contests in the election
-    """
-
-    contests: Dict[CONTEST_ID, PlaintextTallyContest]
-
-
-def publish_plaintext_tally(tally: PlaintextTally) -> PublishedPlaintextTally:
-    """Publish a plaintext tally with simpler format"""
-    return PublishedPlaintextTally(tally.object_id, tally.contests)
-
 
 @dataclass
 class CiphertextTally(ElectionObjectBase, Container, Sized):

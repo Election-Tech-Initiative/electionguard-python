@@ -20,7 +20,6 @@ from electionguard.publish import publish, publish_private_data, RESULTS_DIR
 from electionguard.tally import (
     CiphertextTally,
     PlaintextTally,
-    publish_ciphertext_tally,
 )
 
 
@@ -41,10 +40,8 @@ class TestPublish(TestCase):
         coefficients = [CoefficientValidationSet("", [], [])]
         encrypted_ballots = []
         spoiled_ballots = []
-        plaintext_tally = PlaintextTally("", [], [])
-        ciphertext_tally = publish_ciphertext_tally(
-            CiphertextTally("", description, context)
-        )
+        plaintext_tally = PlaintextTally("", [])
+        ciphertext_tally = CiphertextTally("", description, context)
 
         # Act
         publish(

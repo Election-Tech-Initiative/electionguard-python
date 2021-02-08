@@ -133,28 +133,19 @@ def decrypt_tally(
     if contests is None:
         return None
 
-    spoiled_ballots = decrypt_spoiled_ballots(
-        tally.spoiled_ballots, shares, context.crypto_extended_base_hash
-    )
-
-    if spoiled_ballots is None:
-        return None
-
-    return PlaintextTally(tally.object_id, contests, spoiled_ballots)
+    return PlaintextTally(tally.object_id, contests)
 
 
 def decrypt_spoiled_ballots(
     spoiled_ballots: Dict[BALLOT_ID, CiphertextAcceptedBallot],
     shares: Dict[AVAILABLE_GUARDIAN_ID, TallyDecryptionShare],
     extended_base_hash: ElementModQ,
-) -> Optional[Dict[BALLOT_ID, Dict[CONTEST_ID, PlaintextTallyContest]]]:
+) -> Optional[Dict[BALLOT_ID, PlaintextTally]]:
     """
     Try to decrypt each of the spoiled ballots using the provided decryption shares
     """
 
-    plaintext_spoiled_ballots: Dict[
-        BALLOT_ID, Dict[CONTEST_ID, PlaintextTallyContest]
-    ] = {}
+    plaintext_spoiled_ballots: Dict[BALLOT_ID, PlaintextTally] = {}
 
     for spoiled_ballot in spoiled_ballots.values():
         ballot_shares: Dict[AVAILABLE_GUARDIAN_ID, BallotDecryptionShare] = {
@@ -177,7 +168,7 @@ def decrypt_ballot(
     ballot: CiphertextAcceptedBallot,
     shares: Dict[AVAILABLE_GUARDIAN_ID, BallotDecryptionShare],
     extended_base_hash: ElementModQ,
-) -> Optional[Dict[CONTEST_ID, PlaintextTallyContest]]:
+) -> Optional[PlaintextTally]:
     """
     Try to decrypt a single ballot using the provided decryption shares
     """
@@ -208,4 +199,4 @@ def decrypt_ballot(
             contest.object_id, selections
         )
 
-    return contests
+    return PlaintextTally(ballot.object_id, contests)
