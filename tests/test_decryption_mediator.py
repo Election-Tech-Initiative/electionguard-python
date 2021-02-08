@@ -392,7 +392,6 @@ class TestDecryptionMediator(TestCase):
         share_2 = create_ciphertext_decryption_selection(
             first_selection.object_id,
             self.guardians[2].object_id,
-            first_selection.description_hash,
             reconstructed_share,
             {
                 self.guardians[0].object_id: compensation_0,
