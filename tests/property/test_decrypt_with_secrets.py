@@ -332,16 +332,13 @@ class TestDecryptWithSecrets(unittest.TestCase):
 
         # Assert the ballot selections sum to the expected number of selections
         key_selected = sum(
-            [selection.to_int() for selection in result_from_key.ballot_selections]
+            [selection.vote for selection in result_from_key.ballot_selections]
         )
         nonce_selected = sum(
-            [selection.to_int() for selection in result_from_nonce.ballot_selections]
+            [selection.vote for selection in result_from_nonce.ballot_selections]
         )
         seed_selected = sum(
-            [
-                selection.to_int()
-                for selection in result_from_nonce_seed.ballot_selections
-            ]
+            [selection.vote for selection in result_from_nonce_seed.ballot_selections]
         )
 
         self.assertEqual(key_selected, nonce_selected)
@@ -376,15 +373,9 @@ class TestDecryptWithSecrets(unittest.TestCase):
             # It's possible there are no selections in the original data collection
             # since it is valid to pass in a ballot that is not complete
             if any(data_selections_exist):
-                self.assertTrue(
-                    data_selections_exist[0].to_int() == key_selection.to_int()
-                )
-                self.assertTrue(
-                    data_selections_exist[0].to_int() == nonce_selection.to_int()
-                )
-                self.assertTrue(
-                    data_selections_exist[0].to_int() == seed_selection.to_int()
-                )
+                self.assertTrue(data_selections_exist[0].vote == key_selection.vote)
+                self.assertTrue(data_selections_exist[0].vote == nonce_selection.vote)
+                self.assertTrue(data_selections_exist[0].vote == seed_selection.vote)
 
             # TODO: also check edge cases such as:
             # - placeholder selections are true for under votes
@@ -646,9 +637,9 @@ class TestDecryptWithSecrets(unittest.TestCase):
 
                 if any(data_selection_exists):
                     data_selection = data_selection_exists[0]
-                    self.assertTrue(data_selection.to_int() == key_selection.to_int())
-                    self.assertTrue(data_selection.to_int() == nonce_selection.to_int())
-                    self.assertTrue(data_selection.to_int() == seed_selection.to_int())
+                    self.assertTrue(data_selection.vote == key_selection.vote)
+                    self.assertTrue(data_selection.vote == nonce_selection.vote)
+                    self.assertTrue(data_selection.vote == seed_selection.vote)
                 else:
                     data_selection = None
 

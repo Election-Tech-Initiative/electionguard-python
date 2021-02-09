@@ -1,6 +1,5 @@
 from dataclasses import dataclass, field, replace
 from datetime import datetime
-from distutils import util
 from enum import Enum
 from typing import Any, List, Optional, Protocol, runtime_checkable, Sequence
 
@@ -48,11 +47,10 @@ class PlaintextBallotSelection(ElectionObjectBase):
     """
     A BallotSelection represents an individual selection on a ballot.
 
-    This class accepts a `vote` string field which has no constraints
+    This class accepts a `vote` integer field which has no constraints
     in the ElectionGuard Data Specification, but is constrained logically
-    in the application to resolve to `True` or `False`.  This implies that the
-    data specification supports passing any string that can be represented as
-    an integer, however only 0 and 1 is supported for now.
+    in the application to resolve to `False` or `True` aka only 0 and 1 is
+    supported for now.
 
     This class can also be designated as `is_placeholder_selection` which has no
     context to the data specification but is useful for running validity checks internally
@@ -63,7 +61,7 @@ class PlaintextBallotSelection(ElectionObjectBase):
     discarded when encrypting.
     """
 
-    vote: str
+    vote: int
 
     is_placeholder_selection: bool = field(default=False)
     """Determines if this is a placeholder selection"""
@@ -86,33 +84,12 @@ class PlaintextBallotSelection(ElectionObjectBase):
             )
             return False
 
-        choice = self.to_int()
-        if choice < 0 or choice > 1:
+        vote = self.vote
+        if vote < 0 or vote > 1:
             log_warning(f"Currently only supporting choices of 0 or 1: {str(self)}")
             return False
 
         return True
-
-    def to_int(self) -> int:
-        """
-        Represent a Truthy string as 1, or if the string is Falsy, 0
-        See: https://docs.python.org/3/distutils/apiref.html#distutils.util.strtobool
-
-        :return: an integer 0 or 1 for valid data, or 0 if the data is malformed
-        """
-
-        as_bool = False
-        try:
-            as_bool = util.strtobool(self.vote.lower())
-        except ValueError:
-            log_warning(
-                f"to_int could not convert plaintext: {self.vote.lower()} to bool"
-            )
-
-        # TODO: ISSUE #33: If the boolean coercion above fails, support integer votes
-        # greater than 1 for cases such as cumulative voting
-        as_int = int(as_bool)
-        return as_int
 
     def __eq__(self, other: Any) -> bool:
         return (
@@ -365,9 +342,8 @@ class PlaintextBallotContest(ElectionObjectBase):
 
         # Verify the selections are well-formed
         for selection in self.ballot_selections:
-            selection_count = selection.to_int()
-            votes += selection_count
-            if selection_count >= 1:
+            votes += selection.vote
+            if selection.vote >= 1:
                 number_elected += 1
 
         if number_elected > expected_number_elected:
