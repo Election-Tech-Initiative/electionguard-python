@@ -390,7 +390,7 @@ class CiphertextBallotContest(ElectionObjectBase, CryptoHashCheckable):
     ballot_selections: List[CiphertextBallotSelection]
     """Collection of ballot selections"""
 
-    ciphertext: ElGamalCiphertext
+    ciphertext_accumulation: ElGamalCiphertext
     """The encrypted representation of all of the vote fields (the contest total)"""
 
     crypto_hash: ElementModQ
@@ -490,10 +490,10 @@ class CiphertextBallotContest(ElectionObjectBase, CryptoHashCheckable):
             log_warning(f"no proof exists for: {self.object_id}")
             return False
 
-        elgamal_accumulation = self.elgamal_accumulate()
+        computed_ciphertext_accumulation = self.elgamal_accumulate()
 
         # Verify that the contest ciphertext matches the elgamal accumulation of all selections
-        if self.ciphertext != elgamal_accumulation:
+        if self.ciphertext_accumulation != computed_ciphertext_accumulation:
             log_warning(
                 f"ciphertext does not equal elgamal accumulation for : {self.object_id}"
             )
@@ -501,7 +501,9 @@ class CiphertextBallotContest(ElectionObjectBase, CryptoHashCheckable):
 
         # Verify the sum of the selections matches the proof
         return self.proof.is_valid(
-            elgamal_accumulation, elgamal_public_key, crypto_extended_base_hash
+            computed_ciphertext_accumulation,
+            elgamal_public_key,
+            crypto_extended_base_hash,
         )
 
 
@@ -584,7 +586,7 @@ def make_ciphertext_ballot_contest(
         description_hash=description_hash,
         ballot_selections=ballot_selections,
         nonce=nonce,
-        ciphertext=elgamal_accumulation,
+        ciphertext_accumulation=elgamal_accumulation,
         crypto_hash=crypto_hash,
         proof=proof,
     )
