@@ -390,6 +390,9 @@ class CiphertextBallotContest(ElectionObjectBase, CryptoHashCheckable):
     ballot_selections: List[CiphertextBallotSelection]
     """Collection of ballot selections"""
 
+    ciphertext: ElGamalCiphertext
+    """The encrypted representation of all of the vote fields (the contest total)"""
+
     crypto_hash: ElementModQ
     """Hash of the encrypted values"""
 
@@ -487,8 +490,16 @@ class CiphertextBallotContest(ElectionObjectBase, CryptoHashCheckable):
             log_warning(f"no proof exists for: {self.object_id}")
             return False
 
-        # Verify the sum of the selections matches the proof
         elgamal_accumulation = self.elgamal_accumulate()
+
+        # Verify that the contest ciphertext matches the elgamal accumulation of all selections
+        if self.ciphertext != elgamal_accumulation:
+            log_warning(
+                f"ciphertext does not equal elgamal accumulation for : {self.object_id}"
+            )
+            return False
+
+        # Verify the sum of the selections matches the proof
         return self.proof.is_valid(
             elgamal_accumulation, elgamal_public_key, crypto_extended_base_hash
         )
@@ -555,11 +566,12 @@ def make_ciphertext_ballot_contest(
         )
 
     aggregate = _ciphertext_ballot_contest_aggregate_nonce(object_id, ballot_selections)
+    elgamal_accumulation = _ciphertext_ballot_elgamal_accumulate(ballot_selections)
     if proof is None:
         proof = flatmap_optional(
             aggregate,
             lambda ag: make_constant_chaum_pedersen(
-                message=_ciphertext_ballot_elgamal_accumulate(ballot_selections),
+                message=elgamal_accumulation,
                 constant=number_elected,
                 r=ag,
                 k=elgamal_public_key,
@@ -572,6 +584,7 @@ def make_ciphertext_ballot_contest(
         description_hash=description_hash,
         ballot_selections=ballot_selections,
         nonce=nonce,
+        ciphertext=elgamal_accumulation,
         crypto_hash=crypto_hash,
         proof=proof,
     )
