@@ -1,6 +1,7 @@
 from unittest import TestCase
 
 from electionguard.data_store import DataStore
+from electionguard.group import ONE_MOD_Q, TWO_MOD_Q
 from electionguard.key_ceremony import (
     AuxiliaryPublicKey,
     ElectionPublicKey,
@@ -196,7 +197,10 @@ class TestKeyCeremony(TestCase):
         )
 
         # Act
-        joint_key = combine_election_public_keys(public_keys)
+        joint_key = combine_election_public_keys(
+            {SENDER_GUARDIAN_ID: ONE_MOD_Q, RECIPIENT_GUARDIAN_ID: TWO_MOD_Q},
+            public_keys,
+        )
 
         # Assert
         self.assertIsNotNone(joint_key)

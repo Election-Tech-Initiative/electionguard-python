@@ -4,7 +4,7 @@ from typing import Callable, Optional, Tuple
 from .chaum_pedersen import ChaumPedersenProof, make_chaum_pedersen
 from .data_store import DataStore, ReadOnlyDataStore
 from .election_object_base import ElectionObjectBase
-from .elgamal import ElGamalCiphertext
+from .elgamal import ElGamalCiphertext, elgamal_combine_public_keys
 from .group import (
     ElementModP,
     ElementModQ,
@@ -20,10 +20,8 @@ from .key_ceremony import (
     AuxiliaryPublicKey,
     AuxiliaryDecrypt,
     AuxiliaryEncrypt,
-    combine_election_public_keys,
     CeremonyDetails,
     CoefficientValidationSet,
-    ElectionJointKey,
     ElectionKeyPair,
     ElectionPartialKeyBackup,
     ElectionPartialKeyChallenge,
@@ -414,16 +412,21 @@ class Guardian(ElectionObjectBase):
         return True
 
     # Joint Key
-    def publish_joint_key(self) -> Optional[ElectionJointKey]:
+    def publish_joint_key(self) -> Optional[ElementModP]:
         """
-        Creates a joint election key from the public keys of all guardians
+        Creates the joint election key from the public keys of all guardians
         :return: Optional joint key for election
         """
         if not self.all_election_public_keys_received():
             return None
         if not self.all_election_partial_key_backups_verified():
             return None
-        return combine_election_public_keys(self._guardian_election_public_keys)
+
+        public_keys = map(
+            lambda public_key: public_key.key,
+            self._guardian_election_public_keys.values(),
+        )
+        return elgamal_combine_public_keys(public_keys)
 
     def partially_decrypt(
         self,

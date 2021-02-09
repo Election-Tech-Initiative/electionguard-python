@@ -40,6 +40,7 @@ from electionguard.election import (
 )
 from electionguard.encrypt import selection_from
 from electionguard.group import ElementModQ
+from electionguardtest.group import elements_mod_q_no_zero
 from electionguardtest.elgamal import elgamal_keypairs
 
 _T = TypeVar("_T")
@@ -631,12 +632,14 @@ def ciphertext_elections(draw: _DrawType, election_description: ElectionDescript
     :return: a tuple of a `CiphertextElectionContext` and the secret key associated with it
     """
     secret_key, public_key = draw(elgamal_keypairs())
+    commitment_hash = draw(elements_mod_q_no_zero())
     ciphertext_election_with_secret: CIPHERTEXT_ELECTIONS_TUPLE_TYPE = (
         secret_key,
         make_ciphertext_election_context(
             number_of_guardians=1,
             quorum=1,
             elgamal_public_key=public_key,
+            commitment_hash=commitment_hash,
             description_hash=election_description.crypto_hash(),
         ),
     )

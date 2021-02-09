@@ -233,7 +233,10 @@ class TestEndToEndElection(TestCase):
             )
 
         # Build the Election
-        self.election_builder.set_public_key(get_optional(joint_key))
+        self.election_builder.set_public_key(get_optional(joint_key).joint_public_key)
+        self.election_builder.set_commitment_hash(
+            get_optional(joint_key).commitment_hash
+        )
         self.metadata, self.context = get_optional(self.election_builder.build())
         self.constants = ElectionConstants()
 
