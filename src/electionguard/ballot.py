@@ -47,11 +47,10 @@ class PlaintextBallotSelection(ElectionObjectBase):
     """
     A BallotSelection represents an individual selection on a ballot.
 
-    This class accepts a `vote` string field which has no constraints
+    This class accepts a `vote` integer field which has no constraints
     in the ElectionGuard Data Specification, but is constrained logically
-    in the application to resolve to `True` or `False`.  This implies that the
-    data specification supports passing any string that can be represented as
-    an integer, however only 0 and 1 is supported for now.
+    in the application to resolve to `False` or `True` aka only 0 and 1 is
+    supported for now.
 
     This class can also be designated as `is_placeholder_selection` which has no
     context to the data specification but is useful for running validity checks internally
