@@ -97,7 +97,7 @@ def decrypt_tally_contests_with_decryption_shares(
     for contest in tally.values():
         selections: Dict[SELECTION_ID, PlaintextTallySelection] = {}
 
-        for selection in contest.tally_selections.values():
+        for selection in contest.selections.values():
             tally_shares = get_tally_shares_for_selection(selection.object_id, shares)
             plaintext_selection = decrypt_selection_with_decryption_shares(
                 selection, tally_shares, extended_base_hash

@@ -141,7 +141,7 @@ def compute_decryption_share_for_cast_contests(
             compute_decryption_share_for_selection,
             [
                 (guardian, selection, context)
-                for (_, selection) in contest.tally_selections.items()
+                for (_, selection) in contest.selections.items()
             ],
             with_shared_resources=True,
         )
@@ -185,7 +185,7 @@ def compute_compensated_decryption_share_for_cast_contests(
             compute_compensated_decryption_share_for_selection,
             [
                 (guardian, missing_guardian_id, selection, context, decrypt)
-                for (_, selection) in contest.tally_selections.items()
+                for (_, selection) in contest.selections.items()
             ],
             with_shared_resources=True,
         )

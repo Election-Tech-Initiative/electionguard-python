@@ -211,7 +211,7 @@ class TestTally(TestCase):
         """
         plaintext_selections: Dict[str, int] = {}
         for _, contest in tally.cast.items():
-            for object_id, selection in contest.tally_selections.items():
+            for object_id, selection in contest.selections.items():
                 plaintext_tally = selection.ciphertext.decrypt(secret_key)
                 plaintext_selections[object_id] = plaintext_tally
 
@@ -245,7 +245,7 @@ class TestTally(TestCase):
             # pylint: disable=protected-access
             _key, bad_accumulation = first_tally._accumulate_selections(
                 first_selection.object_id,
-                first_tally.tally_selections[first_selection.object_id],
+                first_tally.selections[first_selection.object_id],
                 ballot.contests[0].ballot_selections,
             )
             self.assertIsNone(bad_accumulation)

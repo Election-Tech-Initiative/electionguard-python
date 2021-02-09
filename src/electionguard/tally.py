@@ -87,7 +87,7 @@ class CiphertextTallyContest(ElectionObjectBase):
     The ContestDescription hash
     """
 
-    tally_selections: Dict[SELECTION_ID, CiphertextTallySelection]
+    selections: Dict[SELECTION_ID, CiphertextTallySelection]
     """
     A collection of CiphertextTallySelection mapped by SelectionDescription.object_id
     """
@@ -115,7 +115,7 @@ class CiphertextTallyContest(ElectionObjectBase):
             if not selection.is_placeholder_selection
         }
 
-        if any(set(self.tally_selections).difference(selection_ids)):
+        if any(set(self.selections).difference(selection_ids)):
             log_warning(
                 f"accumulate cannot add mismatched selections for contest {self.object_id}"
             )
@@ -131,14 +131,14 @@ class CiphertextTallyContest(ElectionObjectBase):
             self._accumulate_selections,
             [
                 (key, selection_tally, contest_selections)
-                for (key, selection_tally) in self.tally_selections.items()
+                for (key, selection_tally) in self.selections.items()
             ],
         )
 
         for (key, ciphertext) in results:
             if ciphertext is None:
                 return False
-            self.tally_selections[key].ciphertext = ciphertext
+            self.selections[key].ciphertext = ciphertext
 
         return True
 
@@ -388,7 +388,7 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
         }
 
         for _contest_id, contest in self.cast.items():
-            for selection_id, selection in contest.tally_selections.items():
+            for selection_id, selection in contest.selections.items():
                 if selection_id in result_dict:
                     selection.elgamal_accumulate(result_dict[selection_id])
 

@@ -240,7 +240,7 @@ class TestDecryptionMediator(TestCase):
         first_selection = [
             selection
             for contest in self.ciphertext_tally.cast.values()
-            for selection in contest.tally_selections.values()
+            for selection in contest.selections.values()
         ][0]
 
         # act
@@ -256,7 +256,7 @@ class TestDecryptionMediator(TestCase):
         first_selection = [
             selection
             for contest in self.ciphertext_tally.cast.values()
-            for selection in contest.tally_selections.values()
+            for selection in contest.selections.values()
         ][0]
 
         # Act
@@ -288,7 +288,7 @@ class TestDecryptionMediator(TestCase):
         first_selection = [
             selection
             for contest in self.ciphertext_tally.cast.values()
-            for selection in contest.tally_selections.values()
+            for selection in contest.selections.values()
         ][0]
 
         # Compute lagrange coefficients for the guardians that are present
@@ -435,7 +435,7 @@ class TestDecryptionMediator(TestCase):
 
         # find the first selection
         first_contest = [contest for contest in self.ciphertext_tally.cast.values()][0]
-        first_selection = list(first_contest.tally_selections.values())[0]
+        first_selection = list(first_contest.selections.values())[0]
 
         # precompute decryption shares for the guardians
         first_share = compute_decryption_share(
