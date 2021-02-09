@@ -51,7 +51,7 @@ This is a detailed description of the entire Key Ceremony Process
       2. Alternate guardian (outside sender or original recipient) attempts to verify key
          - If the proof verifies, continue
          - If the proof fails again, the accused (sender guardian) should be evicted and process should be restarted with new guardian.
-14. On receipt of all verifications of `election partial private keys` by all guardians, generate and publish `joint key` from election public keys
+14. On receipt of all verifications of `election partial private keys` by all guardians, generate and publish `joint key` from election public keys.
 
 
 \* **Note:** _The auxiliary encrypt and decrypt functions can be overridden to allow different encryption mechanisms other than the default._

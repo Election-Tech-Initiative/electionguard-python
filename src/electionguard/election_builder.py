@@ -9,7 +9,7 @@ from .election import (
     InternalElectionDescription,
     make_ciphertext_election_context,
 )
-from .group import ElementModP
+from .group import ElementModP, ElementModQ
 from .utils import get_optional
 
 
@@ -36,6 +36,8 @@ class ElectionBuilder:
 
     elgamal_public_key: Optional[ElementModP] = field(default=None)
 
+    commitment_hash: Optional[ElementModQ] = field(default=None)
+
     def __post_init__(self) -> None:
         self.internal_description = InternalElectionDescription(self.description)
 
@@ -46,6 +48,15 @@ class ElectionBuilder:
         :return: election builder
         """
         self.elgamal_public_key = elgamal_public_key
+        return self
+
+    def set_commitment_hash(self, commitment_hash: ElementModQ) -> ElectionBuilder:
+        """
+        Set commitment hash
+        :param commitment_hash: hash of the commitments guardians make to each other
+        :return: election builder
+        """
+        self.commitment_hash = commitment_hash
         return self
 
     def build(
@@ -67,6 +78,7 @@ class ElectionBuilder:
                 self.number_of_guardians,
                 self.quorum,
                 get_optional(self.elgamal_public_key),
+                get_optional(self.commitment_hash),
                 self.description.crypto_hash(),
             ),
         )

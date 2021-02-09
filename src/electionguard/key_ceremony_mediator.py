@@ -380,4 +380,13 @@ class KeyCeremonyMediator:
             return None
         if not self.all_election_partial_key_backups_verified():
             return None
-        return combine_election_public_keys(self._election_public_keys)
+
+        # retrieve the commitments from the coefficient validation sets
+        election_commitments = {
+            guardian.object_id: guardian.share_coefficient_validation_set().coefficient_commitments
+            for guardian in self._guardians
+        }
+
+        return combine_election_public_keys(
+            election_commitments, self._election_public_keys
+        )

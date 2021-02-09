@@ -33,7 +33,9 @@ class TestPublish(TestCase):
         description = ElectionDescription(
             "", ElectionType.unknown, now, now, [], [], [], [], [], []
         )
-        context = make_ciphertext_election_context(1, 1, ONE_MOD_P, ONE_MOD_Q)
+        context = make_ciphertext_election_context(
+            1, 1, ONE_MOD_P, ONE_MOD_Q, ONE_MOD_Q
+        )
         constants = ElectionConstants()
         devices = []
         coefficients = [CoefficientValidationSet("", [], [])]

@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List, Optional, NamedTuple
+from typing import Dict, List, Optional, NamedTuple
 
 from .auxiliary import (
     AuxiliaryKeyPair,
@@ -20,13 +20,29 @@ from .elgamal import (
     elgamal_keypair_random,
 )
 from .group import hex_to_q, rand_q, ElementModP, ElementModQ
+from .hash import hash_elems
 from .rsa import rsa_keypair, rsa_decrypt, rsa_encrypt
 from .schnorr import SchnorrProof, make_schnorr_proof
 from .serializable import Serializable
 from .types import GUARDIAN_ID
 from .utils import get_optional
 
-ElectionJointKey = ElementModP
+
+class ElectionJointKey(NamedTuple):
+    """
+    The Election joint key
+    """
+
+    joint_public_key: ElementModP
+    """
+    The product of the guardian public keys
+    K = ∏ ni=1 Ki mod p.
+    """
+    commitment_hash: ElementModQ
+    """
+    The hash of the commitments that the guardians make to each other
+    H = H(K 1,0 , K 2,0 ... , K n,0 )
+    """
 
 
 class CeremonyDetails(NamedTuple):
@@ -297,13 +313,35 @@ def verify_election_partial_key_challenge(
     )
 
 
+def hash_coefficient_commitments(
+    commitments: List[ElementModP],
+) -> Optional[ElementModQ]:
+    """
+    Hashes the commitments together
+    :param commitments: the flattened list of commitments of all guardians in sequence order
+    :return: H(K 1,0 , K 2,0 ... , K n,0 )
+    """
+    return hash_elems(commitments)
+
+
 def combine_election_public_keys(
-    election_public_keys: DataStore[GUARDIAN_ID, ElectionPublicKey]
+    election_commitments: Dict[GUARDIAN_ID, List[ElementModP]],
+    election_public_keys: DataStore[GUARDIAN_ID, ElectionPublicKey],
 ) -> ElectionJointKey:
     """
     Creates a joint election key from the public keys of all guardians
-    :return: Joint key for election
+    :param election_commitments: a dictionary of commitments keyed by guardian object_id
+    :param election_public_keys: a data store of public keys keyed by guardian object_id
+    :return: ElectionJointKey for election
     """
     public_keys = map(lambda public_key: public_key.key, election_public_keys.values())
+    commitments = [
+        commitment
+        for commitments in election_commitments.values()
+        for commitment in commitments
+    ]
 
-    return elgamal_combine_public_keys(public_keys)
+    return ElectionJointKey(
+        joint_public_key=elgamal_combine_public_keys(public_keys),
+        commitment_hash=get_optional(hash_coefficient_commitments(commitments)),
+    )

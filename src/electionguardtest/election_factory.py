@@ -37,7 +37,7 @@ from electionguard.election_builder import ElectionBuilder
 
 from electionguard.encrypt import contest_from
 
-from electionguard.group import ElementModP
+from electionguard.group import ElementModP, TWO_MOD_Q
 from electionguard.guardian import Guardian
 from electionguard.key_ceremony import CoefficientValidationSet
 from electionguard.key_ceremony_mediator import KeyCeremonyMediator
@@ -125,7 +125,8 @@ class ElectionFactory:
                 guardian.share_coefficient_validation_set()
             )
 
-        builder.set_public_key(get_optional(joint_key))
+        builder.set_public_key(get_optional(joint_key).joint_public_key)
+        builder.set_commitment_hash(get_optional(joint_key).commitment_hash)
         metadata, context = get_optional(builder.build())
         constants = ElectionConstants()
 
@@ -226,6 +227,7 @@ class ElectionFactory:
             number_of_guardians=1, quorum=1, description=description
         )
         builder.set_public_key(elgamal_public_key)
+        builder.set_commitment_hash(TWO_MOD_Q)
         metadata, election = get_optional(builder.build())
         return metadata, election
 

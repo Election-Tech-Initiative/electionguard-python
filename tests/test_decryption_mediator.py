@@ -105,7 +105,8 @@ class TestDecryptionMediator(TestCase):
 
         self.assertIsNone(builder.build())  # Can't build without the public key
 
-        builder.set_public_key(self.joint_public_key)
+        builder.set_public_key(self.joint_public_key.joint_public_key)
+        builder.set_commitment_hash(self.joint_public_key.commitment_hash)
         self.metadata, self.context = get_optional(builder.build())
 
         self.encryption_device = EncryptionDevice("location")
@@ -171,7 +172,7 @@ class TestDecryptionMediator(TestCase):
         self.assertTrue(
             self.encrypted_fake_cast_ballot.is_valid_encryption(
                 self.metadata.description_hash,
-                self.joint_public_key,
+                self.joint_public_key.joint_public_key,
                 self.context.crypto_extended_base_hash,
             )
         )
@@ -669,7 +670,11 @@ class TestDecryptionMediator(TestCase):
         # Arrange
         description = data.draw(election_descriptions(parties, contests))
         builder = ElectionBuilder(self.NUMBER_OF_GUARDIANS, self.QUORUM, description)
-        metadata, context = builder.set_public_key(self.joint_public_key).build()
+        metadata, context = (
+            builder.set_public_key(self.joint_public_key.joint_public_key)
+            .set_commitment_hash(self.joint_public_key.commitment_hash)
+            .build()
+        )
 
         plaintext_ballots: List[PlaintextBallot] = data.draw(
             plaintext_voted_ballots(metadata, randrange(3, 6))
