@@ -855,7 +855,7 @@ class CiphertextElectionContext(Serializable):
     # the `joint public key (K)` in the [ElectionGuard Spec](https://github.com/microsoft/electionguard/wiki)
     elgamal_public_key: ElementModP
 
-    # the `commitment hash H(K 1,0 , K 2,0 ... , K n,0 )` of the public commitments 
+    # the `commitment hash H(K 1,0 , K 2,0 ... , K n,0 )` of the public commitments
     # guardians make to each other in the [ElectionGuard Spec](https://github.com/microsoft/electionguard/wiki)
     commitment_hash: ElementModQ
 
@@ -905,9 +905,7 @@ def make_ciphertext_election_context(
     crypto_base_hash = hash_elems(
         P, Q, G, number_of_guardians, quorum, description_hash
     )
-    crypto_extended_base_hash = hash_elems(
-        crypto_base_hash, commitment_hash
-    )
+    crypto_extended_base_hash = hash_elems(crypto_base_hash, commitment_hash)
     return CiphertextElectionContext(
         number_of_guardians=number_of_guardians,
         quorum=quorum,
