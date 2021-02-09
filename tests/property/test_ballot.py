@@ -46,7 +46,7 @@ class TestBallot(unittest.TestCase):
         object_id, selection = subject
 
         # Act
-        as_int = selection.to_int()
+        as_int = selection.vote
         is_valid = selection.is_valid(object_id)
 
         # Assert
@@ -67,7 +67,7 @@ class TestBallot(unittest.TestCase):
         a_different_object_id = f"{object_id}-not-the-same"
 
         # Act
-        as_int = selection.to_int()
+        as_int = selection.vote
         is_valid = selection.is_valid(a_different_object_id)
 
         # Assert

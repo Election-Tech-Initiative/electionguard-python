@@ -372,9 +372,7 @@ class TestEndToEndElection(TestCase):
             ):
                 for contest in ballot.contests:
                     for selection in contest.ballot_selections:
-                        expected_plaintext_tally[
-                            selection.object_id
-                        ] += selection.to_int()
+                        expected_plaintext_tally[selection.object_id] += selection.vote
 
         # Compare the expected tally to the decrypted tally
         for tally_contest in self.plaintext_tally.contests.values():
@@ -397,7 +395,7 @@ class TestEndToEndElection(TestCase):
                         for contest in plaintext_ballot.contests:
                             print(f"\n Contest: {contest.object_id}")
                             for selection in contest.ballot_selections:
-                                expected = selection.to_int()
+                                expected = selection.vote
                                 decrypted_selection = (
                                     self.plaintext_tally.spoiled_ballots[ballot_id][
                                         contest.object_id

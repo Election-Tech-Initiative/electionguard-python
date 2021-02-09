@@ -393,7 +393,6 @@ class TestDecryptionMediator(TestCase):
         share_2 = create_ciphertext_decryption_selection(
             first_selection.object_id,
             self.guardians[2].object_id,
-            first_selection.description_hash,
             reconstructed_share,
             {
                 self.guardians[0].object_id: compensation_0,
@@ -503,7 +502,7 @@ class TestDecryptionMediator(TestCase):
 
         for contest in plaintext_ballot.contests:
             for selection in contest.ballot_selections:
-                expected_tally = 0 if selection.vote == "False" else 1
+                expected_tally = selection.vote
                 actual_tally = (
                     result[contest.object_id].selections[selection.object_id].tally
                 )
@@ -566,7 +565,7 @@ class TestDecryptionMediator(TestCase):
 
         for contest in plaintext_ballot.contests:
             for selection in contest.ballot_selections:
-                expected_tally = 0 if selection.vote == "False" else 1
+                expected_tally = selection.vote
                 actual_tally = (
                     result[contest.object_id].selections[selection.object_id].tally
                 )
