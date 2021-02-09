@@ -392,7 +392,6 @@ def compute_decryption_share_for_selection(
         return create_ciphertext_decryption_selection(
             selection.object_id,
             guardian.object_id,
-            selection.description_hash,
             decryption,
             proof,
         )
@@ -461,7 +460,6 @@ def compute_compensated_decryption_share_for_selection(
             selection.object_id,
             available_guardian.object_id,
             missing_guardian_id,
-            selection.description_hash,
             decryption,
             recovery_public_key,
             proof,
@@ -596,10 +594,7 @@ def reconstruct_decryption_contests(
         }
 
         selections: Dict[SELECTION_ID, CiphertextDecryptionSelection] = {}
-        for (
-            selection_id,
-            tally_selection,
-        ) in tally_contest.tally_selections.items():
+        for selection_id in tally_contest.tally_selections.keys():
 
             # collect all of the shares generated for each selection
             compensated_selection_shares: Dict[
@@ -620,7 +615,6 @@ def reconstruct_decryption_contests(
             selections[selection_id] = create_ciphertext_decryption_selection(
                 selection_id,
                 missing_guardian_id,
-                tally_selection.description_hash,
                 reconstructed_share,
                 compensated_selection_shares,
             )
@@ -721,7 +715,6 @@ def reconstruct_decryption_ballot(
             selections[selection.object_id] = create_ciphertext_decryption_selection(
                 selection.object_id,
                 missing_guardian_id,
-                selection.description_hash,
                 reconstructed_share,
                 compensated_selection_shares,
             )
