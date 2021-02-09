@@ -1,6 +1,5 @@
 from dataclasses import dataclass, field, replace
 from datetime import datetime
-from distutils import util
 from enum import Enum
 from typing import Any, List, Optional, Protocol, runtime_checkable, Sequence
 
@@ -48,11 +47,10 @@ class PlaintextBallotSelection(ElectionObjectBase):
     """
     A BallotSelection represents an individual selection on a ballot.
 
-    This class accepts a `vote` string field which has no constraints
+    This class accepts a `vote` integer field which has no constraints
     in the ElectionGuard Data Specification, but is constrained logically
-    in the application to resolve to `True` or `False`.  This implies that the
-    data specification supports passing any string that can be represented as
-    an integer, however only 0 and 1 is supported for now.
+    in the application to resolve to `False` or `True` aka only 0 and 1 is
+    supported for now.
 
     This class can also be designated as `is_placeholder_selection` which has no
     context to the data specification but is useful for running validity checks internally
@@ -63,7 +61,7 @@ class PlaintextBallotSelection(ElectionObjectBase):
     discarded when encrypting.
     """
 
-    vote: str
+    vote: int
 
     is_placeholder_selection: bool = field(default=False)
     """Determines if this is a placeholder selection"""
@@ -86,33 +84,12 @@ class PlaintextBallotSelection(ElectionObjectBase):
             )
             return False
 
-        choice = self.to_int()
-        if choice < 0 or choice > 1:
+        vote = self.vote
+        if vote < 0 or vote > 1:
             log_warning(f"Currently only supporting choices of 0 or 1: {str(self)}")
             return False
 
         return True
-
-    def to_int(self) -> int:
-        """
-        Represent a Truthy string as 1, or if the string is Falsy, 0
-        See: https://docs.python.org/3/distutils/apiref.html#distutils.util.strtobool
-
-        :return: an integer 0 or 1 for valid data, or 0 if the data is malformed
-        """
-
-        as_bool = False
-        try:
-            as_bool = util.strtobool(self.vote.lower())
-        except ValueError:
-            log_warning(
-                f"to_int could not convert plaintext: {self.vote.lower()} to bool"
-            )
-
-        # TODO: ISSUE #33: If the boolean coercion above fails, support integer votes
-        # greater than 1 for cases such as cumulative voting
-        as_int = int(as_bool)
-        return as_int
 
     def __eq__(self, other: Any) -> bool:
         return (
@@ -365,9 +342,8 @@ class PlaintextBallotContest(ElectionObjectBase):
 
         # Verify the selections are well-formed
         for selection in self.ballot_selections:
-            selection_count = selection.to_int()
-            votes += selection_count
-            if selection_count >= 1:
+            votes += selection.vote
+            if selection.vote >= 1:
                 number_elected += 1
 
         if number_elected > expected_number_elected:
@@ -413,6 +389,9 @@ class CiphertextBallotContest(ElectionObjectBase, CryptoHashCheckable):
 
     ballot_selections: List[CiphertextBallotSelection]
     """Collection of ballot selections"""
+
+    ciphertext: ElGamalCiphertext
+    """The encrypted representation of all of the vote fields (the contest total)"""
 
     crypto_hash: ElementModQ
     """Hash of the encrypted values"""
@@ -511,8 +490,16 @@ class CiphertextBallotContest(ElectionObjectBase, CryptoHashCheckable):
             log_warning(f"no proof exists for: {self.object_id}")
             return False
 
-        # Verify the sum of the selections matches the proof
         elgamal_accumulation = self.elgamal_accumulate()
+
+        # Verify that the contest ciphertext matches the elgamal accumulation of all selections
+        if self.ciphertext != elgamal_accumulation:
+            log_warning(
+                f"ciphertext does not equal elgamal accumulation for : {self.object_id}"
+            )
+            return False
+
+        # Verify the sum of the selections matches the proof
         return self.proof.is_valid(
             elgamal_accumulation, elgamal_public_key, crypto_extended_base_hash
         )
@@ -579,11 +566,12 @@ def make_ciphertext_ballot_contest(
         )
 
     aggregate = _ciphertext_ballot_contest_aggregate_nonce(object_id, ballot_selections)
+    elgamal_accumulation = _ciphertext_ballot_elgamal_accumulate(ballot_selections)
     if proof is None:
         proof = flatmap_optional(
             aggregate,
             lambda ag: make_constant_chaum_pedersen(
-                message=_ciphertext_ballot_elgamal_accumulate(ballot_selections),
+                message=elgamal_accumulation,
                 constant=number_elected,
                 r=ag,
                 k=elgamal_public_key,
@@ -596,6 +584,7 @@ def make_ciphertext_ballot_contest(
         description_hash=description_hash,
         ballot_selections=ballot_selections,
         nonce=nonce,
+        ciphertext=elgamal_accumulation,
         crypto_hash=crypto_hash,
         proof=proof,
     )

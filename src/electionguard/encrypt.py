@@ -108,7 +108,7 @@ def selection_from(
 
     return PlaintextBallotSelection(
         description.object_id,
-        vote=str(is_affirmative),
+        vote=1 if is_affirmative else 0,
         is_placeholder_selection=is_placeholder,
     )
 
@@ -163,7 +163,7 @@ def encrypt_selection(
     selection_nonce = nonce_sequence[selection_description.sequence_order]
     disjunctive_chaum_pedersen_nonce = next(iter(nonce_sequence))
 
-    selection_representation = selection.to_int()
+    selection_representation = selection.vote
 
     # Generate the encryption
     elgamal_encryption = elgamal_encrypt(
@@ -276,7 +276,7 @@ def encrypt_contest(
                 # track the selection count so we can append the
                 # appropriate number of true placeholder votes
                 has_selection = True
-                selection_count += selection.to_int()
+                selection_count += selection.vote
                 encrypted_selection = encrypt_selection(
                     selection,
                     description,
