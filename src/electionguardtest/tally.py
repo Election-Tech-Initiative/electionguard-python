@@ -24,5 +24,5 @@ def accumulate_plaintext_ballots(ballots: List[PlaintextBallot]) -> Dict[str, in
                 if desc_id not in tally:
                     tally[desc_id] = 0
                 # returns 1 or 0 for n-of-m ballot selections
-                tally[desc_id] += selection.to_int()
+                tally[desc_id] += selection.vote
     return tally
