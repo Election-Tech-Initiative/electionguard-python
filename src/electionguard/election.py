@@ -852,20 +852,20 @@ class CiphertextElectionContext(Serializable):
     The quorum of guardians necessary to decrypt an election.  Must be less than `number_of_guardians`
     """
 
-    # the `joint public key (K)` in the [ElectionGuard Spec](https://github.com/microsoft/electionguard/wiki)
+    # the `joint public key (K)` in the [ElectionGuard Spec](https://www.electionguard.vote/spec/Overview/)
     elgamal_public_key: ElementModP
 
     # the `commitment hash H(K 1,0 , K 2,0 ... , K n,0 )` of the public commitments
-    # guardians make to each other in the [ElectionGuard Spec](https://github.com/microsoft/electionguard/wiki)
+    # guardians make to each other in the [ElectionGuard Spec](https://www.electionguard.vote/spec/Overview/)
     commitment_hash: ElementModQ
 
     # The hash of the election metadata
     description_hash: ElementModQ
 
-    # the `base hash code (𝑄)` in the [ElectionGuard Spec](https://github.com/microsoft/electionguard/wiki)
+    # the `base hash code (𝑄)` in the [ElectionGuard Spec](https://www.electionguard.vote/spec/Overview/)
     crypto_base_hash: ElementModQ
 
-    # the `extended base hash code (𝑄')` in the [ElectionGuard Spec](https://github.com/microsoft/electionguard/wiki)
+    # the `extended base hash code (𝑄')` in the [ElectionGuard Spec](https://www.electionguard.vote/spec/Overview/)
     crypto_extended_base_hash: ElementModQ
 
 
