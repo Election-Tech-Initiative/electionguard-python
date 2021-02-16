@@ -167,7 +167,7 @@ class TestEndToEndElection(TestCase):
         # Setup Guardians
         for i in range(self.NUMBER_OF_GUARDIANS):
             self.guardians.append(
-                Guardian("guardian_" + str(i), i, self.NUMBER_OF_GUARDIANS, self.QUORUM)
+                Guardian("guardian_" + str(i), i + 1, self.NUMBER_OF_GUARDIANS, self.QUORUM)
             )
 
         # Setup Mediator
