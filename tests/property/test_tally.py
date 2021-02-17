@@ -93,15 +93,15 @@ class TestTally(TestCase):
             )
 
         # act
-        result = tally_ballots(store, metadata, context)
-        self.assertIsNotNone(result)
+        tally = tally_ballots(store, metadata, context)
+        self.assertIsNotNone(tally)
 
         # Assert
-        decrypted_tallies = self._decrypt_with_secret(result, secret_key)
+        decrypted_tallies = self._decrypt_with_secret(tally, secret_key)
         self.assertCountEqual(plaintext_tallies, decrypted_tallies)
         for value in decrypted_tallies.values():
             self.assertEqual(0, value)
-        self.assertEqual(len(ballots), len(result.spoiled_ballots))
+        self.assertEqual(len(ballots), len(tally.spoiled()))
 
     @settings(
         deadline=timedelta(milliseconds=10000),
@@ -131,7 +131,7 @@ class TestTally(TestCase):
                 from_ciphertext_ballot(encrypted_ballot, BallotBoxState.CAST),
             )
 
-        subject = CiphertextTally("my-tally", metadata, context)
+        tally = CiphertextTally("my-tally", metadata, context)
 
         # act
         cached_ballots = store.all()
@@ -139,68 +139,65 @@ class TestTally(TestCase):
         first_ballot.state = BallotBoxState.UNKNOWN
 
         # verify an UNKNOWN state ballot fails
-        self.assertIsNone(tally_ballot(first_ballot, subject))
-        self.assertFalse(subject.append(first_ballot))
+        self.assertIsNone(tally_ballot(first_ballot, tally))
+        self.assertFalse(tally.append(first_ballot))
 
         # cast a ballot
         first_ballot.state = BallotBoxState.CAST
-        self.assertTrue(subject.append(first_ballot))
+        self.assertTrue(tally.append(first_ballot))
 
         # try to append a spoiled ballot
         first_ballot.state = BallotBoxState.SPOILED
-        self.assertFalse(subject.append(first_ballot))
+        self.assertFalse(tally.append(first_ballot))
 
         # Verify accumulation fails if the selection collection is empty
         if first_ballot.state == BallotBoxState.CAST:
             self.assertFalse(
-                subject.cast[first_ballot.object_id].accumulate_contest([])
+                tally.contests[first_ballot.object_id].accumulate_contest([])
             )
 
         # pylint: disable=protected-access
         # pop the cast ballot
-        subject._cast_ballot_ids.pop()
+        tally._cast_ballot_ids.pop()
 
         # reset to cast
         first_ballot.state = BallotBoxState.CAST
 
         self.assertTrue(
             self._cannot_erroneously_mutate_state(
-                subject, first_ballot, BallotBoxState.CAST
+                tally, first_ballot, BallotBoxState.CAST
             )
         )
 
         self.assertTrue(
             self._cannot_erroneously_mutate_state(
-                subject, first_ballot, BallotBoxState.SPOILED
+                tally, first_ballot, BallotBoxState.SPOILED
             )
         )
 
         self.assertTrue(
             self._cannot_erroneously_mutate_state(
-                subject, first_ballot, BallotBoxState.UNKNOWN
+                tally, first_ballot, BallotBoxState.UNKNOWN
             )
         )
 
         # verify a spoiled ballot cannot be added twice
         first_ballot.state = BallotBoxState.SPOILED
-        self.assertTrue(subject.append(first_ballot))
-        self.assertFalse(subject.append(first_ballot))
+        self.assertTrue(tally.append(first_ballot))
+        self.assertFalse(tally.append(first_ballot))
 
         # verify an already spoiled ballot cannot be cast
         first_ballot.state = BallotBoxState.CAST
-        self.assertFalse(subject.append(first_ballot))
-
-        # pop the spoiled ballot
-        subject.spoiled_ballots.pop(first_ballot.object_id)
+        self.assertFalse(tally.append(first_ballot))
 
         # verify a cast ballot cannot be added twice
         first_ballot.state = BallotBoxState.CAST
-        self.assertTrue(subject.append(first_ballot))
-        self.assertFalse(subject.append(first_ballot))
+        self.assertTrue(tally.append(first_ballot))
+        self.assertFalse(tally.append(first_ballot))
 
         # verify an already cast ballot cannot be spoiled
         first_ballot.state = BallotBoxState.SPOILED
-        self.assertFalse(subject.append(first_ballot))
+        self.assertFalse(tally.append(first_ballot))
 
     @staticmethod
     def _decrypt_with_secret(
@@ -210,7 +207,7 @@ class TestTally(TestCase):
         Demonstrates how to decrypt a tally with a known secret key
         """
         plaintext_selections: Dict[str, int] = {}
-        for _, contest in tally.cast.items():
+        for _, contest in tally.contests.items():
             for object_id, selection in contest.selections.items():
                 plaintext_tally = selection.ciphertext.decrypt(secret_key)
                 plaintext_selections[object_id] = plaintext_tally

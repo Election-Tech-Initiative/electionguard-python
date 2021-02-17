@@ -233,7 +233,7 @@ class TestDecryptionMediator(TestCase):
 
         # Cannot get plaintext tally or spoiled ballots without a quorum
         self.assertIsNone(subject.get_plaintext_tally())
-        self.assertIsNone(subject.get_plaintext_spoiled_ballots())
+        self.assertIsNone(subject.get_plaintext_ballots())
 
     def test_compute_selection(self):
         # Arrange
@@ -622,14 +622,16 @@ class TestDecryptionMediator(TestCase):
 
     def test_get_plaintext_tally_all_guardians_present_simple(self):
         # Arrange
-        subject = DecryptionMediator(self.metadata, self.context, self.ciphertext_tally)
+        decrypter = DecryptionMediator(
+            self.metadata, self.context, self.ciphertext_tally
+        )
 
         # act
         for guardian in self.guardians:
-            self.assertIsNotNone(subject.announce(guardian))
+            self.assertIsNotNone(decrypter.announce(guardian))
 
-        decrypted_tallies = subject.get_plaintext_tally()
-        spoiled_ballots = subject.get_plaintext_spoiled_ballots()
+        decrypted_tallies = decrypter.get_plaintext_tally()
+        spoiled_ballots = decrypter.get_plaintext_ballots()
         result = self._convert_to_selections(decrypted_tallies)
 
         # assert
@@ -638,7 +640,7 @@ class TestDecryptionMediator(TestCase):
         self.assertEqual(self.expected_plaintext_tally, result)
 
         # Verify we get the same tally back if we call again
-        another_decrypted_tally = subject.get_plaintext_tally()
+        another_decrypted_tally = decrypter.get_plaintext_tally()
 
         self.assertEqual(decrypted_tallies, another_decrypted_tally)
 
@@ -695,14 +697,14 @@ class TestDecryptionMediator(TestCase):
             metadata, context, plaintext_ballots
         )
 
-        subject = DecryptionMediator(metadata, context, encrypted_tally)
+        decrypter = DecryptionMediator(metadata, context, encrypted_tally)
 
         # act
         for guardian in self.guardians:
-            self.assertIsNotNone(subject.announce(guardian))
+            self.assertIsNotNone(decrypter.announce(guardian))
 
-        decrypted_tallies = subject.get_plaintext_tally()
-        spoiled_ballots = subject.get_plaintext_spoiled_ballots()
+        decrypted_tallies = decrypter.get_plaintext_tally()
+        spoiled_ballots = decrypter.get_plaintext_ballots()
         result = self._convert_to_selections(decrypted_tallies)
 
         # assert

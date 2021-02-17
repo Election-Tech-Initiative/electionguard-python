@@ -6,7 +6,7 @@ from .guardian import Guardian
 from .election import CiphertextElectionContext, ElectionConstants, ElectionDescription
 from .encrypt import EncryptionDevice
 from .key_ceremony import CoefficientValidationSet
-from .tally import PlaintextTally, PublishedCiphertextTally
+from .tally import PlaintextTally, CiphertextTally
 from .utils import make_directory
 
 RESULTS_DIR = "results"
@@ -31,7 +31,7 @@ def publish(
     devices: Iterable[EncryptionDevice],
     ciphertext_ballots: Iterable[CiphertextAcceptedBallot],
     spoiled_ballots: Iterable[PlaintextTally],
-    ciphertext_tally: PublishedCiphertextTally,
+    ciphertext_tally: CiphertextTally,
     plaintext_tally: PlaintextTally,
     coefficient_validation_sets: Iterable[CoefficientValidationSet] = None,
     results_directory: str = RESULTS_DIR,

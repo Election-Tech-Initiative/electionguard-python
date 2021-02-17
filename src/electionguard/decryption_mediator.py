@@ -1,15 +1,19 @@
 from dataclasses import dataclass, field
-from typing import Dict, Optional, List
+from typing import Dict, Optional, Tuple
+
+from electionguard.ballot import CiphertextAcceptedBallot
 
 from .auxiliary import AuxiliaryDecrypt
-from .data_store import DataStore
 from .decryption import (
+    compute_compensated_decryption_share_for_ballot,
     compute_decryption_share,
     compute_compensated_decryption_share,
-    reconstruct_missing_tally_decryption_shares,
+    compute_decryption_share_for_ballots,
+    reconstruct_decryption_share,
+    reconstruct_decryption_share_for_ballot,
 )
-from .decryption_share import TallyDecryptionShare, CompensatedTallyDecryptionShare
-from .decrypt_with_shares import decrypt_spoiled_ballots, decrypt_tally
+from .decryption_share import DecryptionShare, CompensatedDecryptionShare
+from .decrypt_with_shares import decrypt_ballots, decrypt_tally
 from .election import (
     CiphertextElectionContext,
     InternalElectionDescription,
@@ -30,6 +34,8 @@ AVAILABLE_GUARDIAN_ID = GUARDIAN_ID
 MISSING_GUARDIAN_ID = GUARDIAN_ID
 
 GUARDIAN_PUBLIC_KEY = ElementModP
+SHARE_LOOKUP = Dict[AVAILABLE_GUARDIAN_ID, DecryptionShare]
+COMPENSATED_SHARE_LOOKUP = Dict[AVAILABLE_GUARDIAN_ID, CompensatedDecryptionShare]
 
 # pylint: disable=too-many-instance-attributes
 @dataclass
@@ -42,24 +48,27 @@ class DecryptionMediator:
     _metadata: InternalElectionDescription
     _encryption: CiphertextElectionContext
 
+    # Tally to Decrypt
     _ciphertext_tally: CiphertextTally
-    _plaintext_tally: Optional[PlaintextTally] = field(default=None)
-    _spoiled_ballots: Optional[Dict[BALLOT_ID, PlaintextTally]] = field(default=None)
+    _ciphertext_ballots: Dict[BALLOT_ID, CiphertextAcceptedBallot]
 
+    # Tally
+    _tally_shares: Dict[AVAILABLE_GUARDIAN_ID, DecryptionShare] = field(
+        default_factory=lambda: {}
+    )
+
+    # Ballot
+    _ballot_shares: Dict[
+        AVAILABLE_GUARDIAN_ID, Dict[BALLOT_ID, DecryptionShare]
+    ] = field(default_factory=lambda: {})
+
+    # Guardians
     _available_guardians: Dict[AVAILABLE_GUARDIAN_ID, Guardian] = field(
         default_factory=lambda: {}
     )
-    _missing_guardians: DataStore[MISSING_GUARDIAN_ID, ElectionPublicKey] = field(
-        default_factory=lambda: DataStore()
-    )
-
-    _decryption_shares: Dict[AVAILABLE_GUARDIAN_ID, TallyDecryptionShare] = field(
+    _missing_guardians: Dict[MISSING_GUARDIAN_ID, ElectionPublicKey] = field(
         default_factory=lambda: {}
     )
-    """
-    A collection of Decryption Shares for each Available Guardian
-    """
-
     _lagrange_coefficients: Dict[
         MISSING_GUARDIAN_ID, Dict[AVAILABLE_GUARDIAN_ID, ElementModQ]
     ] = field(default_factory=lambda: {})
@@ -67,51 +76,66 @@ class DecryptionMediator:
     A collection of lagrange coefficients `w_{i,j}` computed by available guardians for each missing guardian
     """
 
-    _compensated_decryption_shares: Dict[
-        MISSING_GUARDIAN_ID,
-        Dict[AVAILABLE_GUARDIAN_ID, CompensatedTallyDecryptionShare],
-    ] = field(default_factory=lambda: {})
-    """
-    A collection of Compensated Decryption Shares for each Available Guardian
-    """
-
-    def announce(self, guardian: Guardian) -> Optional[TallyDecryptionShare]:
+    def announce(
+        self, guardian: Guardian
+    ) -> Optional[Tuple[DecryptionShare, Dict[BALLOT_ID, DecryptionShare]]]:
         """
         Announce that a Guardian is present and participating in the decryption.
         A Decryption Share will be generated for the Guardian
 
         :param guardian: The guardian who will participate in the decryption.
-        :return: a `TallyDecryptionShare` for this `Guardian` or `None` if there is an error.
+        :return: decryption shares for tally and ballot for this `Guardian` or `None` if there is an error.
         """
 
         # Only allow a guardian to announce once
         if guardian.object_id in self._available_guardians:
             log_info(f"guardian {guardian.object_id} already announced")
-            return self._decryption_shares[guardian.object_id]
+            return (
+                self._tally_shares[guardian.object_id],
+                self._ballot_shares[guardian.object_id],
+            )
 
-        # Compute the Decryption Share for the guardian
-        share = compute_decryption_share(
+        # Compute the tally and ballot decryption shares
+        tally_share = compute_decryption_share(
             guardian, self._ciphertext_tally, self._encryption
         )
-        if share is None:
+        if tally_share is None:
             log_warning(
-                f"announce could not generate decryption share for {guardian.object_id}"
+                f"announce could not generate tally decryption share for {guardian.object_id}"
             )
             return None
+        self._tally_shares[guardian.object_id] = tally_share
 
-        # Submit the share
-        if self._submit_decryption_share(share):
-            self._available_guardians[guardian.object_id] = guardian
-        else:
+        ballot_shares = compute_decryption_share_for_ballots(
+            guardian, list(self._ciphertext_ballots.values()), self._encryption
+        )
+        if ballot_shares is None:
             log_warning(
-                f"announce could not submit decryption share for {guardian.object_id}"
+                f"announce could not generate ballot decryption share for {guardian.object_id}"
             )
             return None
+        self._ballot_shares[guardian.object_id] = ballot_shares
 
-        # This guardian removes itself from the
-        # missing list since it generated a valid share
+        self._mark_available(guardian)
+        if not self._validate_missing_guardian_keys(guardian):
+            return None
+
+        return (tally_share, ballot_shares)
+
+    def _mark_available(self, guardian: Guardian) -> None:
+        """
+        This guardian removes itself from the
+        missing list since it generated a valid share
+        """
+        self._available_guardians[guardian.object_id] = guardian
         if guardian.object_id in self._missing_guardians.keys():
             self._missing_guardians.pop(guardian.object_id)
+
+    def _validate_missing_guardian_keys(self, guardian: Guardian) -> bool:
+        """
+        Check the guardian's collections of keys and ensure the public keys
+        match for the missing guardians
+        """
 
         # Check this guardian's collection of public keys
         # for other guardians that have not announced
@@ -128,78 +152,17 @@ class DecryptionMediator:
         # before announcing a guardian is available for decryption.
         for guardian_id, public_key in missing_guardians.items():
             if guardian_id in self._missing_guardians.keys():
-                if self._missing_guardians.get(guardian_id) != public_key:
+                if self._missing_guardians[guardian_id] != public_key:
                     log_warning(
                         (
                             f"announce guardian: {guardian.object_id} "
                             f"expected public key mismatch for missing {guardian_id}"
                         )
                     )
-                    return None
+                    return False
             else:
-                self._missing_guardians.set(guardian_id, missing_guardians[guardian_id])
-
-        return share
-
-    def compensate(
-        self, missing_guardian_id: str, decrypt: AuxiliaryDecrypt = rsa_decrypt
-    ) -> Optional[List[CompensatedTallyDecryptionShare]]:
-        """
-        Compensate for a missing guardian by reconstructing the share using the available guardians.
-
-        :param missing_guardian_id: the guardian that failed to `announce`.
-        :return: a collection of `CompensatedTallyDecryptionShare` generated from all available guardians
-                 or `None if there is an error
-        """
-
-        # Only allow a guardian to be compensated for once
-        if missing_guardian_id in self._compensated_decryption_shares:
-            log_warning(f"guardian {missing_guardian_id} already compensated")
-            return list(
-                self._compensated_decryption_shares[missing_guardian_id].values()
-            )
-
-        compensated_decryptions: List[CompensatedTallyDecryptionShare] = []
-        lagrange_coefficients: Dict[AVAILABLE_GUARDIAN_ID, ElementModQ] = {}
-
-        # Loop through each of the available guardians
-        # and calculate a partial for the missing one
-        for available_guardian in self._available_guardians.values():
-
-            # Compute lagrange coefficients for each of the available guardians
-            lagrange_coefficients[
-                available_guardian.object_id
-            ] = compute_lagrange_coefficient(
-                available_guardian.sequence_order,
-                *[
-                    guardian.sequence_order
-                    for guardian in self._available_guardians.values()
-                    if guardian.object_id != available_guardian.object_id
-                ],
-            )
-
-            # Compute the decryption shares
-            share = compute_compensated_decryption_share(
-                available_guardian,
-                missing_guardian_id,
-                self._ciphertext_tally,
-                self._encryption,
-                decrypt,
-            )
-            if share is None:
-                log_warning(f"compensation failed for missing: {missing_guardian_id}")
-                break
-            compensated_decryptions.append(share)
-
-        # Verify generated the correct number of partials
-        if len(compensated_decryptions) != len(self._available_guardians):
-            log_warning(
-                f"compensate mismatch partial decryptions for missing guardian {missing_guardian_id}"
-            )
-            return None
-        self._lagrange_coefficients[missing_guardian_id] = lagrange_coefficients
-        self._submit_compensated_decryption_shares(compensated_decryptions)
-        return compensated_decryptions
+                self._missing_guardians[guardian_id] = missing_guardians[guardian_id]
+        return True
 
     # pylint: disable=too-many-return-statements
     def get_plaintext_tally(
@@ -222,155 +185,235 @@ class DecryptionMediator:
         # If all Guardians are present decrypt the tally
         if len(self._available_guardians) == self._encryption.number_of_guardians:
             return decrypt_tally(
-                self._ciphertext_tally, self._decryption_shares, self._encryption
+                self._ciphertext_tally,
+                self._tally_shares,
+                self._encryption.crypto_extended_base_hash,
             )
 
-        # If missing guardians compensate for the missing guardians
-        for missing in self._missing_guardians.keys():
-            compensated_decryptions = self.compensate(missing, decrypt)
-            if compensated_decryptions is None:
-                log_warning(f"get plaintext tally failed compensating for {missing}")
-                return None
+        # If guardians are missing, compensate then decrypt
+        self._compute_missing_shares_for_tally(decrypt)
 
-        # Reconstruct the missing partial decryptions from the compensation shares
-        missing_decryption_shares = reconstruct_missing_tally_decryption_shares(
-            self._ciphertext_tally,
-            self._missing_guardians,
-            self._compensated_decryption_shares,
-            self._lagrange_coefficients,
-        )
-        if missing_decryption_shares is None or len(missing_decryption_shares) != len(
-            self._missing_guardians
-        ):
-            log_warning("get plaintext tally failed with missing decryption shares")
-            return None
-
-        merged_decryption_shares: Dict[str, TallyDecryptionShare] = {}
-
-        for available, share in self._decryption_shares.items():
-            merged_decryption_shares[available] = share
-
-        for missing, share in missing_decryption_shares.items():
-            merged_decryption_shares[missing] = share
-
-        if len(merged_decryption_shares) != self._encryption.number_of_guardians:
+        if len(self._tally_shares) != self._encryption.number_of_guardians:
             log_warning("get plaintext tally failed with share length mismatch")
             return None
 
         return decrypt_tally(
-            self._ciphertext_tally, merged_decryption_shares, self._encryption
+            self._ciphertext_tally,
+            self._tally_shares,
+            self._encryption.crypto_extended_base_hash,
         )
 
-    def get_plaintext_spoiled_ballots(
+    def _compute_missing_shares_for_tally(
+        self, decrypt: AuxiliaryDecrypt = rsa_decrypt
+    ) -> None:
+        # If missing guardians compensate for the missing guardians
+        missing_tally_shares: Dict[MISSING_GUARDIAN_ID, DecryptionShare] = {}
+        for missing_guardian_id, public_key in self._missing_guardians.items():
+            if missing_guardian_id in self._tally_shares:
+                continue
+            self._compute_lagrange_coefficients(missing_guardian_id)
+            compensated_shares = self._get_compensated_shares_for_tally(
+                missing_guardian_id, decrypt
+            )
+            if compensated_shares is None:
+                log_warning(
+                    f"get plaintext tally failed compensating for {missing_guardian_id}"
+                )
+                return
+
+            missing_decryption_share = reconstruct_decryption_share(
+                missing_guardian_id,
+                public_key,
+                self._ciphertext_tally,
+                compensated_shares,
+                self._lagrange_coefficients[missing_guardian_id],
+            )
+            missing_tally_shares[missing_guardian_id] = missing_decryption_share
+
+        if missing_tally_shares is None:
+            log_warning(
+                "get plaintext tally failed with computing missing decryption shares"
+            )
+            return
+
+        # Combine all tally shares
+        self._tally_shares.update(missing_tally_shares)
+
+    def _get_compensated_shares_for_tally(
+        self, missing_guardian_id: str, decrypt: AuxiliaryDecrypt = rsa_decrypt
+    ) -> Optional[Dict[AVAILABLE_GUARDIAN_ID, CompensatedDecryptionShare]]:
+        """
+        Compensate for a missing guardian by reconstructing the share using the available guardians.
+
+        :param missing_guardian_id: the guardian that failed to `announce`.
+        :return: a collection of `CompensatedDecryptionShare` generated from all available guardians
+                 or `None if there is an error
+        """
+
+        compensated_decryptions: Dict[
+            AVAILABLE_GUARDIAN_ID, CompensatedDecryptionShare
+        ] = {}
+        # Loop through each of the available guardians
+        # and calculate a partial for the missing one
+        for (
+            available_gaurdian_id,
+            available_guardian,
+        ) in self._available_guardians.items():
+            # Compute the tally decryption shares
+            tally_share = compute_compensated_decryption_share(
+                available_guardian,
+                missing_guardian_id,
+                self._ciphertext_tally,
+                self._encryption,
+                decrypt,
+            )
+            if tally_share is None:
+                log_warning(f"compensation failed for missing: {missing_guardian_id}")
+                break
+            compensated_decryptions[available_gaurdian_id] = tally_share
+
+        # Verify generated the correct number of partials
+        if len(compensated_decryptions) != len(self._available_guardians):
+            log_warning(
+                f"compensate mismatch partial decryptions for missing guardian {missing_guardian_id}"
+            )
+            return None
+
+        return compensated_decryptions
+
+    def get_plaintext_ballots(
         self, decrypt: AuxiliaryDecrypt = rsa_decrypt
     ) -> Optional[Dict[BALLOT_ID, PlaintextTally]]:
         """
         Get the plaintext spoiled ballots for the election by composing each Guardian's
         decrypted representation of each selection into a decrypted representation
 
-        :param recompute: Specify if the function should recompute the result, even if one already exists.
         :return: a Plaintext Spoiled Ballots or `None`
         """
 
         # Make sure a Quorum of Guardians have announced
         if len(self._available_guardians) < self._encryption.quorum:
-            log_warning(
-                "cannot get plaintext tally with less than quorum available guardians"
-            )
+            log_warning("cannot decrypt with less than quorum available guardians")
             return None
 
-        # If all Guardians are present decrypt the tally
+        # If all Guardians are present decrypt the ballots
         if len(self._available_guardians) == self._encryption.number_of_guardians:
-            return decrypt_spoiled_ballots(
-                self._ciphertext_tally.spoiled_ballots,
-                self._decryption_shares,
+            return decrypt_ballots(
+                self._ciphertext_ballots,
+                self._ballot_shares,
                 self._encryption.crypto_extended_base_hash,
             )
 
-        # If missing guardians compensate for the missing guardians
-        for missing in self._missing_guardians.keys():
-            compensated_decryptions = self.compensate(missing, decrypt)
-            if compensated_decryptions is None:
-                log_warning(f"get plaintext tally failed compensating for {missing}")
+        # If guardians are missing, compensate then decrypt
+        for ballot_id in self._ciphertext_ballots.keys():
+            self._compute_missing_shares_for_ballot(ballot_id, decrypt)
+
+            if (
+                len(self._ballot_shares[ballot_id])
+                != self._encryption.number_of_guardians
+            ):
+                log_warning("get plaintext ballot failed with share length mismatch")
                 return None
 
-        # Reconstruct the missing partial decryptions from the compensation shares
-        missing_decryption_shares = reconstruct_missing_tally_decryption_shares(
-            self._ciphertext_tally,
-            self._missing_guardians,
-            self._compensated_decryption_shares,
-            self._lagrange_coefficients,
-        )
-        if missing_decryption_shares is None or len(missing_decryption_shares) != len(
-            self._missing_guardians
-        ):
-            log_warning("get plaintext tally failed with missing decryption shares")
-            return None
-
-        merged_decryption_shares: Dict[str, TallyDecryptionShare] = {}
-
-        for available, share in self._decryption_shares.items():
-            merged_decryption_shares[available] = share
-
-        for missing, share in missing_decryption_shares.items():
-            merged_decryption_shares[missing] = share
-
-        if len(merged_decryption_shares) != self._encryption.number_of_guardians:
-            log_warning("get plaintext tally failed with share length mismatch")
-            return None
-
-        return decrypt_spoiled_ballots(
-            self._ciphertext_tally.spoiled_ballots,
-            self._decryption_shares,
+        return decrypt_ballots(
+            self._ciphertext_ballots,
+            self._ballot_shares,
             self._encryption.crypto_extended_base_hash,
         )
 
-    def _submit_decryption_share(self, share: TallyDecryptionShare) -> bool:
-        """
-        Submit the decryption share to be used in the decryption
-        """
-        if share.guardian_id in self._decryption_shares:
-            log_warning(
-                f"cannot submit for guardian {share.guardian_id} that already decrypted"
+    def _compute_missing_shares_for_ballot(
+        self, ballot_id: str, decrypt: AuxiliaryDecrypt = rsa_decrypt
+    ) -> None:
+        # If missing guardians compensate for the missing guardians
+        missing_ballot_shares: Dict[MISSING_GUARDIAN_ID, DecryptionShare] = {}
+        for missing_guardian_id, public_key in self._missing_guardians.items():
+            self._compute_lagrange_coefficients(missing_guardian_id)
+            compensated_shares = self._get_compensated_shares_for_ballot(
+                ballot_id, missing_guardian_id, decrypt
             )
-            return False
-
-        self._decryption_shares[share.guardian_id] = share
-        return True
-
-    def _submit_compensated_decryption_shares(
-        self, shares: List[CompensatedTallyDecryptionShare]
-    ) -> bool:
-        """
-        Submit compensated decryption shares to be used in the decryption
-        """
-        results = [self._submit_compensated_decryption_share(share) for share in shares]
-        return all(results)
-
-    def _submit_compensated_decryption_share(
-        self, share: CompensatedTallyDecryptionShare
-    ) -> bool:
-        """
-        Submit compensated decryption share to be used in the decryption
-        """
-        if (
-            share.missing_guardian_id in self._compensated_decryption_shares
-            and share.guardian_id
-            in self._compensated_decryption_shares[share.missing_guardian_id]
-        ):
-            log_warning(
-                (
-                    f"cannot submit compensated share for guardian {share.guardian_id} "
-                    f"on behalf of {share.missing_guardian_id} that already compensated"
+            if compensated_shares is None:
+                log_warning(
+                    f"get plaintext ballot failed compensating for {missing_guardian_id}"
                 )
+                return
+
+            missing_decryption_share = reconstruct_decryption_share_for_ballot(
+                missing_guardian_id,
+                public_key,
+                self._ciphertext_ballots[ballot_id],
+                compensated_shares,
+                self._lagrange_coefficients[missing_guardian_id],
             )
-            return False
+            missing_ballot_shares[missing_guardian_id] = missing_decryption_share
 
-        if share.missing_guardian_id not in self._compensated_decryption_shares:
-            self._compensated_decryption_shares[share.missing_guardian_id] = {}
+        if missing_ballot_shares is None:
+            log_warning(
+                "get plaintext ballot failed with computing missing decryption shares"
+            )
+            return
 
-        self._compensated_decryption_shares[share.missing_guardian_id][
-            share.guardian_id
-        ] = share
+        self._ballot_shares[ballot_id].update(missing_ballot_shares)
 
-        return True
+    def _get_compensated_shares_for_ballot(
+        self,
+        ballot_id: str,
+        missing_guardian_id: str,
+        decrypt: AuxiliaryDecrypt = rsa_decrypt,
+    ) -> Optional[Dict[AVAILABLE_GUARDIAN_ID, CompensatedDecryptionShare]]:
+        """
+        Compensate for a missing guardian by reconstructing the share using the available guardians.
+
+        :param missing_guardian_id: the guardian that failed to `announce`.
+        :return: a collection of `CompensatedDecryptionShare` generated from all available guardians
+                 or `None if there is an error
+        """
+
+        compensated_decryptions: Dict[
+            AVAILABLE_GUARDIAN_ID, CompensatedDecryptionShare
+        ] = {}
+        # Loop through each of the available guardians
+        # and calculate a partial for the missing one
+        for (
+            available_gaurdian_id,
+            available_guardian,
+        ) in self._available_guardians.items():
+            # Compute the tally decryption shares
+            ballot_share = compute_compensated_decryption_share_for_ballot(
+                available_guardian,
+                missing_guardian_id,
+                self._ciphertext_ballots[ballot_id],
+                self._encryption,
+                decrypt,
+            )
+            if ballot_share is None:
+                log_warning(f"compensation failed for missing: {missing_guardian_id}")
+                break
+            compensated_decryptions[available_gaurdian_id] = ballot_share
+
+        # Verify generated the correct number of partials
+        if len(compensated_decryptions) != len(self._available_guardians):
+            log_warning(
+                f"compensate mismatch partial decryptions for missing guardian {missing_guardian_id}"
+            )
+            return None
+
+        return compensated_decryptions
+
+    def _compute_lagrange_coefficients(self, missing_guardian_id: str) -> None:
+        """Compute lagrange coefficients for each of the available guardians"""
+        if self._lagrange_coefficients[missing_guardian_id]:
+            return
+
+        lagrange_coefficients: Dict[AVAILABLE_GUARDIAN_ID, ElementModQ] = {}
+        for available_guardian in self._available_guardians.values():
+            lagrange_coefficients[
+                available_guardian.object_id
+            ] = compute_lagrange_coefficient(
+                available_guardian.sequence_order,
+                *[
+                    guardian.sequence_order
+                    for guardian in self._available_guardians.values()
+                    if guardian.object_id != available_guardian.object_id
+                ],
+            )
+        self._lagrange_coefficients[missing_guardian_id] = lagrange_coefficients

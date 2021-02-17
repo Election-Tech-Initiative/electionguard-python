@@ -184,26 +184,23 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
 
     # A local cache of ballots id's that have already been cast
     _cast_ballot_ids: Set[BALLOT_ID] = field(init=False)
+    _spoiled_ballot_ids: Set[BALLOT_ID] = field(init=False)
 
-    cast: Dict[CONTEST_ID, CiphertextTallyContest] = field(init=False)
+    contests: Dict[CONTEST_ID, CiphertextTallyContest] = field(init=False)
     """
     A collection of each contest and selection in an election.
     Retains an encrypted representation of a tally for each selection
     """
 
-    spoiled_ballots: Dict[BALLOT_ID, CiphertextAcceptedBallot] = field(
-        default_factory=lambda: {}
-    )
-    """
-    All of the ballots marked spoiled in the election
-    """
-
     def __post_init__(self) -> None:
         object.__setattr__(self, "_cast_ballot_ids", set())
-        object.__setattr__(self, "cast", self._build_tally_collection(self._metadata))
+        object.__setattr__(self, "_spoiled_ballot_ids", set())
+        object.__setattr__(
+            self, "contests", self._build_tally_collection(self._metadata)
+        )
 
     def __len__(self) -> int:
-        return len(self._cast_ballot_ids) + len(self.spoiled_ballots)
+        return len(self._cast_ballot_ids) + len(self._spoiled_ballot_ids)
 
     def __contains__(self, item: object) -> bool:
         if not isinstance(item, CiphertextAcceptedBallot):
@@ -211,7 +208,7 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
 
         if (
             item.object_id in self._cast_ballot_ids
-            or item.object_id in self.spoiled_ballots
+            or item.object_id in self._spoiled_ballot_ids
         ):
             return True
 
@@ -242,8 +239,6 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
 
         log_warning(f"append cannot add {ballot.object_id}")
         return False
-
-    SELECTION_ID = str
 
     def batch_append(
         self,
@@ -289,11 +284,17 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
 
         return False
 
-    def count(self) -> int:
+    def cast(self) -> int:
         """
-        Get a Count of the cast ballots
+        Get a count of the cast ballots
         """
         return len(self._cast_ballot_ids)
+
+    def spoiled(self) -> int:
+        """
+        Get a count of the spoiled ballots
+        """
+        return len(self._spoiled_ballot_ids)
 
     @staticmethod
     def _accumulate(
@@ -315,17 +316,17 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
         for contest in ballot.contests:
             # This should never happen since the ballot is validated against the election metadata
             # but it's possible the local dictionary was modified so we double check.
-            if not contest.object_id in self.cast:
+            if not contest.object_id in self.contests:
                 log_warning(
                     f"add cast missing contest in valid set {contest.object_id}"
                 )
                 return False
 
-            use_contest = self.cast[contest.object_id]
+            use_contest = self.contests[contest.object_id]
             if not use_contest.accumulate_contest(contest.ballot_selections, scheduler):
                 return False
 
-            self.cast[contest.object_id] = use_contest
+            self.contests[contest.object_id] = use_contest
         self._cast_ballot_ids.add(ballot.object_id)
         return True
 
@@ -334,7 +335,7 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
         Add a spoiled ballot
         """
 
-        self.spoiled_ballots[ballot.object_id] = ballot
+        self._spoiled_ballot_ids.add(ballot.object_id)
         return True
 
     @staticmethod
@@ -387,7 +388,7 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
             selection_id: ciphertext for (selection_id, ciphertext) in result_set
         }
 
-        for _contest_id, contest in self.cast.items():
+        for contest in self.contests.values():
             for selection_id, selection in contest.selections.items():
                 if selection_id in result_dict:
                     selection.elgamal_accumulate(result_dict[selection_id])
