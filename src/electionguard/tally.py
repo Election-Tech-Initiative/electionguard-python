@@ -395,20 +395,6 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
         return True
 
 
-@dataclass
-class PublishedCiphertextTally(ElectionObjectBase):
-    """
-    The published ciphertext representation of all contests in the election
-    """
-
-    cast: Dict[CONTEST_ID, CiphertextTallyContest]
-
-
-def publish_ciphertext_tally(tally: CiphertextTally) -> PublishedCiphertextTally:
-    """Publish a ciphertext tally with simpler format"""
-    return PublishedCiphertextTally(tally.object_id, tally.cast)
-
-
 def tally_ballot(
     ballot: CiphertextAcceptedBallot, tally: CiphertextTally
 ) -> Optional[CiphertextTally]:
