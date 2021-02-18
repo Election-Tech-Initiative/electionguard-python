@@ -62,14 +62,16 @@ def decrypt_tally(
 
 def decrypt_ballots(
     ballots: Dict[BALLOT_ID, CiphertextAcceptedBallot],
-    ballot_shares: Dict[BALLOT_ID, Dict[AVAILABLE_GUARDIAN_ID, DecryptionShare]],
+    guardian_ballot_shares: Dict[
+        AVAILABLE_GUARDIAN_ID, Dict[BALLOT_ID, DecryptionShare]
+    ],
     crypto_extended_base_hash: ElementModQ,
 ) -> Optional[Dict[BALLOT_ID, PlaintextTally]]:
     """
     Try to decrypt each of the spoiled ballots using the provided decryption shares
 
     :param ballots: The CiphertextAcceptedBallots to decrypt
-    :param ballot_shares: The guardian Decryption Shares for all guardians for each ballot
+    :param guardian_ballot_shares: The guardian Decryption Shares for all guardians for each ballot
     :param crypto_extended_base_hash: The extended base hash
     :return: A PlaintextTally or None if there is an error
     """
@@ -77,8 +79,14 @@ def decrypt_ballots(
     plaintext_ballots: Dict[BALLOT_ID, PlaintextTally] = {}
 
     for ballot in ballots.values():
+        # For each guardian, get the specific ballot share
+        ballot_shares = {
+            guardian_id: shares[ballot.object_id]
+            for guardian_id, shares in guardian_ballot_shares.items()
+        }
+
         decrypted_ballot = decrypt_ballot(
-            ballot, ballot_shares[ballot.object_id], crypto_extended_base_hash
+            ballot, ballot_shares, crypto_extended_base_hash
         )
         if not decrypted_ballot:
             return None

@@ -309,7 +309,7 @@ class DecryptionMediator:
             self._compute_missing_shares_for_ballot(ballot_id, decrypt)
 
             if (
-                len(self._ballot_shares[ballot_id])
+                self._count_ballot_shares(ballot_id)
                 != self._encryption.number_of_guardians
             ):
                 log_warning("get plaintext ballot failed with share length mismatch")
@@ -321,11 +321,17 @@ class DecryptionMediator:
             self._encryption.crypto_extended_base_hash,
         )
 
+    def _count_ballot_shares(self, ballot_id: str) -> int:
+        count = 0
+        for ballot_shares in self._ballot_shares.values():
+            if ballot_shares.get(ballot_id):
+                count += 1
+        return count
+
     def _compute_missing_shares_for_ballot(
         self, ballot_id: str, decrypt: AuxiliaryDecrypt = rsa_decrypt
     ) -> None:
         # If missing guardians compensate for the missing guardians
-        missing_ballot_shares: Dict[MISSING_GUARDIAN_ID, DecryptionShare] = {}
         for missing_guardian_id, public_key in self._missing_guardians.items():
             self._compute_lagrange_coefficients(missing_guardian_id)
             compensated_shares = self._get_compensated_shares_for_ballot(
@@ -344,15 +350,16 @@ class DecryptionMediator:
                 compensated_shares,
                 self._lagrange_coefficients[missing_guardian_id],
             )
-            missing_ballot_shares[missing_guardian_id] = missing_decryption_share
 
-        if missing_ballot_shares is None:
-            log_warning(
-                "get plaintext ballot failed with computing missing decryption shares"
-            )
-            return
+            if missing_decryption_share is None:
+                log_warning(
+                    "get plaintext ballot failed with computing missing decryption shares"
+                )
+                return
 
-        self._ballot_shares[ballot_id].update(missing_ballot_shares)
+            self._ballot_shares[missing_guardian_id][
+                ballot_id
+            ] = missing_decryption_share
 
     def _get_compensated_shares_for_ballot(
         self,
@@ -401,7 +408,7 @@ class DecryptionMediator:
 
     def _compute_lagrange_coefficients(self, missing_guardian_id: str) -> None:
         """Compute lagrange coefficients for each of the available guardians"""
-        if self._lagrange_coefficients[missing_guardian_id]:
+        if self._lagrange_coefficients.get(missing_guardian_id):
             return
 
         lagrange_coefficients: Dict[AVAILABLE_GUARDIAN_ID, ElementModQ] = {}

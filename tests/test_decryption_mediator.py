@@ -11,24 +11,23 @@ from electionguard.data_store import DataStore
 
 from electionguard.ballot_box import BallotBox, BallotBoxState
 from electionguard.decrypt_with_shares import (
+    decrypt_ballots,
     decrypt_selection_with_decryption_shares,
-    decrypt_spoiled_ballots,
     decrypt_ballot,
 )
 from electionguard.decryption import (
+    compute_compensated_decryption_share_for_ballots,
     compute_decryption_share,
     compute_decryption_share_for_ballot,
+    compute_decryption_share_for_ballots,
     compute_decryption_share_for_selection,
     compute_compensated_decryption_share_for_ballot,
     compute_compensated_decryption_share_for_selection,
     compute_lagrange_coefficients_for_guardians,
-    reconstruct_decryption_ballot,
+    reconstruct_decryption_share_for_ballot,
 )
 from electionguard.decryption_mediator import DecryptionMediator
-from electionguard.decryption_share import (
-    TallyDecryptionShare,
-    create_ciphertext_decryption_selection,
-)
+from electionguard.decryption_share import create_ciphertext_decryption_selection
 from electionguard.election import (
     CiphertextElectionContext,
     InternalElectionDescription,
@@ -39,7 +38,6 @@ from electionguard.encrypt import EncryptionDevice, EncryptionMediator, encrypt_
 
 from electionguard.group import (
     int_to_q_unchecked,
-    ZERO_MOD_P,
     mult_p,
     pow_p,
 )
@@ -67,6 +65,8 @@ identity_auxiliary_encrypt = lambda message, private_key: message
 
 
 class TestDecryptionMediator(TestCase):
+    """Test suite for DecryptionMediator"""
+
     NUMBER_OF_GUARDIANS = 3
     QUORUM = 2
     CEREMONY_DETAILS = CeremonyDetails(NUMBER_OF_GUARDIANS, QUORUM)
@@ -205,13 +205,20 @@ class TestDecryptionMediator(TestCase):
 
         # generate encrypted tally
         self.ciphertext_tally = tally_ballots(ballot_store, self.metadata, self.context)
+        self.ciphertext_ballots = {
+            ballot_id: ballot
+            for (ballot_id, ballot) in ballot_store.items()
+            if ballot.state == BallotBoxState.SPOILED
+        }
 
     def tearDown(self):
         self.key_ceremony.reset(CeremonyDetails(self.NUMBER_OF_GUARDIANS, self.QUORUM))
 
     def test_announce(self):
         # Arrange
-        subject = DecryptionMediator(self.metadata, self.context, self.ciphertext_tally)
+        subject = DecryptionMediator(
+            self.metadata, self.context, self.ciphertext_tally, self.ciphertext_ballots
+        )
 
         # act
         result = subject.announce(self.guardians[0])
@@ -224,13 +231,6 @@ class TestDecryptionMediator(TestCase):
 
         subject.announce(self.guardians[1])
 
-        # Cannot submit another share internally
-        self.assertFalse(
-            subject._submit_decryption_share(
-                TallyDecryptionShare(self.guardians[0].object_id, ZERO_MOD_P, {}, {})
-            )
-        )
-
         # Cannot get plaintext tally or spoiled ballots without a quorum
         self.assertIsNone(subject.get_plaintext_tally())
         self.assertIsNone(subject.get_plaintext_ballots())
@@ -239,7 +239,7 @@ class TestDecryptionMediator(TestCase):
         # Arrange
         first_selection = [
             selection
-            for contest in self.ciphertext_tally.cast.values()
+            for contest in self.ciphertext_tally.contests.values()
             for selection in contest.selections.values()
         ][0]
 
@@ -255,7 +255,7 @@ class TestDecryptionMediator(TestCase):
         # Arrange
         first_selection = [
             selection
-            for contest in self.ciphertext_tally.cast.values()
+            for contest in self.ciphertext_tally.contests.values()
             for selection in contest.selections.values()
         ][0]
 
@@ -287,7 +287,7 @@ class TestDecryptionMediator(TestCase):
         # Arrange
         first_selection = [
             selection
-            for contest in self.ciphertext_tally.cast.values()
+            for contest in self.ciphertext_tally.contests.values()
             for selection in contest.selections.values()
         ][0]
 
@@ -434,7 +434,9 @@ class TestDecryptionMediator(TestCase):
         # Arrange
 
         # find the first selection
-        first_contest = [contest for contest in self.ciphertext_tally.cast.values()][0]
+        first_contest = [
+            contest for contest in self.ciphertext_tally.contests.values()
+        ][0]
         first_selection = list(first_contest.selections.values())[0]
 
         # precompute decryption shares for the guardians
@@ -548,7 +550,7 @@ class TestDecryptionMediator(TestCase):
             .get(missing_guardian_id)
         )
 
-        reconstructed_share = reconstruct_decryption_ballot(
+        reconstructed_share = reconstruct_decryption_share_for_ballot(
             missing_guardian_id,
             public_key,
             encrypted_ballot,
@@ -581,14 +583,14 @@ class TestDecryptionMediator(TestCase):
     def test_decrypt_spoiled_ballots_all_guardians_present(self):
         # Arrange
         # precompute decryption shares for the guardians
-        first_share = compute_decryption_share(
-            self.guardians[0], self.ciphertext_tally, self.context
+        first_share = compute_decryption_share_for_ballots(
+            self.guardians[0], list(self.ciphertext_ballots.values()), self.context
         )
-        second_share = compute_decryption_share(
-            self.guardians[1], self.ciphertext_tally, self.context
+        second_share = compute_decryption_share_for_ballots(
+            self.guardians[1], list(self.ciphertext_ballots.values()), self.context
         )
-        third_share = compute_decryption_share(
-            self.guardians[2], self.ciphertext_tally, self.context
+        third_share = compute_decryption_share_for_ballots(
+            self.guardians[2], list(self.ciphertext_ballots.values()), self.context
         )
         shares = {
             self.guardians[0].object_id: first_share,
@@ -597,8 +599,8 @@ class TestDecryptionMediator(TestCase):
         }
 
         # act
-        result = decrypt_spoiled_ballots(
-            self.ciphertext_tally.spoiled_ballots,
+        result = decrypt_ballots(
+            self.ciphertext_ballots,
             shares,
             self.context.crypto_extended_base_hash,
         )
@@ -623,7 +625,7 @@ class TestDecryptionMediator(TestCase):
     def test_get_plaintext_tally_all_guardians_present_simple(self):
         # Arrange
         decrypter = DecryptionMediator(
-            self.metadata, self.context, self.ciphertext_tally
+            self.metadata, self.context, self.ciphertext_tally, {}
         )
 
         # act
@@ -647,19 +649,16 @@ class TestDecryptionMediator(TestCase):
     def test_get_plaintext_tally_compensate_missing_guardian_simple(self):
 
         # Arrange
-        subject = DecryptionMediator(self.metadata, self.context, self.ciphertext_tally)
+        decrypter = DecryptionMediator(
+            self.metadata, self.context, self.ciphertext_tally, self.ciphertext_ballots
+        )
 
         # Act
 
-        self.assertIsNotNone(subject.announce(self.guardians[0]))
-        self.assertIsNotNone(subject.announce(self.guardians[1]))
+        self.assertIsNotNone(decrypter.announce(self.guardians[0]))
+        self.assertIsNotNone(decrypter.announce(self.guardians[1]))
 
-        # explicitly compensate to demonstrate that this is possible, but not required
-        self.assertIsNotNone(
-            subject.compensate(self.guardians[2].object_id, identity_auxiliary_decrypt)
-        )
-
-        decrypted_tallies = subject.get_plaintext_tally()
+        decrypted_tallies = decrypter.get_plaintext_tally(identity_auxiliary_decrypt)
         self.assertIsNotNone(decrypted_tallies)
         result = self._convert_to_selections(decrypted_tallies)
 
@@ -697,7 +696,7 @@ class TestDecryptionMediator(TestCase):
             metadata, context, plaintext_ballots
         )
 
-        decrypter = DecryptionMediator(metadata, context, encrypted_tally)
+        decrypter = DecryptionMediator(metadata, context, encrypted_tally, {})
 
         # act
         for guardian in self.guardians:
