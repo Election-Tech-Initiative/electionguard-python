@@ -101,7 +101,7 @@ class TestTally(TestCase):
         self.assertCountEqual(plaintext_tallies, decrypted_tallies)
         for value in decrypted_tallies.values():
             self.assertEqual(0, value)
-        self.assertEqual(len(ballots), len(tally.spoiled()))
+        self.assertEqual(len(ballots), tally.spoiled())
 
     @settings(
         deadline=timedelta(milliseconds=10000),
@@ -181,21 +181,12 @@ class TestTally(TestCase):
             )
         )
 
-        # verify a spoiled ballot cannot be added twice
-        first_ballot.state = BallotBoxState.SPOILED
-        self.assertTrue(tally.append(first_ballot))
-        self.assertFalse(tally.append(first_ballot))
-
-        # verify an already spoiled ballot cannot be cast
-        first_ballot.state = BallotBoxState.CAST
-        self.assertFalse(tally.append(first_ballot))
-
         # verify a cast ballot cannot be added twice
         first_ballot.state = BallotBoxState.CAST
         self.assertTrue(tally.append(first_ballot))
         self.assertFalse(tally.append(first_ballot))
 
-        # verify an already cast ballot cannot be spoiled
+        # verify an already accepted ballot cannot be changed or readded
         first_ballot.state = BallotBoxState.SPOILED
         self.assertFalse(tally.append(first_ballot))
 
@@ -216,7 +207,7 @@ class TestTally(TestCase):
 
     def _cannot_erroneously_mutate_state(
         self,
-        subject: CiphertextTally,
+        tally: CiphertextTally,
         ballot: CiphertextAcceptedBallot,
         state_to_test: BallotBoxState,
     ) -> bool:
@@ -229,12 +220,12 @@ class TestTally(TestCase):
         first_selection = first_contest.ballot_selections[0]
         ballot.contests[0].ballot_selections.remove(first_selection)
 
-        self.assertIsNone(tally_ballot(ballot, subject))
-        self.assertFalse(subject.append(ballot))
+        self.assertIsNone(tally_ballot(ballot, tally))
+        self.assertFalse(tally.append(ballot))
 
         # Verify accumulation fails if the selection count does not match
         if ballot.state == BallotBoxState.CAST:
-            first_tally = subject.cast[first_contest.object_id]
+            first_tally = tally.contests[first_contest.object_id]
             self.assertFalse(
                 first_tally.accumulate_contest(ballot.contests[0].ballot_selections)
             )
@@ -252,16 +243,16 @@ class TestTally(TestCase):
         # modify the contest description hash
         first_contest_hash = ballot.contests[0].description_hash
         ballot.contests[0].description_hash = ONE_MOD_Q
-        self.assertIsNone(tally_ballot(ballot, subject))
-        self.assertFalse(subject.append(ballot))
+        self.assertIsNone(tally_ballot(ballot, tally))
+        self.assertFalse(tally.append(ballot))
 
         ballot.contests[0].description_hash = first_contest_hash
 
         # modify a contest object id
         first_contest_object_id = ballot.contests[0].object_id
         ballot.contests[0].object_id = "a-bad-object-id"
-        self.assertIsNone(tally_ballot(ballot, subject))
-        self.assertFalse(subject.append(ballot))
+        self.assertIsNone(tally_ballot(ballot, tally))
+        self.assertFalse(tally.append(ballot))
 
         ballot.contests[0].object_id = first_contest_object_id
 
@@ -271,13 +262,13 @@ class TestTally(TestCase):
         )
         ballot.contests[0].ballot_selections[0].object_id = "another-bad-object-id"
 
-        self.assertIsNone(tally_ballot(ballot, subject))
-        self.assertFalse(subject.append(ballot))
+        self.assertIsNone(tally_ballot(ballot, tally))
+        self.assertFalse(tally.append(ballot))
 
         # Verify accumulation fails if the selection object id does not match
         if ballot.state == BallotBoxState.CAST:
             self.assertFalse(
-                subject.cast[ballot.contests[0].object_id].accumulate_contest(
+                tally.contests[ballot.contests[0].object_id].accumulate_contest(
                     ballot.contests[0].ballot_selections
                 )
             )
@@ -289,8 +280,8 @@ class TestTally(TestCase):
         # modify the ballot's hash
         first_ballot_hash = ballot.description_hash
         ballot.description_hash = ONE_MOD_Q
-        self.assertIsNone(tally_ballot(ballot, subject))
-        self.assertFalse(subject.append(ballot))
+        self.assertIsNone(tally_ballot(ballot, tally))
+        self.assertFalse(tally.append(ballot))
 
         ballot.description_hash = first_ballot_hash
         ballot.state = input_state
