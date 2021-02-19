@@ -38,7 +38,7 @@ from electionguard.encrypt import EncryptionMediator
 
 # Step 3 - Cast and Spoil
 from electionguard.data_store import DataStore
-from electionguard.ballot_box import BallotBox
+from electionguard.ballot_box import BallotBox, get_ballots
 
 # Step 4 - Decrypt Tally
 from electionguard.tally import (
@@ -308,6 +308,7 @@ class TestEndToEndElection(TestCase):
         self.ciphertext_tally = get_optional(
             tally_ballots(self.ballot_store, self.metadata, self.context)
         )
+        self.ciphertext_ballots = get_ballots(self.ballot_store, BallotBoxState.SPOILED)
         self._assert_message(
             tally_ballots.__qualname__,
             f"""
@@ -320,7 +321,7 @@ class TestEndToEndElection(TestCase):
 
         # Configure the Decryption
         self.decrypter = DecryptionMediator(
-            self.metadata, self.context, self.ciphertext_tally
+            self.metadata, self.context, self.ciphertext_tally, self.ciphertext_ballots
         )
 
         # Announce each guardian as present
@@ -405,7 +406,7 @@ class TestEndToEndElection(TestCase):
                 for contest in ballot.contests:
                     print(f"\n Contest: {contest.object_id}")
                     for selection in contest.ballot_selections:
-                        expected = selection.to_int()
+                        expected = selection.vote
                         decrypted_selection = (
                             self.plaintext_spoiled_ballots[ballot.object_id]
                             .contests[contest.object_id]

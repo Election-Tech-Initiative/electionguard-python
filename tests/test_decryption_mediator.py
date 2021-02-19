@@ -7,6 +7,7 @@ from hypothesis import given, HealthCheck, settings, Phase
 from hypothesis.strategies import integers, data
 
 from electionguard.ballot import PlaintextBallot, from_ciphertext_ballot
+from electionguard.ballot_box import get_ballots
 from electionguard.data_store import DataStore
 
 from electionguard.ballot_box import BallotBox, BallotBoxState
@@ -16,7 +17,6 @@ from electionguard.decrypt_with_shares import (
     decrypt_ballot,
 )
 from electionguard.decryption import (
-    compute_compensated_decryption_share_for_ballots,
     compute_decryption_share,
     compute_decryption_share_for_ballot,
     compute_decryption_share_for_ballots,
@@ -205,11 +205,7 @@ class TestDecryptionMediator(TestCase):
 
         # generate encrypted tally
         self.ciphertext_tally = tally_ballots(ballot_store, self.metadata, self.context)
-        self.ciphertext_ballots = {
-            ballot_id: ballot
-            for (ballot_id, ballot) in ballot_store.items()
-            if ballot.state == BallotBoxState.SPOILED
-        }
+        self.ciphertext_ballots = get_ballots(ballot_store, BallotBoxState.SPOILED)
 
     def tearDown(self):
         self.key_ceremony.reset(CeremonyDetails(self.NUMBER_OF_GUARDIANS, self.QUORUM))
