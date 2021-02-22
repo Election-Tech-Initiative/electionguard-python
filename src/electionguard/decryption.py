@@ -6,7 +6,6 @@ from .ballot import (
     CiphertextSelection,
     CiphertextContest,
 )
-from .data_store import DataStore
 from .decryption_share import (
     CiphertextDecryptionSelection,
     CiphertextCompensatedDecryptionSelection,
