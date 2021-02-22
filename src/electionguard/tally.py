@@ -174,6 +174,15 @@ class PlaintextTally(ElectionObjectBase):
 
 
 @dataclass
+class PublishedCiphertextTally(ElectionObjectBase):
+    """
+    A published version of the ciphertext tally
+    """
+
+    contests: Dict[CONTEST_ID, CiphertextTallyContest]
+
+
+@dataclass
 class CiphertextTally(ElectionObjectBase, Container, Sized):
     """
     A `CiphertextTally` accepts cast and spoiled ballots and accumulates a tally on the cast ballots
@@ -295,6 +304,9 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
         Get a count of the spoiled ballots
         """
         return len(self._spoiled_ballot_ids)
+
+    def publish(self) -> PublishedCiphertextTally:
+        return PublishedCiphertextTally(self.object_id, self.contests)
 
     @staticmethod
     def _accumulate(

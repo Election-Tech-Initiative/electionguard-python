@@ -51,7 +51,7 @@ class TestPublish(TestCase):
             devices,
             encrypted_ballots,
             spoiled_ballots,
-            ciphertext_tally,
+            ciphertext_tally.publish(),
             plaintext_tally,
             coefficients,
         )

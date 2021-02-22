@@ -42,6 +42,7 @@ from electionguard.ballot_box import BallotBox, get_ballots
 
 # Step 4 - Decrypt Tally
 from electionguard.tally import (
+    PublishedCiphertextTally,
     tally_ballots,
     CiphertextTally,
     PlaintextTally,
@@ -437,7 +438,7 @@ class TestEndToEndElection(TestCase):
             [self.device],
             self.ballot_store.all(),
             self.plaintext_spoiled_ballots.values(),
-            self.ciphertext_tally,
+            self.ciphertext_tally.publish(),
             self.plaintext_tally,
             self.coefficient_validation_sets,
             RESULTS_DIR,
@@ -483,11 +484,12 @@ class TestEndToEndElection(TestCase):
             spoiled_ballot_from_file = PlaintextTally.from_json_file(name, SPOILED_DIR)
             self.assertEqual(spoiled_ballot, spoiled_ballot_from_file)
 
-        # FIXME CiphertextTally isn't exported class
-        # ciphertext_tally_from_file = CiphertextTally.from_json_file(
-        #     ENCRYPTED_TALLY_FILE_NAME, RESULTS_DIR
-        # )
-        # self.assertEqual(self.ciphertext_tally, ciphertext_tally_from_file)
+        published_ciphertext_tally_from_file = PublishedCiphertextTally.from_json_file(
+            ENCRYPTED_TALLY_FILE_NAME, RESULTS_DIR
+        )
+        self.assertEqual(
+            self.ciphertext_tally.publish(), published_ciphertext_tally_from_file
+        )
 
         plainttext_tally_from_file = PlaintextTally.from_json_file(
             TALLY_FILE_NAME, RESULTS_DIR
