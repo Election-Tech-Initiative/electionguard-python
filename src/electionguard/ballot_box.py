@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Optional
+from typing import Dict, Optional
 
 from .ballot import (
     BallotBoxState,
@@ -77,7 +77,9 @@ def accept_ballot(
     return store.get(ballot_box_ballot.object_id)
 
 
-def get_ballots(store: DataStore, state: Optional[BallotBoxState]):
+def get_ballots(
+    store: DataStore, state: Optional[BallotBoxState]
+) -> Dict[str, CiphertextAcceptedBallot]:
     return {
         ballot_id: ballot
         for (ballot_id, ballot) in store.items()
