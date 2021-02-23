@@ -370,7 +370,7 @@ class PlaintextBallotContest(ElectionObjectBase):
 @dataclass
 class CiphertextContest(ElectionObjectBase):
     """
-    Encrypted contest
+    Base encrypted contest for both tally and ballot
     """
 
     description_hash: ElementModQ

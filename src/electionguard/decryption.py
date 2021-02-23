@@ -401,38 +401,6 @@ def compute_compensated_decryption_share_for_selection(
     return None
 
 
-def compute_lagrange_coefficients_for_guardians(
-    all_available_guardian_keys: List[PublicKeySet],
-) -> Dict[AVAILABLE_GUARDIAN_ID, ElementModQ]:
-    """
-    Produce all Lagrange coefficients for a collection of available
-    Guardians, to be used when reconstructing a missing share.
-    """
-    return {
-        guardian_keys.owner_id: compute_lagrange_coefficients_for_guardian(
-            all_available_guardian_keys, guardian_keys
-        )
-        for guardian_keys in all_available_guardian_keys
-    }
-
-
-def compute_lagrange_coefficients_for_guardian(
-    all_available_guardian_keys: List[PublicKeySet], guardian_keys: PublicKeySet
-) -> ElementModQ:
-    """
-    Produce a Lagrange coefficient for a single Guardian, to be used when reconstructing a missing share.
-    """
-    other_guardian_orders = [
-        g.sequence_order
-        for g in all_available_guardian_keys
-        if g.owner_id != guardian_keys.owner_id
-    ]
-    return compute_lagrange_coefficient(
-        guardian_keys.sequence_order,
-        *other_guardian_orders,
-    )
-
-
 def reconstruct_decryption_share(
     missing_guardian_id: MISSING_GUARDIAN_ID,
     public_key: ElectionPublicKey,
@@ -590,4 +558,36 @@ def reconstruct_decryption_contest(
         missing_guardian_id,
         contest.description_hash,
         selections,
+    )
+
+
+def compute_lagrange_coefficients_for_guardians(
+    all_available_guardian_keys: List[PublicKeySet],
+) -> Dict[AVAILABLE_GUARDIAN_ID, ElementModQ]:
+    """
+    Produce all Lagrange coefficients for a collection of available
+    Guardians, to be used when reconstructing a missing share.
+    """
+    return {
+        guardian_keys.owner_id: compute_lagrange_coefficients_for_guardian(
+            all_available_guardian_keys, guardian_keys
+        )
+        for guardian_keys in all_available_guardian_keys
+    }
+
+
+def compute_lagrange_coefficients_for_guardian(
+    all_available_guardian_keys: List[PublicKeySet], guardian_keys: PublicKeySet
+) -> ElementModQ:
+    """
+    Produce a Lagrange coefficient for a single Guardian, to be used when reconstructing a missing share.
+    """
+    other_guardian_orders = [
+        g.sequence_order
+        for g in all_available_guardian_keys
+        if g.owner_id != guardian_keys.owner_id
+    ]
+    return compute_lagrange_coefficient(
+        guardian_keys.sequence_order,
+        *other_guardian_orders,
     )

@@ -106,6 +106,7 @@ class DecryptionMediator:
             return None
         self._tally_shares[guardian.object_id] = tally_share
 
+        # Compute the ballot decryption shares
         ballot_shares = compute_decryption_share_for_ballots(
             guardian, list(self._ciphertext_ballots.values()), self._encryption
         )
@@ -116,11 +117,51 @@ class DecryptionMediator:
             return None
         self._ballot_shares[guardian.object_id] = ballot_shares
 
+        # Mark guardian in attendance and check their keys
         self._mark_available(guardian)
         if not self._validate_missing_guardian_keys(guardian):
             return None
 
         return (tally_share, ballot_shares)
+
+    # pylint: disable=too-many-return-statements
+    def get_plaintext_tally(
+        self, decrypt: AuxiliaryDecrypt = rsa_decrypt
+    ) -> Optional[PlaintextTally]:
+        """
+        Get the plaintext tally for the election by composing each Guardian's
+        decrypted representation of each selection into a decrypted representation
+
+        :return: a `PlaintextTally` or `None`
+        """
+
+        # Make sure a Quorum of Guardians have announced
+        if len(self._available_guardians) < self._encryption.quorum:
+            log_warning(
+                "cannot get plaintext tally with less than quorum available guardians"
+            )
+            return None
+
+        # If all Guardians are present decrypt the tally
+        if len(self._available_guardians) == self._encryption.number_of_guardians:
+            return decrypt_tally(
+                self._ciphertext_tally,
+                self._tally_shares,
+                self._encryption.crypto_extended_base_hash,
+            )
+
+        # If guardians are missing, compensate then decrypt
+        self._compute_missing_shares_for_tally(decrypt)
+
+        if len(self._tally_shares) != self._encryption.number_of_guardians:
+            log_warning("get plaintext tally failed with share length mismatch")
+            return None
+
+        return decrypt_tally(
+            self._ciphertext_tally,
+            self._tally_shares,
+            self._encryption.crypto_extended_base_hash,
+        )
 
     def _mark_available(self, guardian: Guardian) -> None:
         """
@@ -163,45 +204,6 @@ class DecryptionMediator:
             else:
                 self._missing_guardians[guardian_id] = missing_guardians[guardian_id]
         return True
-
-    # pylint: disable=too-many-return-statements
-    def get_plaintext_tally(
-        self, decrypt: AuxiliaryDecrypt = rsa_decrypt
-    ) -> Optional[PlaintextTally]:
-        """
-        Get the plaintext tally for the election by composing each Guardian's
-        decrypted representation of each selection into a decrypted representation
-
-        :return: a `PlaintextTally` or `None`
-        """
-
-        # Make sure a Quorum of Guardians have announced
-        if len(self._available_guardians) < self._encryption.quorum:
-            log_warning(
-                "cannot get plaintext tally with less than quorum available guardians"
-            )
-            return None
-
-        # If all Guardians are present decrypt the tally
-        if len(self._available_guardians) == self._encryption.number_of_guardians:
-            return decrypt_tally(
-                self._ciphertext_tally,
-                self._tally_shares,
-                self._encryption.crypto_extended_base_hash,
-            )
-
-        # If guardians are missing, compensate then decrypt
-        self._compute_missing_shares_for_tally(decrypt)
-
-        if len(self._tally_shares) != self._encryption.number_of_guardians:
-            log_warning("get plaintext tally failed with share length mismatch")
-            return None
-
-        return decrypt_tally(
-            self._ciphertext_tally,
-            self._tally_shares,
-            self._encryption.crypto_extended_base_hash,
-        )
 
     def _compute_missing_shares_for_tally(
         self, decrypt: AuxiliaryDecrypt = rsa_decrypt
@@ -331,6 +333,10 @@ class DecryptionMediator:
     def _compute_missing_shares_for_ballot(
         self, ballot_id: str, decrypt: AuxiliaryDecrypt = rsa_decrypt
     ) -> None:
+        """
+        Compute the missing decryption shares for all the guardians who are missing
+        and add to the shares of the available guardians
+        """
         # If missing guardians compensate for the missing guardians
         for missing_guardian_id, public_key in self._missing_guardians.items():
             self._compute_lagrange_coefficients(missing_guardian_id)
@@ -370,6 +376,7 @@ class DecryptionMediator:
         """
         Compensate for a missing guardian by reconstructing the share using the available guardians.
 
+        :param ballot_id: The id of the ballot to get the share of
         :param missing_guardian_id: the guardian that failed to `announce`.
         :return: a collection of `CompensatedDecryptionShare` generated from all available guardians
                  or `None if there is an error
