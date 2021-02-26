@@ -1,6 +1,6 @@
 from typing import Dict, Optional, Tuple
 
-from .ballot import CiphertextAcceptedBallot, CiphertextSelection
+from .ballot import SubmittedBallot, CiphertextSelection
 from .decryption_share import (
     BallotDecryptionShare,
     CiphertextDecryptionSelection,
@@ -144,7 +144,7 @@ def decrypt_tally(
 
 
 def decrypt_spoiled_ballots(
-    spoiled_ballots: Dict[BALLOT_ID, CiphertextAcceptedBallot],
+    spoiled_ballots: Dict[BALLOT_ID, SubmittedBallot],
     shares: Dict[AVAILABLE_GUARDIAN_ID, TallyDecryptionShare],
     extended_base_hash: ElementModQ,
 ) -> Optional[Dict[BALLOT_ID, Dict[CONTEST_ID, PlaintextTallyContest]]]:
@@ -174,7 +174,7 @@ def decrypt_spoiled_ballots(
 
 
 def decrypt_ballot(
-    ballot: CiphertextAcceptedBallot,
+    ballot: SubmittedBallot,
     shares: Dict[AVAILABLE_GUARDIAN_ID, BallotDecryptionShare],
     extended_base_hash: ElementModQ,
 ) -> Optional[Dict[CONTEST_ID, PlaintextTallyContest]]:
