@@ -575,7 +575,7 @@ def reconstruct_decryption_contests(
     lagrange_coefficients: Dict[AVAILABLE_GUARDIAN_ID, ElementModQ],
 ) -> Dict[CONTEST_ID, CiphertextDecryptionContest]:
     """
-    Recontruct the missing Decryption Share for a missing guardian
+    Reconstruct the missing Decryption Share for a missing guardian
     from the collection of compensated decryption shares
 
     :param missing_guardian_id: The guardian id for the missing guardian
@@ -636,7 +636,8 @@ def reconstruct_decryption_ballots(
     lagrange_coefficients: Dict[AVAILABLE_GUARDIAN_ID, ElementModQ],
 ) -> Dict[BALLOT_ID, BallotDecryptionShare]:
     """
-    Reconstruct the missing Decryption shares for a missing guardian from the collection of compensated decryption shares
+    Reconstruct the missing Decryption shares for a missing guardian from the collection of compensated decryption
+    shares
 
     :param missing_guardian_id: The guardian id for the missing guardian
     :param public_key: the public key for the missing guardian
