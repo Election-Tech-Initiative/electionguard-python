@@ -9,7 +9,7 @@ from electionguardtest.ballot_factory import BallotFactory
 
 from electionguard.ballot import (
     CiphertextBallot,
-    CiphertextAcceptedBallot,
+    SubmittedBallot,
 )
 from electionguard.data_store import DataStore
 from electionguard.ballot_box import BallotBox
@@ -79,7 +79,7 @@ class ElectionSampleDataGenerator:
         ballot_box = BallotBox(public_data.metadata, public_data.context, ballot_store)
 
         # Randomly cast/spoil the ballots
-        accepted_ballots: List[CiphertextAcceptedBallot] = []
+        accepted_ballots: List[SubmittedBallot] = []
         for ballot in ciphertext_ballots:
             if randint(0, 100) < spoil_rate:
                 accepted_ballots.append(ballot_box.spoil(ballot))
