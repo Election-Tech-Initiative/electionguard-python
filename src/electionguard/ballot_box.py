@@ -4,7 +4,7 @@ from typing import Optional
 from .ballot import (
     BallotBoxState,
     CiphertextBallot,
-    CiphertextAcceptedBallot,
+    SubmittedBallot,
     from_ciphertext_ballot,
 )
 from .data_store import DataStore
@@ -24,7 +24,7 @@ class BallotBox:
     _encryption: CiphertextElectionContext = field()
     _store: DataStore = field(default_factory=lambda: DataStore())
 
-    def cast(self, ballot: CiphertextBallot) -> Optional[CiphertextAcceptedBallot]:
+    def cast(self, ballot: CiphertextBallot) -> Optional[SubmittedBallot]:
         """
         Cast a specific encrypted `CiphertextBallot`
         """
@@ -32,7 +32,7 @@ class BallotBox:
             ballot, BallotBoxState.CAST, self._metadata, self._encryption, self._store
         )
 
-    def spoil(self, ballot: CiphertextBallot) -> Optional[CiphertextAcceptedBallot]:
+    def spoil(self, ballot: CiphertextBallot) -> Optional[SubmittedBallot]:
         """
         Spoil a specific encrypted `CiphertextBallot`
         """
@@ -51,12 +51,12 @@ def accept_ballot(
     metadata: InternalElectionDescription,
     context: CiphertextElectionContext,
     store: DataStore,
-) -> Optional[CiphertextAcceptedBallot]:
+) -> Optional[SubmittedBallot]:
     """
-    Accept a ballot within the context of a specified election and against an existing data store
+    Submit a ballot within the context of a specified election and against an existing data store
     Verified that the ballot is valid for the election `metadata` and `context` and
     that the ballot has not already been cast or spoiled.
-    :return: a `CiphertextAcceptedBallot` or `None` if there was an error
+    :return: a `SubmittedBallot` or `None` if there was an error
     """
     if not ballot_is_valid_for_election(ballot, metadata, context):
         return None
