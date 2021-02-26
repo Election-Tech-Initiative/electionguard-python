@@ -816,9 +816,9 @@ class BallotBoxState(Enum):
 
 
 @dataclass(unsafe_hash=True)
-class CiphertextAcceptedBallot(CiphertextBallot):
+class SubmittedBallot(CiphertextBallot):
     """
-    A `CiphertextAcceptedBallot` represents a ballot that is accepted for inclusion in election results.
+    A `SubmittedBallot` represents a ballot that is accepted for inclusion in election results.
     An accepted ballot is or is about to be either cast or spoiled.
     The state supports the `BallotBoxState.UNKNOWN` enumeration to indicate that this object is mutable
     and has not yet been explicitly assigned a specific state.
@@ -832,7 +832,7 @@ class CiphertextAcceptedBallot(CiphertextBallot):
 
     def __eq__(self, other: Any) -> bool:
         return (
-            isinstance(other, CiphertextAcceptedBallot)
+            isinstance(other, SubmittedBallot)
             and super.__eq__(self, other)
             and self.state == other.state
         )
@@ -900,9 +900,9 @@ def make_ciphertext_accepted_ballot(
     tracking_hash: Optional[ElementModQ],
     timestamp: Optional[int] = None,
     state: BallotBoxState = BallotBoxState.UNKNOWN,
-) -> CiphertextAcceptedBallot:
+) -> SubmittedBallot:
     """
-    Makes a `CiphertextAcceptedBallot`, ensuring that no nonces are part of the contests.
+    Makes a `SubmittedBallot`, ensuring that no nonces are part of the contests.
 
     :param object_id: the object_id of this specific ballot
     :param ballot_style: The `object_id` of the `BallotStyle` in the `Election` Manifest
@@ -936,7 +936,7 @@ def make_ciphertext_accepted_ballot(
         new_contest = replace(contest, nonce=None, ballot_selections=new_selections)
         new_contests.append(new_contest)
 
-    return CiphertextAcceptedBallot(
+    return SubmittedBallot(
         object_id=object_id,
         ballot_style=ballot_style,
         description_hash=description_hash,
@@ -952,9 +952,9 @@ def make_ciphertext_accepted_ballot(
 
 def from_ciphertext_ballot(
     ballot: CiphertextBallot, state: BallotBoxState = BallotBoxState.UNKNOWN
-) -> CiphertextAcceptedBallot:
+) -> SubmittedBallot:
     """
-    Convert a `CiphertextBallot` into a `CiphertextAcceptedBallot`, with all nonces removed.
+    Convert a `CiphertextBallot` into a `SubmittedBallot`, with all nonces removed.
     """
     return make_ciphertext_accepted_ballot(
         object_id=ballot.object_id,
