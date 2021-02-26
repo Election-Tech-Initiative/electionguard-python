@@ -31,7 +31,7 @@ from electionguard.ballot import (
     BallotBoxState,
     CiphertextBallot,
     PlaintextBallot,
-    CiphertextAcceptedBallot,
+    SubmittedBallot,
 )
 from electionguard.encrypt import EncryptionDevice
 from electionguard.encrypt import EncryptionMediator
@@ -462,14 +462,14 @@ class TestEndToEndElection(TestCase):
 
         for ballot in self.ballot_store.all():
             name = BALLOT_PREFIX + ballot.object_id
-            ballot_from_file = CiphertextAcceptedBallot.from_json_file(
+            ballot_from_file = SubmittedBallot.from_json_file(
                 name, BALLOTS_DIR
             )
             self.assertEqual(ballot, ballot_from_file)
 
         for spoiled_ballot in self.ciphertext_tally.spoiled_ballots.values():
             name = BALLOT_PREFIX + spoiled_ballot.object_id
-            spoiled_ballot_from_file = CiphertextAcceptedBallot.from_json_file(
+            spoiled_ballot_from_file = SubmittedBallot.from_json_file(
                 name, SPOILED_DIR
             )
             self.assertEqual(spoiled_ballot, spoiled_ballot_from_file)
