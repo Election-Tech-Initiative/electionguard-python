@@ -891,7 +891,7 @@ def make_ciphertext_ballot(
     )
 
 
-def make_ciphertext_accepted_ballot(
+def make_ciphertext_submitted_ballot(
     object_id: str,
     ballot_style: str,
     description_hash: ElementModQ,
@@ -956,7 +956,7 @@ def from_ciphertext_ballot(
     """
     Convert a `CiphertextBallot` into a `SubmittedBallot`, with all nonces removed.
     """
-    return make_ciphertext_accepted_ballot(
+    return make_ciphertext_submitted_ballot(
         object_id=ballot.object_id,
         ballot_style=ballot.ballot_style,
         description_hash=ballot.description_hash,
