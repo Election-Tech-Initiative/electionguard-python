@@ -114,7 +114,7 @@ For convenience, stateless functions are also provided to automatically generate
 metadata: InternalElectionDescription
 context: CiphertextElectionContext
 
-ballots: List[CiphertextAcceptedBallot]
+ballots: List[SubmittedBallot]
 
 tally = CiphertextTally(metadata, context)
 
