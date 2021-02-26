@@ -6,7 +6,7 @@ from collections.abc import Container, Sized
 from .ballot import (
     BallotBoxState,
     CiphertextBallotSelection,
-    CiphertextAcceptedBallot,
+    SubmittedBallot,
     CiphertextSelection,
 )
 from .data_store import DataStore
@@ -207,7 +207,7 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
     Retains an encrypted representation of a tally for each selection
     """
 
-    spoiled_ballots: Dict[BALLOT_ID, CiphertextAcceptedBallot] = field(
+    spoiled_ballots: Dict[BALLOT_ID, SubmittedBallot] = field(
         default_factory=lambda: {}
     )
     """
@@ -222,7 +222,7 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
         return len(self._cast_ballot_ids) + len(self.spoiled_ballots)
 
     def __contains__(self, item: object) -> bool:
-        if not isinstance(item, CiphertextAcceptedBallot):
+        if not isinstance(item, SubmittedBallot):
             return False
 
         if (
@@ -234,7 +234,7 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
         return False
 
     def append(
-        self, ballot: CiphertextAcceptedBallot, scheduler: Optional[Scheduler] = None
+        self, ballot: SubmittedBallot, scheduler: Optional[Scheduler] = None
     ) -> bool:
         """
         Append a ballot to the tally and recalculate the tally.
@@ -263,7 +263,7 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
 
     def batch_append(
         self,
-        ballots: Iterable[Tuple[Any, CiphertextAcceptedBallot]],
+        ballots: Iterable[Tuple[Any, SubmittedBallot]],
         scheduler: Optional[Scheduler] = None,
     ) -> bool:
         """
@@ -321,7 +321,7 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
         )
 
     def _add_cast(
-        self, ballot: CiphertextAcceptedBallot, scheduler: Optional[Scheduler] = None
+        self, ballot: SubmittedBallot, scheduler: Optional[Scheduler] = None
     ) -> bool:
         """
         Add a cast ballot to the tally, synchronously
@@ -345,7 +345,7 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
         self._cast_ballot_ids.add(ballot.object_id)
         return True
 
-    def _add_spoiled(self, ballot: CiphertextAcceptedBallot) -> bool:
+    def _add_spoiled(self, ballot: SubmittedBallot) -> bool:
         """
         Add a spoiled ballot
         """
@@ -426,7 +426,7 @@ def publish_ciphertext_tally(tally: CiphertextTally) -> PublishedCiphertextTally
 
 
 def tally_ballot(
-    ballot: CiphertextAcceptedBallot, tally: CiphertextTally
+    ballot: SubmittedBallot, tally: CiphertextTally
 ) -> Optional[CiphertextTally]:
     """
     Tally a ballot that is either Cast or Spoiled
