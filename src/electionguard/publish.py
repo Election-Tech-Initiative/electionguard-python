@@ -1,7 +1,7 @@
 from os import path
 from typing import Iterable
 
-from .ballot import PlaintextBallot, CiphertextBallot, CiphertextAcceptedBallot
+from .ballot import PlaintextBallot, CiphertextBallot, SubmittedBallot
 from .guardian import Guardian
 from .election import CiphertextElectionContext, ElectionConstants, ElectionDescription
 from .encrypt import EncryptionDevice
@@ -29,8 +29,8 @@ def publish(
     context: CiphertextElectionContext,
     constants: ElectionConstants,
     devices: Iterable[EncryptionDevice],
-    ciphertext_ballots: Iterable[CiphertextAcceptedBallot],
-    spoiled_ballots: Iterable[CiphertextAcceptedBallot],
+    ciphertext_ballots: Iterable[SubmittedBallot],
+    spoiled_ballots: Iterable[SubmittedBallot],
     ciphertext_tally: PublishedCiphertextTally,
     plaintext_tally: PlaintextTally,
     coefficient_validation_sets: Iterable[CoefficientValidationSet] = None,
