@@ -818,14 +818,14 @@ class BallotBoxState(Enum):
 @dataclass(unsafe_hash=True)
 class SubmittedBallot(CiphertextBallot):
     """
-    A `SubmittedBallot` represents a ballot that is accepted for inclusion in election results.
-    An accepted ballot is or is about to be either cast or spoiled.
+    A `SubmittedBallot` represents a ballot that is submitted for inclusion in election results.
+    A submitted ballot is or is about to be either cast or spoiled.
     The state supports the `BallotBoxState.UNKNOWN` enumeration to indicate that this object is mutable
     and has not yet been explicitly assigned a specific state.
 
     Note, additionally, this ballot includes all proofs but no nonces.
 
-    Do not make this class directly. Use `make_ciphertext_accepted_ballot` or `from_ciphertext_ballot` instead.
+    Do not make this class directly. Use `make_ciphertext_submitted_ballot` or `from_ciphertext_ballot` instead.
     """
 
     state: BallotBoxState

@@ -26,7 +26,7 @@ Once all of the ballots are marked as _cast_ or _spoiled_, all of the encryption
 ## Glossary
 
 - **Ciphertext Ballot** An encrypted representation of a voter's filled-in ballot.
-- **Ciphertext Accepted Ballot** A wrapper around the `CiphertextBallot` that represents a ballot that is accepted for inclusion in election results and is either: cast or spoiled.
+- **Submitted Ballot** A wrapper around the `CiphertextBallot` that represents a ballot that is submitted for inclusion in election results and is either: cast or spoiled.
 - **Ballot Box** A stateful collection of ballots that are either cast or spoiled.
 - **Ballot Store** A repository for retaining cast and spoiled ballots.
 - **Cast Ballot** A ballot which a voter has accepted as valid to be included in the official election tally.
@@ -38,7 +38,7 @@ Once all of the ballots are marked as _cast_ or _spoiled_, all of the encryption
 
 1. Each ballot is loaded into memory (if it is not already).
 2. Each ballot is verified to be correct according to the specific election metadata and encryption context.
-3. Each ballot is `accepted` and identified as either being `cast` or `spoiled`.
+3. Each ballot is `submitted` and identified as either being `cast` or `spoiled`.
 4. The collection of cast and spoiled ballots is cached in the `DataStore`.
 5. All ballots are tallied.  The `cast` ballots are combined to create a `CiphertextTally` The spoiled ballots are cached for decryption later.
 
@@ -46,7 +46,7 @@ Once all of the ballots are marked as _cast_ or _spoiled_, all of the encryption
 
 The ballot box can be interacted with via a stateful class that caches the election context, or via stateless functions.  The following examples demonstrate some ways to interact with the ballot box.
 
-Depending on the specific election workflow, the `BallotBox`class  may not be used for a given election.  For instance, in one case a ballot can be **accepted** directly on an electronic device, in which case there is no `BallotBox`.  In a different workflow, a ballot may be explicitly cast or spoiled in a later step, such as after printing for voter review.
+Depending on the specific election workflow, the `BallotBox`class  may not be used for a given election.  For instance, in one case a ballot can be **submitted** directly on an electronic device, in which case there is no `BallotBox`.  In a different workflow, a ballot may be explicitly cast or spoiled in a later step, such as after printing for voter review.
 
 In all cases, a ballot must be marked as either `cast` or `spoiled` to be included in a tally result.
 
@@ -67,9 +67,9 @@ ballot_box = BallotBox(metadata, encryption, store)
 
 # Cast the ballots
 for ballot in ballots_to_cast:
-    accepted_ballot = ballot_box.cast(ballot)
+    submitted_ballot = ballot_box.cast(ballot)
     # The ballot is both returned, and placed into the ballot store
-    assert(store.get(accepted_ballot.object_id) == accepted_ballot)
+    assert(store.get(submitted_ballot.object_id) == submitted_ballot)
 
 # Spoil the ballots
 for ballot in ballots_to_spoil:
@@ -90,12 +90,12 @@ ballots_to_cast: List[CiphertextBallot]
 ballots_to_spoil: List[CiphertextBallot]
 
 for ballot in ballots_to_cast:
-    accepted_ballot = accept_ballot(
+    submitted_ballot = accept_ballot(
         ballot, BallotBoxState.CAST, metadata, encryption, store
     )
 
 for ballot in ballots_to_spoil:
-    accepted_ballot = accept_ballot(
+    submitted_ballot = accept_ballot(
         ballot, BallotBoxState.SPOILED, metadata, encryption, store
     )
 
