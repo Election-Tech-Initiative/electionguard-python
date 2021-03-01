@@ -1,20 +1,16 @@
 from typing import Dict, Optional, Tuple
 
-from .ballot import CiphertextAcceptedBallot, CiphertextSelection
+from .ballot import CiphertextAcceptedBallot, CiphertextContest, CiphertextSelection
 from .decryption_share import (
-    BallotDecryptionShare,
     CiphertextDecryptionSelection,
-    TallyDecryptionShare,
-    get_ballot_shares_for_selection,
-    get_tally_shares_for_selection,
+    DecryptionShare,
+    get_shares_for_selection,
 )
 from .dlog import discrete_log
-from .election import CiphertextElectionContext
 from .group import ElementModP, ElementModQ, mult_p, div_p
 from .tally import (
     CiphertextTally,
     PlaintextTally,
-    CiphertextTallyContest,
     PlaintextTallyContest,
     PlaintextTallySelection,
 )
@@ -32,12 +28,145 @@ ELECTION_PUBLIC_KEY = ElementModP
 # and the key ceremony is used to share secrets among a quorum of guardians
 
 
+def decrypt_tally(
+    tally: CiphertextTally,
+    shares: Dict[GUARDIAN_ID, DecryptionShare],
+    crypto_extended_base_hash: ElementModQ,
+) -> Optional[PlaintextTally]:
+    """
+    Try to decrypt the tally and the spoiled ballots using the provided decryption shares
+    :param tally: The CiphertextTally to decrypt
+    :param shares: The guardian Decryption Shares for all guardians
+    :param context: the Ciphertextelectioncontext
+    :return: A PlaintextTally or None if there is an error
+    """
+
+    contests: Dict[CONTEST_ID, PlaintextTallyContest] = {}
+
+    for contest in tally.contests.values():
+        plaintext_contest = decrypt_contest_with_decryption_shares(
+            CiphertextContest(
+                contest.object_id,
+                contest.description_hash,
+                list(contest.selections.values()),
+            ),
+            shares,
+            crypto_extended_base_hash,
+        )
+        if not plaintext_contest:
+            return None
+        contests[contest.object_id] = plaintext_contest
+
+    return PlaintextTally(tally.object_id, contests)
+
+
+def decrypt_ballots(
+    ballots: Dict[BALLOT_ID, CiphertextAcceptedBallot],
+    guardian_ballot_shares: Dict[
+        AVAILABLE_GUARDIAN_ID, Dict[BALLOT_ID, DecryptionShare]
+    ],
+    crypto_extended_base_hash: ElementModQ,
+) -> Optional[Dict[BALLOT_ID, PlaintextTally]]:
+    """
+    Try to decrypt each of the spoiled ballots using the provided decryption shares
+
+    :param ballots: The CiphertextAcceptedBallots to decrypt
+    :param guardian_ballot_shares: The guardian Decryption Shares for all guardians for each ballot
+    :param crypto_extended_base_hash: The extended base hash
+    :return: A PlaintextTally or None if there is an error
+    """
+
+    plaintext_ballots: Dict[BALLOT_ID, PlaintextTally] = {}
+
+    for ballot in ballots.values():
+        # For each guardian, get the specific ballot share
+        ballot_shares = {
+            guardian_id: shares[ballot.object_id]
+            for guardian_id, shares in guardian_ballot_shares.items()
+        }
+
+        decrypted_ballot = decrypt_ballot(
+            ballot, ballot_shares, crypto_extended_base_hash
+        )
+        if not decrypted_ballot:
+            return None
+        plaintext_ballots[ballot.object_id] = decrypted_ballot
+
+    return plaintext_ballots
+
+
+def decrypt_ballot(
+    ballot: CiphertextAcceptedBallot,
+    shares: Dict[AVAILABLE_GUARDIAN_ID, DecryptionShare],
+    crypto_extended_base_hash: ElementModQ,
+) -> Optional[PlaintextTally]:
+    """
+    Try to decrypt a single ballot using the provided decryption shares
+
+    :param ballot: The CiphertextAcceptedBallot to decrypt
+    :param shares: The guardian Decryption Shares for all guardians
+    :param crypto_extended_base_hash: The extended base hash
+    :return: A PlaintextTally or None if there is an error
+    """
+    contests: Dict[CONTEST_ID, PlaintextTallyContest] = {}
+
+    for contest in ballot.contests:
+        plaintext_contest = decrypt_contest_with_decryption_shares(
+            CiphertextContest(
+                contest.object_id,
+                contest.description_hash,
+                contest.ballot_selections,
+            ),
+            shares,
+            crypto_extended_base_hash,
+        )
+        if not plaintext_contest:
+            return None
+        contests[contest.object_id] = plaintext_contest
+
+    return PlaintextTally(ballot.object_id, contests)
+
+
+def decrypt_contest_with_decryption_shares(
+    contest: CiphertextContest,
+    shares: Dict[GUARDIAN_ID, DecryptionShare],
+    crypto_extended_base_hash: ElementModQ,
+) -> Optional[PlaintextTallyContest]:
+    """
+    Decrypt the specified tally within the context of the specified Decryption Shares
+
+    :param tally: the encrypted tally of contests
+    :param shares: a collection of `DecryptionShare` used to decrypt
+    :param crypto_extended_base_hash: the extended base hash code (𝑄') for the election
+    :return: a collection of `PlaintextTallyContest` or `None` if there is an error
+    """
+
+    plaintext_selections: Dict[SELECTION_ID, PlaintextTallySelection] = {}
+
+    for selection in contest.selections:
+        tally_shares = get_shares_for_selection(selection.object_id, shares)
+        plaintext_selection = decrypt_selection_with_decryption_shares(
+            selection, tally_shares, crypto_extended_base_hash
+        )
+        if plaintext_selection is None:
+            log_warning(
+                (
+                    f"could not decrypt contest {contest.object_id} "
+                    f"with selection {selection.object_id}"
+                )
+            )
+            return None
+        plaintext_selections[plaintext_selection.object_id] = plaintext_selection
+
+    return PlaintextTallyContest(contest.object_id, plaintext_selections)
+
+
 def decrypt_selection_with_decryption_shares(
     selection: CiphertextSelection,
     shares: Dict[
         GUARDIAN_ID, Tuple[ELECTION_PUBLIC_KEY, CiphertextDecryptionSelection]
     ],
-    extended_base_hash: ElementModQ,
+    crypto_extended_base_hash: ElementModQ,
     suppress_validity_check: bool = False,
 ) -> Optional[PlaintextTallySelection]:
     """
@@ -46,18 +175,18 @@ def decrypt_selection_with_decryption_shares(
 
     :param selection: a `CiphertextTallySelection`
     :param shares: the collection of shares to decrypt the selection
-    :param extended_base_hash: the extended base hash code (𝑄') for the election
-    :return: a `PlaintextTallySelection` or `None` if there is an error
+    :param crypto_extended_base_hash: the extended base hash code (𝑄') for the election
     :param suppress_validity_check: do not validate the encryption prior to decrypting (useful for tests)
+    :return: a `PlaintextTallySelection` or `None` if there is an error
     """
 
     if not suppress_validity_check:
         # Verify that all of the shares are computed correctly
-        for _guardian_id, share in shares.items():
+        for share in shares.values():
             public_key, decryption = share
             # verify we have a proof or recovered parts
             if not decryption.is_valid(
-                selection.ciphertext, public_key, extended_base_hash
+                selection.ciphertext, public_key, crypto_extended_base_hash
             ):
                 return None
 
@@ -76,136 +205,3 @@ def decrypt_selection_with_decryption_shares(
         selection.ciphertext,
         [share for (guardian_id, (public_key, share)) in shares.items()],
     )
-
-
-def decrypt_tally_contests_with_decryption_shares(
-    tally: Dict[CONTEST_ID, CiphertextTallyContest],
-    shares: Dict[GUARDIAN_ID, TallyDecryptionShare],
-    extended_base_hash: ElementModQ,
-) -> Optional[Dict[CONTEST_ID, PlaintextTallyContest]]:
-    """
-    Decrypt the specified tally within the context of the specified Decryption Shares
-
-    :param tally: the encrypted tally of contests
-    :param shares: a collection of `TallyDecryptionShare` used to decrypt
-    :param extended_base_hash: the extended base hash code (𝑄') for the election
-    :return: a collection of `PlaintextTallyContest` or `None` if there is an error
-    """
-    contests: Dict[CONTEST_ID, PlaintextTallyContest] = {}
-
-    # iterate through the tally contests
-    for contest in tally.values():
-        selections: Dict[SELECTION_ID, PlaintextTallySelection] = {}
-
-        for selection in contest.tally_selections.values():
-            tally_shares = get_tally_shares_for_selection(selection.object_id, shares)
-            plaintext_selection = decrypt_selection_with_decryption_shares(
-                selection, tally_shares, extended_base_hash
-            )
-            if plaintext_selection is None:
-                log_warning(f"could not decrypt tally for contest {contest.object_id}")
-                return None
-            selections[plaintext_selection.object_id] = plaintext_selection
-
-        contests[contest.object_id] = PlaintextTallyContest(
-            contest.object_id, selections
-        )
-
-    return contests
-
-
-def decrypt_tally(
-    tally: CiphertextTally,
-    shares: Dict[GUARDIAN_ID, TallyDecryptionShare],
-    context: CiphertextElectionContext,
-) -> Optional[PlaintextTally]:
-    """
-    Try to decrypt the tally and the spoiled ballots using the provided decryption shares
-    :param tally: The CiphertextTally to decrypt
-    :param shares: The guardian Decryption Shares for all guardians
-    :param context: the Ciphertextelectioncontext
-    :return: A PlaintextTally or None if there is an error
-    """
-    contests = decrypt_tally_contests_with_decryption_shares(
-        tally.cast, shares, context.crypto_extended_base_hash
-    )
-
-    if contests is None:
-        return None
-
-    spoiled_ballots = decrypt_spoiled_ballots(
-        tally.spoiled_ballots, shares, context.crypto_extended_base_hash
-    )
-
-    if spoiled_ballots is None:
-        return None
-
-    return PlaintextTally(tally.object_id, contests, spoiled_ballots)
-
-
-def decrypt_spoiled_ballots(
-    spoiled_ballots: Dict[BALLOT_ID, CiphertextAcceptedBallot],
-    shares: Dict[AVAILABLE_GUARDIAN_ID, TallyDecryptionShare],
-    extended_base_hash: ElementModQ,
-) -> Optional[Dict[BALLOT_ID, Dict[CONTEST_ID, PlaintextTallyContest]]]:
-    """
-    Try to decrypt each of the spoiled ballots using the provided decryption shares
-    """
-
-    plaintext_spoiled_ballots: Dict[
-        BALLOT_ID, Dict[CONTEST_ID, PlaintextTallyContest]
-    ] = {}
-
-    for spoiled_ballot in spoiled_ballots.values():
-        ballot_shares: Dict[AVAILABLE_GUARDIAN_ID, BallotDecryptionShare] = {
-            guardian_id: share.spoiled_ballots[spoiled_ballot.object_id]
-            for guardian_id, share in shares.items()
-        }
-
-        decrypted_ballot = decrypt_ballot(
-            spoiled_ballot, ballot_shares, extended_base_hash
-        )
-        if decrypted_ballot:
-            plaintext_spoiled_ballots[spoiled_ballot.object_id] = decrypted_ballot
-        else:
-            return None
-
-    return plaintext_spoiled_ballots
-
-
-def decrypt_ballot(
-    ballot: CiphertextAcceptedBallot,
-    shares: Dict[AVAILABLE_GUARDIAN_ID, BallotDecryptionShare],
-    extended_base_hash: ElementModQ,
-) -> Optional[Dict[CONTEST_ID, PlaintextTallyContest]]:
-    """
-    Try to decrypt a single ballot using the provided decryption shares
-    """
-
-    contests: Dict[CONTEST_ID, PlaintextTallyContest] = {}
-    for contest in ballot.contests:
-        selections: Dict[SELECTION_ID, PlaintextTallySelection] = {}
-        for selection in contest.ballot_selections:
-            selection_shares = get_ballot_shares_for_selection(
-                selection.object_id, shares
-            )
-            plaintext_selection = decrypt_selection_with_decryption_shares(
-                selection, selection_shares, extended_base_hash
-            )
-
-            # verify the plaintext values are received and add them to the collection
-            if plaintext_selection is None:
-                log_warning(
-                    (
-                        f"could not decrypt ballot {ballot.object_id} "
-                        f"for contest {contest.object_id} selection {selection.object_id}"
-                    )
-                )
-                return None
-            selections[plaintext_selection.object_id] = plaintext_selection
-
-        contests[contest.object_id] = PlaintextTallyContest(
-            contest.object_id, selections
-        )
-
-    return contests
