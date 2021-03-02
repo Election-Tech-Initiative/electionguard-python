@@ -1,6 +1,6 @@
 from typing import Dict, Optional, Tuple
 
-from .ballot import CiphertextAcceptedBallot, CiphertextContest, CiphertextSelection
+from .ballot import SubmittedBallot, CiphertextContest, CiphertextSelection
 from .decryption_share import (
     CiphertextDecryptionSelection,
     DecryptionShare,
@@ -61,7 +61,7 @@ def decrypt_tally(
 
 
 def decrypt_ballots(
-    ballots: Dict[BALLOT_ID, CiphertextAcceptedBallot],
+    ballots: Dict[BALLOT_ID, SubmittedBallot],
     guardian_ballot_shares: Dict[
         AVAILABLE_GUARDIAN_ID, Dict[BALLOT_ID, DecryptionShare]
     ],
@@ -70,7 +70,7 @@ def decrypt_ballots(
     """
     Try to decrypt each of the spoiled ballots using the provided decryption shares
 
-    :param ballots: The CiphertextAcceptedBallots to decrypt
+    :param ballots: The SubmittedBallots to decrypt
     :param guardian_ballot_shares: The guardian Decryption Shares for all guardians for each ballot
     :param crypto_extended_base_hash: The extended base hash
     :return: A PlaintextTally or None if there is an error
@@ -96,14 +96,14 @@ def decrypt_ballots(
 
 
 def decrypt_ballot(
-    ballot: CiphertextAcceptedBallot,
+    ballot: SubmittedBallot,
     shares: Dict[AVAILABLE_GUARDIAN_ID, DecryptionShare],
     crypto_extended_base_hash: ElementModQ,
 ) -> Optional[PlaintextTally]:
     """
     Try to decrypt a single ballot using the provided decryption shares
 
-    :param ballot: The CiphertextAcceptedBallot to decrypt
+    :param ballot: The SubmittedBallot to decrypt
     :param shares: The guardian Decryption Shares for all guardians
     :param crypto_extended_base_hash: The extended base hash
     :return: A PlaintextTally or None if there is an error
