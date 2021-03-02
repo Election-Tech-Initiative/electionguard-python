@@ -79,7 +79,7 @@ def accept_ballot(
 
 def get_ballots(
     store: DataStore, state: Optional[BallotBoxState]
-) -> Dict[str, CiphertextAcceptedBallot]:
+) -> Dict[str, SubmittedBallot]:
     return {
         ballot_id: ballot
         for (ballot_id, ballot) in store.items()

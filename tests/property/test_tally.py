@@ -186,7 +186,7 @@ class TestTally(TestCase):
         self.assertTrue(tally.append(first_ballot))
         self.assertFalse(tally.append(first_ballot))
 
-        # verify an already accepted ballot cannot be changed or readded
+        # verify an already submitted ballot cannot be changed or readded
         first_ballot.state = BallotBoxState.SPOILED
         self.assertFalse(tally.append(first_ballot))
 
@@ -208,7 +208,7 @@ class TestTally(TestCase):
     def _cannot_erroneously_mutate_state(
         self,
         tally: CiphertextTally,
-        ballot: CiphertextAcceptedBallot,
+        ballot: SubmittedBallot,
         state_to_test: BallotBoxState,
     ) -> bool:
 

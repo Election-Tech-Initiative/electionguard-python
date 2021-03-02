@@ -109,7 +109,7 @@ class ElectionSampleDataGenerator:
             public_data.context,
             public_data.constants,
             [self.encryption_device],
-            accepted_ballots,
+            submitted_ballots,
             plaintext_spoiled_ballots.values(),
             ciphertext_tally.publish(),
             plaintext_tally,

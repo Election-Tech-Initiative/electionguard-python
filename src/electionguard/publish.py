@@ -29,7 +29,7 @@ def publish(
     context: CiphertextElectionContext,
     constants: ElectionConstants,
     devices: Iterable[EncryptionDevice],
-    ciphertext_ballots: Iterable[CiphertextAcceptedBallot],
+    ciphertext_ballots: Iterable[SubmittedBallot],
     spoiled_ballots: Iterable[PlaintextTally],
     ciphertext_tally: PublishedCiphertextTally,
     plaintext_tally: PlaintextTally,
