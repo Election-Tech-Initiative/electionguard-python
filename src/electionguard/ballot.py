@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field, replace
 from datetime import datetime
 from enum import Enum
-from typing import Any, List, Optional, Protocol, runtime_checkable, Sequence
+from typing import Any, List, Iterable, Optional, Protocol, runtime_checkable, Sequence
 
 from .chaum_pedersen import (
     ConstantChaumPedersenProof,
@@ -365,6 +365,19 @@ class PlaintextBallotContest(ElectionObjectBase):
 
     def __ne__(self, other: Any) -> bool:
         return not self.__eq__(other)
+
+
+@dataclass
+class CiphertextContest(ElectionObjectBase):
+    """
+    Base encrypted contest for both tally and ballot
+    """
+
+    description_hash: ElementModQ
+    """The description hash"""
+
+    selections: Iterable[CiphertextSelection]
+    """Collection of selections"""
 
 
 @dataclass(unsafe_hash=True)

@@ -29,8 +29,8 @@ def publish(
     context: CiphertextElectionContext,
     constants: ElectionConstants,
     devices: Iterable[EncryptionDevice],
-    ciphertext_ballots: Iterable[SubmittedBallot],
-    spoiled_ballots: Iterable[SubmittedBallot],
+    ciphertext_ballots: Iterable[CiphertextAcceptedBallot],
+    spoiled_ballots: Iterable[PlaintextTally],
     ciphertext_tally: PublishedCiphertextTally,
     plaintext_tally: PlaintextTally,
     coefficient_validation_sets: Iterable[CoefficientValidationSet] = None,
@@ -65,9 +65,9 @@ def publish(
         ballot.to_json_file(name, ballots_directory)
 
     make_directory(spoiled_directory)
-    for ballot in spoiled_ballots:
-        name = BALLOT_PREFIX + ballot.object_id
-        ballot.to_json_file(name, spoiled_directory)
+    for spoiled_ballot in spoiled_ballots:
+        name = BALLOT_PREFIX + spoiled_ballot.object_id
+        spoiled_ballot.to_json_file(name, spoiled_directory)
 
     ciphertext_tally.to_json_file(ENCRYPTED_TALLY_FILE_NAME, results_directory)
     plaintext_tally.to_json_file(TALLY_FILE_NAME, results_directory)

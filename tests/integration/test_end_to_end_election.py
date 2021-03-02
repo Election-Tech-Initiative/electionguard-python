@@ -38,15 +38,14 @@ from electionguard.encrypt import EncryptionMediator
 
 # Step 3 - Cast and Spoil
 from electionguard.data_store import DataStore
-from electionguard.ballot_box import BallotBox
+from electionguard.ballot_box import BallotBox, get_ballots
 
 # Step 4 - Decrypt Tally
 from electionguard.tally import (
+    PublishedCiphertextTally,
     tally_ballots,
     CiphertextTally,
-    PublishedCiphertextTally,
     PlaintextTally,
-    publish_ciphertext_tally,
 )
 from electionguard.decryption_mediator import DecryptionMediator
 
@@ -106,6 +105,7 @@ class TestEndToEndElection(TestCase):
     # Step 4 - Decrypt Tally
     ciphertext_tally: CiphertextTally
     plaintext_tally: PlaintextTally
+    plaintext_spoiled_ballots: Dict[str, PlaintextTally]
     decrypter: DecryptionMediator
 
     def test_end_to_end_election(self) -> None:
@@ -309,11 +309,12 @@ class TestEndToEndElection(TestCase):
         self.ciphertext_tally = get_optional(
             tally_ballots(self.ballot_store, self.metadata, self.context)
         )
+        self.ciphertext_ballots = get_ballots(self.ballot_store, BallotBoxState.SPOILED)
         self._assert_message(
             tally_ballots.__qualname__,
             f"""
-            - cast: {self.ciphertext_tally.count()}
-            - spoiled: {len(self.ciphertext_tally.spoiled_ballots)}
+            - cast: {self.ciphertext_tally.cast()}
+            - spoiled: {self.ciphertext_tally.spoiled()}
             Total: {len(self.ciphertext_tally)}
             """,
             self.ciphertext_tally is not None,
@@ -321,7 +322,7 @@ class TestEndToEndElection(TestCase):
 
         # Configure the Decryption
         self.decrypter = DecryptionMediator(
-            self.metadata, self.context, self.ciphertext_tally
+            self.metadata, self.context, self.ciphertext_tally, self.ciphertext_ballots
         )
 
         # Announce each guardian as present
@@ -333,11 +334,21 @@ class TestEndToEndElection(TestCase):
                 decryption_share is not None,
             )
 
-        # Get the Plain Text Tally
+        # Get the plaintext Tally
         self.plaintext_tally = get_optional(self.decrypter.get_plaintext_tally())
         self._assert_message(
             DecryptionMediator.get_plaintext_tally.__qualname__,
             "Tally Decrypted",
+            self.plaintext_tally is not None,
+        )
+
+        # Get the plaintext Spoiled Ballots
+        self.plaintext_spoiled_ballots = get_optional(
+            self.decrypter.get_plaintext_ballots()
+        )
+        self._assert_message(
+            DecryptionMediator.get_plaintext_ballots.__qualname__,
+            "Spoiled Ballots Decrypted",
             self.plaintext_tally is not None,
         )
 
@@ -387,28 +398,26 @@ class TestEndToEndElection(TestCase):
         print(f"\n{'-'*40}\n")
 
         # Compare the expected values for each spoiled ballot
-        for (
-            ballot_id,
-            submitted_ballot,
-        ) in self.ciphertext_tally.spoiled_ballots.items():
-            if submitted_ballot.state == BallotBoxState.SPOILED:
-                for plaintext_ballot in self.plaintext_ballots:
-                    if ballot_id == plaintext_ballot.object_id:
-                        print(f"\nSpoiled Ballot: {ballot_id}")
-                        for contest in plaintext_ballot.contests:
-                            print(f"\n Contest: {contest.object_id}")
-                            for selection in contest.ballot_selections:
-                                expected = selection.vote
-                                decrypted_selection = (
-                                    self.plaintext_tally.spoiled_ballots[ballot_id][
-                                        contest.object_id
-                                    ].selections[selection.object_id]
-                                )
-                                self._assert_message(
-                                    f"   - Selection: {selection.object_id}",
-                                    f"expected: {expected}, actual: {decrypted_selection.tally}",
-                                    expected == decrypted_selection.tally,
-                                )
+        for ballot in self.plaintext_ballots:
+            if (
+                get_optional(self.ballot_store.get(ballot.object_id)).state
+                == BallotBoxState.SPOILED
+            ):
+                print(f"\nSpoiled Ballot: {ballot.object_id}")
+                for contest in ballot.contests:
+                    print(f"\n Contest: {contest.object_id}")
+                    for selection in contest.ballot_selections:
+                        expected = selection.vote
+                        decrypted_selection = (
+                            self.plaintext_spoiled_ballots[ballot.object_id]
+                            .contests[contest.object_id]
+                            .selections[selection.object_id]
+                        )
+                        self._assert_message(
+                            f"   - Selection: {selection.object_id}",
+                            f"expected: {expected}, actual: {decrypted_selection.tally}",
+                            expected == decrypted_selection.tally,
+                        )
 
     def step_5_publish_and_verify(self) -> None:
         """Publish and verify steps of the election"""
@@ -428,8 +437,8 @@ class TestEndToEndElection(TestCase):
             self.constants,
             [self.device],
             self.ballot_store.all(),
-            self.ciphertext_tally.spoiled_ballots.values(),
-            publish_ciphertext_tally(self.ciphertext_tally),
+            self.plaintext_spoiled_ballots.values(),
+            self.ciphertext_tally.publish(),
             self.plaintext_tally,
             self.coefficient_validation_sets,
             RESULTS_DIR,
@@ -468,16 +477,16 @@ class TestEndToEndElection(TestCase):
             ballot_from_file = SubmittedBallot.from_json_file(name, BALLOTS_DIR)
             self.assertEqual(ballot, ballot_from_file)
 
-        for spoiled_ballot in self.ciphertext_tally.spoiled_ballots.values():
+        for spoiled_ballot in self.plaintext_spoiled_ballots.values():
             name = BALLOT_PREFIX + spoiled_ballot.object_id
-            spoiled_ballot_from_file = SubmittedBallot.from_json_file(name, SPOILED_DIR)
+            spoiled_ballot_from_file = PlaintextTally.from_json_file(name, SPOILED_DIR)
             self.assertEqual(spoiled_ballot, spoiled_ballot_from_file)
 
-        ciphertext_tally_from_file = PublishedCiphertextTally.from_json_file(
+        published_ciphertext_tally_from_file = PublishedCiphertextTally.from_json_file(
             ENCRYPTED_TALLY_FILE_NAME, RESULTS_DIR
         )
         self.assertEqual(
-            publish_ciphertext_tally(self.ciphertext_tally), ciphertext_tally_from_file
+            self.ciphertext_tally.publish(), published_ciphertext_tally_from_file
         )
 
         plainttext_tally_from_file = PlaintextTally.from_json_file(

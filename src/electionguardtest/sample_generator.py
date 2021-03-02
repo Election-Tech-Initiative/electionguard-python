@@ -16,7 +16,7 @@ from electionguard.ballot_box import BallotBox
 from electionguard.decryption_mediator import DecryptionMediator
 from electionguard.encrypt import EncryptionDevice, EncryptionMediator
 from electionguard.publish import publish, publish_private_data, RESULTS_DIR
-from electionguard.tally import tally_ballots, publish_ciphertext_tally
+from electionguard.tally import tally_ballots
 from electionguard.utils import get_optional
 
 DEFAULT_NUMBER_OF_BALLOTS = 5
@@ -101,6 +101,7 @@ class ElectionSampleDataGenerator:
                 decrypter.announce(guardian)
 
         plaintext_tally = get_optional(decrypter.get_plaintext_tally())
+        plaintext_spoiled_ballots = get_optional(decrypter.get_plaintext_ballots())
 
         # Publish
         publish(
@@ -108,9 +109,9 @@ class ElectionSampleDataGenerator:
             public_data.context,
             public_data.constants,
             [self.encryption_device],
-            submitted_ballots,
-            ciphertext_tally.spoiled_ballots.values(),
-            publish_ciphertext_tally(ciphertext_tally),
+            accepted_ballots,
+            plaintext_spoiled_ballots.values(),
+            ciphertext_tally.publish(),
             plaintext_tally,
             public_data.guardians,
         )
