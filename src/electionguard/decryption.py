@@ -2,7 +2,7 @@ from typing import Dict, List, Optional
 
 from .auxiliary import AuxiliaryDecrypt
 from .ballot import (
-    CiphertextAcceptedBallot,
+    SubmittedBallot,
     CiphertextSelection,
     CiphertextContest,
 )
@@ -111,7 +111,7 @@ def compute_compensated_decryption_share(
 
 def compute_decryption_share_for_ballots(
     guardian: Guardian,
-    ballots: List[CiphertextAcceptedBallot],
+    ballots: List[SubmittedBallot],
     context: CiphertextElectionContext,
     scheduler: Optional[Scheduler] = None,
 ) -> Optional[Dict[BALLOT_ID, DecryptionShare]]:
@@ -134,7 +134,7 @@ def compute_decryption_share_for_ballots(
 def compute_compensated_decryption_share_for_ballots(
     guardian: Guardian,
     missing_guardian_id: MISSING_GUARDIAN_ID,
-    ballots: List[CiphertextAcceptedBallot],
+    ballots: List[SubmittedBallot],
     context: CiphertextElectionContext,
     decrypt: AuxiliaryDecrypt = rsa_decrypt,
     scheduler: Optional[Scheduler] = None,
@@ -157,7 +157,7 @@ def compute_compensated_decryption_share_for_ballots(
 
 def compute_decryption_share_for_ballot(
     guardian: Guardian,
-    ballot: CiphertextAcceptedBallot,
+    ballot: SubmittedBallot,
     context: CiphertextElectionContext,
     scheduler: Optional[Scheduler] = None,
 ) -> Optional[DecryptionShare]:
@@ -190,7 +190,7 @@ def compute_decryption_share_for_ballot(
 def compute_compensated_decryption_share_for_ballot(
     guardian: Guardian,
     missing_guardian_id: MISSING_GUARDIAN_ID,
-    ballot: CiphertextAcceptedBallot,
+    ballot: SubmittedBallot,
     context: CiphertextElectionContext,
     decrypt: AuxiliaryDecrypt = rsa_decrypt,
     scheduler: Optional[Scheduler] = None,
@@ -409,7 +409,7 @@ def reconstruct_decryption_share(
     lagrange_coefficients: Dict[AVAILABLE_GUARDIAN_ID, ElementModQ],
 ) -> DecryptionShare:
     """
-    Recontruct the missing Decryption Share for a missing guardian
+    Reconstruct the missing Decryption Share for a missing guardian
     from the collection of compensated decryption shares
 
     :param missing_guardian_id: The guardian id for the missing guardian
@@ -439,16 +439,17 @@ def reconstruct_decryption_share(
 def reconstruct_decryption_shares_for_ballots(
     missing_guardian_id: MISSING_GUARDIAN_ID,
     public_key: ElectionPublicKey,
-    ballots: Dict[BALLOT_ID, CiphertextAcceptedBallot],
+    ballots: Dict[BALLOT_ID, SubmittedBallot],
     shares: Dict[BALLOT_ID, Dict[AVAILABLE_GUARDIAN_ID, CompensatedDecryptionShare]],
     lagrange_coefficients: Dict[AVAILABLE_GUARDIAN_ID, ElementModQ],
 ) -> Dict[BALLOT_ID, DecryptionShare]:
     """
-    Recontruct the missing Decryption shares for a missing guardian from the collection of compensated decryption shares
+    Reconstruct the missing Decryption shares for a missing guardian from the collection of compensated decryption
+    shares
 
     :param missing_guardian_id: The guardian id for the missing guardian
     :param public_key: the public key for the missing guardian
-    :param ballots: The collection of `CiphertextAcceptedBallot` that is spoiled
+    :param ballots: The collection of `SubmittedBallot` that is spoiled
     :shares: the collection of `CompensatedDecryptionShare` for the missing guardian
     :lagrange_coefficients: the lagrange coefficients corresponding to the available guardians that provided shares
     """
@@ -470,7 +471,7 @@ def reconstruct_decryption_shares_for_ballots(
 def reconstruct_decryption_share_for_ballot(
     missing_guardian_id: MISSING_GUARDIAN_ID,
     public_key: ElectionPublicKey,
-    ballot: CiphertextAcceptedBallot,
+    ballot: SubmittedBallot,
     shares: Dict[AVAILABLE_GUARDIAN_ID, CompensatedDecryptionShare],
     lagrange_coefficients: Dict[AVAILABLE_GUARDIAN_ID, ElementModQ],
 ) -> DecryptionShare:
@@ -480,7 +481,7 @@ def reconstruct_decryption_share_for_ballot(
 
     :param missing_guardian_id: The guardian id for the missing guardian
     :param public_key: the public key for the missing guardian
-    :param ballots: The `CiphertextAcceptedBallot` to reconstruct
+    :param ballots: The `SubmittedBallot` to reconstruct
     :shares: the collection of `CompensatedBallotDecryptionShare` for
         the missing guardian, each keyed by the ID of the guardian that produced it
     :lagrange_coefficients: the lagrange coefficients corresponding to the available guardians that provided shares

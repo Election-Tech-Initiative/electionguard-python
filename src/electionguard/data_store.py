@@ -33,7 +33,7 @@ class DataStore(Generic[_T, _U]):
 
     def all(self) -> List[Optional[_U]]:
         """
-        Get all `CiphertextAcceptedBallot` from the store
+        Get all `SubmittedBallot` from the store
         """
         return list(self._store.values())
 

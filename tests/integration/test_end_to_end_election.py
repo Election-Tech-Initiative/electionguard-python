@@ -31,7 +31,7 @@ from electionguard.ballot import (
     BallotBoxState,
     CiphertextBallot,
     PlaintextBallot,
-    CiphertextAcceptedBallot,
+    SubmittedBallot,
 )
 from electionguard.encrypt import EncryptionDevice
 from electionguard.encrypt import EncryptionMediator
@@ -288,14 +288,14 @@ class TestEndToEndElection(TestCase):
         # Randomly cast or spoil the ballots
         for ballot in self.ciphertext_ballots:
             if randint(0, 1):
-                accepted_ballot = self.ballot_box.cast(ballot)
+                submitted_ballot = self.ballot_box.cast(ballot)
             else:
-                accepted_ballot = self.ballot_box.spoil(ballot)
+                submitted_ballot = self.ballot_box.spoil(ballot)
 
             self._assert_message(
                 BallotBox.__qualname__,
-                f"Accepted Ballot Id: {ballot.object_id} state: {get_optional(accepted_ballot).state}",
-                accepted_ballot is not None,
+                f"Submitted Ballot Id: {ballot.object_id} state: {get_optional(submitted_ballot).state}",
+                submitted_ballot is not None,
             )
 
     def step_4_decrypt_tally(self) -> None:
@@ -474,9 +474,7 @@ class TestEndToEndElection(TestCase):
 
         for ballot in self.ballot_store.all():
             name = BALLOT_PREFIX + ballot.object_id
-            ballot_from_file = CiphertextAcceptedBallot.from_json_file(
-                name, BALLOTS_DIR
-            )
+            ballot_from_file = SubmittedBallot.from_json_file(name, BALLOTS_DIR)
             self.assertEqual(ballot, ballot_from_file)
 
         for spoiled_ballot in self.plaintext_spoiled_ballots.values():

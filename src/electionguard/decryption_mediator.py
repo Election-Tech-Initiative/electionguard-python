@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Dict, Optional, Tuple
 
-from electionguard.ballot import CiphertextAcceptedBallot
+from electionguard.ballot import SubmittedBallot
 
 from .auxiliary import AuxiliaryDecrypt
 from .decryption import (
@@ -50,7 +50,7 @@ class DecryptionMediator:
 
     # Tally to Decrypt
     _ciphertext_tally: CiphertextTally
-    _ciphertext_ballots: Dict[BALLOT_ID, CiphertextAcceptedBallot]
+    _ciphertext_ballots: Dict[BALLOT_ID, SubmittedBallot]
 
     # Tally
     _tally_shares: Dict[AVAILABLE_GUARDIAN_ID, DecryptionShare] = field(
