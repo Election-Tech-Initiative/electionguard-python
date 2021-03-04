@@ -1,10 +1,10 @@
 import unittest
 from datetime import datetime
 
-from electionguard.election import (
+from electionguard.manifest import (
     ContestDescriptionWithPlaceholders,
-    ElectionDescription,
-    InternalElectionDescription,
+    Manifest,
+    InternalManifest,
     SelectionDescription,
     VoteVariationType,
 )
@@ -17,50 +17,50 @@ election_factory = ElectionFactory.ElectionFactory()
 ballot_factory = BallotFactory.BallotFactory()
 
 
-class TestElection(unittest.TestCase):
-    """Election tests"""
+class TestManifest(unittest.TestCase):
+    """Manifest tests"""
 
-    def test_simple_election_is_valid(self):
+    def test_simple_manifest_is_valid(self):
 
         # Act
-        subject = election_factory.get_simple_election_from_file()
+        subject = election_factory.get_simple_manifest_from_file()
 
         # Assert
         self.assertIsNotNone(subject.election_scope_id)
         self.assertEqual(subject.election_scope_id, "jefferson-county-primary")
         self.assertTrue(subject.is_valid())
 
-    def test_simple_election_can_serialize(self):
+    def test_simple_manifest_can_serialize(self):
         # Arrange
-        subject = election_factory.get_simple_election_from_file()
+        subject = election_factory.get_simple_manifest_from_file()
         intermediate = subject.to_json()
 
         # Act
-        result = ElectionDescription.from_json(intermediate)
+        result = Manifest.from_json(intermediate)
 
         # Assert
         self.assertIsNotNone(result.election_scope_id)
         self.assertEqual(result.election_scope_id, "jefferson-county-primary")
 
-    def test_election_has_deterministic_hash(self):
+    def test_manifest_has_deterministic_hash(self):
 
         # Act
-        subject1 = election_factory.get_simple_election_from_file()
-        subject2 = election_factory.get_simple_election_from_file()
+        subject1 = election_factory.get_simple_manifest_from_file()
+        subject2 = election_factory.get_simple_manifest_from_file()
 
         # Assert
         self.assertEqual(subject1.crypto_hash(), subject2.crypto_hash())
 
-    def test_election_hash_is_consistent_regardless_of_format(self):
+    def test_manifest_hash_is_consistent_regardless_of_format(self):
 
         # Act
-        subject1 = election_factory.get_simple_election_from_file()
+        subject1 = election_factory.get_simple_manifest_from_file()
         subject1.start_date = read_json('"2020-03-01T08:00:00-05:00"', datetime)
 
-        subject2 = election_factory.get_simple_election_from_file()
+        subject2 = election_factory.get_simple_manifest_from_file()
         subject2.start_date = read_json('"2020-03-01T13:00:00-00:00"', datetime)
 
-        subject3 = election_factory.get_simple_election_from_file()
+        subject3 = election_factory.get_simple_manifest_from_file()
         subject3.start_date = read_json('"2020-03-01T13:00:00.000-00:00"', datetime)
 
         subjects = [subject1, subject2, subject3]
@@ -70,12 +70,12 @@ class TestElection(unittest.TestCase):
         for other_hash in hashes[1:]:
             self.assertEqual(hashes[0], other_hash)
 
-    def test_election_from_file_generates_consistent_internal_description_contest_hashes(
+    def test_manifest_from_file_generates_consistent_internal_description_contest_hashes(
         self,
     ):
         # Arrange
-        comparator = election_factory.get_simple_election_from_file()
-        subject = InternalElectionDescription(comparator)
+        comparator = election_factory.get_simple_manifest_from_file()
+        subject = InternalManifest(comparator)
 
         self.assertEqual(len(comparator.contests), len(subject.contests))
 

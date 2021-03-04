@@ -19,14 +19,13 @@ from electionguard.ballot import (
     PlaintextBallotContest,
     PlaintextBallotSelection,
 )
-
-from electionguard.election import (
+from electionguard.encrypt import selection_from
+from electionguard.manifest import (
     ContestDescription,
     SelectionDescription,
-    InternalElectionDescription,
+    InternalManifest,
 )
 
-from electionguard.encrypt import selection_from
 
 _T = TypeVar("_T")
 _DrawType = Callable[[SearchStrategy[_T]], _T]
@@ -90,7 +89,7 @@ class BallotFactory:
 
     def get_fake_ballot(
         self,
-        election: InternalElectionDescription,
+        internal_manifest: InternalManifest,
         ballot_id: str = None,
         with_trues=True,
     ) -> PlaintextBallot:
@@ -102,29 +101,31 @@ class BallotFactory:
             ballot_id = "some-unique-ballot-id-123"
 
         contests: List[PlaintextBallotContest] = []
-        for contest in election.get_contests_for(election.ballot_styles[0].object_id):
+        for contest in internal_manifest.get_contests_for(
+            internal_manifest.ballot_styles[0].object_id
+        ):
             contests.append(
                 self.get_random_contest_from(contest, Random(), with_trues=with_trues)
             )
 
         fake_ballot = PlaintextBallot(
-            ballot_id, election.ballot_styles[0].object_id, contests
+            ballot_id, internal_manifest.ballot_styles[0].object_id, contests
         )
 
         return fake_ballot
 
     def generate_fake_plaintext_ballots_for_election(
-        self, election: InternalElectionDescription, number_of_ballots: int
+        self, internal_manifest: InternalManifest, number_of_ballots: int
     ) -> List[PlaintextBallot]:
         ballots: List[PlaintextBallot] = []
         for _i in range(number_of_ballots):
 
-            style_index = randint(0, len(election.ballot_styles) - 1)
-            ballot_style = election.ballot_styles[style_index]
+            style_index = randint(0, len(internal_manifest.ballot_styles) - 1)
+            ballot_style = internal_manifest.ballot_styles[style_index]
             ballot_id = f"ballot-{uuid.uuid1()}"
 
             contests: List[PlaintextBallotContest] = []
-            for contest in election.get_contests_for(ballot_style.object_id):
+            for contest in internal_manifest.get_contests_for(ballot_style.object_id):
                 contests.append(
                     self.get_random_contest_from(contest, Random(), with_trues=True)
                 )
