@@ -45,7 +45,7 @@ class DecryptionMediator:
     to form a decrypted representation of an election tally
     """
 
-    _metadata: InternalElectionDescription
+    _metadata: InternalElectionDescription  # not used
     _encryption: CiphertextElectionContext
 
     # Tally to Decrypt
@@ -69,6 +69,7 @@ class DecryptionMediator:
     _missing_guardians: Dict[MISSING_GUARDIAN_ID, ElectionPublicKey] = field(
         default_factory=lambda: {}
     )
+    # could use _lagrange_coefficients: Dict[AVAILABLE_GUARDIAN_ID, ElementModQ]
     _lagrange_coefficients: Dict[
         MISSING_GUARDIAN_ID, Dict[AVAILABLE_GUARDIAN_ID, ElementModQ]
     ] = field(default_factory=lambda: {})
@@ -356,12 +357,6 @@ class DecryptionMediator:
                 compensated_shares,
                 self._lagrange_coefficients[missing_guardian_id],
             )
-
-            if missing_decryption_share is None:
-                log_warning(
-                    "get plaintext ballot failed with computing missing decryption shares"
-                )
-                return
 
             self._ballot_shares[missing_guardian_id][
                 ballot_id
