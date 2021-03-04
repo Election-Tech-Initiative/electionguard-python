@@ -7,11 +7,11 @@ from .ballot import (
     SubmittedBallot,
     from_ciphertext_ballot,
 )
-from .data_store import DataStore
-
-from .election import CiphertextElectionContext, InternalElectionDescription
-from .logs import log_warning
 from .ballot_validator import ballot_is_valid_for_election
+from .data_store import DataStore
+from .election import CiphertextElectionContext
+from .logs import log_warning
+from .manifest import InternalManifest
 
 
 @dataclass
@@ -20,7 +20,7 @@ class BallotBox:
     A stateful convenience wrapper to cache election data
     """
 
-    _metadata: InternalElectionDescription = field()
+    _internal_manifest: InternalManifest = field()
     _encryption: CiphertextElectionContext = field()
     _store: DataStore = field(default_factory=lambda: DataStore())
 
@@ -29,7 +29,11 @@ class BallotBox:
         Cast a specific encrypted `CiphertextBallot`
         """
         return accept_ballot(
-            ballot, BallotBoxState.CAST, self._metadata, self._encryption, self._store
+            ballot,
+            BallotBoxState.CAST,
+            self._internal_manifest,
+            self._encryption,
+            self._store,
         )
 
     def spoil(self, ballot: CiphertextBallot) -> Optional[SubmittedBallot]:
@@ -39,7 +43,7 @@ class BallotBox:
         return accept_ballot(
             ballot,
             BallotBoxState.SPOILED,
-            self._metadata,
+            self._internal_manifest,
             self._encryption,
             self._store,
         )
@@ -48,17 +52,17 @@ class BallotBox:
 def accept_ballot(
     ballot: CiphertextBallot,
     state: BallotBoxState,
-    metadata: InternalElectionDescription,
+    internal_manifest: InternalManifest,
     context: CiphertextElectionContext,
     store: DataStore,
 ) -> Optional[SubmittedBallot]:
     """
     Submit a ballot within the context of a specified election and against an existing data store
-    Verified that the ballot is valid for the election `metadata` and `context` and
+    Verified that the ballot is valid for the election `internal_manifest` and `context` and
     that the ballot has not already been cast or spoiled.
     :return: a `SubmittedBallot` or `None` if there was an error
     """
-    if not ballot_is_valid_for_election(ballot, metadata, context):
+    if not ballot_is_valid_for_election(ballot, internal_manifest, context):
         return None
 
     existing_ballot = store.get(ballot.object_id)

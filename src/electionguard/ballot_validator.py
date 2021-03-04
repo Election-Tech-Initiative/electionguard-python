@@ -1,28 +1,27 @@
 from .ballot import CiphertextBallot, CiphertextBallotContest, CiphertextBallotSelection
-from .election import (
-    CiphertextElectionContext,
+from .election import CiphertextElectionContext
+from .logs import log_warning
+from .manifest import (
     ContestDescriptionWithPlaceholders,
-    InternalElectionDescription,
+    InternalManifest,
     SelectionDescription,
 )
-
-from .logs import log_warning
 
 
 def ballot_is_valid_for_election(
     ballot: CiphertextBallot,
-    metadata: InternalElectionDescription,
+    internal_manifest: InternalManifest,
     context: CiphertextElectionContext,
 ) -> bool:
     """
     Determine if a ballot is valid for a given election
     """
 
-    if not ballot_is_valid_for_style(ballot, metadata):
+    if not ballot_is_valid_for_style(ballot, internal_manifest):
         return False
 
     if not ballot.is_valid_encryption(
-        metadata.description_hash,
+        internal_manifest.manifest_hash,
         context.elgamal_public_key,
         context.crypto_extended_base_hash,
     ):
@@ -87,15 +86,15 @@ def contest_is_valid_for_style(
 
 
 def ballot_is_valid_for_style(
-    ballot: CiphertextBallot, metadata: InternalElectionDescription
+    ballot: CiphertextBallot, internal_manifest: InternalManifest
 ) -> bool:
     """
     Determine if ballot is valid for ballot style
     :param ballot: Ballot
-    :param metadata: Internal election description
+    :param internal_manifest: Internal election description
     :return: Is valid
     """
-    descriptions = metadata.get_contests_for(ballot.style_id)
+    descriptions = internal_manifest.get_contests_for(ballot.style_id)
 
     for description in descriptions:
         use_contest = None
