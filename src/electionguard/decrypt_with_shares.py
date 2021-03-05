@@ -133,9 +133,9 @@ def decrypt_contest_with_decryption_shares(
     crypto_extended_base_hash: ElementModQ,
 ) -> Optional[PlaintextTallyContest]:
     """
-    Decrypt the specified tally within the context of the specified Decryption Shares
+    Decrypt the specified contest within the context of the specified Decryption Shares
 
-    :param tally: the encrypted tally of contests
+    :param contest: the contest to decrypt
     :param shares: a collection of `DecryptionShare` used to decrypt
     :param crypto_extended_base_hash: the extended base hash code (𝑄') for the election
     :return: a collection of `PlaintextTallyContest` or `None` if there is an error
@@ -170,10 +170,10 @@ def decrypt_selection_with_decryption_shares(
     suppress_validity_check: bool = False,
 ) -> Optional[PlaintextTallySelection]:
     """
-    Decrypt the specified `CiphertextTallySelection` with the collection of `ElementModP` decryption shares.
+    Decrypt the specified `CiphertextSelection` with the collection of `ElementModP` decryption shares.
     Each share is expected to be passed with the corresponding public key so that the encryption can be validated
 
-    :param selection: a `CiphertextTallySelection`
+    :param selection: a `CiphertextSelection`
     :param shares: the collection of shares to decrypt the selection
     :param crypto_extended_base_hash: the extended base hash code (𝑄') for the election
     :param suppress_validity_check: do not validate the encryption prior to decrypting (useful for tests)
