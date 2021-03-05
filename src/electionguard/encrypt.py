@@ -402,7 +402,7 @@ def encrypt_ballot(
     """
 
     # Determine the relevant range of contests for this ballot style
-    style = election_metadata.get_ballot_style(ballot.ballot_style)
+    style = election_metadata.get_ballot_style(ballot.style_id)
 
     # Validate Input
     if not ballot.is_valid(style.object_id):
@@ -423,7 +423,7 @@ def encrypt_ballot(
     encrypted_contests: List[CiphertextBallotContest] = list()
 
     # only iterate on contests for this specific ballot style
-    for description in election_metadata.get_contests_for(ballot.ballot_style):
+    for description in election_metadata.get_contests_for(ballot.style_id):
         use_contest = None
         for contest in ballot.contests:
             if contest.object_id == description.object_id:
@@ -448,7 +448,7 @@ def encrypt_ballot(
     # Create the return object
     encrypted_ballot = make_ciphertext_ballot(
         ballot.object_id,
-        ballot.ballot_style,
+        ballot.style_id,
         election_metadata.description_hash,
         seed_hash,
         encrypted_contests,
