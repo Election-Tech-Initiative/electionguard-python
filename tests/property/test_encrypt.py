@@ -55,7 +55,7 @@ from electionguardtest.group import elements_mod_q_no_zero
 
 election_factory = ElectionFactory.ElectionFactory()
 ballot_factory = BallotFactory.BallotFactory()
-SEED_HASH = EncryptionDevice("Location").get_hash()
+SEED = EncryptionDevice("Location").get_hash()
 
 
 class TestEncrypt(unittest.TestCase):
@@ -557,9 +557,9 @@ class TestEncrypt(unittest.TestCase):
         self.assertTrue(subject.is_valid(internal_manifest.ballot_styles[0].object_id))
 
         # Act
-        result = encrypt_ballot(subject, internal_manifest, context, SEED_HASH)
+        result = encrypt_ballot(subject, internal_manifest, context, SEED)
         result_from_seed = encrypt_ballot(
-            subject, internal_manifest, context, SEED_HASH, nonce_seed
+            subject, internal_manifest, context, SEED, nonce_seed
         )
 
         # Assert

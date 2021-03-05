@@ -44,10 +44,12 @@ class TestTally(TestCase):
 
         # encrypt each ballot
         store = DataStore()
-        seed_hash = EncryptionDevice("Location").get_hash()
+        encryption_seed = EncryptionDevice("Location").get_hash()
         for ballot in ballots:
-            encrypted_ballot = encrypt_ballot(ballot, metadata, context, seed_hash)
-            seed_hash = encrypted_ballot.code
+            encrypted_ballot = encrypt_ballot(
+                ballot, metadata, context, encryption_seed
+            )
+            encryption_seed = encrypted_ballot.code
             self.assertIsNotNone(encrypted_ballot)
             # add to the ballot store
             store.set(
@@ -81,10 +83,12 @@ class TestTally(TestCase):
 
         # encrypt each ballot
         store = DataStore()
-        seed_hash = EncryptionDevice("Location").get_hash()
+        encryption_seed = EncryptionDevice("Location").get_hash()
         for ballot in ballots:
-            encrypted_ballot = encrypt_ballot(ballot, metadata, context, seed_hash)
-            seed_hash = encrypted_ballot.code
+            encrypted_ballot = encrypt_ballot(
+                ballot, metadata, context, encryption_seed
+            )
+            encryption_seed = encrypted_ballot.code
             self.assertIsNotNone(encrypted_ballot)
             # add to the ballot store
             store.set(
@@ -120,10 +124,12 @@ class TestTally(TestCase):
 
         # encrypt each ballot
         store = DataStore()
-        seed_hash = EncryptionDevice("Location").get_hash()
+        encryption_seed = EncryptionDevice("Location").get_hash()
         for ballot in ballots:
-            encrypted_ballot = encrypt_ballot(ballot, metadata, context, seed_hash)
-            seed_hash = encrypted_ballot.code
+            encrypted_ballot = encrypt_ballot(
+                ballot, metadata, context, encryption_seed
+            )
+            encryption_seed = encrypted_ballot.code
             self.assertIsNotNone(encrypted_ballot)
             # add to the ballot store
             store.set(

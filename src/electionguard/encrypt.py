@@ -58,7 +58,7 @@ class EncryptionMediator:
 
     _internal_manifest: InternalManifest
     _encryption: CiphertextElectionContext
-    _seed_hash: ElementModQ
+    _encryption_seed: ElementModQ
 
     def __init__(
         self,
@@ -68,17 +68,17 @@ class EncryptionMediator:
     ):
         self._internal_manifest = internal_manifest
         self._encryption = context
-        self._seed_hash = encryption_device.get_hash()
+        self._encryption_seed = encryption_device.get_hash()
 
     def encrypt(self, ballot: PlaintextBallot) -> Optional[CiphertextBallot]:
         """
         Encrypt the specified ballot using the cached election context.
         """
         encrypted_ballot = encrypt_ballot(
-            ballot, self._internal_manifest, self._encryption, self._seed_hash
+            ballot, self._internal_manifest, self._encryption, self._encryption_seed
         )
         if encrypted_ballot is not None and encrypted_ballot.code is not None:
-            self._seed_hash = encrypted_ballot.code
+            self._encryption_seed = encrypted_ballot.code
         return encrypted_ballot
 
 
@@ -378,7 +378,7 @@ def encrypt_ballot(
     ballot: PlaintextBallot,
     internal_manifest: InternalManifest,
     context: CiphertextElectionContext,
-    seed_hash: ElementModQ,
+    encryption_seed: ElementModQ,
     nonce: Optional[ElementModQ] = None,
     should_verify_proofs: bool = True,
 ) -> Optional[CiphertextBallot]:
@@ -395,7 +395,7 @@ def encrypt_ballot(
     :param ballot: the ballot in the valid input form
     :param internal_manifest: the `InternalManifest` which defines this ballot's structure
     :param context: all the cryptographic context for the election
-    :param seed_hash: Hash from previous ballot or starting hash from device
+    :param encryption_seed: Hash from previous ballot or starting hash from device
     :param nonce: an optional `int` used to seed the `Nonce` generated for this contest
                  if this value is not provided, the secret generating mechanism of the OS provides its own
     :param should_verify_proofs: specify if the proofs should be verified prior to returning (default True)
@@ -450,7 +450,7 @@ def encrypt_ballot(
         ballot.object_id,
         ballot.style_id,
         internal_manifest.manifest_hash,
-        seed_hash,
+        encryption_seed,
         encrypted_contests,
         random_master_nonce,
     )
