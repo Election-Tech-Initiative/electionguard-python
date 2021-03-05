@@ -357,12 +357,6 @@ class DecryptionMediator:
                 self._lagrange_coefficients[missing_guardian_id],
             )
 
-            if missing_decryption_share is None:
-                log_warning(
-                    "get plaintext ballot failed with computing missing decryption shares"
-                )
-                return
-
             self._ballot_shares[missing_guardian_id][
                 ballot_id
             ] = missing_decryption_share
