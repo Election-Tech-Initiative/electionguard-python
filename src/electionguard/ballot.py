@@ -849,11 +849,11 @@ def make_ciphertext_ballot(
     object_id: str,
     style_id: str,
     manifest_hash: ElementModQ,
-    previous_code: Optional[ElementModQ],
+    previous_ballot_code: Optional[ElementModQ],
     contests: List[CiphertextBallotContest],
     nonce: Optional[ElementModQ] = None,
     timestamp: Optional[int] = None,
-    code: Optional[ElementModQ] = None,
+    ballot_code: Optional[ElementModQ] = None,
 ) -> CiphertextBallot:
     """
     Makes a `CiphertextBallot`, initially in the state where it's neither been cast nor spoiled.
@@ -875,18 +875,20 @@ def make_ciphertext_ballot(
     contest_hash = hash_elems(object_id, manifest_hash, *contest_hashes)
 
     timestamp = to_ticks(datetime.now()) if timestamp is None else timestamp
-    if previous_code is None:
-        previous_code = manifest_hash
-    if code is None:
-        code = get_rotating_ballot_code(previous_code, timestamp, contest_hash)
+    if previous_ballot_code is None:
+        previous_ballot_code = manifest_hash
+    if ballot_code is None:
+        ballot_code = get_rotating_ballot_code(
+            previous_ballot_code, timestamp, contest_hash
+        )
 
     return CiphertextBallot(
         object_id,
         style_id,
         manifest_hash,
-        previous_code,
+        previous_ballot_code,
         contests,
-        code,
+        ballot_code,
         timestamp,
         contest_hash,
         nonce,
@@ -897,9 +899,9 @@ def make_ciphertext_submitted_ballot(
     object_id: str,
     style_id: str,
     manifest_hash: ElementModQ,
-    previous_code: Optional[ElementModQ],
+    previous_ballot_code: Optional[ElementModQ],
     contests: List[CiphertextBallotContest],
-    code: Optional[ElementModQ],
+    ballot_code: Optional[ElementModQ],
     timestamp: Optional[int] = None,
     state: BallotBoxState = BallotBoxState.UNKNOWN,
 ) -> SubmittedBallot:
@@ -922,10 +924,12 @@ def make_ciphertext_submitted_ballot(
     contest_hash = hash_elems(object_id, manifest_hash, *contest_hashes)
 
     timestamp = to_ticks(datetime.utcnow()) if timestamp is None else timestamp
-    if previous_code is None:
-        previous_code = manifest_hash
-    if code is None:
-        code = get_rotating_ballot_code(previous_code, timestamp, contest_hash)
+    if previous_ballot_code is None:
+        previous_ballot_code = manifest_hash
+    if ballot_code is None:
+        ballot_code = get_rotating_ballot_code(
+            previous_ballot_code, timestamp, contest_hash
+        )
 
     # copy the contests and selections, removing all nonces
     new_contests: List[CiphertextBallotContest] = []
@@ -940,9 +944,9 @@ def make_ciphertext_submitted_ballot(
         object_id,
         style_id,
         manifest_hash,
-        previous_code,
+        previous_ballot_code,
         new_contests,
-        code,
+        ballot_code,
         timestamp,
         contest_hash,
         None,
