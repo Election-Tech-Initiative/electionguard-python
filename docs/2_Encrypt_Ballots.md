@@ -12,7 +12,7 @@ The primary function of ElectionGuard is to encrypt ballots.  Ballots are encryp
 
 ## Process
 
-1. Verify the ballot is well-formed against the _Election Metadata_ (`InternalElectionDescription`)
+1. Verify the ballot is well-formed against the _Election Metadata_ (`InternalManifest`)
 2. Generate a random master nonce value to use as a secret when encrypting the ballot
 3. Using the metadata of the election and the master nonce, encrypt each selection on the ballot
 4. For each selection on the ballot, generate a disjunctive Non-Interactive Zero-Knowledge Proof that the encryption is either an encryption of zero or one
@@ -23,13 +23,13 @@ The primary function of ElectionGuard is to encrypt ballots.  Ballots are encryp
 
 ```python
 
-metadata: InternalElectionDescription
+internal_manifest: InternalManifest
 context: CiphertextElectionContext
 ballot: PlaintextBallot
 
 # Configure an encryption device
 device = EncryptionDevice("polling-place-one")
-encrypter = EncryptionMediator(metadata, context, device)
+encrypter = EncryptionMediator(internal_manifest, context, device)
 
 # Encrypt the ballot
 encrypted_ballot: CiphertextBallot = encrypter.encrypt(ballot)
