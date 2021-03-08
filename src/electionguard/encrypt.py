@@ -35,10 +35,27 @@ class EncryptionDevice(Serializable):
     """
 
     uuid: int
-    location: str
+    """Unique identifier for device"""
 
-    def __init__(self, location: str) -> None:
-        self.uuid = generate_device_uuid()
+    session_id: str
+    """Used to identify session and protect the timestamp"""
+
+    launch_code: int
+    """Election initialization value"""
+
+    location: str
+    """Arbitary string to designate the location of device"""
+
+    def __init__(
+        self,
+        uuid: int,
+        session_id: str,
+        launch_code: int,
+        location: str,
+    ) -> None:
+        self.uuid = uuid
+        self.session_id = session_id
+        self.launch_code = launch_code
         self.location = location
 
     def get_hash(self) -> ElementModQ:
@@ -46,7 +63,12 @@ class EncryptionDevice(Serializable):
         Get hash for encryption device
         :return: Starting hash
         """
-        return get_hash_for_device(self.uuid, self.location)
+        return get_hash_for_device(
+            self.uuid, self.session_id, self.launch_code, self.location
+        )
+
+    def get_timestamp(self) -> int:
+        pass
 
 
 class EncryptionMediator:
@@ -420,30 +442,11 @@ def encrypt_ballot(
         random_master_nonce,
     )
 
-    encrypted_contests: List[CiphertextBallotContest] = list()
-
-    # only iterate on contests for this specific ballot style
-    for description in internal_manifest.get_contests_for(ballot.style_id):
-        use_contest = None
-        for contest in ballot.contests:
-            if contest.object_id == description.object_id:
-                use_contest = contest
-                break
-        # no selections provided for the contest, so create a placeholder contest
-        if not use_contest:
-            use_contest = contest_from(description)
-
-        encrypted_contest = encrypt_contest(
-            use_contest,
-            description,
-            context.elgamal_public_key,
-            context.crypto_extended_base_hash,
-            nonce_seed,
-        )
-
-        if encrypted_contest is None:
-            return None  # log will have happened earlier
-        encrypted_contests.append(get_optional(encrypted_contest))
+    encrypted_contests = encrypt_ballot_contests(
+        ballot, internal_manifest, context, nonce_seed
+    )
+    if encrypted_contests is None:
+        return None
 
     # Create the return object
     encrypted_ballot = make_ciphertext_ballot(
@@ -469,3 +472,38 @@ def encrypt_ballot(
     ):
         return encrypted_ballot
     return None  # log will have happened earlier
+
+
+def encrypt_ballot_contests(
+    ballot: PlaintextBallot,
+    description: InternalManifest,
+    context: CiphertextElectionContext,
+    nonce_seed: ElementModQ,
+) -> Optional[List[CiphertextBallotContest]]:
+    """Encrypt contests from a plaintext ballot with a specific style"""
+    encrypted_contests: List[CiphertextBallotContest] = []
+
+    # Only iterate on contests for this specific ballot style
+    for ballot_style_contest in description.get_contests_for(ballot.style_id):
+        use_contest = None
+        for contest in ballot.contests:
+            if contest.object_id == ballot_style_contest.object_id:
+                use_contest = contest
+                break
+
+        # no selections provided for the contest, so create a placeholder contest
+        if not use_contest:
+            use_contest = contest_from(ballot_style_contest)
+
+        encrypted_contest = encrypt_contest(
+            use_contest,
+            ballot_style_contest,
+            context.elgamal_public_key,
+            context.crypto_extended_base_hash,
+            nonce_seed,
+        )
+
+        if encrypted_contest is None:
+            return None
+        encrypted_contests.append(get_optional(encrypted_contest))
+    return encrypted_contests

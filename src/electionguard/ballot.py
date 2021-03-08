@@ -871,8 +871,7 @@ def make_ciphertext_ballot(
     if len(contests) == 0:
         log_warning("ciphertext ballot with no contests")
 
-    contest_hashes = [contest.crypto_hash for contest in contests]
-    contest_hash = hash_elems(object_id, manifest_hash, *contest_hashes)
+    contest_hash = create_ballot_hash(object_id, manifest_hash, contests)
 
     timestamp = to_ticks(datetime.now()) if timestamp is None else timestamp
     if previous_ballot_code is None:
@@ -893,6 +892,17 @@ def make_ciphertext_ballot(
         contest_hash,
         nonce,
     )
+
+
+def create_ballot_hash(
+    ballot_id: str,
+    description_hash: ElementModQ,
+    contests: List[CiphertextBallotContest],
+) -> ElementModQ:
+    """Create the hash of the ballot contests"""
+
+    contest_hashes = [contest.crypto_hash for contest in contests]
+    return hash_elems(ballot_id, description_hash, *contest_hashes)
 
 
 def make_ciphertext_submitted_ballot(
