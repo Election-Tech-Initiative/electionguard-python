@@ -760,7 +760,6 @@ class InternalManifest:
             return matching_contests[0]
         return None
 
-    # SUGGEST should return Optional
     def get_ballot_style(self, ballot_style_id: str) -> BallotStyle:
         """
         Get a ballot style for a specified ballot_style_id
