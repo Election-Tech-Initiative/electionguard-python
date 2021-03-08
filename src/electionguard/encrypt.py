@@ -370,7 +370,7 @@ def encrypt_contest(
 
 
 # TODO: ISSUE #57: add the device hash to the function interface so it can be propagated with the ballot.
-# also propagate the seed hash so that the ballot codes can be regenerated
+# also propagate the seed so that the ballot codes can be regenerated
 # by traversing the collection of ballots encrypted by a specific device
 
 

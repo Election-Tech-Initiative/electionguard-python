@@ -176,7 +176,7 @@ class CiphertextBallotSelection(
         crypto_extended_base_hash: ElementModQ,
     ) -> bool:
         """
-        Given an encrypted BallotSelection, validates the encryption state against a specific seed hash and public key.
+        Given an encrypted BallotSelection, validates the encryption state against a specific seed and public key.
         Calling this function expects that the object is in a well-formed encrypted state
         with the elgamal encrypted `message` field populated along with
         the DisjunctiveChaumPedersenProof`proof` populated.
@@ -469,13 +469,13 @@ class CiphertextBallotContest(ElectionObjectBase, CryptoHashCheckable):
         crypto_extended_base_hash: ElementModQ,
     ) -> bool:
         """
-        Given an encrypted BallotContest, validates the encryption state against a specific seed hash and public key
+        Given an encrypted BallotContest, validates the encryption state against a specific seed and public key
         by verifying the accumulated sum of selections match the proof.
         Calling this function expects that the object is in a well-formed encrypted state
         with the `ballot_selections` populated with valid encrypted ballot selections,
         the ElementModQ `description_hash`, the ElementModQ `crypto_hash`,
         and the ConstantChaumPedersenProof all populated.
-        Specifically, the seed hash in this context is the hash of the ContestDescription,
+        Specifically, the seed in this context is the hash of the ContestDescription,
         or whatever `ElementModQ` was used to populate the `description_hash` field.
         """
         if encryption_seed != self.description_hash:
@@ -750,12 +750,12 @@ class CiphertextBallot(ElectionObjectBase, CryptoHashCheckable):
         crypto_extended_base_hash: ElementModQ,
     ) -> bool:
         """
-        Given an encrypted Ballot, validates the encryption state against a specific seed hash and public key
+        Given an encrypted Ballot, validates the encryption state against a specific seed and public key
         by verifying the states of this ballot's children (BallotContest's and BallotSelection's).
         Calling this function expects that the object is in a well-formed encrypted state
         with the `contests` populated with valid encrypted ballot selections,
         and the ElementModQ `manifest_hash` also populated.
-        Specifically, the seed hash in this context is the hash of the Election Manifest,
+        Specifically, the seed in this context is the hash of the Election Manifest,
         or whatever `ElementModQ` was used to populate the `manifest_hash` field.
         """
 
