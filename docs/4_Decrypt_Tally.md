@@ -57,14 +57,14 @@ Here is a simple example of how to execute the decryption process.
 
 ```python
 
-metadata: InternalElectionDescription       # Load the election metadata
+internal_manifest: InternalManifest       # Load the election manifest
 context: CiphertextElectionContext          # Load the election encryption context
 encrypted_Tally: CiphertextTally            # Provide a tally from the previous step
           
 available_guardians: List[Guardian]         # Provite the list of guardians who will participate
 missing_guardians: List[str]                # Provide a list of guardians who will not participate
 
-mediator = DecryptionMediator(metadata, context, encrypted_tally)
+mediator = DecryptionMediator(internal_manifest, context, encrypted_tally)
 
 # Loop through the available guardians and annouce their presence
 for guardian in available_guardians:

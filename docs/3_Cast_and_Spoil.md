@@ -56,14 +56,14 @@ In all cases, a ballot must be marked as either `cast` or `spoiled` to be includ
 
 from electionguard.ballot_box import BallotBox
 
-metadata: InternalElectionDescription
+internal_manifest: InternalManifest
 encryption: CiphertextElection
 store: DataStore
 ballots_to_cast: List[CiphertextBallot]
 ballots_to_spoil: List[CiphertextBallot]
 
 # The Ballot Box is a thin wrapper around the `accept_ballot` function method
-ballot_box = BallotBox(metadata, encryption, store)
+ballot_box = BallotBox(internal_manifest, encryption, store)
 
 # Cast the ballots
 for ballot in ballots_to_cast:
@@ -83,7 +83,7 @@ for ballot in ballots_to_spoil:
 
 from electionguard.ballot_box import accept_ballot
 
-metadata: InternalElectionDescription
+internal_manifest: InternalManifest
 encryption: CiphertextElection
 store: DataStore
 ballots_to_cast: List[CiphertextBallot]
@@ -91,12 +91,12 @@ ballots_to_spoil: List[CiphertextBallot]
 
 for ballot in ballots_to_cast:
     submitted_ballot = accept_ballot(
-        ballot, BallotBoxState.CAST, metadata, encryption, store
+        ballot, BallotBoxState.CAST, internal_manifest, encryption, store
     )
 
 for ballot in ballots_to_spoil:
     submitted_ballot = accept_ballot(
-        ballot, BallotBoxState.SPOILED, metadata, encryption, store
+        ballot, BallotBoxState.SPOILED, internal_manifest, encryption, store
     )
 
 ```
@@ -111,12 +111,12 @@ For convenience, stateless functions are also provided to automatically generate
 
 ```python
 
-metadata: InternalElectionDescription
+internal_manifest: InternalManifest
 context: CiphertextElectionContext
 
 ballots: List[SubmittedBallot]
 
-tally = CiphertextTally(metadata, context)
+tally = CiphertextTally(internal_manifest, context)
 
 for ballot in ballots:
     assert(tally.append(ballot))
@@ -127,11 +127,11 @@ for ballot in ballots:
 
 ```python
 
-metadata: InternalElectionDescription
+internal_manifest: InternalManifest
 context: CiphertextElectionContext
 store: DataStore
 
-tally = tally_ballots(store, metadata, context)
+tally = tally_ballots(store, internal_manifest, context)
 assert(tally is not None)
 
 ```

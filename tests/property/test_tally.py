@@ -38,16 +38,24 @@ class TestTally(TestCase):
         self, everything: ELECTIONS_AND_BALLOTS_TUPLE_TYPE
     ):
         # Arrange
-        _election_description, metadata, ballots, secret_key, context = everything
+        (
+            _election_description,
+            internal_manifest,
+            ballots,
+            secret_key,
+            context,
+        ) = everything
         # Tally the plaintext ballots for comparison later
         plaintext_tallies = accumulate_plaintext_ballots(ballots)
 
         # encrypt each ballot
         store = DataStore()
-        seed_hash = EncryptionDevice("Location").get_hash()
+        encryption_seed = EncryptionDevice("Location").get_hash()
         for ballot in ballots:
-            encrypted_ballot = encrypt_ballot(ballot, metadata, context, seed_hash)
-            seed_hash = encrypted_ballot.code
+            encrypted_ballot = encrypt_ballot(
+                ballot, internal_manifest, context, encryption_seed
+            )
+            encryption_seed = encrypted_ballot.code
             self.assertIsNotNone(encrypted_ballot)
             # add to the ballot store
             store.set(
@@ -56,7 +64,7 @@ class TestTally(TestCase):
             )
 
         # act
-        result = tally_ballots(store, metadata, context)
+        result = tally_ballots(store, internal_manifest, context)
         self.assertIsNotNone(result)
 
         # Assert
@@ -75,16 +83,24 @@ class TestTally(TestCase):
         self, everything: ELECTIONS_AND_BALLOTS_TUPLE_TYPE
     ):
         # Arrange
-        _election_description, metadata, ballots, secret_key, context = everything
+        (
+            _election_description,
+            internal_manifest,
+            ballots,
+            secret_key,
+            context,
+        ) = everything
         # Tally the plaintext ballots for comparison later
         plaintext_tallies = accumulate_plaintext_ballots(ballots)
 
         # encrypt each ballot
         store = DataStore()
-        seed_hash = EncryptionDevice("Location").get_hash()
+        encryption_seed = EncryptionDevice("Location").get_hash()
         for ballot in ballots:
-            encrypted_ballot = encrypt_ballot(ballot, metadata, context, seed_hash)
-            seed_hash = encrypted_ballot.code
+            encrypted_ballot = encrypt_ballot(
+                ballot, internal_manifest, context, encryption_seed
+            )
+            encryption_seed = encrypted_ballot.code
             self.assertIsNotNone(encrypted_ballot)
             # add to the ballot store
             store.set(
@@ -93,7 +109,7 @@ class TestTally(TestCase):
             )
 
         # act
-        tally = tally_ballots(store, metadata, context)
+        tally = tally_ballots(store, internal_manifest, context)
         self.assertIsNotNone(tally)
 
         # Assert
@@ -116,14 +132,22 @@ class TestTally(TestCase):
     ):
 
         # Arrange
-        _election_description, metadata, ballots, _secret_key, context = everything
+        (
+            _election_description,
+            internal_manifest,
+            ballots,
+            _secret_key,
+            context,
+        ) = everything
 
         # encrypt each ballot
         store = DataStore()
-        seed_hash = EncryptionDevice("Location").get_hash()
+        encryption_seed = EncryptionDevice("Location").get_hash()
         for ballot in ballots:
-            encrypted_ballot = encrypt_ballot(ballot, metadata, context, seed_hash)
-            seed_hash = encrypted_ballot.code
+            encrypted_ballot = encrypt_ballot(
+                ballot, internal_manifest, context, encryption_seed
+            )
+            encryption_seed = encrypted_ballot.code
             self.assertIsNotNone(encrypted_ballot)
             # add to the ballot store
             store.set(
@@ -131,7 +155,7 @@ class TestTally(TestCase):
                 from_ciphertext_ballot(encrypted_ballot, BallotBoxState.CAST),
             )
 
-        tally = CiphertextTally("my-tally", metadata, context)
+        tally = CiphertextTally("my-tally", internal_manifest, context)
 
         # act
         cached_ballots = store.all()

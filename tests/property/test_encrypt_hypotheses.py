@@ -21,7 +21,7 @@ from electionguardtest.group import elements_mod_q
 from electionguardtest.tally import accumulate_plaintext_ballots
 
 
-SEED_HASH = EncryptionDevice("Location").get_hash()
+SEED = EncryptionDevice("Location").get_hash()
 
 
 class TestElections(unittest.TestCase):
@@ -89,7 +89,7 @@ class TestElections(unittest.TestCase):
         # encrypt each ballot
         for i in range(num_ballots):
             encrypted_ballot = encrypt_ballot(
-                ballots[i], internal_manifest, context, SEED_HASH, nonces[i]
+                ballots[i], internal_manifest, context, SEED, nonces[i]
             )
             encrypted_ballots.append(encrypted_ballot)
 
