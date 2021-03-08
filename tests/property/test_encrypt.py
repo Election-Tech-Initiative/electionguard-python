@@ -558,15 +558,13 @@ class TestEncrypt(unittest.TestCase):
 
         # Act
         result = encrypt_ballot(subject, internal_manifest, context, SEED_HASH)
-        tracker_code = result.get_tracker_code()
         result_from_seed = encrypt_ballot(
             subject, internal_manifest, context, SEED_HASH, nonce_seed
         )
 
         # Assert
         self.assertIsNotNone(result)
-        self.assertIsNotNone(result.tracking_hash)
-        self.assertIsNotNone(tracker_code)
+        self.assertIsNotNone(result.code)
         self.assertIsNotNone(result_from_seed)
         self.assertTrue(
             result.is_valid_encryption(
