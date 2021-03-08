@@ -217,7 +217,7 @@ class CiphertextBallotSelection(
     def crypto_hash_with(self, seed_hash: ElementModQ) -> ElementModQ:
         """
         Given an encrypted BallotSelection, generates a hash, suitable for rolling up
-        into a hash / code for an entire ballot. Of note, this particular hash examines
+        into a hash for an entire ballot / ballot code. Of note, this particular hash examines
         the `seed_hash` and `message`, but not the proof.
         This is deliberate, allowing for the possibility of ElectionGuard variants running on
         much more limited hardware, wherein the Disjunctive Chaum-Pedersen proofs might be computed
@@ -443,7 +443,7 @@ class CiphertextBallotContest(ElectionObjectBase, CryptoHashCheckable):
     def crypto_hash_with(self, seed_hash: ElementModQ) -> ElementModQ:
         """
         Given an encrypted BallotContest, generates a hash, suitable for rolling up
-        into a hash / code for an entire ballot. Of note, this particular hash examines
+        into a hash for an entire ballot / ballot code. Of note, this particular hash examines
         the `seed_hash` and `ballot_selections`, but not the proof.
         This is deliberate, allowing for the possibility of ElectionGuard variants running on
         much more limited hardware, wherein the Disjunctive Chaum-Pedersen proofs might be computed
@@ -663,11 +663,11 @@ class CiphertextBallot(ElectionObjectBase, CryptoHashCheckable):
     style_id: str
     """The `object_id` of the `BallotStyle` in the `Election` Manifest"""
 
-    description_hash: ElementModQ
-    """Hash of the election metadata"""
+    manifest_hash: ElementModQ
+    """Hash of the election manifest"""
 
     previous_code: ElementModQ
-    """Previous code or seed hash"""
+    """Previous ballot code or seed"""
 
     contests: List[CiphertextBallotContest]
     """List of contests for this ballot"""
@@ -689,7 +689,7 @@ class CiphertextBallot(ElectionObjectBase, CryptoHashCheckable):
             isinstance(other, CiphertextBallot)
             and self.object_id == other.object_id
             and self.style_id == other.style_id
-            and self.description_hash == other.description_hash
+            and self.manifest_hash == other.manifest_hash
             and self.previous_code == other.previous_code
             and _list_eq(self.contests, other.contests)
             and self.code == other.code
@@ -703,13 +703,13 @@ class CiphertextBallot(ElectionObjectBase, CryptoHashCheckable):
 
     @staticmethod
     def nonce_seed(
-        description_hash: ElementModQ, object_id: str, nonce: ElementModQ
+        manifest_hash: ElementModQ, object_id: str, nonce: ElementModQ
     ) -> ElementModQ:
         """
         :return: a representation of the election and the external Id in the nonce's used
         to derive other nonce values on the ballot
         """
-        return hash_elems(description_hash, object_id, nonce)
+        return hash_elems(manifest_hash, object_id, nonce)
 
     def hashed_ballot_nonce(self) -> Optional[ElementModQ]:
         """
@@ -723,13 +723,13 @@ class CiphertextBallot(ElectionObjectBase, CryptoHashCheckable):
             )
             return None
 
-        return self.nonce_seed(self.description_hash, self.object_id, self.nonce)
+        return self.nonce_seed(self.manifest_hash, self.object_id, self.nonce)
 
     def crypto_hash_with(self, seed_hash: ElementModQ) -> ElementModQ:
         """
         Given an encrypted Ballot, generates a hash, suitable for rolling up
-        into a hash / code for an entire ballot. Of note, this particular hash examines
-        the `description_hash` and `ballot_selections`, but not the proof.
+        into a hash for an entire ballot / ballot code. Of note, this particular hash examines
+        the `manifest_hash` and `ballot_selections`, but not the proof.
         This is deliberate, allowing for the possibility of ElectionGuard variants running on
         much more limited hardware, wherein the Disjunctive Chaum-Pedersen proofs might be computed
         later on.
@@ -754,16 +754,16 @@ class CiphertextBallot(ElectionObjectBase, CryptoHashCheckable):
         by verifying the states of this ballot's children (BallotContest's and BallotSelection's).
         Calling this function expects that the object is in a well-formed encrypted state
         with the `contests` populated with valid encrypted ballot selections,
-        and the ElementModQ `description_hash` also populated.
+        and the ElementModQ `manifest_hash` also populated.
         Specifically, the seed hash in this context is the hash of the Election Manifest,
-        or whatever `ElementModQ` was used to populate the `description_hash` field.
+        or whatever `ElementModQ` was used to populate the `manifest_hash` field.
         """
 
-        if seed_hash != self.description_hash:
+        if seed_hash != self.manifest_hash:
             log_warning(
                 (
                     f"mismatching ballot hash: {self.object_id} expected({str(seed_hash)}), "
-                    f"actual({str(self.description_hash)})"
+                    f"actual({str(self.manifest_hash)})"
                 )
             )
             return False
@@ -848,7 +848,7 @@ class SubmittedBallot(CiphertextBallot):
 def make_ciphertext_ballot(
     object_id: str,
     style_id: str,
-    description_hash: ElementModQ,
+    manifest_hash: ElementModQ,
     previous_code: Optional[ElementModQ],
     contests: List[CiphertextBallotContest],
     nonce: Optional[ElementModQ] = None,
@@ -860,11 +860,11 @@ def make_ciphertext_ballot(
 
     :param object_id: the object_id of this specific ballot
     :param style_id: The `object_id` of the `BallotStyle` in the `Election` Manifest
-    :param description_hash: Hash of the election metadata
+    :param manifest_hash: Hash of the election manifest
     :param crypto_base_hash: Hash of the cryptographic election context
     :param contests: List of contests for this ballot
     :param timestamp: Timestamp at which the ballot encryption is generated in tick
-    :param previous_code: Previous code or seed hash
+    :param previous_code: Previous ballot code or seed
     :param nonce: optional nonce used as part of the encryption process
     """
 
@@ -872,31 +872,31 @@ def make_ciphertext_ballot(
         log_warning("ciphertext ballot with no contests")
 
     contest_hashes = [contest.crypto_hash for contest in contests]
-    contest_hash = hash_elems(object_id, description_hash, *contest_hashes)
+    contest_hash = hash_elems(object_id, manifest_hash, *contest_hashes)
 
     timestamp = to_ticks(datetime.now()) if timestamp is None else timestamp
     if previous_code is None:
-        previous_code = description_hash
+        previous_code = manifest_hash
     if code is None:
         code = get_rotating_ballot_code(previous_code, timestamp, contest_hash)
 
     return CiphertextBallot(
-        object_id=object_id,
-        style_id=style_id,
-        description_hash=description_hash,
-        previous_code=previous_code,
-        contests=contests,
-        code=code,
-        timestamp=timestamp,
-        nonce=nonce,
-        crypto_hash=contest_hash,
+        object_id,
+        style_id,
+        manifest_hash,
+        previous_code,
+        contests,
+        code,
+        timestamp,
+        contest_hash,
+        nonce,
     )
 
 
 def make_ciphertext_submitted_ballot(
     object_id: str,
     style_id: str,
-    description_hash: ElementModQ,
+    manifest_hash: ElementModQ,
     previous_code: Optional[ElementModQ],
     contests: List[CiphertextBallotContest],
     code: Optional[ElementModQ],
@@ -908,8 +908,8 @@ def make_ciphertext_submitted_ballot(
 
     :param object_id: the object_id of this specific ballot
     :param style_id: The `object_id` of the `BallotStyle` in the `Election` Manifest
-    :param description_hash: Hash of the election metadata
-    :param previous_code: Previous code or seed hash
+    :param manifest_hash: Hash of the election manifest
+    :param previous_code: Previous ballot code or seed
     :param contests: List of contests for this ballot
     :param timestamp: Timestamp at which the ballot encryption is generated in tick
     :param state: ballot box state
@@ -919,11 +919,11 @@ def make_ciphertext_submitted_ballot(
         log_warning("ciphertext ballot with no contests")
 
     contest_hashes = [contest.crypto_hash for contest in contests]
-    contest_hash = hash_elems(object_id, description_hash, *contest_hashes)
+    contest_hash = hash_elems(object_id, manifest_hash, *contest_hashes)
 
     timestamp = to_ticks(datetime.utcnow()) if timestamp is None else timestamp
     if previous_code is None:
-        previous_code = description_hash
+        previous_code = manifest_hash
     if code is None:
         code = get_rotating_ballot_code(previous_code, timestamp, contest_hash)
 
@@ -937,16 +937,16 @@ def make_ciphertext_submitted_ballot(
         new_contests.append(new_contest)
 
     return SubmittedBallot(
-        object_id=object_id,
-        style_id=style_id,
-        description_hash=description_hash,
-        previous_code=previous_code,
-        contests=new_contests,
-        code=code,
-        timestamp=timestamp,
-        crypto_hash=contest_hash,
-        nonce=None,
-        state=state,
+        object_id,
+        style_id,
+        manifest_hash,
+        previous_code,
+        new_contests,
+        code,
+        timestamp,
+        contest_hash,
+        None,
+        state,
     )
 
 
@@ -957,12 +957,12 @@ def from_ciphertext_ballot(
     Convert a `CiphertextBallot` into a `SubmittedBallot`, with all nonces removed.
     """
     return make_ciphertext_submitted_ballot(
-        object_id=ballot.object_id,
-        style_id=ballot.style_id,
-        description_hash=ballot.description_hash,
-        contests=ballot.contests,
-        timestamp=ballot.timestamp,
-        previous_code=ballot.previous_code,
-        code=ballot.code,
-        state=state,
+        ballot.object_id,
+        ballot.style_id,
+        ballot.manifest_hash,
+        ballot.previous_code,
+        ballot.contests,
+        ballot.code,
+        ballot.timestamp,
+        state,
     )

@@ -278,12 +278,12 @@ class TestTally(TestCase):
         ].object_id = first_contest_selection_object_id
 
         # modify the ballot's hash
-        first_ballot_hash = ballot.description_hash
-        ballot.description_hash = ONE_MOD_Q
+        first_ballot_hash = ballot.manifest_hash
+        ballot.manifest_hash = ONE_MOD_Q
         self.assertIsNone(tally_ballot(ballot, tally))
         self.assertFalse(tally.append(ballot))
 
-        ballot.description_hash = first_ballot_hash
+        ballot.manifest_hash = first_ballot_hash
         ballot.state = input_state
 
         return True
