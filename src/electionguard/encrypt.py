@@ -13,6 +13,7 @@ from .ballot import (
     make_ciphertext_ballot,
 )
 
+from .ballot_code import get_hash_for_device
 from .election import CiphertextElectionContext
 from .elgamal import elgamal_encrypt
 from .group import ElementModP, ElementModQ, rand_q
@@ -25,7 +26,6 @@ from .manifest import (
 )
 from .nonces import Nonces
 from .serializable import Serializable
-from .tracker import get_hash_for_device
 from .utils import get_optional, get_or_else_optional_func
 
 
@@ -77,8 +77,8 @@ class EncryptionMediator:
         encrypted_ballot = encrypt_ballot(
             ballot, self._internal_manifest, self._encryption, self._seed_hash
         )
-        if encrypted_ballot is not None and encrypted_ballot.tracking_hash is not None:
-            self._seed_hash = encrypted_ballot.tracking_hash
+        if encrypted_ballot is not None and encrypted_ballot.code is not None:
+            self._seed_hash = encrypted_ballot.code
         return encrypted_ballot
 
 
@@ -370,7 +370,7 @@ def encrypt_contest(
 
 
 # TODO: ISSUE #57: add the device hash to the function interface so it can be propagated with the ballot.
-# also propagate the seed hash so that the ballot tracking id's can be regenerated
+# also propagate the seed hash so that the ballot codes can be regenerated
 # by traversing the collection of ballots encrypted by a specific device
 
 
@@ -455,7 +455,7 @@ def encrypt_ballot(
         random_master_nonce,
     )
 
-    if not encrypted_ballot.tracking_hash:
+    if not encrypted_ballot.code:
         return None
 
     if not should_verify_proofs:
