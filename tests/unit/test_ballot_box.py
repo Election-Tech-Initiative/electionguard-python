@@ -9,7 +9,7 @@ from electionguard.ballot_box import (
 )
 from electionguard.ballot_validator import ballot_is_valid_for_election
 from electionguard.elgamal import elgamal_keypair_from_secret
-from electionguard.encrypt import encrypt_ballot, EncryptionDevice
+from electionguard.encrypt import encrypt_ballot, EncryptionDevice, generate_device_uuid
 from electionguard.group import int_to_q
 
 import electionguardtest.ballot_factory as BallotFactory
@@ -18,7 +18,7 @@ import electionguardtest.election_factory as ElectionFactory
 election_factory = ElectionFactory.ElectionFactory()
 ballot_factory = BallotFactory.BallotFactory()
 
-SEED = EncryptionDevice("Location").get_hash()
+SEED = EncryptionDevice(generate_device_uuid(), "Session", 12345, "Location").get_hash()
 
 
 class TestBallotBox(TestCase):

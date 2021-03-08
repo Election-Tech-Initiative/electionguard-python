@@ -28,7 +28,7 @@ context: CiphertextElectionContext
 ballot: PlaintextBallot
 
 # Configure an encryption device
-device = EncryptionDevice("polling-place-one")
+device = EncryptionDevice(generate_device_uuid(), "Session", 12345, "polling-place-one")
 encrypter = EncryptionMediator(internal_manifest, context, device)
 
 # Encrypt the ballot

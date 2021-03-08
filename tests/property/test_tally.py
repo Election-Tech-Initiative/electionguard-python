@@ -12,7 +12,7 @@ from electionguard.ballot import (
 )
 from electionguard.data_store import DataStore
 
-from electionguard.encrypt import encrypt_ballot, EncryptionDevice
+from electionguard.encrypt import encrypt_ballot, EncryptionDevice, generate_device_uuid
 from electionguard.group import ElementModQ, ONE_MOD_Q
 from electionguard.tally import CiphertextTally, tally_ballots, tally_ballot
 
@@ -50,7 +50,9 @@ class TestTally(TestCase):
 
         # encrypt each ballot
         store = DataStore()
-        encryption_seed = EncryptionDevice("Location").get_hash()
+        encryption_seed = EncryptionDevice(
+            generate_device_uuid(), "Session", 12345, "Location"
+        ).get_hash()
         for ballot in ballots:
             encrypted_ballot = encrypt_ballot(
                 ballot, internal_manifest, context, encryption_seed
@@ -95,7 +97,9 @@ class TestTally(TestCase):
 
         # encrypt each ballot
         store = DataStore()
-        encryption_seed = EncryptionDevice("Location").get_hash()
+        encryption_seed = EncryptionDevice(
+            generate_device_uuid(), "Session", 12345, "Location"
+        ).get_hash()
         for ballot in ballots:
             encrypted_ballot = encrypt_ballot(
                 ballot, internal_manifest, context, encryption_seed
@@ -142,7 +146,9 @@ class TestTally(TestCase):
 
         # encrypt each ballot
         store = DataStore()
-        encryption_seed = EncryptionDevice("Location").get_hash()
+        encryption_seed = EncryptionDevice(
+            generate_device_uuid(), "Session", 12345, "Location"
+        ).get_hash()
         for ballot in ballots:
             encrypted_ballot = encrypt_ballot(
                 ballot, internal_manifest, context, encryption_seed

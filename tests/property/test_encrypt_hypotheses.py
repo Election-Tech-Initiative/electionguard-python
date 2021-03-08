@@ -8,7 +8,7 @@ from hypothesis.strategies import integers
 from electionguard.ballot import CiphertextBallot
 from electionguard.decrypt_with_secrets import decrypt_ballot_with_secret
 from electionguard.elgamal import ElGamalCiphertext, elgamal_encrypt, elgamal_add
-from electionguard.encrypt import encrypt_ballot, EncryptionDevice
+from electionguard.encrypt import encrypt_ballot, EncryptionDevice, generate_device_uuid
 from electionguard.group import ElementModQ
 from electionguard.manifest import Manifest
 from electionguard.nonces import Nonces
@@ -21,7 +21,7 @@ from electionguardtest.group import elements_mod_q
 from electionguardtest.tally import accumulate_plaintext_ballots
 
 
-SEED = EncryptionDevice("Location").get_hash()
+SEED = EncryptionDevice(generate_device_uuid(), "Session", 12345, "Location").get_hash()
 
 
 class TestElections(unittest.TestCase):

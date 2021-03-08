@@ -23,6 +23,7 @@ from electionguard.encrypt import (
     encrypt_selection,
     EncryptionDevice,
     EncryptionMediator,
+    generate_device_uuid,
 )
 from electionguard.group import (
     ElementModQ,
@@ -511,7 +512,7 @@ class TestDecryptWithSecrets(unittest.TestCase):
         )
 
         data = ballot_factory.get_simple_ballot_from_file()
-        device = EncryptionDevice("Location")
+        device = EncryptionDevice(generate_device_uuid(), "Session", 12345, "Location")
         operator = EncryptionMediator(internal_manifest, context, device)
 
         # Act
@@ -675,7 +676,7 @@ class TestDecryptWithSecrets(unittest.TestCase):
         )
 
         data = ballot_factory.get_simple_ballot_from_file()
-        device = EncryptionDevice("Location")
+        device = EncryptionDevice(generate_device_uuid(), "Session", 12345, "Location")
         operator = EncryptionMediator(internal_manifest, context, device)
 
         # Act

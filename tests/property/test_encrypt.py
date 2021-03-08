@@ -27,6 +27,7 @@ from electionguard.encrypt import (
     encrypt_ballot,
     encrypt_contest,
     encrypt_selection,
+    generate_device_uuid,
     selection_from,
     EncryptionDevice,
     EncryptionMediator,
@@ -55,7 +56,7 @@ from electionguardtest.group import elements_mod_q_no_zero
 
 election_factory = ElectionFactory.ElectionFactory()
 ballot_factory = BallotFactory.BallotFactory()
-SEED = EncryptionDevice("Location").get_hash()
+SEED = EncryptionDevice(generate_device_uuid(), "Session", 12345, "Location").get_hash()
 
 
 class TestEncrypt(unittest.TestCase):
@@ -592,7 +593,7 @@ class TestEncrypt(unittest.TestCase):
         data = election_factory.get_fake_ballot(internal_manifest)
         self.assertTrue(data.is_valid(internal_manifest.ballot_styles[0].object_id))
 
-        device = EncryptionDevice("Location")
+        device = EncryptionDevice(generate_device_uuid(), "Session", 12345, "Location")
         subject = EncryptionMediator(internal_manifest, context, device)
 
         # Act
@@ -619,7 +620,7 @@ class TestEncrypt(unittest.TestCase):
         data = ballot_factory.get_simple_ballot_from_file()
         self.assertTrue(data.is_valid(internal_manifest.ballot_styles[0].object_id))
 
-        device = EncryptionDevice("Location")
+        device = EncryptionDevice(generate_device_uuid(), "Session", 12345, "Location")
         subject = EncryptionMediator(internal_manifest, context, device)
 
         # Act
@@ -660,7 +661,7 @@ class TestEncrypt(unittest.TestCase):
         data = ballot_factory.get_simple_ballot_from_file()
         self.assertTrue(data.is_valid(internal_manifest.ballot_styles[0].object_id))
 
-        device = EncryptionDevice("Location")
+        device = EncryptionDevice(generate_device_uuid(), "Session", 12345, "Location")
         subject = EncryptionMediator(internal_manifest, context, device)
 
         # Act

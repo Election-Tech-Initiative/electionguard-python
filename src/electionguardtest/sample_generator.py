@@ -14,7 +14,11 @@ from electionguard.ballot import (
 from electionguard.data_store import DataStore
 from electionguard.ballot_box import BallotBox
 from electionguard.decryption_mediator import DecryptionMediator
-from electionguard.encrypt import EncryptionDevice, EncryptionMediator
+from electionguard.encrypt import (
+    EncryptionDevice,
+    EncryptionMediator,
+    generate_device_uuid,
+)
 from electionguard.publish import publish, publish_private_data, RESULTS_DIR
 from electionguard.tally import tally_ballots
 from electionguard.utils import get_optional
@@ -39,7 +43,12 @@ class ElectionSampleDataGenerator:
         """Initialize the class"""
         self.election_factory = ElectionFactory()
         self.ballot_factory = BallotFactory()
-        self.encryption_device = EncryptionDevice(f"polling-place-{str(uuid.uuid1())}")
+        self.encryption_device = EncryptionDevice(
+            generate_device_uuid(),
+            "Session",
+            12345,
+            f"polling-place-{str(uuid.uuid1())}",
+        )
 
     def generate(
         self,

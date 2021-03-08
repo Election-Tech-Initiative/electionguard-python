@@ -31,7 +31,12 @@ from electionguard.decryption_share import create_ciphertext_decryption_selectio
 from electionguard.election import CiphertextElectionContext
 from electionguard.election_builder import ElectionBuilder
 from electionguard.election_polynomial import compute_lagrange_coefficient
-from electionguard.encrypt import EncryptionDevice, EncryptionMediator, encrypt_ballot
+from electionguard.encrypt import (
+    EncryptionDevice,
+    EncryptionMediator,
+    encrypt_ballot,
+    generate_device_uuid,
+)
 from electionguard.group import (
     int_to_q_unchecked,
     mult_p,
@@ -106,7 +111,9 @@ class TestDecryptionMediator(TestCase):
         builder.set_commitment_hash(self.joint_public_key.commitment_hash)
         self.internal_manifest, self.context = get_optional(builder.build())
 
-        self.encryption_device = EncryptionDevice("location")
+        self.encryption_device = EncryptionDevice(
+            generate_device_uuid(), "Session", 12345, "Location"
+        )
         self.ballot_marking_device = EncryptionMediator(
             self.internal_manifest, self.context, self.encryption_device
         )
