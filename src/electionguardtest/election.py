@@ -18,6 +18,12 @@ from hypothesis.strategies import (
 
 from electionguard.ballot import PlaintextBallotContest, PlaintextBallot
 from electionguard.election import (
+    CiphertextElectionContext,
+    make_ciphertext_election_context,
+)
+from electionguard.encrypt import selection_from
+from electionguard.group import ElementModQ
+from electionguard.manifest import (
     Candidate,
     ElectionType,
     ReportingUnitType,
@@ -31,17 +37,15 @@ from electionguard.election import (
     Party,
     CandidateContestDescription,
     ReferendumContestDescription,
-    ElectionDescription,
-    InternalElectionDescription,
-    CiphertextElectionContext,
     SelectionDescription,
     ContestDescription,
-    make_ciphertext_election_context,
+    Manifest,
+    InternalManifest,
 )
-from electionguard.encrypt import selection_from
-from electionguard.group import ElementModQ
-from electionguardtest.group import elements_mod_q_no_zero
+
 from electionguardtest.elgamal import elgamal_keypairs
+from electionguardtest.group import elements_mod_q_no_zero
+
 
 _T = TypeVar("_T")
 _DrawType = Callable[[SearchStrategy[_T]], _T]
@@ -506,7 +510,7 @@ def election_descriptions(
     draw: _DrawType, max_num_parties: int = 3, max_num_contests: int = 3
 ):
     """
-    Generates an `ElectionDescription` -- the top-level object describing an election.
+    Generates a `Manifest` -- the top-level object describing an election.
     :param draw: Hidden argument, used by Hypothesis.
     :param max_num_parties: The largest number of parties that will be generated (default: 3)
     :param max_num_contests: The largest number of contests that will be generated (default: 3)
@@ -539,7 +543,7 @@ def election_descriptions(
     start_date = draw(datetimes())
     end_date = start_date
 
-    return ElectionDescription(
+    return Manifest(
         election_scope_id=draw(emails()),
         spec_version="v0.95",
         type=ElectionType.general,  # good enough for now
@@ -557,35 +561,37 @@ def election_descriptions(
 
 @composite
 def plaintext_voted_ballots(
-    draw: _DrawType, metadata: InternalElectionDescription, count: int = 1
+    draw: _DrawType, internal_manifest: InternalManifest, count: int = 1
 ):
     """
     Given
     """
     if count == 1:
-        return draw(plaintext_voted_ballot(metadata))
+        return draw(plaintext_voted_ballot(internal_manifest))
     ballots: List[PlaintextBallot] = []
     for _i in range(count):
-        ballots.append(draw(plaintext_voted_ballot(metadata)))
+        ballots.append(draw(plaintext_voted_ballot(internal_manifest)))
     return ballots
 
 
 @composite
-def plaintext_voted_ballot(draw: _DrawType, metadata: InternalElectionDescription):
+def plaintext_voted_ballot(draw: _DrawType, internal_manifest: InternalManifest):
     """
-    Given an `InternalElectionDescription` object, generates an arbitrary `PlaintextBallot` with the
+    Given an `InternalManifest` object, generates an arbitrary `PlaintextBallot` with the
     choices made randomly.
     :param draw: Hidden argument, used by Hypothesis.
-    :param metadata: Any `InternalElectionDescription`
+    :param internal_manifest: Any `InternalManifest`
     """
 
-    num_ballot_styles = len(metadata.ballot_styles)
+    num_ballot_styles = len(internal_manifest.ballot_styles)
     assert num_ballot_styles > 0, "invalid election with no ballot styles"
 
     # pick a ballot style at random
-    ballot_style = metadata.ballot_styles[draw(integers(0, num_ballot_styles - 1))]
+    ballot_style = internal_manifest.ballot_styles[
+        draw(integers(0, num_ballot_styles - 1))
+    ]
 
-    contests = metadata.get_contests_for(ballot_style.object_id)
+    contests = internal_manifest.get_contests_for(ballot_style.object_id)
     assert len(contests) > 0, "invalid ballot style with no contests in it"
 
     voted_contests: List[PlaintextBallotContest] = []
@@ -620,14 +626,14 @@ CIPHERTEXT_ELECTIONS_TUPLE_TYPE = Tuple[ElementModQ, CiphertextElectionContext]
 
 
 @composite
-def ciphertext_elections(draw: _DrawType, election_description: ElectionDescription):
+def ciphertext_elections(draw: _DrawType, manifest: Manifest):
     """
     Generates a `CiphertextElectionContext` with a single public-private key pair as the encryption context.
 
     In a real election, the key ceremony would be used to generate a shared public key.
 
     :param draw: Hidden argument, used by Hypothesis.
-    :param election_description: An `ElectionDescription` object, with
+    :param manifest: An `Manifest` object, with
     which the `CiphertextElectionContext` will be associated
     :return: a tuple of a `CiphertextElectionContext` and the secret key associated with it
     """
@@ -640,15 +646,15 @@ def ciphertext_elections(draw: _DrawType, election_description: ElectionDescript
             quorum=1,
             elgamal_public_key=public_key,
             commitment_hash=commitment_hash,
-            description_hash=election_description.crypto_hash(),
+            description_hash=manifest.crypto_hash(),
         ),
     )
     return ciphertext_election_with_secret
 
 
 ELECTIONS_AND_BALLOTS_TUPLE_TYPE = Tuple[
-    ElectionDescription,
-    InternalElectionDescription,
+    Manifest,
+    InternalManifest,
     List[PlaintextBallot],
     ElementModQ,
     CiphertextElectionContext,
@@ -664,23 +670,22 @@ def elections_and_ballots(draw: _DrawType, num_ballots: int = 3):
 
     :param draw: Hidden argument, used by Hypothesis.
     :param num_ballots: The number of ballots to generate (default: 3).
-    :reeturn: a tuple of: an `InternalElectionDescription`, a list of plaintext ballots, an ElGamal secret key,
+    :reeturn: a tuple of: an `InternalManifest`, a list of plaintext ballots, an ElGamal secret key,
         and a `CiphertextElectionContext`
     """
     assert num_ballots >= 0, "You're asking for a negative number of ballots?"
-    election_description = draw(election_descriptions())
-    internal_election_description = InternalElectionDescription(election_description)
+    manifest = draw(election_descriptions())
+    internal_manifest = InternalManifest(manifest)
 
     ballots = [
-        draw(plaintext_voted_ballots(internal_election_description))
-        for _ in range(num_ballots)
+        draw(plaintext_voted_ballots(internal_manifest)) for _ in range(num_ballots)
     ]
 
-    secret_key, context = draw(ciphertext_elections(election_description))
+    secret_key, context = draw(ciphertext_elections(manifest))
 
     mock_election: ELECTIONS_AND_BALLOTS_TUPLE_TYPE = (
-        election_description,
-        internal_election_description,
+        manifest,
+        internal_manifest,
         ballots,
         secret_key,
         context,

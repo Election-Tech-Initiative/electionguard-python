@@ -15,11 +15,10 @@ from electionguard.utils import get_optional
 # Step 0 - Configure Election
 from electionguard.election import (
     ElectionConstants,
-    ElectionDescription,
-    InternalElectionDescription,
     CiphertextElectionContext,
 )
 from electionguard.election_builder import ElectionBuilder
+from electionguard.manifest import Manifest, InternalManifest
 
 # Step 1 - Key Ceremony
 from electionguard.guardian import Guardian
@@ -52,14 +51,14 @@ from electionguard.decryption_mediator import DecryptionMediator
 # Step 5 - Publish and Verify
 from electionguard.publish import (
     publish,
-    DEVICE_PREFIX,
+    BALLOT_PREFIX,
     COEFFICIENT_PREFIX,
     CONSTANTS_FILE_NAME,
-    DESCRIPTION_FILE_NAME,
     CONTEXT_FILE_NAME,
+    DEVICE_PREFIX,
     ENCRYPTED_TALLY_FILE_NAME,
+    MANIFEST_FILE_NAME,
     TALLY_FILE_NAME,
-    BALLOT_PREFIX,
 )
 
 RESULTS_DIR = "test-results"
@@ -81,9 +80,9 @@ class TestEndToEndElection(TestCase):
     REMOVE_OUTPUT = False
 
     # Step 0 - Configure Election
-    description: ElectionDescription
+    manifest: Manifest
     election_builder: ElectionBuilder
-    metadata: InternalElectionDescription
+    internal_manifest: InternalManifest
     context: CiphertextElectionContext
     constants: ElectionConstants
 
@@ -121,34 +120,34 @@ class TestEndToEndElection(TestCase):
 
     def step_0_configure_election(self) -> None:
         """
-        To conduct an election, load an `ElectionDescription` file
+        To conduct an election, load an `Manifest` file
         """
 
         # Load a pre-configured Election Description
         # TODO: replace with complex election
-        self.description = ElectionFactory().get_simple_election_from_file()
+        self.manifest = ElectionFactory().get_simple_manifest_from_file()
         print(
             f"""
             {'-'*40}\n
             # Election Summary:
-            # Scope: {self.description.election_scope_id}
-            # Geopolitical Units: {len(self.description.geopolitical_units)}
-            # Parties: {len(self.description.parties)}
-            # Candidates: {len(self.description.candidates)}
-            # Contests: {len(self.description.contests)}
-            # Ballot Styles: {len(self.description.ballot_styles)}\n
+            # Scope: {self.manifest.election_scope_id}
+            # Geopolitical Units: {len(self.manifest.geopolitical_units)}
+            # Parties: {len(self.manifest.parties)}
+            # Candidates: {len(self.manifest.candidates)}
+            # Contests: {len(self.manifest.contests)}
+            # Ballot Styles: {len(self.manifest.ballot_styles)}\n
             {'-'*40}\n
             """
         )
         self._assert_message(
-            ElectionDescription.is_valid.__qualname__,
+            Manifest.is_valid.__qualname__,
             "Verify that the input election meta-data is well-formed",
-            self.description.is_valid(),
+            self.manifest.is_valid(),
         )
 
         # Create an Election Builder
         self.election_builder = ElectionBuilder(
-            self.NUMBER_OF_GUARDIANS, self.QUORUM, self.description
+            self.NUMBER_OF_GUARDIANS, self.QUORUM, self.manifest
         )
         self._assert_message(
             ElectionBuilder.__qualname__,
@@ -237,7 +236,9 @@ class TestEndToEndElection(TestCase):
         self.election_builder.set_commitment_hash(
             get_optional(joint_key).commitment_hash
         )
-        self.metadata, self.context = get_optional(self.election_builder.build())
+        self.internal_manifest, self.context = get_optional(
+            self.election_builder.build()
+        )
         self.constants = ElectionConstants()
 
         # Move on to encrypting ballots
@@ -249,7 +250,9 @@ class TestEndToEndElection(TestCase):
 
         # Configure the Encryption Device
         self.device = EncryptionDevice("polling-place-one")
-        self.encrypter = EncryptionMediator(self.metadata, self.context, self.device)
+        self.encrypter = EncryptionMediator(
+            self.internal_manifest, self.context, self.device
+        )
         self._assert_message(
             EncryptionDevice.__qualname__,
             f"Ready to encrypt at location: {self.device.location}",
@@ -283,7 +286,9 @@ class TestEndToEndElection(TestCase):
 
         # Configure the Ballot Box
         self.ballot_store = DataStore()
-        self.ballot_box = BallotBox(self.metadata, self.context, self.ballot_store)
+        self.ballot_box = BallotBox(
+            self.internal_manifest, self.context, self.ballot_store
+        )
 
         # Randomly cast or spoil the ballots
         for ballot in self.ciphertext_ballots:
@@ -307,7 +312,7 @@ class TestEndToEndElection(TestCase):
 
         # Generate a Homomorphically Accumulated Tally of the ballots
         self.ciphertext_tally = get_optional(
-            tally_ballots(self.ballot_store, self.metadata, self.context)
+            tally_ballots(self.ballot_store, self.internal_manifest, self.context)
         )
         self.ciphertext_ballots = get_ballots(self.ballot_store, BallotBoxState.SPOILED)
         self._assert_message(
@@ -322,7 +327,9 @@ class TestEndToEndElection(TestCase):
 
         # Configure the Decryption
         self.decrypter = DecryptionMediator(
-            self.metadata, self.context, self.ciphertext_tally, self.ciphertext_ballots
+            self.context,
+            self.ciphertext_tally,
+            self.ciphertext_ballots,
         )
 
         # Announce each guardian as present
@@ -370,7 +377,7 @@ class TestEndToEndElection(TestCase):
         # Create a representation of each contest's tally
         selection_ids = [
             selection.object_id
-            for contest in self.metadata.contests
+            for contest in self.manifest.contests
             for selection in contest.ballot_selections
         ]
         expected_plaintext_tally: Dict[str, int] = {key: 0 for key in selection_ids}
@@ -432,7 +439,7 @@ class TestEndToEndElection(TestCase):
         Publish results/artifacts of the election
         """
         publish(
-            self.description,
+            self.manifest,
             self.context,
             self.constants,
             [self.device],
@@ -453,10 +460,8 @@ class TestEndToEndElection(TestCase):
         """Verify results of election"""
 
         # Deserialize
-        description_from_file = ElectionDescription.from_json_file(
-            DESCRIPTION_FILE_NAME, RESULTS_DIR
-        )
-        self.assertEqual(self.description, description_from_file)
+        manifest_from_file = Manifest.from_json_file(MANIFEST_FILE_NAME, RESULTS_DIR)
+        self.assertEqual(self.manifest, manifest_from_file)
 
         context_from_file = CiphertextElectionContext.from_json_file(
             CONTEXT_FILE_NAME, RESULTS_DIR

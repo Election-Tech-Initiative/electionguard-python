@@ -13,16 +13,16 @@ from .ballot import (
     make_ciphertext_ballot,
 )
 
-from .election import (
-    CiphertextElectionContext,
-    InternalElectionDescription,
+from .election import CiphertextElectionContext
+from .elgamal import elgamal_encrypt
+from .group import ElementModP, ElementModQ, rand_q
+from .logs import log_warning
+from .manifest import (
+    InternalManifest,
     ContestDescription,
     ContestDescriptionWithPlaceholders,
     SelectionDescription,
 )
-from .elgamal import elgamal_encrypt
-from .group import ElementModP, ElementModQ, rand_q
-from .logs import log_warning
 from .nonces import Nonces
 from .serializable import Serializable
 from .tracker import get_hash_for_device
@@ -56,17 +56,17 @@ class EncryptionMediator:
     It composes Elections and Ballots.
     """
 
-    _metadata: InternalElectionDescription
+    _internal_manifest: InternalManifest
     _encryption: CiphertextElectionContext
     _seed_hash: ElementModQ
 
     def __init__(
         self,
-        election_metadata: InternalElectionDescription,
+        internal_manifest: InternalManifest,
         context: CiphertextElectionContext,
         encryption_device: EncryptionDevice,
     ):
-        self._metadata = election_metadata
+        self._internal_manifest = internal_manifest
         self._encryption = context
         self._seed_hash = encryption_device.get_hash()
 
@@ -75,7 +75,7 @@ class EncryptionMediator:
         Encrypt the specified ballot using the cached election context.
         """
         encrypted_ballot = encrypt_ballot(
-            ballot, self._metadata, self._encryption, self._seed_hash
+            ballot, self._internal_manifest, self._encryption, self._seed_hash
         )
         if encrypted_ballot is not None and encrypted_ballot.tracking_hash is not None:
             self._seed_hash = encrypted_ballot.tracking_hash
@@ -376,7 +376,7 @@ def encrypt_contest(
 
 def encrypt_ballot(
     ballot: PlaintextBallot,
-    election_metadata: InternalElectionDescription,
+    internal_manifest: InternalManifest,
     context: CiphertextElectionContext,
     seed_hash: ElementModQ,
     nonce: Optional[ElementModQ] = None,
@@ -393,7 +393,7 @@ def encrypt_ballot(
     It will fill missing contests with `False` selections and generate `placeholder` selections that are marked `True`.
 
     :param ballot: the ballot in the valid input form
-    :param election_metadata: the `InternalElectionDescription` which defines this ballot's structure
+    :param internal_manifest: the `InternalManifest` which defines this ballot's structure
     :param context: all the cryptographic context for the election
     :param seed_hash: Hash from previous ballot or starting hash from device
     :param nonce: an optional `int` used to seed the `Nonce` generated for this contest
@@ -402,7 +402,7 @@ def encrypt_ballot(
     """
 
     # Determine the relevant range of contests for this ballot style
-    style = election_metadata.get_ballot_style(ballot.style_id)
+    style = internal_manifest.get_ballot_style(ballot.style_id)
 
     # Validate Input
     if not ballot.is_valid(style.object_id):
@@ -415,7 +415,7 @@ def encrypt_ballot(
     # Include a representation of the election and the external Id in the nonce's used
     # to derive other nonce values on the ballot
     nonce_seed = CiphertextBallot.nonce_seed(
-        election_metadata.description_hash,
+        internal_manifest.manifest_hash,
         ballot.object_id,
         random_master_nonce,
     )
@@ -423,7 +423,7 @@ def encrypt_ballot(
     encrypted_contests: List[CiphertextBallotContest] = list()
 
     # only iterate on contests for this specific ballot style
-    for description in election_metadata.get_contests_for(ballot.style_id):
+    for description in internal_manifest.get_contests_for(ballot.style_id):
         use_contest = None
         for contest in ballot.contests:
             if contest.object_id == description.object_id:
@@ -449,7 +449,7 @@ def encrypt_ballot(
     encrypted_ballot = make_ciphertext_ballot(
         ballot.object_id,
         ballot.style_id,
-        election_metadata.description_hash,
+        internal_manifest.manifest_hash,
         seed_hash,
         encrypted_contests,
         random_master_nonce,
@@ -463,7 +463,7 @@ def encrypt_ballot(
 
     # Verify the proofs
     if encrypted_ballot.is_valid_encryption(
-        election_metadata.description_hash,
+        internal_manifest.manifest_hash,
         context.elgamal_public_key,
         context.crypto_extended_base_hash,
     ):

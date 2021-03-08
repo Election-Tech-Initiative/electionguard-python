@@ -8,13 +8,13 @@ from .ballot import (
     PlaintextBallotContest,
     PlaintextBallotSelection,
 )
-from .election import (
-    InternalElectionDescription,
+from .group import ElementModP, ElementModQ
+from .logs import log_warning
+from .manifest import (
+    InternalManifest,
     ContestDescriptionWithPlaceholders,
     SelectionDescription,
 )
-from .group import ElementModP, ElementModQ
-from .logs import log_warning
 from .nonces import Nonces
 
 from .utils import get_optional
@@ -238,7 +238,7 @@ def decrypt_contest_with_nonce(
 
 def decrypt_ballot_with_secret(
     ballot: CiphertextBallot,
-    election_metadata: InternalElectionDescription,
+    internal_manifest: InternalManifest,
     crypto_extended_base_hash: ElementModQ,
     public_key: ElementModP,
     secret_key: ElementModQ,
@@ -249,7 +249,7 @@ def decrypt_ballot_with_secret(
     Decrypt the specified `CiphertextBallot` within the context of the specified election.
 
     :param ballot: the ballot to decrypt
-    :param election_metadata: the qualified election metadata that includes placeholder selections
+    :param internal_manifest: the qualified election metadata that includes placeholder selections
     :param crypto_extended_base_hash: the extended base hash code (𝑄') for the election
     :param public_key: the public key for the election (K)
     :param secret_key: the known secret key used to generate the public key for this election
@@ -258,14 +258,14 @@ def decrypt_ballot_with_secret(
     """
 
     if not suppress_validity_check and not ballot.is_valid_encryption(
-        election_metadata.description_hash, public_key, crypto_extended_base_hash
+        internal_manifest.manifest_hash, public_key, crypto_extended_base_hash
     ):
         return None
 
     plaintext_contests: List[PlaintextBallotContest] = list()
 
     for contest in ballot.contests:
-        description = election_metadata.contest_for(contest.object_id)
+        description = internal_manifest.contest_for(contest.object_id)
         plaintext_contest = decrypt_contest_with_secret(
             contest,
             get_optional(description),
@@ -288,7 +288,7 @@ def decrypt_ballot_with_secret(
 
 def decrypt_ballot_with_nonce(
     ballot: CiphertextBallot,
-    election_metadata: InternalElectionDescription,
+    internal_manifest: InternalManifest,
     crypto_extended_base_hash: ElementModQ,
     public_key: ElementModP,
     nonce: Optional[ElementModQ] = None,
@@ -299,7 +299,7 @@ def decrypt_ballot_with_nonce(
     Decrypt the specified `CiphertextBallot` within the context of the specified election.
 
     :param ballot: the ballot to decrypt
-    :param election_metadata: the qualified election metadata that includes placeholder selections
+    :param internal_manifest: the qualified election metadata that includes placeholder selections
     :param crypto_extended_base_hash: the extended base hash code (𝑄') for the election
     :param public_key: the public key for the election (K)
     :param nonce: the optional master ballot nonce that was either seeded to, or gernated by the encryption function
@@ -308,7 +308,7 @@ def decrypt_ballot_with_nonce(
     """
 
     if not suppress_validity_check and not ballot.is_valid_encryption(
-        election_metadata.description_hash, public_key, crypto_extended_base_hash
+        internal_manifest.manifest_hash, public_key, crypto_extended_base_hash
     ):
         return None
 
@@ -318,7 +318,7 @@ def decrypt_ballot_with_nonce(
         nonce_seed = ballot.hashed_ballot_nonce()
     else:
         nonce_seed = CiphertextBallot.nonce_seed(
-            election_metadata.description_hash, ballot.object_id, nonce
+            internal_manifest.manifest_hash, ballot.object_id, nonce
         )
 
     if nonce_seed is None:
@@ -330,7 +330,7 @@ def decrypt_ballot_with_nonce(
     plaintext_contests: List[PlaintextBallotContest] = list()
 
     for contest in ballot.contests:
-        description = election_metadata.contest_for(contest.object_id)
+        description = internal_manifest.contest_for(contest.object_id)
         plaintext_contest = decrypt_contest_with_nonce(
             contest,
             get_optional(description),

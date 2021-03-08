@@ -3,14 +3,15 @@ from typing import Iterable
 
 from .ballot import PlaintextBallot, CiphertextBallot, SubmittedBallot
 from .guardian import Guardian
-from .election import CiphertextElectionContext, ElectionConstants, ElectionDescription
+from .election import CiphertextElectionContext, ElectionConstants
 from .encrypt import EncryptionDevice
 from .key_ceremony import CoefficientValidationSet
+from .manifest import Manifest
 from .tally import PlaintextTally, PublishedCiphertextTally
 from .utils import make_directory
 
 RESULTS_DIR = "results"
-DESCRIPTION_FILE_NAME = "description"
+MANIFEST_FILE_NAME = "manifest"
 CONTEXT_FILE_NAME = "context"
 CONSTANTS_FILE_NAME = "constants"
 ENCRYPTED_TALLY_FILE_NAME = "encrypted_tally"
@@ -25,7 +26,7 @@ GUARDIAN_PREFIX = "guardian_"
 
 # TODO #148 Revert PlaintextTally to PublishedPlaintextTally after moving spoiled info
 def publish(
-    description: ElectionDescription,
+    manifest: Manifest,
     context: CiphertextElectionContext,
     constants: ElectionConstants,
     devices: Iterable[EncryptionDevice],
@@ -44,7 +45,7 @@ def publish(
     spoiled_directory = path.join(results_directory, "spoiled_ballots")
 
     make_directory(results_directory)
-    description.to_json_file(DESCRIPTION_FILE_NAME, results_directory)
+    manifest.to_json_file(MANIFEST_FILE_NAME, results_directory)
     context.to_json_file(CONTEXT_FILE_NAME, results_directory)
     constants.to_json_file(CONSTANTS_FILE_NAME, results_directory)
 

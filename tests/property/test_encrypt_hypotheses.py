@@ -7,10 +7,10 @@ from hypothesis.strategies import integers
 
 from electionguard.ballot import CiphertextBallot
 from electionguard.decrypt_with_secrets import decrypt_ballot_with_secret
-from electionguard.election import ElectionDescription
 from electionguard.elgamal import ElGamalCiphertext, elgamal_encrypt, elgamal_add
 from electionguard.encrypt import encrypt_ballot, EncryptionDevice
 from electionguard.group import ElementModQ
+from electionguard.manifest import Manifest
 from electionguard.nonces import Nonces
 from electionguardtest.election import (
     election_descriptions,
@@ -33,13 +33,13 @@ class TestElections(unittest.TestCase):
         max_examples=10,
     )
     @given(election_descriptions())
-    def test_generators_yield_valid_output(self, ed: ElectionDescription):
+    def test_generators_yield_valid_output(self, manifest: Manifest):
         """
         Tests that our Hypothesis election strategies generate "valid" output, also exercises the full stack
         of `is_valid` methods.
         """
 
-        self.assertTrue(ed.is_valid())
+        self.assertTrue(manifest.is_valid())
 
     @settings(
         deadline=timedelta(milliseconds=10000),
@@ -64,15 +64,21 @@ class TestElections(unittest.TestCase):
         encryption context.  It also manually verifies that homomorphic accumulation works as expected.
         """
         # Arrange
-        _election_description, metadata, ballots, secret_key, context = everything
+        (
+            _election_description,
+            internal_manifest,
+            ballots,
+            secret_key,
+            context,
+        ) = everything
 
         # Tally the plaintext ballots for comparison later
         plaintext_tallies = accumulate_plaintext_ballots(ballots)
         num_ballots = len(ballots)
-        num_contests = len(metadata.contests)
+        num_contests = len(internal_manifest.contests)
         zero_nonce, *nonces = Nonces(nonce)[: num_ballots + 1]
         self.assertEqual(len(nonces), num_ballots)
-        self.assertTrue(len(metadata.contests) > 0)
+        self.assertTrue(len(internal_manifest.contests) > 0)
 
         # Generate a valid encryption of zero
         encrypted_zero = elgamal_encrypt(0, zero_nonce, context.elgamal_public_key)
@@ -83,7 +89,7 @@ class TestElections(unittest.TestCase):
         # encrypt each ballot
         for i in range(num_ballots):
             encrypted_ballot = encrypt_ballot(
-                ballots[i], metadata, context, SEED_HASH, nonces[i]
+                ballots[i], internal_manifest, context, SEED_HASH, nonces[i]
             )
             encrypted_ballots.append(encrypted_ballot)
 
@@ -94,7 +100,7 @@ class TestElections(unittest.TestCase):
             # decrypt the ballot with secret and verify it matches the plaintext
             decrypted_ballot = decrypt_ballot_with_secret(
                 ballot=encrypted_ballot,
-                election_metadata=metadata,
+                internal_manifest=internal_manifest,
                 crypto_extended_base_hash=context.crypto_extended_base_hash,
                 public_key=context.elgamal_public_key,
                 secret_key=secret_key,
@@ -115,7 +121,7 @@ class TestElections(unittest.TestCase):
 
         # loop through the contest descriptions and verify
         # the decrypted tallies match the plaintext tallies
-        for contest in metadata.contests:
+        for contest in internal_manifest.contests:
             # Sanity check the generated data
             self.assertTrue(len(contest.ballot_selections) > 0)
             self.assertTrue(len(contest.placeholder_selections) > 0)

@@ -7,15 +7,11 @@ from electionguard.ballot import (
     PlaintextBallot,
     make_ciphertext_ballot,
 )
-from electionguard.election import (
-    ElectionType,
-    ElectionConstants,
-    ElectionDescription,
-    make_ciphertext_election_context,
-)
+from electionguard.election import ElectionConstants, make_ciphertext_election_context
 from electionguard.group import ONE_MOD_Q, ONE_MOD_P, int_to_q_unchecked
 from electionguard.guardian import Guardian
 from electionguard.key_ceremony import CoefficientValidationSet
+from electionguard.manifest import ElectionType, Manifest
 from electionguard.publish import publish, publish_private_data, RESULTS_DIR
 from electionguard.tally import (
     CiphertextTally,
@@ -29,9 +25,7 @@ class TestPublish(TestCase):
     def test_publish(self) -> None:
         # Arrange
         now = datetime.now(timezone.utc)
-        description = ElectionDescription(
-            "", ElectionType.unknown, now, now, [], [], [], [], [], []
-        )
+        manifest = Manifest("", ElectionType.unknown, now, now, [], [], [], [], [], [])
         context = make_ciphertext_election_context(
             1, 1, ONE_MOD_P, ONE_MOD_Q, ONE_MOD_Q
         )
@@ -41,11 +35,11 @@ class TestPublish(TestCase):
         encrypted_ballots = []
         spoiled_ballots = []
         plaintext_tally = PlaintextTally("", [])
-        ciphertext_tally = CiphertextTally("", description, context)
+        ciphertext_tally = CiphertextTally("", manifest, context)
 
         # Act
         publish(
-            description,
+            manifest,
             context,
             constants,
             devices,

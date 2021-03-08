@@ -56,16 +56,16 @@ class ElectionSampleDataGenerator:
 
         # Configure the election
         (
-            public_data,
+            manifest,
             private_data,
-        ) = self.election_factory.get_hamilton_election_with_encryption_context()
+        ) = self.election_factory.get_hamilton_manifest_with_encryption_context()
         plaintext_ballots = (
             self.ballot_factory.generate_fake_plaintext_ballots_for_election(
-                public_data.metadata, number_of_ballots
+                manifest.internal_manifest, number_of_ballots
             )
         )
         self.encrypter = EncryptionMediator(
-            public_data.metadata, public_data.context, self.encryption_device
+            manifest.internal_manifest, manifest.context, self.encryption_device
         )
 
         # Encrypt some ballots
@@ -76,7 +76,9 @@ class ElectionSampleDataGenerator:
             )
 
         ballot_store = DataStore()
-        ballot_box = BallotBox(public_data.metadata, public_data.context, ballot_store)
+        ballot_box = BallotBox(
+            manifest.internal_manifest, manifest.context, ballot_store
+        )
 
         # Randomly cast/spoil the ballots
         submitted_ballots: List[SubmittedBallot] = []
@@ -88,12 +90,12 @@ class ElectionSampleDataGenerator:
 
         # Tally
         ciphertext_tally = get_optional(
-            tally_ballots(ballot_store, public_data.metadata, public_data.context)
+            tally_ballots(ballot_store, manifest.internal_manifest, manifest.context)
         )
 
         # Decrypt
         decrypter = DecryptionMediator(
-            public_data.metadata, public_data.context, ciphertext_tally
+            manifest.internal_manifest, manifest.context, ciphertext_tally
         )
 
         for i, guardian in enumerate(private_data.guardians):
@@ -105,15 +107,15 @@ class ElectionSampleDataGenerator:
 
         # Publish
         publish(
-            public_data.description,
-            public_data.context,
-            public_data.constants,
+            manifest.manifest,
+            manifest.context,
+            manifest.constants,
             [self.encryption_device],
             submitted_ballots,
             plaintext_spoiled_ballots.values(),
             ciphertext_tally.publish(),
             plaintext_tally,
-            public_data.guardians,
+            manifest.guardians,
         )
 
         publish_private_data(

@@ -12,11 +12,12 @@ from .ballot import (
 from .data_store import DataStore
 from .ballot_validator import ballot_is_valid_for_election
 from .decryption_share import CiphertextDecryptionSelection
-from .election import CiphertextElectionContext, InternalElectionDescription
+from .election import CiphertextElectionContext
 from .election_object_base import ElectionObjectBase
 from .elgamal import ElGamalCiphertext, elgamal_add
 from .group import ElementModQ, ONE_MOD_P, ElementModP
 from .logs import log_warning
+from .manifest import InternalManifest
 from .scheduler import Scheduler
 from .types import BALLOT_ID, CONTEST_ID, SELECTION_ID
 
@@ -188,7 +189,7 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
     A `CiphertextTally` accepts cast and spoiled ballots and accumulates a tally on the cast ballots
     """
 
-    _metadata: InternalElectionDescription
+    _internal_manifest: InternalManifest
     _encryption: CiphertextElectionContext
 
     # A local cache of ballots id's that have already been cast
@@ -205,7 +206,7 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
         object.__setattr__(self, "_cast_ballot_ids", set())
         object.__setattr__(self, "_spoiled_ballot_ids", set())
         object.__setattr__(
-            self, "contests", self._build_tally_collection(self._metadata)
+            self, "contests", self._build_tally_collection(self._internal_manifest)
         )
 
     def __len__(self) -> int:
@@ -237,7 +238,9 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
             log_warning(f"append cannot add {ballot.object_id} that is already tallied")
             return False
 
-        if not ballot_is_valid_for_election(ballot, self._metadata, self._encryption):
+        if not ballot_is_valid_for_election(
+            ballot, self._internal_manifest, self._encryption
+        ):
             return False
 
         if ballot.state == BallotBoxState.CAST:
@@ -264,7 +267,7 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
             # get the value of the dict
             ballot_value = ballot[1]
             if not self.__contains__(ballot) and ballot_is_valid_for_election(
-                ballot_value, self._metadata, self._encryption
+                ballot_value, self._internal_manifest, self._encryption
             ):
                 if ballot_value.state == BallotBoxState.CAST:
 
@@ -352,14 +355,14 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
 
     @staticmethod
     def _build_tally_collection(
-        description: InternalElectionDescription,
+        internal_manifest: InternalManifest,
     ) -> Dict[CONTEST_ID, CiphertextTallyContest]:
         """
-        Build the object graph for the tally from the InternalElectionDescription
+        Build the object graph for the tally from the InternalManifest
         """
 
         cast_collection: Dict[str, CiphertextTallyContest] = {}
-        for contest in description.contests:
+        for contest in internal_manifest.contests:
             # build a collection of valid selections for the contest description
             # note: we explicitly ignore the Placeholder Selections.
             contest_selections: Dict[str, CiphertextTallySelection] = {}
@@ -430,7 +433,7 @@ def tally_ballot(
 
 def tally_ballots(
     store: DataStore,
-    metadata: InternalElectionDescription,
+    internal_manifest: InternalManifest,
     context: CiphertextElectionContext,
 ) -> Optional[CiphertextTally]:
     """
@@ -438,7 +441,9 @@ def tally_ballots(
     :return: a CiphertextTally or None if there is an error
     """
     # TODO: ISSUE #14: unique Id for the tally
-    tally: CiphertextTally = CiphertextTally("election-results", metadata, context)
+    tally: CiphertextTally = CiphertextTally(
+        "election-results", internal_manifest, context
+    )
     if tally.batch_append(store):
         return tally
     return None
