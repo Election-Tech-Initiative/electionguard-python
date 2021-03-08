@@ -162,7 +162,7 @@ def _get_plaintext_contests(
         ):
             selections.append(
                 PlaintextBallotSelection(
-                    selection.candidate_id,
+                    selection.object_id,
                     YES_VOTE if compact_ballot.selections[index] else NO_VOTE,
                     not contest_in_style,
                     compact_ballot.extended_data.get(index),
