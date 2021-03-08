@@ -27,18 +27,18 @@ class TestBallotBox(TestCase):
     def test_ballot_box_cast_ballot(self):
         # Arrange
         keypair = elgamal_keypair_from_secret(int_to_q(2))
-        election = election_factory.get_fake_election()
-        metadata, context = election_factory.get_fake_ciphertext_election(
-            election, keypair.public_key
+        manifest = election_factory.get_fake_manifest()
+        internal_manifest, context = election_factory.get_fake_ciphertext_election(
+            manifest, keypair.public_key
         )
         store = DataStore()
-        source = election_factory.get_fake_ballot(metadata)
-        self.assertTrue(source.is_valid(metadata.ballot_styles[0].object_id))
+        source = election_factory.get_fake_ballot(internal_manifest)
+        self.assertTrue(source.is_valid(internal_manifest.ballot_styles[0].object_id))
 
         # Act
-        data = encrypt_ballot(source, metadata, context, SEED_HASH)
-        self.assertTrue(ballot_is_valid_for_election(data, metadata, context))
-        subject = BallotBox(metadata, context, store)
+        data = encrypt_ballot(source, internal_manifest, context, SEED_HASH)
+        self.assertTrue(ballot_is_valid_for_election(data, internal_manifest, context))
+        subject = BallotBox(internal_manifest, context, store)
         result = subject.cast(data)
 
         # Assert
@@ -54,17 +54,17 @@ class TestBallotBox(TestCase):
     def test_ballot_box_spoil_ballot(self):
         # Arrange
         keypair = elgamal_keypair_from_secret(int_to_q(2))
-        election = election_factory.get_fake_election()
-        metadata, context = election_factory.get_fake_ciphertext_election(
-            election, keypair.public_key
+        manifest = election_factory.get_fake_manifest()
+        internal_manifest, context = election_factory.get_fake_ciphertext_election(
+            manifest, keypair.public_key
         )
         store = DataStore()
-        source = election_factory.get_fake_ballot(metadata)
-        self.assertTrue(source.is_valid(metadata.ballot_styles[0].object_id))
+        source = election_factory.get_fake_ballot(internal_manifest)
+        self.assertTrue(source.is_valid(internal_manifest.ballot_styles[0].object_id))
 
         # Act
-        data = encrypt_ballot(source, metadata, context, SEED_HASH)
-        subject = BallotBox(metadata, context, store)
+        data = encrypt_ballot(source, internal_manifest, context, SEED_HASH)
+        subject = BallotBox(internal_manifest, context, store)
         result = subject.spoil(data)
 
         # Assert
@@ -80,17 +80,19 @@ class TestBallotBox(TestCase):
     def test_cast_ballot(self):
         # Arrange
         keypair = elgamal_keypair_from_secret(int_to_q(2))
-        election = election_factory.get_fake_election()
-        metadata, context = election_factory.get_fake_ciphertext_election(
-            election, keypair.public_key
+        manifest = election_factory.get_fake_manifest()
+        internal_manifest, context = election_factory.get_fake_ciphertext_election(
+            manifest, keypair.public_key
         )
         store = DataStore()
-        source = election_factory.get_fake_ballot(metadata)
-        self.assertTrue(source.is_valid(metadata.ballot_styles[0].object_id))
+        source = election_factory.get_fake_ballot(internal_manifest)
+        self.assertTrue(source.is_valid(internal_manifest.ballot_styles[0].object_id))
 
         # Act
-        data = encrypt_ballot(source, metadata, context, SEED_HASH)
-        result = accept_ballot(data, BallotBoxState.CAST, metadata, context, store)
+        data = encrypt_ballot(source, internal_manifest, context, SEED_HASH)
+        result = accept_ballot(
+            data, BallotBoxState.CAST, internal_manifest, context, store
+        )
 
         # Assert
         expected = store.get(source.object_id)
@@ -100,26 +102,30 @@ class TestBallotBox(TestCase):
 
         # Test failure modes
         self.assertIsNone(
-            accept_ballot(data, BallotBoxState.CAST, metadata, context, store)
+            accept_ballot(data, BallotBoxState.CAST, internal_manifest, context, store)
         )  # cannot cast again
         self.assertIsNone(
-            accept_ballot(data, BallotBoxState.SPOILED, metadata, context, store)
+            accept_ballot(
+                data, BallotBoxState.SPOILED, internal_manifest, context, store
+            )
         )  # cannot cspoil a ballot already cast
 
     def test_spoil_ballot(self):
         # Arrange
         keypair = elgamal_keypair_from_secret(int_to_q(2))
-        election = election_factory.get_fake_election()
-        metadata, context = election_factory.get_fake_ciphertext_election(
-            election, keypair.public_key
+        manifest = election_factory.get_fake_manifest()
+        internal_manifest, context = election_factory.get_fake_ciphertext_election(
+            manifest, keypair.public_key
         )
         store = DataStore()
-        source = election_factory.get_fake_ballot(metadata)
-        self.assertTrue(source.is_valid(metadata.ballot_styles[0].object_id))
+        source = election_factory.get_fake_ballot(internal_manifest)
+        self.assertTrue(source.is_valid(internal_manifest.ballot_styles[0].object_id))
 
         # Act
-        data = encrypt_ballot(source, metadata, context, SEED_HASH)
-        result = accept_ballot(data, BallotBoxState.SPOILED, metadata, context, store)
+        data = encrypt_ballot(source, internal_manifest, context, SEED_HASH)
+        result = accept_ballot(
+            data, BallotBoxState.SPOILED, internal_manifest, context, store
+        )
 
         # Assert
         expected = store.get(source.object_id)
@@ -129,8 +135,10 @@ class TestBallotBox(TestCase):
 
         # Test failure modes
         self.assertIsNone(
-            accept_ballot(data, BallotBoxState.SPOILED, metadata, context, store)
+            accept_ballot(
+                data, BallotBoxState.SPOILED, internal_manifest, context, store
+            )
         )  # cannot spoil again
         self.assertIsNone(
-            accept_ballot(data, BallotBoxState.CAST, metadata, context, store)
+            accept_ballot(data, BallotBoxState.CAST, internal_manifest, context, store)
         )  # cannot cast a ballot already spoiled

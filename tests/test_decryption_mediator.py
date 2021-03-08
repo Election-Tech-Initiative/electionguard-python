@@ -28,14 +28,10 @@ from electionguard.decryption import (
 )
 from electionguard.decryption_mediator import DecryptionMediator
 from electionguard.decryption_share import create_ciphertext_decryption_selection
-from electionguard.election import (
-    CiphertextElectionContext,
-    InternalElectionDescription,
-)
+from electionguard.election import CiphertextElectionContext
 from electionguard.election_builder import ElectionBuilder
 from electionguard.election_polynomial import compute_lagrange_coefficient
 from electionguard.encrypt import EncryptionDevice, EncryptionMediator, encrypt_ballot
-
 from electionguard.group import (
     int_to_q_unchecked,
     mult_p,
@@ -44,6 +40,7 @@ from electionguard.group import (
 from electionguard.guardian import Guardian
 from electionguard.key_ceremony import CeremonyDetails
 from electionguard.key_ceremony_mediator import KeyCeremonyMediator
+from electionguard.manifest import InternalManifest
 from electionguard.tally import (
     CiphertextTally,
     PlaintextTally,
@@ -100,46 +97,50 @@ class TestDecryptionMediator(TestCase):
         self.assertIsNotNone(self.joint_public_key)
 
         # setup the election
-        self.election = election_factory.get_fake_election()
-        builder = ElectionBuilder(self.NUMBER_OF_GUARDIANS, self.QUORUM, self.election)
+        manifest = election_factory.get_fake_manifest()
+        builder = ElectionBuilder(self.NUMBER_OF_GUARDIANS, self.QUORUM, manifest)
 
         self.assertIsNone(builder.build())  # Can't build without the public key
 
         builder.set_public_key(self.joint_public_key.joint_public_key)
         builder.set_commitment_hash(self.joint_public_key.commitment_hash)
-        self.metadata, self.context = get_optional(builder.build())
+        self.internal_manifest, self.context = get_optional(builder.build())
 
         self.encryption_device = EncryptionDevice("location")
         self.ballot_marking_device = EncryptionMediator(
-            self.metadata, self.context, self.encryption_device
+            self.internal_manifest, self.context, self.encryption_device
         )
 
         # get some fake ballots
         self.fake_cast_ballot = ballot_factory.get_fake_ballot(
-            self.metadata, "some-unique-ballot-id-cast"
+            self.internal_manifest, "some-unique-ballot-id-cast"
         )
         self.more_fake_ballots = []
         for i in range(10):
             self.more_fake_ballots.append(
                 ballot_factory.get_fake_ballot(
-                    self.metadata, f"some-unique-ballot-id-cast{i}"
+                    self.internal_manifest, f"some-unique-ballot-id-cast{i}"
                 )
             )
         self.fake_spoiled_ballot = ballot_factory.get_fake_ballot(
-            self.metadata, "some-unique-ballot-id-spoiled"
+            self.internal_manifest, "some-unique-ballot-id-spoiled"
         )
         self.more_fake_spoiled_ballots = []
         for i in range(2):
             self.more_fake_spoiled_ballots.append(
                 ballot_factory.get_fake_ballot(
-                    self.metadata, f"some-unique-ballot-id-spoiled{i}"
+                    self.internal_manifest, f"some-unique-ballot-id-spoiled{i}"
                 )
             )
         self.assertTrue(
-            self.fake_cast_ballot.is_valid(self.metadata.ballot_styles[0].object_id)
+            self.fake_cast_ballot.is_valid(
+                self.internal_manifest.ballot_styles[0].object_id
+            )
         )
         self.assertTrue(
-            self.fake_spoiled_ballot.is_valid(self.metadata.ballot_styles[0].object_id)
+            self.fake_spoiled_ballot.is_valid(
+                self.internal_manifest.ballot_styles[0].object_id
+            )
         )
         self.expected_plaintext_tally = accumulate_plaintext_ballots(
             [self.fake_cast_ballot] + self.more_fake_ballots
@@ -149,7 +150,7 @@ class TestDecryptionMediator(TestCase):
         # that were not made on any ballots
         selection_ids = {
             selection.object_id
-            for contest in self.metadata.contests
+            for contest in self.internal_manifest.contests
             for selection in contest.ballot_selections
         }
 
@@ -171,7 +172,7 @@ class TestDecryptionMediator(TestCase):
         self.assertIsNotNone(self.encrypted_fake_spoiled_ballot)
         self.assertTrue(
             self.encrypted_fake_cast_ballot.is_valid_encryption(
-                self.metadata.description_hash,
+                self.internal_manifest.manifest_hash,
                 self.joint_public_key.joint_public_key,
                 self.context.crypto_extended_base_hash,
             )
@@ -192,7 +193,7 @@ class TestDecryptionMediator(TestCase):
 
         # configure the ballot box
         ballot_store = DataStore()
-        ballot_box = BallotBox(self.metadata, self.context, ballot_store)
+        ballot_box = BallotBox(self.internal_manifest, self.context, ballot_store)
         ballot_box.cast(self.encrypted_fake_cast_ballot)
         ballot_box.spoil(self.encrypted_fake_spoiled_ballot)
 
@@ -204,7 +205,9 @@ class TestDecryptionMediator(TestCase):
             ballot_box.spoil(fake_ballot)
 
         # generate encrypted tally
-        self.ciphertext_tally = tally_ballots(ballot_store, self.metadata, self.context)
+        self.ciphertext_tally = tally_ballots(
+            ballot_store, self.internal_manifest, self.context
+        )
         self.ciphertext_ballots = get_ballots(ballot_store, BallotBoxState.SPOILED)
 
     def tearDown(self):
@@ -213,7 +216,9 @@ class TestDecryptionMediator(TestCase):
     def test_announce(self):
         # Arrange
         subject = DecryptionMediator(
-            self.metadata, self.context, self.ciphertext_tally, self.ciphertext_ballots
+            self.context,
+            self.ciphertext_tally,
+            self.ciphertext_ballots,
         )
 
         # act
@@ -620,9 +625,7 @@ class TestDecryptionMediator(TestCase):
 
     def test_get_plaintext_tally_all_guardians_present_simple(self):
         # Arrange
-        decrypter = DecryptionMediator(
-            self.metadata, self.context, self.ciphertext_tally, {}
-        )
+        decrypter = DecryptionMediator(self.context, self.ciphertext_tally, {})
 
         # act
         for guardian in self.guardians:
@@ -646,7 +649,9 @@ class TestDecryptionMediator(TestCase):
 
         # Arrange
         decrypter = DecryptionMediator(
-            self.metadata, self.context, self.ciphertext_tally, self.ciphertext_ballots
+            self.context,
+            self.ciphertext_tally,
+            self.ciphertext_ballots,
         )
 
         # Act
@@ -677,22 +682,22 @@ class TestDecryptionMediator(TestCase):
         # Arrange
         description = data.draw(election_descriptions(parties, contests))
         builder = ElectionBuilder(self.NUMBER_OF_GUARDIANS, self.QUORUM, description)
-        metadata, context = (
+        internal_manifest, context = (
             builder.set_public_key(self.joint_public_key.joint_public_key)
             .set_commitment_hash(self.joint_public_key.commitment_hash)
             .build()
         )
 
         plaintext_ballots: List[PlaintextBallot] = data.draw(
-            plaintext_voted_ballots(metadata, randrange(3, 6))
+            plaintext_voted_ballots(internal_manifest, randrange(3, 6))
         )
         plaintext_tallies = accumulate_plaintext_ballots(plaintext_ballots)
 
         encrypted_tally = self._generate_encrypted_tally(
-            metadata, context, plaintext_ballots
+            internal_manifest, context, plaintext_ballots
         )
 
-        decrypter = DecryptionMediator(metadata, context, encrypted_tally, {})
+        decrypter = DecryptionMediator(context, encrypted_tally, {})
 
         # act
         for guardian in self.guardians:
@@ -709,7 +714,7 @@ class TestDecryptionMediator(TestCase):
 
     def _generate_encrypted_tally(
         self,
-        metadata: InternalElectionDescription,
+        internal_manifest: InternalManifest,
         context: CiphertextElectionContext,
         ballots: List[PlaintextBallot],
     ) -> CiphertextTally:
@@ -718,7 +723,7 @@ class TestDecryptionMediator(TestCase):
         store = DataStore()
         for ballot in ballots:
             encrypted_ballot = encrypt_ballot(
-                ballot, metadata, context, int_to_q_unchecked(1)
+                ballot, internal_manifest, context, int_to_q_unchecked(1)
             )
             self.assertIsNotNone(encrypted_ballot)
             # add to the ballot store
@@ -727,7 +732,7 @@ class TestDecryptionMediator(TestCase):
                 from_ciphertext_ballot(encrypted_ballot, BallotBoxState.CAST),
             )
 
-        tally = tally_ballots(store, metadata, context)
+        tally = tally_ballots(store, internal_manifest, context)
         self.assertIsNotNone(tally)
         return get_optional(tally)
 

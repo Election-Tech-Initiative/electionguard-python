@@ -14,10 +14,7 @@ from .decryption import (
 )
 from .decryption_share import DecryptionShare, CompensatedDecryptionShare
 from .decrypt_with_shares import decrypt_ballots, decrypt_tally
-from .election import (
-    CiphertextElectionContext,
-    InternalElectionDescription,
-)
+from .election import CiphertextElectionContext
 from .election_polynomial import compute_lagrange_coefficient
 from .group import ElementModP, ElementModQ
 from .guardian import Guardian
@@ -45,7 +42,6 @@ class DecryptionMediator:
     to form a decrypted representation of an election tally
     """
 
-    _metadata: InternalElectionDescription
     _encryption: CiphertextElectionContext
 
     # Tally to Decrypt
@@ -356,12 +352,6 @@ class DecryptionMediator:
                 compensated_shares,
                 self._lagrange_coefficients[missing_guardian_id],
             )
-
-            if missing_decryption_share is None:
-                log_warning(
-                    "get plaintext ballot failed with computing missing decryption shares"
-                )
-                return
 
             self._ballot_shares[missing_guardian_id][
                 ballot_id

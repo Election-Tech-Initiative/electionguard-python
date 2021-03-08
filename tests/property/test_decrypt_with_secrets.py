@@ -8,8 +8,6 @@ from hypothesis import HealthCheck, Phase
 from hypothesis import given, settings
 from hypothesis.strategies import integers
 
-import electionguardtest.ballot_factory as BallotFactory
-import electionguardtest.election_factory as ElectionFactory
 from electionguard.chaum_pedersen import DisjunctiveChaumPedersenProof
 from electionguard.decrypt_with_secrets import (
     decrypt_selection_with_secret,
@@ -18,12 +16,6 @@ from electionguard.decrypt_with_secrets import (
     decrypt_contest_with_nonce,
     decrypt_ballot_with_nonce,
     decrypt_ballot_with_secret,
-)
-from electionguard.election import (
-    ContestDescription,
-    SelectionDescription,
-    generate_placeholder_selections_from,
-    contest_description_with_placeholders_from,
 )
 from electionguard.elgamal import ElGamalKeyPair, ElGamalCiphertext
 from electionguard.encrypt import (
@@ -39,8 +31,18 @@ from electionguard.group import (
     mult_p,
     int_to_q_unchecked,
 )
+from electionguard.manifest import (
+    ContestDescription,
+    SelectionDescription,
+    generate_placeholder_selections_from,
+    contest_description_with_placeholders_from,
+)
+
+import electionguardtest.ballot_factory as BallotFactory
+import electionguardtest.election_factory as ElectionFactory
 from electionguardtest.elgamal import elgamal_keypairs
 from electionguardtest.group import elements_mod_q_no_zero
+
 
 election_factory = ElectionFactory.ElectionFactory()
 ballot_factory = BallotFactory.BallotFactory()
@@ -503,7 +505,7 @@ class TestDecryptWithSecrets(unittest.TestCase):
         # TODO: Hypothesis test instead
 
         # Arrange
-        election = election_factory.get_simple_election_from_file()
+        election = election_factory.get_simple_manifest_from_file()
         metadata, context = election_factory.get_fake_ciphertext_election(
             election, keypair.public_key
         )
@@ -549,7 +551,7 @@ class TestDecryptWithSecrets(unittest.TestCase):
         self.assertEqual(data.object_id, result_from_nonce.object_id)
         self.assertEqual(data.object_id, result_from_nonce_seed.object_id)
 
-        for description in metadata.get_contests_for(data.ballot_style):
+        for description in metadata.get_contests_for(data.style_id):
 
             expected_entries = (
                 len(description.ballot_selections) + description.number_elected
@@ -667,7 +669,7 @@ class TestDecryptWithSecrets(unittest.TestCase):
     ):
 
         # Arrange
-        election = election_factory.get_simple_election_from_file()
+        election = election_factory.get_simple_manifest_from_file()
         metadata, context = election_factory.get_fake_ciphertext_election(
             election, keypair.public_key
         )

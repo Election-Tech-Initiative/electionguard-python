@@ -47,7 +47,7 @@ class TestTally(TestCase):
         seed_hash = EncryptionDevice("Location").get_hash()
         for ballot in ballots:
             encrypted_ballot = encrypt_ballot(ballot, metadata, context, seed_hash)
-            seed_hash = encrypted_ballot.tracking_hash
+            seed_hash = encrypted_ballot.code
             self.assertIsNotNone(encrypted_ballot)
             # add to the ballot store
             store.set(
@@ -84,7 +84,7 @@ class TestTally(TestCase):
         seed_hash = EncryptionDevice("Location").get_hash()
         for ballot in ballots:
             encrypted_ballot = encrypt_ballot(ballot, metadata, context, seed_hash)
-            seed_hash = encrypted_ballot.tracking_hash
+            seed_hash = encrypted_ballot.code
             self.assertIsNotNone(encrypted_ballot)
             # add to the ballot store
             store.set(
@@ -123,7 +123,7 @@ class TestTally(TestCase):
         seed_hash = EncryptionDevice("Location").get_hash()
         for ballot in ballots:
             encrypted_ballot = encrypt_ballot(ballot, metadata, context, seed_hash)
-            seed_hash = encrypted_ballot.tracking_hash
+            seed_hash = encrypted_ballot.code
             self.assertIsNotNone(encrypted_ballot)
             # add to the ballot store
             store.set(
@@ -278,12 +278,12 @@ class TestTally(TestCase):
         ].object_id = first_contest_selection_object_id
 
         # modify the ballot's hash
-        first_ballot_hash = ballot.description_hash
-        ballot.description_hash = ONE_MOD_Q
+        first_ballot_hash = ballot.manifest_hash
+        ballot.manifest_hash = ONE_MOD_Q
         self.assertIsNone(tally_ballot(ballot, tally))
         self.assertFalse(tally.append(ballot))
 
-        ballot.description_hash = first_ballot_hash
+        ballot.manifest_hash = first_ballot_hash
         ballot.state = input_state
 
         return True

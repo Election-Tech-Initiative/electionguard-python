@@ -41,7 +41,7 @@ def compute_decryption_share(
     scheduler: Optional[Scheduler] = None,
 ) -> Optional[DecryptionShare]:
     """
-    Compute the decryption for all of the cast contests in the Ciphertext Tally
+    Compute the decryption for all of the contests in the Ciphertext Tally
     """
 
     contests: Dict[CONTEST_ID, CiphertextDecryptionContest] = {}
@@ -78,7 +78,7 @@ def compute_compensated_decryption_share(
     scheduler: Optional[Scheduler] = None,
 ) -> Optional[CompensatedDecryptionShare]:
     """
-    Compute the compensated decryption for all of the cast contests in the Ciphertext Tally
+    Compute the compensated decryption for all of the contests in the Ciphertext Tally
     """
 
     contests: Dict[CONTEST_ID, CiphertextCompensatedDecryptionContest] = {}
@@ -413,7 +413,7 @@ def reconstruct_decryption_share(
     from the collection of compensated decryption shares
 
     :param missing_guardian_id: The guardian id for the missing guardian
-    :param cast_tally: The collection of `CiphertextTallyContest` that is cast
+    :param tally: The collection of `CiphertextTallyContest` that is cast
     :shares: the collection of `CompensatedTallyDecryptionShare` for the missing guardian
     :lagrange_coefficients: the lagrange coefficients corresponding to the available guardians that provided shares
     """
@@ -481,7 +481,7 @@ def reconstruct_decryption_share_for_ballot(
 
     :param missing_guardian_id: The guardian id for the missing guardian
     :param public_key: the public key for the missing guardian
-    :param ballots: The `SubmittedBallot` to reconstruct
+    :param ballot: The `SubmittedBallot` to reconstruct
     :shares: the collection of `CompensatedBallotDecryptionShare` for
         the missing guardian, each keyed by the ID of the guardian that produced it
     :lagrange_coefficients: the lagrange coefficients corresponding to the available guardians that provided shares
@@ -517,8 +517,8 @@ def reconstruct_decryption_contest(
     from the collection of compensated decryption shares
 
     :param missing_guardian_id: The guardian id for the missing guardian
-    :param cast_tally: The collection of `CiphertextTallyContest` that is cast
-    :shares: the collection of `CompensatedTallyDecryptionShare` for the missing guardian
+    :param contest: The CiphertextContest to decrypt
+    :shares: the collection of `CompensatedDecryptionShare` for the missing guardian
     :lagrange_coefficients: the lagrange coefficients corresponding to the available guardians that provided shares
     """
 

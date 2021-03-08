@@ -3,13 +3,9 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Optional, Tuple
 
-from .election import (
-    CiphertextElectionContext,
-    ElectionDescription,
-    InternalElectionDescription,
-    make_ciphertext_election_context,
-)
+from .election import CiphertextElectionContext, make_ciphertext_election_context
 from .group import ElementModP, ElementModQ
+from .manifest import Manifest, InternalManifest
 from .utils import get_optional
 
 
@@ -30,16 +26,16 @@ class ElectionBuilder:
     The quorum of guardians necessary to decrypt an election.  Must be less than `number_of_guardians`
     """
 
-    description: ElectionDescription
+    manifest: Manifest
 
-    internal_description: InternalElectionDescription = field(init=False)
+    internal_manifest: InternalManifest = field(init=False)
 
     elgamal_public_key: Optional[ElementModP] = field(default=None)
 
     commitment_hash: Optional[ElementModQ] = field(default=None)
 
     def __post_init__(self) -> None:
-        self.internal_description = InternalElectionDescription(self.description)
+        self.internal_manifest = InternalManifest(self.manifest)
 
     def set_public_key(self, elgamal_public_key: ElementModP) -> ElectionBuilder:
         """
@@ -61,24 +57,24 @@ class ElectionBuilder:
 
     def build(
         self,
-    ) -> Optional[Tuple[InternalElectionDescription, CiphertextElectionContext]]:
+    ) -> Optional[Tuple[InternalManifest, CiphertextElectionContext]]:
         """
         Build election
-        :return: election description and context or none
+        :return: election manifest and context or none
         """
-        if not self.description.is_valid():
+        if not self.manifest.is_valid():
             return None
 
         if self.elgamal_public_key is None:
             return None
 
         return (
-            self.internal_description,
+            self.internal_manifest,
             make_ciphertext_election_context(
                 self.number_of_guardians,
                 self.quorum,
                 get_optional(self.elgamal_public_key),
                 get_optional(self.commitment_hash),
-                self.description.crypto_hash(),
+                self.manifest.crypto_hash(),
             ),
         )

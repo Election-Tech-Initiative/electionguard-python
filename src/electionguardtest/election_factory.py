@@ -12,14 +12,18 @@ from hypothesis.strategies import (
 )
 
 from electionguard.ballot import PlaintextBallot
-
-from electionguard.election import (
+from electionguard.election import CiphertextElectionContext, ElectionConstants
+from electionguard.election_builder import ElectionBuilder
+from electionguard.encrypt import contest_from
+from electionguard.group import ElementModP, TWO_MOD_Q
+from electionguard.guardian import Guardian
+from electionguard.key_ceremony import CoefficientValidationSet
+from electionguard.key_ceremony_mediator import KeyCeremonyMediator
+from electionguard.manifest import (
     BallotStyle,
-    CiphertextElectionContext,
-    ElectionConstants,
-    ElectionDescription,
+    Manifest,
     ElectionType,
-    InternalElectionDescription,
+    InternalManifest,
     generate_placeholder_selections_from,
     GeopoliticalUnit,
     Candidate,
@@ -32,15 +36,6 @@ from electionguard.election import (
     CandidateContestDescription,
     ReferendumContestDescription,
 )
-
-from electionguard.election_builder import ElectionBuilder
-
-from electionguard.encrypt import contest_from
-
-from electionguard.group import ElementModP, TWO_MOD_Q
-from electionguard.guardian import Guardian
-from electionguard.key_ceremony import CoefficientValidationSet
-from electionguard.key_ceremony_mediator import KeyCeremonyMediator
 from electionguard.utils import get_optional
 
 _T = TypeVar("_T")
@@ -56,8 +51,8 @@ QUORUM = 3
 class AllPublicElectionData:
     """All public data for election"""
 
-    description: ElectionDescription
-    metadata: InternalElectionDescription
+    manifest: Manifest
+    internal_manifest: InternalManifest
     context: CiphertextElectionContext
     constants: ElectionConstants
     guardians: List[CoefficientValidationSet]
@@ -75,28 +70,28 @@ class ElectionFactory:
 
     simple_election_manifest_file_name = "election_manifest_simple.json"
 
-    def get_simple_election_from_file(self) -> ElectionDescription:
-        return self._get_election_from_file(self.simple_election_manifest_file_name)
+    def get_simple_manifest_from_file(self) -> Manifest:
+        return self._get_manifest_from_file(self.simple_election_manifest_file_name)
 
     @staticmethod
-    def get_hamilton_election_from_file() -> ElectionDescription:
+    def get_hamilton_manifest_from_file() -> Manifest:
         with open(
             os.path.join(data, "hamilton-county", "election_manifest.json"), "r"
         ) as subject:
             result = subject.read()
-            target = ElectionDescription.from_json(result)
+            target = Manifest.from_json(result)
 
         return target
 
-    def get_hamilton_election_with_encryption_context(
+    def get_hamilton_manifest_with_encryption_context(
         self,
     ) -> Tuple[AllPublicElectionData, AllPrivateElectionData]:
         guardians: List[Guardian] = []
         coefficient_validation_sets: List[CoefficientValidationSet] = []
 
         # Configure the election builder
-        description = self.get_hamilton_election_from_file()
-        builder = ElectionBuilder(NUMBER_OF_GUARDIANS, QUORUM, description)
+        manifest = self.get_hamilton_manifest_from_file()
+        builder = ElectionBuilder(NUMBER_OF_GUARDIANS, QUORUM, manifest)
 
         # Setup Guardians
         for i in range(NUMBER_OF_GUARDIANS):
@@ -127,20 +122,24 @@ class ElectionFactory:
 
         builder.set_public_key(get_optional(joint_key).joint_public_key)
         builder.set_commitment_hash(get_optional(joint_key).commitment_hash)
-        metadata, context = get_optional(builder.build())
+        internal_manifest, context = get_optional(builder.build())
         constants = ElectionConstants()
 
         return (
             AllPublicElectionData(
-                description, metadata, context, constants, coefficient_validation_sets
+                manifest,
+                internal_manifest,
+                context,
+                constants,
+                coefficient_validation_sets,
             ),
             AllPrivateElectionData(guardians),
         )
 
     @staticmethod
-    def get_fake_election() -> ElectionDescription:
+    def get_fake_manifest() -> Manifest:
         """
-        Get a single Fake Election object that is manually constructed with default values
+        Get a single fake manifest object that is manually constructed with default values
         """
 
         fake_ballot_style = BallotStyle("some-ballot-style-id")
@@ -194,7 +193,7 @@ class ElectionFactory:
             fake_candidate_ballot_selections,
         )
 
-        fake_election = ElectionDescription(
+        fake_manifest = Manifest(
             spec_version="v0.95",
             election_scope_id="some-scope-id",
             type=ElectionType.unknown,
@@ -217,48 +216,46 @@ class ElectionFactory:
             ballot_styles=[fake_ballot_style],
         )
 
-        return fake_election
+        return fake_manifest
 
     @staticmethod
     def get_fake_ciphertext_election(
-        description: ElectionDescription, elgamal_public_key: ElementModP
-    ) -> Tuple[InternalElectionDescription, CiphertextElectionContext]:
-        builder = ElectionBuilder(
-            number_of_guardians=1, quorum=1, description=description
-        )
+        manifest: Manifest, elgamal_public_key: ElementModP
+    ) -> Tuple[InternalManifest, CiphertextElectionContext]:
+        builder = ElectionBuilder(number_of_guardians=1, quorum=1, manifest=manifest)
         builder.set_public_key(elgamal_public_key)
         builder.set_commitment_hash(TWO_MOD_Q)
-        metadata, election = get_optional(builder.build())
-        return metadata, election
+        internal_manifest, context = get_optional(builder.build())
+        return internal_manifest, context
 
     # TODO: Move to ballot Factory?
     def get_fake_ballot(
-        self, election: ElectionDescription = None, ballot_id: str = None
+        self, manifest: Manifest = None, ballot_id: str = None
     ) -> PlaintextBallot:
         """
         Get a single Fake Ballot object that is manually constructed with default vaules
         """
-        if election is None:
-            election = self.get_fake_election()
+        if manifest is None:
+            manifest = self.get_fake_manifest()
 
         if ballot_id is None:
             ballot_id = "some-unique-ballot-id-123"
 
         fake_ballot = PlaintextBallot(
             ballot_id,
-            election.ballot_styles[0].object_id,
-            [contest_from(election.contests[0]), contest_from(election.contests[1])],
+            manifest.ballot_styles[0].object_id,
+            [contest_from(manifest.contests[0]), contest_from(manifest.contests[1])],
         )
 
         return fake_ballot
 
     @staticmethod
-    def _get_election_from_file(filename: str) -> ElectionDescription:
+    def _get_manifest_from_file(filename: str) -> Manifest:
         with open(os.path.join(data, filename), "r") as subject:
             result = subject.read()
-            target = ElectionDescription.from_json(result)
+            manifest = Manifest.from_json(result)
 
-        return target
+        return manifest
 
 
 @composite
