@@ -612,7 +612,7 @@ class PlaintextBallot(ElectionObjectBase):
     :field object_id: A unique Ballot ID that is relevant to the external system
     """
 
-    ballot_style: str
+    style_id: str
     """The `object_id` of the `BallotStyle` in the `Election` Manifest"""
 
     contests: List[PlaintextBallotContest]
@@ -624,11 +624,11 @@ class PlaintextBallot(ElectionObjectBase):
         :param expected_ballot_style_id: Expected ballot style id
         :return: True if valid
         """
-        if self.ballot_style != expected_ballot_style_id:
+        if self.style_id != expected_ballot_style_id:
             log_warning(
                 (
                     f"invalid ballot_style: for: {self.object_id} expected({expected_ballot_style_id}) "
-                    f"actual({self.ballot_style})"
+                    f"actual({self.style_id})"
                 )
             )
             return False
@@ -638,7 +638,7 @@ class PlaintextBallot(ElectionObjectBase):
     def __eq__(self, other: Any) -> bool:
         return (
             isinstance(other, PlaintextBallot)
-            and self.ballot_style == other.ballot_style
+            and self.style_id == other.style_id
             and _list_eq(self.contests, other.contests)
         )
 
@@ -660,7 +660,7 @@ class CiphertextBallot(ElectionObjectBase, CryptoHashCheckable):
     :field object_id: A unique Ballot ID that is relevant to the external system
     """
 
-    ballot_style: str
+    style_id: str
     """The `object_id` of the `BallotStyle` in the `Election` Manifest"""
 
     description_hash: ElementModQ
@@ -688,7 +688,7 @@ class CiphertextBallot(ElectionObjectBase, CryptoHashCheckable):
         return (
             isinstance(other, CiphertextBallot)
             and self.object_id == other.object_id
-            and self.ballot_style == other.ballot_style
+            and self.style_id == other.style_id
             and self.description_hash == other.description_hash
             and self.previous_tracking_hash == other.previous_tracking_hash
             and _list_eq(self.contests, other.contests)
@@ -856,7 +856,7 @@ class SubmittedBallot(CiphertextBallot):
 
 def make_ciphertext_ballot(
     object_id: str,
-    ballot_style: str,
+    style_id: str,
     description_hash: ElementModQ,
     previous_tracking_hash: Optional[ElementModQ],
     contests: List[CiphertextBallotContest],
@@ -868,7 +868,7 @@ def make_ciphertext_ballot(
     Makes a `CiphertextBallot`, initially in the state where it's neither been cast nor spoiled.
 
     :param object_id: the object_id of this specific ballot
-    :param ballot_style: The `object_id` of the `BallotStyle` in the `Election` Manifest
+    :param style_id: The `object_id` of the `BallotStyle` in the `Election` Manifest
     :param description_hash: Hash of the election metadata
     :param crypto_base_hash: Hash of the cryptographic election context
     :param contests: List of contests for this ballot
@@ -893,7 +893,7 @@ def make_ciphertext_ballot(
 
     return CiphertextBallot(
         object_id=object_id,
-        ballot_style=ballot_style,
+        style_id=style_id,
         description_hash=description_hash,
         previous_tracking_hash=previous_tracking_hash,
         contests=contests,
@@ -906,7 +906,7 @@ def make_ciphertext_ballot(
 
 def make_ciphertext_submitted_ballot(
     object_id: str,
-    ballot_style: str,
+    style_id: str,
     description_hash: ElementModQ,
     previous_tracking_hash: Optional[ElementModQ],
     contests: List[CiphertextBallotContest],
@@ -918,7 +918,7 @@ def make_ciphertext_submitted_ballot(
     Makes a `SubmittedBallot`, ensuring that no nonces are part of the contests.
 
     :param object_id: the object_id of this specific ballot
-    :param ballot_style: The `object_id` of the `BallotStyle` in the `Election` Manifest
+    :param style_id: The `object_id` of the `BallotStyle` in the `Election` Manifest
     :param description_hash: Hash of the election metadata
     :param previous_tracking_hash: Previous tracking hash or seed hash
     :param contests: List of contests for this ballot
@@ -951,7 +951,7 @@ def make_ciphertext_submitted_ballot(
 
     return SubmittedBallot(
         object_id=object_id,
-        ballot_style=ballot_style,
+        style_id=style_id,
         description_hash=description_hash,
         previous_tracking_hash=previous_tracking_hash,
         contests=new_contests,
@@ -971,7 +971,7 @@ def from_ciphertext_ballot(
     """
     return make_ciphertext_submitted_ballot(
         object_id=ballot.object_id,
-        ballot_style=ballot.ballot_style,
+        style_id=ballot.style_id,
         description_hash=ballot.description_hash,
         contests=ballot.contests,
         timestamp=ballot.timestamp,

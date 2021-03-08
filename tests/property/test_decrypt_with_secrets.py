@@ -549,7 +549,7 @@ class TestDecryptWithSecrets(unittest.TestCase):
         self.assertEqual(data.object_id, result_from_nonce.object_id)
         self.assertEqual(data.object_id, result_from_nonce_seed.object_id)
 
-        for description in metadata.get_contests_for(data.ballot_style):
+        for description in metadata.get_contests_for(data.style_id):
 
             expected_entries = (
                 len(description.ballot_selections) + description.number_elected

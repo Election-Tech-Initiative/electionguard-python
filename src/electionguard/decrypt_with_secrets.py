@@ -283,7 +283,7 @@ def decrypt_ballot_with_secret(
             )
             return None
 
-    return PlaintextBallot(ballot.object_id, ballot.ballot_style, plaintext_contests)
+    return PlaintextBallot(ballot.object_id, ballot.style_id, plaintext_contests)
 
 
 def decrypt_ballot_with_nonce(
@@ -348,4 +348,4 @@ def decrypt_ballot_with_nonce(
             )
             return None
 
-    return PlaintextBallot(ballot.object_id, ballot.ballot_style, plaintext_contests)
+    return PlaintextBallot(ballot.object_id, ballot.style_id, plaintext_contests)

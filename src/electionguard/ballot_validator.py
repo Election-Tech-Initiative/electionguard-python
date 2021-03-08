@@ -95,7 +95,7 @@ def ballot_is_valid_for_style(
     :param metadata: Internal election description
     :return: Is valid
     """
-    descriptions = metadata.get_contests_for(ballot.ballot_style)
+    descriptions = metadata.get_contests_for(ballot.style_id)
 
     for description in descriptions:
         use_contest = None
