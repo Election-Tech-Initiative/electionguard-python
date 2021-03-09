@@ -2,14 +2,16 @@ from .hash import hash_elems
 from .group import ElementModQ
 
 
-def get_hash_for_device(uuid: int, location: str) -> ElementModQ:
+def get_hash_for_device(
+    uuid: int, session_id: str, launch_code: int, location: str
+) -> ElementModQ:
     """
     Get starting hash for given device
     :param uuid: Unique identifier of device
     :param location: Location of device
     :return: Starting hash of device
     """
-    return hash_elems(uuid, location)
+    return hash_elems(uuid, session_id, launch_code, location)
 
 
 def get_rotating_ballot_code(

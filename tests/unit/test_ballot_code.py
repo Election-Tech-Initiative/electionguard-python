@@ -1,13 +1,12 @@
 from unittest import TestCase
 
-from electionguard.encrypt import EncryptionDevice
-
 from electionguard.group import ZERO_MOD_Q, ONE_MOD_Q, TWO_MOD_Q
-
 from electionguard.ballot_code import (
     get_rotating_ballot_code,
     get_hash_for_device,
 )
+
+from electionguardtest.election_factory import ElectionFactory
 
 
 class TestBallotCode(TestCase):
@@ -15,14 +14,16 @@ class TestBallotCode(TestCase):
 
     def test_rotate_ballot_code(self):
         # Arrange
-        device = EncryptionDevice("Location")
+        device = ElectionFactory.get_encryption_device()
         ballot_hash_1 = ONE_MOD_Q
         ballot_hash_2 = TWO_MOD_Q
         timestamp_1 = 1000
         timestamp_2 = 2000
 
         # Act
-        device_hash = get_hash_for_device(device.uuid, device.location)
+        device_hash = get_hash_for_device(
+            device.uuid, device.session_id, device.launch_code, device.location
+        )
         ballot_code_1 = get_rotating_ballot_code(
             device_hash, timestamp_1, ballot_hash_1
         )

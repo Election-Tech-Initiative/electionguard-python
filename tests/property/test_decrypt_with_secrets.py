@@ -21,7 +21,6 @@ from electionguard.elgamal import ElGamalKeyPair, ElGamalCiphertext
 from electionguard.encrypt import (
     encrypt_contest,
     encrypt_selection,
-    EncryptionDevice,
     EncryptionMediator,
 )
 from electionguard.group import (
@@ -511,7 +510,7 @@ class TestDecryptWithSecrets(unittest.TestCase):
         )
 
         data = ballot_factory.get_simple_ballot_from_file()
-        device = EncryptionDevice("Location")
+        device = election_factory.get_encryption_device()
         operator = EncryptionMediator(internal_manifest, context, device)
 
         # Act
@@ -675,7 +674,7 @@ class TestDecryptWithSecrets(unittest.TestCase):
         )
 
         data = ballot_factory.get_simple_ballot_from_file()
-        device = EncryptionDevice("Location")
+        device = election_factory.get_encryption_device()
         operator = EncryptionMediator(internal_manifest, context, device)
 
         # Act
