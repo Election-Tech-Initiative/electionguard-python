@@ -13,7 +13,7 @@ from electionguard.ballot_compact import (
 )
 from electionguard.election import CiphertextElectionContext
 from electionguard.elgamal import elgamal_keypair_from_secret
-from electionguard.encrypt import EncryptionDevice, encrypt_ballot, generate_device_uuid
+from electionguard.encrypt import encrypt_ballot
 from electionguard.group import ElementModQ, int_to_q
 from electionguard.manifest import InternalManifest
 
@@ -38,9 +38,7 @@ class TestCompactBallot(TestCase):
             self.internal_manifest,
             self.context,
         ) = election_factory.get_fake_ciphertext_election(manifest, keypair.public_key)
-        device_hash = EncryptionDevice(
-            generate_device_uuid(), "Session Id", 12345, "Location"
-        ).get_hash()
+        device_hash = ElectionFactory.get_encryption_device().get_hash()
 
         # Arrange ballots
         self.plaintext_ballot = election_factory.get_fake_ballot(self.internal_manifest)

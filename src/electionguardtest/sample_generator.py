@@ -2,7 +2,6 @@
 from random import randint
 from shutil import rmtree
 from typing import List
-import uuid
 
 from electionguardtest.election_factory import ElectionFactory, QUORUM
 from electionguardtest.ballot_factory import BallotFactory
@@ -17,7 +16,6 @@ from electionguard.decryption_mediator import DecryptionMediator
 from electionguard.encrypt import (
     EncryptionDevice,
     EncryptionMediator,
-    generate_device_uuid,
 )
 from electionguard.publish import publish, publish_private_data, RESULTS_DIR
 from electionguard.tally import tally_ballots
@@ -43,12 +41,7 @@ class ElectionSampleDataGenerator:
         """Initialize the class"""
         self.election_factory = ElectionFactory()
         self.ballot_factory = BallotFactory()
-        self.encryption_device = EncryptionDevice(
-            generate_device_uuid(),
-            "Session",
-            12345,
-            f"polling-place-{str(uuid.uuid1())}",
-        )
+        self.encryption_device = self.election_factory.get_encryption_device()
 
     def generate(
         self,

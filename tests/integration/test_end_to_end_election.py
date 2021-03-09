@@ -32,7 +32,7 @@ from electionguard.ballot import (
     PlaintextBallot,
     SubmittedBallot,
 )
-from electionguard.encrypt import EncryptionDevice, generate_device_uuid
+from electionguard.encrypt import EncryptionDevice
 from electionguard.encrypt import EncryptionMediator
 
 # Step 3 - Cast and Spoil
@@ -249,9 +249,7 @@ class TestEndToEndElection(TestCase):
         """
 
         # Configure the Encryption Device
-        self.device = EncryptionDevice(
-            generate_device_uuid(), "Session", 12345, "polling-place-one"
-        )
+        self.device = ElectionFactory.get_encryption_device()
         self.encrypter = EncryptionMediator(
             self.internal_manifest, self.context, self.device
         )
