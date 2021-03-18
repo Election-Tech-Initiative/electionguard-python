@@ -79,7 +79,7 @@ def compute_polynomial_coordinate(
     :return: Polynomial used to share election keys
     """
 
-    assert 0 <= exponent_modifier < Q, "exponent_modifier is out of range"
+    assert 0 < exponent_modifier < Q, "exponent_modifier is out of range"
 
     computed_value = ZERO_MOD_Q
     for (i, coefficient) in enumerate(polynomial.coefficients):
