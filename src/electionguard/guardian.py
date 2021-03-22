@@ -1,9 +1,13 @@
 # pylint: disable=too-many-public-methods
-from typing import Callable, Optional, Tuple
+from dataclasses import dataclass
+from typing import Callable, List, Optional, Tuple
+from electionguard.election_polynomial import PUBLIC_COMMITMENT
+
+from electionguard.schnorr import SchnorrProof
+from electionguard.serializable import Serializable
 
 from .chaum_pedersen import ChaumPedersenProof, make_chaum_pedersen
 from .data_store import DataStore, ReadOnlyDataStore
-from .election_object_base import ElectionObjectBase
 from .elgamal import ElGamalCiphertext, elgamal_combine_public_keys
 from .group import (
     ElementModP,
@@ -21,13 +25,11 @@ from .key_ceremony import (
     AuxiliaryDecrypt,
     AuxiliaryEncrypt,
     CeremonyDetails,
-    CoefficientValidationSet,
     ElectionKeyPair,
     ElectionPartialKeyBackup,
     ElectionPartialKeyChallenge,
     ElectionPartialKeyVerification,
     ElectionPublicKey,
-    get_coefficient_validation_set,
     generate_election_key_pair,
     generate_election_partial_key_backup,
     generate_election_partial_key_challenge,
@@ -41,16 +43,41 @@ from .rsa import rsa_encrypt, rsa_decrypt
 from .types import GUARDIAN_ID
 from .utils import get_optional
 
+
+@dataclass
+class GuardianRecord(Serializable):
+    """Published record of Guardian"""
+
+    guardian_id: GUARDIAN_ID
+    sequence_order: str
+    election_public_key: ElementModP
+    election_proofs: List[SchnorrProof]
+    election_commitments: List[PUBLIC_COMMITMENT]
+
+
+def publish_guardian_record(election_public_key: ElectionPublicKey) -> GuardianRecord:
+    return GuardianRecord(
+        election_public_key.owner_id,
+        election_public_key.sequence_order,
+        election_public_key.key,
+        election_public_key.proofs,
+        election_public_key.commitments,
+    )
+
+
 # pylint: disable=too-many-instance-attributes
-class Guardian(ElectionObjectBase):
+class Guardian:
     """
     Guardian of election responsible for safeguarding information and decrypting results
     """
 
-    sequence_order: int
+    id: str
+    sequence_order: int  # Cannot be zero
     ceremony_details: CeremonyDetails
+
     _auxiliary_keys: AuxiliaryKeyPair
     _election_keys: ElectionKeyPair
+
     _backups_to_share: DataStore[GUARDIAN_ID, ElectionPartialKeyBackup]
     """
     The collection of this guardian's partial key backups that will be shared to other guardians
@@ -135,6 +162,10 @@ class Guardian(ElectionObjectBase):
         self.generate_auxiliary_key_pair()
         self.generate_election_key_pair()
 
+    def publish(self) -> GuardianRecord:
+        """Publish record of guardian with all required information"""
+        return publish_guardian_record(self._election_keys)
+
     def set_ceremony_details(self, number_of_guardians: int, quorum: int) -> None:
         """
         Set ceremony details for election
@@ -150,11 +181,8 @@ class Guardian(ElectionObjectBase):
         :return: Public set of election and auxiliary keys
         """
         return PublicKeySet(
-            self.object_id,
-            self.sequence_order,
-            self._auxiliary_keys.public_key,
-            self._election_keys.key_pair.public_key,
-            self._election_keys.proof,
+            self._election_keys.share(),
+            self._auxiliary_keys.share(),
         )
 
     def save_guardian_public_keys(self, public_key_set: PublicKeySet) -> None:
@@ -162,20 +190,8 @@ class Guardian(ElectionObjectBase):
         Save public election and auxiliary keys for another guardian
         :param public_key_set: Public set of election and auxiliary keys
         """
-        self.save_auxiliary_public_key(
-            AuxiliaryPublicKey(
-                public_key_set.owner_id,
-                public_key_set.sequence_order,
-                public_key_set.auxiliary_public_key,
-            )
-        )
-        self.save_election_public_key(
-            ElectionPublicKey(
-                public_key_set.owner_id,
-                public_key_set.election_public_key_proof,
-                public_key_set.election_public_key,
-            ),
-        )
+        self.save_auxiliary_public_key(public_key_set.auxiliary)
+        self.save_election_public_key(public_key_set.election)
 
     def all_public_keys_received(self) -> bool:
         """
@@ -205,9 +221,7 @@ class Guardian(ElectionObjectBase):
         Share auxiliary public key with another guardian
         :return: Auxiliary Public Key
         """
-        return AuxiliaryPublicKey(
-            self.object_id, self.sequence_order, self._auxiliary_keys.public_key
-        )
+        return self._auxiliary_keys.share()
 
     def save_auxiliary_public_key(self, key: AuxiliaryPublicKey) -> None:
         """
@@ -248,19 +262,7 @@ class Guardian(ElectionObjectBase):
         Share election public key with another guardian
         :return: Election public key
         """
-        return ElectionPublicKey(
-            self.object_id,
-            self._election_keys.proof,
-            self._election_keys.key_pair.public_key,
-        )
-
-    def share_coefficient_validation_set(self) -> CoefficientValidationSet:
-        """
-        Share coefficient validation set to be used for validating the coefficients post election
-        """
-        return get_coefficient_validation_set(
-            self.object_id, self._election_keys.polynomial
-        )
+        return self._election_keys.share()
 
     def save_election_public_key(self, key: ElectionPublicKey) -> None:
         """
@@ -297,16 +299,16 @@ class Guardian(ElectionObjectBase):
         """
         if not self.all_auxiliary_public_keys_received():
             log_warning(
-                f"guardian; {self.object_id} could not generate election partial key backups: missing auxiliary keys"
+                f"guardian; {self.id} could not generate election partial key backups: missing auxiliary keys"
             )
             return False
         for auxiliary_key in self._guardian_auxiliary_public_keys.values():
             backup = generate_election_partial_key_backup(
-                self.object_id, self._election_keys.polynomial, auxiliary_key, encrypt
+                self.id, self._election_keys.polynomial, auxiliary_key, encrypt
             )
             if backup is None:
                 log_warning(
-                    f"guardian; {self.object_id} could not generate election partial key backups: failed to encrypt"
+                    f"guardian; {self.id} could not generate election partial key backups: failed to encrypt"
                 )
                 return False
             self._backups_to_share.set(auxiliary_key.owner_id, backup)
@@ -359,7 +361,7 @@ class Guardian(ElectionObjectBase):
         if backup is None:
             return None
         return verify_election_partial_key_backup(
-            self.object_id, backup, self._auxiliary_keys, decrypt
+            self.id, backup, self._auxiliary_keys, decrypt
         )
 
     def publish_election_backup_challenge(
@@ -385,7 +387,7 @@ class Guardian(ElectionObjectBase):
         :param challenge: Election partial key challenge
         :return: Election partial key verification
         """
-        return verify_election_partial_key_challenge(self.object_id, challenge)
+        return verify_election_partial_key_challenge(self.id, challenge)
 
     def save_election_partial_key_verification(
         self, verification: ElectionPartialKeyVerification
@@ -492,7 +494,7 @@ class Guardian(ElectionObjectBase):
         backup = self._guardian_election_partial_key_backups.get(missing_guardian_id)
         if backup is None:
             log_warning(
-                f"compensate decrypt guardian {self.object_id} missing backup for {missing_guardian_id}"
+                f"compensate decrypt guardian {self.id} missing backup for {missing_guardian_id}"
             )
             return None
 
@@ -501,7 +503,7 @@ class Guardian(ElectionObjectBase):
         )
         if decrypted_value is None:
             log_warning(
-                f"compensate decrypt guardian {self.object_id} failed decryption for {missing_guardian_id}"
+                f"compensate decrypt guardian {self.id} failed decryption for {missing_guardian_id}"
             )
             return None
         partial_secret_key = get_optional(hex_to_q(decrypted_value))
@@ -529,7 +531,7 @@ class Guardian(ElectionObjectBase):
         backup = self._guardian_election_partial_key_backups.get(missing_guardian_id)
         if backup is None:
             log_warning(
-                f"compensate decrypt guardian {self.object_id} missing backup for {missing_guardian_id}"
+                f"compensate decrypt guardian {self.id} missing backup for {missing_guardian_id}"
             )
             return None
 

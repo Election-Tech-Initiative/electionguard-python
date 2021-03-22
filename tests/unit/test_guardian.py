@@ -66,11 +66,14 @@ class TestGuardian(TestCase):
 
         # Assert
         self.assertIsNotNone(public_keys)
-        self.assertIsNotNone(public_keys.auxiliary_public_key)
-        self.assertIsNotNone(public_keys.election_public_key)
-        self.assertEqual(public_keys.owner_id, SENDER_GUARDIAN_ID)
-        self.assertEqual(public_keys.sequence_order, SENDER_SEQUENCE_ORDER)
-        self.assertTrue(public_keys.election_public_key_proof.is_valid())
+        self.assertIsNotNone(public_keys.auxiliary)
+        self.assertIsNotNone(public_keys.election)
+        self.assertEqual(public_keys.election.owner_id, SENDER_GUARDIAN_ID)
+        self.assertEqual(public_keys.auxiliary.owner_id, SENDER_GUARDIAN_ID)
+        self.assertEqual(public_keys.election.sequence_order, SENDER_SEQUENCE_ORDER)
+        self.assertEqual(public_keys.auxiliary.sequence_order, SENDER_SEQUENCE_ORDER)
+        for proof in public_keys.election.coefficient_proofs:
+            self.assertTrue(proof.is_valid())
 
     def test_save_guardian_public_keys(self):
         # Arrange
@@ -199,7 +202,8 @@ class TestGuardian(TestCase):
         self.assertIsNotNone(public_key)
         self.assertIsNotNone(public_key.key)
         self.assertEqual(public_key.owner_id, SENDER_GUARDIAN_ID)
-        self.assertTrue(public_key.proof.is_valid())
+        for proof in public_key.coefficient_proofs:
+            self.assertTrue(proof.is_valid())
 
     def test_save_election_public_key(self):
         # Arrange
