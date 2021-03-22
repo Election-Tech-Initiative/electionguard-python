@@ -1,10 +1,7 @@
 from unittest import TestCase
 
-from electionguard.data_store import DataStore
-from electionguard.group import ONE_MOD_Q, TWO_MOD_Q
 from electionguard.key_ceremony import (
     AuxiliaryPublicKey,
-    ElectionPublicKey,
     generate_election_key_pair,
     generate_rsa_auxiliary_key_pair,
     generate_election_partial_key_backup,
@@ -13,7 +10,6 @@ from electionguard.key_ceremony import (
     verify_election_partial_key_challenge,
     combine_election_public_keys,
 )
-from electionguard.types import GUARDIAN_ID
 
 SENDER_GUARDIAN_ID = "Test Guardian 1"
 RECIPIENT_GUARDIAN_ID = "Test Guardian 2"
@@ -49,7 +45,10 @@ class TestKeyCeremony(TestCase):
         self.assertIsNotNone(election_key_pair.key_pair.public_key)
         self.assertIsNotNone(election_key_pair.key_pair.secret_key)
         self.assertIsNotNone(election_key_pair.polynomial)
-        self.assertTrue(election_key_pair.proof.is_valid())
+        self.assertEqual(
+            len(election_key_pair.polynomial.coefficient_commitments), QUORUM
+        )
+        self.assertEqual(len(election_key_pair.polynomial.coefficient_proofs), QUORUM)
         for proof in election_key_pair.polynomial.coefficient_proofs:
             self.assertTrue(proof.is_valid())
 
@@ -76,10 +75,6 @@ class TestKeyCeremony(TestCase):
         self.assertEqual(backup.designated_id, RECIPIENT_GUARDIAN_ID)
         self.assertEqual(backup.designated_sequence_order, RECIPIENT_SEQUENCE_ORDER)
         self.assertIsNotNone(backup.encrypted_value)
-        self.assertEqual(len(backup.coefficient_commitments), QUORUM)
-        self.assertEqual(len(backup.coefficient_proofs), QUORUM)
-        for proof in backup.coefficient_proofs:
-            self.assertTrue(proof.is_valid())
 
     def test_verify_election_partial_key_backup(self):
         # Arrange
@@ -176,31 +171,15 @@ class TestKeyCeremony(TestCase):
 
     def test_combine_election_public_keys(self):
         # Arrange
-        random_keypair = generate_election_key_pair(QUORUM)
-        random_keypair_two = generate_election_key_pair(QUORUM)
-        public_keys = DataStore[GUARDIAN_ID, ElectionPublicKey]()
-        public_keys.set(
-            RECIPIENT_GUARDIAN_ID,
-            ElectionPublicKey(
-                RECIPIENT_GUARDIAN_ID,
-                random_keypair.proof,
-                random_keypair.key_pair.public_key,
-            ),
+        random_keypair = generate_election_key_pair(
+            RECIPIENT_GUARDIAN_ID, SENDER_SEQUENCE_ORDER, QUORUM
         )
-        public_keys.set(
-            SENDER_GUARDIAN_ID,
-            ElectionPublicKey(
-                SENDER_GUARDIAN_ID,
-                random_keypair_two.proof,
-                random_keypair_two.key_pair.public_key,
-            ),
+        random_keypair_two = generate_election_key_pair(
+            SENDER_GUARDIAN_ID, RECIPIENT_SEQUENCE_ORDER, QUORUM
         )
 
         # Act
-        joint_key = combine_election_public_keys(
-            {SENDER_GUARDIAN_ID: ONE_MOD_Q, RECIPIENT_GUARDIAN_ID: TWO_MOD_Q},
-            public_keys,
-        )
+        joint_key = combine_election_public_keys([random_keypair, random_keypair_two])
 
         # Assert
         self.assertIsNotNone(joint_key)

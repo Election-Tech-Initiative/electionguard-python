@@ -1,14 +1,13 @@
-from dataclasses import dataclass
-from typing import Dict, List, Optional, NamedTuple
+from typing import List, Optional, NamedTuple
 
 from .auxiliary import (
-    AuxiliaryKeyPair,
     AuxiliaryDecrypt,
     AuxiliaryEncrypt,
+    AuxiliaryKeyPair,
     AuxiliaryPublicKey,
 )
-from .data_store import DataStore
 from .election_polynomial import (
+    PUBLIC_COMMITMENT,
     compute_polynomial_coordinate,
     ElectionPolynomial,
     generate_polynomial,
@@ -19,13 +18,45 @@ from .elgamal import (
     elgamal_combine_public_keys,
     elgamal_keypair_random,
 )
-from .group import hex_to_q, rand_q, ElementModP, ElementModQ
+from .group import hex_to_q, ElementModP, ElementModQ
 from .hash import hash_elems
 from .rsa import rsa_keypair, rsa_decrypt, rsa_encrypt
-from .schnorr import SchnorrProof, make_schnorr_proof
-from .serializable import Serializable
+from .schnorr import SchnorrProof
 from .types import GUARDIAN_ID
 from .utils import get_optional
+
+ELECTION_PUBLIC_KEY = ElementModP
+ELECTION_JOINT_PUBLIC_KEY = ElementModP
+VERIFIER_ID = str
+
+
+class ElectionPublicKey(NamedTuple):
+    """A tuple of election public key and owner information"""
+
+    owner_id: GUARDIAN_ID
+    sequence_order: int
+    key: ELECTION_PUBLIC_KEY
+    coefficient_commitments: List[PUBLIC_COMMITMENT]
+    coefficient_proofs: List[SchnorrProof]
+
+
+class ElectionKeyPair(NamedTuple):
+    """A tuple of election key pair, proof and polynomial"""
+
+    owner_id: GUARDIAN_ID
+    sequence_order: int
+    key_pair: ElGamalKeyPair
+    polynomial: ElectionPolynomial
+
+    def share(self) -> ElectionPublicKey:
+        """Share the election public key and associated data"""
+        return ElectionPublicKey(
+            self.owner_id,
+            self.sequence_order,
+            self.key_pair.public_key,
+            self.polynomial.coefficient_commitments,
+            self.polynomial.coefficient_proofs,
+        )
 
 
 class ElectionJointKey(NamedTuple):
@@ -33,7 +64,7 @@ class ElectionJointKey(NamedTuple):
     The Election joint key
     """
 
-    joint_public_key: ElementModP
+    joint_public_key: ELECTION_JOINT_PUBLIC_KEY
     """
     The product of the guardian public keys
     K = ∏ ni=1 Ki mod p.
@@ -42,6 +73,30 @@ class ElectionJointKey(NamedTuple):
     """
     The hash of the commitments that the guardians make to each other
     H = H(K 1,0 , K 2,0 ... , K n,0 )
+    """
+
+
+class ElectionPartialKeyBackup(NamedTuple):
+    """Election partial key backup used for key sharing"""
+
+    owner_id: GUARDIAN_ID
+    """
+    The Id of the guardian that generated this backup
+    """
+
+    designated_id: GUARDIAN_ID
+    """
+    The Id of the guardian to receive this backup
+    """
+
+    designated_sequence_order: int
+    """
+    The sequence order of the designated guardian
+    """
+
+    encrypted_value: str
+    """
+    The encrypted coordinate corresponding to a secret election polynomial
     """
 
 
@@ -54,78 +109,11 @@ class CeremonyDetails(NamedTuple):
     quorum: int
 
 
-class ElectionKeyPair(NamedTuple):
-    """A tuple of election key pair, proof and polynomial"""
-
-    key_pair: ElGamalKeyPair
-    proof: SchnorrProof
-    polynomial: ElectionPolynomial
-
-
-class ElectionPublicKey(NamedTuple):
-    """A tuple of election public key and owner information"""
-
-    owner_id: GUARDIAN_ID
-    proof: SchnorrProof
-    key: ElementModP
-
-
 class PublicKeySet(NamedTuple):
-    """Public key set of auxiliary and election keys and owner information"""
+    """A convenience set of public auxiliary and election keys"""
 
-    owner_id: GUARDIAN_ID
-    sequence_order: int
-    auxiliary_public_key: str
-    election_public_key: ElementModP
-    election_public_key_proof: SchnorrProof
-
-
-class GuardianPair(NamedTuple):
-    """Pair of guardians involved in sharing"""
-
-    owner_id: GUARDIAN_ID
-    designated_id: GUARDIAN_ID
-
-
-class ElectionPartialKeyBackup(NamedTuple):
-    """Election partial key backup used for key sharing"""
-
-    owner_id: GUARDIAN_ID
-    """
-    The Id of the guardian that generated this backup
-    """
-    designated_id: GUARDIAN_ID
-    """
-    The Id of the guardian to receive this backup
-    """
-    designated_sequence_order: int
-    """
-    The sequence order of the designated guardian
-    """
-
-    encrypted_value: str
-    """
-    The encrypted coordinate corresponding to a secret election polynomial
-    """
-
-    coefficient_commitments: List[ElementModP]
-    """
-    The public keys `K_ij`generated from the election polynomial coefficients
-    """
-
-    coefficient_proofs: List[SchnorrProof]
-    """
-    the proofs of posession of the private keys for the election polynomial secret coefficients
-    """
-
-
-@dataclass
-class CoefficientValidationSet(Serializable):
-    """Set of validation pieces for election key coefficients"""
-
-    owner_id: GUARDIAN_ID
-    coefficient_commitments: List[ElementModP]
-    coefficient_proofs: List[SchnorrProof]
+    election: ElectionPublicKey
+    auxiliary: AuxiliaryPublicKey
 
 
 class ElectionPartialKeyVerification(NamedTuple):
@@ -143,12 +131,9 @@ class ElectionPartialKeyChallenge(NamedTuple):
     owner_id: GUARDIAN_ID
     designated_id: GUARDIAN_ID
     designated_sequence_order: int
-    """
-    The sequence order of the designated guardian
-    """
 
     value: ElementModQ
-    coefficient_commitments: List[ElementModP]
+    coefficient_commitments: List[PUBLIC_COMMITMENT]
     coefficient_proofs: List[SchnorrProof]
 
 
@@ -174,7 +159,7 @@ def generate_rsa_auxiliary_key_pair() -> AuxiliaryKeyPair:
 
 
 def generate_election_key_pair(
-    quorum: int, nonce: ElementModQ = None
+    guardian_id: str, sequence_order: int, quorum: int, nonce: ElementModQ = None
 ) -> ElectionKeyPair:
     """
     Generate election key pair, proof, and polynomial
@@ -185,14 +170,13 @@ def generate_election_key_pair(
     key_pair = ElGamalKeyPair(
         polynomial.coefficients[0], polynomial.coefficient_commitments[0]
     )
-    proof = make_schnorr_proof(key_pair, rand_q())
-    return ElectionKeyPair(key_pair, proof, polynomial)
+    return ElectionKeyPair(guardian_id, sequence_order, key_pair, polynomial)
 
 
 def generate_election_partial_key_backup(
     owner_id: GUARDIAN_ID,
     polynomial: ElectionPolynomial,
-    auxiliary_public_key: AuxiliaryPublicKey,
+    designated_auxiliary_public_key: AuxiliaryPublicKey,
     encrypt: AuxiliaryEncrypt = rsa_encrypt,
 ) -> Optional[ElectionPartialKeyBackup]:
     """
@@ -204,59 +188,38 @@ def generate_election_partial_key_backup(
     :return: Election partial key backup
     """
     value = compute_polynomial_coordinate(
-        auxiliary_public_key.sequence_order, polynomial
+        designated_auxiliary_public_key.sequence_order, polynomial
     )
-    encrypted_value = encrypt(value.to_hex(), auxiliary_public_key.key)
+    encrypted_value = encrypt(value.to_hex(), designated_auxiliary_public_key.key)
     if encrypted_value is None:
         return None
     return ElectionPartialKeyBackup(
         owner_id,
-        auxiliary_public_key.owner_id,
-        auxiliary_public_key.sequence_order,
+        designated_auxiliary_public_key.owner_id,
+        designated_auxiliary_public_key.sequence_order,
         encrypted_value,
-        polynomial.coefficient_commitments,
-        polynomial.coefficient_proofs,
-    )
-
-
-def get_coefficient_validation_set(
-    owner_id: GUARDIAN_ID,
-    polynomial: ElectionPolynomial,
-) -> CoefficientValidationSet:
-    """Get coefficient validation set from polynomial"""
-    return CoefficientValidationSet(
-        owner_id,
-        polynomial.coefficient_commitments,
-        polynomial.coefficient_proofs,
-    )
-
-
-def get_coefficient_validation_set_from_backup(
-    backup: ElectionPartialKeyBackup,
-) -> CoefficientValidationSet:
-    """Get coefficient validation set from a election partial key backup"""
-    return CoefficientValidationSet(
-        backup.owner_id,
-        backup.coefficient_commitments,
-        backup.coefficient_proofs,
     )
 
 
 def verify_election_partial_key_backup(
     verifier_id: GUARDIAN_ID,
     backup: ElectionPartialKeyBackup,
-    auxiliary_key_pair: AuxiliaryKeyPair,
+    election_public_key: ElectionPublicKey,
+    verifier_auxiliary_key_pair: AuxiliaryKeyPair,
     decrypt: AuxiliaryDecrypt = rsa_decrypt,
 ) -> ElectionPartialKeyVerification:
     """
     Verify election partial key backup contain point on owners polynomial
     :param verifier_id: Verifier of the partial key backup
-    :param backup: Election partial key backup
+    :param backup: Other guardian's election partial key backup
+    :param election_public_key: Other guardian's election public key
     :param auxiliary_key_pair: Auxiliary key pair
     :param decrypt: Decryption function using auxiliary key
     """
 
-    decrypted_value = decrypt(backup.encrypted_value, auxiliary_key_pair.secret_key)
+    decrypted_value = decrypt(
+        backup.encrypted_value, verifier_auxiliary_key_pair.secret_key
+    )
     if decrypted_value is None:
         return ElectionPartialKeyVerification(
             backup.owner_id, backup.designated_id, verifier_id, False
@@ -267,7 +230,7 @@ def verify_election_partial_key_backup(
         backup.designated_id,
         verifier_id,
         verify_polynomial_coordinate(
-            value, backup.designated_sequence_order, backup.coefficient_commitments
+            value, backup.designated_sequence_order, election_public_key.commitments
         ),
     )
 
@@ -287,13 +250,11 @@ def generate_election_partial_key_challenge(
         backup.designated_id,
         backup.designated_sequence_order,
         compute_polynomial_coordinate(backup.designated_sequence_order, polynomial),
-        backup.coefficient_commitments,
-        backup.coefficient_proofs,
     )
 
 
 def verify_election_partial_key_challenge(
-    verifier_id: GUARDIAN_ID, challenge: ElectionPartialKeyChallenge
+    verifier_id: VERIFIER_ID, challenge: ElectionPartialKeyChallenge
 ) -> ElectionPartialKeyVerification:
     """
     Verify a challenge to a previous verification of a partial key backup
@@ -313,35 +274,22 @@ def verify_election_partial_key_challenge(
     )
 
 
-def hash_coefficient_commitments(
-    commitments: List[ElementModP],
-) -> Optional[ElementModQ]:
-    """
-    Hashes the commitments together
-    :param commitments: the flattened list of commitments of all guardians in sequence order
-    :return: H(K 1,0 , K 2,0 ... , K n,0 )
-    """
-    return hash_elems(commitments)
-
-
 def combine_election_public_keys(
-    election_commitments: Dict[GUARDIAN_ID, List[ElementModP]],
-    election_public_keys: DataStore[GUARDIAN_ID, ElectionPublicKey],
+    election_public_keys: List[ElectionPublicKey],
 ) -> ElectionJointKey:
     """
     Creates a joint election key from the public keys of all guardians
-    :param election_commitments: a dictionary of commitments keyed by guardian object_id
-    :param election_public_keys: a data store of public keys keyed by guardian object_id
+    :param election_public_keys: all public keys of the guardians
     :return: ElectionJointKey for election
     """
-    public_keys = map(lambda public_key: public_key.key, election_public_keys.values())
+    public_keys = [set.key for set in election_public_keys]
     commitments = [
         commitment
-        for commitments in election_commitments.values()
-        for commitment in commitments
+        for set in election_public_keys
+        for commitment in set.coefficient_commitments
     ]
 
     return ElectionJointKey(
         joint_public_key=elgamal_combine_public_keys(public_keys),
-        commitment_hash=get_optional(hash_coefficient_commitments(commitments)),
+        commitment_hash=get_optional(hash_elems(commitments)),
     )
