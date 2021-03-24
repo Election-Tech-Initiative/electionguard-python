@@ -3,7 +3,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, List, Iterable, Optional, Protocol, runtime_checkable, Sequence
 
-from .ballot_code import get_rotating_ballot_code
+from .ballot_code import get_ballot_code
 from .chaum_pedersen import (
     ConstantChaumPedersenProof,
     DisjunctiveChaumPedersenProof,
