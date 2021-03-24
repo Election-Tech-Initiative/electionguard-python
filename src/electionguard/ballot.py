@@ -666,7 +666,7 @@ class CiphertextBallot(ElectionObjectBase, CryptoHashCheckable):
     manifest_hash: ElementModQ
     """Hash of the election manifest"""
 
-    previous_code: ElementModQ
+    code_seed: ElementModQ
     """Previous ballot code or seed"""
 
     contests: List[CiphertextBallotContest]
@@ -690,7 +690,7 @@ class CiphertextBallot(ElectionObjectBase, CryptoHashCheckable):
             and self.object_id == other.object_id
             and self.style_id == other.style_id
             and self.manifest_hash == other.manifest_hash
-            and self.previous_code == other.previous_code
+            and self.code_seed == other.code_seed
             and _list_eq(self.contests, other.contests)
             and self.code == other.code
             and self.timestamp == other.timestamp
@@ -864,7 +864,7 @@ def make_ciphertext_ballot(
     :param crypto_base_hash: Hash of the cryptographic election context
     :param contests: List of contests for this ballot
     :param timestamp: Timestamp at which the ballot encryption is generated in tick
-    :param previous_code: Previous ballot code or seed
+    :param code_seed: Previous ballot code or seed
     :param nonce: optional nonce used as part of the encryption process
     """
 
@@ -921,7 +921,7 @@ def make_ciphertext_submitted_ballot(
     :param object_id: the object_id of this specific ballot
     :param style_id: The `object_id` of the `BallotStyle` in the `Election` Manifest
     :param manifest_hash: Hash of the election manifest
-    :param previous_code: Previous ballot code or seed
+    :param code_seed: Previous ballot code or seed
     :param contests: List of contests for this ballot
     :param timestamp: Timestamp at which the ballot encryption is generated in tick
     :param state: ballot box state
@@ -974,7 +974,7 @@ def from_ciphertext_ballot(
         ballot.object_id,
         ballot.style_id,
         ballot.manifest_hash,
-        ballot.previous_code,
+        ballot.code_seed,
         ballot.contests,
         ballot.code,
         ballot.timestamp,

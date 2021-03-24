@@ -14,7 +14,7 @@ def get_hash_for_device(
     return hash_elems(uuid, session_id, launch_code, location)
 
 
-def get_rotating_ballot_code(
+def get_ballot_code(
     prev_code: ElementModQ, timestamp: int, ballot_hash: ElementModQ
 ) -> ElementModQ:
     """
