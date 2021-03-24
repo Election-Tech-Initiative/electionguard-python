@@ -877,7 +877,7 @@ def make_ciphertext_ballot(
     if previous_ballot_code is None:
         previous_ballot_code = manifest_hash
     if ballot_code is None:
-        ballot_code = get_rotating_ballot_code(
+        ballot_code = get_ballot_code(
             previous_ballot_code, timestamp, contest_hash
         )
 
@@ -937,7 +937,7 @@ def make_ciphertext_submitted_ballot(
     if previous_ballot_code is None:
         previous_ballot_code = manifest_hash
     if ballot_code is None:
-        ballot_code = get_rotating_ballot_code(
+        ballot_code = get_ballot_code(
             previous_ballot_code, timestamp, contest_hash
         )
 
