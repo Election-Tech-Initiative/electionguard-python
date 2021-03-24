@@ -2,7 +2,7 @@ from unittest import TestCase
 
 from electionguard.group import ZERO_MOD_Q, ONE_MOD_Q, TWO_MOD_Q
 from electionguard.ballot_code import (
-    get_rotating_ballot_code,
+    get_ballot_code,
     get_hash_for_device,
 )
 
