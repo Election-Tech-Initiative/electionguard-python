@@ -877,9 +877,7 @@ def make_ciphertext_ballot(
     if previous_ballot_code is None:
         previous_ballot_code = manifest_hash
     if ballot_code is None:
-        ballot_code = get_ballot_code(
-            previous_ballot_code, timestamp, contest_hash
-        )
+        ballot_code = get_ballot_code(previous_ballot_code, timestamp, contest_hash)
 
     return CiphertextBallot(
         object_id,
@@ -937,9 +935,7 @@ def make_ciphertext_submitted_ballot(
     if previous_ballot_code is None:
         previous_ballot_code = manifest_hash
     if ballot_code is None:
-        ballot_code = get_ballot_code(
-            previous_ballot_code, timestamp, contest_hash
-        )
+        ballot_code = get_ballot_code(previous_ballot_code, timestamp, contest_hash)
 
     # copy the contests and selections, removing all nonces
     new_contests: List[CiphertextBallotContest] = []

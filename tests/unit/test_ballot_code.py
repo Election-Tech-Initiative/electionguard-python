@@ -24,12 +24,8 @@ class TestBallotCode(TestCase):
         device_hash = get_hash_for_device(
             device.uuid, device.session_id, device.launch_code, device.location
         )
-        ballot_code_1 = get_ballot_code(
-            device_hash, timestamp_1, ballot_hash_1
-        )
-        ballot_code_2 = get_ballot_code(
-            device_hash, timestamp_2, ballot_hash_2
-        )
+        ballot_code_1 = get_ballot_code(device_hash, timestamp_1, ballot_hash_1)
+        ballot_code_2 = get_ballot_code(device_hash, timestamp_2, ballot_hash_2)
 
         # Assert
         self.assertIsNotNone(device_hash)
