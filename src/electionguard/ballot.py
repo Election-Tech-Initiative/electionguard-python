@@ -667,7 +667,7 @@ class CiphertextBallot(ElectionObjectBase, CryptoHashCheckable):
     """Hash of the election manifest"""
 
     code_seed: ElementModQ
-    """Previous ballot code or seed"""
+    """Seed for ballot code"""
 
     contests: List[CiphertextBallotContest]
     """List of contests for this ballot"""
@@ -864,7 +864,7 @@ def make_ciphertext_ballot(
     :param crypto_base_hash: Hash of the cryptographic election context
     :param contests: List of contests for this ballot
     :param timestamp: Timestamp at which the ballot encryption is generated in tick
-    :param code_seed: Previous ballot code or seed
+    :param code_seed: Seed for ballot code
     :param nonce: optional nonce used as part of the encryption process
     """
 
