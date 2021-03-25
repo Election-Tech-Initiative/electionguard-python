@@ -1,5 +1,6 @@
 from datetime import datetime
 import os
+import uuid
 from dataclasses import dataclass
 from typing import TypeVar, Callable, Optional, Tuple, List
 
@@ -14,7 +15,7 @@ from hypothesis.strategies import (
 from electionguard.ballot import PlaintextBallot
 from electionguard.election import CiphertextElectionContext, ElectionConstants
 from electionguard.election_builder import ElectionBuilder
-from electionguard.encrypt import contest_from
+from electionguard.encrypt import EncryptionDevice, contest_from, generate_device_uuid
 from electionguard.group import ElementModP, TWO_MOD_Q
 from electionguard.guardian import Guardian
 from electionguard.key_ceremony import CoefficientValidationSet
@@ -256,6 +257,15 @@ class ElectionFactory:
             manifest = Manifest.from_json(result)
 
         return manifest
+
+    @staticmethod
+    def get_encryption_device() -> EncryptionDevice:
+        return EncryptionDevice(
+            generate_device_uuid(),
+            "Session",
+            12345,
+            f"polling-place-{str(uuid.uuid1())}",
+        )
 
 
 @composite

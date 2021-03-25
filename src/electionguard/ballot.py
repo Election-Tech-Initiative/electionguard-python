@@ -171,32 +171,32 @@ class CiphertextBallotSelection(
 
     def is_valid_encryption(
         self,
-        seed_hash: ElementModQ,
+        encryption_seed: ElementModQ,
         elgamal_public_key: ElementModP,
         crypto_extended_base_hash: ElementModQ,
     ) -> bool:
         """
-        Given an encrypted BallotSelection, validates the encryption state against a specific seed hash and public key.
+        Given an encrypted BallotSelection, validates the encryption state against a specific seed and public key.
         Calling this function expects that the object is in a well-formed encrypted state
         with the elgamal encrypted `message` field populated along with
         the DisjunctiveChaumPedersenProof`proof` populated.
         the ElementModQ `description_hash` and the ElementModQ `crypto_hash` are also checked.
 
-        :param seed_hash: the hash of the SelectionDescription, or
+        :param encryption_seed: the hash of the SelectionDescription, or
                           whatever `ElementModQ` was used to populate the `description_hash` field.
         :param elgamal_public_key: The election public key
         """
 
-        if seed_hash != self.description_hash:
+        if encryption_seed != self.description_hash:
             log_warning(
                 (
-                    f"mismatching selection hash: {self.object_id} expected({str(seed_hash)}), "
+                    f"mismatching selection hash: {self.object_id} expected({str(encryption_seed)}), "
                     f"actual({str(self.description_hash)})"
                 )
             )
             return False
 
-        recalculated_crypto_hash = self.crypto_hash_with(seed_hash)
+        recalculated_crypto_hash = self.crypto_hash_with(encryption_seed)
         if self.crypto_hash != recalculated_crypto_hash:
             log_warning(
                 (
@@ -214,26 +214,26 @@ class CiphertextBallotSelection(
             self.ciphertext, elgamal_public_key, crypto_extended_base_hash
         )
 
-    def crypto_hash_with(self, seed_hash: ElementModQ) -> ElementModQ:
+    def crypto_hash_with(self, encryption_seed: ElementModQ) -> ElementModQ:
         """
         Given an encrypted BallotSelection, generates a hash, suitable for rolling up
         into a hash for an entire ballot / ballot code. Of note, this particular hash examines
-        the `seed_hash` and `message`, but not the proof.
+        the `encryption_seed` and `message`, but not the proof.
         This is deliberate, allowing for the possibility of ElectionGuard variants running on
         much more limited hardware, wherein the Disjunctive Chaum-Pedersen proofs might be computed
         later on.
 
-        In most cases the seed_hash should match the `description_hash`
+        In most cases the encryption_seed should match the `description_hash`
         """
         return _ciphertext_ballot_selection_crypto_hash_with(
-            self.object_id, seed_hash, self.ciphertext
+            self.object_id, encryption_seed, self.ciphertext
         )
 
 
 def _ciphertext_ballot_selection_crypto_hash_with(
-    object_id: str, seed_hash: ElementModQ, ciphertext: ElGamalCiphertext
+    object_id: str, encryption_seed: ElementModQ, ciphertext: ElGamalCiphertext
 ) -> ElementModQ:
-    return hash_elems(object_id, seed_hash, ciphertext.crypto_hash())
+    return hash_elems(object_id, encryption_seed, ciphertext.crypto_hash())
 
 
 def make_ciphertext_ballot_selection(
@@ -440,19 +440,19 @@ class CiphertextBallotContest(ElectionObjectBase, CryptoHashCheckable):
             self.object_id, self.ballot_selections
         )
 
-    def crypto_hash_with(self, seed_hash: ElementModQ) -> ElementModQ:
+    def crypto_hash_with(self, encryption_seed: ElementModQ) -> ElementModQ:
         """
         Given an encrypted BallotContest, generates a hash, suitable for rolling up
         into a hash for an entire ballot / ballot code. Of note, this particular hash examines
-        the `seed_hash` and `ballot_selections`, but not the proof.
+        the `encryption_seed` and `ballot_selections`, but not the proof.
         This is deliberate, allowing for the possibility of ElectionGuard variants running on
         much more limited hardware, wherein the Disjunctive Chaum-Pedersen proofs might be computed
         later on.
 
-        In most cases, the seed_hash is the description_hash
+        In most cases, the encryption_seed is the description_hash
         """
         return _ciphertext_ballot_context_crypto_hash(
-            self.object_id, self.ballot_selections, seed_hash
+            self.object_id, self.ballot_selections, encryption_seed
         )
 
     def elgamal_accumulate(self) -> ElGamalCiphertext:
@@ -464,30 +464,30 @@ class CiphertextBallotContest(ElectionObjectBase, CryptoHashCheckable):
 
     def is_valid_encryption(
         self,
-        seed_hash: ElementModQ,
+        encryption_seed: ElementModQ,
         elgamal_public_key: ElementModP,
         crypto_extended_base_hash: ElementModQ,
     ) -> bool:
         """
-        Given an encrypted BallotContest, validates the encryption state against a specific seed hash and public key
+        Given an encrypted BallotContest, validates the encryption state against a specific seed and public key
         by verifying the accumulated sum of selections match the proof.
         Calling this function expects that the object is in a well-formed encrypted state
         with the `ballot_selections` populated with valid encrypted ballot selections,
         the ElementModQ `description_hash`, the ElementModQ `crypto_hash`,
         and the ConstantChaumPedersenProof all populated.
-        Specifically, the seed hash in this context is the hash of the ContestDescription,
+        Specifically, the seed in this context is the hash of the ContestDescription,
         or whatever `ElementModQ` was used to populate the `description_hash` field.
         """
-        if seed_hash != self.description_hash:
+        if encryption_seed != self.description_hash:
             log_warning(
                 (
-                    f"mismatching contest hash: {self.object_id} expected({str(seed_hash)}), "
+                    f"mismatching contest hash: {self.object_id} expected({str(encryption_seed)}), "
                     f"actual({str(self.description_hash)})"
                 )
             )
             return False
 
-        recalculated_crypto_hash = self.crypto_hash_with(seed_hash)
+        recalculated_crypto_hash = self.crypto_hash_with(encryption_seed)
         if self.crypto_hash != recalculated_crypto_hash:
             log_warning(
                 (
@@ -529,7 +529,7 @@ def _ciphertext_ballot_elgamal_accumulate(
 def _ciphertext_ballot_context_crypto_hash(
     object_id: str,
     ballot_selections: List[CiphertextBallotSelection],
-    seed_hash: ElementModQ,
+    encryption_seed: ElementModQ,
 ) -> ElementModQ:
     if len(ballot_selections) == 0:
         log_warning(
@@ -539,7 +539,7 @@ def _ciphertext_ballot_context_crypto_hash(
 
     selection_hashes = [selection.crypto_hash for selection in ballot_selections]
 
-    return hash_elems(object_id, seed_hash, *selection_hashes)
+    return hash_elems(object_id, encryption_seed, *selection_hashes)
 
 
 def _ciphertext_ballot_contest_aggregate_nonce(
@@ -725,7 +725,7 @@ class CiphertextBallot(ElectionObjectBase, CryptoHashCheckable):
 
         return self.nonce_seed(self.manifest_hash, self.object_id, self.nonce)
 
-    def crypto_hash_with(self, seed_hash: ElementModQ) -> ElementModQ:
+    def crypto_hash_with(self, encryption_seed: ElementModQ) -> ElementModQ:
         """
         Given an encrypted Ballot, generates a hash, suitable for rolling up
         into a hash for an entire ballot / ballot code. Of note, this particular hash examines
@@ -741,34 +741,34 @@ class CiphertextBallot(ElectionObjectBase, CryptoHashCheckable):
             return ZERO_MOD_Q
 
         contest_hashes = [contest.crypto_hash for contest in self.contests]
-        return hash_elems(self.object_id, seed_hash, *contest_hashes)
+        return hash_elems(self.object_id, encryption_seed, *contest_hashes)
 
     def is_valid_encryption(
         self,
-        seed_hash: ElementModQ,
+        encryption_seed: ElementModQ,
         elgamal_public_key: ElementModP,
         crypto_extended_base_hash: ElementModQ,
     ) -> bool:
         """
-        Given an encrypted Ballot, validates the encryption state against a specific seed hash and public key
+        Given an encrypted Ballot, validates the encryption state against a specific seed and public key
         by verifying the states of this ballot's children (BallotContest's and BallotSelection's).
         Calling this function expects that the object is in a well-formed encrypted state
         with the `contests` populated with valid encrypted ballot selections,
         and the ElementModQ `manifest_hash` also populated.
-        Specifically, the seed hash in this context is the hash of the Election Manifest,
+        Specifically, the seed in this context is the hash of the Election Manifest,
         or whatever `ElementModQ` was used to populate the `manifest_hash` field.
         """
 
-        if seed_hash != self.manifest_hash:
+        if encryption_seed != self.manifest_hash:
             log_warning(
                 (
-                    f"mismatching ballot hash: {self.object_id} expected({str(seed_hash)}), "
+                    f"mismatching ballot hash: {self.object_id} expected({str(encryption_seed)}), "
                     f"actual({str(self.manifest_hash)})"
                 )
             )
             return False
 
-        recalculated_crypto_hash = self.crypto_hash_with(seed_hash)
+        recalculated_crypto_hash = self.crypto_hash_with(encryption_seed)
         if self.crypto_hash != recalculated_crypto_hash:
             log_warning(
                 (
@@ -871,8 +871,7 @@ def make_ciphertext_ballot(
     if len(contests) == 0:
         log_warning("ciphertext ballot with no contests")
 
-    contest_hashes = [contest.crypto_hash for contest in contests]
-    contest_hash = hash_elems(object_id, manifest_hash, *contest_hashes)
+    contest_hash = create_ballot_hash(object_id, manifest_hash, contests)
 
     timestamp = to_ticks(datetime.now()) if timestamp is None else timestamp
     if previous_ballot_code is None:
@@ -893,6 +892,17 @@ def make_ciphertext_ballot(
         contest_hash,
         nonce,
     )
+
+
+def create_ballot_hash(
+    ballot_id: str,
+    description_hash: ElementModQ,
+    contests: List[CiphertextBallotContest],
+) -> ElementModQ:
+    """Create the hash of the ballot contests"""
+
+    contest_hashes = [contest.crypto_hash for contest in contests]
+    return hash_elems(ballot_id, description_hash, *contest_hashes)
 
 
 def make_ciphertext_submitted_ballot(

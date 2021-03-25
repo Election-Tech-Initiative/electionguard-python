@@ -28,7 +28,6 @@ from electionguard.encrypt import (
     encrypt_contest,
     encrypt_selection,
     selection_from,
-    EncryptionDevice,
     EncryptionMediator,
 )
 from electionguard.group import (
@@ -55,7 +54,7 @@ from electionguardtest.group import elements_mod_q_no_zero
 
 election_factory = ElectionFactory.ElectionFactory()
 ballot_factory = BallotFactory.BallotFactory()
-SEED_HASH = EncryptionDevice("Location").get_hash()
+SEED = election_factory.get_encryption_device().get_hash()
 
 
 class TestEncrypt(unittest.TestCase):
@@ -557,9 +556,9 @@ class TestEncrypt(unittest.TestCase):
         self.assertTrue(subject.is_valid(internal_manifest.ballot_styles[0].object_id))
 
         # Act
-        result = encrypt_ballot(subject, internal_manifest, context, SEED_HASH)
+        result = encrypt_ballot(subject, internal_manifest, context, SEED)
         result_from_seed = encrypt_ballot(
-            subject, internal_manifest, context, SEED_HASH, nonce_seed
+            subject, internal_manifest, context, SEED, nonce_seed
         )
 
         # Assert
@@ -592,7 +591,7 @@ class TestEncrypt(unittest.TestCase):
         data = election_factory.get_fake_ballot(internal_manifest)
         self.assertTrue(data.is_valid(internal_manifest.ballot_styles[0].object_id))
 
-        device = EncryptionDevice("Location")
+        device = election_factory.get_encryption_device()
         subject = EncryptionMediator(internal_manifest, context, device)
 
         # Act
@@ -619,7 +618,7 @@ class TestEncrypt(unittest.TestCase):
         data = ballot_factory.get_simple_ballot_from_file()
         self.assertTrue(data.is_valid(internal_manifest.ballot_styles[0].object_id))
 
-        device = EncryptionDevice("Location")
+        device = election_factory.get_encryption_device()
         subject = EncryptionMediator(internal_manifest, context, device)
 
         # Act
@@ -660,7 +659,7 @@ class TestEncrypt(unittest.TestCase):
         data = ballot_factory.get_simple_ballot_from_file()
         self.assertTrue(data.is_valid(internal_manifest.ballot_styles[0].object_id))
 
-        device = EncryptionDevice("Location")
+        device = election_factory.get_encryption_device()
         subject = EncryptionMediator(internal_manifest, context, device)
 
         # Act

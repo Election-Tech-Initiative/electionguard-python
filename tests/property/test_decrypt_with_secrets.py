@@ -21,7 +21,6 @@ from electionguard.elgamal import ElGamalKeyPair, ElGamalCiphertext
 from electionguard.encrypt import (
     encrypt_contest,
     encrypt_selection,
-    EncryptionDevice,
     EncryptionMediator,
 )
 from electionguard.group import (
@@ -506,13 +505,13 @@ class TestDecryptWithSecrets(unittest.TestCase):
 
         # Arrange
         election = election_factory.get_simple_manifest_from_file()
-        metadata, context = election_factory.get_fake_ciphertext_election(
+        internal_manifest, context = election_factory.get_fake_ciphertext_election(
             election, keypair.public_key
         )
 
         data = ballot_factory.get_simple_ballot_from_file()
-        device = EncryptionDevice("Location")
-        operator = EncryptionMediator(metadata, context, device)
+        device = election_factory.get_encryption_device()
+        operator = EncryptionMediator(internal_manifest, context, device)
 
         # Act
         subject = operator.encrypt(data)
@@ -520,7 +519,7 @@ class TestDecryptWithSecrets(unittest.TestCase):
 
         result_from_key = decrypt_ballot_with_secret(
             subject,
-            metadata,
+            internal_manifest,
             context.crypto_extended_base_hash,
             keypair.public_key,
             keypair.secret_key,
@@ -528,14 +527,14 @@ class TestDecryptWithSecrets(unittest.TestCase):
         )
         result_from_nonce = decrypt_ballot_with_nonce(
             subject,
-            metadata,
+            internal_manifest,
             context.crypto_extended_base_hash,
             keypair.public_key,
             remove_placeholders=False,
         )
         result_from_nonce_seed = decrypt_ballot_with_nonce(
             subject,
-            metadata,
+            internal_manifest,
             context.crypto_extended_base_hash,
             keypair.public_key,
             subject.nonce,
@@ -551,7 +550,7 @@ class TestDecryptWithSecrets(unittest.TestCase):
         self.assertEqual(data.object_id, result_from_nonce.object_id)
         self.assertEqual(data.object_id, result_from_nonce_seed.object_id)
 
-        for description in metadata.get_contests_for(data.style_id):
+        for description in internal_manifest.get_contests_for(data.style_id):
 
             expected_entries = (
                 len(description.ballot_selections) + description.number_elected
@@ -670,13 +669,13 @@ class TestDecryptWithSecrets(unittest.TestCase):
 
         # Arrange
         election = election_factory.get_simple_manifest_from_file()
-        metadata, context = election_factory.get_fake_ciphertext_election(
+        internal_manifest, context = election_factory.get_fake_ciphertext_election(
             election, keypair.public_key
         )
 
         data = ballot_factory.get_simple_ballot_from_file()
-        device = EncryptionDevice("Location")
-        operator = EncryptionMediator(metadata, context, device)
+        device = election_factory.get_encryption_device()
+        operator = EncryptionMediator(internal_manifest, context, device)
 
         # Act
         subject = operator.encrypt(data)
@@ -687,7 +686,7 @@ class TestDecryptWithSecrets(unittest.TestCase):
 
         result_from_nonce = decrypt_ballot_with_nonce(
             subject,
-            metadata,
+            internal_manifest,
             context.crypto_extended_base_hash,
             keypair.public_key,
         )
@@ -695,7 +694,7 @@ class TestDecryptWithSecrets(unittest.TestCase):
         # SUGGEST this test is the same as the one above
         result_from_nonce_seed = decrypt_ballot_with_nonce(
             subject,
-            metadata,
+            internal_manifest,
             context.crypto_extended_base_hash,
             keypair.public_key,
             missing_nonce_value,

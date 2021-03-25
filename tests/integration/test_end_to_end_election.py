@@ -249,7 +249,7 @@ class TestEndToEndElection(TestCase):
         """
 
         # Configure the Encryption Device
-        self.device = EncryptionDevice("polling-place-one")
+        self.device = ElectionFactory.get_encryption_device()
         self.encrypter = EncryptionMediator(
             self.internal_manifest, self.context, self.device
         )

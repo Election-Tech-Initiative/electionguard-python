@@ -9,7 +9,7 @@ from electionguard.ballot_box import (
 )
 from electionguard.ballot_validator import ballot_is_valid_for_election
 from electionguard.elgamal import elgamal_keypair_from_secret
-from electionguard.encrypt import encrypt_ballot, EncryptionDevice
+from electionguard.encrypt import encrypt_ballot
 from electionguard.group import int_to_q
 
 import electionguardtest.ballot_factory as BallotFactory
@@ -18,7 +18,7 @@ import electionguardtest.election_factory as ElectionFactory
 election_factory = ElectionFactory.ElectionFactory()
 ballot_factory = BallotFactory.BallotFactory()
 
-SEED_HASH = EncryptionDevice("Location").get_hash()
+SEED = election_factory.get_encryption_device().get_hash()
 
 
 class TestBallotBox(TestCase):
@@ -36,7 +36,7 @@ class TestBallotBox(TestCase):
         self.assertTrue(source.is_valid(internal_manifest.ballot_styles[0].object_id))
 
         # Act
-        data = encrypt_ballot(source, internal_manifest, context, SEED_HASH)
+        data = encrypt_ballot(source, internal_manifest, context, SEED)
         self.assertTrue(ballot_is_valid_for_election(data, internal_manifest, context))
         subject = BallotBox(internal_manifest, context, store)
         result = subject.cast(data)
@@ -63,7 +63,7 @@ class TestBallotBox(TestCase):
         self.assertTrue(source.is_valid(internal_manifest.ballot_styles[0].object_id))
 
         # Act
-        data = encrypt_ballot(source, internal_manifest, context, SEED_HASH)
+        data = encrypt_ballot(source, internal_manifest, context, SEED)
         subject = BallotBox(internal_manifest, context, store)
         result = subject.spoil(data)
 
@@ -89,7 +89,7 @@ class TestBallotBox(TestCase):
         self.assertTrue(source.is_valid(internal_manifest.ballot_styles[0].object_id))
 
         # Act
-        data = encrypt_ballot(source, internal_manifest, context, SEED_HASH)
+        data = encrypt_ballot(source, internal_manifest, context, SEED)
         result = accept_ballot(
             data, BallotBoxState.CAST, internal_manifest, context, store
         )
@@ -122,7 +122,7 @@ class TestBallotBox(TestCase):
         self.assertTrue(source.is_valid(internal_manifest.ballot_styles[0].object_id))
 
         # Act
-        data = encrypt_ballot(source, internal_manifest, context, SEED_HASH)
+        data = encrypt_ballot(source, internal_manifest, context, SEED)
         result = accept_ballot(
             data, BallotBoxState.SPOILED, internal_manifest, context, store
         )
