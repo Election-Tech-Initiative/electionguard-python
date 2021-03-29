@@ -102,7 +102,6 @@ unit-tests:
 
 property-tests:
 	@echo ✅ PROPERTY TESTS
-	poetry run pytest tests/test_decryption_mediator.py
 	poetry run pytest tests/property
 
 integration-tests:
