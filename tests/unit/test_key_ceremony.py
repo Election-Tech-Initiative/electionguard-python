@@ -10,6 +10,10 @@ from electionguard.key_ceremony import (
     verify_election_partial_key_challenge,
     combine_election_public_keys,
 )
+from electionguardtest.identity_encrypt import (
+    identity_auxiliary_decrypt,
+    identity_auxiliary_encrypt,
+)
 
 SENDER_GUARDIAN_ID = "Test Guardian 1"
 RECIPIENT_GUARDIAN_ID = "Test Guardian 2"
@@ -19,9 +23,6 @@ RECIPIENT_SEQUENCE_ORDER = 2
 NUMBER_OF_GUARDIANS = 5
 QUORUM = 3
 
-identity_auxiliary_decrypt = lambda message, public_key: message
-identity_auxiliary_encrypt = lambda message, private_key: message
-
 
 class TestKeyCeremony(TestCase):
     """Key ceremony tests"""
@@ -29,7 +30,9 @@ class TestKeyCeremony(TestCase):
     def test_generate_rsa_auxiliary_key_pair(self):
 
         # Act
-        auxiliary_key_pair = generate_rsa_auxiliary_key_pair()
+        auxiliary_key_pair = generate_rsa_auxiliary_key_pair(
+            SENDER_GUARDIAN_ID, SENDER_SEQUENCE_ORDER
+        )
 
         # Assert
         self.assertIsNotNone(auxiliary_key_pair)
@@ -38,7 +41,9 @@ class TestKeyCeremony(TestCase):
 
     def test_generate_election_key_pair(self):
         # Act
-        election_key_pair = generate_election_key_pair(NUMBER_OF_GUARDIANS)
+        election_key_pair = generate_election_key_pair(
+            SENDER_GUARDIAN_ID, SENDER_SEQUENCE_ORDER, QUORUM
+        )
 
         # Assert
         self.assertIsNotNone(election_key_pair)
@@ -54,8 +59,12 @@ class TestKeyCeremony(TestCase):
 
     def test_generate_election_partial_key_backup(self):
         # Arrange
-        election_key_pair = generate_election_key_pair(QUORUM)
-        auxiliary_key_pair = generate_rsa_auxiliary_key_pair()
+        election_key_pair = generate_election_key_pair(
+            SENDER_GUARDIAN_ID, SENDER_SEQUENCE_ORDER, QUORUM
+        )
+        auxiliary_key_pair = generate_rsa_auxiliary_key_pair(
+            RECIPIENT_GUARDIAN_ID, RECIPIENT_SEQUENCE_ORDER
+        )
         auxiliary_public_key = AuxiliaryPublicKey(
             RECIPIENT_GUARDIAN_ID,
             RECIPIENT_SEQUENCE_ORDER,
@@ -78,8 +87,12 @@ class TestKeyCeremony(TestCase):
 
     def test_verify_election_partial_key_backup(self):
         # Arrange
-        recipient_auxiliary_key_pair = generate_rsa_auxiliary_key_pair()
-        sender_election_key_pair = generate_election_key_pair(QUORUM)
+        recipient_auxiliary_key_pair = generate_rsa_auxiliary_key_pair(
+            RECIPIENT_GUARDIAN_ID, RECIPIENT_SEQUENCE_ORDER
+        )
+        sender_election_key_pair = generate_election_key_pair(
+            SENDER_GUARDIAN_ID, SENDER_SEQUENCE_ORDER, QUORUM
+        )
         recipient_auxiliary_public_key = AuxiliaryPublicKey(
             RECIPIENT_GUARDIAN_ID,
             RECIPIENT_SEQUENCE_ORDER,
@@ -96,6 +109,7 @@ class TestKeyCeremony(TestCase):
         verification = verify_election_partial_key_backup(
             RECIPIENT_GUARDIAN_ID,
             partial_key_backup,
+            sender_election_key_pair.share(),
             recipient_auxiliary_key_pair,
             identity_auxiliary_decrypt,
         )
@@ -109,8 +123,12 @@ class TestKeyCeremony(TestCase):
 
     def test_generate_election_partial_key_challenge(self):
         # Arrange
-        recipient_auxiliary_key_pair = generate_rsa_auxiliary_key_pair()
-        sender_election_key_pair = generate_election_key_pair(QUORUM)
+        recipient_auxiliary_key_pair = generate_rsa_auxiliary_key_pair(
+            RECIPIENT_GUARDIAN_ID, RECIPIENT_SEQUENCE_ORDER
+        )
+        sender_election_key_pair = generate_election_key_pair(
+            SENDER_GUARDIAN_ID, SENDER_SEQUENCE_ORDER, QUORUM
+        )
         recipient_auxiliary_public_key = AuxiliaryPublicKey(
             RECIPIENT_GUARDIAN_ID,
             RECIPIENT_SEQUENCE_ORDER,
@@ -140,8 +158,12 @@ class TestKeyCeremony(TestCase):
 
     def test_verify_election_partial_key_challenge(self):
         # Arrange
-        recipient_auxiliary_key_pair = generate_rsa_auxiliary_key_pair()
-        sender_election_key_pair = generate_election_key_pair(QUORUM)
+        recipient_auxiliary_key_pair = generate_rsa_auxiliary_key_pair(
+            RECIPIENT_GUARDIAN_ID, RECIPIENT_SEQUENCE_ORDER
+        )
+        sender_election_key_pair = generate_election_key_pair(
+            SENDER_GUARDIAN_ID, SENDER_SEQUENCE_ORDER, QUORUM
+        )
         recipient_auxiliary_public_key = AuxiliaryPublicKey(
             RECIPIENT_GUARDIAN_ID,
             RECIPIENT_SEQUENCE_ORDER,
@@ -171,17 +193,17 @@ class TestKeyCeremony(TestCase):
 
     def test_combine_election_public_keys(self):
         # Arrange
-        random_keypair = generate_election_key_pair(
+        random_key = generate_election_key_pair(
             RECIPIENT_GUARDIAN_ID, SENDER_SEQUENCE_ORDER, QUORUM
-        )
-        random_keypair_two = generate_election_key_pair(
+        ).share()
+        random_key_two = generate_election_key_pair(
             SENDER_GUARDIAN_ID, RECIPIENT_SEQUENCE_ORDER, QUORUM
-        )
+        ).share()
 
         # Act
-        joint_key = combine_election_public_keys([random_keypair, random_keypair_two])
+        joint_key = combine_election_public_keys([random_key, random_key_two])
 
         # Assert
         self.assertIsNotNone(joint_key)
-        self.assertNotEqual(joint_key, random_keypair.key_pair.public_key)
-        self.assertNotEqual(joint_key, random_keypair_two.key_pair.public_key)
+        self.assertNotEqual(joint_key, random_key.key)
+        self.assertNotEqual(joint_key, random_key_two.key)

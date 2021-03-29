@@ -137,25 +137,33 @@ class ElectionPartialKeyChallenge(NamedTuple):
     coefficient_proofs: List[SchnorrProof]
 
 
-def generate_elgamal_auxiliary_key_pair() -> AuxiliaryKeyPair:
+def generate_elgamal_auxiliary_key_pair(
+    owner_id: GUARDIAN_ID, sequence_order: int
+) -> AuxiliaryKeyPair:
     """
     Generate auxiliary key pair using elgamal
     :return: Auxiliary key pair
     """
     elgamal_key_pair = elgamal_keypair_random()
     return AuxiliaryKeyPair(
+        owner_id,
+        sequence_order,
         elgamal_key_pair.secret_key.to_hex(),
         elgamal_key_pair.public_key.to_hex(),
     )
 
 
-def generate_rsa_auxiliary_key_pair() -> AuxiliaryKeyPair:
+def generate_rsa_auxiliary_key_pair(
+    owner_id: GUARDIAN_ID, sequence_order: int
+) -> AuxiliaryKeyPair:
     """
     Generate auxiliary key pair using RSA
     :return: Auxiliary key pair
     """
     rsa_key_pair = rsa_keypair()
-    return AuxiliaryKeyPair(rsa_key_pair.private_key, rsa_key_pair.public_key)
+    return AuxiliaryKeyPair(
+        owner_id, sequence_order, rsa_key_pair.private_key, rsa_key_pair.public_key
+    )
 
 
 def generate_election_key_pair(
@@ -202,7 +210,7 @@ def generate_election_partial_key_backup(
 
 
 def verify_election_partial_key_backup(
-    verifier_id: GUARDIAN_ID,
+    verifier_id: str,
     backup: ElectionPartialKeyBackup,
     election_public_key: ElectionPublicKey,
     verifier_auxiliary_key_pair: AuxiliaryKeyPair,
@@ -230,7 +238,9 @@ def verify_election_partial_key_backup(
         backup.designated_id,
         verifier_id,
         verify_polynomial_coordinate(
-            value, backup.designated_sequence_order, election_public_key.commitments
+            value,
+            backup.designated_sequence_order,
+            election_public_key.coefficient_commitments,
         ),
     )
 
@@ -250,6 +260,8 @@ def generate_election_partial_key_challenge(
         backup.designated_id,
         backup.designated_sequence_order,
         compute_polynomial_coordinate(backup.designated_sequence_order, polynomial),
+        polynomial.coefficient_commitments,
+        polynomial.coefficient_proofs,
     )
 
 
