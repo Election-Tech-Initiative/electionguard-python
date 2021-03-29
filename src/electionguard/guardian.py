@@ -1,6 +1,7 @@
 # pylint: disable=too-many-public-methods
 from dataclasses import dataclass
 from typing import Callable, List, Optional, Tuple
+from electionguard.decryption import RECOVERY_PUBLIC_KEY, compute_recovery_public_key
 from electionguard.election_polynomial import PUBLIC_COMMITMENT
 
 from electionguard.schnorr import SchnorrProof
@@ -13,10 +14,6 @@ from .group import (
     ElementModP,
     ElementModQ,
     hex_to_q,
-    mult_p,
-    pow_q,
-    pow_p,
-    ONE_MOD_P,
     rand_q,
 )
 from .key_ceremony import (
@@ -25,6 +22,8 @@ from .key_ceremony import (
     AuxiliaryDecrypt,
     AuxiliaryEncrypt,
     CeremonyDetails,
+    ELECTION_JOINT_PUBLIC_KEY,
+    ELECTION_PUBLIC_KEY,
     ElectionKeyPair,
     ElectionPartialKeyBackup,
     ElectionPartialKeyChallenge,
@@ -49,10 +48,10 @@ class GuardianRecord(Serializable):
     """Published record of Guardian"""
 
     guardian_id: GUARDIAN_ID
-    sequence_order: str
-    election_public_key: ElementModP
-    election_proofs: List[SchnorrProof]
+    sequence_order: int
+    election_public_key: ELECTION_PUBLIC_KEY
     election_commitments: List[PUBLIC_COMMITMENT]
+    election_proofs: List[SchnorrProof]
 
 
 def publish_guardian_record(election_public_key: ElectionPublicKey) -> GuardianRecord:
@@ -60,8 +59,8 @@ def publish_guardian_record(election_public_key: ElectionPublicKey) -> GuardianR
         election_public_key.owner_id,
         election_public_key.sequence_order,
         election_public_key.key,
-        election_public_key.proofs,
-        election_public_key.commitments,
+        election_public_key.coefficient_commitments,
+        election_public_key.coefficient_proofs,
     )
 
 
@@ -126,8 +125,7 @@ class Guardian:
         :param nonce_seed: an optional `ElementModQ` value that can be used to generate the `ElectionKeyPair`.
                            It is recommended to only use this field for testing.
         """
-
-        super().__init__(id)
+        self.id = id
         self.sequence_order = sequence_order
         self.set_ceremony_details(number_of_guardians, quorum)
         self._backups_to_share = DataStore[GUARDIAN_ID, ElectionPartialKeyBackup]()
@@ -164,7 +162,7 @@ class Guardian:
 
     def publish(self) -> GuardianRecord:
         """Publish record of guardian with all required information"""
-        return publish_guardian_record(self._election_keys)
+        return publish_guardian_record(self._election_keys.share())
 
     def set_ceremony_details(self, number_of_guardians: int, quorum: int) -> None:
         """
@@ -206,14 +204,14 @@ class Guardian:
     def generate_auxiliary_key_pair(
         self,
         generate_auxiliary_key_pair: Callable[
-            [], AuxiliaryKeyPair
+            [GUARDIAN_ID, int], AuxiliaryKeyPair
         ] = generate_rsa_auxiliary_key_pair,
     ) -> None:
         """
         Generate auxiliary key pair
         :param generate_auxiliary_key_pair: Function to generate auxiliary key pair
         """
-        self._auxiliary_keys = generate_auxiliary_key_pair()
+        self._auxiliary_keys = generate_auxiliary_key_pair(self.id, self.sequence_order)
         self.save_auxiliary_public_key(self.share_auxiliary_public_key())
 
     def share_auxiliary_public_key(self) -> AuxiliaryPublicKey:
@@ -253,7 +251,7 @@ class Guardian:
         Generate election key pair for encrypting/decrypting election
         """
         self._election_keys = generate_election_key_pair(
-            self.ceremony_details.quorum, nonce
+            self.id, self.sequence_order, self.ceremony_details.quorum, nonce
         )
         self.save_election_public_key(self.share_election_public_key())
 
@@ -326,6 +324,13 @@ class Guardian:
         """
         return self._backups_to_share.get(designated_id)
 
+    def share_election_partial_key_backups(self) -> List[ElectionPartialKeyBackup]:
+        """
+        Share all election partial key backups
+        :return: Election partial key backup or None
+        """
+        return self._backups_to_share.all()
+
     def save_election_partial_key_backup(
         self, backup: ElectionPartialKeyBackup
     ) -> None:
@@ -358,10 +363,11 @@ class Guardian:
         :return: Election partial key verification or None
         """
         backup = self._guardian_election_partial_key_backups.get(guardian_id)
-        if backup is None:
+        public_key = self._guardian_election_public_keys.get(guardian_id)
+        if backup is None or public_key is None:
             return None
         return verify_election_partial_key_backup(
-            self.id, backup, self._auxiliary_keys, decrypt
+            self.id, backup, public_key, self._auxiliary_keys, decrypt
         )
 
     def publish_election_backup_challenge(
@@ -414,7 +420,7 @@ class Guardian:
         return True
 
     # Joint Key
-    def publish_joint_key(self) -> Optional[ElementModP]:
+    def publish_joint_key(self) -> Optional[ELECTION_JOINT_PUBLIC_KEY]:
         """
         Creates the joint election key from the public keys of all guardians
         :return: Optional joint key for election
@@ -524,23 +530,19 @@ class Guardian:
 
     def recovery_public_key_for(
         self, missing_guardian_id: GUARDIAN_ID
-    ) -> Optional[ElementModP]:
+    ) -> Optional[RECOVERY_PUBLIC_KEY]:
         """
         Compute the recovery public key for a given guardian
         """
-        backup = self._guardian_election_partial_key_backups.get(missing_guardian_id)
-        if backup is None:
+        missing_guardian_key = self._guardian_election_public_keys.get(
+            missing_guardian_id
+        )
+        if missing_guardian_key is None:
             log_warning(
-                f"compensate decrypt guardian {self.id} missing backup for {missing_guardian_id}"
+                f"compensate decrypt guardian {self.id} missing backup or key for {missing_guardian_id}"
             )
             return None
 
-        # compute the recovery public key,
-        # corresponding to the secret share Pi(l)
-        # K_ij^(l^j) for j in 0..k-1.  K_ij is coefficients[j].public_key
-        pub_key = ONE_MOD_P
-        for index, commitment in enumerate(backup.coefficient_commitments):
-            exponent = pow_q(self.sequence_order, index)
-            pub_key = mult_p(pub_key, pow_p(commitment, exponent))
-
-        return pub_key
+        return compute_recovery_public_key(
+            self.share_election_public_key(), missing_guardian_key
+        )
