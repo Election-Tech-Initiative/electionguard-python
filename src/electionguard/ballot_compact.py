@@ -41,7 +41,7 @@ class CompactSubmittedBallot:
     compact_plaintext_ballot: CompactPlaintextBallot
     timestamp: int
     ballot_nonce: ElementModQ
-    previous_code: ElementModQ
+    code_seed: ElementModQ
     code: ElementModQ
     ballot_box_state: BallotBoxState
 
@@ -66,7 +66,7 @@ def compress_submitted_ballot(
         compress_plaintext_ballot(plaintext_ballot),
         ballot.timestamp,
         ballot_nonce,
-        ballot.previous_code,
+        ballot.code_seed,
         get_optional(ballot.code),
         ballot.state,
     )
@@ -98,7 +98,7 @@ def expand_compact_submitted_ballot(
         plaintext_ballot.object_id,
         plaintext_ballot.style_id,
         internal_manifest.manifest_hash,
-        compact_ballot.previous_code,
+        compact_ballot.code_seed,
         contests,
         compact_ballot.code,
         compact_ballot.timestamp,

@@ -3,7 +3,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, List, Iterable, Optional, Protocol, runtime_checkable, Sequence
 
-from .ballot_code import get_rotating_ballot_code
+from .ballot_code import get_ballot_code
 from .chaum_pedersen import (
     ConstantChaumPedersenProof,
     DisjunctiveChaumPedersenProof,
@@ -666,8 +666,8 @@ class CiphertextBallot(ElectionObjectBase, CryptoHashCheckable):
     manifest_hash: ElementModQ
     """Hash of the election manifest"""
 
-    previous_code: ElementModQ
-    """Previous ballot code or seed"""
+    code_seed: ElementModQ
+    """Seed for ballot code"""
 
     contests: List[CiphertextBallotContest]
     """List of contests for this ballot"""
@@ -690,7 +690,7 @@ class CiphertextBallot(ElectionObjectBase, CryptoHashCheckable):
             and self.object_id == other.object_id
             and self.style_id == other.style_id
             and self.manifest_hash == other.manifest_hash
-            and self.previous_code == other.previous_code
+            and self.code_seed == other.code_seed
             and _list_eq(self.contests, other.contests)
             and self.code == other.code
             and self.timestamp == other.timestamp
@@ -849,7 +849,7 @@ def make_ciphertext_ballot(
     object_id: str,
     style_id: str,
     manifest_hash: ElementModQ,
-    previous_ballot_code: Optional[ElementModQ],
+    code_seed: Optional[ElementModQ],
     contests: List[CiphertextBallotContest],
     nonce: Optional[ElementModQ] = None,
     timestamp: Optional[int] = None,
@@ -864,7 +864,7 @@ def make_ciphertext_ballot(
     :param crypto_base_hash: Hash of the cryptographic election context
     :param contests: List of contests for this ballot
     :param timestamp: Timestamp at which the ballot encryption is generated in tick
-    :param previous_code: Previous ballot code or seed
+    :param code_seed: Seed for ballot code
     :param nonce: optional nonce used as part of the encryption process
     """
 
@@ -874,18 +874,16 @@ def make_ciphertext_ballot(
     contest_hash = create_ballot_hash(object_id, manifest_hash, contests)
 
     timestamp = to_ticks(datetime.now()) if timestamp is None else timestamp
-    if previous_ballot_code is None:
-        previous_ballot_code = manifest_hash
+    if code_seed is None:
+        code_seed = manifest_hash
     if ballot_code is None:
-        ballot_code = get_rotating_ballot_code(
-            previous_ballot_code, timestamp, contest_hash
-        )
+        ballot_code = get_ballot_code(code_seed, timestamp, contest_hash)
 
     return CiphertextBallot(
         object_id,
         style_id,
         manifest_hash,
-        previous_ballot_code,
+        code_seed,
         contests,
         ballot_code,
         timestamp,
@@ -909,7 +907,7 @@ def make_ciphertext_submitted_ballot(
     object_id: str,
     style_id: str,
     manifest_hash: ElementModQ,
-    previous_ballot_code: Optional[ElementModQ],
+    code_seed: Optional[ElementModQ],
     contests: List[CiphertextBallotContest],
     ballot_code: Optional[ElementModQ],
     timestamp: Optional[int] = None,
@@ -921,7 +919,7 @@ def make_ciphertext_submitted_ballot(
     :param object_id: the object_id of this specific ballot
     :param style_id: The `object_id` of the `BallotStyle` in the `Election` Manifest
     :param manifest_hash: Hash of the election manifest
-    :param previous_code: Previous ballot code or seed
+    :param code_seed: Seed for ballot code
     :param contests: List of contests for this ballot
     :param timestamp: Timestamp at which the ballot encryption is generated in tick
     :param state: ballot box state
@@ -934,12 +932,10 @@ def make_ciphertext_submitted_ballot(
     contest_hash = hash_elems(object_id, manifest_hash, *contest_hashes)
 
     timestamp = to_ticks(datetime.utcnow()) if timestamp is None else timestamp
-    if previous_ballot_code is None:
-        previous_ballot_code = manifest_hash
+    if code_seed is None:
+        code_seed = manifest_hash
     if ballot_code is None:
-        ballot_code = get_rotating_ballot_code(
-            previous_ballot_code, timestamp, contest_hash
-        )
+        ballot_code = get_ballot_code(code_seed, timestamp, contest_hash)
 
     # copy the contests and selections, removing all nonces
     new_contests: List[CiphertextBallotContest] = []
@@ -954,7 +950,7 @@ def make_ciphertext_submitted_ballot(
         object_id,
         style_id,
         manifest_hash,
-        previous_ballot_code,
+        code_seed,
         new_contests,
         ballot_code,
         timestamp,
@@ -974,7 +970,7 @@ def from_ciphertext_ballot(
         ballot.object_id,
         ballot.style_id,
         ballot.manifest_hash,
-        ballot.previous_code,
+        ballot.code_seed,
         ballot.contests,
         ballot.code,
         ballot.timestamp,

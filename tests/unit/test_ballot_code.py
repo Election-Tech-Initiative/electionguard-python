@@ -2,7 +2,7 @@ from unittest import TestCase
 
 from electionguard.group import ZERO_MOD_Q, ONE_MOD_Q, TWO_MOD_Q
 from electionguard.ballot_code import (
-    get_rotating_ballot_code,
+    get_ballot_code,
     get_hash_for_device,
 )
 
@@ -24,12 +24,8 @@ class TestBallotCode(TestCase):
         device_hash = get_hash_for_device(
             device.uuid, device.session_id, device.launch_code, device.location
         )
-        ballot_code_1 = get_rotating_ballot_code(
-            device_hash, timestamp_1, ballot_hash_1
-        )
-        ballot_code_2 = get_rotating_ballot_code(
-            device_hash, timestamp_2, ballot_hash_2
-        )
+        ballot_code_1 = get_ballot_code(device_hash, timestamp_1, ballot_hash_1)
+        ballot_code_2 = get_ballot_code(device_hash, timestamp_2, ballot_hash_2)
 
         # Assert
         self.assertIsNotNone(device_hash)
