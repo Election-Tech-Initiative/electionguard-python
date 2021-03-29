@@ -17,8 +17,7 @@ from electionguard.election import CiphertextElectionContext, ElectionConstants
 from electionguard.election_builder import ElectionBuilder
 from electionguard.encrypt import EncryptionDevice, contest_from, generate_device_uuid
 from electionguard.group import ElementModP, TWO_MOD_Q
-from electionguard.guardian import Guardian
-from electionguard.key_ceremony import CoefficientValidationSet
+from electionguard.guardian import Guardian, GuardianRecord
 from electionguard.key_ceremony_mediator import KeyCeremonyMediator
 from electionguard.manifest import (
     BallotStyle,
@@ -39,6 +38,8 @@ from electionguard.manifest import (
 )
 from electionguard.utils import get_optional
 
+from .key_ceremony_helper import KeyCeremonyHelper
+
 _T = TypeVar("_T")
 _DrawType = Callable[[SearchStrategy[_T]], _T]
 
@@ -56,7 +57,7 @@ class AllPublicElectionData:
     internal_manifest: InternalManifest
     context: CiphertextElectionContext
     constants: ElectionConstants
-    guardians: List[CoefficientValidationSet]
+    guardians: List[GuardianRecord]
 
 
 @dataclass
@@ -88,7 +89,7 @@ class ElectionFactory:
         self,
     ) -> Tuple[AllPublicElectionData, AllPrivateElectionData]:
         guardians: List[Guardian] = []
-        coefficient_validation_sets: List[CoefficientValidationSet] = []
+        guardian_records: List[GuardianRecord] = []
 
         # Configure the election builder
         manifest = self.get_hamilton_manifest_from_file()
@@ -107,19 +108,13 @@ class ElectionFactory:
 
         # Run the key ceremony
         mediator = KeyCeremonyMediator(guardians[0].ceremony_details)
-        for guardian in guardians:
-            mediator.announce(guardian)
-        mediator.orchestrate()
-        mediator.verify()
+        KeyCeremonyHelper.perform_full_ceremony(guardians, mediator)
 
-        # Joint Key
+        # Final: Joint Key
         joint_key = mediator.publish_joint_key()
 
-        # Save Validation Keys
-        for guardian in guardians:
-            coefficient_validation_sets.append(
-                guardian.share_coefficient_validation_set()
-            )
+        # Publish Guardian Records
+        guardian_records = [guardian.publish() for guardian in guardians]
 
         builder.set_public_key(get_optional(joint_key).joint_public_key)
         builder.set_commitment_hash(get_optional(joint_key).commitment_hash)
@@ -132,7 +127,7 @@ class ElectionFactory:
                 internal_manifest,
                 context,
                 constants,
-                coefficient_validation_sets,
+                guardian_records,
             ),
             AllPrivateElectionData(guardians),
         )
