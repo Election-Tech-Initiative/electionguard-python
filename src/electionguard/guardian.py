@@ -45,16 +45,46 @@ from .utils import get_optional
 
 @dataclass
 class GuardianRecord(Serializable):
-    """Published record of Guardian"""
+    """
+    Published record containing all required information per Guardian
+    for Election record used in verification processes
+    """
 
     guardian_id: GUARDIAN_ID
+    """Unique identifier of the guardian"""
+
     sequence_order: int
+    """
+    Unique sequence order of the guardian indicating the order
+    in which the guardian should be processed
+    """
+
     election_public_key: ELECTION_PUBLIC_KEY
+    """
+    Guardian's election public key for encrypting election objects.
+    """
+
     election_commitments: List[PUBLIC_COMMITMENT]
+    """
+    Commitment for each coeffficient of the guardians secret polynomial.
+    First commitment is and should be identical to election_public_key.
+    """
+
     election_proofs: List[SchnorrProof]
+    """
+    Proofs for each commitment for each coeffficient of the guardians secret polynomial.
+    First proof is the proof for the election_public_key.
+    """
 
 
 def publish_guardian_record(election_public_key: ElectionPublicKey) -> GuardianRecord:
+    """
+    Published record containing all required information per Guardian
+    for Election record used in verification processes
+
+    :param election_public_key: Guardian's election public key
+    :return: Guardian's record
+    """
     return GuardianRecord(
         election_public_key.owner_id,
         election_public_key.sequence_order,

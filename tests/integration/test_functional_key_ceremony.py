@@ -20,7 +20,11 @@ from electionguardtest.identity_encrypt import identity_auxiliary_encrypt
 
 
 class TestKeyCeremony(TestCase):
-    """Functional tests of key ceremony"""
+    """
+    Test the key ceremony entirely from a functional sense
+    This demonstrates that no stateful models are required and
+    allows users to see the full flow utilizing only the core methods.
+    """
 
     # Basic Types
     SENDER_ID = GUARDIAN_ID

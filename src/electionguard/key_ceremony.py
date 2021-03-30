@@ -34,19 +34,54 @@ class ElectionPublicKey(NamedTuple):
     """A tuple of election public key and owner information"""
 
     owner_id: GUARDIAN_ID
+    """
+    The id of the owner guardian
+    """
+
     sequence_order: int
+    """
+    The sequence order of the owner guardian
+    """
+
     key: ELECTION_PUBLIC_KEY
+    """
+    The election public for the guardian
+    Note: This is the same as the first coefficient commitment
+    """
+
     coefficient_commitments: List[PUBLIC_COMMITMENT]
+    """
+    The commitments for the coefficients in the secret polynomial
+    """
+
     coefficient_proofs: List[SchnorrProof]
+    """
+    The proofs for the coefficients in the secret polynomial
+    """
 
 
 class ElectionKeyPair(NamedTuple):
     """A tuple of election key pair, proof and polynomial"""
 
     owner_id: GUARDIAN_ID
+    """
+    The id of the owner guardian
+    """
+
     sequence_order: int
+    """
+    The sequence order of the owner guardian
+    """
+
     key_pair: ElGamalKeyPair
+    """
+    The pair of public and private election keys for the guardian
+    """
+
     polynomial: ElectionPolynomial
+    """
+    The secret polynomial for the guardian
+    """
 
     def share(self) -> ElectionPublicKey:
         """Share the election public key and associated data"""
@@ -303,5 +338,7 @@ def combine_election_public_keys(
 
     return ElectionJointKey(
         joint_public_key=elgamal_combine_public_keys(public_keys),
-        commitment_hash=get_optional(hash_elems(commitments)),
+        commitment_hash=get_optional(
+            hash_elems(commitments)
+        ),  # H(K 1,0 , K 2,0 ... , K n,0 )
     )

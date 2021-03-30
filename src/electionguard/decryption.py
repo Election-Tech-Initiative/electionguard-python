@@ -55,6 +55,12 @@ def compute_decryption_share(
 ) -> Optional[DecryptionShare]:
     """
     Compute the decryption for all of the contests in the Ciphertext Tally
+
+    :param guardian_keys: Guardian's election key pair
+    :param tally: Encrypted tally to get decryption share of
+    :param context: Election context
+    :param scheduler: Scheduler
+    :return: Return a guardian's decryption share of tally or None if error
     """
 
     contests: Dict[CONTEST_ID, CiphertextDecryptionContest] = {}
@@ -94,6 +100,17 @@ def compute_compensated_decryption_share(
 ) -> Optional[CompensatedDecryptionShare]:
     """
     Compute the compensated decryption for all of the contests in the Ciphertext Tally
+
+    :param guardian_key: Guardian's election public key
+    :param guardian_auxiliary_keys: Guardian's auxiliary key pair
+    :param missing_guardian_key: Missing guardian's election public key
+    :param missing_guardian_backup: Missing guardian's election partial key backup
+    :param tally: Encrypted tally to get decryption share of
+    :param context: Election context
+    :param decrypt: Auxiliary decryption method
+    :param scheduler: Scheduler
+    :return: Return a guardian's compensated decryption share of tally for the missing guardian
+        or None if error
     """
 
     contests: Dict[CONTEST_ID, CiphertextCompensatedDecryptionContest] = {}
@@ -134,6 +151,11 @@ def compute_decryption_share_for_ballots(
 ) -> Optional[Dict[BALLOT_ID, DecryptionShare]]:
     """
     Compute the decryption for a list of ballots for a guardian
+
+    :param guardian_keys: Guardian's election key pair
+    :param ballots: Ballots to be decrypted
+    :param context: The public election encryption context
+    :return: Dictionary of decrypted ballots or `None` if there is an error
     """
     shares: Dict[BALLOT_ID, DecryptionShare] = {}
 
@@ -160,6 +182,14 @@ def compute_compensated_decryption_share_for_ballots(
 ) -> Optional[Dict[BALLOT_ID, CompensatedDecryptionShare]]:
     """
     Compute the compensated decryption for ballots for a guardian
+
+    :param guardian_key: The election public key of the available guardian that will partially decrypt the selection
+    :param guardian_auxiliary_keys: Auxiliary keys for the available guardian
+    :param missing_guardian_key: Election public key of the guardian that is missing
+    :param missing_guardian_backup: Election partial key backup of the missing guardian
+    :param ballots: Ballots to be decrypted
+    :param context: The public election encryption context
+    :return: Dictionary of decrypted ballots or `None` if there is an error
     """
     shares: Dict[BALLOT_ID, CompensatedDecryptionShare] = {}
 
@@ -189,6 +219,12 @@ def compute_decryption_share_for_ballot(
 ) -> Optional[DecryptionShare]:
     """
     Compute the decryption for a single ballot
+
+    :param guardian_keys: Guardian's election key pair
+    :param ballot: Ballot to be decrypted
+    :param context: The public election encryption context
+    :param scheduler: Scheduler
+    :return: Decryption share for ballot or `None` if there is an error
     """
     contests: Dict[CONTEST_ID, CiphertextDecryptionContest] = {}
 
@@ -225,6 +261,17 @@ def compute_compensated_decryption_share_for_ballot(
 ) -> Optional[CompensatedDecryptionShare]:
     """
     Compute the compensated decryption for a single ballot
+
+    :param guardian_key: Guardian's election public key
+    :param guardian_auxiliary_keys: Guardian's auxiliary key pair
+    :param missing_guardian_key: Missing guardian's election public key
+    :param missing_guardian_backup: Missing guardian's election partial key backup
+    :param ballot: Encrypted ballot to get decryption share of
+    :param context: Election context
+    :param decrypt: Auxiliary decryption method
+    :param scheduler: Scheduler
+    :return: Return a guardian's compensated decryption share of ballot for the missing guardian
+        or None if error
     """
     contests: Dict[CONTEST_ID, CiphertextCompensatedDecryptionContest] = {}
 
@@ -260,6 +307,15 @@ def compute_decryption_share_for_contest(
     context: CiphertextElectionContext,
     scheduler: Optional[Scheduler] = None,
 ) -> Optional[CiphertextDecryptionContest]:
+    """
+    Compute the decryption share for a single contest
+
+    :param guardian_keys: Guardian's election key pair
+    :param contest: Contest to be decrypted
+    :param context: The public election encryption context
+    :param scheduler: Scheduler
+    :return: Decryption share for contest or `None` if there is an error
+    """
     if not scheduler:
         scheduler = Scheduler()
 
@@ -294,6 +350,17 @@ def compute_compensated_decryption_share_for_contest(
     decrypt: AuxiliaryDecrypt = rsa_decrypt,
     scheduler: Optional[Scheduler] = None,
 ) -> Optional[CiphertextCompensatedDecryptionContest]:
+    """
+    Compute the compensated decryption share for a single contest
+
+    :param guardian_key: The election public key of the available guardian that will partially decrypt the selection
+    :param guardian_auxiliary_keys: Auxiliary keys for the available guardian
+    :param missing_guardian_key: Election public key of the guardian that is missing
+    :param missing_guardian_backup: Election partial key backup of the missing guardian
+    :param contest: The specific contest to decrypt
+    :param context: The public election encryption context
+    :return: a `CiphertextCompensatedDecryptionContest` or `None` if there is an error
+    """
     if not scheduler:
         scheduler = Scheduler()
 
@@ -340,9 +407,9 @@ def compute_decryption_share_for_selection(
     """
     Compute a partial decryption for a specific selection
 
-    :param guardian_key: Election public key of the guardian who will partially decrypt the selection
+    :param guardian_keys: Election keys for the guardian who will partially decrypt the selection
     :param selection: The specific selection to decrypt
-    :context: The public election encryption context
+    :param context: The public election encryption context
     :return: a `CiphertextDecryptionSelection` or `None` if there is an error
     """
 
@@ -380,12 +447,14 @@ def compute_compensated_decryption_share_for_selection(
 ) -> Optional[CiphertextCompensatedDecryptionSelection]:
     """
     Compute a compensated decryption share for a specific selection using the
-    avialable guardian's share of the missing guardian's private key polynomial
+    available guardian's share of the missing guardian's private key polynomial
 
     :param guardian_key: The election public key of the available guardian that will partially decrypt the selection
-    :param missing_guardian_key: The id of the guardian that is missing
+    :param guardian_auxiliary_keys: Auxiliary keys for the available guardian
+    :param missing_guardian_key: Election public key of the guardian that is missing
+    :param missing_guardian_backup: Election partial key backup of the missing guardian
     :param selection: The specific selection to decrypt
-    :context: The public election encryption context
+    :param context: The public election encryption context
     :return: a `CiphertextCompensatedDecryptionSelection` or `None` if there is an error
     """
 
