@@ -18,6 +18,7 @@ from electionguard.election_builder import ElectionBuilder
 from electionguard.encrypt import EncryptionDevice, contest_from, generate_device_uuid
 from electionguard.group import ElementModP, TWO_MOD_Q
 from electionguard.guardian import Guardian, GuardianRecord
+from electionguard.key_ceremony import CeremonyDetails
 from electionguard.key_ceremony_mediator import KeyCeremonyMediator
 from electionguard.manifest import (
     BallotStyle,
@@ -95,19 +96,10 @@ class ElectionFactory:
         manifest = self.get_hamilton_manifest_from_file()
         builder = ElectionBuilder(NUMBER_OF_GUARDIANS, QUORUM, manifest)
 
-        # Setup Guardians
-        for i in range(NUMBER_OF_GUARDIANS):
-            guardians.append(
-                Guardian(
-                    "hamilton-county-canvass-board-member-" + str(i),
-                    i,
-                    NUMBER_OF_GUARDIANS,
-                    QUORUM,
-                )
-            )
-
-        # Run the key ceremony
-        mediator = KeyCeremonyMediator(guardians[0].ceremony_details)
+        # Run the Key Ceremony
+        ceremony_details = CeremonyDetails(NUMBER_OF_GUARDIANS, QUORUM)
+        guardians = KeyCeremonyHelper.create_guardians(ceremony_details)
+        mediator = KeyCeremonyMediator("key-ceremony-mediator", ceremony_details)
         KeyCeremonyHelper.perform_full_ceremony(guardians, mediator)
 
         # Final: Joint Key
