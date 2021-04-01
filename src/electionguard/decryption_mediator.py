@@ -380,9 +380,11 @@ class DecryptionMediator:
                 self._lagrange_coefficients[missing_guardian_id],
             )
 
-            self._ballot_shares[missing_guardian_id][
-                ballot_id
-            ] = missing_decryption_share
+            existing_shares = self._ballot_shares.get(missing_guardian_id)
+            if existing_shares is None:
+                existing_shares = {}
+            existing_shares[ballot_id] = missing_decryption_share
+            self._ballot_shares[missing_guardian_id] = existing_shares
 
     def _get_compensated_shares_for_ballot(
         self,
