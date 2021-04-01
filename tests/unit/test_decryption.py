@@ -2,43 +2,43 @@
 # pylint: disable=too-many-instance-attributes
 # pylint: disable=unnecessary-comprehension
 
-from typing import Dict, List, Tuple
+from typing import Dict, List
 from unittest import TestCase
+from electionguard.ballot import SubmittedBallot
 
 from electionguard.ballot_box import BallotBox, BallotBoxState, get_ballots
 from electionguard.data_store import DataStore
-from electionguard.decrypt_with_shares import (
-    ELECTION_PUBLIC_KEY,
-    decrypt_ballots,
-    decrypt_selection_with_decryption_shares,
-    decrypt_ballot,
-)
+from electionguard.decrypt_with_shares import decrypt_selection_with_decryption_shares
 from electionguard.decryption import (
-    compute_decryption_share,
-    compute_decryption_share_for_ballot,
-    compute_decryption_share_for_ballots,
-    compute_decryption_share_for_selection,
+    compute_compensated_decryption_share,
     compute_compensated_decryption_share_for_ballot,
+    compute_compensated_decryption_share_for_ballots,
+    compute_decryption_share,
+    compute_decryption_share_for_selection,
     compute_compensated_decryption_share_for_selection,
     compute_lagrange_coefficients_for_guardians,
+    reconstruct_decryption_share,
     reconstruct_decryption_share_for_ballot,
+    reconstruct_decryption_shares_for_ballots,
 )
 from electionguard.decryption_share import (
-    DecryptionShare,
+    CompensatedDecryptionShare,
     create_ciphertext_decryption_selection,
 )
 from electionguard.election_polynomial import compute_lagrange_coefficient
+from electionguard.elgamal import ElGamalKeyPair
 from electionguard.group import (
+    ZERO_MOD_Q,
     mult_p,
     pow_p,
 )
 from electionguard.election_builder import ElectionBuilder
 from electionguard.encrypt import EncryptionMediator
 from electionguard.guardian import Guardian
-from electionguard.key_ceremony import CeremonyDetails
+from electionguard.key_ceremony import CeremonyDetails, ElectionKeyPair
 from electionguard.key_ceremony_mediator import KeyCeremonyMediator
 from electionguard.tally import tally_ballots
-from electionguard.types import GUARDIAN_ID
+from electionguard.types import BALLOT_ID, GUARDIAN_ID
 from electionguard.utils import get_optional
 
 import electionguardtest.ballot_factory as BallotFactory
@@ -172,13 +172,77 @@ class TestDecryption(TestCase):
         self.ciphertext_tally = tally_ballots(
             ballot_store, self.internal_manifest, self.context
         )
-        self.ciphertext_ballots = get_ballots(ballot_store, BallotBoxState.SPOILED)
+        self.ciphertext_ballots: Dict[BALLOT_ID, SubmittedBallot] = get_ballots(
+            ballot_store, BallotBoxState.SPOILED
+        )
 
     def tearDown(self):
         self.key_ceremony_mediator.reset(
             CeremonyDetails(self.NUMBER_OF_GUARDIANS, self.QUORUM)
         )
 
+    # SHARE
+    def test_compute_decryption_share(self):
+        # Arrange
+        guardian = self.guardians[0]
+
+        # Act
+        # Guardian doesn't give keys
+        broken_secret_key = ZERO_MOD_Q
+        broken_guardian_key_pair = ElectionKeyPair(
+            guardian.id,
+            guardian.sequence_order,
+            ElGamalKeyPair(
+                broken_secret_key, guardian._election_keys.key_pair.public_key
+            ),
+            guardian._election_keys.polynomial,
+        )
+
+        broken_share = compute_decryption_share(
+            broken_guardian_key_pair,
+            self.ciphertext_tally,
+            self.context,
+        )
+
+        # Assert
+        self.assertIsNone(broken_share)
+
+        # Act
+        # Normal use case
+        share = compute_decryption_share(
+            guardian._election_keys,
+            self.ciphertext_tally,
+            self.context,
+        )
+
+        # Assert
+        self.assertIsNotNone(share)
+
+    def test_compute_compensated_decryption_share(self):
+        # Arrange
+        guardian = self.guardians[0]
+        missing_guardian = self.guardians[2]
+
+        public_key = guardian.share_election_public_key()
+        auxiliary_keys = guardian._auxiliary_keys
+        missing_guardian_public_key = missing_guardian.share_election_public_key()
+        missing_guardian_backup = missing_guardian._backups_to_share.get(guardian.id)
+
+        # Act
+        share = compute_compensated_decryption_share(
+            public_key,
+            auxiliary_keys,
+            missing_guardian_public_key,
+            missing_guardian_backup,
+            self.ciphertext_tally,
+            self.context,
+            identity_auxiliary_decrypt,
+        )
+
+        # Assert
+        self.assertIsNotNone(share)
+
+    # SELECTION
     def test_compute_selection(self):
         # Arrange
         first_selection = [
@@ -194,36 +258,6 @@ class TestDecryption(TestCase):
 
         # assert
         self.assertIsNotNone(result)
-
-    def test_compute_compensated_selection_failure(self):
-        # Arrange
-        available_guardian = self.guardians[0]
-        missing_guardian = self.guardians[2]
-
-        first_selection = [
-            selection
-            for contest in self.ciphertext_tally.contests.values()
-            for selection in contest.selections.values()
-        ][0]
-
-        # Act
-        # Get backup for missing guardian instead of one sent by guardian
-        incorrect_backup = available_guardian.share_election_partial_key_backup(
-            missing_guardian.id
-        )
-
-        result = compute_compensated_decryption_share_for_selection(
-            available_guardian.share_election_public_key(),
-            available_guardian._auxiliary_keys,
-            missing_guardian.share_election_public_key(),
-            incorrect_backup,
-            first_selection,
-            self.context,
-            identity_auxiliary_decrypt,
-        )
-
-        # Assert
-        self.assertIsNone(result)
 
     def test_compute_compensated_selection(self):
         """
@@ -380,143 +414,58 @@ class TestDecryption(TestCase):
             result.tally, self.expected_plaintext_tally[first_selection.object_id]
         )
 
-    def test_decrypt_selection_all_present(self):
+    def test_compute_compensated_selection_failure(self):
         # Arrange
-        available_guardians = self.guardians
-
-        # find the first selection
-        first_contest = list(self.ciphertext_tally.contests.values())[0]
-        first_selection = list(first_contest.selections.values())[0]
-
-        print(first_contest.object_id)
-        print(first_selection.object_id)
-
-        # precompute decryption shares for specific selection for the guardians
-        shares: Dict[GUARDIAN_ID, Tuple[ELECTION_PUBLIC_KEY, DecryptionShare]] = {
-            guardian.id: (
-                guardian.share_election_public_key().key,
-                compute_decryption_share(
-                    guardian._election_keys,
-                    self.ciphertext_tally,
-                    self.context,
-                )
-                .contests[first_contest.object_id]
-                .selections[first_selection.object_id],
-            )
-            for guardian in available_guardians
-        }
-
-        # Act
-        result = decrypt_selection_with_decryption_shares(
-            first_selection, shares, self.context.crypto_extended_base_hash
-        )
-
-        # Assert
-        self.assertIsNotNone(result)
-        self.assertEqual(
-            self.expected_plaintext_tally[first_selection.object_id], result.tally
-        )
-
-    def test_decrypt_ballot_all_guardians_present(self):
-        # Arrange
-        # precompute decryption shares for the guardians
-        available_guardians = self.guardians
-        plaintext_ballot = self.fake_cast_ballot
-        encrypted_ballot = self.encrypted_fake_cast_ballot
-        shares = {
-            available_guardian.id: compute_decryption_share_for_ballot(
-                available_guardian._election_keys,
-                encrypted_ballot,
-                self.context,
-            )
-            for available_guardian in available_guardians
-        }
-
-        # act
-        result = decrypt_ballot(
-            encrypted_ballot,
-            shares,
-            self.context.crypto_extended_base_hash,
-        )
-
-        # assert
-        self.assertIsNotNone(result)
-
-        for contest in plaintext_ballot.contests:
-            for selection in contest.ballot_selections:
-                expected_tally = selection.vote
-                actual_tally = (
-                    result.contests[contest.object_id]
-                    .selections[selection.object_id]
-                    .tally
-                )
-                self.assertEqual(expected_tally, actual_tally)
-
-    def test_decrypt_ballots_all_guardians_present(self):
-        # Arrange
-        # precompute decryption shares for the guardians
-        available_guardians = self.guardians
-        shares = {
-            guardian.id: compute_decryption_share_for_ballots(
-                guardian._election_keys,
-                list(self.ciphertext_ballots.values()),
-                self.context,
-            )
-            for guardian in available_guardians
-        }
-
-        # Act
-        result = decrypt_ballots(
-            self.ciphertext_ballots,
-            shares,
-            self.context.crypto_extended_base_hash,
-        )
-
-        # Assert
-        self.assertIsNotNone(result)
-        self.assertTrue(self.fake_spoiled_ballot.object_id in result)
-
-        spoiled_ballot = result[self.fake_spoiled_ballot.object_id]
-        for contest in self.fake_spoiled_ballot.contests:
-            for selection in contest.ballot_selections:
-                self.assertEqual(
-                    spoiled_ballot.contests[contest.object_id]
-                    .selections[selection.object_id]
-                    .tally,
-                    result[self.fake_spoiled_ballot.object_id]
-                    .contests[contest.object_id]
-                    .selections[selection.object_id]
-                    .tally,
-                )
-
-    def test_decrypt_ballot_compensate_missing_guardians(self):
-        # Arrange
-        # precompute decryption shares for the guardians
-        plaintext_ballot = self.fake_cast_ballot
-        encrypted_ballot = self.encrypted_fake_cast_ballot
-        available_guardians = self.guardians[0:2]
+        available_guardian = self.guardians[0]
         missing_guardian = self.guardians[2]
 
-        available_shares = {
-            available_guardian.id: compute_decryption_share_for_ballot(
-                available_guardian._election_keys,
-                encrypted_ballot,
-                self.context,
-            )
-            for available_guardian in available_guardians
-        }
+        first_selection = [
+            selection
+            for contest in self.ciphertext_tally.contests.values()
+            for selection in contest.selections.values()
+        ][0]
 
-        compensated_shares = {
-            available_guardian.id: compute_compensated_decryption_share_for_ballot(
+        # Act
+        # Get backup for missing guardian instead of one sent by guardian
+        incorrect_backup = available_guardian.share_election_partial_key_backup(
+            missing_guardian.id
+        )
+
+        result = compute_compensated_decryption_share_for_selection(
+            available_guardian.share_election_public_key(),
+            available_guardian._auxiliary_keys,
+            missing_guardian.share_election_public_key(),
+            incorrect_backup,
+            first_selection,
+            self.context,
+            identity_auxiliary_decrypt,
+        )
+
+        # Assert
+        self.assertIsNone(result)
+
+    def test_reconstruct_decryption_share(self):
+        # Arrange
+        available_guardians = self.guardians[0:2]
+        available_guardians_keys = [
+            guardian.share_election_public_key() for guardian in available_guardians
+        ]
+        missing_guardian = self.guardians[2]
+        missing_guardian_key = missing_guardian.share_election_public_key()
+        missing_guardian_backups = {
+            backup.designated_id: backup
+            for backup in missing_guardian.share_election_partial_key_backups()
+        }
+        tally = self.ciphertext_tally
+
+        # Act
+        compensated_shares: Dict[GUARDIAN_ID, CompensatedDecryptionShare] = {
+            available_guardian.id: compute_compensated_decryption_share(
                 available_guardian.share_election_public_key(),
                 available_guardian._auxiliary_keys,
-                missing_guardian.share_election_public_key(),
-                get_optional(
-                    available_guardian._guardian_election_partial_key_backups.get(
-                        missing_guardian.id
-                    )
-                ),
-                encrypted_ballot,
+                missing_guardian_key,
+                missing_guardian_backups[available_guardian.id],
+                tally,
                 self.context,
                 identity_auxiliary_decrypt,
             )
@@ -524,34 +473,109 @@ class TestDecryption(TestCase):
         }
 
         lagrange_coefficients = compute_lagrange_coefficients_for_guardians(
-            [guardian.share_election_public_key() for guardian in available_guardians]
+            available_guardians_keys
         )
 
-        reconstructed_share = reconstruct_decryption_share_for_ballot(
-            missing_guardian.share_election_public_key(),
-            encrypted_ballot,
-            compensated_shares,
+        share = reconstruct_decryption_share(
+            missing_guardian_key, tally, compensated_shares, lagrange_coefficients
+        )
+
+        # Assert
+        self.assertEqual(self.QUORUM, len(compensated_shares))
+        self.assertEqual(self.QUORUM, len(lagrange_coefficients))
+        self.assertIsNotNone(share)
+
+    def test_reconstruct_decryption_shares_for_ballots(self):
+        # Arrange
+        available_guardians = self.guardians[0:2]
+        available_guardians_keys = [
+            guardian.share_election_public_key() for guardian in available_guardians
+        ]
+        missing_guardian = self.guardians[2]
+        missing_guardian_key = missing_guardian.share_election_public_key()
+        missing_guardian_backups = {
+            backup.designated_id: backup
+            for backup in missing_guardian.share_election_partial_key_backups()
+        }
+        ballots = self.ciphertext_ballots
+
+        # Act
+        compensated_ballot_shares: Dict[
+            BALLOT_ID, Dict[GUARDIAN_ID, CompensatedDecryptionShare]
+        ] = {
+            ballot_id: {guardian.id: None for guardian in available_guardians}
+            for ballot_id in ballots.keys()
+        }
+        for available_guardian in available_guardians:
+            compensated_shares = compute_compensated_decryption_share_for_ballots(
+                available_guardian.share_election_public_key(),
+                available_guardian._auxiliary_keys,
+                missing_guardian_key,
+                missing_guardian_backups[available_guardian.id],
+                list(ballots.values()),
+                self.context,
+                identity_auxiliary_decrypt,
+            )
+            for ballot_id, compensated_share in compensated_shares.items():
+                compensated_ballot_shares[ballot_id][
+                    available_guardian.id
+                ] = compensated_share
+
+        lagrange_coefficients = compute_lagrange_coefficients_for_guardians(
+            available_guardians_keys
+        )
+
+        ballot_shares = reconstruct_decryption_shares_for_ballots(
+            missing_guardian_key,
+            ballots,
+            compensated_ballot_shares,
             lagrange_coefficients,
         )
 
-        all_shares = {**available_shares, missing_guardian.id: reconstructed_share}
+        # Assert
+        self.assertEqual(self.QUORUM, len(lagrange_coefficients))
+        self.assertEqual(len(ballots), len(compensated_ballot_shares))
+        self.assertEqual(len(ballots), len(ballot_shares))
 
-        # act
-        result = decrypt_ballot(
-            encrypted_ballot,
-            all_shares,
-            self.context.crypto_extended_base_hash,
+    def test_reconstruct_decryption_share_for_ballot(self):
+        # Arrange
+        available_guardians = self.guardians[0:2]
+        available_guardians_keys = [
+            guardian.share_election_public_key() for guardian in available_guardians
+        ]
+        missing_guardian = self.guardians[2]
+        missing_guardian_key = missing_guardian.share_election_public_key()
+        missing_guardian_backups = {
+            backup.designated_id: backup
+            for backup in missing_guardian.share_election_partial_key_backups()
+        }
+        ballot = self.ciphertext_ballots[self.fake_spoiled_ballot.object_id]
+
+        # Act
+        compensated_shares: Dict[GUARDIAN_ID, CompensatedDecryptionShare] = {
+            available_guardian.id: get_optional(
+                compute_compensated_decryption_share_for_ballot(
+                    available_guardian.share_election_public_key(),
+                    available_guardian._auxiliary_keys,
+                    missing_guardian_key,
+                    missing_guardian_backups[available_guardian.id],
+                    ballot,
+                    self.context,
+                    identity_auxiliary_decrypt,
+                )
+            )
+            for available_guardian in available_guardians
+        }
+
+        lagrange_coefficients = compute_lagrange_coefficients_for_guardians(
+            available_guardians_keys
         )
 
-        # assert
-        self.assertIsNotNone(result)
+        share = reconstruct_decryption_share_for_ballot(
+            missing_guardian_key, ballot, compensated_shares, lagrange_coefficients
+        )
 
-        for contest in plaintext_ballot.contests:
-            for selection in contest.ballot_selections:
-                expected_tally = selection.vote
-                actual_tally = (
-                    result.contests[contest.object_id]
-                    .selections[selection.object_id]
-                    .tally
-                )
-                self.assertEqual(expected_tally, actual_tally)
+        # Assert
+        self.assertEqual(self.QUORUM, len(compensated_shares))
+        self.assertEqual(self.QUORUM, len(lagrange_coefficients))
+        self.assertIsNotNone(share)

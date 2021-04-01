@@ -244,10 +244,29 @@ class TestDecryptionMediator(TestCase):
         self.assertIsNotNone(decrypted_tallies)
         result = _convert_to_selections(decrypted_tallies)
 
-        # assert
+        # Assert
         self.assertIsNotNone(result)
         print(result)
         self.assertEqual(self.expected_plaintext_tally, result)
+
+    def test_get_plaintext_ballots_compensate_missing_guardian_simple(self):
+
+        # Arrange
+        decrypter = DecryptionMediator(
+            self.context,
+            self.ciphertext_tally,
+            self.ciphertext_ballots,
+        )
+
+        # Act
+
+        self.assertIsNotNone(decrypter.announce(self.guardians[0]))
+        self.assertIsNotNone(decrypter.announce(self.guardians[1]))
+
+        decrypted_ballots = decrypter.get_plaintext_ballots(identity_auxiliary_decrypt)
+
+        # Assert
+        self.assertIsNotNone(decrypted_ballots)
 
     @settings(
         deadline=timedelta(milliseconds=15000),
