@@ -2,10 +2,9 @@ from os import path
 from typing import Iterable
 
 from .ballot import PlaintextBallot, CiphertextBallot, SubmittedBallot
-from .guardian import Guardian
+from .guardian import GuardianRecord
 from .election import CiphertextElectionContext, ElectionConstants
 from .encrypt import EncryptionDevice
-from .key_ceremony import CoefficientValidationSet
 from .manifest import Manifest
 from .tally import PlaintextTally, PublishedCiphertextTally
 from .utils import make_directory
@@ -34,13 +33,13 @@ def publish(
     spoiled_ballots: Iterable[PlaintextTally],
     ciphertext_tally: PublishedCiphertextTally,
     plaintext_tally: PlaintextTally,
-    coefficient_validation_sets: Iterable[CoefficientValidationSet] = None,
+    guardian_records: Iterable[GuardianRecord],
     results_directory: str = RESULTS_DIR,
 ) -> None:
     """Publishes the election record as json"""
 
     devices_directory = path.join(results_directory, "devices")
-    coefficients_directory = path.join(results_directory, "coefficients")
+    guardian_directory = path.join(results_directory, "guardians")
     ballots_directory = path.join(results_directory, "encrypted_ballots")
     spoiled_directory = path.join(results_directory, "spoiled_ballots")
 
@@ -54,11 +53,11 @@ def publish(
         device_name = DEVICE_PREFIX + str(device.uuid)
         device.to_json_file(device_name, devices_directory)
 
-    make_directory(coefficients_directory)
-    if coefficient_validation_sets is not None:
-        for coefficient_validation_set in coefficient_validation_sets:
-            set_name = COEFFICIENT_PREFIX + coefficient_validation_set.owner_id
-            coefficient_validation_set.to_json_file(set_name, coefficients_directory)
+    make_directory(guardian_directory)
+    if guardian_records is not None:
+        for guardian_record in guardian_records:
+            set_name = COEFFICIENT_PREFIX + guardian_record.guardian_id
+            guardian_record.to_json_file(set_name, guardian_directory)
 
     make_directory(ballots_directory)
     for ballot in ciphertext_ballots:
@@ -77,7 +76,7 @@ def publish(
 def publish_private_data(
     plaintext_ballots: Iterable[PlaintextBallot],
     ciphertext_ballots: Iterable[CiphertextBallot],
-    guardians: Iterable[Guardian],
+    guardian_records: Iterable[GuardianRecord],
     results_directory: str = RESULTS_DIR,
 ) -> None:
     """
@@ -93,9 +92,11 @@ def publish_private_data(
     make_directory(results_directory)
     make_directory(private_directory)
 
-    for guardian in guardians:
-        guardian_name = GUARDIAN_PREFIX + guardian.object_id
-        guardian.to_json_file(guardian_name, private_directory, strip_privates=False)
+    for guardian_record in guardian_records:
+        guardian_name = GUARDIAN_PREFIX + guardian_record.guardian_id
+        guardian_record.to_json_file(
+            guardian_name, private_directory, strip_privates=False
+        )
 
     make_directory(plaintext_ballots_directory)
     for plaintext_ballot in plaintext_ballots:

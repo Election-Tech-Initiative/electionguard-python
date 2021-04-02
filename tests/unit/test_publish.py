@@ -9,8 +9,7 @@ from electionguard.ballot import (
 )
 from electionguard.election import ElectionConstants, make_ciphertext_election_context
 from electionguard.group import ONE_MOD_Q, ONE_MOD_P, int_to_q_unchecked
-from electionguard.guardian import Guardian
-from electionguard.key_ceremony import CoefficientValidationSet
+from electionguard.guardian import GuardianRecord
 from electionguard.manifest import ElectionType, Manifest
 from electionguard.publish import publish, publish_private_data, RESULTS_DIR
 from electionguard.tally import (
@@ -31,7 +30,7 @@ class TestPublish(TestCase):
         )
         constants = ElectionConstants()
         devices = []
-        coefficients = [CoefficientValidationSet("", [], [])]
+        guardian_records = [GuardianRecord("", "", ONE_MOD_Q, [], [])]
         encrypted_ballots = []
         spoiled_ballots = []
         plaintext_tally = PlaintextTally("", [])
@@ -47,7 +46,7 @@ class TestPublish(TestCase):
             spoiled_ballots,
             ciphertext_tally.publish(),
             plaintext_tally,
-            coefficients,
+            guardian_records,
         )
 
         # Assert
@@ -64,13 +63,13 @@ class TestPublish(TestCase):
                 "", "", int_to_q_unchecked(0), int_to_q_unchecked(0), []
             )
         ]
-        guardians = [Guardian("", 1, 1, 1)]
+        guardian_records = [GuardianRecord("", "", ONE_MOD_Q, [], [])]
 
         # Act
         publish_private_data(
             plaintext_ballots,
             encrypted_ballots,
-            guardians,
+            guardian_records,
         )
 
         # Assert

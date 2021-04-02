@@ -31,7 +31,7 @@ class DataStore(Generic[_T, _U]):
     def __iter__(self) -> Iterator:
         return iter(self._store.items())
 
-    def all(self) -> List[Optional[_U]]:
+    def all(self) -> List[_U]:
         """
         Get all `SubmittedBallot` from the store
         """
