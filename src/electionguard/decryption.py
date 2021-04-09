@@ -37,10 +37,7 @@ from .rsa import rsa_decrypt
 from .scheduler import Scheduler
 from .tally import CiphertextTally
 
-from .types import BALLOT_ID, CONTEST_ID, GUARDIAN_ID, SELECTION_ID
-
-AVAILABLE_GUARDIAN_ID = GUARDIAN_ID
-MISSING_GUARDIAN_ID = GUARDIAN_ID
+from .types import CONTEST_ID, GUARDIAN_ID, SELECTION_ID
 
 GUARDIAN_PUBLIC_KEY = ElementModP
 ELECTION_PUBLIC_KEY = ElementModP
@@ -555,8 +552,8 @@ def compute_recovery_public_key(
 def reconstruct_decryption_share(
     missing_guardian_key: ElectionPublicKey,
     tally: CiphertextTally,
-    shares: Dict[AVAILABLE_GUARDIAN_ID, CompensatedDecryptionShare],
-    lagrange_coefficients: Dict[AVAILABLE_GUARDIAN_ID, ElementModQ],
+    shares: Dict[GUARDIAN_ID, CompensatedDecryptionShare],
+    lagrange_coefficients: Dict[GUARDIAN_ID, ElementModQ],
 ) -> DecryptionShare:
     """
     Reconstruct the missing Decryption Share for a missing guardian
@@ -565,7 +562,7 @@ def reconstruct_decryption_share(
     :param missing_guardian_id: The guardian id for the missing guardian
     :param public_key: The public key of the guardian creating share
     :param tally: The collection of `CiphertextTallyContest` that is cast
-    :shares: the collection of `CompensatedTallyDecryptionShare` for the missing guardian
+    :shares: the collection of `CompensatedTallyDecryptionShare` for the missing guardian from available guardians
     :lagrange_coefficients: the lagrange coefficients corresponding to the available guardians that provided shares
     """
     contests: Dict[CONTEST_ID, CiphertextDecryptionContest] = {}
@@ -593,8 +590,8 @@ def reconstruct_decryption_share(
 def reconstruct_decryption_share_for_ballot(
     missing_guardian_key: ElectionPublicKey,
     ballot: SubmittedBallot,
-    shares: Dict[AVAILABLE_GUARDIAN_ID, CompensatedDecryptionShare],
-    lagrange_coefficients: Dict[AVAILABLE_GUARDIAN_ID, ElementModQ],
+    shares: Dict[GUARDIAN_ID, CompensatedDecryptionShare],
+    lagrange_coefficients: Dict[GUARDIAN_ID, ElementModQ],
 ) -> DecryptionShare:
     """
     Reconstruct a missing ballot Decryption share for a missing guardian
@@ -604,7 +601,7 @@ def reconstruct_decryption_share_for_ballot(
     :param public_key: the public key for the missing guardian
     :param ballot: The `SubmittedBallot` to reconstruct
     :shares: the collection of `CompensatedBallotDecryptionShare` for
-        the missing guardian, each keyed by the ID of the guardian that produced it
+        the missing guardian, each keyed by the ID of the guardian that produced it from available guardians
     :lagrange_coefficients: the lagrange coefficients corresponding to the available guardians that provided shares
     """
     contests: Dict[CONTEST_ID, CiphertextDecryptionContest] = {}
@@ -628,10 +625,10 @@ def reconstruct_decryption_share_for_ballot(
 
 
 def reconstruct_decryption_contest(
-    missing_guardian_id: MISSING_GUARDIAN_ID,
+    missing_guardian_id: GUARDIAN_ID,
     contest: CiphertextContest,
-    shares: Dict[AVAILABLE_GUARDIAN_ID, CompensatedDecryptionShare],
-    lagrange_coefficients: Dict[AVAILABLE_GUARDIAN_ID, ElementModQ],
+    shares: Dict[GUARDIAN_ID, CompensatedDecryptionShare],
+    lagrange_coefficients: Dict[GUARDIAN_ID, ElementModQ],
 ) -> CiphertextDecryptionContest:
     """
     Recontruct the missing Decryption Share for a missing guardian
@@ -639,13 +636,11 @@ def reconstruct_decryption_contest(
 
     :param missing_guardian_id: The guardian id for the missing guardian
     :param contest: The CiphertextContest to decrypt
-    :shares: the collection of `CompensatedDecryptionShare` for the missing guardian
+    :shares: the collection of `CompensatedDecryptionShare` for the missing guardian from available guardians
     :lagrange_coefficients: the lagrange coefficients corresponding to the available guardians that provided shares
     """
 
-    contest_shares: Dict[
-        AVAILABLE_GUARDIAN_ID, CiphertextCompensatedDecryptionContest
-    ] = {
+    contest_shares: Dict[GUARDIAN_ID, CiphertextCompensatedDecryptionContest] = {
         available_guardian_id: compensated_share.contests[contest.object_id]
         for available_guardian_id, compensated_share in shares.items()
     }
@@ -655,7 +650,7 @@ def reconstruct_decryption_contest(
 
         # collect all of the shares generated for each selection
         compensated_selection_shares: Dict[
-            AVAILABLE_GUARDIAN_ID, CiphertextCompensatedDecryptionSelection
+            GUARDIAN_ID, CiphertextCompensatedDecryptionSelection
         ] = {
             available_guardian_id: compensated_contest.selections[selection.object_id]
             for available_guardian_id, compensated_contest in contest_shares.items()
@@ -685,7 +680,7 @@ def reconstruct_decryption_contest(
 
 def compute_lagrange_coefficients_for_guardians(
     available_guardians_keys: List[ElectionPublicKey],
-) -> Dict[AVAILABLE_GUARDIAN_ID, ElementModQ]:
+) -> Dict[GUARDIAN_ID, ElementModQ]:
     """
     Produce all Lagrange coefficients for a collection of available
     Guardians, to be used when reconstructing a missing share.
