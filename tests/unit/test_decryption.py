@@ -12,14 +12,13 @@ from electionguard.decrypt_with_shares import decrypt_selection_with_decryption_
 from electionguard.decryption import (
     compute_compensated_decryption_share,
     compute_compensated_decryption_share_for_ballot,
-    compute_compensated_decryption_share_for_ballots,
     compute_decryption_share,
     compute_decryption_share_for_selection,
     compute_compensated_decryption_share_for_selection,
     compute_lagrange_coefficients_for_guardians,
+    compute_recovery_public_key,
     reconstruct_decryption_share,
     reconstruct_decryption_share_for_ballot,
-    reconstruct_decryption_shares_for_ballots,
 )
 from electionguard.decryption_share import (
     CompensatedDecryptionShare,
@@ -268,6 +267,9 @@ class TestDecryption(TestCase):
         available_guardian_1 = self.guardians[0]
         available_guardian_2 = self.guardians[1]
         missing_guardian = self.guardians[2]
+        available_guardian_1_key = available_guardian_1.share_election_public_key()
+        available_guardian_2_key = available_guardian_2.share_election_public_key()
+        missing_guardian_key = missing_guardian.share_election_public_key()
 
         first_selection = [
             selection
@@ -339,8 +341,8 @@ class TestDecryption(TestCase):
         self.assertTrue(
             compensation_0.proof.is_valid(
                 first_selection.ciphertext,
-                get_optional(
-                    available_guardian_1.recovery_public_key_for(missing_guardian.id)
+                compute_recovery_public_key(
+                    available_guardian_1_key, missing_guardian_key
                 ),
                 compensation_0.share,
                 self.context.crypto_extended_base_hash,
@@ -350,8 +352,8 @@ class TestDecryption(TestCase):
         self.assertTrue(
             compensation_1.proof.is_valid(
                 first_selection.ciphertext,
-                get_optional(
-                    available_guardian_2.recovery_public_key_for(missing_guardian.id)
+                compute_recovery_public_key(
+                    available_guardian_2_key, missing_guardian_key
                 ),
                 compensation_1.share,
                 self.context.crypto_extended_base_hash,
@@ -485,7 +487,7 @@ class TestDecryption(TestCase):
         self.assertEqual(self.QUORUM, len(lagrange_coefficients))
         self.assertIsNotNone(share)
 
-    def test_reconstruct_decryption_shares_for_ballots(self):
+    def test_reconstruct_decryption_shares_for_ballot(self):
         # Arrange
         available_guardians = self.guardians[0:2]
         available_guardians_keys = [
@@ -497,45 +499,39 @@ class TestDecryption(TestCase):
             backup.designated_id: backup
             for backup in missing_guardian.share_election_partial_key_backups()
         }
-        ballots = self.ciphertext_ballots
+        ballot = list(self.ciphertext_ballots.values())[0]
 
         # Act
-        compensated_ballot_shares: Dict[
-            BALLOT_ID, Dict[GUARDIAN_ID, CompensatedDecryptionShare]
-        ] = {
-            ballot_id: {guardian.id: None for guardian in available_guardians}
-            for ballot_id in ballots.keys()
-        }
+        compensated_ballot_shares: Dict[GUARDIAN_ID, CompensatedDecryptionShare] = {}
         for available_guardian in available_guardians:
-            compensated_shares = compute_compensated_decryption_share_for_ballots(
+            compensated_share = compute_compensated_decryption_share_for_ballot(
                 available_guardian.share_election_public_key(),
                 available_guardian._auxiliary_keys,
                 missing_guardian_key,
                 missing_guardian_backups[available_guardian.id],
-                list(ballots.values()),
+                ballot,
                 self.context,
                 identity_auxiliary_decrypt,
             )
-            for ballot_id, compensated_share in compensated_shares.items():
-                compensated_ballot_shares[ballot_id][
-                    available_guardian.id
-                ] = compensated_share
+            if compensated_share:
+                compensated_ballot_shares[available_guardian.id] = compensated_share
 
         lagrange_coefficients = compute_lagrange_coefficients_for_guardians(
             available_guardians_keys
         )
 
-        ballot_shares = reconstruct_decryption_shares_for_ballots(
+        missing_ballot_share = reconstruct_decryption_share_for_ballot(
             missing_guardian_key,
-            ballots,
+            ballot,
             compensated_ballot_shares,
             lagrange_coefficients,
         )
 
         # Assert
         self.assertEqual(self.QUORUM, len(lagrange_coefficients))
-        self.assertEqual(len(ballots), len(compensated_ballot_shares))
-        self.assertEqual(len(ballots), len(ballot_shares))
+        self.assertEqual(len(available_guardians), len(compensated_ballot_shares))
+        self.assertEqual(len(available_guardians), len(lagrange_coefficients))
+        self.assertIsNotNone(missing_ballot_share)
 
     def test_reconstruct_decryption_share_for_ballot(self):
         # Arrange
