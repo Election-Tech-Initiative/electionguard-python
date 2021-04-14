@@ -37,7 +37,7 @@ from electionguard.utils import get_optional
 import electionguardtest.ballot_factory as BallotFactory
 import electionguardtest.election_factory as ElectionFactory
 from electionguardtest.election import election_descriptions, plaintext_voted_ballots
-from electionguardtest.identity_encrypt import identity_auxiliary_decrypt
+from electionguardtest.decryption_helper import DecryptionHelper
 from electionguardtest.key_ceremony_helper import KeyCeremonyHelper
 from electionguardtest.tally import accumulate_plaintext_ballots
 
@@ -52,6 +52,8 @@ class TestDecryptionMediator(TestCase):
     QUORUM = 2
     CEREMONY_DETAILS = CeremonyDetails(NUMBER_OF_GUARDIANS, QUORUM)
     internal_manifest: InternalManifest
+
+    decryption_mediator_id = "mediator-id"
 
     def setUp(self):
 
@@ -178,95 +180,116 @@ class TestDecryptionMediator(TestCase):
         self.ciphertext_tally = tally_ballots(
             ballot_store, self.internal_manifest, self.context
         )
-        self.ciphertext_ballots = get_ballots(ballot_store, BallotBoxState.SPOILED)
+        self.ciphertext_ballots = list(
+            get_ballots(ballot_store, BallotBoxState.SPOILED).values()
+        )
 
     def test_announce(self):
         # Arrange
-        subject = DecryptionMediator(
+        mediator = DecryptionMediator(
+            self.decryption_mediator_id,
+            self.context,
+        )
+        guardian = self.guardians[0]
+        guardian_key = self.guardians[0].share_election_public_key()
+        tally_share = guardian.compute_tally_share(self.ciphertext_tally, self.context)
+        ballot_shares = {}
+
+        # Act
+        mediator.announce(guardian_key, tally_share, ballot_shares)
+
+        # Assert
+        self.assertEqual(len(mediator.get_available_guardians()), 1)
+
+        # Act
+        # Announce again
+        mediator.announce(guardian_key, tally_share, ballot_shares)
+
+        # Assert
+        # Can only announce once
+        self.assertEqual(len(mediator.get_available_guardians()), 1)
+        # Cannot get plaintext tally or spoiled ballots without a quorum
+        self.assertIsNone(mediator.get_plaintext_tally(self.ciphertext_tally))
+        self.assertIsNone(mediator.get_plaintext_ballots(self.ciphertext_ballots))
+
+    def test_get_plaintext_with_all_guardians_present(self):
+        # Arrange
+        mediator = DecryptionMediator(
+            self.decryption_mediator_id,
+            self.context,
+        )
+
+        available_guardians = self.guardians
+
+        DecryptionHelper.perform_decryption_setup(
+            available_guardians,
+            mediator,
             self.context,
             self.ciphertext_tally,
             self.ciphertext_ballots,
         )
 
-        # act
-        result = subject.announce(self.guardians[0])
+        # Act
+        plaintext_tally = mediator.get_plaintext_tally(self.ciphertext_tally)
+        plaintext_ballots = mediator.get_plaintext_ballots(self.ciphertext_ballots)
 
-        # assert
-        self.assertIsNotNone(result)
-
-        # Can only announce once
-        self.assertIsNotNone(subject.announce(self.guardians[0]))
-
-        # Cannot get plaintext tally or spoiled ballots without a quorum
-        self.assertIsNone(subject.get_plaintext_tally())
-        self.assertIsNone(subject.get_plaintext_ballots())
-
-        # Assert a second
-        self.assertIsNotNone(subject.announce(self.guardians[1]))
-
-    def test_get_plaintext_tally_all_guardians_present_simple(self):
-        # Arrange
-        decrypter = DecryptionMediator(self.context, self.ciphertext_tally, {})
-
-        # act
-        for guardian in self.guardians:
-            self.assertIsNotNone(decrypter.announce(guardian))
-
-        decrypted_tallies = decrypter.get_plaintext_tally()
-        spoiled_ballots = decrypter.get_plaintext_ballots()
-        result = _convert_to_selections(decrypted_tallies)
-
-        # assert
-        self.assertIsNotNone(result)
-        self.assertIsNotNone(spoiled_ballots)
-        self.assertEqual(self.expected_plaintext_tally, result)
+        # Convert to selections to check for the same tally
+        selections = _convert_to_selections(plaintext_tally)
 
         # Verify we get the same tally back if we call again
-        another_decrypted_tally = decrypter.get_plaintext_tally()
+        another_plaintext_tally = mediator.get_plaintext_tally(self.ciphertext_tally)
 
-        self.assertEqual(decrypted_tallies, another_decrypted_tally)
+        # Assert
+        self.assertIsNotNone(plaintext_tally)
+        self.assertIsNotNone(plaintext_ballots)
+        self.assertEqual(len(self.ciphertext_ballots), len(plaintext_ballots))
 
-    def test_get_plaintext_tally_compensate_missing_guardian_simple(self):
+        self.assertIsNotNone(selections)
+        self.assertEqual(self.expected_plaintext_tally, selections)
+
+        self.assertEqual(plaintext_tally, another_plaintext_tally)
+
+    def test_get_plaintext_with_a_missing_guardian(self):
 
         # Arrange
-        decrypter = DecryptionMediator(
+        mediator = DecryptionMediator(
+            self.decryption_mediator_id,
+            self.context,
+        )
+
+        available_guardians = self.guardians[0:2]
+        all_guardian_keys = [
+            guardian.share_election_public_key() for guardian in self.guardians
+        ]
+
+        DecryptionHelper.perform_compensated_decryption_setup(
+            available_guardians,
+            all_guardian_keys,
+            mediator,
             self.context,
             self.ciphertext_tally,
             self.ciphertext_ballots,
         )
 
         # Act
+        plaintext_tally = mediator.get_plaintext_tally(self.ciphertext_tally)
+        plaintext_ballots = mediator.get_plaintext_ballots(self.ciphertext_ballots)
 
-        self.assertIsNotNone(decrypter.announce(self.guardians[0]))
-        self.assertIsNotNone(decrypter.announce(self.guardians[1]))
+        # Convert to selections to check for the same tally
+        selections = _convert_to_selections(plaintext_tally)
 
-        decrypted_tallies = decrypter.get_plaintext_tally(identity_auxiliary_decrypt)
-        self.assertIsNotNone(decrypted_tallies)
-        result = _convert_to_selections(decrypted_tallies)
-
-        # Assert
-        self.assertIsNotNone(result)
-        print(result)
-        self.assertEqual(self.expected_plaintext_tally, result)
-
-    def test_get_plaintext_ballots_compensate_missing_guardian_simple(self):
-
-        # Arrange
-        decrypter = DecryptionMediator(
-            self.context,
-            self.ciphertext_tally,
-            self.ciphertext_ballots,
-        )
-
-        # Act
-
-        self.assertIsNotNone(decrypter.announce(self.guardians[0]))
-        self.assertIsNotNone(decrypter.announce(self.guardians[1]))
-
-        decrypted_ballots = decrypter.get_plaintext_ballots(identity_auxiliary_decrypt)
+        # Verify we get the same tally back if we call again
+        another_plaintext_tally = mediator.get_plaintext_tally(self.ciphertext_tally)
 
         # Assert
-        self.assertIsNotNone(decrypted_ballots)
+        self.assertIsNotNone(plaintext_tally)
+        self.assertIsNotNone(plaintext_ballots)
+        self.assertEqual(len(self.ciphertext_ballots), len(plaintext_ballots))
+
+        self.assertIsNotNone(selections)
+        self.assertEqual(self.expected_plaintext_tally, selections)
+
+        self.assertEqual(plaintext_tally, another_plaintext_tally)
 
     @settings(
         deadline=timedelta(milliseconds=15000),
@@ -276,7 +299,7 @@ class TestDecryptionMediator(TestCase):
         phases=[Phase.explicit, Phase.reuse, Phase.generate, Phase.target],
     )
     @given(data(), integers(1, 3), integers(2, 5))
-    def test_get_plaintext_tally_all_guardians_present(
+    def test_get_plaintext_tally_with_all_guardians_present(
         self, values, parties: int, contests: int
     ):
         # Arrange
@@ -291,26 +314,26 @@ class TestDecryptionMediator(TestCase):
         plaintext_ballots: List[PlaintextBallot] = values.draw(
             plaintext_voted_ballots(internal_manifest, randrange(3, 6))
         )
-        plaintext_tallies = accumulate_plaintext_ballots(plaintext_ballots)
+        expected_plaintext_tally = accumulate_plaintext_ballots(plaintext_ballots)
 
         encrypted_tally = self._generate_encrypted_tally(
             internal_manifest, context, plaintext_ballots
         )
 
-        decrypter = DecryptionMediator(context, encrypted_tally, {})
+        mediator = DecryptionMediator(self.decryption_mediator_id, context)
+        available_guardians = self.guardians
+        DecryptionHelper.perform_decryption_setup(
+            available_guardians, mediator, context, encrypted_tally, []
+        )
 
-        # act
-        for guardian in self.guardians:
-            self.assertIsNotNone(decrypter.announce(guardian))
+        # Act
+        plaintext_tally = mediator.get_plaintext_tally(encrypted_tally)
+        selections = _convert_to_selections(plaintext_tally)
 
-        decrypted_tallies = decrypter.get_plaintext_tally()
-        spoiled_ballots = decrypter.get_plaintext_ballots()
-        result = _convert_to_selections(decrypted_tallies)
-
-        # assert
-        self.assertIsNotNone(result)
-        self.assertIsNotNone(spoiled_ballots)
-        self.assertEqual(plaintext_tallies, result)
+        # Assert
+        self.assertIsNotNone(plaintext_tally)
+        self.assertIsNotNone(selections)
+        self.assertEqual(expected_plaintext_tally, selections)
 
     def _generate_encrypted_tally(
         self,

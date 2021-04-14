@@ -6,7 +6,6 @@ from electionguard.guardian import Guardian, get_valid_ballot_shares
 from electionguard.decryption_mediator import DecryptionMediator
 from electionguard.key_ceremony import ElectionPublicKey
 from electionguard.tally import CiphertextTally
-from electionguard.types import GUARDIAN_ID
 
 from electionguardtest.identity_encrypt import identity_auxiliary_decrypt
 
@@ -87,8 +86,12 @@ class DecryptionHelper:
 
         # Announce missing guardians
         # Get all guardian keys and filter to determine the missing guardians
-        available_guardian_ids = [ guardian.id for guardian in available_guardians ]
-        missing_guardians = [ key for key in all_guardians_keys if key.owner_id not in available_guardian_ids ]
+        available_guardian_ids = [guardian.id for guardian in available_guardians]
+        missing_guardians = [
+            key
+            for key in all_guardians_keys
+            if key.owner_id not in available_guardian_ids
+        ]
 
         for missing_guardian_key in missing_guardians:
             mediator.announce_missing(missing_guardian_key)

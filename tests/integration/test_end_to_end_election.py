@@ -104,7 +104,7 @@ class TestEndToEndElection(TestCase):
     ciphertext_tally: CiphertextTally
     plaintext_tally: PlaintextTally
     plaintext_spoiled_ballots: Dict[str, PlaintextTally]
-    decrypter: DecryptionMediator
+    decryption_mediator: DecryptionMediator
 
     # Step 5 - Publish
     guardian_records: List[GuardianRecord] = []
@@ -360,23 +360,36 @@ class TestEndToEndElection(TestCase):
         )
 
         # Configure the Decryption
-        self.decrypter = DecryptionMediator(
+        ciphertext_ballots = list(self.ciphertext_ballots.values())
+        self.decryption_mediator = DecryptionMediator(
+            "decryption-mediator",
             self.context,
-            self.ciphertext_tally,
-            self.ciphertext_ballots,
+            # self.ciphertext_tally,
+            # self.ciphertext_ballots,
         )
 
         # Announce each guardian as present
+        count = 0
         for guardian in self.guardians:
-            decryption_share = self.decrypter.announce(guardian)
+            guardian_key = guardian.share_election_public_key()
+            tally_share = guardian.compute_tally_share(
+                self.ciphertext_tally, self.context
+            )
+            ballot_shares = guardian.compute_ballot_shares(
+                ciphertext_ballots, self.context
+            )
+            self.decryption_mediator.announce(guardian_key, tally_share, ballot_shares)
+            count += 1
             self._assert_message(
                 DecryptionMediator.announce.__qualname__,
                 f"Guardian Present: {guardian.id}",
-                decryption_share is not None,
+                len(self.decryption_mediator.get_available_guardians()) == count,
             )
 
         # Get the plaintext Tally
-        self.plaintext_tally = get_optional(self.decrypter.get_plaintext_tally())
+        self.plaintext_tally = get_optional(
+            self.decryption_mediator.get_plaintext_tally(self.ciphertext_tally)
+        )
         self._assert_message(
             DecryptionMediator.get_plaintext_tally.__qualname__,
             "Tally Decrypted",
@@ -385,7 +398,7 @@ class TestEndToEndElection(TestCase):
 
         # Get the plaintext Spoiled Ballots
         self.plaintext_spoiled_ballots = get_optional(
-            self.decrypter.get_plaintext_ballots()
+            self.decryption_mediator.get_plaintext_ballots(ciphertext_ballots)
         )
         self._assert_message(
             DecryptionMediator.get_plaintext_ballots.__qualname__,
