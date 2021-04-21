@@ -672,7 +672,7 @@ class CiphertextBallot(ElectionObjectBase, CryptoHashCheckable):
     contests: List[CiphertextBallotContest]
     """List of contests for this ballot"""
 
-    code: Optional[ElementModQ]
+    code: ElementModQ
     """Unique ballot code for this ballot"""
 
     timestamp: int

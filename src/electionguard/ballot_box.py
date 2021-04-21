@@ -12,6 +12,7 @@ from .data_store import DataStore
 from .election import CiphertextElectionContext
 from .logs import log_warning
 from .manifest import InternalManifest
+from .types import BALLOT_ID
 
 
 @dataclass
@@ -83,7 +84,7 @@ def accept_ballot(
 
 def get_ballots(
     store: DataStore, state: Optional[BallotBoxState]
-) -> Dict[str, SubmittedBallot]:
+) -> Dict[BALLOT_ID, SubmittedBallot]:
     return {
         ballot_id: ballot
         for (ballot_id, ballot) in store.items()

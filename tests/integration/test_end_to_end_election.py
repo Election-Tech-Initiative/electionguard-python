@@ -7,9 +7,6 @@ from unittest import TestCase
 
 from random import randint
 
-from electionguardtest.election_factory import ElectionFactory
-from electionguardtest.ballot_factory import BallotFactory
-
 from electionguard.utils import get_optional
 
 # Step 0 - Configure Election
@@ -21,8 +18,7 @@ from electionguard.election_builder import ElectionBuilder
 from electionguard.manifest import Manifest, InternalManifest
 
 # Step 1 - Key Ceremony
-from electionguard.guardian import Guardian
-from electionguard.key_ceremony import CoefficientValidationSet
+from electionguard.guardian import Guardian, GuardianRecord
 from electionguard.key_ceremony_mediator import KeyCeremonyMediator
 
 # Step 2 - Encrypt Votes
@@ -61,9 +57,13 @@ from electionguard.publish import (
     TALLY_FILE_NAME,
 )
 
+from electionguardtest.ballot_factory import BallotFactory
+from electionguardtest.election_factory import ElectionFactory, NUMBER_OF_GUARDIANS
+from electionguardtest.identity_encrypt import identity_auxiliary_encrypt
+
 RESULTS_DIR = "test-results"
 DEVICES_DIR = path.join(RESULTS_DIR, "devices")
-COEFFICIENTS_DIR = path.join(RESULTS_DIR, "coefficients")
+GUARDIAN_DIR = path.join(RESULTS_DIR, "guardians")
 BALLOTS_DIR = path.join(RESULTS_DIR, "encrypted_ballots")
 SPOILED_DIR = path.join(RESULTS_DIR, "spoiled_ballots")
 
@@ -89,7 +89,6 @@ class TestEndToEndElection(TestCase):
     # Step 1 - Key Ceremony
     mediator: KeyCeremonyMediator
     guardians: List[Guardian] = []
-    coefficient_validation_sets: List[CoefficientValidationSet] = []
 
     # Step 2 - Encrypt Votes
     device: EncryptionDevice
@@ -105,7 +104,10 @@ class TestEndToEndElection(TestCase):
     ciphertext_tally: CiphertextTally
     plaintext_tally: PlaintextTally
     plaintext_spoiled_ballots: Dict[str, PlaintextTally]
-    decrypter: DecryptionMediator
+    decryption_mediator: DecryptionMediator
+
+    # Step 5 - Publish
+    guardian_records: List[GuardianRecord] = []
 
     def test_end_to_end_election(self) -> None:
         """
@@ -166,70 +168,102 @@ class TestEndToEndElection(TestCase):
         # Setup Guardians
         for i in range(self.NUMBER_OF_GUARDIANS):
             self.guardians.append(
-                Guardian("guardian_" + str(i), i, self.NUMBER_OF_GUARDIANS, self.QUORUM)
+                Guardian(
+                    "guardian_" + str(i + 1),
+                    i + 1,
+                    self.NUMBER_OF_GUARDIANS,
+                    self.QUORUM,
+                )
             )
 
         # Setup Mediator
-        self.mediator = KeyCeremonyMediator(self.guardians[0].ceremony_details)
+        self.mediator = KeyCeremonyMediator(
+            "mediator_1", self.guardians[0].ceremony_details
+        )
 
-        # Attendance (Public Key Share)
+        # ROUND 1: Public Key Sharing
+        # Announce
         for guardian in self.guardians:
-            self.mediator.announce(guardian)
+            self.mediator.announce(guardian.share_public_keys())
+
+        # Share Keys
+        for guardian in self.guardians:
+            announced_keys = self.mediator.share_announced()
+            for key_set in announced_keys:
+                if guardian.id is not key_set.election.owner_id:
+                    guardian.save_guardian_public_keys(key_set)
 
         self._assert_message(
-            KeyCeremonyMediator.all_guardians_in_attendance.__qualname__,
+            KeyCeremonyMediator.all_guardians_announced.__qualname__,
             "Confirms all guardians have shared their public keys",
-            self.mediator.all_guardians_in_attendance(),
+            self.mediator.all_guardians_announced(),
         )
 
-        # Run the Key Ceremony process,
-        # Which shares the keys among the guardians
-        orchestrated = self.mediator.orchestrate()
-        self._assert_message(
-            KeyCeremonyMediator.orchestrate.__qualname__,
-            "Executes the key exchange between guardians",
-            orchestrated is not None,
-        )
+        # ROUND 2: Election Partial Key Backup Sharing
+        # Share Backups
+        for sending_guardian in self.guardians:
+            sending_guardian.generate_election_partial_key_backups(
+                identity_auxiliary_encrypt
+            )
+            backups = []
+            for designated_guardian in self.guardians:
+                if designated_guardian.id != sending_guardian.id:
+                    backups.append(
+                        sending_guardian.share_election_partial_key_backup(
+                            designated_guardian.id
+                        )
+                    )
+            self.mediator.receive_backups(backups)
+            self._assert_message(
+                KeyCeremonyMediator.receive_backups.__qualname__,
+                "Receive election partial key backups from key owning guardian",
+                len(backups) == NUMBER_OF_GUARDIANS - 1,
+            )
 
         self._assert_message(
-            KeyCeremonyMediator.all_election_partial_key_backups_available.__qualname__,
-            "Confirm sall guardians have shared their partial key backups",
-            self.mediator.all_election_partial_key_backups_available(),
+            KeyCeremonyMediator.all_backups_available.__qualname__,
+            "Confirm all guardians have shared their election partial key backups",
+            self.mediator.all_backups_available(),
         )
 
-        # Verification
-        verified = self.mediator.verify()
-        self._assert_message(
-            KeyCeremonyMediator.verify.__qualname__,
-            "Confirms all guardians truthfully executed the ceremony",
-            verified,
-        )
+        # Receive Backups
+        for designated_guardian in self.guardians:
+            backups = self.mediator.share_backups(designated_guardian.id)
+            self._assert_message(
+                KeyCeremonyMediator.share_backups.__qualname__,
+                "Share election partial key backups for the designated guardian",
+                len(backups) == NUMBER_OF_GUARDIANS - 1,
+            )
+            for backup in backups:
+                designated_guardian.save_election_partial_key_backup(backup)
+
+        # ROUND 3: Verification of Backups
+        # Verify Backups
+        for designated_guardian in self.guardians:
+            verifications = []
+            for backup_owner in self.guardians:
+                if designated_guardian.id is not backup_owner.id:
+                    verification = (
+                        designated_guardian.verify_election_partial_key_backup(
+                            backup_owner.id, identity_auxiliary_encrypt
+                        )
+                    )
+                    verifications.append(verification)
+            self.mediator.receive_backup_verifications(verifications)
 
         self._assert_message(
-            KeyCeremonyMediator.all_election_partial_key_verifications_received.__qualname__,
-            "Confirms all guardians have submitted a verification of the backups of all other guardians",
-            self.mediator.all_election_partial_key_verifications_received(),
-        )
-
-        self._assert_message(
-            KeyCeremonyMediator.all_election_partial_key_backups_verified.__qualname__,
+            KeyCeremonyMediator.all_backups_verified.__qualname__,
             "Confirms all guardians have verified the backups of all other guardians",
-            self.mediator.all_election_partial_key_backups_verified(),
+            self.mediator.all_backups_verified(),
         )
 
-        # Joint Key
+        # FINAL: Publish Joint Key
         joint_key = self.mediator.publish_joint_key()
         self._assert_message(
             KeyCeremonyMediator.publish_joint_key.__qualname__,
             "Publishes the Joint Election Key",
             joint_key is not None,
         )
-
-        # Save Validation Keys
-        for guardian in self.guardians:
-            self.coefficient_validation_sets.append(
-                guardian.share_coefficient_validation_set()
-            )
 
         # Build the Election
         self.election_builder.set_public_key(get_optional(joint_key).joint_public_key)
@@ -326,23 +360,34 @@ class TestEndToEndElection(TestCase):
         )
 
         # Configure the Decryption
-        self.decrypter = DecryptionMediator(
+        ciphertext_ballots = list(self.ciphertext_ballots.values())
+        self.decryption_mediator = DecryptionMediator(
+            "decryption-mediator",
             self.context,
-            self.ciphertext_tally,
-            self.ciphertext_ballots,
         )
 
         # Announce each guardian as present
+        count = 0
         for guardian in self.guardians:
-            decryption_share = self.decrypter.announce(guardian)
+            guardian_key = guardian.share_election_public_key()
+            tally_share = guardian.compute_tally_share(
+                self.ciphertext_tally, self.context
+            )
+            ballot_shares = guardian.compute_ballot_shares(
+                ciphertext_ballots, self.context
+            )
+            self.decryption_mediator.announce(guardian_key, tally_share, ballot_shares)
+            count += 1
             self._assert_message(
                 DecryptionMediator.announce.__qualname__,
-                f"Guardian Present: {guardian.object_id}",
-                decryption_share is not None,
+                f"Guardian Present: {guardian.id}",
+                len(self.decryption_mediator.get_available_guardians()) == count,
             )
 
         # Get the plaintext Tally
-        self.plaintext_tally = get_optional(self.decrypter.get_plaintext_tally())
+        self.plaintext_tally = get_optional(
+            self.decryption_mediator.get_plaintext_tally(self.ciphertext_tally)
+        )
         self._assert_message(
             DecryptionMediator.get_plaintext_tally.__qualname__,
             "Tally Decrypted",
@@ -351,7 +396,7 @@ class TestEndToEndElection(TestCase):
 
         # Get the plaintext Spoiled Ballots
         self.plaintext_spoiled_ballots = get_optional(
-            self.decrypter.get_plaintext_ballots()
+            self.decryption_mediator.get_plaintext_ballots(ciphertext_ballots)
         )
         self._assert_message(
             DecryptionMediator.get_plaintext_ballots.__qualname__,
@@ -438,6 +483,9 @@ class TestEndToEndElection(TestCase):
         """
         Publish results/artifacts of the election
         """
+
+        self.guardian_records = [guardian.publish() for guardian in self.guardians]
+
         publish(
             self.manifest,
             self.context,
@@ -447,7 +495,7 @@ class TestEndToEndElection(TestCase):
             self.plaintext_spoiled_ballots.values(),
             self.ciphertext_tally.publish(),
             self.plaintext_tally,
-            self.coefficient_validation_sets,
+            self.guardian_records,
             RESULTS_DIR,
         )
         self._assert_message(
@@ -499,14 +547,12 @@ class TestEndToEndElection(TestCase):
         )
         self.assertEqual(self.plaintext_tally, plainttext_tally_from_file)
 
-        for coefficient_validation_set in self.coefficient_validation_sets:
-            set_name = COEFFICIENT_PREFIX + coefficient_validation_set.owner_id
-            coefficient_validation_set_from_file = (
-                CoefficientValidationSet.from_json_file(set_name, COEFFICIENTS_DIR)
+        for guardian_record in self.guardian_records:
+            set_name = COEFFICIENT_PREFIX + guardian_record.guardian_id
+            guardian_record_from_file = GuardianRecord.from_json_file(
+                set_name, GUARDIAN_DIR
             )
-            self.assertEqual(
-                coefficient_validation_set, coefficient_validation_set_from_file
-            )
+            self.assertEqual(guardian_record, guardian_record_from_file)
 
     def _assert_message(
         self, name: str, message: str, condition: Union[Callable, bool] = True

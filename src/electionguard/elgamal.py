@@ -17,12 +17,15 @@ from .hash import hash_elems
 from .logs import log_error
 from .utils import flatmap_optional, get_optional
 
+ELGAMAL_SECRET_KEY = ElementModQ
+ELGAMAL_PUBLIC_KEY = ElementModP
+
 
 class ElGamalKeyPair(NamedTuple):
     """A tuple of an ElGamal secret key and public key."""
 
-    secret_key: ElementModQ
-    public_key: ElementModP
+    secret_key: ELGAMAL_SECRET_KEY
+    public_key: ELGAMAL_PUBLIC_KEY
 
 
 class ElGamalCiphertext(NamedTuple):

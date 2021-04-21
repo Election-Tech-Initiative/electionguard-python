@@ -3,15 +3,13 @@ from random import randint
 from shutil import rmtree
 from typing import List
 
-from electionguardtest.election_factory import ElectionFactory, QUORUM
-from electionguardtest.ballot_factory import BallotFactory
-
 from electionguard.ballot import (
+    BallotBoxState,
     CiphertextBallot,
     SubmittedBallot,
 )
 from electionguard.data_store import DataStore
-from electionguard.ballot_box import BallotBox
+from electionguard.ballot_box import BallotBox, get_ballots
 from electionguard.decryption_mediator import DecryptionMediator
 from electionguard.encrypt import (
     EncryptionDevice,
@@ -20,6 +18,11 @@ from electionguard.encrypt import (
 from electionguard.publish import publish, publish_private_data, RESULTS_DIR
 from electionguard.tally import tally_ballots
 from electionguard.utils import get_optional
+
+from .ballot_factory import BallotFactory
+from .decryption_helper import DecryptionHelper
+from .election_factory import ElectionFactory, QUORUM
+
 
 DEFAULT_NUMBER_OF_BALLOTS = 5
 DEFAULT_SPOIL_RATE = 50
@@ -91,21 +94,30 @@ class ElectionSampleDataGenerator:
                 submitted_ballots.append(ballot_box.cast(ballot))
 
         # Tally
+        spoiled_ciphertext_ballots = get_ballots(ballot_store, BallotBoxState.SPOILED)
         ciphertext_tally = get_optional(
             tally_ballots(ballot_store, manifest.internal_manifest, manifest.context)
         )
 
         # Decrypt
-        decrypter = DecryptionMediator(
-            manifest.internal_manifest, manifest.context, ciphertext_tally
+        mediator = DecryptionMediator("sample-manifest-decrypter", manifest.context)
+        available_guardians = (
+            private_data.guardians
+            if use_all_guardians
+            else private_data.guardians[0:QUORUM]
+        )
+        DecryptionHelper.perform_decryption_setup(
+            available_guardians,
+            mediator,
+            manifest.context,
+            ciphertext_tally,
+            spoiled_ciphertext_ballots,
         )
 
-        for i, guardian in enumerate(private_data.guardians):
-            if use_all_guardians or i < QUORUM:
-                decrypter.announce(guardian)
-
-        plaintext_tally = get_optional(decrypter.get_plaintext_tally())
-        plaintext_spoiled_ballots = get_optional(decrypter.get_plaintext_ballots())
+        plaintext_tally = get_optional(mediator.get_plaintext_tally(ciphertext_tally))
+        plaintext_spoiled_ballots = get_optional(
+            mediator.get_plaintext_ballots(spoiled_ciphertext_ballots)
+        )
 
         # Publish
         publish(
