@@ -19,6 +19,8 @@ from .group import (
 )
 from .schnorr import make_schnorr_proof, SchnorrProof
 
+SECRET_COEFFICIENT = ElementModQ  # Secret coefficient of election polynomial
+PUBLIC_COMMITMENT = ElementModP  # Public commitment of election polynomial
 
 # TODO:ISSUE #84: do not use lists here
 class ElectionPolynomial(NamedTuple):
@@ -29,10 +31,10 @@ class ElectionPolynomial(NamedTuple):
     be discovered by a quorum of n guardians corresponding to n coefficients.
     """
 
-    coefficients: List[ElementModQ]
+    coefficients: List[SECRET_COEFFICIENT]
     """The secret coefficients `a_ij` """
 
-    coefficient_commitments: List[ElementModP]
+    coefficient_commitments: List[PUBLIC_COMMITMENT]
     """The public keys `K_ij`generated from secret coefficients"""
 
     coefficient_proofs: List[SchnorrProof]
@@ -49,8 +51,8 @@ def generate_polynomial(
     :param nonce: an optional nonce parameter that may be provided (useful for testing)
     :return: Polynomial used to share election keys
     """
-    coefficients: List[ElementModQ] = []
-    commitments: List[ElementModP] = []
+    coefficients: List[SECRET_COEFFICIENT] = []
+    commitments: List[PUBLIC_COMMITMENT] = []
     proofs: List[SchnorrProof] = []
 
     for i in range(number_of_coefficients):
@@ -79,7 +81,7 @@ def compute_polynomial_coordinate(
     :return: Polynomial used to share election keys
     """
 
-    assert 0 <= exponent_modifier < Q, "exponent_modifier is out of range"
+    _check_exponent_modifier(exponent_modifier)
 
     computed_value = ZERO_MOD_Q
     for (i, coefficient) in enumerate(polynomial.coefficients):
@@ -107,21 +109,32 @@ def compute_lagrange_coefficient(coordinate: int, *degrees: int) -> ElementModQ:
 def verify_polynomial_coordinate(
     coordinate: ElementModQ,
     exponent_modifier: int,
-    coefficient_commitments: List[ElementModP],
+    commitments: List[PUBLIC_COMMITMENT],
 ) -> bool:
     """
     Verify a polynomial coordinate value is in fact on the polynomial's curve
 
     :param coordinate: Value to be checked
     :param exponent_modifier: Unique modifier (usually sequence order) for exponent
-    :param coefficient_commitments: Commitments for coefficients of polynomial
+    :param commitments: Public commitments for coefficients of polynomial
     :return: True if verified on polynomial
     """
+
+    _check_exponent_modifier(exponent_modifier)
+
     commitment_output = ONE_MOD_P
-    for (i, commitment) in enumerate(coefficient_commitments):
+    for (i, commitment) in enumerate(commitments):
         exponent = pow_p(int_to_p_unchecked(exponent_modifier), int_to_p_unchecked(i))
         factor = pow_p(commitment, exponent)
         commitment_output = mult_p(commitment_output, factor)
 
     value_output = g_pow_p(coordinate)
     return value_output == commitment_output
+
+
+def _check_exponent_modifier(exponent_modifier: int) -> None:
+    """
+    Ensure the exponent modifier (typically sequence order)
+    is between 0 and Q. If not, identify modifier is out of the range
+    """
+    assert 0 < exponent_modifier < Q, "exponent_modifier is out of range"
