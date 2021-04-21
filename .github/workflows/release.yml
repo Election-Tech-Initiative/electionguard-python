@@ -6,6 +6,7 @@ on:
 
 env:
   PYTHON_VERSION: 3.8
+  POETRY_PATH: "$HOME/.poetry/bin" 
 
 jobs:
   code_analysis: 
