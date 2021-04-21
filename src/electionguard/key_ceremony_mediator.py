@@ -11,9 +11,7 @@ from .key_ceremony import (
     combine_election_public_keys,
     verify_election_partial_key_challenge,
 )
-from .types import GUARDIAN_ID
-
-MEDIATOR_ID = str
+from .types import GUARDIAN_ID, MEDIATOR_ID
 
 
 class GuardianPair(NamedTuple):
