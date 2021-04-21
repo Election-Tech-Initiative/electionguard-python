@@ -9,14 +9,12 @@ from electionguard.ballot_box import BallotBox, BallotBoxState, get_ballots
 from electionguard.data_store import DataStore
 from electionguard.decrypt_with_shares import (
     ELECTION_PUBLIC_KEY,
-    decrypt_ballots,
     decrypt_selection_with_decryption_shares,
     decrypt_ballot,
 )
 from electionguard.decryption import (
     compute_decryption_share,
     compute_decryption_share_for_ballot,
-    compute_decryption_share_for_ballots,
     compute_compensated_decryption_share_for_ballot,
     compute_lagrange_coefficients_for_guardians,
     reconstruct_decryption_share_for_ballot,
@@ -240,43 +238,6 @@ class TestDecryptWithShares(TestCase):
                     .tally
                 )
                 self.assertEqual(expected_tally, actual_tally)
-
-    def test_decrypt_ballots_with_all_guardians_present(self):
-        # Arrange
-        # precompute decryption shares for the guardians
-        available_guardians = self.guardians
-        shares = {
-            guardian.id: compute_decryption_share_for_ballots(
-                guardian._election_keys,
-                list(self.ciphertext_ballots.values()),
-                self.context,
-            )
-            for guardian in available_guardians
-        }
-
-        # Act
-        result = decrypt_ballots(
-            self.ciphertext_ballots,
-            shares,
-            self.context.crypto_extended_base_hash,
-        )
-
-        # Assert
-        self.assertIsNotNone(result)
-        self.assertTrue(self.fake_spoiled_ballot.object_id in result)
-
-        spoiled_ballot = result[self.fake_spoiled_ballot.object_id]
-        for contest in self.fake_spoiled_ballot.contests:
-            for selection in contest.ballot_selections:
-                self.assertEqual(
-                    spoiled_ballot.contests[contest.object_id]
-                    .selections[selection.object_id]
-                    .tally,
-                    result[self.fake_spoiled_ballot.object_id]
-                    .contests[contest.object_id]
-                    .selections[selection.object_id]
-                    .tally,
-                )
 
     def test_decrypt_ballot_with_missing_guardians(self):
         # Arrange
