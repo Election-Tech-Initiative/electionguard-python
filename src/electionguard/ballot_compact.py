@@ -67,7 +67,7 @@ def compress_submitted_ballot(
         ballot.timestamp,
         ballot_nonce,
         ballot.code_seed,
-        get_optional(ballot.code),
+        ballot.code,
         ballot.state,
     )
 
