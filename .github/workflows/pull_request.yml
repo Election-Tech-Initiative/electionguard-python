@@ -28,15 +28,8 @@ jobs:
       - name: Install Dependencies
         run: make install
       - name: Get Version Test
-        run: |
-          get_version=(poetry version)
-          echo "${get_version[@]}"
-          echo "PACKAGE_VERSION=1.0.0" >> $GITHUB_ENV
-          echo ${{ env.PACKAGE_VERSION }}
-          echo "PACKAGE_VERSION=$(echo $VERSION | poetry version)" >> $GITHUB_ENV
-          echo ${{ env.PACKAGE_VERSION }}
-          echo "Hope this worked."
-      - name: Maybe?
+        run: echo "PACKAGE_VERSION=$(echo $VERSION | poetry version --short)" >> $GITHUB_ENV
+      - name: Print after its set
         run: |
           echo ${{ env.PACKAGE_VERSION }}
           echo $PACKAGE_VERSION
