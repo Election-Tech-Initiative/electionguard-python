@@ -30,7 +30,7 @@ jobs:
       - name: Get Version Test
         run: |
           get_version=(poetry version)
-          echo "${get_version[@]}""
+          echo "${get_version[@]}"
           echo "PACKAGE_VERSION=1.0.0" >> $GITHUB_ENV
           echo ${{ env.PACKAGE_VERSION }}
           echo "PACKAGE_VERSION=${get_version[@]}" >> $GITHUB_ENV
