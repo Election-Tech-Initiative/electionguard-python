@@ -29,8 +29,12 @@ jobs:
         run: make install
       - name: Get Version Test
         run: |
-          echo "PACKAGE_VERSION=$(echo $VERSION | poetry version )" >> $GITHUB_ENV
+          echo poetry version
+          echo "PACKAGE_VERSION=$(poetry version)" >> $GITHUB_ENV
           echo ${{ env.PACKAGE_VERSION }}
+          echo "PACKAGE_VERSION=${poetry version}" >> $GITHUB_ENV
+          echo ${{ env.PACKAGE_VERSION }}
+          echo "Hope this worked."
       - name: Lint
         run: make lint
       - name: Initialize CodeQL
