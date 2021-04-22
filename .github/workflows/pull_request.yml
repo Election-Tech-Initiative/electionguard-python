@@ -29,7 +29,7 @@ jobs:
         run: make install
       - name: Get Version Test
         run: |
-          get_version = (poetry version)
+          get_version=(poetry version)
           echo "${get_version[@]}""
           echo "PACKAGE_VERSION=1.0.0" >> $GITHUB_ENV
           echo ${{ env.PACKAGE_VERSION }}
