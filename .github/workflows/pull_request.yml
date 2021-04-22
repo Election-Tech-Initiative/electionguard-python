@@ -33,7 +33,7 @@ jobs:
           echo "${get_version[@]}""
           echo "PACKAGE_VERSION=1.0.0" >> $GITHUB_ENV
           echo ${{ env.PACKAGE_VERSION }}
-          echo "PACKAGE_VERSION=${${get_version[@]}" >> $GITHUB_ENV
+          echo "PACKAGE_VERSION=${get_version[@]}" >> $GITHUB_ENV
           echo ${{ env.PACKAGE_VERSION }}
           echo "Hope this worked."
       - name: Lint
