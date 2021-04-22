@@ -107,7 +107,7 @@ jobs:
       - name: Install Dependencies
         run: make install
       - name: Get Version
-        run: echo ::set-env name=PACKAGE_VERSION::$(echo $VERSION | poetry version)
+        run: echo "PACKAGE_VERSION=$(echo $VERSION | poetry version --short)" >> $GITHUB_ENV
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1.0.0
