@@ -10,12 +10,12 @@ from .group import (
     pow_p,
     ZERO_MOD_Q,
     TWO_MOD_Q,
-    int_to_q,
     rand_range_q,
+    int_to_q_unchecked,
 )
 from .hash import hash_elems
-from .logs import log_error
-from .utils import flatmap_optional, get_optional
+from .logs import log_info, log_error
+from .utils import get_optional
 
 ELGAMAL_SECRET_KEY = ElementModQ
 ELGAMAL_PUBLIC_KEY = ElementModP
@@ -128,18 +128,22 @@ def elgamal_encrypt(
     :param m: Message to elgamal_encrypt; must be an integer in [0,Q).
     :param nonce: Randomly chosen nonce in [1,Q).
     :param public_key: ElGamal public key.
-    :return: A ciphertext tuple.
+    :return: An `ElGamalCiphertext`.
     """
     if nonce == ZERO_MOD_Q:
         log_error("ElGamal encryption requires a non-zero nonce")
         return None
 
-    return flatmap_optional(
-        int_to_q(m),
-        lambda e: ElGamalCiphertext(
-            g_pow_p(nonce), mult_p(g_pow_p(e), pow_p(public_key, nonce))
-        ),
-    )
+    pad = g_pow_p(nonce)
+    gpowp_m = g_pow_p(int_to_q_unchecked(m))
+    pubkey_pow_n = pow_p(public_key, nonce)
+    data = mult_p(gpowp_m, pubkey_pow_n)
+
+    log_info(f": publicKey: {public_key.to_hex()}")
+    log_info(f": pad: {pad.to_hex()}")
+    log_info(f": data: {data.to_hex()}")
+
+    return ElGamalCiphertext(pad, data)
 
 
 def elgamal_add(*ciphertexts: ElGamalCiphertext) -> ElGamalCiphertext:
