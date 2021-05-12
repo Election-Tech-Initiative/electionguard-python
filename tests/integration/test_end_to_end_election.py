@@ -48,11 +48,11 @@ from electionguard.decryption_mediator import DecryptionMediator
 from electionguard.publish import (
     publish,
     BALLOT_PREFIX,
-    COEFFICIENT_PREFIX,
     CONSTANTS_FILE_NAME,
     CONTEXT_FILE_NAME,
     DEVICE_PREFIX,
     ENCRYPTED_TALLY_FILE_NAME,
+    GUARDIAN_PREFIX,
     MANIFEST_FILE_NAME,
     TALLY_FILE_NAME,
 )
@@ -548,7 +548,7 @@ class TestEndToEndElection(TestCase):
         self.assertEqual(self.plaintext_tally, plainttext_tally_from_file)
 
         for guardian_record in self.guardian_records:
-            set_name = COEFFICIENT_PREFIX + guardian_record.guardian_id
+            set_name = GUARDIAN_PREFIX + guardian_record.guardian_id
             guardian_record_from_file = GuardianRecord.from_json_file(
                 set_name, GUARDIAN_DIR
             )

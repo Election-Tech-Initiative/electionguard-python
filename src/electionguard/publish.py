@@ -56,7 +56,7 @@ def publish(
     make_directory(guardian_directory)
     if guardian_records is not None:
         for guardian_record in guardian_records:
-            set_name = COEFFICIENT_PREFIX + guardian_record.guardian_id
+            set_name = GUARDIAN_PREFIX + guardian_record.guardian_id
             guardian_record.to_json_file(set_name, guardian_directory)
 
     make_directory(ballots_directory)
