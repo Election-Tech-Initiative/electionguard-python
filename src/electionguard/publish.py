@@ -2,7 +2,7 @@ from os import path
 from typing import Iterable
 
 from .ballot import PlaintextBallot, CiphertextBallot, SubmittedBallot
-from .guardian import GuardianRecord
+from .guardian import PrivateGuardianRecord
 from .election import CiphertextElectionContext, ElectionConstants
 from .encrypt import EncryptionDevice
 from .manifest import Manifest
@@ -33,7 +33,7 @@ def publish(
     spoiled_ballots: Iterable[PlaintextTally],
     ciphertext_tally: PublishedCiphertextTally,
     plaintext_tally: PlaintextTally,
-    guardian_records: Iterable[GuardianRecord],
+    guardian_records: Iterable[PrivateGuardianRecord],
     results_directory: str = RESULTS_DIR,
 ) -> None:
     """Publishes the election record as json"""
@@ -76,7 +76,7 @@ def publish(
 def publish_private_data(
     plaintext_ballots: Iterable[PlaintextBallot],
     ciphertext_ballots: Iterable[CiphertextBallot],
-    guardian_records: Iterable[GuardianRecord],
+    guardian_records: Iterable[PrivateGuardianRecord],
     results_directory: str = RESULTS_DIR,
 ) -> None:
     """

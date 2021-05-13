@@ -19,14 +19,15 @@ from electionguard.publish import publish, publish_private_data, RESULTS_DIR
 from electionguard.tally import tally_ballots
 from electionguard.utils import get_optional
 
-from .ballot_factory import BallotFactory
-from .decryption_helper import DecryptionHelper
-from .election_factory import ElectionFactory, QUORUM
+from electionguardtest.ballot_factory import BallotFactory
+from electionguardtest.decryption_helper import DecryptionHelper
+from electionguardtest.election_factory import ElectionFactory, QUORUM
 
 
 DEFAULT_NUMBER_OF_BALLOTS = 5
 DEFAULT_SPOIL_RATE = 50
 DEFAULT_USE_ALL_GUARDIANS = False
+DEFAULT_USE_PRIVATE_DATA = False
 
 
 class ElectionSampleDataGenerator:
@@ -51,6 +52,7 @@ class ElectionSampleDataGenerator:
         number_of_ballots: int = DEFAULT_NUMBER_OF_BALLOTS,
         spoil_rate: int = DEFAULT_SPOIL_RATE,
         use_all_guardians: bool = DEFAULT_USE_ALL_GUARDIANS,
+        use_private_data: bool = DEFAULT_USE_PRIVATE_DATA,
     ):
         """
         Generate the sample data set
@@ -106,35 +108,51 @@ class ElectionSampleDataGenerator:
             if use_all_guardians
             else private_data.guardians[0:QUORUM]
         )
-        DecryptionHelper.perform_decryption_setup(
-            available_guardians,
-            mediator,
-            manifest.context,
-            ciphertext_tally,
-            spoiled_ciphertext_ballots,
-        )
 
-        plaintext_tally = get_optional(mediator.get_plaintext_tally(ciphertext_tally))
-        plaintext_spoiled_ballots = get_optional(
-            mediator.get_plaintext_ballots(spoiled_ciphertext_ballots)
-        )
+        if not use_all_guardians:
+            available_guardians = private_data.guardians[0:QUORUM]
+            all_guardian_keys = [
+                guardian.share_election_public_key() for guardian in private_data.guardians
+            ]
 
-        # Publish
-        publish(
-            manifest.manifest,
-            manifest.context,
-            manifest.constants,
-            [self.encryption_device],
-            submitted_ballots,
-            plaintext_spoiled_ballots.values(),
-            ciphertext_tally.publish(),
-            plaintext_tally,
-            manifest.guardians,
-        )
+            DecryptionHelper.perform_compensated_decryption_setup(
+                available_guardians,
+                all_guardian_keys,
+                mediator,
+                manifest.context,
+                ciphertext_tally,
+                spoiled_ciphertext_ballots.values(),
+            )
+        else:
+            DecryptionHelper.perform_decryption_setup(
+                available_guardians,
+                mediator,
+                manifest.context,
+                ciphertext_tally,
+                spoiled_ciphertext_ballots.values(),
+            )
 
-        publish_private_data(
-            plaintext_ballots, ciphertext_ballots, private_data.guardians
-        )
+        plaintext_tally = mediator.get_plaintext_tally(ciphertext_tally)
+        plaintext_spoiled_ballots = mediator.get_plaintext_ballots(spoiled_ciphertext_ballots.values())
+
+        if plaintext_tally:
+            # Publish
+            publish(
+                manifest.manifest,
+                manifest.context,
+                manifest.constants,
+                [self.encryption_device],
+                submitted_ballots,
+                plaintext_spoiled_ballots.values(),
+                ciphertext_tally.publish(),
+                plaintext_tally,
+                manifest.guardians,
+            )
+
+            if use_private_data:
+                publish_private_data(
+                    plaintext_ballots, ciphertext_ballots, [guardian.publish() for guardian in private_data.guardians]
+                )
 
 
 if __name__ == "__main__":
@@ -167,8 +185,15 @@ if __name__ == "__main__":
         action="store_true",
         help="If specified, all guardians will be included.  Otherwise, only the threshold number will be included.",
     )
+    parser.add_argument(
+        "-p",
+        "--private-data",
+        default=DEFAULT_USE_PRIVATE_DATA,
+        action="store_true",
+        help="Include private data when generating.",
+    )
     args = parser.parse_args()
 
     ElectionSampleDataGenerator().generate(
-        args.number_of_ballots, args.spoil_rate, args.all_guardians
+        args.number_of_ballots, args.spoil_rate, args.all_guardians, args.private_data
     )

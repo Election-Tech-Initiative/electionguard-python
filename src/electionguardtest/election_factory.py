@@ -39,7 +39,7 @@ from electionguard.manifest import (
 )
 from electionguard.utils import get_optional
 
-from .key_ceremony_helper import KeyCeremonyHelper
+from electionguardtest.key_ceremony_helper import KeyCeremonyHelper
 
 _T = TypeVar("_T")
 _DrawType = Callable[[SearchStrategy[_T]], _T]
