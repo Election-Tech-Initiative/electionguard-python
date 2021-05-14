@@ -85,7 +85,7 @@ lint:
 	poetry build
 	poetry run twine check dist/*
 	@echo 5.Documentation
-	mkdocs build --strict
+	poetry run mkdocs build --strict
 
 auto-lint:
 	@echo 💚 AUTO LINT
