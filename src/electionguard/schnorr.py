@@ -14,7 +14,7 @@ from .logs import log_warning
 from .proof import Proof, ProofUsage
 
 
-@dataclass(frozen=True)
+@dataclass
 class SchnorrProof(Proof):
     """
     Representation of a Schnorr proof
