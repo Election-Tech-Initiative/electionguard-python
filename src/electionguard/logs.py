@@ -98,7 +98,7 @@ def get_stream_handler() -> logging.StreamHandler:
     Get a Stream Handler, sends only warnings and errors to stdout.
     """
     stream_handler = logging.StreamHandler(sys.stdout)
-    stream_handler.setLevel(logging.WARNING)
+    stream_handler.setLevel(logging.INFO)
     stream_handler.setFormatter(logging.Formatter(FORMAT))
     return stream_handler
 

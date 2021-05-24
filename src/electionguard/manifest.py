@@ -7,9 +7,9 @@ from .ballot import _list_eq
 from .election_object_base import ElectionObjectBase
 from .group import ElementModQ
 from .hash import CryptoHashable, hash_elems
-from .logs import log_warning
+from .logs import log_warning, log_debug
 from .serializable import Serializable
-from .utils import get_optional, to_ticks
+from .utils import get_optional, to_iso_date_string
 
 
 @unique
@@ -103,7 +103,9 @@ class AnnotatedString(Serializable, CryptoHashable):
         """
         A hash representation of the object
         """
-        return hash_elems(self.annotation, self.value)
+        hash = hash_elems(self.annotation, self.value)
+        log_debug(f"{self.__class__} : crypto_hash: {hash.to_hex()}")
+        return hash
 
 
 @dataclass(eq=True, unsafe_hash=True)
@@ -120,7 +122,9 @@ class Language(Serializable, CryptoHashable):
         """
         A hash representation of the object
         """
-        return hash_elems(self.value, self.language)
+        hash = hash_elems(self.value, self.language)
+        log_debug(f"{self.__class__} : crypto_hash: {hash.to_hex()}")
+        return hash
 
 
 @dataclass(eq=True, unsafe_hash=True)
@@ -136,7 +140,9 @@ class InternationalizedText(Serializable, CryptoHashable):
         """
         A hash representation of the object
         """
-        return hash_elems(self.text)
+        hash = hash_elems(self.text)
+        log_debug(f"{self.__class__} : crypto_hash: {hash.to_hex()}")
+        return hash
 
 
 @dataclass(eq=True, unsafe_hash=True)
@@ -155,7 +161,9 @@ class ContactInformation(Serializable, CryptoHashable):
         """
         A hash representation of the object
         """
-        return hash_elems(self.name, self.address_line, self.email, self.phone)
+        hash = hash_elems(self.name, self.address_line, self.email, self.phone)
+        log_debug(f"{self.__class__} : crypto_hash: {hash.to_hex()}")
+        return hash
 
 
 @dataclass(eq=True, unsafe_hash=True)
@@ -174,9 +182,11 @@ class GeopoliticalUnit(ElectionObjectBase, CryptoHashable):
         """
         A hash representation of the object
         """
-        return hash_elems(
+        hash = hash_elems(
             self.object_id, self.name, str(self.type.name), self.contact_information
         )
+        log_debug(f"{self.__class__} : crypto_hash: {hash.to_hex()}")
+        return hash
 
 
 @dataclass(eq=True, unsafe_hash=True)
@@ -193,9 +203,11 @@ class BallotStyle(ElectionObjectBase, CryptoHashable):
         """
         A hash representation of the object
         """
-        return hash_elems(
+        hash = hash_elems(
             self.object_id, self.geopolitical_unit_ids, self.party_ids, self.image_uri
         )
+        log_debug(f"{self.__class__} : crypto_hash: {hash.to_hex()}")
+        return hash
 
 
 @dataclass(eq=True, unsafe_hash=True)
@@ -220,13 +232,15 @@ class Party(ElectionObjectBase, CryptoHashable):
         """
         A hash representation of the object
         """
-        return hash_elems(
+        hash = hash_elems(
             self.object_id,
             self.name,
             self.abbreviation,
             self.color,
             self.logo_uri,
         )
+        log_debug(f"{self.__class__} : crypto_hash: {hash.to_hex()}")
+        return hash
 
 
 @dataclass(eq=True, unsafe_hash=True)
@@ -256,7 +270,9 @@ class Candidate(ElectionObjectBase, CryptoHashable):
         """
         A hash representation of the object
         """
-        return hash_elems(self.object_id, self.name, self.party_id, self.image_uri)
+        hash = hash_elems(self.object_id, self.name, self.party_id, self.image_uri)
+        log_debug(f"{self.__class__} : crypto_hash: {hash.to_hex()}")
+        return hash
 
 
 @dataclass(eq=True, unsafe_hash=True)
@@ -287,7 +303,9 @@ class SelectionDescription(ElectionObjectBase, CryptoHashable):
         """
         A hash representation of the object
         """
-        return hash_elems(self.object_id, self.sequence_order, self.candidate_id)
+        hash = hash_elems(self.object_id, self.sequence_order, self.candidate_id)
+        log_debug(f"{self.__class__} : crypto_hash: {hash.to_hex()}")
+        return hash
 
 
 # pylint: disable=too-many-instance-attributes
@@ -358,7 +376,7 @@ class ContestDescription(ElectionObjectBase, CryptoHashable):
         description match up.
         """
         # remove any placeholders from the hash mechanism
-        return hash_elems(
+        hash = hash_elems(
             self.object_id,
             self.sequence_order,
             self.electoral_district_id,
@@ -370,6 +388,8 @@ class ContestDescription(ElectionObjectBase, CryptoHashable):
             self.votes_allowed,
             self.ballot_selections,
         )
+        log_debug(f"{self.__class__} : crypto_hash: {hash.to_hex()}")
+        return hash
 
     def is_valid(self) -> bool:
         """
@@ -561,12 +581,11 @@ class Manifest(Serializable, CryptoHashable):
         """
         Returns a hash of the metadata components of the election
         """
-
-        return hash_elems(
+        hash = hash_elems(
             self.election_scope_id,
             str(self.type.name),
-            to_ticks(self.start_date),
-            to_ticks(self.end_date),
+            to_iso_date_string(self.start_date),
+            to_iso_date_string(self.end_date),
             self.name,
             self.contact_information,
             self.geopolitical_units,
@@ -574,6 +593,8 @@ class Manifest(Serializable, CryptoHashable):
             self.contests,
             self.ballot_styles,
         )
+        log_debug(f"{self.__class__} : crypto_hash: {hash.to_hex()}")
+        return hash
 
     def is_valid(self) -> bool:
         """

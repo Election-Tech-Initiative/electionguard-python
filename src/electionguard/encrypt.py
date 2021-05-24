@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List, Optional
 from uuid import getnode
 
@@ -17,7 +18,7 @@ from .ballot_code import get_hash_for_device
 from .election import CiphertextElectionContext
 from .elgamal import elgamal_encrypt
 from .group import ElementModP, ElementModQ, rand_q
-from .logs import log_warning
+from .logs import log_info, log_warning
 from .manifest import (
     InternalManifest,
     ContestDescription,
@@ -58,6 +59,8 @@ class EncryptionDevice(Serializable):
         self.launch_code = launch_code
         self.location = location
 
+        log_info(f": EncryptionDevice: Created: UUID: {uuid} at: {location}")
+
     def get_hash(self) -> ElementModQ:
         """
         Get hash for encryption device
@@ -67,8 +70,12 @@ class EncryptionDevice(Serializable):
             self.uuid, self.session_id, self.launch_code, self.location
         )
 
+    # pylint: disable=no-self-use
     def get_timestamp(self) -> int:
-        pass
+        """
+        Get the current timestamp in utc
+        """
+        return int(datetime.utcnow().timestamp())
 
 
 class EncryptionMediator:
@@ -79,7 +86,7 @@ class EncryptionMediator:
     """
 
     _internal_manifest: InternalManifest
-    _encryption: CiphertextElectionContext
+    _context: CiphertextElectionContext
     _encryption_seed: ElementModQ
 
     def __init__(
@@ -89,15 +96,17 @@ class EncryptionMediator:
         encryption_device: EncryptionDevice,
     ):
         self._internal_manifest = internal_manifest
-        self._encryption = context
+        self._context = context
         self._encryption_seed = encryption_device.get_hash()
 
     def encrypt(self, ballot: PlaintextBallot) -> Optional[CiphertextBallot]:
         """
         Encrypt the specified ballot using the cached election context.
         """
+
+        log_info(f" encrypt: objectId: {ballot.object_id}")
         encrypted_ballot = encrypt_ballot(
-            ballot, self._internal_manifest, self._encryption, self._encryption_seed
+            ballot, self._internal_manifest, self._context, self._encryption_seed
         )
         if encrypted_ballot is not None and encrypted_ballot.code is not None:
             self._encryption_seed = encrypted_ballot.code
@@ -184,6 +193,10 @@ def encrypt_selection(
     nonce_sequence = Nonces(selection_description_hash, nonce_seed)
     selection_nonce = nonce_sequence[selection_description.sequence_order]
     disjunctive_chaum_pedersen_nonce = next(iter(nonce_sequence))
+
+    log_info(
+        f": encrypt_selection: for {selection_description.object_id} hash: {selection_description_hash.to_hex()}"
+    )
 
     selection_representation = selection.vote
 
@@ -441,6 +454,9 @@ def encrypt_ballot(
         ballot.object_id,
         random_master_nonce,
     )
+
+    log_info(f": manifest_hash : {internal_manifest.manifest_hash.to_hex()}")
+    log_info(f": encryption_seed : {encryption_seed.to_hex()}")
 
     encrypted_contests = encrypt_ballot_contests(
         ballot, internal_manifest, context, nonce_seed
