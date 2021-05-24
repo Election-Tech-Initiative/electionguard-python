@@ -112,7 +112,8 @@ class ElectionSampleDataGenerator:
         if not use_all_guardians:
             available_guardians = private_data.guardians[0:QUORUM]
             all_guardian_keys = [
-                guardian.share_election_public_key() for guardian in private_data.guardians
+                guardian.share_election_public_key()
+                for guardian in private_data.guardians
             ]
 
             DecryptionHelper.perform_compensated_decryption_setup(
@@ -133,7 +134,9 @@ class ElectionSampleDataGenerator:
             )
 
         plaintext_tally = mediator.get_plaintext_tally(ciphertext_tally)
-        plaintext_spoiled_ballots = mediator.get_plaintext_ballots(spoiled_ciphertext_ballots.values())
+        plaintext_spoiled_ballots = mediator.get_plaintext_ballots(
+            spoiled_ciphertext_ballots.values()
+        )
 
         if plaintext_tally:
             # Publish
@@ -151,7 +154,9 @@ class ElectionSampleDataGenerator:
 
             if use_private_data:
                 publish_private_data(
-                    plaintext_ballots, ciphertext_ballots, [guardian.publish() for guardian in private_data.guardians]
+                    plaintext_ballots,
+                    ciphertext_ballots,
+                    [guardian.publish() for guardian in private_data.guardians],
                 )
 
 

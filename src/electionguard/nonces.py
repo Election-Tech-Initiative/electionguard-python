@@ -1,3 +1,4 @@
+# pylint: disable=too-many-ancestors
 from typing import Union, Sequence, List, overload
 
 from electionguard.group import ElementModQ, ElementModPOrQ
