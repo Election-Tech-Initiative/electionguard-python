@@ -11,8 +11,10 @@ all: environment install build validate auto-lint coverage
 environment:
 	@echo 🔧 ENVIRONMENT SETUP
 	make install-gmp
-	make install-poetry
-	make install-mkdocs
+	#make install-poetry
+	#make install-mkdocs
+	pip install 'poetry==1.0.10'
+	poetry install
 	@echo 🚨 Be sure to add poetry to PATH
 
 install:
@@ -83,7 +85,7 @@ lint:
 	poetry build
 	poetry run twine check dist/*
 	@echo 5.Documentation
-	mkdocs build --strict
+	poetry run mkdocs build --strict
 
 auto-lint:
 	@echo 💚 AUTO LINT

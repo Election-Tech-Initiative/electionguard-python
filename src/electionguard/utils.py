@@ -78,6 +78,21 @@ def to_ticks(date_time: datetime) -> int:
     return int(ticks)
 
 
+def to_iso_date_string(date_time: datetime) -> str:
+    """
+    Return the number of ticks for a date time.
+    Ticks are defined here as number of seconds since the unix epoch (00:00:00 UTC on 1 January 1970)
+    :param date_time: Date time to convert
+    :return: number of ticks
+    """
+    utc_datetime = (
+        date_time.astimezone(timezone.utc).replace(microsecond=0)
+        if date_time.tzinfo
+        else date_time.replace(microsecond=0)
+    )
+    return utc_datetime.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
 def space_between_capitals(base: str) -> str:
     """
     Return a modified string with spaces between capital letters

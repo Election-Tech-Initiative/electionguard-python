@@ -21,7 +21,7 @@ from .nonces import Nonces
 from .proof import Proof, ProofUsage
 
 
-@dataclass(frozen=True)
+@dataclass
 class DisjunctiveChaumPedersenProof(Proof):
     """
     Representation of disjunctive Chaum Pederson proof
@@ -137,7 +137,7 @@ class DisjunctiveChaumPedersenProof(Proof):
         return success
 
 
-@dataclass(frozen=True)
+@dataclass
 class ChaumPedersenProof(Proof):
     """
     Representation of a generic Chaum-Pedersen Zero Knowledge proof
@@ -253,7 +253,7 @@ class ChaumPedersenProof(Proof):
         return success
 
 
-@dataclass(frozen=True)
+@dataclass
 class ConstantChaumPedersenProof(Proof):
     """
     Representation of constant Chaum Pederson proof

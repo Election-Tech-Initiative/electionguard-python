@@ -97,7 +97,7 @@ def publish_guardian_record(election_public_key: ElectionPublicKey) -> GuardianR
     )
 
 
-@dataclass(frozen=True)
+@dataclass
 class PrivateGuardianRecord(Serializable):
     """Unpublishable private record containing information per Guardian"""
 

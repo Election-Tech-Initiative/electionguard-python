@@ -488,7 +488,7 @@ class TestDecryptWithSecrets(unittest.TestCase):
         self.assertIsNone(result_from_nonce_seed_tampered)
 
     @settings(
-        deadline=timedelta(milliseconds=2000),
+        deadline=timedelta(milliseconds=5000),
         suppress_health_check=[HealthCheck.too_slow],
         max_examples=1,
         # disabling the "shrink" phase, because it runs very slowly

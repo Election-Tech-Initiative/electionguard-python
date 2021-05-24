@@ -1,6 +1,15 @@
 from dataclasses import dataclass
 
-from .group import Q, P, R, G, ElementModQ, ElementModP
+from .group import (
+    Q,
+    P,
+    R,
+    G,
+    ElementModQ,
+    ElementModP,
+    int_to_p_unchecked,
+    int_to_q_unchecked,
+)
 from .hash import hash_elems
 from .serializable import Serializable
 
@@ -98,7 +107,12 @@ def make_ciphertext_election_context(
     # form the basis of subsequent hash computations.
 
     crypto_base_hash = hash_elems(
-        P, Q, G, number_of_guardians, quorum, description_hash
+        int_to_p_unchecked(P),
+        int_to_q_unchecked(Q),
+        int_to_p_unchecked(G),
+        number_of_guardians,
+        quorum,
+        description_hash,
     )
     crypto_extended_base_hash = hash_elems(crypto_base_hash, commitment_hash)
     return CiphertextElectionContext(

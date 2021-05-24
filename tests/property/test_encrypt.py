@@ -23,6 +23,7 @@ from electionguard.elgamal import (
     elgamal_add,
 )
 from electionguard.encrypt import (
+    EncryptionDevice,
     contest_from,
     encrypt_ballot,
     encrypt_contest,
@@ -580,7 +581,7 @@ class TestEncrypt(unittest.TestCase):
             )
         )
 
-    def test_encrypt_ballot_with_stateful_composer_succeeds(self):
+    def test_encrypt_ballot_with_composer_succeeds(self):
         # Arrange
         keypair = elgamal_keypair_from_secret(int_to_q(2))
         manifest = election_factory.get_fake_manifest()
@@ -607,7 +608,7 @@ class TestEncrypt(unittest.TestCase):
             )
         )
 
-    def test_encrypt_simple_ballot_from_files_succeeds(self):
+    def test_encrypt_simple_ballot_from_file_with_composer_succeeds(self):
         # Arrange
         keypair = elgamal_keypair_from_secret(int_to_q(2))
         manifest = election_factory.get_simple_manifest_from_file()
@@ -618,17 +619,49 @@ class TestEncrypt(unittest.TestCase):
         data = ballot_factory.get_simple_ballot_from_file()
         self.assertTrue(data.is_valid(internal_manifest.ballot_styles[0].object_id))
 
-        device = election_factory.get_encryption_device()
+        device = EncryptionDevice(12345, 23456, 34567, "Location")
         subject = EncryptionMediator(internal_manifest, context, device)
 
         # Act
         result = subject.encrypt(data)
+
+        print(result.to_json())
 
         # Assert
         self.assertIsNotNone(result)
         self.assertEqual(data.object_id, result.object_id)
         self.assertTrue(
             result.is_valid_encryption(
+                internal_manifest.manifest_hash,
+                keypair.public_key,
+                context.crypto_extended_base_hash,
+            )
+        )
+
+    def test_encrypt_simple_ballot_from_files_succeeds(self) -> None:
+        # Arrange
+        keypair = elgamal_keypair_from_secret(int_to_q(2))
+        manifest = election_factory.get_simple_manifest_from_file()
+        internal_manifest, context = election_factory.get_fake_ciphertext_election(
+            manifest, keypair.public_key
+        )
+
+        device = EncryptionDevice(12345, 23456, 34567, "Location")
+        ballot = ballot_factory.get_simple_ballot_from_file()
+        self.assertTrue(ballot.is_valid(internal_manifest.ballot_styles[0].object_id))
+
+        # Act
+
+        ciphertext = encrypt_ballot(
+            ballot, internal_manifest, context, device.get_hash(), TWO_MOD_Q
+        )
+        print(ciphertext.to_json())
+
+        # Assert
+        self.assertIsNotNone(ciphertext)
+        self.assertEqual(ballot.object_id, ciphertext.object_id)
+        self.assertTrue(
+            ciphertext.is_valid_encryption(
                 internal_manifest.manifest_hash,
                 keypair.public_key,
                 context.crypto_extended_base_hash,
