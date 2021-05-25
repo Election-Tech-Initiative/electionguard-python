@@ -17,18 +17,14 @@ from .types import BALLOT_ID
 
 @dataclass
 class BallotBox:
-    """
-    A stateful convenience wrapper to cache election data
-    """
+    """A stateful convenience wrapper to cache election data."""
 
     _internal_manifest: InternalManifest = field()
     _encryption: CiphertextElectionContext = field()
     _store: DataStore = field(default_factory=lambda: DataStore())
 
     def cast(self, ballot: CiphertextBallot) -> Optional[SubmittedBallot]:
-        """
-        Cast a specific encrypted `CiphertextBallot`
-        """
+        """Cast a specific encrypted `CiphertextBallot`."""
         return accept_ballot(
             ballot,
             BallotBoxState.CAST,
@@ -38,9 +34,7 @@ class BallotBox:
         )
 
     def spoil(self, ballot: CiphertextBallot) -> Optional[SubmittedBallot]:
-        """
-        Spoil a specific encrypted `CiphertextBallot`
-        """
+        """Spoil a specific encrypted `CiphertextBallot`."""
         return accept_ballot(
             ballot,
             BallotBoxState.SPOILED,
@@ -64,6 +58,7 @@ def accept_ballot(
     :return: a `SubmittedBallot` or `None` if there was an error
     """
     if not ballot_is_valid_for_election(ballot, internal_manifest, context):
+        log_warning(f"ballot: {ballot.object_id} failed validity check")
         return None
 
     existing_ballot = store.get(ballot.object_id)
@@ -85,6 +80,7 @@ def accept_ballot(
 def get_ballots(
     store: DataStore, state: Optional[BallotBoxState]
 ) -> Dict[BALLOT_ID, SubmittedBallot]:
+    """Get ballots from the store optionally filtering on state."""
     return {
         ballot_id: ballot
         for (ballot_id, ballot) in store.items()

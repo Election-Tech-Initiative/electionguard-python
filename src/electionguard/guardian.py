@@ -1,4 +1,5 @@
 # pylint: disable=too-many-public-methods
+# pylint: disable=too-many-instance-attributes
 from dataclasses import dataclass
 from typing import Callable, Dict, List, Optional, TypeVar
 
@@ -99,7 +100,10 @@ def publish_guardian_record(election_public_key: ElectionPublicKey) -> GuardianR
 
 @dataclass
 class PrivateGuardianRecord(Serializable):
-    """Unpublishable private record containing information per Guardian"""
+    """Unpublishable private record containing information per Guardian."""
+
+    guardian_id: GUARDIAN_ID
+    """Unique identifier of the guardian"""
 
     election_keys: ElectionKeyPair
     """Private election Key pair of this guardian"""
@@ -129,6 +133,7 @@ class PrivateGuardianRecord(Serializable):
 class Guardian:
     """
     Guardian of election responsible for safeguarding information and decrypting results.
+
     The first half of the guardian involves the key exchange known as the key ceremony.
     The second half relates to the decryption process.
     """
@@ -177,7 +182,7 @@ class Guardian:
         nonce_seed: Optional[ElementModQ] = None,
     ) -> None:
         """
-        Initialize a guardian with the specified arguments
+        Initialize a guardian with the specified arguments.
 
         :param id: the unique identifier for the guardian
         :param sequence_order: a unique number in [1, 256) that identifies this guardian
@@ -200,7 +205,8 @@ class Guardian:
 
     def reset(self, number_of_guardians: int, quorum: int) -> None:
         """
-        Reset guardian to initial state
+        Reset guardian to initial state.
+
         :param number_of_guardians: Number of guardians in election
         :param quorum: Quorum of guardians required to decrypt
         """
@@ -214,12 +220,13 @@ class Guardian:
         self.generate_election_key_pair()
 
     def publish(self) -> GuardianRecord:
-        """Publish record of guardian with all required information"""
+        """Publish record of guardian with all required information."""
         return publish_guardian_record(self._election_keys.share())
 
     def export_private_data(self) -> PrivateGuardianRecord:
-        """Export private data of guardian. Warning cannot be published"""
+        """Export private data of guardian. Warning cannot be published."""
         return PrivateGuardianRecord(
+            self.id,
             self._election_keys,
             self._auxiliary_keys,
             self._backups_to_share,
@@ -231,7 +238,8 @@ class Guardian:
 
     def set_ceremony_details(self, number_of_guardians: int, quorum: int) -> None:
         """
-        Set ceremony details for election
+        Set ceremony details for election.
+
         :param number_of_guardians: Number of guardians in election
         :param quorum: Quorum of guardians required to decrypt
         """
@@ -240,7 +248,8 @@ class Guardian:
     # Public Keys
     def share_public_keys(self) -> PublicKeySet:
         """
-        Share public election and auxiliary keys for guardian
+        Share public election and auxiliary keys for guardian.
+
         :return: Public set of election and auxiliary keys
         """
         return PublicKeySet(
@@ -250,7 +259,8 @@ class Guardian:
 
     def save_guardian_public_keys(self, public_key_set: PublicKeySet) -> None:
         """
-        Save public election and auxiliary keys for another guardian
+        Save public election and auxiliary keys for another guardian.
+
         :param public_key_set: Public set of election and auxiliary keys
         """
         self.save_auxiliary_public_key(public_key_set.auxiliary)
@@ -259,6 +269,7 @@ class Guardian:
     def all_public_keys_received(self) -> bool:
         """
         True if all election and auxiliary public keys have been received.
+
         :return: All election and auxiliary public keys backups received
         """
         return (
@@ -273,7 +284,8 @@ class Guardian:
         ] = generate_rsa_auxiliary_key_pair,
     ) -> None:
         """
-        Generate auxiliary key pair
+        Generate auxiliary key pair.
+
         :param generate_auxiliary_key_pair: Function to generate auxiliary key pair
         """
         self._auxiliary_keys = generate_auxiliary_key_pair(self.id, self.sequence_order)
@@ -281,14 +293,16 @@ class Guardian:
 
     def share_auxiliary_public_key(self) -> AuxiliaryPublicKey:
         """
-        Share auxiliary public key with another guardian
+        Share auxiliary public key with another guardian.
+
         :return: Auxiliary Public Key
         """
         return self._auxiliary_keys.share()
 
     def save_auxiliary_public_key(self, key: AuxiliaryPublicKey) -> None:
         """
-        Save a guardians auxiliary public key
+        Save a guardians auxiliary public key.
+
         :param key: Auxiliary public key
         """
         self._guardian_auxiliary_public_keys[key.owner_id] = key
@@ -296,6 +310,7 @@ class Guardian:
     def all_auxiliary_public_keys_received(self) -> bool:
         """
         True if all auxiliary public keys have been received.
+
         :return: All auxiliary public keys backups received
         """
         return (
@@ -304,9 +319,7 @@ class Guardian:
         )
 
     def generate_election_key_pair(self, nonce: ElementModQ = None) -> None:
-        """
-        Generate election key pair for encrypting/decrypting election
-        """
+        """Generate election key pair for encrypting/decrypting election."""
         self._election_keys = generate_election_key_pair(
             self.id, self.sequence_order, self.ceremony_details.quorum, nonce
         )
@@ -314,14 +327,16 @@ class Guardian:
 
     def share_election_public_key(self) -> ElectionPublicKey:
         """
-        Share election public key with another guardian
+        Share election public key with another guardian.
+
         :return: Election public key
         """
         return self._election_keys.share()
 
     def save_election_public_key(self, key: ElectionPublicKey) -> None:
         """
-        Save a guardians election public key
+        Save a guardians election public key.
+
         :param key: Election public key
         """
         self._guardian_election_public_keys[key.owner_id] = key
@@ -329,6 +344,7 @@ class Guardian:
     def all_election_public_keys_received(self) -> bool:
         """
         True if all election public keys have been received.
+
         :return: All election public keys backups received
         """
         return (
@@ -340,7 +356,8 @@ class Guardian:
         self, encrypt: AuxiliaryEncrypt = rsa_encrypt
     ) -> bool:
         """
-        Generate all election partial key backups based on existing public keys
+        Generate all election partial key backups based on existing public keys.
+
         :param encrypt: Encryption function using auxiliary key
         """
         if not self.all_auxiliary_public_keys_received():
@@ -366,7 +383,8 @@ class Guardian:
         self, designated_id: GUARDIAN_ID
     ) -> Optional[ElectionPartialKeyBackup]:
         """
-        Share election partial key backup with another guardian
+        Share election partial key backup with another guardian.
+
         :param designated_id: Designated guardian
         :return: Election partial key backup or None
         """
@@ -374,7 +392,8 @@ class Guardian:
 
     def share_election_partial_key_backups(self) -> List[ElectionPartialKeyBackup]:
         """
-        Share all election partial key backups
+        Share all election partial key backups.
+
         :return: Election partial key backup or None
         """
         return list(self._backups_to_share.values())
@@ -383,7 +402,8 @@ class Guardian:
         self, backup: ElectionPartialKeyBackup
     ) -> None:
         """
-        Save election partial key backup from another guardian
+        Save election partial key backup from another guardian.
+
         :param backup: Election partial key backup
         """
         self._guardian_election_partial_key_backups[backup.owner_id] = backup
@@ -391,6 +411,7 @@ class Guardian:
     def all_election_partial_key_backups_received(self) -> bool:
         """
         True if all election partial key backups have been received.
+
         :return: All election partial key backups received
         """
         return (
@@ -405,7 +426,8 @@ class Guardian:
         decrypt: AuxiliaryDecrypt = rsa_decrypt,
     ) -> Optional[ElectionPartialKeyVerification]:
         """
-        Verify election partial key backup value is in polynomial
+        Verify election partial key backup value is in polynomial.
+
         :param guardian_id: Owner of backup to verify
         :param decrypt:
         :return: Election partial key verification or None
@@ -422,7 +444,8 @@ class Guardian:
         self, guardian_id: GUARDIAN_ID
     ) -> Optional[ElectionPartialKeyChallenge]:
         """
-        Publish election backup challenge of election partial key verification
+        Publish election backup challenge of election partial key verification.
+
         :param guardian_id: Owner of election key
         :return: Election partial key challenge or None
         """
@@ -437,7 +460,8 @@ class Guardian:
         self, challenge: ElectionPartialKeyChallenge
     ) -> ElectionPartialKeyVerification:
         """
-        Verify challenge of previous verification of election partial key
+        Verify challenge of previous verification of election partial key.
+
         :param challenge: Election partial key challenge
         :return: Election partial key verification
         """
@@ -447,7 +471,8 @@ class Guardian:
         self, verification: ElectionPartialKeyVerification
     ) -> None:
         """
-        Save election partial key verification from another guardian
+        Save election partial key verification from another guardian.
+
         :param verification: Election partial key verification
         """
         self._guardian_election_partial_key_verifications[
@@ -457,6 +482,7 @@ class Guardian:
     def all_election_partial_key_backups_verified(self) -> bool:
         """
         True if all election partial key backups have been verified.
+
         :return: All election partial key backups verified
         """
         required = self.ceremony_details.number_of_guardians - 1
@@ -470,7 +496,8 @@ class Guardian:
     # Joint Key
     def publish_joint_key(self) -> Optional[ELECTION_JOINT_PUBLIC_KEY]:
         """
-        Creates the joint election key from the public keys of all guardians
+        Create the joint election key from the public keys of all guardians.
+
         :return: Optional joint key for election
         """
         if not self.all_election_public_keys_received():
@@ -485,14 +512,14 @@ class Guardian:
         return elgamal_combine_public_keys(public_keys)
 
     def share_other_guardian_key(self, guardian_id: GUARDIAN_ID) -> ElectionPublicKey:
-        """Share other guardians keys shared during key ceremony"""
+        """Share other guardians keys shared during key ceremony."""
         return get_optional(self._guardian_election_public_keys.get(guardian_id))
 
     def compute_tally_share(
         self, tally: CiphertextTally, context: CiphertextElectionContext
     ) -> Optional[DecryptionShare]:
         """
-        Compute the decryption share of tally
+        Compute the decryption share of tally.
 
         :param tally: Ciphertext tally to get share of
         :param context: Election context
@@ -508,7 +535,7 @@ class Guardian:
         self, ballots: List[SubmittedBallot], context: CiphertextElectionContext
     ) -> Dict[BALLOT_ID, Optional[DecryptionShare]]:
         """
-        Compute the decryption shares of ballots
+        Compute the decryption shares of ballots.
 
         :param ballots: List of ciphertext ballots to get shares of
         :param context: Election context
@@ -532,7 +559,7 @@ class Guardian:
         decrypt: AuxiliaryDecrypt = rsa_decrypt,
     ) -> Optional[CompensatedDecryptionShare]:
         """
-        Compute the compensated decryption share of a tally for a missing guardian
+        Compute the compensated decryption share of a tally for a missing guardian.
 
         :param missing_guardian_id: Missing guardians id
         :param tally: Ciphertext tally to get share of
@@ -567,7 +594,7 @@ class Guardian:
         decrypt: AuxiliaryDecrypt = rsa_decrypt,
     ) -> Dict[BALLOT_ID, Optional[CompensatedDecryptionShare]]:
         """
-        Compute the compensated decryption share of each ballots for a missing guardian
+        Compute the compensated decryption share of each ballots for a missing guardian.
 
         :param missing_guardian_id: Missing guardians id
         :param ballots: List of ciphertext ballots to get shares of
@@ -608,6 +635,7 @@ _SHARE = TypeVar("_SHARE")
 def get_valid_ballot_shares(
     ballot_shares: Dict[BALLOT_ID, Optional[_SHARE]]
 ) -> Dict[BALLOT_ID, _SHARE]:
+    """Get valid ballot shares."""
     filtered_shares = {}
     for ballot_id, ballot_share in ballot_shares.items():
         if ballot_share is not None:

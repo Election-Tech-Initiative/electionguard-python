@@ -46,6 +46,7 @@ def decrypt_selection_with_secret(
     if not suppress_validity_check and not selection.is_valid_encryption(
         description.crypto_hash(), public_key, crypto_extended_base_hash
     ):
+        log_warning(f"selection: {selection.object_id} failed validity check")
         return None
 
     plaintext_vote = selection.ciphertext.decrypt(secret_key)
@@ -82,6 +83,7 @@ def decrypt_selection_with_nonce(
     if not suppress_validity_check and not selection.is_valid_encryption(
         description.crypto_hash(), public_key, crypto_extended_base_hash
     ):
+        log_warning(f"selection: {selection.object_id} failed validity check")
         return None
 
     if nonce_seed is None:
@@ -137,6 +139,7 @@ def decrypt_contest_with_secret(
     if not suppress_validity_check and not contest.is_valid_encryption(
         description.crypto_hash(), public_key, crypto_extended_base_hash
     ):
+        log_warning(f"contest: {contest.object_id} failed validity check")
         return None
 
     plaintext_selections: List[PlaintextBallotSelection] = list()
@@ -186,10 +189,10 @@ def decrypt_contest_with_nonce(
     :param suppress_validity_check: do not validate the encryption prior to decrypting (useful for tests)
     :param remove_placeholders: filter out placeholder ciphertext selections after decryption
     """
-
     if not suppress_validity_check and not contest.is_valid_encryption(
         description.crypto_hash(), public_key, crypto_extended_base_hash
     ):
+        log_warning(f"contest: {contest.object_id} failed validity check")
         return None
 
     if nonce_seed is None:
@@ -256,10 +259,10 @@ def decrypt_ballot_with_secret(
     :param suppress_validity_check: do not validate the encryption prior to decrypting (useful for tests)
     :param remove_placeholders: filter out placeholder ciphertext selections after decryption
     """
-
     if not suppress_validity_check and not ballot.is_valid_encryption(
         internal_manifest.manifest_hash, public_key, crypto_extended_base_hash
     ):
+        log_warning(f"ballot: {ballot.object_id} failed validity check")
         return None
 
     plaintext_contests: List[PlaintextBallotContest] = list()
@@ -306,10 +309,10 @@ def decrypt_ballot_with_nonce(
     :param suppress_validity_check: do not validate the encryption prior to decrypting (useful for tests)
     :param remove_placeholders: filter out placeholder ciphertext selections after decryption
     """
-
     if not suppress_validity_check and not ballot.is_valid_encryption(
         internal_manifest.manifest_hash, public_key, crypto_extended_base_hash
     ):
+        log_warning(f"ballot: {ballot.object_id} failed validity check")
         return None
 
     # Use the hashed representation included in the ballot

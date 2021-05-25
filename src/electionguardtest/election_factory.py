@@ -249,8 +249,8 @@ class ElectionFactory:
     def get_encryption_device() -> EncryptionDevice:
         return EncryptionDevice(
             generate_device_uuid(),
-            "Session",
             12345,
+            45678,
             f"polling-place-{str(uuid.uuid1())}",
         )
 

@@ -2,7 +2,7 @@ from os import path
 from typing import Iterable
 
 from .ballot import PlaintextBallot, CiphertextBallot, SubmittedBallot
-from .guardian import PrivateGuardianRecord
+from .guardian import GuardianRecord, PrivateGuardianRecord
 from .election import CiphertextElectionContext, ElectionConstants
 from .encrypt import EncryptionDevice
 from .manifest import Manifest
@@ -33,7 +33,7 @@ def publish(
     spoiled_ballots: Iterable[PlaintextTally],
     ciphertext_tally: PublishedCiphertextTally,
     plaintext_tally: PlaintextTally,
-    guardian_records: Iterable[PrivateGuardianRecord],
+    guardian_records: Iterable[GuardianRecord],
     results_directory: str = RESULTS_DIR,
 ) -> None:
     """Publishes the election record as json"""
@@ -50,7 +50,7 @@ def publish(
 
     make_directory(devices_directory)
     for device in devices:
-        device_name = DEVICE_PREFIX + str(device.uuid)
+        device_name = DEVICE_PREFIX + str(device.device_id)
         device.to_json_file(device_name, devices_directory)
 
     make_directory(guardian_directory)

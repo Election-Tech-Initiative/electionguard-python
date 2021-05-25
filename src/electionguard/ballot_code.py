@@ -3,15 +3,18 @@ from .group import ElementModQ
 
 
 def get_hash_for_device(
-    uuid: int, session_id: str, launch_code: int, location: str
+    device_id: int, session_id: int, launch_code: int, location: str
 ) -> ElementModQ:
     """
-    Get starting hash for given device
-    :param uuid: Unique identifier of device
+    Get starting hash for given device.
+
+    :param device_id: Unique identifier of device
+    :param session_id: Unique identifier for the session
+    :param launch_code: A unique launch code for the election
     :param location: Location of device
     :return: Starting hash of device
     """
-    return hash_elems(uuid, session_id, launch_code, location)
+    return hash_elems(device_id, session_id, launch_code, location)
 
 
 def get_ballot_code(
