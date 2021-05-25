@@ -13,7 +13,7 @@ environment:
 	make install-gmp
 	#make install-poetry
 	#make install-mkdocs
-	pip install 'poetry==1.0.10'
+	pip install 'poetry==1.1.6'
 	poetry install
 	@echo 🚨 Be sure to add poetry to PATH
 
