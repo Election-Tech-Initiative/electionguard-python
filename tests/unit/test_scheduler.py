@@ -1,3 +1,4 @@
+# pylint: disable=consider-using-with
 from multiprocessing import Pool
 from unittest import TestCase
 from typing import List
