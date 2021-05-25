@@ -34,13 +34,13 @@ def decrypt_tally(
     crypto_extended_base_hash: ElementModQ,
 ) -> Optional[PlaintextTally]:
     """
-    Try to decrypt the tally and the spoiled ballots using the provided decryption shares
+    Try to decrypt the tally and the spoiled ballots using the provided decryption shares.
+
     :param tally: The CiphertextTally to decrypt
     :param shares: The guardian Decryption Shares for all guardians
     :param context: the Ciphertextelectioncontext
     :return: A PlaintextTally or None if there is an error
     """
-
     contests: Dict[CONTEST_ID, PlaintextTallyContest] = {}
 
     for contest in tally.contests.values():
@@ -54,6 +54,7 @@ def decrypt_tally(
             crypto_extended_base_hash,
         )
         if not plaintext_contest:
+            log_warning(f"contest: {contest.object_id} failed to decrypt with shares")
             return None
         contests[contest.object_id] = plaintext_contest
 
@@ -66,7 +67,7 @@ def decrypt_ballot(
     crypto_extended_base_hash: ElementModQ,
 ) -> Optional[PlaintextTally]:
     """
-    Try to decrypt a single ballot using the provided decryption shares
+    Try to decrypt a single ballot using the provided decryption shares.
 
     :param ballot: The SubmittedBallot to decrypt
     :param shares: The guardian Decryption Shares for all guardians
@@ -86,6 +87,7 @@ def decrypt_ballot(
             crypto_extended_base_hash,
         )
         if not plaintext_contest:
+            log_warning(f"contest: {contest.object_id} failed to decrypt with shares")
             return None
         contests[contest.object_id] = plaintext_contest
 
@@ -98,14 +100,13 @@ def decrypt_contest_with_decryption_shares(
     crypto_extended_base_hash: ElementModQ,
 ) -> Optional[PlaintextTallyContest]:
     """
-    Decrypt the specified contest within the context of the specified Decryption Shares
+    Decrypt the specified contest within the context of the specified Decryption Shares.
 
     :param contest: the contest to decrypt
     :param shares: a collection of `DecryptionShare` used to decrypt
     :param crypto_extended_base_hash: the extended base hash code (𝑄') for the election
     :return: a collection of `PlaintextTallyContest` or `None` if there is an error
     """
-
     plaintext_selections: Dict[SELECTION_ID, PlaintextTallySelection] = {}
 
     for selection in contest.selections:
@@ -144,7 +145,6 @@ def decrypt_selection_with_decryption_shares(
     :param suppress_validity_check: do not validate the encryption prior to decrypting (useful for tests)
     :return: a `PlaintextTallySelection` or `None` if there is an error
     """
-
     if not suppress_validity_check:
         # Verify that all of the shares are computed correctly
         for share in shares.values():
@@ -153,6 +153,9 @@ def decrypt_selection_with_decryption_shares(
             if not decryption.is_valid(
                 selection.ciphertext, public_key, crypto_extended_base_hash
             ):
+                log_warning(
+                    f"share: {decryption.object_id} has invalid proof or recovered parts"
+                )
                 return None
 
     # accumulate all of the shares calculated for the selection

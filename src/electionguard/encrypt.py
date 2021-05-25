@@ -35,10 +35,10 @@ class EncryptionDevice(Serializable):
     Metadata for encryption device
     """
 
-    uuid: int
+    device_id: int
     """Unique identifier for device"""
 
-    session_id: str
+    session_id: int
     """Used to identify session and protect the timestamp"""
 
     launch_code: int
@@ -49,17 +49,17 @@ class EncryptionDevice(Serializable):
 
     def __init__(
         self,
-        uuid: int,
-        session_id: str,
+        device_id: int,
+        session_id: int,
         launch_code: int,
         location: str,
     ) -> None:
-        self.uuid = uuid
+        self.device_id = device_id
         self.session_id = session_id
         self.launch_code = launch_code
         self.location = location
 
-        log_info(f": EncryptionDevice: Created: UUID: {uuid} at: {location}")
+        log_info(f": EncryptionDevice: Created: UUID: {device_id} at: {location}")
 
     def get_hash(self) -> ElementModQ:
         """
@@ -67,7 +67,7 @@ class EncryptionDevice(Serializable):
         :return: Starting hash
         """
         return get_hash_for_device(
-            self.uuid, self.session_id, self.launch_code, self.location
+            self.device_id, self.session_id, self.launch_code, self.location
         )
 
     # pylint: disable=no-self-use

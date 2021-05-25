@@ -2,7 +2,7 @@ from os import path
 from typing import Iterable
 
 from .ballot import PlaintextBallot, CiphertextBallot, SubmittedBallot
-from .guardian import GuardianRecord
+from .guardian import GuardianRecord, PrivateGuardianRecord
 from .election import CiphertextElectionContext, ElectionConstants
 from .encrypt import EncryptionDevice
 from .manifest import Manifest
@@ -50,13 +50,13 @@ def publish(
 
     make_directory(devices_directory)
     for device in devices:
-        device_name = DEVICE_PREFIX + str(device.uuid)
+        device_name = DEVICE_PREFIX + str(device.device_id)
         device.to_json_file(device_name, devices_directory)
 
     make_directory(guardian_directory)
     if guardian_records is not None:
         for guardian_record in guardian_records:
-            set_name = COEFFICIENT_PREFIX + guardian_record.guardian_id
+            set_name = GUARDIAN_PREFIX + guardian_record.guardian_id
             guardian_record.to_json_file(set_name, guardian_directory)
 
     make_directory(ballots_directory)
@@ -76,7 +76,7 @@ def publish(
 def publish_private_data(
     plaintext_ballots: Iterable[PlaintextBallot],
     ciphertext_ballots: Iterable[CiphertextBallot],
-    guardian_records: Iterable[GuardianRecord],
+    guardian_records: Iterable[PrivateGuardianRecord],
     results_directory: str = RESULTS_DIR,
 ) -> None:
     """

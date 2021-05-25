@@ -6,6 +6,7 @@ from shutil import rmtree
 from unittest import TestCase
 
 from random import randint
+from electionguard.types import BALLOT_ID
 
 from electionguard.utils import get_optional
 
@@ -48,11 +49,11 @@ from electionguard.decryption_mediator import DecryptionMediator
 from electionguard.publish import (
     publish,
     BALLOT_PREFIX,
-    COEFFICIENT_PREFIX,
     CONSTANTS_FILE_NAME,
     CONTEXT_FILE_NAME,
     DEVICE_PREFIX,
     ENCRYPTED_TALLY_FILE_NAME,
+    GUARDIAN_PREFIX,
     MANIFEST_FILE_NAME,
     TALLY_FILE_NAME,
 )
@@ -97,8 +98,9 @@ class TestEndToEndElection(TestCase):
     ciphertext_ballots: List[CiphertextBallot] = []
 
     # Step 3 - Cast and Spoil
-    ballot_store: DataStore
+    ballot_store: DataStore[BALLOT_ID, SubmittedBallot]
     ballot_box: BallotBox
+    submitted_ballots: Dict[BALLOT_ID, SubmittedBallot]
 
     # Step 4 - Decrypt Tally
     ciphertext_tally: CiphertextTally
@@ -188,7 +190,7 @@ class TestEndToEndElection(TestCase):
 
         # Share Keys
         for guardian in self.guardians:
-            announced_keys = self.mediator.share_announced()
+            announced_keys = get_optional(self.mediator.share_announced())
             for key_set in announced_keys:
                 if guardian.id is not key_set.election.owner_id:
                     guardian.save_guardian_public_keys(key_set)
@@ -209,8 +211,10 @@ class TestEndToEndElection(TestCase):
             for designated_guardian in self.guardians:
                 if designated_guardian.id != sending_guardian.id:
                     backups.append(
-                        sending_guardian.share_election_partial_key_backup(
-                            designated_guardian.id
+                        get_optional(
+                            sending_guardian.share_election_partial_key_backup(
+                                designated_guardian.id
+                            )
                         )
                     )
             self.mediator.receive_backups(backups)
@@ -228,7 +232,7 @@ class TestEndToEndElection(TestCase):
 
         # Receive Backups
         for designated_guardian in self.guardians:
-            backups = self.mediator.share_backups(designated_guardian.id)
+            backups = get_optional(self.mediator.share_backups(designated_guardian.id))
             self._assert_message(
                 KeyCeremonyMediator.share_backups.__qualname__,
                 "Share election partial key backups for the designated guardian",
@@ -248,7 +252,7 @@ class TestEndToEndElection(TestCase):
                             backup_owner.id, identity_auxiliary_encrypt
                         )
                     )
-                    verifications.append(verification)
+                    verifications.append(get_optional(verification))
             self.mediator.receive_backup_verifications(verifications)
 
         self._assert_message(
@@ -348,7 +352,7 @@ class TestEndToEndElection(TestCase):
         self.ciphertext_tally = get_optional(
             tally_ballots(self.ballot_store, self.internal_manifest, self.context)
         )
-        self.ciphertext_ballots = get_ballots(self.ballot_store, BallotBoxState.SPOILED)
+        self.submitted_ballots = get_ballots(self.ballot_store, BallotBoxState.SPOILED)
         self._assert_message(
             tally_ballots.__qualname__,
             f"""
@@ -360,7 +364,7 @@ class TestEndToEndElection(TestCase):
         )
 
         # Configure the Decryption
-        ciphertext_ballots = list(self.ciphertext_ballots.values())
+        submitted_ballots_list = list(self.submitted_ballots.values())
         self.decryption_mediator = DecryptionMediator(
             "decryption-mediator",
             self.context,
@@ -374,9 +378,11 @@ class TestEndToEndElection(TestCase):
                 self.ciphertext_tally, self.context
             )
             ballot_shares = guardian.compute_ballot_shares(
-                ciphertext_ballots, self.context
+                submitted_ballots_list, self.context
             )
-            self.decryption_mediator.announce(guardian_key, tally_share, ballot_shares)
+            self.decryption_mediator.announce(
+                guardian_key, get_optional(tally_share), ballot_shares
+            )
             count += 1
             self._assert_message(
                 DecryptionMediator.announce.__qualname__,
@@ -396,7 +402,7 @@ class TestEndToEndElection(TestCase):
 
         # Get the plaintext Spoiled Ballots
         self.plaintext_spoiled_ballots = get_optional(
-            self.decryption_mediator.get_plaintext_ballots(ciphertext_ballots)
+            self.decryption_mediator.get_plaintext_ballots(submitted_ballots_list)
         )
         self._assert_message(
             DecryptionMediator.get_plaintext_ballots.__qualname__,
@@ -409,7 +415,7 @@ class TestEndToEndElection(TestCase):
 
     def compare_results(self) -> None:
         """
-        Compare the results to ensure the decryption was done correctly
+        Compare the results to ensure the decryption was done correctly.
         """
         print(
             f"""
@@ -521,7 +527,7 @@ class TestEndToEndElection(TestCase):
         )
         self.assertEqual(self.constants, constants_from_file)
 
-        device_name = DEVICE_PREFIX + str(self.device.uuid)
+        device_name = DEVICE_PREFIX + str(self.device.device_id)
         device_from_file = EncryptionDevice.from_json_file(device_name, DEVICES_DIR)
         self.assertEqual(self.device, device_from_file)
 
@@ -548,7 +554,7 @@ class TestEndToEndElection(TestCase):
         self.assertEqual(self.plaintext_tally, plainttext_tally_from_file)
 
         for guardian_record in self.guardian_records:
-            set_name = COEFFICIENT_PREFIX + guardian_record.guardian_id
+            set_name = GUARDIAN_PREFIX + guardian_record.guardian_id
             guardian_record_from_file = GuardianRecord.from_json_file(
                 set_name, GUARDIAN_DIR
             )

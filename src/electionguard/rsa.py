@@ -1,8 +1,8 @@
 from typing import Optional, NamedTuple
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric.rsa import (
-    generate_private_key,
     RSAPrivateKey,
+    generate_private_key,
     RSAPrivateKeyWithSerialization,
     RSAPublicKey,
 )
@@ -67,7 +67,9 @@ def rsa_encrypt(message: str, public_key: str) -> Optional[str]:
     :return: Encrypted message
     """
     data = bytes(public_key, ISO_ENCODING)
-    rsa_public_key: RSAPublicKey = load_pem_public_key(data, backend=default_backend())
+    rsa_public_key = load_pem_public_key(data, backend=default_backend())
+    if not isinstance(rsa_public_key, RSAPublicKey):
+        return None
     plaintext = bytes.fromhex(message)
     if len(plaintext) > MAX_BITS:
         return None
@@ -85,9 +87,11 @@ def rsa_decrypt(encrypted_message: str, private_key: str) -> Optional[str]:
     """
 
     data = bytes(private_key, ISO_ENCODING)
-    rsa_private_key: RSAPrivateKey = load_pem_private_key(
+    rsa_private_key = load_pem_private_key(
         data, password=None, backend=default_backend()
     )
+    if not isinstance(rsa_private_key, RSAPrivateKey):
+        return None
     ciphertext = bytes(encrypted_message, ISO_ENCODING)
     try:
         plaintext = rsa_private_key.decrypt(ciphertext, PKCS1v15())

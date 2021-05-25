@@ -39,7 +39,7 @@ from electionguard.manifest import (
 )
 from electionguard.utils import get_optional
 
-from .key_ceremony_helper import KeyCeremonyHelper
+from electionguardtest.key_ceremony_helper import KeyCeremonyHelper
 
 _T = TypeVar("_T")
 _DrawType = Callable[[SearchStrategy[_T]], _T]
@@ -249,8 +249,8 @@ class ElectionFactory:
     def get_encryption_device() -> EncryptionDevice:
         return EncryptionDevice(
             generate_device_uuid(),
-            "Session",
             12345,
+            45678,
             f"polling-place-{str(uuid.uuid1())}",
         )
 
