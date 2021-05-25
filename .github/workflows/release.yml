@@ -6,13 +6,13 @@ on:
 
 env:
   PYTHON_VERSION: 3.8
-  POETRY_PATH: "$HOME/.poetry/bin" 
+  POETRY_PATH: "$HOME/.poetry/bin"
 
 jobs:
-  code_analysis: 
+  code_analysis:
     name: Code Analysis
     runs-on: ubuntu-latest
-    steps: 
+    steps:
       - name: Checkout Code
         uses: actions/checkout@v2
       - name: Set up Python ${{ env.PYTHON_VERSION }}
@@ -107,7 +107,7 @@ jobs:
       - name: Install Dependencies
         run: make install
       - name: Get Version
-        run: echo "PACKAGE_VERSION=$(echo $VERSION | poetry version --short)" >> $GITHUB_ENV
+        run: echo "PACKAGE_VERSION=$(poetry version --short)" >> $GITHUB_ENV
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1.0.0
