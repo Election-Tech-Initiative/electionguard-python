@@ -69,10 +69,10 @@ class CiphertextElectionContext(Serializable):
     """The hash of the election metadata"""
 
     crypto_base_hash: ElementModQ
-    """the `base hash code (𝑄)` in the [ElectionGuard Spec](https://github.com/microsoft/electionguard/wiki)"""
+    """The `base hash code (𝑄)` in the [ElectionGuard Spec](https://github.com/microsoft/electionguard/wiki)"""
 
     crypto_extended_base_hash: ElementModQ
-    """the `extended base hash code (𝑄')` in the [ElectionGuard Spec](https://github.com/microsoft/electionguard/wiki)"""
+    """The `extended base hash code (𝑄')` in [ElectionGuard Spec](https://github.com/microsoft/electionguard/wiki)"""
 
 
 def make_ciphertext_election_context(
@@ -80,7 +80,7 @@ def make_ciphertext_election_context(
     quorum: int,
     elgamal_public_key: ElementModP,
     commitment_hash: ElementModQ,
-    description_hash: ElementModQ,
+    manifest_hash: ElementModQ,
 ) -> CiphertextElectionContext:
     """
     Makes a CiphertextElectionContext object.
@@ -89,7 +89,7 @@ def make_ciphertext_election_context(
     :param quorum: The quorum of guardians necessary to decrypt an election.  Must be less than `number_of_guardians`
     :param elgamal_public_key: the public key of the election
     :param commitment_hash: the hash of the commitments the guardians make to each other
-    :param description_hash: the hash of the election metadata
+    :param manifest_hash: the hash of the election metadata
     """
 
     # What's a crypto_base_hash?
@@ -114,7 +114,7 @@ def make_ciphertext_election_context(
         int_to_p_unchecked(G),
         number_of_guardians,
         quorum,
-        description_hash,
+        manifest_hash,
     )
     crypto_extended_base_hash = hash_elems(crypto_base_hash, commitment_hash)
     return CiphertextElectionContext(
@@ -122,7 +122,7 @@ def make_ciphertext_election_context(
         quorum=quorum,
         elgamal_public_key=elgamal_public_key,
         commitment_hash=commitment_hash,
-        manifest_hash=description_hash,
+        manifest_hash=manifest_hash,
         crypto_base_hash=crypto_base_hash,
         crypto_extended_base_hash=crypto_extended_base_hash,
     )
