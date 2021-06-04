@@ -56,21 +56,23 @@ class CiphertextElectionContext(Serializable):
     The quorum of guardians necessary to decrypt an election.  Must be less than `number_of_guardians`
     """
 
-    # the `joint public key (K)` in the [ElectionGuard Spec](https://github.com/microsoft/electionguard/wiki)
     elgamal_public_key: ElementModP
+    """the `joint public key (K)` in the [ElectionGuard Spec](https://github.com/microsoft/electionguard/wiki)"""
 
-    # the `commitment hash H(K 1,0 , K 2,0 ... , K n,0 )` of the public commitments
-    # guardians make to each other in the [ElectionGuard Spec](https://github.com/microsoft/electionguard/wiki)
     commitment_hash: ElementModQ
+    """
+    the `commitment hash H(K 1,0 , K 2,0 ... , K n,0 )` of the public commitments
+    guardians make to each other in the [ElectionGuard Spec](https://github.com/microsoft/electionguard/wiki)
+    """
 
-    # The hash of the election metadata
-    description_hash: ElementModQ
+    manifest_hash: ElementModQ
+    """The hash of the election metadata"""
 
-    # the `base hash code (𝑄)` in the [ElectionGuard Spec](https://github.com/microsoft/electionguard/wiki)
     crypto_base_hash: ElementModQ
+    """the `base hash code (𝑄)` in the [ElectionGuard Spec](https://github.com/microsoft/electionguard/wiki)"""
 
-    # the `extended base hash code (𝑄')` in the [ElectionGuard Spec](https://github.com/microsoft/electionguard/wiki)
     crypto_extended_base_hash: ElementModQ
+    """the `extended base hash code (𝑄')` in the [ElectionGuard Spec](https://github.com/microsoft/electionguard/wiki)"""
 
 
 def make_ciphertext_election_context(
@@ -120,7 +122,7 @@ def make_ciphertext_election_context(
         quorum=quorum,
         elgamal_public_key=elgamal_public_key,
         commitment_hash=commitment_hash,
-        description_hash=description_hash,
+        manifest_hash=description_hash,
         crypto_base_hash=crypto_base_hash,
         crypto_extended_base_hash=crypto_extended_base_hash,
     )
