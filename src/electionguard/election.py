@@ -20,16 +20,16 @@ class ElectionConstants(Serializable):
     The constants for mathematical functions during the election.
     """
 
-    large_prime = P
+    large_prime = int_to_p_unchecked(P)
     """large prime or p"""
 
-    small_prime = Q
+    small_prime = int_to_q_unchecked(Q)
     """small prime or q"""
 
-    cofactor = R
+    cofactor = int_to_p_unchecked(R)
     """cofactor or r"""
 
-    generator = G
+    generator = int_to_p_unchecked(G)
     """generator or g"""
 
 
