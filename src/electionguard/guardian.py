@@ -44,7 +44,6 @@ from .serializable import Serializable
 from .schnorr import SchnorrProof
 from .tally import CiphertextTally
 from .types import BALLOT_ID, GUARDIAN_ID
-from .utils import get_optional
 
 
 @dataclass
