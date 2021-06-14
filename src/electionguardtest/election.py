@@ -646,7 +646,7 @@ def ciphertext_elections(draw: _DrawType, manifest: Manifest):
             quorum=1,
             elgamal_public_key=public_key,
             commitment_hash=commitment_hash,
-            description_hash=manifest.crypto_hash(),
+            manifest_hash=manifest.crypto_hash(),
         ),
     )
     return ciphertext_election_with_secret

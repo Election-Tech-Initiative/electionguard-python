@@ -27,15 +27,17 @@ class ElementModQ(NamedTuple):
 
     def to_bytes(self) -> bytes:
         """
-        Converts from the element to the representation of bytes by first going through hex.
+        Convert from the element to the representation of bytes by first going through hex.
+
         This is preferable to directly accessing `elem`, whose representation might change.
         """
         return b16decode(self.to_hex())
 
     def to_hex(self) -> str:
         """
-        Converts from the element to the hex representation of bytes. This is preferable to directly
-        accessing `elem`, whose representation might change.
+        Convert from the element to the hex representation of bytes.
+
+        This is preferable to directly accessing `elem`, whose representation might change.
         """
         h = format(self.elem, "02X")
         if len(h) % 2:
@@ -44,21 +46,24 @@ class ElementModQ(NamedTuple):
 
     def to_int(self) -> int:
         """
-        Converts from the element to a regular integer. This is preferable to directly
-        accessing `elem`, whose representation might change.
+        Convert from the element to a regular integer.
+
+        This is preferable to directly accessing `elem`, whose representation might change.
         """
         return self.elem
 
     def is_in_bounds(self) -> bool:
         """
-        Validates that the element is actually within the bounds of [0,Q).
+        Validate that the element is actually within the bounds of [0,Q).
+
         Returns true if all is good, false if something's wrong.
         """
         return 0 <= self.elem < Q
 
     def is_in_bounds_no_zero(self) -> bool:
         """
-        Validates that the element is actually within the bounds of [1,Q).
+        Validate that the element is actually within the bounds of [1,Q).
+
         Returns true if all is good, false if something's wrong.
         """
         return 0 < self.elem < Q
@@ -84,8 +89,9 @@ class ElementModP(NamedTuple):
 
     def to_hex(self) -> str:
         """
-        Converts from the element to the hex representation of bytes. This is preferable to directly
-        accessing `elem`, whose representation might change.
+        Converts from the element to the hex representation of bytes.
+
+        This is preferable to directly accessing `elem`, whose representation might change.
         """
         h = format(self.elem, "02X")
         if len(h) % 2:
@@ -94,28 +100,32 @@ class ElementModP(NamedTuple):
 
     def to_int(self) -> int:
         """
-        Converts from the element to a regular integer. This is preferable to directly
-        accessing `elem`, whose representation might change.
+        Convert from the element to a regular integer.
+
+        This is preferable to directly accessing `elem`, whose representation might change.
         """
         return self.elem
 
     def is_in_bounds(self) -> bool:
         """
-        Validates that the element is actually within the bounds of [0,P).
+        Validate that the element is actually within the bounds of [0,P).
+
         Returns true if all is good, false if something's wrong.
         """
         return 0 <= self.elem < P
 
     def is_in_bounds_no_zero(self) -> bool:
         """
-        Validates that the element is actually within the bounds of [1,P).
+        Validate that the element is actually within the bounds of [1,P).
+
         Returns true if all is good, false if something's wrong.
         """
         return 0 < self.elem < P
 
     def is_valid_residue(self) -> bool:
         """
-        Validates that this element is in Z^r_p.
+        Validate that this element is in Z^r_p.
+
         Returns true if all is good, false if something's wrong.
         """
         residue = pow_p(self, ElementModQ(mpz(Q))) == ONE_MOD_P
@@ -153,8 +163,8 @@ ElementModPorInt = Union[ElementModP, int]
 def hex_to_q(input: str) -> Optional[ElementModQ]:
     """
     Given a hex string representing bytes, returns an ElementModQ.
-    Returns `None` if the number is out of the allowed
-    [0,Q) range.
+
+    Returns `None` if the number is out of the allowed [0,Q) range.
     """
     i = int(input, 16)
     if 0 <= i < Q:
@@ -165,8 +175,8 @@ def hex_to_q(input: str) -> Optional[ElementModQ]:
 def int_to_q(input: Union[str, int]) -> Optional[ElementModQ]:
     """
     Given a Python integer, returns an ElementModQ.
-    Returns `None` if the number is out of the allowed
-    [0,Q) range.
+
+    Returns `None` if the number is out of the allowed [0,Q) range.
     """
     i = int(input)
     if 0 <= i < Q:
@@ -174,23 +184,47 @@ def int_to_q(input: Union[str, int]) -> Optional[ElementModQ]:
     return None
 
 
-def int_to_q_unchecked(i: Union[str, int]) -> ElementModQ:
+def hex_to_q_unchecked(input: str) -> ElementModQ:
     """
-    Given a Python integer, returns an ElementModQ. Allows
-    for the input to be out-of-bounds, and thus creating an invalid
-    element (i.e., outside of [0,Q)). Useful for tests of it
+    Given a hex string representing bytes, returns an ElementModQ.
+
+    Allows for the input to be out-of-bounds, and thus creating an invalid
+    element (i.e., outside of [0,Q)). Useful for tests or if
     you're absolutely, positively, certain the input is in-bounds.
     """
+    i = int(input, 16)
+    return ElementModQ(mpz(i))
 
+
+def int_to_q_unchecked(i: Union[str, int]) -> ElementModQ:
+    """
+    Given a Python integer, returns an ElementModQ.
+
+    Allows for the input to be out-of-bounds, and thus creating an invalid
+    element (i.e., outside of [0,Q)). Useful for tests or if
+    you're absolutely, positively, certain the input is in-bounds.
+    """
     m = mpz(int(i))
     return ElementModQ(m)
+
+
+def hex_to_p(input: str) -> Optional[ElementModP]:
+    """
+    Given a hex string representing bytes, returns an ElementModP.
+
+    Returns `None` if the number is out of the allowed [0,Q) range.
+    """
+    i = int(input, 16)
+    if 0 <= i < P:
+        return ElementModP(mpz(i))
+    return None
 
 
 def int_to_p(input: Union[str, int]) -> Optional[ElementModP]:
     """
     Given a Python integer, returns an ElementModP.
-    Returns `None` if the number is out of the allowed
-    [0,P) range.
+
+    Returns `None` if the number is out of the allowed [0,P) range.
     """
     i = int(input)
     if 0 <= i < P:
@@ -198,10 +232,23 @@ def int_to_p(input: Union[str, int]) -> Optional[ElementModP]:
     return None
 
 
+def hex_to_p_unchecked(input: str) -> ElementModP:
+    """
+    Given a hex string representing bytes, returns an ElementModP.
+
+    Allows for the input to be out-of-bounds, and thus creating an invalid
+    element (i.e., outside of [0,P)). Useful for tests or if
+    you're absolutely, positively, certain the input is in-bounds.
+    """
+    i = int(input, 16)
+    return ElementModP(mpz(i))
+
+
 def int_to_p_unchecked(i: Union[str, int]) -> ElementModP:
     """
-    Given a Python integer, returns an ElementModP. Allows
-    for the input to be out-of-bounds, and thus creating an invalid
+    Given a Python integer, returns an ElementModP.
+
+    Allows for the input to be out-of-bounds, and thus creating an invalid
     element (i.e., outside of [0,P)). Useful for tests or if
     you're absolutely, positively, certain the input is in-bounds.
     """
@@ -210,23 +257,17 @@ def int_to_p_unchecked(i: Union[str, int]) -> ElementModP:
 
 
 def q_to_bytes(e: ElementModQ) -> bytes:
-    """
-    Returns a byte sequence from the element.
-    """
+    """Return a byte sequence from the element."""
     return to_binary(e.elem)
 
 
 def bytes_to_q(b: bytes) -> ElementModQ:
-    """
-    Returns an element from a byte sequence.
-    """
+    """Return an element from a byte sequence."""
     return ElementModQ(mpz(from_binary(b)))
 
 
 def add_q(*elems: ElementModQorInt) -> ElementModQ:
-    """
-    Adds together one or more elements in Q, returns the sum mod Q.
-    """
+    """Add together one or more elements in Q, returns the sum mod Q."""
     t = mpz(0)
     for e in elems:
         if isinstance(e, int):
@@ -237,9 +278,7 @@ def add_q(*elems: ElementModQorInt) -> ElementModQ:
 
 
 def a_minus_b_q(a: ElementModQorInt, b: ElementModQorInt) -> ElementModQ:
-    """
-    Computes (a-b) mod q.
-    """
+    """Compute (a-b) mod q."""
     if isinstance(a, int):
         a = int_to_q_unchecked(a)
     if isinstance(b, int):
@@ -249,9 +288,7 @@ def a_minus_b_q(a: ElementModQorInt, b: ElementModQorInt) -> ElementModQ:
 
 
 def div_p(a: ElementModPOrQorInt, b: ElementModPOrQorInt) -> ElementModP:
-    """
-    Computes a/b mod p
-    """
+    """Compute a/b mod p."""
     if isinstance(a, int):
         a = int_to_p_unchecked(a)
     if isinstance(b, int):
@@ -262,9 +299,7 @@ def div_p(a: ElementModPOrQorInt, b: ElementModPOrQorInt) -> ElementModP:
 
 
 def div_q(a: ElementModPOrQorInt, b: ElementModPOrQorInt) -> ElementModQ:
-    """
-    Computes a/b mod q
-    """
+    """Compute a/b mod q."""
     if isinstance(a, int):
         a = int_to_p_unchecked(a)
     if isinstance(b, int):
@@ -275,9 +310,7 @@ def div_q(a: ElementModPOrQorInt, b: ElementModPOrQorInt) -> ElementModQ:
 
 
 def negate_q(a: ElementModQorInt) -> ElementModQ:
-    """
-    Computes (Q - a) mod q.
-    """
+    """Compute (Q - a) mod q."""
     if isinstance(a, int):
         a = int_to_q_unchecked(a)
     return ElementModQ(Q - a.elem)
@@ -286,9 +319,7 @@ def negate_q(a: ElementModQorInt) -> ElementModQ:
 def a_plus_bc_q(
     a: ElementModQorInt, b: ElementModQorInt, c: ElementModQorInt
 ) -> ElementModQ:
-    """
-    Computes (a + b * c) mod q.
-    """
+    """Compute (a + b * c) mod q."""
     if isinstance(a, int):
         a = int_to_q_unchecked(a)
     if isinstance(b, int):
@@ -301,7 +332,7 @@ def a_plus_bc_q(
 
 def mult_inv_p(e: ElementModPOrQorInt) -> ElementModP:
     """
-    Computes the multiplicative inverse mod p.
+    Compute the multiplicative inverse mod p.
 
     :param e:  An element in [1, P).
     """
@@ -314,7 +345,7 @@ def mult_inv_p(e: ElementModPOrQorInt) -> ElementModP:
 
 def pow_p(b: ElementModPOrQorInt, e: ElementModPOrQorInt) -> ElementModP:
     """
-    Computes b^e mod p.
+    Compute b^e mod p.
 
     :param b: An element in [0,P).
     :param e: An element in [0,P).
@@ -330,7 +361,7 @@ def pow_p(b: ElementModPOrQorInt, e: ElementModPOrQorInt) -> ElementModP:
 
 def pow_q(b: ElementModQorInt, e: ElementModQorInt) -> ElementModQ:
     """
-    Computes b^e mod q.
+    Compute b^e mod q.
 
     :param b: An element in [0,Q).
     :param e: An element in [0,Q).
@@ -346,7 +377,7 @@ def pow_q(b: ElementModQorInt, e: ElementModQorInt) -> ElementModQ:
 
 def mult_p(*elems: ElementModPOrQorInt) -> ElementModP:
     """
-    Computes the product, mod p, of all elements.
+    Compute the product, mod p, of all elements.
 
     :param elems: Zero or more elements in [0,P).
     """
@@ -360,7 +391,7 @@ def mult_p(*elems: ElementModPOrQorInt) -> ElementModP:
 
 def mult_q(*elems: ElementModPOrQorInt) -> ElementModQ:
     """
-    Computes the product, mod q, of all elements.
+    Compute the product, mod q, of all elements.
 
     :param elems: Zero or more elements in [0,Q).
     """
@@ -374,7 +405,7 @@ def mult_q(*elems: ElementModPOrQorInt) -> ElementModQ:
 
 def g_pow_p(e: ElementModPOrQ) -> ElementModP:
     """
-    Computes g^e mod p.
+    Compute g^e mod p.
 
     :param e: An element in [0,P).
     """
@@ -383,7 +414,7 @@ def g_pow_p(e: ElementModPOrQ) -> ElementModP:
 
 def rand_q() -> ElementModQ:
     """
-    Generate random number between 0 and Q
+    Generate random number between 0 and Q.
 
     :return: Random value between 0 and Q
     """
@@ -392,7 +423,7 @@ def rand_q() -> ElementModQ:
 
 def rand_range_q(start: ElementModQorInt) -> ElementModQ:
     """
-    Generate random number between start and Q
+    Generate random number between start and Q.
 
     :param start: Starting value of range
     :return: Random value between start and Q
@@ -407,7 +438,5 @@ def rand_range_q(start: ElementModQorInt) -> ElementModQ:
 
 
 def eq_elems(a: ElementModPOrQ, b: ElementModPOrQ) -> bool:
-    """
-    Returns whether the two elements hold the same value.
-    """
+    """Return whether the two elements hold the same value."""
     return a.elem == b.elem

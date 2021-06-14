@@ -20,16 +20,16 @@ class ElectionConstants(Serializable):
     The constants for mathematical functions during the election.
     """
 
-    large_prime = P
+    large_prime = int_to_p_unchecked(P)
     """large prime or p"""
 
-    small_prime = Q
+    small_prime = int_to_q_unchecked(Q)
     """small prime or q"""
 
-    cofactor = R
+    cofactor = int_to_p_unchecked(R)
     """cofactor or r"""
 
-    generator = G
+    generator = int_to_p_unchecked(G)
     """generator or g"""
 
 
@@ -56,21 +56,23 @@ class CiphertextElectionContext(Serializable):
     The quorum of guardians necessary to decrypt an election.  Must be less than `number_of_guardians`
     """
 
-    # the `joint public key (K)` in the [ElectionGuard Spec](https://github.com/microsoft/electionguard/wiki)
     elgamal_public_key: ElementModP
+    """the `joint public key (K)` in the [ElectionGuard Spec](https://github.com/microsoft/electionguard/wiki)"""
 
-    # the `commitment hash H(K 1,0 , K 2,0 ... , K n,0 )` of the public commitments
-    # guardians make to each other in the [ElectionGuard Spec](https://github.com/microsoft/electionguard/wiki)
     commitment_hash: ElementModQ
+    """
+    the `commitment hash H(K 1,0 , K 2,0 ... , K n,0 )` of the public commitments
+    guardians make to each other in the [ElectionGuard Spec](https://github.com/microsoft/electionguard/wiki)
+    """
 
-    # The hash of the election metadata
-    description_hash: ElementModQ
+    manifest_hash: ElementModQ
+    """The hash of the election metadata"""
 
-    # the `base hash code (𝑄)` in the [ElectionGuard Spec](https://github.com/microsoft/electionguard/wiki)
     crypto_base_hash: ElementModQ
+    """The `base hash code (𝑄)` in the [ElectionGuard Spec](https://github.com/microsoft/electionguard/wiki)"""
 
-    # the `extended base hash code (𝑄')` in the [ElectionGuard Spec](https://github.com/microsoft/electionguard/wiki)
     crypto_extended_base_hash: ElementModQ
+    """The `extended base hash code (𝑄')` in [ElectionGuard Spec](https://github.com/microsoft/electionguard/wiki)"""
 
 
 def make_ciphertext_election_context(
@@ -78,7 +80,7 @@ def make_ciphertext_election_context(
     quorum: int,
     elgamal_public_key: ElementModP,
     commitment_hash: ElementModQ,
-    description_hash: ElementModQ,
+    manifest_hash: ElementModQ,
 ) -> CiphertextElectionContext:
     """
     Makes a CiphertextElectionContext object.
@@ -87,7 +89,7 @@ def make_ciphertext_election_context(
     :param quorum: The quorum of guardians necessary to decrypt an election.  Must be less than `number_of_guardians`
     :param elgamal_public_key: the public key of the election
     :param commitment_hash: the hash of the commitments the guardians make to each other
-    :param description_hash: the hash of the election metadata
+    :param manifest_hash: the hash of the election metadata
     """
 
     # What's a crypto_base_hash?
@@ -112,7 +114,7 @@ def make_ciphertext_election_context(
         int_to_p_unchecked(G),
         number_of_guardians,
         quorum,
-        description_hash,
+        manifest_hash,
     )
     crypto_extended_base_hash = hash_elems(crypto_base_hash, commitment_hash)
     return CiphertextElectionContext(
@@ -120,7 +122,7 @@ def make_ciphertext_election_context(
         quorum=quorum,
         elgamal_public_key=elgamal_public_key,
         commitment_hash=commitment_hash,
-        description_hash=description_hash,
+        manifest_hash=manifest_hash,
         crypto_base_hash=crypto_base_hash,
         crypto_extended_base_hash=crypto_extended_base_hash,
     )
