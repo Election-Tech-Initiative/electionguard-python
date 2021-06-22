@@ -28,8 +28,8 @@ class TestHash(unittest.TestCase):
         if ha != hb:
             self.assertNotEqual(a, b)
 
-    def test_hash_value_for_zero_string_different_from_zero_number(self):
-        self.assertNotEqual(hash_elems(0), hash_elems("0"))
+    def test_hash_for_zero_number_is_zero_string(self):
+        self.assertEqual(hash_elems(0), hash_elems("0"))
 
     def test_hash_for_non_zero_number_string_same_as_explicit_number(self):
         self.assertEqual(hash_elems(1), hash_elems("1"))
@@ -40,26 +40,24 @@ class TestHash(unittest.TestCase):
             hash_elems("welcome to electionguard"),
         )
 
-    def test_hash_for_empty_string_same_as_null_string(self):
-        self.assertEqual(hash_elems(""), hash_elems("null"))
-
     def test_hash_for_none_same_as_null_string(self):
         self.assertEqual(hash_elems(None), hash_elems("null"))
-
-    def test_hash_for_none_same_as_explicit_zero_number(self):
-        self.assertEqual(hash_elems(None), hash_elems(0))
 
     def test_hash_of_save_values_in_list_are_same_hash(self):
         self.assertEqual(hash_elems(["0", "0"]), hash_elems(["0", "0"]))
 
-    def test_hash_empty_list_same_as_hash_null_string(self):
+    def test_hash_null_equivalents(self):
         null_list: Optional[List[str]] = None
         empty_list: List[str] = []
 
         self.assertEqual(hash_elems(null_list), hash_elems(empty_list))
         self.assertEqual(hash_elems(empty_list), hash_elems(None))
-        self.assertEqual(hash_elems(empty_list), hash_elems(""))
         self.assertEqual(hash_elems(empty_list), hash_elems("null"))
+
+    def test_hash_not_null_equivalents(self):
+        # empty string is not equivalent to null
+        self.assertNotEqual(hash_elems([]), hash_elems(""))
+        self.assertNotEqual(hash_elems(None), hash_elems(0))
 
     def test_hash_value_from_nested_list_and_result_of_hashed_list_by_taking_the_hex(
         self,
