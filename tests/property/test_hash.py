@@ -55,8 +55,7 @@ class TestHash(unittest.TestCase):
         self.assertEqual(hash_elems(empty_list), hash_elems("null"))
 
     def test_hash_not_null_equivalents(self):
-        # empty string is not equivalent to null
-        self.assertNotEqual(hash_elems([]), hash_elems(""))
+        self.assertNotEqual(hash_elems(None), hash_elems(""))
         self.assertNotEqual(hash_elems(None), hash_elems(0))
 
     def test_hash_value_from_nested_list_and_result_of_hashed_list_by_taking_the_hex(
