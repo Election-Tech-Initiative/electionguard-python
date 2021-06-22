@@ -93,8 +93,7 @@ def hash_elems(*a: CRYPTO_HASHABLE_ALL) -> ElementModQ:
             hash_me = "null"
         elif isinstance(x, (Sequence, List, Iterable)):
             # The simplest way to deal with lists, tuples, and such are to crunch them recursively.
-            tmp = hash_elems(*x)
-            hash_me = tmp.to_hex()
+            hash_me = hash_elems(*x).to_hex()
         else:
             hash_me = str(x)
 
