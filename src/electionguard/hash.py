@@ -1,7 +1,14 @@
 from abc import abstractmethod
 from collections.abc import Sequence
 from hashlib import sha256
-from typing import Union, Protocol, runtime_checkable, Sequence as TypedSequence
+from typing import (
+    Iterable,
+    List,
+    Union,
+    Protocol,
+    runtime_checkable,
+    Sequence as TypedSequence,
+)
 
 from .group import (
     ElementModPOrQ,
@@ -69,25 +76,28 @@ def hash_elems(*a: CRYPTO_HASHABLE_ALL) -> ElementModQ:
         # that's a bit Python-specific, and we'd rather make it easier for other languages
         # to exactly match this hash function.
 
-        if not x:
+        if isinstance(x, (ElementModP, ElementModQ)):
+            hash_me = x.to_hex()
+        elif isinstance(x, CryptoHashable):
+            hash_me = x.crypto_hash().to_hex()
+        elif isinstance(x, str):
+            # strings are iterable, so it's important to handle them before list-like types
+            hash_me = x
+        elif isinstance(x, int):
+            hash_me = str(x)
+        elif not x:
             # This case captures empty lists and None, nicely guaranteeing that we don't
             # need to do a recursive call if the list is empty. So we need a string to
             # feed in for both of these cases. "None" would be a Python-specific thing,
             # so we'll go with the more JSON-ish "null".
             hash_me = "null"
-
-        elif isinstance(x, (ElementModP, ElementModQ)):
-            hash_me = x.to_hex()
-        elif isinstance(x, CryptoHashable):
-            hash_me = x.crypto_hash().to_hex()
-        elif isinstance(x, str):
-            # strings are iterable, so it's important to handle them before the following check
-            hash_me = x
-        elif isinstance(x, Sequence):
+        elif isinstance(x, (Sequence, List, Iterable)):
             # The simplest way to deal with lists, tuples, and such are to crunch them recursively.
-            hash_me = hash_elems(*x).to_hex()
+            tmp = hash_elems(*x)
+            hash_me = tmp.to_hex()
         else:
             hash_me = str(x)
+
         h.update((hash_me + "|").encode("utf-8"))
 
     # We don't need the checked version of int_to_q, because the
