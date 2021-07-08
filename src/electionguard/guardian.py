@@ -510,7 +510,9 @@ class Guardian:
         )
         return elgamal_combine_public_keys(public_keys)
 
-    def share_other_guardian_key(self, guardian_id: GUARDIAN_ID) -> Optional[ElectionPublicKey]:
+    def share_other_guardian_key(
+        self, guardian_id: GUARDIAN_ID
+    ) -> Optional[ElectionPublicKey]:
         """Share other guardians keys shared during key ceremony"""
         return self._guardian_election_public_keys.get(guardian_id)
 

@@ -60,7 +60,10 @@ from electionguard.publish import (
 
 from electionguardtest.ballot_factory import BallotFactory
 from electionguardtest.election_factory import ElectionFactory, NUMBER_OF_GUARDIANS
-from electionguardtest.identity_encrypt import identity_auxiliary_encrypt,identity_auxiliary_decrypt
+from electionguardtest.identity_encrypt import (
+    identity_auxiliary_encrypt,
+    identity_auxiliary_decrypt,
+)
 
 RESULTS_DIR = "test-results"
 DEVICES_DIR = path.join(RESULTS_DIR, "devices")
