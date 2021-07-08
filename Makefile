@@ -1,4 +1,4 @@
-.PHONY: all openssl-fix install install-gmp install-gmp-mac install-gmp-linux install-gmp-windows install-poetry install-mkdocs auto-lint validate test test-example bench coverage coverage-html coverage-xml coverage-erase generate-sample-data
+.PHONY: all openssl-fix install install-gmp install-gmp-mac install-gmp-linux install-gmp-windows install-mkdocs auto-lint validate test test-example bench coverage coverage-html coverage-xml coverage-erase generate-sample-data
 
 CODE_COVERAGE ?= 90
 OS ?= $(shell python -c 'import platform; print(platform.system())')
@@ -11,7 +11,8 @@ all: environment install build validate auto-lint coverage
 environment:
 	@echo 🔧 ENVIRONMENT SETUP
 	make install-gmp
-	pip install 'poetry==1.1.6'
+	pip3 install 'poetry==1.1.6'
+	poetry config virtualenvs.in-project true 
 	poetry install
 	@echo 🚨 Be sure to add poetry to PATH
 
@@ -67,10 +68,6 @@ ifeq ($(IS_64_BIT), False)
 	@echo 32 bit system detected
 endif
 
-install-poetry:
-	@echo 📦 Install poetry
-	curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
-
 lint:
 	@echo 💚 LINT
 	@echo 1.Pylint
@@ -116,7 +113,7 @@ test:
 
 test-example:
 	@echo ✅ TEST Example
-	poetry run python -m pytest -s tests/integration/test_end_to_end_election.py
+	poetry run python3 -m pytest -s tests/integration/test_end_to_end_election.py
 
 test-integration:
 	@echo ✅ INTEGRATION TESTS
@@ -140,7 +137,7 @@ coverage-erase:
 # Benchmark
 bench:
 	@echo 📊 BENCHMARKS
-	poetry run python -s tests/bench/bench_chaum_pedersen.py
+	poetry run python3 -s tests/bench/bench_chaum_pedersen.py
 
 # Documentation
 install-mkdocs:
@@ -171,7 +168,7 @@ dependency-graph-ci:
 
 # Sample Data
 generate-sample-data:
-	poetry run python src/electionguardtest/sample_generator.py -n $(SAMPLE_BALLOT_COUNT) -s $(SAMPLE_BALLOT_SPOIL_RATE)
+	poetry run python3 src/electionguardtest/sample_generator.py -n $(SAMPLE_BALLOT_COUNT) -s $(SAMPLE_BALLOT_SPOIL_RATE)
 
 # Publish
 publish:
@@ -190,13 +187,13 @@ publish-test-ci:
 
 publish-validate:	
 	@echo ✅ VALIDATE
-	python -m pip install --no-deps electionguard
-	python -c 'import electionguard'
+	python3 -m pip install --no-deps electionguard
+	python3 -c 'import electionguard'
 
 publish-validate-test:	
 	@echo ✅ VALIDATE
-	python -m pip install --index-url https://test.pypi.org/simple/ --no-deps electionguard
-	python -c 'import electionguard'
+	python3 -m pip install --index-url https://test.pypi.org/simple/ --no-deps electionguard
+	python3 -c 'import electionguard'
 
 # Release
 release-zip-ci:

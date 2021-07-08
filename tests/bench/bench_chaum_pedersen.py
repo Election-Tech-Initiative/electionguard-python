@@ -1,7 +1,7 @@
 from timeit import default_timer as timer
 from typing import Dict, List, NamedTuple, Tuple
 
-from numpy import average, std
+from statistics import mean, stdev
 
 from electionguard.chaum_pedersen import make_disjunctive_chaum_pedersen_zero
 
@@ -78,14 +78,14 @@ if __name__ == "__main__":
             end_all_scalar = timer()
 
             print(f"  Creating Chaum-Pedersen proofs ({size} iterations)")
-            avg_proof_scalar = average([t[0] for t in timing_data])
-            std_proof_scalar = std([t[0] for t in timing_data])
+            avg_proof_scalar = mean([t[0] for t in timing_data])
+            std_proof_scalar = stdev([t[0] for t in timing_data])
             print(f"    Avg    = {avg_proof_scalar:.6f} sec")
             print(f"    Stddev = {std_proof_scalar:.6f} sec")
 
             print(f"  Validating Chaum-Pedersen proofs ({size} iterations)")
-            avg_verify_scalar = average([t[1] for t in timing_data])
-            std_verify_scalar = std([t[1] for t in timing_data])
+            avg_verify_scalar = mean([t[1] for t in timing_data])
+            std_verify_scalar = stdev([t[1] for t in timing_data])
             print(f"    Avg    = {avg_verify_scalar:.6f} sec")
             print(f"    Stddev = {std_verify_scalar:.6f} sec")
 
