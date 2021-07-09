@@ -60,7 +60,10 @@ from electionguard.publish import (
 
 from electionguardtest.ballot_factory import BallotFactory
 from electionguardtest.election_factory import ElectionFactory, NUMBER_OF_GUARDIANS
-from electionguardtest.identity_encrypt import identity_auxiliary_encrypt
+from electionguardtest.identity_encrypt import (
+    identity_auxiliary_encrypt,
+    identity_auxiliary_decrypt,
+)
 
 RESULTS_DIR = "test-results"
 DEVICES_DIR = path.join(RESULTS_DIR, "devices")
@@ -249,7 +252,7 @@ class TestEndToEndElection(TestCase):
                 if designated_guardian.id is not backup_owner.id:
                     verification = (
                         designated_guardian.verify_election_partial_key_backup(
-                            backup_owner.id, identity_auxiliary_encrypt
+                            backup_owner.id, identity_auxiliary_decrypt
                         )
                     )
                     verifications.append(get_optional(verification))

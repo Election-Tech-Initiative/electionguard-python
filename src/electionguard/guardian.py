@@ -44,7 +44,6 @@ from .serializable import Serializable
 from .schnorr import SchnorrProof
 from .tally import CiphertextTally
 from .types import BALLOT_ID, GUARDIAN_ID
-from .utils import get_optional
 
 
 @dataclass
@@ -511,9 +510,11 @@ class Guardian:
         )
         return elgamal_combine_public_keys(public_keys)
 
-    def share_other_guardian_key(self, guardian_id: GUARDIAN_ID) -> ElectionPublicKey:
-        """Share other guardians keys shared during key ceremony."""
-        return get_optional(self._guardian_election_public_keys.get(guardian_id))
+    def share_other_guardian_key(
+        self, guardian_id: GUARDIAN_ID
+    ) -> Optional[ElectionPublicKey]:
+        """Share other guardians keys shared during key ceremony"""
+        return self._guardian_election_public_keys.get(guardian_id)
 
     def compute_tally_share(
         self, tally: CiphertextTally, context: CiphertextElectionContext
