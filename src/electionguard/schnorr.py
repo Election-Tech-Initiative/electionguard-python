@@ -17,7 +17,7 @@ from .proof import Proof, ProofUsage
 @dataclass
 class SchnorrProof(Proof):
     """
-    Representation of a Schnorr proof
+    Representation of a Schnorr proof 
     """
 
     public_key: ElementModP
