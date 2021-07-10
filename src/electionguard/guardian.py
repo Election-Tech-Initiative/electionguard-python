@@ -43,7 +43,7 @@ from .rsa import rsa_encrypt, rsa_decrypt
 from .serializable import Serializable
 from .schnorr import SchnorrProof
 from .tally import CiphertextTally
-from .types import BALLOT_ID, GUARDIAN_ID
+from .type import BALLOT_ID, GUARDIAN_ID
 
 
 @dataclass

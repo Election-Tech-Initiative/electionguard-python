@@ -22,7 +22,7 @@ from .group import hex_to_q, ElementModP, ElementModQ
 from .hash import hash_elems
 from .rsa import rsa_keypair, rsa_decrypt, rsa_encrypt
 from .schnorr import SchnorrProof
-from .types import GUARDIAN_ID
+from .type import GUARDIAN_ID
 from .utils import get_optional
 
 ELECTION_PUBLIC_KEY = ElementModP

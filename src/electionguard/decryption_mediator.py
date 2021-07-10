@@ -16,7 +16,7 @@ from .tally import (
     CiphertextTally,
     PlaintextTally,
 )
-from .types import BALLOT_ID, GUARDIAN_ID, MEDIATOR_ID
+from .type import BALLOT_ID, GUARDIAN_ID, MEDIATOR_ID
 
 
 class DecryptionMediator:
