@@ -115,10 +115,8 @@ class TestElections(unittest.TestCase):
         )
 
         decrypted_tallies = {}
-        for object_id in encrypted_tallies:
-            decrypted_tallies[object_id] = encrypted_tallies[object_id].decrypt(
-                secret_key
-            )
+        for object_id, encrypted_tally in encrypted_tallies.items():
+            decrypted_tallies[object_id] = encrypted_tally.decrypt(secret_key)
 
         # loop through the contest descriptions and verify
         # the decrypted tallies match the plaintext tallies

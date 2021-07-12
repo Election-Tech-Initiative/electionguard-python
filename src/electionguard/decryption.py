@@ -410,15 +410,6 @@ def compute_compensated_decryption_share_for_selection(
         guardian_key, missing_guardian_key
     )
 
-    if recovery_public_key is None:
-        log_warning(
-            (
-                f"compute compensated decryption share failed for {guardian_key.owner_id} "
-                f"missing recovery key: {missing_guardian_key.owner_id} {selection.object_id}"
-            )
-        )
-        return None
-
     if proof.is_valid(
         selection.ciphertext,
         recovery_public_key,

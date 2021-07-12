@@ -1,3 +1,4 @@
+# pylint: disable=isinstance-second-argument-not-valid-type
 from abc import abstractmethod
 from collections.abc import Sequence
 from hashlib import sha256
