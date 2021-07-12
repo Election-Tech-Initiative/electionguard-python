@@ -26,7 +26,7 @@ from electionguard.guardian import Guardian
 from electionguard.key_ceremony import CeremonyDetails
 from electionguard.key_ceremony_mediator import KeyCeremonyMediator
 from electionguard.tally import tally_ballots
-from electionguard.types import GUARDIAN_ID
+from electionguard.type import GUARDIAN_ID
 from electionguard.utils import get_optional
 
 import electionguardtest.ballot_factory as BallotFactory

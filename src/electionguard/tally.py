@@ -19,7 +19,7 @@ from .group import ElementModQ, ONE_MOD_P, ElementModP
 from .logs import log_warning
 from .manifest import InternalManifest
 from .scheduler import Scheduler
-from .types import BALLOT_ID, CONTEST_ID, SELECTION_ID
+from .type import BALLOT_ID, CONTEST_ID, SELECTION_ID
 
 
 @dataclass

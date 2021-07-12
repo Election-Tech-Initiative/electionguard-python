@@ -12,7 +12,7 @@ from .data_store import DataStore
 from .election import CiphertextElectionContext
 from .logs import log_warning
 from .manifest import InternalManifest
-from .types import BALLOT_ID
+from .type import BALLOT_ID
 
 
 @dataclass

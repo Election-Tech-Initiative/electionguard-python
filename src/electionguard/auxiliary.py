@@ -1,6 +1,6 @@
 from typing import Callable, Optional, NamedTuple
 
-from .types import GUARDIAN_ID
+from .type import GUARDIAN_ID
 
 MESSAGE = str
 AUXILIARY_PUBLIC_KEY = str

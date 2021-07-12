@@ -9,7 +9,7 @@ from .group import ElementModP, ElementModQ
 
 from .logs import log_warning
 
-from .types import CONTEST_ID, GUARDIAN_ID, SELECTION_ID
+from .type import CONTEST_ID, GUARDIAN_ID, SELECTION_ID
 
 ELECTION_PUBLIC_KEY = ElementModP
 

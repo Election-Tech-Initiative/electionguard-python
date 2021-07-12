@@ -37,7 +37,7 @@ from .rsa import rsa_decrypt
 from .scheduler import Scheduler
 from .tally import CiphertextTally
 
-from .types import CONTEST_ID, GUARDIAN_ID, SELECTION_ID
+from .type import CONTEST_ID, GUARDIAN_ID, SELECTION_ID
 
 GUARDIAN_PUBLIC_KEY = ElementModP
 ELECTION_PUBLIC_KEY = ElementModP

@@ -15,7 +15,7 @@ from .tally import (
     PlaintextTallySelection,
 )
 from .logs import log_warning
-from .types import CONTEST_ID, GUARDIAN_ID, SELECTION_ID
+from .type import CONTEST_ID, GUARDIAN_ID, SELECTION_ID
 
 AVAILABLE_GUARDIAN_ID = GUARDIAN_ID
 MISSING_GUARDIAN_ID = GUARDIAN_ID

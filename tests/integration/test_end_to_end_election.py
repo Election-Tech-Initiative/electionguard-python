@@ -6,7 +6,7 @@ from shutil import rmtree
 from unittest import TestCase
 
 from random import randint
-from electionguard.types import BALLOT_ID
+from electionguard.type import BALLOT_ID
 
 from electionguard.utils import get_optional
 
