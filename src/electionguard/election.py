@@ -41,7 +41,7 @@ class CiphertextElectionContext(Serializable):
     this object includes fields that are populated in the course of encrypting an election
     Specifically, `crypto_base_hash`, `crypto_extended_base_hash` and `elgamal_public_key`
     are populated with election-specific information necessary for encrypting the election.
-    Refer to the [Electionguard Specification](https://github.com/microsoft/electionguard) for more information.
+    Refer to the specification for more information.
 
     To make an instance of this class, don't construct it directly. Use
     `make_ciphertext_election_context` instead.
@@ -57,22 +57,22 @@ class CiphertextElectionContext(Serializable):
     """
 
     elgamal_public_key: ElementModP
-    """the `joint public key (K)` in the [ElectionGuard Spec](https://github.com/microsoft/electionguard/wiki)"""
+    """the `joint public key (K)` in the specification"""
 
     commitment_hash: ElementModQ
     """
     the `commitment hash H(K 1,0 , K 2,0 ... , K n,0 )` of the public commitments
-    guardians make to each other in the [ElectionGuard Spec](https://github.com/microsoft/electionguard/wiki)
+    guardians make to each other in the specification
     """
 
     manifest_hash: ElementModQ
     """The hash of the election metadata"""
 
     crypto_base_hash: ElementModQ
-    """The `base hash code (𝑄)` in the [ElectionGuard Spec](https://github.com/microsoft/electionguard/wiki)"""
+    """The `base hash code (𝑄)` in the specification"""
 
     crypto_extended_base_hash: ElementModQ
-    """The `extended base hash code (𝑄')` in [ElectionGuard Spec](https://github.com/microsoft/electionguard/wiki)"""
+    """The `extended base hash code (𝑄')` in specification"""
 
 
 def make_ciphertext_election_context(
