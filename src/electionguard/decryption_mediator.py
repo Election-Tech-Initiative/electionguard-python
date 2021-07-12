@@ -212,11 +212,6 @@ class DecryptionMediator:
                 lagrange_coefficients,
             )
 
-            if reconstruct_decryption_share is None:
-                log_warning(
-                    f"failed to reconstruct tally share for missing guardian {missing_guardian_id}"
-                )
-
             # Add reconstructed share into tally shares
             self._tally_shares[missing_guardian_id] = reconstructed_share
 
@@ -248,11 +243,6 @@ class DecryptionMediator:
                     compensated_shares,
                     lagrange_coefficients,
                 )
-
-                if reconstructed_share is None:
-                    log_warning(
-                        f"failed to reconstruct ballot share for {ballot_id} for missing guardian {missing_guardian_id}"
-                    )
 
                 ballot_shares[missing_guardian_id] = reconstructed_share
 
