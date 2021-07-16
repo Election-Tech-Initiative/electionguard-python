@@ -12,7 +12,7 @@ from hypothesis.strategies import integers
 
 import electionguardtest.ballot_factory as BallotFactory
 import electionguardtest.election_factory as ElectionFactory
-
+from electionguard.constants import get_small_prime
 from electionguard.chaum_pedersen import (
     ConstantChaumPedersenProof,
     DisjunctiveChaumPedersenProof,
@@ -39,7 +39,6 @@ from electionguard.group import (
     TWO_MOD_Q,
     int_to_q,
     add_q,
-    Q,
     TWO_MOD_P,
     mult_p,
 )
@@ -67,7 +66,7 @@ class TestEncrypt(unittest.TestCase):
 
         # Arrange
         keypair = elgamal_keypair_from_secret(int_to_q(2))
-        nonce = randbelow(Q)
+        nonce = randbelow(get_small_prime())
         metadata = SelectionDescription(
             "some-selection-object-id", "some-candidate-id", 1
         )
@@ -92,7 +91,7 @@ class TestEncrypt(unittest.TestCase):
 
         # Arrange
         keypair = elgamal_keypair_from_secret(int_to_q(2))
-        nonce = randbelow(Q)
+        nonce = randbelow(get_small_prime())
         metadata = SelectionDescription(
             "some-selection-object-id", "some-candidate-id", 1
         )
@@ -241,7 +240,7 @@ class TestEncrypt(unittest.TestCase):
     def test_encrypt_simple_contest_referendum_succeeds(self):
         # Arrange
         keypair = elgamal_keypair_from_secret(int_to_q(2))
-        nonce = randbelow(Q)
+        nonce = randbelow(get_small_prime())
         ballot_selections = [
             SelectionDescription(
                 "some-object-id-affirmative", "some-candidate-id-affirmative", 0

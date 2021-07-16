@@ -6,15 +6,14 @@ from shutil import rmtree
 from unittest import TestCase
 
 from random import randint
+from electionguard.serializable import read_json_file
 from electionguard.type import BALLOT_ID
 
 from electionguard.utils import get_optional
 
 # Step 0 - Configure Election
-from electionguard.election import (
-    ElectionConstants,
-    CiphertextElectionContext,
-)
+from electionguard.constants import ElectionConstants, TEST_ONLY_CONSTANTS
+from electionguard.election import CiphertextElectionContext
 from electionguard.election_builder import ElectionBuilder
 from electionguard.manifest import Manifest, InternalManifest
 
@@ -280,7 +279,7 @@ class TestEndToEndElection(TestCase):
         self.internal_manifest, self.context = get_optional(
             self.election_builder.build()
         )
-        self.constants = ElectionConstants()
+        self.constants = TEST_ONLY_CONSTANTS
 
         # Move on to encrypting ballots
 
@@ -525,8 +524,8 @@ class TestEndToEndElection(TestCase):
         )
         self.assertEqual(self.context, context_from_file)
 
-        constants_from_file = ElectionConstants.from_json_file(
-            CONSTANTS_FILE_NAME, RESULTS_DIR
+        constants_from_file = read_json_file(
+            ElectionConstants, CONSTANTS_FILE_NAME, RESULTS_DIR
         )
         self.assertEqual(self.constants, constants_from_file)
 

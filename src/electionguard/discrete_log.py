@@ -4,9 +4,9 @@
 import asyncio
 from typing import Dict, Tuple
 
-from electionguard.singleton import Singleton
-
-from .group import G, ElementModP, ONE_MOD_P, mult_p, int_to_p_unchecked
+from .constants import get_generator
+from .singleton import Singleton
+from .group import ElementModP, ONE_MOD_P, mult_p, int_to_p_unchecked
 
 DLOG_CACHE = Dict[ElementModP, int]
 DLOG_MAX = 100_000_000
@@ -71,7 +71,7 @@ def compute_discrete_log_cache(
     max_element = list(cache)[-1]
     exponent = cache[max_element]
 
-    g = int_to_p_unchecked(G)
+    g = int_to_p_unchecked(get_generator())
     while element != max_element:
         exponent = exponent + 1
         if exponent > DLOG_MAX:

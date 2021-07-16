@@ -3,6 +3,7 @@ import unittest
 from hypothesis import given
 from hypothesis.strategies import integers
 
+from electionguard.constants import get_generator, get_large_prime
 from electionguard.discrete_log import (
     discrete_log,
     discrete_log_async,
@@ -12,12 +13,10 @@ from electionguard.group import (
     ElementModP,
     ONE_MOD_P,
     mult_p,
-    G,
     g_pow_p,
     int_to_q,
     int_to_p_unchecked,
     int_to_q_unchecked,
-    P,
 )
 from electionguard.utils import get_optional
 
@@ -27,7 +26,7 @@ def _discrete_log_uncached(e: ElementModP) -> int:
     A simpler implementation of discrete_log, only meant for comparison testing of the caching version.
     """
     count = 0
-    g_inv = int_to_p_unchecked(pow(G, -1, P))
+    g_inv = int_to_p_unchecked(pow(get_generator(), -1, get_large_prime()))
     while e != ONE_MOD_P:
         e = mult_p(e, g_inv)
         count = count + 1

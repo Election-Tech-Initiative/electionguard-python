@@ -3,9 +3,13 @@ from typing import Optional
 
 from hypothesis import given
 
+from electionguard.constants import (
+    get_small_prime,
+    get_large_prime,
+    get_generator,
+    get_cofactor,
+)
 from electionguard.group import (
-    P,
-    Q,
     ElementModP,
     ElementModQ,
     a_minus_b_q,
@@ -13,11 +17,9 @@ from electionguard.group import (
     ONE_MOD_P,
     mult_p,
     ZERO_MOD_P,
-    G,
     ONE_MOD_Q,
     g_pow_p,
     ZERO_MOD_Q,
-    R,
     int_to_p,
     int_to_q,
     add_q,
@@ -117,22 +119,25 @@ class TestModularArithmetic(unittest.TestCase):
         self.assertEqual(ZERO_MOD_Q, add_q())
 
     def test_properties_for_constants(self):
-        self.assertNotEqual(G, 1)
-        self.assertEqual((R * Q) % P, P - 1)
-        self.assertLess(Q, P)
-        self.assertLess(G, P)
-        self.assertLess(R, P)
+        self.assertNotEqual(get_generator(), 1)
+        self.assertEqual(
+            (get_cofactor() * get_small_prime()) % get_large_prime(),
+            get_large_prime() - 1,
+        )
+        self.assertLess(get_small_prime(), get_large_prime())
+        self.assertLess(get_generator(), get_large_prime())
+        self.assertLess(get_cofactor(), get_large_prime())
 
     def test_simple_powers(self):
-        gp = int_to_p(G)
+        gp = int_to_p(get_generator())
         self.assertEqual(gp, g_pow_p(ONE_MOD_Q))
         self.assertEqual(ONE_MOD_P, g_pow_p(ZERO_MOD_Q))
 
     @given(elements_mod_q())
     def test_in_bounds_q(self, q: ElementModQ):
         self.assertTrue(q.is_in_bounds())
-        too_big = q.to_int() + Q
-        too_small = q.to_int() - Q
+        too_big = q.to_int() + get_small_prime()
+        too_small = q.to_int() - get_small_prime()
         self.assertFalse(int_to_q_unchecked(too_big).is_in_bounds())
         self.assertFalse(int_to_q_unchecked(too_small).is_in_bounds())
         self.assertEqual(None, int_to_q(too_big))
@@ -141,8 +146,8 @@ class TestModularArithmetic(unittest.TestCase):
     @given(elements_mod_p())
     def test_in_bounds_p(self, p: ElementModP):
         self.assertTrue(p.is_in_bounds())
-        too_big = p.to_int() + P
-        too_small = p.to_int() - P
+        too_big = p.to_int() + get_large_prime()
+        too_small = p.to_int() - get_large_prime()
         self.assertFalse(int_to_p_unchecked(too_big).is_in_bounds())
         self.assertFalse(int_to_p_unchecked(too_small).is_in_bounds())
         self.assertEqual(None, int_to_p(too_big))
@@ -152,19 +157,27 @@ class TestModularArithmetic(unittest.TestCase):
     def test_in_bounds_q_no_zero(self, q: ElementModQ):
         self.assertTrue(q.is_in_bounds_no_zero())
         self.assertFalse(ZERO_MOD_Q.is_in_bounds_no_zero())
-        self.assertFalse(int_to_q_unchecked(q.to_int() + Q).is_in_bounds_no_zero())
-        self.assertFalse(int_to_q_unchecked(q.to_int() - Q).is_in_bounds_no_zero())
+        self.assertFalse(
+            int_to_q_unchecked(q.to_int() + get_small_prime()).is_in_bounds_no_zero()
+        )
+        self.assertFalse(
+            int_to_q_unchecked(q.to_int() - get_small_prime()).is_in_bounds_no_zero()
+        )
 
     @given(elements_mod_p_no_zero())
     def test_in_bounds_p_no_zero(self, p: ElementModP):
         self.assertTrue(p.is_in_bounds_no_zero())
         self.assertFalse(ZERO_MOD_P.is_in_bounds_no_zero())
-        self.assertFalse(int_to_p_unchecked(p.to_int() + P).is_in_bounds_no_zero())
-        self.assertFalse(int_to_p_unchecked(p.to_int() - P).is_in_bounds_no_zero())
+        self.assertFalse(
+            int_to_p_unchecked(p.to_int() + get_large_prime()).is_in_bounds_no_zero()
+        )
+        self.assertFalse(
+            int_to_p_unchecked(p.to_int() - get_large_prime()).is_in_bounds_no_zero()
+        )
 
     @given(elements_mod_q())
     def test_large_values_rejected_by_int_to_q(self, q: ElementModQ):
-        oversize = q.to_int() + Q
+        oversize = q.to_int() + get_small_prime()
         self.assertEqual(None, int_to_q(oversize))
 
 

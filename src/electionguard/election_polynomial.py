@@ -1,5 +1,6 @@
 from typing import List, NamedTuple
 
+from .constants import get_small_prime
 from .elgamal import ElGamalKeyPair
 from .group import (
     add_q,
@@ -15,7 +16,6 @@ from .group import (
     pow_q,
     rand_q,
     ZERO_MOD_Q,
-    Q,
 )
 from .schnorr import make_schnorr_proof, SchnorrProof
 
@@ -137,4 +137,6 @@ def _check_exponent_modifier(exponent_modifier: int) -> None:
     Ensure the exponent modifier (typically sequence order)
     is between 0 and Q. If not, identify modifier is out of the range
     """
-    assert 0 < exponent_modifier < Q, "exponent_modifier is out of range"
+    assert (
+        0 < exponent_modifier < get_small_prime()
+    ), "exponent_modifier is out of range"
