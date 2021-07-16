@@ -11,11 +11,12 @@ from hypothesis.strategies import (
     emails,
     integers,
     text,
+    uuids,
     SearchStrategy,
 )
 
 from electionguard.ballot import PlaintextBallot
-from electionguard.constants import ElectionConstants
+from electionguard.constants import ElectionConstants, get_constants
 from electionguard.election import CiphertextElectionContext
 from electionguard.election_builder import ElectionBuilder
 from electionguard.encrypt import EncryptionDevice, contest_from, generate_device_uuid
@@ -265,15 +266,16 @@ def get_selection_description_well_formed(
     email_addresses=emails(),
     candidate_id: Optional[str] = None,
     sequence_order: Optional[int] = None,
+    ids=uuids(),
 ) -> Tuple[str, SelectionDescription]:
     """Get mock well formed selection description."""
     if candidate_id is None:
         candidate_id = draw(email_addresses)
 
-    object_id = f"{candidate_id}-selection"
-
     if sequence_order is None:
         sequence_order = draw(ints)
+
+    object_id = f"{candidate_id}-selection-{draw(ids)}"
 
     return (object_id, SelectionDescription(object_id, candidate_id, sequence_order))
 
