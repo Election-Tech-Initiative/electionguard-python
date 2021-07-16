@@ -117,7 +117,7 @@ class ElectionFactory:
         builder.set_public_key(get_optional(joint_key).joint_public_key)
         builder.set_commitment_hash(get_optional(joint_key).commitment_hash)
         internal_manifest, context = get_optional(builder.build())
-        constants = ElectionConstants()
+        constants = get_constants()
 
         return (
             AllPublicElectionData(
