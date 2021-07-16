@@ -14,13 +14,20 @@ QUORUM = 2
 CEREMONY_DETAILS = CeremonyDetails(NUMBER_OF_GUARDIANS, QUORUM)
 GUARDIAN_1_ID = "Guardian 1"
 GUARDIAN_2_ID = "Guardian 2"
-GUARDIAN_1 = Guardian(GUARDIAN_1_ID, 1, NUMBER_OF_GUARDIANS, QUORUM)
-GUARDIAN_2 = Guardian(GUARDIAN_2_ID, 2, NUMBER_OF_GUARDIANS, QUORUM)
-GUARDIANS = [GUARDIAN_1, GUARDIAN_2]
 
 
 class TestKeyCeremonyMediator(BaseTestCase):
     """Key ceremony mediator tests"""
+
+    GUARDIAN_1 = None
+    GUARDIAN_2 = None
+    GUARDIANS = []
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.GUARDIAN_1 = Guardian(GUARDIAN_1_ID, 1, NUMBER_OF_GUARDIANS, QUORUM)
+        self.GUARDIAN_2 = Guardian(GUARDIAN_2_ID, 2, NUMBER_OF_GUARDIANS, QUORUM)
+        self.GUARDIANS = [self.GUARDIAN_1, self.GUARDIAN_2]
 
     def test_reset(self):
         # Arrange
@@ -37,13 +44,13 @@ class TestKeyCeremonyMediator(BaseTestCase):
         mediator = KeyCeremonyMediator("mediator_attendance", CEREMONY_DETAILS)
 
         # Act
-        mediator.announce(GUARDIAN_1.share_public_keys())
+        mediator.announce(self.GUARDIAN_1.share_public_keys())
 
         # Assert
         self.assertFalse(mediator.all_guardians_announced())
 
         # Act
-        mediator.announce(GUARDIAN_2.share_public_keys())
+        mediator.announce(self.GUARDIAN_2.share_public_keys())
 
         # Assert
         self.assertTrue(mediator.all_guardians_announced())
@@ -60,15 +67,15 @@ class TestKeyCeremonyMediator(BaseTestCase):
 
         # Arrange
         mediator = KeyCeremonyMediator("mediator_backups_exchange", CEREMONY_DETAILS)
-        KeyCeremonyHelper.perform_round_1(GUARDIANS, mediator)
+        KeyCeremonyHelper.perform_round_1(self.GUARDIANS, mediator)
 
         # Round 2 - Guardians Only
-        GUARDIAN_1.generate_election_partial_key_backups()
-        GUARDIAN_2.generate_election_partial_key_backups()
-        backup_from_1_for_2 = GUARDIAN_1.share_election_partial_key_backup(
+        self.GUARDIAN_1.generate_election_partial_key_backups()
+        self.GUARDIAN_2.generate_election_partial_key_backups()
+        backup_from_1_for_2 = self.GUARDIAN_1.share_election_partial_key_backup(
             GUARDIAN_2_ID
         )
-        backup_from_2_for_1 = GUARDIAN_2.share_election_partial_key_backup(
+        backup_from_2_for_1 = self.GUARDIAN_2.share_election_partial_key_backup(
             GUARDIAN_1_ID
         )
 
@@ -107,14 +114,14 @@ class TestKeyCeremonyMediator(BaseTestCase):
         """
         # Arrange
         mediator = KeyCeremonyMediator("mediator_verification", CEREMONY_DETAILS)
-        KeyCeremonyHelper.perform_round_1(GUARDIANS, mediator)
-        KeyCeremonyHelper.perform_round_2(GUARDIANS, mediator)
+        KeyCeremonyHelper.perform_round_1(self.GUARDIANS, mediator)
+        KeyCeremonyHelper.perform_round_2(self.GUARDIANS, mediator)
 
         # Round 3 - Guardians only
-        verification1 = GUARDIAN_1.verify_election_partial_key_backup(
+        verification1 = self.GUARDIAN_1.verify_election_partial_key_backup(
             GUARDIAN_2_ID, identity_auxiliary_decrypt
         )
-        verification2 = GUARDIAN_2.verify_election_partial_key_backup(
+        verification2 = self.GUARDIAN_2.verify_election_partial_key_backup(
             GUARDIAN_1_ID, identity_auxiliary_decrypt
         )
 
@@ -143,11 +150,11 @@ class TestKeyCeremonyMediator(BaseTestCase):
         """
         # Arrange
         mediator = KeyCeremonyMediator("mediator_challenge", CEREMONY_DETAILS)
-        KeyCeremonyHelper.perform_round_1(GUARDIANS, mediator)
-        KeyCeremonyHelper.perform_round_2(GUARDIANS, mediator)
+        KeyCeremonyHelper.perform_round_1(self.GUARDIANS, mediator)
+        KeyCeremonyHelper.perform_round_2(self.GUARDIANS, mediator)
 
         # Round 3 - Guardians only
-        verification1 = GUARDIAN_1.verify_election_partial_key_backup(
+        verification1 = self.GUARDIAN_1.verify_election_partial_key_backup(
             GUARDIAN_2_ID, identity_auxiliary_decrypt
         )
 
@@ -172,7 +179,7 @@ class TestKeyCeremonyMediator(BaseTestCase):
         )
 
         # Act
-        challenge = GUARDIAN_1.publish_election_backup_challenge(GUARDIAN_2_ID)
+        challenge = self.GUARDIAN_1.publish_election_backup_challenge(GUARDIAN_2_ID)
         mediator.verify_challenge(challenge)
         new_state = mediator.get_verification_state()
         all_verified = mediator.all_backups_verified()
