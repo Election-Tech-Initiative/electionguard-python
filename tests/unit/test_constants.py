@@ -6,9 +6,9 @@ from tests.base_test_case import BaseTestCase
 
 from electionguard.constants import (
     PrimeOption,
+    LARGE_TEST_CONSTANTS,
     get_constants,
     STANDARD_CONSTANTS,
-    MEDIUM_TEST_CONSTANTS,
 )
 
 from electionguard.constants import (
@@ -44,7 +44,7 @@ class TestConstants(BaseTestCase):
 
         # Assert
         self.assertIsNotNone(constants)
-        self.assertEqual(constants, MEDIUM_TEST_CONSTANTS)
+        self.assertEqual(constants, LARGE_TEST_CONSTANTS)
         self.assertEqual(constants.large_prime, get_large_prime())
         self.assertEqual(constants.small_prime, get_small_prime())
         self.assertEqual(constants.cofactor, get_cofactor())

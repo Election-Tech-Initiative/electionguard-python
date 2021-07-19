@@ -43,10 +43,10 @@ STANDARD_CONSTANTS = create_constants(
 )
 
 # TEST ONLY
-MINISCULE_TEST_CONSTANTS = create_constants(157, 13, 12, 16)
-TINY_TEST_CONSTANTS = create_constants(503, 251, 2, 5)
-SMALL_TEST_CONSTANTS = create_constants(65267, 32633, 2, 3)
-MEDIUM_TEST_CONSTANTS = create_constants(
+EXTRA_SMALL_TEST_CONSTANTS = create_constants(157, 13, 12, 16)
+SMALL_TEST_CONSTANTS = create_constants(503, 251, 2, 5)
+MEDIUM_TEST_CONSTANTS = create_constants(65267, 32633, 2, 3)
+LARGE_TEST_CONSTANTS = create_constants(
     18446744073704586917, 65521, 281539415968996, 15463152587872997502
 )
 
@@ -67,7 +67,7 @@ def get_constants() -> ElectionConstants:
 
     option_map = {
         PrimeOption.Standard: STANDARD_CONSTANTS,
-        PrimeOption.TestOnly: MEDIUM_TEST_CONSTANTS,
+        PrimeOption.TestOnly: LARGE_TEST_CONSTANTS,
     }
     return option_map.get(option) or STANDARD_CONSTANTS
 
