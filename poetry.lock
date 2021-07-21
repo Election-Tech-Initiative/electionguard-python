@@ -8,7 +8,7 @@ python-versions = "*"
 
 [[package]]
 name = "astroid"
-version = "2.6.5"
+version = "2.6.6"
 description = "An abstract syntax tree for Python with inference support."
 category = "dev"
 optional = false
@@ -283,17 +283,6 @@ MarkupSafe = ">=2.0"
 
 [package.extras]
 i18n = ["Babel (>=2.7)"]
-
-[[package]]
-name = "jsons"
-version = "1.5.0"
-description = "For serializing Python objects to JSON (dicts) and back"
-category = "main"
-optional = false
-python-versions = ">=3.5"
-
-[package.dependencies]
-typish = ">=1.9.2"
 
 [[package]]
 name = "keyring"
@@ -740,7 +729,7 @@ python-versions = "*"
 name = "typish"
 version = "1.9.2"
 description = "Functionality for types"
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
 
@@ -802,7 +791,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9.5"
-content-hash = "8e3394ff2f2c23d60cd59ee4a11337c23fe2ce55d2442c590b108e7b41648d44"
+content-hash = "b85d32dab1396cab464271e633e760b7536cf459ec1a78a79b5a6d95f97a85ee"
 
 [metadata.files]
 appdirs = [
@@ -810,8 +799,8 @@ appdirs = [
     {file = "appdirs-1.4.4.tar.gz", hash = "sha256:7d5d0167b2b1ba821647616af46a749d1c653740dd0d2415100fe26e27afdf41"},
 ]
 astroid = [
-    {file = "astroid-2.6.5-py3-none-any.whl", hash = "sha256:7b963d1c590d490f60d2973e57437115978d3a2529843f160b5003b721e1e925"},
-    {file = "astroid-2.6.5.tar.gz", hash = "sha256:83e494b02d75d07d4e347b27c066fd791c0c74fc96c613d1ea3de0c82c48168f"},
+    {file = "astroid-2.6.6-py3-none-any.whl", hash = "sha256:ab7f36e8a78b8e54a62028ba6beef7561db4cdb6f2a5009ecc44a6f42b5697ef"},
+    {file = "astroid-2.6.6.tar.gz", hash = "sha256:3975a0bd5373bdce166e60c851cfcbaf21ee96de80ec518c1f4cb3e94c3fb334"},
 ]
 atomicwrites = [
     {file = "atomicwrites-1.4.0-py2.py3-none-any.whl", hash = "sha256:6d1784dea7c0c8d4a5172b6c620f40b6e4cbfdf96d783691f2e1302a7b88e197"},
@@ -1001,9 +990,6 @@ jeepney = [
 jinja2 = [
     {file = "Jinja2-3.0.1-py3-none-any.whl", hash = "sha256:1f06f2da51e7b56b8f238affdd6b4e2c61e39598a378cc49345bc1bd42a978a4"},
     {file = "Jinja2-3.0.1.tar.gz", hash = "sha256:703f484b47a6af502e743c9122595cc812b0271f661722403114f71a79d0f5a4"},
-]
-jsons = [
-    {file = "jsons-1.5.0-py3-none-any.whl", hash = "sha256:a3d8388d5aa488fb2c859808a208695d2cfca9d92a53a559c950375e7ecb0132"},
 ]
 keyring = [
     {file = "keyring-23.0.1-py3-none-any.whl", hash = "sha256:8f607d7d1cc502c43a932a275a56fe47db50271904513a379d39df1af277ac48"},
