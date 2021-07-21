@@ -10,11 +10,10 @@ from .group import (
     int_to_q_unchecked,
 )
 from .hash import hash_elems
-from .serializable import Serializable
 
 
 @dataclass(eq=True, unsafe_hash=True)
-class CiphertextElectionContext(Serializable):
+class CiphertextElectionContext:
     """`CiphertextElectionContext` is the ElectionGuard representation of a specific election.
 
     Note: The ElectionGuard Data Spec deviates from the NIST model in that

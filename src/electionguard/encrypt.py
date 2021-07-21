@@ -26,11 +26,10 @@ from .manifest import (
     SelectionDescription,
 )
 from .nonces import Nonces
-from .serializable import Serializable
 from .utils import get_optional, get_or_else_optional_func
 
 
-class EncryptionDevice(Serializable):
+class EncryptionDevice:
     """
     Metadata for encryption device
     """

@@ -8,7 +8,6 @@ from .election_object_base import ElectionObjectBase
 from .group import ElementModQ
 from .hash import CryptoHashable, hash_elems
 from .logs import log_warning, log_debug
-from .serializable import Serializable
 from .utils import get_optional, to_iso_date_string
 
 
@@ -90,7 +89,7 @@ class VoteVariationType(Enum):
 
 
 @dataclass(eq=True, unsafe_hash=True)
-class AnnotatedString(Serializable, CryptoHashable):
+class AnnotatedString(CryptoHashable):
     """
     Use this as a type for character strings.
     See: https://developers.google.com/elections-data/reference/annotated-string
@@ -109,7 +108,7 @@ class AnnotatedString(Serializable, CryptoHashable):
 
 
 @dataclass(eq=True, unsafe_hash=True)
-class Language(Serializable, CryptoHashable):
+class Language(CryptoHashable):
     """
     The ISO-639 language
     see: https://en.wikipedia.org/wiki/ISO_639
@@ -128,7 +127,7 @@ class Language(Serializable, CryptoHashable):
 
 
 @dataclass(eq=True, unsafe_hash=True)
-class InternationalizedText(Serializable, CryptoHashable):
+class InternationalizedText(CryptoHashable):
     """
     Data entity used to represent multi-national text. Use when text on a ballot contains multi-national text.
     See: https://developers.google.com/elections-data/reference/internationalized-text
@@ -146,7 +145,7 @@ class InternationalizedText(Serializable, CryptoHashable):
 
 
 @dataclass(eq=True, unsafe_hash=True)
-class ContactInformation(Serializable, CryptoHashable):
+class ContactInformation(CryptoHashable):
     """
     For defining contact information about objects such as persons, boards of authorities, and organizations.
     See: https://developers.google.com/elections-data/reference/contact-information
@@ -534,7 +533,7 @@ class ContestDescriptionWithPlaceholders(ContestDescription):
 
 # pylint: disable=too-many-instance-attributes
 @dataclass(unsafe_hash=True)
-class Manifest(Serializable, CryptoHashable):
+class Manifest(CryptoHashable):
     """
     Use this entity for defining the structure of the election and associated
     information such as candidates, contests, and vote counts.  This class is
