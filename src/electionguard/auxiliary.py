@@ -1,4 +1,5 @@
-from typing import Callable, Optional, NamedTuple
+from dataclasses import dataclass
+from typing import Callable, Optional
 
 from .type import GUARDIAN_ID
 
@@ -8,7 +9,8 @@ AUXILIARY_SECRET_KEY = str
 ENCRYPTED_MESSAGE = str
 
 
-class AuxiliaryPublicKey(NamedTuple):
+@dataclass
+class AuxiliaryPublicKey:
     """A tuple of auxiliary public key and owner information that can be shared between guardians"""
 
     owner_id: GUARDIAN_ID
@@ -28,7 +30,8 @@ class AuxiliaryPublicKey(NamedTuple):
     """
 
 
-class AuxiliaryKeyPair(NamedTuple):
+@dataclass
+class AuxiliaryKeyPair:
     """A tuple of a secret key and public key."""
 
     owner_id: GUARDIAN_ID

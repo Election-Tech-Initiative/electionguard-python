@@ -1,4 +1,5 @@
-from typing import List, NamedTuple
+from dataclasses import dataclass
+from typing import List
 
 from .constants import get_small_prime
 from .elgamal import ElGamalKeyPair
@@ -22,8 +23,9 @@ from .schnorr import make_schnorr_proof, SchnorrProof
 SECRET_COEFFICIENT = ElementModQ  # Secret coefficient of election polynomial
 PUBLIC_COMMITMENT = ElementModP  # Public commitment of election polynomial
 
-# TODO:ISSUE #84: do not use lists here
-class ElectionPolynomial(NamedTuple):
+
+@dataclass
+class ElectionPolynomial:
     """
     A polynomial defined by coefficients
 

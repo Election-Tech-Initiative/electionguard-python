@@ -63,7 +63,8 @@ class DisjunctiveChaumPedersenProof(Proof):
         :return: True if everything is consistent. False otherwise.
         """
 
-        (alpha, beta) = message
+        alpha = message.pad
+        beta = message.data
         a0 = self.proof_zero_pad
         b0 = self.proof_zero_data
         a1 = self.proof_one_pad
@@ -179,7 +180,8 @@ class ChaumPedersenProof(Proof):
         :param q: The extended base hash of the election
         :return: True if everything is consistent. False otherwise.
         """
-        (alpha, beta) = message
+        alpha = message.pad
+        beta = message.data
         a = self.pad
         b = self.data
         c = self.challenge
@@ -288,7 +290,8 @@ class ConstantChaumPedersenProof(Proof):
         :return: True if everything is consistent. False otherwise.
         """
 
-        (alpha, beta) = message
+        alpha = message.pad
+        beta = message.data
         a = self.pad
         b = self.data
         c = self.challenge
@@ -411,7 +414,8 @@ def make_disjunctive_chaum_pedersen_zero(
                         usually the election extended base hash (𝑄')
     :param seed: Used to generate other random values here
     """
-    (alpha, beta) = message
+    alpha = message.pad
+    beta = message.data
 
     # Pick three random numbers in Q.
     c1, v1, u0 = Nonces(seed, "disjoint-chaum-pedersen-proof")[0:3]
@@ -446,7 +450,8 @@ def make_disjunctive_chaum_pedersen_one(
                         usually the election extended base hash (𝑄')
     :param seed: Used to generate other random values here
     """
-    (alpha, beta) = message
+    alpha = message.pad
+    beta = message.data
 
     # Pick three random numbers in Q.
     c0, v0, u1 = Nonces(seed, "disjoint-chaum-pedersen-proof")[0:3]
@@ -482,7 +487,8 @@ def make_chaum_pedersen(
     :param hash_header: A value used when generating the challenge,
                         usually the election extended base hash (𝑄')
     """
-    (alpha, beta) = message
+    alpha = message.pad
+    beta = message.data
 
     # Pick one random number in Q.
     u = Nonces(seed, "constant-chaum-pedersen-proof")[0]
@@ -513,7 +519,8 @@ def make_constant_chaum_pedersen(
     :param hash_header: A value used when generating the challenge,
                         usually the election extended base hash (𝑄')
     """
-    (alpha, beta) = message
+    alpha = message.pad
+    beta = message.data
 
     # Pick one random number in Q.
     u = Nonces(seed, "constant-chaum-pedersen-proof")[0]

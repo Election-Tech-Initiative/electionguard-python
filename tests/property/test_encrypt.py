@@ -205,10 +205,7 @@ class TestEncrypt(BaseTestCase):
 
         # tamper with the encryption
         malformed_encryption = deepcopy(result)
-        malformed_message = malformed_encryption.ciphertext._replace(
-            pad=mult_p(result.ciphertext.pad, TWO_MOD_P)
-        )
-        malformed_encryption.ciphertext = malformed_message
+        malformed_encryption.ciphertext.pad = mult_p(result.ciphertext.pad, TWO_MOD_P)
 
         # tamper with the proof
         malformed_proof = deepcopy(result)
@@ -358,6 +355,7 @@ class TestEncrypt(BaseTestCase):
         _id, description = contest_description
         random = Random(random_seed)
         subject = ballot_factory.get_random_contest_from(description, random)
+        print(subject)
 
         # Act
         result = encrypt_contest(

@@ -637,7 +637,9 @@ def ciphertext_elections(draw: _DrawType, manifest: Manifest):
     which the `CiphertextElectionContext` will be associated
     :return: a tuple of a `CiphertextElectionContext` and the secret key associated with it
     """
-    secret_key, public_key = draw(elgamal_keypairs())
+    keypair = draw(elgamal_keypairs())
+    secret_key = keypair.secret_key
+    public_key = keypair.public_key
     commitment_hash = draw(elements_mod_q_no_zero())
     ciphertext_election_with_secret: CIPHERTEXT_ELECTIONS_TUPLE_TYPE = (
         secret_key,

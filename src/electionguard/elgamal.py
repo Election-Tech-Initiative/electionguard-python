@@ -1,4 +1,5 @@
-from typing import Iterable, NamedTuple, Optional
+from dataclasses import dataclass
+from typing import Iterable, Optional
 
 from .discrete_log import DiscreteLog
 from .group import (
@@ -21,14 +22,16 @@ ELGAMAL_SECRET_KEY = ElementModQ
 ELGAMAL_PUBLIC_KEY = ElementModP
 
 
-class ElGamalKeyPair(NamedTuple):
+@dataclass
+class ElGamalKeyPair:
     """A tuple of an ElGamal secret key and public key."""
 
     secret_key: ELGAMAL_SECRET_KEY
     public_key: ELGAMAL_PUBLIC_KEY
 
 
-class ElGamalCiphertext(NamedTuple):
+@dataclass
+class ElGamalCiphertext:
     """
     An "exponential ElGamal ciphertext" (i.e., with the plaintext in the exponent to allow for
     homomorphic addition). Create one with `elgamal_encrypt`. Add them with `elgamal_add`.

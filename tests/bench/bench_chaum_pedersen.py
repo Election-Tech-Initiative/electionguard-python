@@ -1,5 +1,6 @@
+from dataclasses import dataclass
 from timeit import default_timer as timer
-from typing import Dict, List, NamedTuple, Tuple
+from typing import Dict, List, Tuple
 
 from statistics import mean, stdev
 
@@ -16,7 +17,8 @@ from electionguard.scheduler import Scheduler
 from electionguard.utils import get_optional
 
 
-class BenchInput(NamedTuple):
+@dataclass
+class BenchInput:
     """Input for benchmark"""
 
     keypair: ElGamalKeyPair

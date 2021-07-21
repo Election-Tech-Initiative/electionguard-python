@@ -1,4 +1,5 @@
-from typing import Optional, NamedTuple
+from dataclasses import dataclass
+from typing import Optional
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric.rsa import (
     RSAPrivateKey,
@@ -25,7 +26,8 @@ ISO_ENCODING = "ISO-8859-1"
 BYTE_ORDER = "big"
 
 
-class RSAKeyPair(NamedTuple):
+@dataclass
+class RSAKeyPair:
     """Key pair of RSA pkcs1 in bytes"""
 
     private_key: str

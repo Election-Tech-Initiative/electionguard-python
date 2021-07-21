@@ -5,7 +5,8 @@ in the sense that performance may be less than hand-optimized C code, and no gua
 made about timing or other side-channels.
 """
 
-from typing import Any, Final, NamedTuple, Optional, Union
+from dataclasses import dataclass
+from typing import Any, Final, Optional, Union
 from base64 import b16decode
 from secrets import randbelow
 
@@ -15,7 +16,8 @@ from gmpy2 import mpz, powmod, invert, to_binary, from_binary
 from .constants import get_large_prime, get_small_prime, get_generator
 
 
-class ElementModQ(NamedTuple):
+@dataclass(unsafe_hash=True)
+class ElementModQ:
     """An element of the smaller `mod q` space, i.e., in [0, Q), where Q is a 256-bit prime."""
 
     elem: mpz
@@ -78,7 +80,8 @@ class ElementModQ(NamedTuple):
         return self.elem.digits()
 
 
-class ElementModP(NamedTuple):
+@dataclass(unsafe_hash=True)
+class ElementModP:
     """An element of the larger `mod p` space, i.e., in [0, P), where P is a 4096-bit prime."""
 
     elem: mpz

@@ -134,10 +134,7 @@ class TestDecryptWithSecrets(BaseTestCase):
 
         # tamper with the encryption
         malformed_encryption = deepcopy(subject)
-        malformed_message = malformed_encryption.ciphertext._replace(
-            pad=mult_p(subject.ciphertext.pad, TWO_MOD_P)
-        )
-        malformed_encryption.ciphertext = malformed_message
+        malformed_encryption.ciphertext.pad = mult_p(subject.ciphertext.pad, TWO_MOD_P)
 
         # tamper with the proof
         malformed_proof = deepcopy(subject)

@@ -1,4 +1,5 @@
-from typing import List, Optional, NamedTuple
+from dataclasses import dataclass
+from typing import List, Optional
 
 from .auxiliary import (
     AuxiliaryDecrypt,
@@ -30,7 +31,8 @@ ELECTION_JOINT_PUBLIC_KEY = ElementModP
 VERIFIER_ID = str
 
 
-class ElectionPublicKey(NamedTuple):
+@dataclass
+class ElectionPublicKey:
     """A tuple of election public key and owner information"""
 
     owner_id: GUARDIAN_ID
@@ -60,7 +62,8 @@ class ElectionPublicKey(NamedTuple):
     """
 
 
-class ElectionKeyPair(NamedTuple):
+@dataclass
+class ElectionKeyPair:
     """A tuple of election key pair, proof and polynomial"""
 
     owner_id: GUARDIAN_ID
@@ -94,7 +97,8 @@ class ElectionKeyPair(NamedTuple):
         )
 
 
-class ElectionJointKey(NamedTuple):
+@dataclass
+class ElectionJointKey:
     """
     The Election joint key
     """
@@ -111,7 +115,8 @@ class ElectionJointKey(NamedTuple):
     """
 
 
-class ElectionPartialKeyBackup(NamedTuple):
+@dataclass
+class ElectionPartialKeyBackup:
     """Election partial key backup used for key sharing"""
 
     owner_id: GUARDIAN_ID
@@ -135,23 +140,24 @@ class ElectionPartialKeyBackup(NamedTuple):
     """
 
 
-class CeremonyDetails(NamedTuple):
-    """
-    Details of key ceremony
-    """
+@dataclass
+class CeremonyDetails:
+    """Details of key ceremony"""
 
     number_of_guardians: int
     quorum: int
 
 
-class PublicKeySet(NamedTuple):
+@dataclass
+class PublicKeySet:
     """A convenience set of public auxiliary and election keys"""
 
     election: ElectionPublicKey
     auxiliary: AuxiliaryPublicKey
 
 
-class ElectionPartialKeyVerification(NamedTuple):
+@dataclass
+class ElectionPartialKeyVerification:
     """Verification of election partial key used in key sharing"""
 
     owner_id: GUARDIAN_ID
@@ -160,7 +166,8 @@ class ElectionPartialKeyVerification(NamedTuple):
     verified: bool
 
 
-class ElectionPartialKeyChallenge(NamedTuple):
+@dataclass
+class ElectionPartialKeyChallenge:
     """Challenge of election partial key used in key sharing"""
 
     owner_id: GUARDIAN_ID

@@ -205,5 +205,5 @@ class TestKeyCeremony(BaseTestCase):
 
         # Assert
         self.assertIsNotNone(joint_key)
-        self.assertNotEqual(joint_key, random_key.key)
-        self.assertNotEqual(joint_key, random_key_two.key)
+        self.assertNotEqual(joint_key.joint_public_key, random_key.key)
+        self.assertNotEqual(joint_key.joint_public_key, random_key_two.key)
