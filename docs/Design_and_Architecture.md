@@ -22,13 +22,9 @@ Class methods are used for simplicity, but sophistication with regard to inherit
 
 The library prefers immutable objects where possible to encourage simple data structures.
 
-#### dataclass
+### ✅ Dataclasses
 
-`dataclass` uses the `object.__setattr__` pattern in `_postinit__` functions to support freezing data classes where possible.
-
-#### NamedTuple
-
-[NamedTuple](https://docs.python.org/3/library/typing.html#typing.NamedTuple) is frequently used for the library's data structures. They are immutable after creation and have a `_replace()` method that makes it easy to make a copy replacing only one field.
+`dataclass` is used frequently to simplify constructors. This follows the simplicity aspect, but also ensures easier serialization without being prescriptive on which library to use.
 
 ### ✅ Concurrency
 
