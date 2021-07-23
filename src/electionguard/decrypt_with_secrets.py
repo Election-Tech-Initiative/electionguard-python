@@ -24,7 +24,7 @@ ELECTION_PUBLIC_KEY = ElementModP
 # The Methods in this file can be used to decrypt values if private keys or nonces are known
 
 
-def decrypt_selection_with_secret(
+async def decrypt_selection_with_secret(
     selection: CiphertextBallotSelection,
     description: SelectionDescription,
     public_key: ElementModP,
@@ -49,7 +49,7 @@ def decrypt_selection_with_secret(
         log_warning(f"selection: {selection.object_id} failed validity check")
         return None
 
-    plaintext_vote = selection.ciphertext.decrypt(secret_key)
+    plaintext_vote = await selection.ciphertext.decrypt(secret_key)
 
     # TODO: ISSUE #47: handle decryption of the extradata field if needed
 
@@ -60,7 +60,7 @@ def decrypt_selection_with_secret(
     )
 
 
-def decrypt_selection_with_nonce(
+async def decrypt_selection_with_nonce(
     selection: CiphertextBallotSelection,
     description: SelectionDescription,
     public_key: ElementModP,
@@ -104,7 +104,7 @@ def decrypt_selection_with_nonce(
         )
         return None
 
-    plaintext_vote = selection.ciphertext.decrypt_known_nonce(public_key, nonce)
+    plaintext_vote = await selection.ciphertext.decrypt_known_nonce(public_key, nonce)
 
     # TODO: ISSUE #35: encrypt/decrypt: handle decryption of the extradata field if needed
 
@@ -115,7 +115,7 @@ def decrypt_selection_with_nonce(
     )
 
 
-def decrypt_contest_with_secret(
+async def decrypt_contest_with_secret(
     contest: CiphertextBallotContest,
     description: ContestDescriptionWithPlaceholders,
     public_key: ElementModP,
@@ -145,7 +145,7 @@ def decrypt_contest_with_secret(
     plaintext_selections: List[PlaintextBallotSelection] = list()
     for selection in contest.ballot_selections:
         selection_description = description.selection_for(selection.object_id)
-        plaintext_selection = decrypt_selection_with_secret(
+        plaintext_selection = await decrypt_selection_with_secret(
             selection,
             get_optional(selection_description),
             public_key,
@@ -168,7 +168,7 @@ def decrypt_contest_with_secret(
     return PlaintextBallotContest(contest.object_id, plaintext_selections)
 
 
-def decrypt_contest_with_nonce(
+async def decrypt_contest_with_nonce(
     contest: CiphertextBallotContest,
     description: ContestDescriptionWithPlaceholders,
     public_key: ElementModP,
@@ -216,7 +216,7 @@ def decrypt_contest_with_nonce(
     plaintext_selections: List[PlaintextBallotSelection] = list()
     for selection in contest.ballot_selections:
         selection_description = description.selection_for(selection.object_id)
-        plaintext_selection = decrypt_selection_with_nonce(
+        plaintext_selection = await decrypt_selection_with_nonce(
             selection,
             get_optional(selection_description),
             public_key,
@@ -239,7 +239,7 @@ def decrypt_contest_with_nonce(
     return PlaintextBallotContest(contest.object_id, plaintext_selections)
 
 
-def decrypt_ballot_with_secret(
+async def decrypt_ballot_with_secret(
     ballot: CiphertextBallot,
     internal_manifest: InternalManifest,
     crypto_extended_base_hash: ElementModQ,
@@ -269,7 +269,7 @@ def decrypt_ballot_with_secret(
 
     for contest in ballot.contests:
         description = internal_manifest.contest_for(contest.object_id)
-        plaintext_contest = decrypt_contest_with_secret(
+        plaintext_contest = await decrypt_contest_with_secret(
             contest,
             get_optional(description),
             public_key,
@@ -289,7 +289,7 @@ def decrypt_ballot_with_secret(
     return PlaintextBallot(ballot.object_id, ballot.style_id, plaintext_contests)
 
 
-def decrypt_ballot_with_nonce(
+async def decrypt_ballot_with_nonce(
     ballot: CiphertextBallot,
     internal_manifest: InternalManifest,
     crypto_extended_base_hash: ElementModQ,
@@ -334,7 +334,7 @@ def decrypt_ballot_with_nonce(
 
     for contest in ballot.contests:
         description = internal_manifest.contest_for(contest.object_id)
-        plaintext_contest = decrypt_contest_with_nonce(
+        plaintext_contest = await decrypt_contest_with_nonce(
             contest,
             get_optional(description),
             public_key,

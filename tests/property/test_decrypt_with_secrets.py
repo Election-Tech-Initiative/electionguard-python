@@ -1,4 +1,6 @@
 import unittest
+import asyncio
+
 from copy import deepcopy
 from datetime import timedelta
 from random import Random
@@ -82,14 +84,20 @@ class TestDecryptWithSecrets(unittest.TestCase):
         )
         self.assertIsNotNone(subject)
 
-        result_from_key = decrypt_selection_with_secret(
-            subject, description, keypair.public_key, keypair.secret_key, ONE_MOD_Q
+        result_from_key = asyncio.run(
+            decrypt_selection_with_secret(
+                subject, description, keypair.public_key, keypair.secret_key, ONE_MOD_Q
+            )
         )
-        result_from_nonce = decrypt_selection_with_nonce(
-            subject, description, keypair.public_key, ONE_MOD_Q
+        result_from_nonce = asyncio.run(
+            decrypt_selection_with_nonce(
+                subject, description, keypair.public_key, ONE_MOD_Q
+            )
         )
-        result_from_nonce_seed = decrypt_selection_with_nonce(
-            subject, description, keypair.public_key, ONE_MOD_Q, nonce_seed
+        result_from_nonce_seed = asyncio.run(
+            decrypt_selection_with_nonce(
+                subject, description, keypair.public_key, ONE_MOD_Q, nonce_seed
+            )
         )
 
         # Assert
@@ -154,27 +162,35 @@ class TestDecryptWithSecrets(unittest.TestCase):
         )
         malformed_proof.proof = malformed_disjunctive
 
-        result_from_key_malformed_encryption = decrypt_selection_with_secret(
-            malformed_encryption,
-            description,
-            keypair.public_key,
-            keypair.secret_key,
-            ONE_MOD_Q,
+        result_from_key_malformed_encryption = asyncio.run(
+            decrypt_selection_with_secret(
+                malformed_encryption,
+                description,
+                keypair.public_key,
+                keypair.secret_key,
+                ONE_MOD_Q,
+            )
         )
 
-        result_from_key_malformed_proof = decrypt_selection_with_secret(
-            malformed_proof,
-            description,
-            keypair.public_key,
-            keypair.secret_key,
-            ONE_MOD_Q,
+        result_from_key_malformed_proof = asyncio.run(
+            decrypt_selection_with_secret(
+                malformed_proof,
+                description,
+                keypair.public_key,
+                keypair.secret_key,
+                ONE_MOD_Q,
+            )
         )
 
-        result_from_nonce_malformed_encryption = decrypt_selection_with_nonce(
-            malformed_encryption, description, keypair.public_key, ONE_MOD_Q
+        result_from_nonce_malformed_encryption = asyncio.run(
+            decrypt_selection_with_nonce(
+                malformed_encryption, description, keypair.public_key, ONE_MOD_Q
+            )
         )
-        result_from_nonce_malformed_proof = decrypt_selection_with_nonce(
-            malformed_proof, description, keypair.public_key, ONE_MOD_Q
+        result_from_nonce_malformed_proof = asyncio.run(
+            decrypt_selection_with_nonce(
+                malformed_proof, description, keypair.public_key, ONE_MOD_Q
+            )
         )
 
         # Assert
@@ -218,8 +234,10 @@ class TestDecryptWithSecrets(unittest.TestCase):
         # Tamper with the nonce by setting it to an arbitrary value
         subject.nonce = nonce_seed
 
-        result_from_nonce_seed = decrypt_selection_with_nonce(
-            subject, description, keypair.public_key, ONE_MOD_Q, nonce_seed
+        result_from_nonce_seed = asyncio.run(
+            decrypt_selection_with_nonce(
+                subject, description, keypair.public_key, ONE_MOD_Q, nonce_seed
+            )
         )
 
         # Assert
@@ -272,28 +290,34 @@ class TestDecryptWithSecrets(unittest.TestCase):
 
         # Decrypt the contest, but keep the placeholders
         # so we can verify the selection count matches as expected in the test
-        result_from_key = decrypt_contest_with_secret(
-            subject,
-            description_with_placeholders,
-            keypair.public_key,
-            keypair.secret_key,
-            ONE_MOD_Q,
-            remove_placeholders=False,
+        result_from_key = asyncio.run(
+            decrypt_contest_with_secret(
+                subject,
+                description_with_placeholders,
+                keypair.public_key,
+                keypair.secret_key,
+                ONE_MOD_Q,
+                remove_placeholders=False,
+            )
         )
-        result_from_nonce = decrypt_contest_with_nonce(
-            subject,
-            description_with_placeholders,
-            keypair.public_key,
-            ONE_MOD_Q,
-            remove_placeholders=False,
+        result_from_nonce = asyncio.run(
+            decrypt_contest_with_nonce(
+                subject,
+                description_with_placeholders,
+                keypair.public_key,
+                ONE_MOD_Q,
+                remove_placeholders=False,
+            )
         )
-        result_from_nonce_seed = decrypt_contest_with_nonce(
-            subject,
-            description_with_placeholders,
-            keypair.public_key,
-            ONE_MOD_Q,
-            nonce_seed,
-            remove_placeholders=False,
+        result_from_nonce_seed = asyncio.run(
+            decrypt_contest_with_nonce(
+                subject,
+                description_with_placeholders,
+                keypair.public_key,
+                ONE_MOD_Q,
+                nonce_seed,
+                remove_placeholders=False,
+            )
         )
 
         # Assert
@@ -433,20 +457,24 @@ class TestDecryptWithSecrets(unittest.TestCase):
         # tamper with the nonce
         subject.nonce = int_to_q_unchecked(1)
 
-        result_from_nonce = decrypt_contest_with_nonce(
-            subject,
-            description_with_placeholders,
-            keypair.public_key,
-            ONE_MOD_Q,
-            remove_placeholders=False,
+        result_from_nonce = asyncio.run(
+            decrypt_contest_with_nonce(
+                subject,
+                description_with_placeholders,
+                keypair.public_key,
+                ONE_MOD_Q,
+                remove_placeholders=False,
+            )
         )
-        result_from_nonce_seed = decrypt_contest_with_nonce(
-            subject,
-            description_with_placeholders,
-            keypair.public_key,
-            ONE_MOD_Q,
-            nonce_seed,
-            remove_placeholders=False,
+        result_from_nonce_seed = asyncio.run(
+            decrypt_contest_with_nonce(
+                subject,
+                description_with_placeholders,
+                keypair.public_key,
+                ONE_MOD_Q,
+                nonce_seed,
+                remove_placeholders=False,
+            )
         )
 
         # Assert
@@ -458,28 +486,34 @@ class TestDecryptWithSecrets(unittest.TestCase):
             TWO_MOD_P, TWO_MOD_P
         )
 
-        result_from_key_tampered = decrypt_contest_with_secret(
-            subject,
-            description_with_placeholders,
-            keypair.public_key,
-            keypair.secret_key,
-            ONE_MOD_Q,
-            remove_placeholders=False,
+        result_from_key_tampered = asyncio.run(
+            decrypt_contest_with_secret(
+                subject,
+                description_with_placeholders,
+                keypair.public_key,
+                keypair.secret_key,
+                ONE_MOD_Q,
+                remove_placeholders=False,
+            )
         )
-        result_from_nonce_tampered = decrypt_contest_with_nonce(
-            subject,
-            description_with_placeholders,
-            keypair.public_key,
-            ONE_MOD_Q,
-            remove_placeholders=False,
+        result_from_nonce_tampered = asyncio.run(
+            decrypt_contest_with_nonce(
+                subject,
+                description_with_placeholders,
+                keypair.public_key,
+                ONE_MOD_Q,
+                remove_placeholders=False,
+            )
         )
-        result_from_nonce_seed_tampered = decrypt_contest_with_nonce(
-            subject,
-            description_with_placeholders,
-            keypair.public_key,
-            ONE_MOD_Q,
-            nonce_seed,
-            remove_placeholders=False,
+        result_from_nonce_seed_tampered = asyncio.run(
+            decrypt_contest_with_nonce(
+                subject,
+                description_with_placeholders,
+                keypair.public_key,
+                ONE_MOD_Q,
+                nonce_seed,
+                remove_placeholders=False,
+            )
         )
 
         # Assert
@@ -517,28 +551,34 @@ class TestDecryptWithSecrets(unittest.TestCase):
         subject = operator.encrypt(data)
         self.assertIsNotNone(subject)
 
-        result_from_key = decrypt_ballot_with_secret(
-            subject,
-            internal_manifest,
-            context.crypto_extended_base_hash,
-            keypair.public_key,
-            keypair.secret_key,
-            remove_placeholders=False,
+        result_from_key = asyncio.run(
+            decrypt_ballot_with_secret(
+                subject,
+                internal_manifest,
+                context.crypto_extended_base_hash,
+                keypair.public_key,
+                keypair.secret_key,
+                remove_placeholders=False,
+            )
         )
-        result_from_nonce = decrypt_ballot_with_nonce(
-            subject,
-            internal_manifest,
-            context.crypto_extended_base_hash,
-            keypair.public_key,
-            remove_placeholders=False,
+        result_from_nonce = asyncio.run(
+            decrypt_ballot_with_nonce(
+                subject,
+                internal_manifest,
+                context.crypto_extended_base_hash,
+                keypair.public_key,
+                remove_placeholders=False,
+            )
         )
-        result_from_nonce_seed = decrypt_ballot_with_nonce(
-            subject,
-            internal_manifest,
-            context.crypto_extended_base_hash,
-            keypair.public_key,
-            subject.nonce,
-            remove_placeholders=False,
+        result_from_nonce_seed = asyncio.run(
+            decrypt_ballot_with_nonce(
+                subject,
+                internal_manifest,
+                context.crypto_extended_base_hash,
+                keypair.public_key,
+                subject.nonce,
+                remove_placeholders=False,
+            )
         )
 
         # Assert
@@ -684,20 +724,24 @@ class TestDecryptWithSecrets(unittest.TestCase):
 
         missing_nonce_value = None
 
-        result_from_nonce = decrypt_ballot_with_nonce(
-            subject,
-            internal_manifest,
-            context.crypto_extended_base_hash,
-            keypair.public_key,
+        result_from_nonce = asyncio.run(
+            decrypt_ballot_with_nonce(
+                subject,
+                internal_manifest,
+                context.crypto_extended_base_hash,
+                keypair.public_key,
+            )
         )
 
         # SUGGEST this test is the same as the one above
-        result_from_nonce_seed = decrypt_ballot_with_nonce(
-            subject,
-            internal_manifest,
-            context.crypto_extended_base_hash,
-            keypair.public_key,
-            missing_nonce_value,
+        result_from_nonce_seed = asyncio.run(
+            decrypt_ballot_with_nonce(
+                subject,
+                internal_manifest,
+                context.crypto_extended_base_hash,
+                keypair.public_key,
+                missing_nonce_value,
+            )
         )
 
         # Assert

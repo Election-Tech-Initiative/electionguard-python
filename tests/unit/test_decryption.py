@@ -4,6 +4,7 @@
 
 from typing import Dict, List
 from unittest import TestCase
+import asyncio
 from electionguard.ballot import SubmittedBallot
 
 from electionguard.ballot_box import BallotBox, BallotBoxState, get_ballots
@@ -390,23 +391,25 @@ class TestDecryption(TestCase):
         )
 
         # Decrypt the result
-        result = decrypt_selection_with_decryption_shares(
-            first_selection,
-            {
-                available_guardian_1.id: (
-                    available_guardian_1.share_election_public_key().key,
-                    share_0,
-                ),
-                available_guardian_2.id: (
-                    available_guardian_2.share_election_public_key().key,
-                    share_1,
-                ),
-                missing_guardian.id: (
-                    missing_guardian.share_election_public_key().key,
-                    share_2,
-                ),
-            },
-            self.context.crypto_extended_base_hash,
+        result = asyncio.run(
+            decrypt_selection_with_decryption_shares(
+                first_selection,
+                {
+                    available_guardian_1.id: (
+                        available_guardian_1.share_election_public_key().key,
+                        share_0,
+                    ),
+                    available_guardian_2.id: (
+                        available_guardian_2.share_election_public_key().key,
+                        share_1,
+                    ),
+                    missing_guardian.id: (
+                        missing_guardian.share_election_public_key().key,
+                        share_2,
+                    ),
+                },
+                self.context.crypto_extended_base_hash,
+            )
         )
 
         print(result)

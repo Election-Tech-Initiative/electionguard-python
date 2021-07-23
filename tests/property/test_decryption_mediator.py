@@ -1,6 +1,7 @@
 # pylint: disable=too-many-instance-attributes
 
 from unittest import TestCase
+import asyncio
 from datetime import timedelta
 from typing import Dict, List
 from random import randrange
@@ -209,8 +210,12 @@ class TestDecryptionMediator(TestCase):
         # Can only announce once
         self.assertEqual(len(mediator.get_available_guardians()), 1)
         # Cannot get plaintext tally or spoiled ballots without a quorum
-        self.assertIsNone(mediator.get_plaintext_tally(self.ciphertext_tally))
-        self.assertIsNone(mediator.get_plaintext_ballots(self.ciphertext_ballots))
+        self.assertIsNone(
+            asyncio.run(mediator.get_plaintext_tally(self.ciphertext_tally))
+        )
+        self.assertIsNone(
+            asyncio.run(mediator.get_plaintext_ballots(self.ciphertext_ballots))
+        )
 
     def test_get_plaintext_with_all_guardians_present(self):
         # Arrange
@@ -230,14 +235,20 @@ class TestDecryptionMediator(TestCase):
         )
 
         # Act
-        plaintext_tally = mediator.get_plaintext_tally(self.ciphertext_tally)
-        plaintext_ballots = mediator.get_plaintext_ballots(self.ciphertext_ballots)
+        plaintext_tally = asyncio.run(
+            mediator.get_plaintext_tally(self.ciphertext_tally)
+        )
+        plaintext_ballots = asyncio.run(
+            mediator.get_plaintext_ballots(self.ciphertext_ballots)
+        )
 
         # Convert to selections to check for the same tally
         selections = _convert_to_selections(plaintext_tally)
 
         # Verify we get the same tally back if we call again
-        another_plaintext_tally = mediator.get_plaintext_tally(self.ciphertext_tally)
+        another_plaintext_tally = asyncio.run(
+            mediator.get_plaintext_tally(self.ciphertext_tally)
+        )
 
         # Assert
         self.assertIsNotNone(plaintext_tally)
@@ -272,14 +283,20 @@ class TestDecryptionMediator(TestCase):
         )
 
         # Act
-        plaintext_tally = mediator.get_plaintext_tally(self.ciphertext_tally)
-        plaintext_ballots = mediator.get_plaintext_ballots(self.ciphertext_ballots)
+        plaintext_tally = asyncio.run(
+            mediator.get_plaintext_tally(self.ciphertext_tally)
+        )
+        plaintext_ballots = asyncio.run(
+            mediator.get_plaintext_ballots(self.ciphertext_ballots)
+        )
 
         # Convert to selections to check for the same tally
         selections = _convert_to_selections(plaintext_tally)
 
         # Verify we get the same tally back if we call again
-        another_plaintext_tally = mediator.get_plaintext_tally(self.ciphertext_tally)
+        another_plaintext_tally = asyncio.run(
+            mediator.get_plaintext_tally(self.ciphertext_tally)
+        )
 
         # Assert
         self.assertIsNotNone(plaintext_tally)
@@ -327,7 +344,7 @@ class TestDecryptionMediator(TestCase):
         )
 
         # Act
-        plaintext_tally = mediator.get_plaintext_tally(encrypted_tally)
+        plaintext_tally = asyncio.run(mediator.get_plaintext_tally(encrypted_tally))
         selections = _convert_to_selections(plaintext_tally)
 
         # Assert

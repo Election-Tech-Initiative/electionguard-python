@@ -1,6 +1,7 @@
 import unittest
+import asyncio
 
-from hypothesis import given
+from hypothesis import given, settings, HealthCheck
 from hypothesis.strategies import integers
 
 from electionguard.dlog import discrete_log
@@ -40,17 +41,22 @@ class TestDLog(unittest.TestCase):
 
         self.assertEqual(exp, plaintext_again)
 
-    @given(integers(0, 1000))
+    @settings(
+        suppress_health_check=[HealthCheck.too_slow],
+    )
+    @given(
+        integers(0, 1000),
+    )
     def test_cached(self, exp: int):
         plaintext = get_optional(int_to_q(exp))
         exp_plaintext = g_pow_p(plaintext)
-        plaintext_again = discrete_log(exp_plaintext)
+        plaintext_again = asyncio.run(discrete_log(exp_plaintext))
 
         self.assertEqual(exp, plaintext_again)
 
     def test_cached_one(self):
         plaintext = int_to_q_unchecked(1)
         ciphertext = g_pow_p(plaintext)
-        plaintext_again = discrete_log(ciphertext)
+        plaintext_again = asyncio.run(discrete_log(ciphertext))
 
         self.assertEqual(1, plaintext_again)

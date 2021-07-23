@@ -28,7 +28,7 @@ ELECTION_PUBLIC_KEY = ElementModP
 # and the key ceremony is used to share secrets among a quorum of guardians
 
 
-def decrypt_tally(
+async def decrypt_tally(
     tally: CiphertextTally,
     shares: Dict[GUARDIAN_ID, DecryptionShare],
     crypto_extended_base_hash: ElementModQ,
@@ -44,7 +44,7 @@ def decrypt_tally(
     contests: Dict[CONTEST_ID, PlaintextTallyContest] = {}
 
     for contest in tally.contests.values():
-        plaintext_contest = decrypt_contest_with_decryption_shares(
+        plaintext_contest = await decrypt_contest_with_decryption_shares(
             CiphertextContest(
                 contest.object_id,
                 contest.description_hash,
@@ -61,7 +61,7 @@ def decrypt_tally(
     return PlaintextTally(tally.object_id, contests)
 
 
-def decrypt_ballot(
+async def decrypt_ballot(
     ballot: SubmittedBallot,
     shares: Dict[AVAILABLE_GUARDIAN_ID, DecryptionShare],
     crypto_extended_base_hash: ElementModQ,
@@ -77,7 +77,7 @@ def decrypt_ballot(
     contests: Dict[CONTEST_ID, PlaintextTallyContest] = {}
 
     for contest in ballot.contests:
-        plaintext_contest = decrypt_contest_with_decryption_shares(
+        plaintext_contest = await decrypt_contest_with_decryption_shares(
             CiphertextContest(
                 contest.object_id,
                 contest.description_hash,
@@ -94,7 +94,7 @@ def decrypt_ballot(
     return PlaintextTally(ballot.object_id, contests)
 
 
-def decrypt_contest_with_decryption_shares(
+async def decrypt_contest_with_decryption_shares(
     contest: CiphertextContest,
     shares: Dict[GUARDIAN_ID, DecryptionShare],
     crypto_extended_base_hash: ElementModQ,
@@ -111,7 +111,7 @@ def decrypt_contest_with_decryption_shares(
 
     for selection in contest.selections:
         tally_shares = get_shares_for_selection(selection.object_id, shares)
-        plaintext_selection = decrypt_selection_with_decryption_shares(
+        plaintext_selection = await decrypt_selection_with_decryption_shares(
             selection, tally_shares, crypto_extended_base_hash
         )
         if plaintext_selection is None:
@@ -127,7 +127,7 @@ def decrypt_contest_with_decryption_shares(
     return PlaintextTallyContest(contest.object_id, plaintext_selections)
 
 
-def decrypt_selection_with_decryption_shares(
+async def decrypt_selection_with_decryption_shares(
     selection: CiphertextSelection,
     shares: Dict[
         GUARDIAN_ID, Tuple[ELECTION_PUBLIC_KEY, CiphertextDecryptionSelection]
@@ -165,7 +165,7 @@ def decrypt_selection_with_decryption_shares(
 
     # Calculate 𝑀=𝐵⁄(∏𝑀𝑖) mod 𝑝.
     decrypted_value = div_p(selection.ciphertext.data, all_shares_product_M)
-    d_log = discrete_log(decrypted_value)
+    d_log = await discrete_log(decrypted_value)
     return PlaintextTallySelection(
         selection.object_id,
         d_log,

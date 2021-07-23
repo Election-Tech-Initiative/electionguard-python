@@ -47,7 +47,7 @@ class ElectionSampleDataGenerator:
         self.ballot_factory = BallotFactory()
         self.encryption_device = self.election_factory.get_encryption_device()
 
-    def generate(
+    async def generate(
         self,
         number_of_ballots: int = DEFAULT_NUMBER_OF_BALLOTS,
         spoil_rate: int = DEFAULT_SPOIL_RATE,
@@ -133,8 +133,8 @@ class ElectionSampleDataGenerator:
                 spoiled_ciphertext_ballots.values(),
             )
 
-        plaintext_tally = mediator.get_plaintext_tally(ciphertext_tally)
-        plaintext_spoiled_ballots = mediator.get_plaintext_ballots(
+        plaintext_tally = await mediator.get_plaintext_tally(ciphertext_tally)
+        plaintext_spoiled_ballots = await mediator.get_plaintext_ballots(
             spoiled_ciphertext_ballots.values()
         )
 

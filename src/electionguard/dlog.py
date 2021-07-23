@@ -13,7 +13,7 @@ __dlog_max_exp = 0
 __dlog_lock: Optional[asyncio.Lock] = None
 
 
-def discrete_log(e: ElementModP) -> int:
+async def discrete_log(e: ElementModP) -> int:
     """
     Computes the discrete log (base g, mod p) of the given element,
     with internal caching of results. Should run efficiently when called
@@ -30,7 +30,8 @@ def discrete_log(e: ElementModP) -> int:
     # no need for mutually exclusive access when reading from the cache
     if e in __dlog_cache:
         return __dlog_cache[e]
-    return asyncio.run(__discrete_log_internal(e))
+
+    return await __discrete_log_internal(e)
 
 
 async def __discrete_log_internal(e: ElementModP) -> int:

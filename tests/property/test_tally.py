@@ -1,4 +1,5 @@
 from unittest import TestCase
+import asyncio
 from datetime import timedelta
 from typing import Dict
 
@@ -70,7 +71,7 @@ class TestTally(TestCase):
         self.assertIsNotNone(result)
 
         # Assert
-        decrypted_tallies = self._decrypt_with_secret(result, secret_key)
+        decrypted_tallies = asyncio.run(self._decrypt_with_secret(result, secret_key))
         self.assertEqual(plaintext_tallies, decrypted_tallies)
 
     @settings(
@@ -115,7 +116,7 @@ class TestTally(TestCase):
         self.assertIsNotNone(tally)
 
         # Assert
-        decrypted_tallies = self._decrypt_with_secret(tally, secret_key)
+        decrypted_tallies = asyncio.run(self._decrypt_with_secret(tally, secret_key))
         self.assertCountEqual(plaintext_tallies, decrypted_tallies)
         for value in decrypted_tallies.values():
             self.assertEqual(0, value)
@@ -217,7 +218,7 @@ class TestTally(TestCase):
         self.assertFalse(tally.append(first_ballot))
 
     @staticmethod
-    def _decrypt_with_secret(
+    async def _decrypt_with_secret(
         tally: CiphertextTally, secret_key: ElementModQ
     ) -> Dict[str, int]:
         """
@@ -226,7 +227,7 @@ class TestTally(TestCase):
         plaintext_selections: Dict[str, int] = {}
         for _, contest in tally.contests.items():
             for object_id, selection in contest.selections.items():
-                plaintext_tally = selection.ciphertext.decrypt(secret_key)
+                plaintext_tally = await selection.ciphertext.decrypt(secret_key)
                 plaintext_selections[object_id] = plaintext_tally
 
         return plaintext_selections

@@ -1,4 +1,5 @@
 import unittest
+import asyncio
 from datetime import timedelta
 from typing import List, Dict
 
@@ -99,13 +100,15 @@ class TestElections(unittest.TestCase):
             self.assertEqual(num_contests, len(encrypted_ballot.contests))
 
             # decrypt the ballot with secret and verify it matches the plaintext
-            decrypted_ballot = decrypt_ballot_with_secret(
-                ballot=encrypted_ballot,
-                internal_manifest=internal_manifest,
-                crypto_extended_base_hash=context.crypto_extended_base_hash,
-                public_key=context.elgamal_public_key,
-                secret_key=secret_key,
-                remove_placeholders=True,
+            decrypted_ballot = asyncio.run(
+                decrypt_ballot_with_secret(
+                    ballot=encrypted_ballot,
+                    internal_manifest=internal_manifest,
+                    crypto_extended_base_hash=context.crypto_extended_base_hash,
+                    public_key=context.elgamal_public_key,
+                    secret_key=secret_key,
+                    remove_placeholders=True,
+                )
             )
             self.assertEqual(ballots[i], decrypted_ballot)
 
@@ -116,7 +119,9 @@ class TestElections(unittest.TestCase):
 
         decrypted_tallies = {}
         for object_id, encrypted_tally in encrypted_tallies.items():
-            decrypted_tallies[object_id] = encrypted_tally.decrypt(secret_key)
+            decrypted_tallies[object_id] = asyncio.run(
+                encrypted_tally.decrypt(secret_key)
+            )
 
         # loop through the contest descriptions and verify
         # the decrypted tallies match the plaintext tallies

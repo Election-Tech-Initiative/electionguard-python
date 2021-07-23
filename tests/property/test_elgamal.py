@@ -1,7 +1,8 @@
 import unittest
+import asyncio
 from timeit import default_timer as timer
 
-from hypothesis import given
+from hypothesis import given, settings, HealthCheck
 from hypothesis.strategies import integers
 
 from electionguard.elgamal import (
@@ -56,7 +57,7 @@ class TestElGamal(unittest.TestCase):
             pow(public_key.to_int(), nonce.to_int(), P),
         )
 
-        plaintext = ciphertext.decrypt(keypair.secret_key)
+        plaintext = asyncio.run(ciphertext.decrypt(keypair.secret_key))
 
         self.assertEqual(0, plaintext)
 
@@ -70,21 +71,29 @@ class TestElGamal(unittest.TestCase):
         self.assertEqual(None, elgamal_keypair_from_secret(ZERO_MOD_Q))
         self.assertEqual(None, elgamal_keypair_from_secret(ONE_MOD_Q))
 
+    @settings(
+        suppress_health_check=[HealthCheck.too_slow],
+    )
     @given(integers(0, 100), elements_mod_q_no_zero(), elgamal_keypairs())
     def test_elgamal_encryption_decryption_inverses(
         self, message: int, nonce: ElementModQ, keypair: ElGamalKeyPair
     ):
         ciphertext = get_optional(elgamal_encrypt(message, nonce, keypair.public_key))
-        plaintext = ciphertext.decrypt(keypair.secret_key)
+        plaintext = asyncio.run(ciphertext.decrypt(keypair.secret_key))
 
         self.assertEqual(message, plaintext)
 
+    @settings(
+        suppress_health_check=[HealthCheck.too_slow],
+    )
     @given(integers(0, 100), elements_mod_q_no_zero(), elgamal_keypairs())
     def test_elgamal_encryption_decryption_with_known_nonce_inverses(
         self, message: int, nonce: ElementModQ, keypair: ElGamalKeyPair
     ):
         ciphertext = get_optional(elgamal_encrypt(message, nonce, keypair.public_key))
-        plaintext = ciphertext.decrypt_known_nonce(keypair.public_key, nonce)
+        plaintext = asyncio.run(
+            ciphertext.decrypt_known_nonce(keypair.public_key, nonce)
+        )
 
         self.assertEqual(message, plaintext)
 
@@ -94,6 +103,9 @@ class TestElGamal(unittest.TestCase):
         self.assertLess(keypair.secret_key.to_int(), Q)
         self.assertEqual(g_pow_p(keypair.secret_key), keypair.public_key)
 
+    @settings(
+        suppress_health_check=[HealthCheck.too_slow],
+    )
     @given(
         elgamal_keypairs(),
         integers(0, 100),
@@ -112,7 +124,7 @@ class TestElGamal(unittest.TestCase):
         c1 = get_optional(elgamal_encrypt(m1, r1, keypair.public_key))
         c2 = get_optional(elgamal_encrypt(m2, r2, keypair.public_key))
         c_sum = elgamal_add(c1, c2)
-        total = c_sum.decrypt(keypair.secret_key)
+        total = asyncio.run(c_sum.decrypt(keypair.secret_key))
 
         self.assertEqual(total, m1 + m2)
 

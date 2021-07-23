@@ -1,4 +1,5 @@
 import unittest
+import asyncio
 from copy import deepcopy
 from datetime import timedelta
 from random import Random
@@ -743,8 +744,10 @@ class TestEncrypt(unittest.TestCase):
 
             for selection in contest.ballot_selections:
                 # Since we know the nonce, we can decrypt the plaintext
-                representation = selection.ciphertext.decrypt_known_nonce(
-                    keypair.public_key, selection.nonce
+                representation = asyncio.run(
+                    selection.ciphertext.decrypt_known_nonce(
+                        keypair.public_key, selection.nonce
+                    )
                 )
 
                 # one could also decrypt with the secret key:

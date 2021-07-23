@@ -4,6 +4,7 @@ from typing import Callable, Dict, List, Union
 from os import path
 from shutil import rmtree
 from unittest import TestCase
+import asyncio
 
 from random import randint
 from electionguard.type import BALLOT_ID
@@ -395,7 +396,9 @@ class TestEndToEndElection(TestCase):
 
         # Get the plaintext Tally
         self.plaintext_tally = get_optional(
-            self.decryption_mediator.get_plaintext_tally(self.ciphertext_tally)
+            asyncio.run(
+                self.decryption_mediator.get_plaintext_tally(self.ciphertext_tally)
+            )
         )
         self._assert_message(
             DecryptionMediator.get_plaintext_tally.__qualname__,
@@ -405,7 +408,9 @@ class TestEndToEndElection(TestCase):
 
         # Get the plaintext Spoiled Ballots
         self.plaintext_spoiled_ballots = get_optional(
-            self.decryption_mediator.get_plaintext_ballots(submitted_ballots_list)
+            asyncio.run(
+                self.decryption_mediator.get_plaintext_ballots(submitted_ballots_list)
+            )
         )
         self._assert_message(
             DecryptionMediator.get_plaintext_ballots.__qualname__,

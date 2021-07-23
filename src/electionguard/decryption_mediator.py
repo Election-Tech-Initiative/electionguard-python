@@ -249,7 +249,7 @@ class DecryptionMediator:
             # Add shares into ballot shares
             self._ballot_shares[ballot_id] = ballot_shares
 
-    def get_plaintext_tally(
+    async def get_plaintext_tally(
         self, ciphertext_tally: CiphertextTally
     ) -> Optional[PlaintextTally]:
         """
@@ -264,13 +264,13 @@ class DecryptionMediator:
         ):
             return None
 
-        return decrypt_tally(
+        return await decrypt_tally(
             ciphertext_tally,
             self._tally_shares,
             self._context.crypto_extended_base_hash,
         )
 
-    def get_plaintext_ballots(
+    async def get_plaintext_ballots(
         self, ciphertext_ballots: List[SubmittedBallot]
     ) -> Optional[Dict[BALLOT_ID, PlaintextTally]]:
         """
@@ -291,7 +291,7 @@ class DecryptionMediator:
             if not ballot_shares or not self._ready_to_decrypt(ballot_shares):
                 # Skip ballot if not ready to decrypt
                 continue
-            ballot = decrypt_ballot(
+            ballot = await decrypt_ballot(
                 ciphertext_ballot,
                 ballot_shares,
                 self._context.crypto_extended_base_hash,
