@@ -45,6 +45,9 @@ async def __discrete_log_internal(e: ElementModP) -> int:
         __dlog_lock = asyncio.Lock()
 
     async with __dlog_lock:
+        if e in __dlog_cache:
+            return __dlog_cache[e]
+
         g = int_to_p_unchecked(G)
         while e != __dlog_max_elem:
             __dlog_max_exp = __dlog_max_exp + 1
