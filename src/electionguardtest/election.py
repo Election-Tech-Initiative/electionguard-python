@@ -15,6 +15,7 @@ from hypothesis.strategies import (
     one_of,
     just,
 )
+from hypothesis.strategies._internal.core import sampled_from
 
 from electionguard.ballot import PlaintextBallotContest, PlaintextBallot
 from electionguard.election import (
@@ -160,7 +161,7 @@ def election_types(draw: _DrawType):
     Generates an `ElectionType`.
     :param draw: Hidden argument, used by Hypothesis.
     """
-    n = draw(integers(0, 7))
+    n = draw(sampled_from(ElectionType))
     return ElectionType(n)
 
 
@@ -170,7 +171,7 @@ def reporting_unit_types(draw: _DrawType):
     Generates a `ReportingUnitType` object.
     :param draw: Hidden argument, used by Hypothesis.
     """
-    n = draw(integers(0, 28))
+    n = draw(sampled_from(ReportingUnitType))
     return ReportingUnitType(n)
 
 
