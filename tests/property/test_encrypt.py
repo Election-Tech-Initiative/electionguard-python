@@ -617,8 +617,6 @@ class TestEncrypt(BaseTestCase):
         # Act
         result = subject.encrypt(data)
 
-        print(result.to_json())
-
         # Assert
         self.assertIsNotNone(result)
         self.assertEqual(data.object_id, result.object_id)
@@ -647,7 +645,6 @@ class TestEncrypt(BaseTestCase):
         ciphertext = encrypt_ballot(
             ballot, internal_manifest, context, device.get_hash(), TWO_MOD_Q
         )
-        print(ciphertext.to_json())
 
         # Assert
         self.assertIsNotNone(ciphertext)
