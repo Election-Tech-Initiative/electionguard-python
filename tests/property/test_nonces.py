@@ -30,13 +30,12 @@ class TestNonces(BaseTestCase):
     @given(
         elements_mod_q(),
         elements_mod_q(),
-        integers(min_value=0, max_value=1000000),
     )
-    def test_nonces_seed_matters(self, seed1: ElementModQ, seed2: ElementModQ, i: int):
+    def test_nonces_seed_matters(self, seed1: ElementModQ, seed2: ElementModQ):
         assume(seed1 != seed2)
         n1 = Nonces(seed1)
         n2 = Nonces(seed2)
-        self.assertNotEqual(n1[i], n2[i])
+        self.assertNotEqual(n1[0], n2[0])
 
     @given(elements_mod_q())
     def test_nonces_with_slices(self, seed: ElementModQ):
