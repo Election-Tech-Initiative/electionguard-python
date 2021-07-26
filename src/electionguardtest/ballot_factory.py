@@ -168,13 +168,13 @@ def get_selection_well_formed(
 ) -> Tuple[str, PlaintextBallotSelection]:
     use_none = draw(bools)
     if use_none:
-        extra_data = None
+        extended_data = None
     else:
-        extra_data = draw(txt)
+        extended_data = draw(txt)
     object_id = f"selection-{draw(ids)}"
     return (
         object_id,
-        PlaintextBallotSelection(object_id, draw(vote), draw(bools), extra_data),
+        PlaintextBallotSelection(object_id, draw(vote), draw(bools), extended_data),
     )
 
 
@@ -184,11 +184,11 @@ def get_selection_poorly_formed(
 ) -> Tuple[str, PlaintextBallotSelection]:
     use_none = draw(bools)
     if use_none:
-        extra_data = None
+        extended_data = None
     else:
-        extra_data = draw(txt)
+        extended_data = draw(txt)
     object_id = f"selection-{draw(ids)}"
     return (
         object_id,
-        PlaintextBallotSelection(object_id, draw(vote), draw(bools), extra_data),
+        PlaintextBallotSelection(object_id, draw(vote), draw(bools), extended_data),
     )
