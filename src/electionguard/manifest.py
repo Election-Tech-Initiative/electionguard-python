@@ -18,14 +18,14 @@ class ElectionType(Enum):
     see: https://developers.google.com/elections-data/reference/election-type
     """
 
-    unknown = 0
-    general = 1
-    partisan_primary_closed = 2
-    partisan_primary_open = 3
-    primary = 4
-    runoff = 5
-    special = 6
-    other = 7
+    unknown = "unknown"
+    general = "general"
+    partisan_primary_closed = "partisan_primary_closed"
+    partisan_primary_open = "partisan_primary_open"
+    primary = "primary"
+    runoff = "runoff"
+    special = "special"
+    other = "other"
 
 
 @unique
@@ -35,35 +35,35 @@ class ReportingUnitType(Enum):
     see: https://developers.google.com/elections-data/reference/reporting-unit-type
     """
 
-    unknown = 0
-    ballot_batch = 1
-    ballot_style_area = 2
-    borough = 3
-    city = 4
-    city_council = 5
-    combined_precinct = 6
-    congressional = 7
-    country = 8
-    county = 9
-    county_council = 10
-    drop_box = 11
-    judicial = 12
-    municipality = 13
-    polling_place = 14
-    precinct = 15
-    school = 16
-    special = 17
-    split_precinct = 18
-    state = 19
-    state_house = 20
-    state_senate = 21
-    township = 22
-    utility = 23
-    village = 24
-    vote_center = 25
-    ward = 26
-    water = 27
-    other = 28
+    unknown = "unknown"
+    ballot_batch = "ballot_batch"
+    ballot_style_area = "ballot_style_area"
+    borough = "borough"
+    city = "city"
+    city_council = "city_council"
+    combined_precinct = "combined_precinct"
+    congressional = "congressional"
+    country = "country"
+    county = "county"
+    county_council = "county_council"
+    drop_box = "drop_box"
+    judicial = "judicial"
+    municipality = "municipality"
+    polling_place = "polling_place"
+    precinct = "precinct"
+    school = "school"
+    special = "special"
+    split_precinct = "split_precinct"
+    state = "state"
+    state_house = "state_house"
+    state_senate = "state_senate"
+    township = "township"
+    utility = "utility"
+    village = "village"
+    vote_center = "vote_center"
+    ward = "ward"
+    water = "water"
+    other = "other"
 
 
 @unique
@@ -73,19 +73,19 @@ class VoteVariationType(Enum):
     see: https://developers.google.com/elections-data/reference/vote-variation
     """
 
-    unknown = 0
-    one_of_m = 1
-    approval = 2
-    borda = 3
-    cumulative = 4
-    majority = 5
-    n_of_m = 6
-    plurality = 7
-    proportional = 8
-    range = 9
-    rcv = 10
-    super_majority = 11
-    other = 12
+    unknown = "unknown"
+    one_of_m = "one_of_m"
+    approval = "approval"
+    borda = "borda"
+    cumulative = "cumulative"
+    majority = "majority"
+    n_of_m = "n_of_m"
+    plurality = "plurality"
+    proportional = "proportional"
+    range = "range"
+    rcv = "rcv"
+    super_majority = "super_majority"
+    other = "other"
 
 
 @dataclass(eq=True, unsafe_hash=True)
