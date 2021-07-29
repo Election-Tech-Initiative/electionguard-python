@@ -29,7 +29,6 @@ from electionguard.group import (
     TWO_MOD_P,
     ONE_MOD_Q,
     mult_p,
-    int_to_q_unchecked,
 )
 from electionguard.manifest import (
     ContestDescription,
@@ -429,7 +428,7 @@ class TestDecryptWithSecrets(BaseTestCase):
         self.assertIsNotNone(subject)
 
         # tamper with the nonce
-        subject.nonce = int_to_q_unchecked(1)
+        subject.nonce = ONE_MOD_Q
 
         result_from_nonce = decrypt_contest_with_nonce(
             subject,

@@ -12,7 +12,6 @@ from .group import (
     ZERO_MOD_Q,
     TWO_MOD_Q,
     rand_range_q,
-    int_to_q_unchecked,
 )
 from .hash import hash_elems
 from .logs import log_info, log_error
@@ -95,7 +94,7 @@ def elgamal_keypair_from_secret(a: ElementModQ) -> Optional[ElGamalKeyPair]:
     Given an ElGamal secret key (typically, a random number in [2,Q)), returns
     an ElGamal keypair, consisting of the given secret key a and public key g^a.
     """
-    secret_key_int = a.to_int()
+    secret_key_int = a
     if secret_key_int < 2:
         log_error("ElGamal secret key needs to be in [2,Q).")
         return None
@@ -138,7 +137,7 @@ def elgamal_encrypt(
         return None
 
     pad = g_pow_p(nonce)
-    gpowp_m = g_pow_p(int_to_q_unchecked(m))
+    gpowp_m = g_pow_p(m)
     pubkey_pow_n = pow_p(public_key, nonce)
     data = mult_p(gpowp_m, pubkey_pow_n)
 

@@ -15,7 +15,6 @@ from .constants import get_small_prime
 from .group import (
     ElementModPOrQ,
     ElementModQ,
-    int_to_q_unchecked,
     ElementModP,
 )
 
@@ -102,6 +101,6 @@ def hash_elems(*a: CRYPTO_HASHABLE_ALL) -> ElementModQ:
 
     # We don't need the checked version of int_to_q, because the
     # modulo operation here guarantees that we're in bounds.
-    return int_to_q_unchecked(
+    return ElementModQ(
         int.from_bytes(h.digest(), byteorder="big") % (get_small_prime() - 1)
     )

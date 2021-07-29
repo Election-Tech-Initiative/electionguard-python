@@ -8,7 +8,6 @@ from .group import (
     ElementModP,
     ElementModQ,
     g_pow_p,
-    int_to_p_unchecked,
     div_q,
     mult_p,
     mult_q,
@@ -126,7 +125,7 @@ def verify_polynomial_coordinate(
 
     commitment_output = ONE_MOD_P
     for (i, commitment) in enumerate(commitments):
-        exponent = pow_p(int_to_p_unchecked(exponent_modifier), int_to_p_unchecked(i))
+        exponent = pow_p(exponent_modifier, i)
         factor = pow_p(commitment, exponent)
         commitment_output = mult_p(commitment_output, factor)
 

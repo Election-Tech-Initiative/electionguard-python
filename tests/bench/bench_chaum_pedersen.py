@@ -11,7 +11,7 @@ from electionguard.elgamal import (
     ElGamalKeyPair,
     elgamal_encrypt,
 )
-from electionguard.group import ElementModQ, int_to_q_unchecked, ONE_MOD_Q
+from electionguard.group import ElementModQ, ONE_MOD_Q
 from electionguard.nonces import Nonces
 from electionguard.scheduler import Scheduler
 from electionguard.utils import get_optional
@@ -52,7 +52,7 @@ def identity(x: int) -> int:
 
 if __name__ == "__main__":
     problem_sizes = (100, 500, 1000, 5000)
-    rands = Nonces(int_to_q_unchecked(31337))
+    rands = Nonces(ElementModQ(31337))
     speedup: Dict[int, float] = {}
 
     # warm up the pool to help get consistent measurements

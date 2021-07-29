@@ -14,7 +14,6 @@ from electionguard.group import (
     ElementModQ,
     ElementModP,
     ZERO_MOD_P,
-    int_to_p_unchecked,
     TWO_MOD_Q,
     ONE_MOD_Q,
 )
@@ -83,7 +82,7 @@ class TestSchnorr(BaseTestCase):
             ZERO_MOD_P, proof.commitment, proof.challenge, proof.response
         )
         proof3 = SchnorrProof(
-            int_to_p_unchecked(get_large_prime()),
+            ElementModP(get_large_prime(), False),
             proof.commitment,
             proof.challenge,
             proof.response,
