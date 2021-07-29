@@ -51,6 +51,7 @@ mkdocs = "^1.2.1"
 mypy = "^0.910"
 pydeps = "*"
 pylint = "*"
+pydantic = "^1.8.2"
 pytest = "*"
 secretstorage = "*"
 twine = "*"
@@ -58,6 +59,9 @@ typish = '*'
 
 [tool.black]
 target-version = ['py39']
+
+[tool.pylint.basic]
+extension-pkg-whitelist = "pydantic"
 
 [tool.pylint.format]
 max-line-length = 120
@@ -95,6 +99,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.mypy]
 python_version = 3.9
+plugins = ["pydantic.mypy"]
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
