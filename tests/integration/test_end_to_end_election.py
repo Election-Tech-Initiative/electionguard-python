@@ -2,12 +2,10 @@
 
 from typing import Callable, Dict, List, Union
 from os import path
-from shutil import rmtree
 from random import randint
 
 from tests.base_test_case import BaseTestCase
 
-from electionguard.serializable import read_json_file
 from electionguard.type import BALLOT_ID
 from electionguard.utils import get_optional
 
@@ -37,25 +35,11 @@ from electionguard.ballot_box import BallotBox, get_ballots
 
 # Step 4 - Decrypt Tally
 from electionguard.tally import (
-    PublishedCiphertextTally,
     tally_ballots,
     CiphertextTally,
     PlaintextTally,
 )
 from electionguard.decryption_mediator import DecryptionMediator
-
-# Step 5 - Publish and Verify
-from electionguard.publish import (
-    publish,
-    BALLOT_PREFIX,
-    CONSTANTS_FILE_NAME,
-    CONTEXT_FILE_NAME,
-    DEVICE_PREFIX,
-    ENCRYPTED_TALLY_FILE_NAME,
-    GUARDIAN_PREFIX,
-    MANIFEST_FILE_NAME,
-    TALLY_FILE_NAME,
-)
 
 from electionguardtest.ballot_factory import BallotFactory
 from electionguardtest.election_factory import ElectionFactory, NUMBER_OF_GUARDIANS
@@ -79,8 +63,6 @@ class TestEndToEndElection(BaseTestCase):
 
     NUMBER_OF_GUARDIANS = 5
     QUORUM = 3
-
-    REMOVE_OUTPUT = False
 
     # Step 0 - Configure Election
     manifest: Manifest
@@ -122,7 +104,6 @@ class TestEndToEndElection(BaseTestCase):
         self.step_2_encrypt_votes()
         self.step_3_cast_and_spoil()
         self.step_4_decrypt_tally()
-        self.step_5_publish_and_verify()
 
     def step_0_configure_election(self) -> None:
         """
@@ -478,89 +459,6 @@ class TestEndToEndElection(BaseTestCase):
                             f"expected: {expected}, actual: {decrypted_selection.tally}",
                             expected == decrypted_selection.tally,
                         )
-
-    def step_5_publish_and_verify(self) -> None:
-        """Publish and verify steps of the election"""
-        self.publish_results()
-        self.verify_results()
-
-        if self.REMOVE_OUTPUT:
-            rmtree(RESULTS_DIR)
-
-    def publish_results(self) -> None:
-        """
-        Publish results/artifacts of the election
-        """
-
-        self.guardian_records = [guardian.publish() for guardian in self.guardians]
-
-        publish(
-            self.manifest,
-            self.context,
-            self.constants,
-            [self.device],
-            self.ballot_store.all(),
-            self.plaintext_spoiled_ballots.values(),
-            self.ciphertext_tally.publish(),
-            self.plaintext_tally,
-            self.guardian_records,
-            RESULTS_DIR,
-        )
-        self._assert_message(
-            "Publish",
-            f"Artifacts published to: {RESULTS_DIR}",
-            path.exists(RESULTS_DIR),
-        )
-
-    def verify_results(self) -> None:
-        """Verify results of election"""
-
-        # Deserialize
-        manifest_from_file = Manifest.from_json_file(MANIFEST_FILE_NAME, RESULTS_DIR)
-        self.assertEqual(self.manifest, manifest_from_file)
-
-        context_from_file = CiphertextElectionContext.from_json_file(
-            CONTEXT_FILE_NAME, RESULTS_DIR
-        )
-        self.assertEqual(self.context, context_from_file)
-
-        constants_from_file = read_json_file(
-            ElectionConstants, CONSTANTS_FILE_NAME, RESULTS_DIR
-        )
-        self.assertEqual(self.constants, constants_from_file)
-
-        device_name = DEVICE_PREFIX + str(self.device.device_id)
-        device_from_file = EncryptionDevice.from_json_file(device_name, DEVICES_DIR)
-        self.assertEqual(self.device, device_from_file)
-
-        for ballot in self.ballot_store.all():
-            name = BALLOT_PREFIX + ballot.object_id
-            ballot_from_file = SubmittedBallot.from_json_file(name, BALLOTS_DIR)
-            self.assertEqual(ballot, ballot_from_file)
-
-        for spoiled_ballot in self.plaintext_spoiled_ballots.values():
-            name = BALLOT_PREFIX + spoiled_ballot.object_id
-            spoiled_ballot_from_file = PlaintextTally.from_json_file(name, SPOILED_DIR)
-            self.assertEqual(spoiled_ballot, spoiled_ballot_from_file)
-
-        published_ciphertext_tally_from_file = PublishedCiphertextTally.from_json_file(
-            ENCRYPTED_TALLY_FILE_NAME, RESULTS_DIR
-        )
-        self.assertEqual(
-            self.ciphertext_tally.publish(), published_ciphertext_tally_from_file
-        )
-
-        plainttext_tally_from_file = PlaintextTally.from_json_file(
-            TALLY_FILE_NAME, RESULTS_DIR
-        )
-        self.assertEqual(self.plaintext_tally, plainttext_tally_from_file)
-
-        for guardian_record in self.guardian_records:
-            set_name = GUARDIAN_PREFIX + guardian_record.guardian_id
-            guardian_record_from_file = GuardianRecord.from_json_file(
-                set_name, GUARDIAN_DIR
-            )
-            self.assertEqual(guardian_record, guardian_record_from_file)
 
     def _assert_message(
         self, name: str, message: str, condition: Union[Callable, bool] = True

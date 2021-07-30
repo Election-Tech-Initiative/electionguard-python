@@ -9,10 +9,9 @@ from electionguard.manifest import (
     SelectionDescription,
     VoteVariationType,
 )
-from electionguard.serializable import read_json
 import electionguardtest.election_factory as ElectionFactory
 import electionguardtest.ballot_factory as BallotFactory
-
+from electionguardtest.serialize import from_raw, to_raw
 
 election_factory = ElectionFactory.ElectionFactory()
 ballot_factory = BallotFactory.BallotFactory()
@@ -34,10 +33,10 @@ class TestManifest(BaseTestCase):
     def test_simple_manifest_can_serialize(self):
         # Arrange
         subject = election_factory.get_simple_manifest_from_file()
-        intermediate = subject.to_json()
+        intermediate = to_raw(subject)
 
         # Act
-        result = Manifest.from_json(intermediate)
+        result = from_raw(Manifest, intermediate)
 
         # Assert
         self.assertIsNotNone(result.election_scope_id)
@@ -56,13 +55,13 @@ class TestManifest(BaseTestCase):
 
         # Act
         subject1 = election_factory.get_simple_manifest_from_file()
-        subject1.start_date = read_json('"2020-03-01T08:00:00-05:00"', datetime)
+        subject1.start_date = from_raw(datetime, '"2020-03-01T08:00:00-05:00"')
 
         subject2 = election_factory.get_simple_manifest_from_file()
-        subject2.start_date = read_json('"2020-03-01T13:00:00-00:00"', datetime)
+        subject2.start_date = from_raw(datetime, '"2020-03-01T13:00:00-00:00"')
 
         subject3 = election_factory.get_simple_manifest_from_file()
-        subject3.start_date = read_json('"2020-03-01T13:00:00.000-00:00"', datetime)
+        subject3.start_date = from_raw(datetime, '"2020-03-01T13:00:00.000-00:00"')
 
         subjects = [subject1, subject2, subject3]
 

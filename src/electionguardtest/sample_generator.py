@@ -15,13 +15,18 @@ from electionguard.encrypt import (
     EncryptionDevice,
     EncryptionMediator,
 )
-from electionguard.publish import publish, publish_private_data, RESULTS_DIR
+from electionguard.guardian import PrivateGuardianRecord
 from electionguard.tally import tally_ballots
 from electionguard.utils import get_optional
 
 from electionguardtest.ballot_factory import BallotFactory
 from electionguardtest.decryption_helper import DecryptionHelper
 from electionguardtest.election_factory import ElectionFactory, QUORUM
+from electionguardtest.export import (
+    export_private_data,
+    export,
+    RESULTS_DIR,
+)
 
 
 DEFAULT_NUMBER_OF_BALLOTS = 5
@@ -139,8 +144,7 @@ class ElectionSampleDataGenerator:
         )
 
         if plaintext_tally:
-            # Publish
-            publish(
+            export(
                 manifest.manifest,
                 manifest.context,
                 manifest.constants,
@@ -153,10 +157,23 @@ class ElectionSampleDataGenerator:
             )
 
             if use_private_data:
-                publish_private_data(
+                export_private_data(
                     plaintext_ballots,
                     ciphertext_ballots,
-                    [guardian.publish() for guardian in private_data.guardians],
+                    [
+                        # pylint: disable=protected-access
+                        PrivateGuardianRecord(
+                            guardian.id,
+                            guardian._election_keys,
+                            guardian._auxiliary_keys,
+                            guardian._backups_to_share,
+                            guardian._guardian_auxiliary_public_keys,
+                            guardian._guardian_election_public_keys,
+                            guardian._guardian_election_partial_key_backups,
+                            guardian._guardian_election_partial_key_verifications,
+                        )
+                        for guardian in private_data.guardians
+                    ],
                 )
 
 

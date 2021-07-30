@@ -1,5 +1,4 @@
 from datetime import datetime, timezone
-from os import mkdir, path
 from re import sub
 from typing import Callable, Optional, TypeVar
 
@@ -100,9 +99,3 @@ def space_between_capitals(base: str) -> str:
     :return: modified string
     """
     return sub(r"(\w)([A-Z])", r"\1 \2", base)
-
-
-def make_directory(directory_path: str) -> None:
-    """Create a directory only if it does not exist"""
-    if not path.exists(directory_path):
-        mkdir(directory_path)
