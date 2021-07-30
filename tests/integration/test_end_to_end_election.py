@@ -2,7 +2,9 @@
 
 from typing import Callable, Dict, List, Union
 from os import path
+from shutil import rmtree
 from random import randint
+from dataclasses import asdict
 
 from tests.base_test_case import BaseTestCase
 
@@ -35,11 +37,26 @@ from electionguard.ballot_box import BallotBox, get_ballots
 
 # Step 4 - Decrypt Tally
 from electionguard.tally import (
+    PublishedCiphertextTally,
     tally_ballots,
     CiphertextTally,
     PlaintextTally,
 )
 from electionguard.decryption_mediator import DecryptionMediator
+
+# Step 5 - Publish and Verify
+from electionguardtest.export import (
+    export,
+    BALLOT_PREFIX,
+    CONSTANTS_FILE_NAME,
+    CONTEXT_FILE_NAME,
+    DEVICE_PREFIX,
+    ENCRYPTED_TALLY_FILE_NAME,
+    GUARDIAN_PREFIX,
+    MANIFEST_FILE_NAME,
+    TALLY_FILE_NAME,
+)
+from electionguardtest.serialize import from_file_to_dataclass, construct_path
 
 from electionguardtest.ballot_factory import BallotFactory
 from electionguardtest.election_factory import ElectionFactory, NUMBER_OF_GUARDIANS
@@ -63,6 +80,8 @@ class TestEndToEndElection(BaseTestCase):
 
     NUMBER_OF_GUARDIANS = 5
     QUORUM = 3
+
+    REMOVE_OUTPUT = False
 
     # Step 0 - Configure Election
     manifest: Manifest
@@ -104,6 +123,7 @@ class TestEndToEndElection(BaseTestCase):
         self.step_2_encrypt_votes()
         self.step_3_cast_and_spoil()
         self.step_4_decrypt_tally()
+        self.step_5_publish()
 
     def step_0_configure_election(self) -> None:
         """
@@ -460,6 +480,97 @@ class TestEndToEndElection(BaseTestCase):
                             expected == decrypted_selection.tally,
                         )
 
+    def step_5_publish(self) -> None:
+        """Publish results/artifacts of the election."""
+
+        self.guardian_records = [guardian.publish() for guardian in self.guardians]
+
+        export(
+            self.manifest,
+            self.context,
+            self.constants,
+            [self.device],
+            self.ballot_store.all(),
+            self.plaintext_spoiled_ballots.values(),
+            self.ciphertext_tally.publish(),
+            self.plaintext_tally,
+            self.guardian_records,
+            RESULTS_DIR,
+        )
+        self._assert_message(
+            "Publish",
+            f"Artifacts published to: {RESULTS_DIR}",
+            path.exists(RESULTS_DIR),
+        )
+
+        self.deserialize_data()
+
+        if self.REMOVE_OUTPUT:
+            rmtree(RESULTS_DIR)
+
+    def deserialize_data(self) -> None:
+        """Ensure published data can be deserialized."""
+
+        # Deserialize
+        manifest_from_file = from_file_to_dataclass(
+            Manifest,
+            construct_path(MANIFEST_FILE_NAME, RESULTS_DIR),
+        )
+        self.assertEqualAsDicts(self.manifest, manifest_from_file)
+
+        context_from_file = from_file_to_dataclass(
+            CiphertextElectionContext, construct_path(CONTEXT_FILE_NAME, RESULTS_DIR)
+        )
+        self.assertEqualAsDicts(self.context, context_from_file)
+
+        constants_from_file = from_file_to_dataclass(
+            ElectionConstants, construct_path(CONSTANTS_FILE_NAME, RESULTS_DIR)
+        )
+        self.assertEqualAsDicts(self.constants, constants_from_file)
+
+        device_from_file = from_file_to_dataclass(
+            EncryptionDevice,
+            construct_path(DEVICE_PREFIX + str(self.device.device_id), DEVICES_DIR),
+        )
+        self.assertEqualAsDicts(self.device, device_from_file)
+
+        for ballot in self.ballot_store.all():
+            ballot_from_file = from_file_to_dataclass(
+                SubmittedBallot,
+                construct_path(BALLOT_PREFIX + ballot.object_id, BALLOTS_DIR),
+            )
+            self.assertEqualAsDicts(ballot, ballot_from_file)
+
+        for spoiled_ballot in self.plaintext_spoiled_ballots.values():
+            spoiled_ballot_from_file = from_file_to_dataclass(
+                PlaintextTally,
+                construct_path(BALLOT_PREFIX + spoiled_ballot.object_id, SPOILED_DIR),
+            )
+            self.assertEqualAsDicts(spoiled_ballot, spoiled_ballot_from_file)
+
+        published_ciphertext_tally_from_file = from_file_to_dataclass(
+            PublishedCiphertextTally,
+            construct_path(ENCRYPTED_TALLY_FILE_NAME, RESULTS_DIR),
+        )
+        self.assertEqualAsDicts(
+            self.ciphertext_tally.publish(),
+            published_ciphertext_tally_from_file,
+        )
+
+        plainttext_tally_from_file = from_file_to_dataclass(
+            PlaintextTally, construct_path(TALLY_FILE_NAME, RESULTS_DIR)
+        )
+        self.assertEqualAsDicts(self.plaintext_tally, plainttext_tally_from_file)
+
+        for guardian_record in self.guardian_records:
+            guardian_record_from_file = from_file_to_dataclass(
+                GuardianRecord,
+                construct_path(
+                    GUARDIAN_PREFIX + guardian_record.guardian_id, GUARDIAN_DIR
+                ),
+            )
+            self.assertEqualAsDicts(guardian_record, guardian_record_from_file)
+
     def _assert_message(
         self, name: str, message: str, condition: Union[Callable, bool] = True
     ) -> None:
@@ -470,6 +581,16 @@ class TestEndToEndElection(BaseTestCase):
 
         print(f"{name}: {message}: {result}")
         self.assertTrue(result)
+
+    def assertEqualAsDicts(self, first: object, second: object):
+        """
+        Specialty assertEqual to compare dataclasses as dictionaries.
+
+        This is relevant specifically to using pydantic dataclasses to import.
+        Pydantic reconstructs dataclasses with name uniqueness to add their validation.
+        This creates a naming issue where the default equality check fails.
+        """
+        self.assertEqual(asdict(first), asdict(second))
 
 
 if __name__ == "__main__":
