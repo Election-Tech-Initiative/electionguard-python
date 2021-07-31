@@ -1,6 +1,14 @@
 name: Validate Pull Request
 
-on: [pull_request, repository_dispatch]
+on:
+  push:
+    branches: [main, "integration/**", "releases/**"]
+  pull_request:
+    branches: [main, "integration/**", "releases/**"]
+  repository_dispatch:
+    types: [pull_request]
+  schedule:
+    - cron: "30 23 * * 1" # 2330 UTC Every Monday
 
 env:
   PYTHON_VERSION: 3.8
@@ -11,6 +19,14 @@ jobs:
   code_analysis: 
     name: Code Analysis
     runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ["python"]
     steps: 
       - name: Checkout Code
         uses: actions/checkout@v2
@@ -32,7 +48,7 @@ jobs:
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v1
         with:
-          languages: python
+          languages: ${{ matrix.language }}
       - name: Autobuild
         uses: github/codeql-action/autobuild@v1
       - name: Perform CodeQL Analysis

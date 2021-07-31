@@ -121,7 +121,7 @@ class DecryptionHelper:
                     context,
                     identity_auxiliary_decrypt,
                 )
-                if tally_share:
+                if tally_share is not None:
                     mediator.receive_tally_compensation_share(tally_share)
 
                 ballot_shares = get_valid_ballot_shares(
