@@ -36,7 +36,10 @@ from electionguard.utils import get_optional
 
 import electionguardtools.factories.ballot_factory as BallotFactory
 import electionguardtools.factories.election_factory as ElectionFactory
-from electionguardtools.strategies.election import election_descriptions, plaintext_voted_ballots
+from electionguardtools.strategies.election import (
+    election_descriptions,
+    plaintext_voted_ballots,
+)
 from electionguardtools.helpers.tally_ceremony_orchestrator import DecryptionHelper
 from electionguardtools.helpers.key_ceremony_orchestrator import KeyCeremonyHelper
 from electionguardtools.helpers.tally_accumulate import accumulate_plaintext_ballots
