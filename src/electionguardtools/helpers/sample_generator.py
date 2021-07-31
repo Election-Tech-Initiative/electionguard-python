@@ -19,9 +19,9 @@ from electionguard.publish import publish, publish_private_data, RESULTS_DIR
 from electionguard.tally import tally_ballots
 from electionguard.utils import get_optional
 
-from electionguardtest.ballot_factory import BallotFactory
-from electionguardtest.decryption_helper import DecryptionHelper
-from electionguardtest.election_factory import ElectionFactory, QUORUM
+from electionguardtools.factories.ballot_factory import BallotFactory
+from electionguardtools.helpers.tally_ceremony_orchestrator import DecryptionHelper
+from electionguardtools.factories.election_factory import ElectionFactory, QUORUM
 
 
 DEFAULT_NUMBER_OF_BALLOTS = 5

@@ -40,11 +40,11 @@ from electionguard.tally import tally_ballots
 from electionguard.type import BALLOT_ID, GUARDIAN_ID
 from electionguard.utils import get_optional
 
-import electionguardtest.ballot_factory as BallotFactory
-import electionguardtest.election_factory as ElectionFactory
-from electionguardtest.identity_encrypt import identity_auxiliary_decrypt
-from electionguardtest.key_ceremony_helper import KeyCeremonyHelper
-from electionguardtest.tally import accumulate_plaintext_ballots
+import electionguardtools.factories.ballot_factory as BallotFactory
+import electionguardtools.factories.election_factory as ElectionFactory
+from electionguardtools.helpers.identity_encrypt import identity_auxiliary_decrypt
+from electionguardtools.helpers.key_ceremony_orchestrator import KeyCeremonyHelper
+from electionguardtools.helpers.tally_accumulate import accumulate_plaintext_ballots
 
 election_factory = ElectionFactory.ElectionFactory()
 ballot_factory = BallotFactory.BallotFactory()

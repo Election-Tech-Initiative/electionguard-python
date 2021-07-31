@@ -33,7 +33,7 @@ from electionguard.utils import (
     match_optional,
     get_optional,
 )
-from electionguardtest.group import (
+from electionguardtools.strategies.group import (
     elements_mod_p_no_zero,
     elements_mod_p,
     elements_mod_q,

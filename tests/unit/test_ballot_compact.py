@@ -17,7 +17,7 @@ from electionguard.encrypt import encrypt_ballot
 from electionguard.group import ElementModQ, int_to_q
 from electionguard.manifest import InternalManifest
 
-from electionguardtest.election_factory import ElectionFactory
+from electionguardtools.factories.election_factory import ElectionFactory
 
 
 class TestCompactBallot(TestCase):

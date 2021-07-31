@@ -6,7 +6,7 @@ from electionguard.ballot_code import (
     get_hash_for_device,
 )
 
-from electionguardtest.election_factory import ElectionFactory
+from electionguardtools.factories.election_factory import ElectionFactory
 
 
 class TestBallotCode(TestCase):

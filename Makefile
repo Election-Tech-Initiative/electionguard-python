@@ -168,7 +168,7 @@ dependency-graph-ci:
 
 # Sample Data
 generate-sample-data:
-	poetry run python3 src/electionguardtest/sample_generator.py -n $(SAMPLE_BALLOT_COUNT) -s $(SAMPLE_BALLOT_SPOIL_RATE)
+	poetry run python3 src/electionguardtools/sample_generator.py -n $(SAMPLE_BALLOT_COUNT) -s $(SAMPLE_BALLOT_SPOIL_RATE)
 
 # Publish
 publish:

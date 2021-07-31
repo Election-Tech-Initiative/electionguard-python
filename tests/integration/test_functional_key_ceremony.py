@@ -16,7 +16,7 @@ from electionguard.key_ceremony import (
     verify_election_partial_key_challenge,
 )
 from electionguard.type import GUARDIAN_ID
-from electionguardtest.identity_encrypt import identity_auxiliary_encrypt
+from electionguardtools.helpers.identity_encrypt import identity_auxiliary_encrypt
 
 
 class TestKeyCeremony(TestCase):

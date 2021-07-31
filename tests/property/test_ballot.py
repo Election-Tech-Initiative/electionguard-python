@@ -8,7 +8,7 @@ from hypothesis import given, settings
 
 from electionguard.ballot import PlaintextBallotSelection
 
-import electionguardtest.ballot_factory as BallotFactory
+import electionguardtools.factories.ballot_factory as BallotFactory
 
 
 class TestBallot(unittest.TestCase):

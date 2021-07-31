@@ -7,7 +7,7 @@ from electionguard.decryption_mediator import DecryptionMediator
 from electionguard.key_ceremony import ElectionPublicKey
 from electionguard.tally import CiphertextTally
 
-from electionguardtest.identity_encrypt import identity_auxiliary_decrypt
+from electionguardtools.helpers.identity_encrypt import identity_auxiliary_decrypt
 
 
 class DecryptionHelper:

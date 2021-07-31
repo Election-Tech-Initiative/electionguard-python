@@ -4,7 +4,7 @@ from electionguard.guardian import Guardian
 from electionguard.key_ceremony import CeremonyDetails, ElectionPartialKeyVerification
 from electionguard.key_ceremony_mediator import GuardianPair, KeyCeremonyMediator
 
-from electionguardtest.identity_encrypt import (
+from electionguardtools.helpers.identity_encrypt import (
     identity_auxiliary_decrypt,
     identity_auxiliary_encrypt,
 )

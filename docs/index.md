@@ -12,7 +12,7 @@ This repository is a "reference implementation" of ElectionGuard written in Pyth
 | ----------------------- | ---------------------------------------- |
 | `docs`                  | Documentation for using the library      |
 | `src/electionguard`     | Source code to the ElectionGuard library |
-| `src/electionguardtest` | sample data and generators for testing   |
+| `src/electionguardtools` | sample data and generators for testing   |
 | `stubs`                 | Type annotations for external libraries  |
 | `tests`                 | Tests to exercise this codebase     |
 | `CONTRIBUTING.md`       | Guidelines for contributing              |

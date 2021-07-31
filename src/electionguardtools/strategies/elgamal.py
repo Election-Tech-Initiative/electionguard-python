@@ -1,10 +1,10 @@
 from typing import TypeVar, Callable
 
-from hypothesis.strategies import composite, SearchStrategy
+from electionguardtools.strategies import composite, SearchStrategy
 
 from electionguard.elgamal import elgamal_keypair_from_secret
 from electionguard.group import ONE_MOD_Q, TWO_MOD_Q
-from electionguardtest.group import elements_mod_q_no_zero
+from electionguardtools.strategies.group import elements_mod_q_no_zero
 
 _T = TypeVar("_T")
 _DrawType = Callable[[SearchStrategy[_T]], _T]

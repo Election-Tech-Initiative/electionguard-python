@@ -12,14 +12,14 @@ from electionguard.encrypt import encrypt_ballot
 from electionguard.group import ElementModQ
 from electionguard.manifest import Manifest
 from electionguard.nonces import Nonces
-from electionguardtest.election import (
+from electionguardtools.strategies.election import (
     election_descriptions,
     elections_and_ballots,
     ELECTIONS_AND_BALLOTS_TUPLE_TYPE,
 )
-from electionguardtest.election_factory import ElectionFactory
-from electionguardtest.group import elements_mod_q
-from electionguardtest.tally import accumulate_plaintext_ballots
+from electionguardtools.factories.election_factory import ElectionFactory
+from electionguardtools.strategies.group import elements_mod_q
+from electionguardtools.helpers.tally_accumulate import accumulate_plaintext_ballots
 
 
 SEED = ElectionFactory.get_encryption_device().get_hash()

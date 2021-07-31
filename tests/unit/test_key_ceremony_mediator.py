@@ -6,8 +6,8 @@ from electionguard.key_ceremony import (
     ElectionPartialKeyVerification,
 )
 from electionguard.key_ceremony_mediator import KeyCeremonyMediator, GuardianPair
-from electionguardtest.key_ceremony_helper import KeyCeremonyHelper
-from electionguardtest.identity_encrypt import identity_auxiliary_decrypt
+from electionguardtools.helpers.key_ceremony_orchestrator import KeyCeremonyHelper
+from electionguardtools.helpers.identity_encrypt import identity_auxiliary_decrypt
 
 NUMBER_OF_GUARDIANS = 2
 QUORUM = 2

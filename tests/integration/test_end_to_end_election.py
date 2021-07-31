@@ -58,9 +58,9 @@ from electionguard.publish import (
     TALLY_FILE_NAME,
 )
 
-from electionguardtest.ballot_factory import BallotFactory
-from electionguardtest.election_factory import ElectionFactory, NUMBER_OF_GUARDIANS
-from electionguardtest.identity_encrypt import (
+from electionguardtools.factories.ballot_factory import BallotFactory
+from electionguardtools.factories.election_factory import ElectionFactory, NUMBER_OF_GUARDIANS
+from electionguardtools.helpers.identity_encrypt import (
     identity_auxiliary_encrypt,
     identity_auxiliary_decrypt,
 )

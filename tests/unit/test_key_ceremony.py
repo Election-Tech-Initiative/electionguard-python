@@ -10,7 +10,7 @@ from electionguard.key_ceremony import (
     verify_election_partial_key_challenge,
     combine_election_public_keys,
 )
-from electionguardtest.identity_encrypt import (
+from electionguardtools.helpers.identity_encrypt import (
     identity_auxiliary_decrypt,
     identity_auxiliary_encrypt,
 )

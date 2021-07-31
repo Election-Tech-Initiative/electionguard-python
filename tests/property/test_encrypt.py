@@ -9,8 +9,8 @@ from hypothesis import HealthCheck
 from hypothesis import given, settings
 from hypothesis.strategies import integers
 
-import electionguardtest.ballot_factory as BallotFactory
-import electionguardtest.election_factory as ElectionFactory
+import electionguardtools.factories.ballot_factory as BallotFactory
+import electionguardtools.factories.election_factory as ElectionFactory
 from electionguard.chaum_pedersen import (
     ConstantChaumPedersenProof,
     DisjunctiveChaumPedersenProof,
@@ -50,8 +50,8 @@ from electionguard.manifest import (
     VoteVariationType,
 )
 
-from electionguardtest.elgamal import elgamal_keypairs
-from electionguardtest.group import elements_mod_q_no_zero
+from electionguardtools.strategies.elgamal import elgamal_keypairs
+from electionguardtools.strategies.group import elements_mod_q_no_zero
 
 election_factory = ElectionFactory.ElectionFactory()
 ballot_factory = BallotFactory.BallotFactory()

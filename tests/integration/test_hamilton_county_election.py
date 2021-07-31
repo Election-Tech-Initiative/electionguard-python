@@ -1,7 +1,7 @@
 import unittest
 
-import electionguardtest.election_factory as ElectionFactory
-import electionguardtest.ballot_factory as BallotFactory
+import electionguardtools.factories.election_factory as ElectionFactory
+import electionguardtools.factories.ballot_factory as BallotFactory
 
 election_factory = ElectionFactory.ElectionFactory()
 ballot_factory = BallotFactory.BallotFactory()

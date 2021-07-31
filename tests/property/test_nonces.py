@@ -6,7 +6,7 @@ from hypothesis.strategies import integers
 
 from electionguard.group import ElementModQ, int_to_q_unchecked
 from electionguard.nonces import Nonces
-from electionguardtest.group import elements_mod_q
+from electionguardtools.strategies.group import elements_mod_q
 
 
 class TestNonces(unittest.TestCase):

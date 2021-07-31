@@ -1,7 +1,7 @@
 from unittest import TestCase
 
 from electionguard.schema import get_election_description_schema, validate_json_schema
-import electionguardtest.election_factory as ElectionFactory
+import electionguardtools.factories.election_factory as ElectionFactory
 
 election_factory = ElectionFactory.ElectionFactory()
 

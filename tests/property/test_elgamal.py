@@ -28,7 +28,7 @@ from electionguard.logs import log_info
 from electionguard.nonces import Nonces
 from electionguard.scheduler import Scheduler
 from electionguard.utils import get_optional
-from electionguardtest.elgamal import elgamal_keypairs
+from electionguardtools.strategies.elgamal import elgamal_keypairs
 from tests.property.test_group import elements_mod_q_no_zero
 
 

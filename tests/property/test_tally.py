@@ -17,12 +17,12 @@ from electionguard.group import ElementModQ, ONE_MOD_Q
 from electionguard.tally import CiphertextTally, tally_ballots, tally_ballot
 
 
-from electionguardtest.election import (
+from electionguardtools.strategies.election import (
     elections_and_ballots,
     ELECTIONS_AND_BALLOTS_TUPLE_TYPE,
 )
-from electionguardtest.election_factory import ElectionFactory
-from electionguardtest.tally import accumulate_plaintext_ballots
+from electionguardtools.factories.election_factory import ElectionFactory
+from electionguardtools.helpers.tally_accumulate import accumulate_plaintext_ballots
 
 
 class TestTally(TestCase):
