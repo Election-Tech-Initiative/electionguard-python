@@ -22,8 +22,10 @@ from electionguard.group import (
 from electionguard.utils import get_optional
 
 
-# simpler implementation of discrete_log, only meant for comparison testing of the caching version
 def _discrete_log_uncached(e: ElementModP) -> int:
+    """
+    A simpler implementation of discrete_log, only meant for comparison testing of the caching version.
+    """
     count = 0
     g_inv = int_to_p_unchecked(pow(G, -1, P))
     while e != ONE_MOD_P:

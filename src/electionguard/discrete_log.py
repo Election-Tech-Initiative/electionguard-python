@@ -9,7 +9,8 @@ from electionguard.singleton import Singleton
 from .group import G, ElementModP, ONE_MOD_P, mult_p, int_to_p_unchecked
 
 DLOG_CACHE = Dict[ElementModP, int]
-DLOG_MAX = 1_000_000
+DLOG_MAX = 100_000_000
+"""The max number to calculate.  This value is used to stop a race condition."""
 
 
 def discrete_log(element: ElementModP, cache: DLOG_CACHE) -> Tuple[int, DLOG_CACHE]:
@@ -74,7 +75,7 @@ def compute_discrete_log_cache(
     while element != max_element:
         exponent = exponent + 1
         if exponent > DLOG_MAX:
-            raise Exception("size is larger than max.")
+            raise ValueError("size is larger than max.")
         max_element = mult_p(g, max_element)
         cache[max_element] = exponent
         print(f"max: {max_element}, exp: {exponent}")
