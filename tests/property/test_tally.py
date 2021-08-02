@@ -182,9 +182,8 @@ class TestTally(TestCase):
                 tally.contests[first_ballot.object_id].accumulate_contest([])
             )
 
-        # pylint: disable=protected-access
         # pop the cast ballot
-        tally._cast_ballot_ids.pop()
+        tally.cast_ballot_ids.pop()
 
         # reset to cast
         first_ballot.state = BallotBoxState.CAST
