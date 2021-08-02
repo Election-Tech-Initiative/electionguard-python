@@ -9,8 +9,10 @@ from hypothesis import HealthCheck
 from hypothesis import given, settings
 from hypothesis.strategies import integers
 
+
 import electionguardtest.ballot_factory as BallotFactory
 import electionguardtest.election_factory as ElectionFactory
+
 from electionguard.chaum_pedersen import (
     ConstantChaumPedersenProof,
     DisjunctiveChaumPedersenProof,
@@ -302,14 +304,14 @@ class TestEncrypt(unittest.TestCase):
     )
     def test_encrypt_contest_valid_input_succeeds(
         self,
-        contest_description: ContestDescription,
+        contest_description: Tuple[str, ContestDescription],
         keypair: ElGamalKeyPair,
         nonce_seed: ElementModQ,
         random_seed: int,
     ):
 
         # Arrange
-        _, description = contest_description
+        _id, description = contest_description
         random = Random(random_seed)
         subject = ballot_factory.get_random_contest_from(description, random)
 
@@ -346,14 +348,14 @@ class TestEncrypt(unittest.TestCase):
     )
     def test_encrypt_contest_valid_input_tampered_proof_fails(
         self,
-        contest_description: ContestDescription,
+        contest_description: Tuple[str, ContestDescription],
         keypair: ElGamalKeyPair,
         nonce_seed: ElementModQ,
         random_seed: int,
     ):
 
         # Arrange
-        _, description = contest_description
+        _id, description = contest_description
         random = Random(random_seed)
         subject = ballot_factory.get_random_contest_from(description, random)
 
@@ -410,30 +412,22 @@ class TestEncrypt(unittest.TestCase):
     )
     def test_encrypt_contest_overvote_fails(
         self,
-        contest_description: ContestDescription,
+        contest_description: Tuple[str, ContestDescription],
         keypair: ElGamalKeyPair,
         seed: ElementModQ,
         overvotes: int,
         random_seed: int,
     ):
         # Arrange
-        _, description = contest_description
+        _id, description = contest_description
         random = Random(random_seed)
         subject = ballot_factory.get_random_contest_from(description, random)
 
-        highest_sequence = max(
-            *[selection.sequence_order for selection in description.ballot_selections],
-            1,
-        )
-
-        for i in range(overvotes):
-            extra = ballot_factory.get_random_selection_from(
+        for _i in range(overvotes):
+            overvote = ballot_factory.get_random_selection_from(
                 description.ballot_selections[0], random
             )
-            extra.sequence_order = (
-                highest_sequence + i + 1
-            )  # LOOK! there is no extra.sequence_order field AFAICT
-            subject.ballot_selections.append(extra)
+            subject.ballot_selections.append(overvote)
 
         # Act
         result = encrypt_contest(
