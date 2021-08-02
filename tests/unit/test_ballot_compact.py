@@ -88,3 +88,4 @@ class TestCompactBallot(TestCase):
         # Assert
         self.assertIsNotNone(expanded_ballot)
         self.assertEqual(self.submitted_ballot, expanded_ballot)
+        self.assertEqual(self.submitted_ballot.crypto_hash, expanded_ballot.crypto_hash)
