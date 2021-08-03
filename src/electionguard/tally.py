@@ -192,9 +192,9 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
     _internal_manifest: InternalManifest
     _encryption: CiphertextElectionContext
 
-    # A local cache of ballots id's that have already been cast
-    _cast_ballot_ids: Set[BALLOT_ID] = field(init=False)
-    _spoiled_ballot_ids: Set[BALLOT_ID] = field(init=False)
+    cast_ballot_ids: Set[BALLOT_ID] = field(default_factory=lambda: set())
+    """A local cache of ballots id's that have already been cast"""
+    spoiled_ballot_ids: Set[BALLOT_ID] = field(default_factory=lambda: set())
 
     contests: Dict[CONTEST_ID, CiphertextTallyContest] = field(init=False)
     """
@@ -203,22 +203,20 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
     """
 
     def __post_init__(self) -> None:
-        object.__setattr__(self, "_cast_ballot_ids", set())
-        object.__setattr__(self, "_spoiled_ballot_ids", set())
         object.__setattr__(
             self, "contests", self._build_tally_collection(self._internal_manifest)
         )
 
     def __len__(self) -> int:
-        return len(self._cast_ballot_ids) + len(self._spoiled_ballot_ids)
+        return len(self.cast_ballot_ids) + len(self.spoiled_ballot_ids)
 
     def __contains__(self, item: object) -> bool:
         if not isinstance(item, SubmittedBallot):
             return False
 
         if (
-            item.object_id in self._cast_ballot_ids
-            or item.object_id in self._spoiled_ballot_ids
+            item.object_id in self.cast_ballot_ids
+            or item.object_id in self.spoiled_ballot_ids
         ):
             return True
 
@@ -291,7 +289,7 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
                 # get the value of the dict
                 ballot_value = ballot[1]
                 if ballot_value.state == BallotBoxState.CAST:
-                    self._cast_ballot_ids.add(ballot_value.object_id)
+                    self.cast_ballot_ids.add(ballot_value.object_id)
             return True
 
         return False
@@ -300,13 +298,13 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
         """
         Get a count of the cast ballots
         """
-        return len(self._cast_ballot_ids)
+        return len(self.cast_ballot_ids)
 
     def spoiled(self) -> int:
         """
         Get a count of the spoiled ballots
         """
-        return len(self._spoiled_ballot_ids)
+        return len(self.spoiled_ballot_ids)
 
     def publish(self) -> PublishedCiphertextTally:
         return PublishedCiphertextTally(self.object_id, self.contests)
@@ -342,7 +340,7 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
                 return False
 
             self.contests[contest.object_id] = use_contest
-        self._cast_ballot_ids.add(ballot.object_id)
+        self.cast_ballot_ids.add(ballot.object_id)
         return True
 
     def _add_spoiled(self, ballot: SubmittedBallot) -> bool:
@@ -350,7 +348,7 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
         Add a spoiled ballot
         """
 
-        self._spoiled_ballot_ids.add(ballot.object_id)
+        self.spoiled_ballot_ids.add(ballot.object_id)
         return True
 
     @staticmethod
