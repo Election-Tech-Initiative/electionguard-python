@@ -75,7 +75,7 @@ lint:
 	@echo 2.Black Formatting
 	poetry run black --check .
 	@echo 3.Mypy Static Typing
-	poetry run mypy --config-file "pyproject.toml" src/electionguard stubs
+	poetry run mypy src/electionguard stubs
 	@echo 4.Package Metadata
 	poetry build
 	poetry run twine check dist/*

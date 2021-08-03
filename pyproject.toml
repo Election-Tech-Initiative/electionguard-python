@@ -49,7 +49,7 @@ docutils = "*"
 hypothesis = ">=5.15.1"
 jeepney = "*"
 mkdocs = "^1.2.1"
-mypy = "^0.782"
+mypy = "^0.910"
 pydeps = "*"
 pylint = "*"
 pytest = "*"
@@ -60,11 +60,11 @@ typish = '*'
 [tool.black]
 target-version = ['py39']
 
-[tool.pylint.'FORMAT']
+[tool.pylint.format]
 max-line-length = 120
 
 # FIXME: Pylint should not require this many exceptions
-[tool.pylint.'MESSAGES CONTROL']
+[tool.pylint.messages_control]
 disable = '''
   duplicate-code,
   fixme,
@@ -94,8 +94,7 @@ directory = "coverage_html_report"
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
-# Not officially supported
-[mypy]
+[tool.mypy]
 python_version = 3.9
 warn_return_any = true
 warn_unused_configs = true
