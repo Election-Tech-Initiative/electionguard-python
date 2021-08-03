@@ -3,6 +3,7 @@ from typing import Dict, List
 
 
 from .ballot import (
+    CiphertextBallot,
     SubmittedBallot,
     ExtendedData,
     PlaintextBallot,
@@ -85,9 +86,14 @@ def expand_compact_submitted_ballot(
     plaintext_ballot = expand_compact_plaintext_ballot(
         compact_ballot.compact_plaintext_ballot, internal_manifest
     )
+    nonce_seed = CiphertextBallot.nonce_seed(
+        internal_manifest.manifest_hash,
+        compact_ballot.compact_plaintext_ballot.object_id,
+        compact_ballot.ballot_nonce,
+    )
     contests = get_optional(
         encrypt_ballot_contests(
-            plaintext_ballot, internal_manifest, context, compact_ballot.ballot_nonce
+            plaintext_ballot, internal_manifest, context, nonce_seed
         )
     )
     crypto_hash = create_ballot_hash(
