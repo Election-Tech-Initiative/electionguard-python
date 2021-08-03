@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="None">
+  <meta name="author" content="Microsoft">
+  <link rel="canonical" href="https://electionguard-python.readthedocs.io/">
+  <link rel="shortcut icon" href="img/favicon.ico">
+  <title>ElectionGuard Python</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
+
+  <link rel="stylesheet" href="css/theme.css" />
+  <link rel="stylesheet" href="css/theme_extra.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "Home";
+    var mkdocs_page_input_path = "index.md";
+    var mkdocs_page_url = "/";
+  </script>
+  
+  <script src="js/jquery-2.1.1.min.js" defer></script>
+  <script src="js/modernizr-2.8.3.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+        <a href="." class="icon icon-home"> ElectionGuard Python</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="./search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+                <ul class="current">
+                    <li class="toctree-l1 current"><a class="reference internal current" href=".">Home</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#in-this-repository">📁 In This Repository</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#what-is-electionguard">❓ What Is ElectionGuard?</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#how-can-i-use-electionguard">🦸 How Can I use ElectionGuard?</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#requirements">💻 Requirements</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#quick-start">🚀 Quick Start</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#documentation">📄 Documentation</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#questions">❓Questions</a>
+    </li>
+    </ul>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="Design_and_Architecture/">Design and Architecture</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="Build_and_Run/">Build and Run</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="Project_Workflow/">Project Workflow</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="Election_Manifest/">Election Manifest</a>
+                    </li>
+                </ul>
+                <p class="caption"><span class="caption-text">Steps</span></p>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="0_Configure_Election/">0. Configure Election</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="1_Key_Ceremony/">1. Key Ceremony</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="2_Encrypt_Ballots/">2. Encrypt Ballots</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="3_Cast_and_Spoil/">3. Cast and Spoil</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="4_Decrypt_Tally/">4. Decrypt Tally</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="5_Publish_and_Verify/">5. Publish and Verify</a>
+                    </li>
+                </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href=".">ElectionGuard Python</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".">Docs</a> &raquo;</li>
+    
+      
+    
+    <li>Home</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        <a href="https://github.com/microsoft/electionguard-python/edit/master/docs/index.md"
+          class="icon icon-github"> Edit on GitHub</a>
+      
+    </li>
+  </ul>
+  
+  <hr/>
+</div>
+
+          <div role="main">
+            <div class="section">
+              
+                <p><img alt="Microsoft Defending Democracy Program: ElectionGuard Python" src="https://github.com/microsoft/electionguard-python/blob/main/images/electionguard-banner.svg?raw=true" /></p>
+<h1 id="electionguard-python">🗳 ElectionGuard Python</h1>
+<p><img alt="Github Package Action" src="https://github.com/microsoft/electionguard-python/workflows/Release%20Build/badge.svg" /> <a href="https://pypi.org/project/electionguard/"><img alt="" src="https://img.shields.io/pypi/v/electionguard" /></a> <a href="https://pypi.org/project/electionguard/"><img alt="" src="https://img.shields.io/pypi/dm/electionguard" /></a> <a href="https://lgtm.com/projects/g/microsoft/electionguard-python/context:python"><img alt="Language grade: Python" src="https://img.shields.io/lgtm/grade/python/g/microsoft/electionguard-python.svg?logo=lgtm&amp;logoWidth=18" /></a> <a href="https://lgtm.com/projects/g/microsoft/electionguard-python/alerts/"><img alt="Total alerts" src="https://img.shields.io/lgtm/alerts/g/microsoft/electionguard-python.svg?logo=lgtm&amp;logoWidth=18" /></a> <a href="https://electionguard-python.readthedocs.io"><img alt="Documentation Status" src="https://readthedocs.org/projects/electionguard-python/badge/?version=latest" /></a> <a href="https://github.com/microsoft/electionguard-python/blob/main/LICENSE"><img alt="license" src="https://img.shields.io/github/license/microsoft/electionguard" /></a></p>
+<p>This repository is a "reference implementation" of ElectionGuard written in Python 3. This implementation can be used to conduct End-to-End Verifiable Elections as well as privacy-enhanced risk-limiting audits.  Components of this library can also be used to construct "Verifiers" to validate the results of an ElectionGuard election.</p>
+<h2 id="in-this-repository">📁 In This Repository</h2>
+<table>
+<thead>
+<tr>
+<th>File/folder</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>docs</code></td>
+<td>Documentation for using the library</td>
+</tr>
+<tr>
+<td><code>src/electionguard</code></td>
+<td>Source code to the ElectionGuard library</td>
+</tr>
+<tr>
+<td><code>src/electionguardtest</code></td>
+<td>sample data and generators for testing</td>
+</tr>
+<tr>
+<td><code>stubs</code></td>
+<td>Type annotations for external libraries</td>
+</tr>
+<tr>
+<td><code>tests</code></td>
+<td>Tests to exercise this codebase</td>
+</tr>
+<tr>
+<td><code>CONTRIBUTING.md</code></td>
+<td>Guidelines for contributing</td>
+</tr>
+<tr>
+<td><code>README.md</code></td>
+<td>This README file</td>
+</tr>
+<tr>
+<td><code>LICENSE</code></td>
+<td>The license for ElectionGuard-Python.</td>
+</tr>
+</tbody>
+</table>
+<p><br/></p>
+<h2 id="what-is-electionguard">❓ What Is ElectionGuard?</h2>
+<p>ElectionGuard is an open source software development kit (SDK) that makes voting more secure, transparent and accessible. The ElectionGuard SDK leverages homomorphic encryption to ensure that votes recorded by electronic systems of any type remain encrypted, secure, and secret. Meanwhile, ElectionGuard also allows verifiable and accurate tallying of ballots by any 3rd party organization without compromising secrecy or security.</p>
+<p>Learn More in the <a href="https://github.com/microsoft/electionguard">ElectionGuard Repository</a></p>
+<h2 id="how-can-i-use-electionguard">🦸 How Can I use ElectionGuard?</h2>
+<p>ElectionGuard supports a variety of use cases.  The Primary use case is to generate verifiable end-to-end (E2E) encrypted elections.  The Electionguard process can also be used for other use cases such as privacy enhanced risk-limiting audits (RLAs).</p>
+<h2 id="requirements">💻 Requirements</h2>
+<ul>
+<li><a href="https://www.python.org/downloads/">Python 3.8</a> is <ins><strong>required</strong></ins> to develop this SDK. If developer uses multiple versions of python, <a href="https://github.com/pyenv/pyenv">pyenv</a> is suggested to assist version management.</li>
+<li><a href="https://www.gnu.org/software/make/manual/make.html">GNU Make</a> is used to simplify the commands and GitHub Actions. This approach is recommended to simplify the command line experience. This is built in for MacOS and Linux. For Windows, setup is simpler with <a href="https://chocolatey.org/install">Chocolatey</a> and installing the provided <a href="https://chocolatey.org/packages/make">make package</a>. The other Windows option is <a href="http://gnuwin32.sourceforge.net/packages/make.htm">manually installing make</a>.</li>
+<li><a href="https://gmpy2.readthedocs.io/en/latest/">Gmpy2</a> is used for <a href="https://en.wikipedia.org/wiki/Arbitrary-precision_arithmetic">Arbitrary-precision arithmetic</a> which
+has its own <a href="https://gmpy2.readthedocs.io/en/latest/intro.html#installation">installation requirements (native C libraries)</a> on Linux and MacOS.  <strong>⚠️ Note:</strong> <em>This is not required for Windows since the gmpy2 precompiled libraries are provided.</em></li>
+<li><a href="https://github.com/pypa/pipenv">pipenv</a> is used to configure the python environment. Installation instructions can be found <a href="https://github.com/pypa/pipenv#installation">here</a>.</li>
+</ul>
+<h2 id="quick-start">🚀 Quick Start</h2>
+<p>Using <a href="https://www.gnu.org/software/make/manual/make.html"><strong>make</strong></a>, the entire <a href="https://github.com/microsoft/electionguard-python/blob/main/.github/workflows/pull_request.yml">GitHub Action workflow</a> can be run with one command:</p>
+<pre><code>make
+</code></pre>
+<p>The unit and integration tests can also be run with make:</p>
+<pre><code>make test
+</code></pre>
+<p>A complete end-to-end election example can be run independently by executing:</p>
+<pre><code>make test-example
+</code></pre>
+<p>For more detailed build and run options, see the <a href="Build_and_Run/">documentation</a>.</p>
+<h2 id="documentation">📄 Documentation</h2>
+<p>Sections:</p>
+<ul>
+<li><a href="Design_and_Architecture/">Design and Architecture</a></li>
+<li><a href="Build_and_Run/">Build and Run</a></li>
+<li><a href="Project_Workflow/">Project Workflow</a></li>
+<li><a href="Election_Manifest/">Election Manifest</a></li>
+</ul>
+<p>Step-by-Step Process:</p>
+<ol>
+<li><a href="0_Configure_Election/">Configure Election</a></li>
+<li><a href="1_Key_Ceremony/">Key Ceremony</a></li>
+<li><a href="2_Encrypt_Ballots/">Encrypt Ballots</a></li>
+<li><a href="3_Cast_and_Spoil/">Cast and Spoil</a></li>
+<li><a href="4_Decrypt_Tally/">Decrypt Tally</a></li>
+<li><a href="5_Publish_and_Verify/">Publish and Verify</a></li>
+</ol>
+<h2 id="questions">❓Questions</h2>
+<p>Electionguard would love for you to ask questions out in the open using GitHub Issues. If you really want to email the ElectionGuard team, reach out at electionguard@microsoft.com.</p>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="Design_and_Architecture/" class="btn btn-neutral float-right" title="Design and Architecture">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+      <p>© Microsoft 2020</p>
+    
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/microsoft/electionguard-python/" class="fa fa-github" style="color: #fcfcfc"> GitHub</a>
+        </span>
+    
+    
+    
+      <span><a href="Design_and_Architecture/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script>var base_url = '.';</script>
+    <script src="js/theme_extra.js" defer></script>
+    <script src="js/theme.js" defer></script>
+      <script src="search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>
+
+<!--
+MkDocs version : 1.2.2
+Build Date UTC : 2021-08-03 19:12:03.352647+00:00
+-->

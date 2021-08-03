@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <meta name="author" content="Microsoft">
+  <link rel="canonical" href="https://electionguard-python.readthedocs.io/2_Encrypt_Ballots/">
+  <link rel="shortcut icon" href="../img/favicon.ico">
+  <title>2. Encrypt Ballots - ElectionGuard Python</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
+
+  <link rel="stylesheet" href="../css/theme.css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "2. Encrypt Ballots";
+    var mkdocs_page_input_path = "2_Encrypt_Ballots.md";
+    var mkdocs_page_url = "/2_Encrypt_Ballots/";
+  </script>
+  
+  <script src="../js/jquery-2.1.1.min.js" defer></script>
+  <script src="../js/modernizr-2.8.3.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+        <a href=".." class="icon icon-home"> ElectionGuard Python</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../Design_and_Architecture/">Design and Architecture</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../Build_and_Run/">Build and Run</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../Project_Workflow/">Project Workflow</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../Election_Manifest/">Election Manifest</a>
+                    </li>
+                </ul>
+                <p class="caption"><span class="caption-text">Steps</span></p>
+                <ul class="current">
+                    <li class="toctree-l1"><a class="reference internal" href="../0_Configure_Election/">0. Configure Election</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../1_Key_Ceremony/">1. Key Ceremony</a>
+                    </li>
+                    <li class="toctree-l1 current"><a class="reference internal current" href="./">2. Encrypt Ballots</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#glossary">Glossary</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#process">Process</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#usage-example">Usage Example</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#implementation-considerations">Implementation Considerations</a>
+    </li>
+    </ul>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../3_Cast_and_Spoil/">3. Cast and Spoil</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../4_Decrypt_Tally/">4. Decrypt Tally</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../5_Publish_and_Verify/">5. Publish and Verify</a>
+                    </li>
+                </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="..">ElectionGuard Python</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="..">Docs</a> &raquo;</li>
+    
+      
+        
+          <li>Steps &raquo;</li>
+        
+      
+    
+    <li>2. Encrypt Ballots</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        <a href="https://github.com/microsoft/electionguard-python/edit/master/docs/2_Encrypt_Ballots.md"
+          class="icon icon-github"> Edit on GitHub</a>
+      
+    </li>
+  </ul>
+  
+  <hr/>
+</div>
+
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="encrypt-ballots">Encrypt Ballots</h1>
+<p>The primary function of ElectionGuard is to encrypt ballots.  Ballots are encrypted on a uniquely identified device within the context of a specific election.  The election public key is used to encrypt ballots.  A <em>master nonce</em> value is generated for each ballot and the nonce is used to derive other nonce values for encrypting the selection on each ballot.</p>
+<h2 id="glossary">Glossary</h2>
+<ul>
+<li><strong>Plaintext Ballot</strong> - The plaintext representation of a voter's selections</li>
+<li><strong>Ciphertext Ballot</strong> - The encrypted representation of a voter's selections</li>
+<li><strong>Master Nonce</strong> - A random number used to derive encryptions in a <code>CiphertextBallot</code></li>
+<li><strong>Verification Code or Ballot Code</strong> - A unique hash value generated by an <em>Encryption Device</em> to anonymously identify a ballot</li>
+<li><strong>Encryption Device</strong> The device that is doing the encryption</li>
+</ul>
+<h2 id="process">Process</h2>
+<ol>
+<li>Verify the ballot is well-formed against the <em>Election Metadata</em> (<code>InternalManifest</code>)</li>
+<li>Generate a random master nonce value to use as a secret when encrypting the ballot</li>
+<li>Using the metadata of the election and the master nonce, encrypt each selection on the ballot</li>
+<li>For each selection on the ballot, generate a disjunctive Non-Interactive Zero-Knowledge Proof that the encryption is either an encryption of zero or one</li>
+<li>For each contest on the ballot, generate a Non-Interactive Zero-Knowledge Proof that the sum of all encrypted ballots is equal to the selection limit on the contest</li>
+<li>Generate a verification code for the ballot</li>
+</ol>
+<h2 id="usage-example">Usage Example</h2>
+<pre><code class="language-python">
+internal_manifest: InternalManifest
+context: CiphertextElectionContext
+ballot: PlaintextBallot
+
+# Configure an encryption device
+device = EncryptionDevice(generate_device_uuid(), &quot;Session&quot;, 12345, &quot;polling-place-one&quot;)
+encrypter = EncryptionMediator(internal_manifest, context, device)
+
+# Encrypt the ballot
+encrypted_ballot: CiphertextBallot = encrypter.encrypt(ballot)
+
+</code></pre>
+<h2 id="implementation-considerations">Implementation Considerations</h2>
+<p>When encrypting a ballot, a new ballot object is created that is associated with the plaintext ballot.  The encrypted representation includes all of the encryptions, hash values, nonce values, and proofs generated at each step.  For the primary end-to-end election workflow, consumers of this API should separate the <code>nonce</code> values from the <code>CiphertextBallot</code> prior to publishing the encrypted ballot representation.  </p>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../3_Cast_and_Spoil/" class="btn btn-neutral float-right" title="3. Cast and Spoil">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href="../1_Key_Ceremony/" class="btn btn-neutral" title="1. Key Ceremony"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+      <p>© Microsoft 2020</p>
+    
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/microsoft/electionguard-python/" class="fa fa-github" style="color: #fcfcfc"> GitHub</a>
+        </span>
+    
+    
+      <span><a href="../1_Key_Ceremony/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../3_Cast_and_Spoil/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme_extra.js" defer></script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>

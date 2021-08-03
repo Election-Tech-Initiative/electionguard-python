@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <meta name="author" content="Microsoft">
+  <link rel="canonical" href="https://electionguard-python.readthedocs.io/4_Decrypt_Tally/">
+  <link rel="shortcut icon" href="../img/favicon.ico">
+  <title>4. Decrypt Tally - ElectionGuard Python</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
+
+  <link rel="stylesheet" href="../css/theme.css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "4. Decrypt Tally";
+    var mkdocs_page_input_path = "4_Decrypt_Tally.md";
+    var mkdocs_page_url = "/4_Decrypt_Tally/";
+  </script>
+  
+  <script src="../js/jquery-2.1.1.min.js" defer></script>
+  <script src="../js/modernizr-2.8.3.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+        <a href=".." class="icon icon-home"> ElectionGuard Python</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../Design_and_Architecture/">Design and Architecture</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../Build_and_Run/">Build and Run</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../Project_Workflow/">Project Workflow</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../Election_Manifest/">Election Manifest</a>
+                    </li>
+                </ul>
+                <p class="caption"><span class="caption-text">Steps</span></p>
+                <ul class="current">
+                    <li class="toctree-l1"><a class="reference internal" href="../0_Configure_Election/">0. Configure Election</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../1_Key_Ceremony/">1. Key Ceremony</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../2_Encrypt_Ballots/">2. Encrypt Ballots</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../3_Cast_and_Spoil/">3. Cast and Spoil</a>
+                    </li>
+                    <li class="toctree-l1 current"><a class="reference internal current" href="./">4. Decrypt Tally</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#glossary">Glossary</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#process">Process</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#decryption-when-all-guardians-are-present">Decryption when All Guardians are Present</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#decryption-when-some-guardians-are-missing">Decryption when some Guardians are Missing</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#challengedspoiled-ballots">Challenged/Spoiled Ballots</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#usage-example">Usage Example</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#implementation-considerations">Implementation Considerations</a>
+    </li>
+    </ul>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../5_Publish_and_Verify/">5. Publish and Verify</a>
+                    </li>
+                </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="..">ElectionGuard Python</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="..">Docs</a> &raquo;</li>
+    
+      
+        
+          <li>Steps &raquo;</li>
+        
+      
+    
+    <li>4. Decrypt Tally</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        <a href="https://github.com/microsoft/electionguard-python/edit/master/docs/4_Decrypt_Tally.md"
+          class="icon icon-github"> Edit on GitHub</a>
+      
+    </li>
+  </ul>
+  
+  <hr/>
+</div>
+
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="decryption">Decryption</h1>
+<p>At the conclusion of voting, all of the cast ballots are published in their encrypted form in the election record together with the proofs that the ballots are well-formed.  Additionally, all of the encryptions of each option are homomorphically-combined to form an encryption of the total number of times that each option was selected.  The homomorphically-combined encryptions are decrypted to generate the election tally.  Individual cast ballots are not decrypted.  Individual spoiled ballots are decrypted and the plaintext values are published along with the encrypted representations and the proofs.</p>
+<p>In order to decrypt the homomorphically-combined encryption of each selection, each <code>Guardian</code> participating in the decryption must compute a specific <code>Decryption Share</code> of the decryption.</p>
+<p>It is preferable that all guardians be present for decryption, however in the event that guardians cannot be present, Electionguard includes a mechanism to decrypt with the <code>Quorum of Guardians</code>.</p>
+<p>During the <a href="../1_Key_Ceremony/">Key Ceremony</a> a <code>Quorum of Guardians</code> is defined that represents the minimum number of guardians that must be present to decrypt the election.  If the decryption is to proceed with a <code>Quorum of Guardians</code> greater than or equal to the <code>Quorum</code> count, but less than the total number of guardians, then a subset of the <code>Available Guardians</code> must also each construct a <code>Partial Decryption Share</code> for the missing <code>Missing Guardian</code>, in addition to providing their own <code>Decryption Share</code>.</p>
+<p>It is important to note that mathematically not every present guardian has to compute a <code>Partial Decryption Share</code> for every <code>Missing Guardian</code>.  Only the <code>Quorum Count</code> of guardians are necessary to construct <code>Partial Decryption Shares</code> in order to compensate for any Missing Guardian.  </p>
+<p>In this implementation, we take an approach that utilizes all Available Guardians to compensate for Missing Guardians.  When it is determined that guardians are missing, all available guardians each calculate a <code>Partial Decryption Share</code> for the missing guardian and publish the result.  A <code>Quorum of Guardians</code> count of available <code>Partial Decryption Shares</code> is randomly selected from the pool of available partial decryption shares for a given<code>Missing Guardian</code>.  If more than one guardian is missing, we randomly choose to ignore the <code>Partial Decryption Share</code> provided by one of the Available Guardians whose partial decryption share was chosen for the previous Missing Guardian, and randomly select again from the pool of available Partial Decryption Shares.  This ensures that all available guardians have the opportunity to participate in compensating for Missing Guardians.</p>
+<h2 id="glossary">Glossary</h2>
+<ul>
+<li><strong>Guardian</strong> A guardian of the election who holds the ability to partially decrypt the election results</li>
+<li><strong>Decryption Share</strong> A guardian's partial share of a decryption</li>
+<li><strong>Encrypted Tally</strong> The homomorphically-combined and encrypted representation of all selections made for each option on every contest in the election.  See <a href="">Ballot Box</a> for more information.</li>
+<li><strong>Key Ceremony</strong> The process conducted at the beginning of the election to create the joint encryption context for encrypting ballots during the election.  See <a href="../1_Key_Ceremony/">Key Ceremony</a> for more information.</li>
+<li><strong>Quorum of Guardians</strong> The minimum count (<em>threshold</em>) of guardians that must be present in order to successfully decrypt the election results.</li>
+<li><strong>Available Guardian</strong> A guardian that has announced as <em>present</em> for the decryption phase</li>
+<li><strong>Missing Guardian</strong> A guardian who was configured during the <code>Key Ceremony</code> but who is not present for the decryption of the election results.</li>
+<li><strong>Compensated Decryption Share</strong> - a partial decryption share value computed by an available guardian to compensate for a missing guardian so that the missing guardian's share can be generated and the election results can be successfully decrypted.</li>
+<li><strong>Decryption Mediator</strong> - A component or actor responsible for composing each guardian's partial decryptions or compensated decryptions into the plaintext tally</li>
+</ul>
+<h2 id="process">Process</h2>
+<ol>
+<li>Each <code>Guardian</code> that will participate in the decryption process computes a <code>Decryption Share</code> of the <em>Ciphertext Tally</em>.</li>
+<li>Each <code>Guardian</code> also computes a Chaum-Pedersen proof of correctness of their <code>Decryption Share</code>.</li>
+</ol>
+<h3 id="decryption-when-all-guardians-are-present">Decryption when All Guardians are Present</h3>
+<ol>
+<li>If all guardians are present, the Decryption Shares are combined to generate a tally for each option on every contest</li>
+</ol>
+<h3 id="decryption-when-some-guardians-are-missing">Decryption when some Guardians are Missing</h3>
+<p><em>warning: The functionality described in this segment is still a 🚧 Work In Progress</em></p>
+<p>When one or more of the Guardians are missing, any subset of the Guardians that are present can use the information they have about the other guardian's private keys to reconstruct the partial decryption shares for the missing guardians.</p>
+<ol>
+<li>Each <code>Available Guardian</code> computes a <code>Partial Decryption Share</code> for each <code>Missing Guardian</code></li>
+<li>at least a <code>Quorum</code> count of <code>Partial Decryption Shares</code> are chosen from the values generated in the previous step for a specific <code>Missing guardian</code></li>
+<li>Each chosen <code>Available Guardian</code> uses its <code>Partial Decryption Share</code> to compute a share of the missing partial decryption.</li>
+<li>the process is re-run until all Missing Guardians are compensated for.</li>
+<li>The <code>Compensated Decryption Shares</code> are combined to <em>reconstruct</em> the missing <code>TallyDecryptionShare</code></li>
+<li>finally, all of the <code>DecryptionShares</code> are combined to generate a tally for each option on every contest</li>
+</ol>
+<h2 id="challengedspoiled-ballots">Challenged/Spoiled Ballots</h2>
+<p>If a ballot is not to be included in the vote count, it is considered challenged, or <a href="https://en.wikipedia.org/wiki/Spoilt_vote">Spoiled</a>.  Every ballot spoiled in an election is individually verifiably decrypted in exactly the same way that the aggregate ballot of tallies is decrypted.  Since spoiled ballots are not included as part of the vote count, they are included in the Election Record with their plaintext values included along with the encrypted representations.</p>
+<p>Spoiling ballots is an important part of the ElectionGuard process as it allows voters to explicitly generate challenge ballots that are verifiable as part of the Election Record.</p>
+<h2 id="usage-example">Usage Example</h2>
+<p>Here is a simple example of how to execute the decryption process.</p>
+<pre><code class="language-python">
+internal_manifest: InternalManifest       # Load the election manifest
+context: CiphertextElectionContext          # Load the election encryption context
+encrypted_Tally: CiphertextTally            # Provide a tally from the previous step
+
+available_guardians: List[Guardian]         # Provite the list of guardians who will participate
+missing_guardians: List[str]                # Provide a list of guardians who will not participate
+
+mediator = DecryptionMediator(internal_manifest, context, encrypted_tally)
+
+# Loop through the available guardians and annouce their presence
+for guardian in available_guardians:
+    if (mediator.announce(guardian) is None):
+        break
+
+# loop through the missing guardians and compensate for them
+for guardian in missing_guardians:
+    if (mediator.compensate(guardian) is None):
+        break
+
+# Generate the plaintext tally
+plaintext_tally = mediator.get_plaintext_tally()
+
+# The plaintext tally automatically includes the election tally and the spoiled ballots
+contest_tallies = plaintext_tally.contests
+spoiled_ballots = plaintext_tally.spoiled_ballots
+
+</code></pre>
+<h2 id="implementation-considerations">Implementation Considerations</h2>
+<p>In certain use cases where the <code>Key Ceremony</code> is not used, ballots and tallies can be decrypted directly using the secret key of the election.  See the <a href="https://github.com/microsoft/electionguard-python/tree/main/tests/test_tally.md">Tally Tests</a> for an example of how to decrypt the tally using the secret key.</p>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../5_Publish_and_Verify/" class="btn btn-neutral float-right" title="5. Publish and Verify">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href="../3_Cast_and_Spoil/" class="btn btn-neutral" title="3. Cast and Spoil"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+      <p>© Microsoft 2020</p>
+    
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/microsoft/electionguard-python/" class="fa fa-github" style="color: #fcfcfc"> GitHub</a>
+        </span>
+    
+    
+      <span><a href="../3_Cast_and_Spoil/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../5_Publish_and_Verify/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme_extra.js" defer></script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>

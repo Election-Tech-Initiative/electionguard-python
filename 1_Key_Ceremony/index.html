@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <meta name="author" content="Microsoft">
+  <link rel="canonical" href="https://electionguard-python.readthedocs.io/1_Key_Ceremony/">
+  <link rel="shortcut icon" href="../img/favicon.ico">
+  <title>1. Key Ceremony - ElectionGuard Python</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
+
+  <link rel="stylesheet" href="../css/theme.css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "1. Key Ceremony";
+    var mkdocs_page_input_path = "1_Key_Ceremony.md";
+    var mkdocs_page_url = "/1_Key_Ceremony/";
+  </script>
+  
+  <script src="../js/jquery-2.1.1.min.js" defer></script>
+  <script src="../js/modernizr-2.8.3.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+        <a href=".." class="icon icon-home"> ElectionGuard Python</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../Design_and_Architecture/">Design and Architecture</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../Build_and_Run/">Build and Run</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../Project_Workflow/">Project Workflow</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../Election_Manifest/">Election Manifest</a>
+                    </li>
+                </ul>
+                <p class="caption"><span class="caption-text">Steps</span></p>
+                <ul class="current">
+                    <li class="toctree-l1"><a class="reference internal" href="../0_Configure_Election/">0. Configure Election</a>
+                    </li>
+                    <li class="toctree-l1 current"><a class="reference internal current" href="./">1. Key Ceremony</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#summary">Summary</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#attendance">Attendance</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#key-sharing">Key Sharing</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#joint-key">Joint Key</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#glossary">Glossary</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#process">Process</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#files">Files</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#usage-example">Usage Example</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#implementation-considerations">Implementation Considerations</a>
+    </li>
+    </ul>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../2_Encrypt_Ballots/">2. Encrypt Ballots</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../3_Cast_and_Spoil/">3. Cast and Spoil</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../4_Decrypt_Tally/">4. Decrypt Tally</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../5_Publish_and_Verify/">5. Publish and Verify</a>
+                    </li>
+                </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="..">ElectionGuard Python</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="..">Docs</a> &raquo;</li>
+    
+      
+        
+          <li>Steps &raquo;</li>
+        
+      
+    
+    <li>1. Key Ceremony</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        <a href="https://github.com/microsoft/electionguard-python/edit/master/docs/1_Key_Ceremony.md"
+          class="icon icon-github"> Edit on GitHub</a>
+      
+    </li>
+  </ul>
+  
+  <hr/>
+</div>
+
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="key-ceremony">Key Ceremony</h1>
+<p>The ElectionGuard Key Ceremony is the process used by Election Officials to share encryption keys for an election.  Before an election, a fixed number of Guardians are selection to hold the private keys needed to decrypt the election results.  A Quorum count of Guardians can also be specified to compensate for guardians who may be missing at the time of Decryption.  For instance, 5 Guardians may be selected to hold the keys, but only 3 of them are required to decrypt the election results.</p>
+<p>Guardians are typically Election Officials, Trustees Canvass Board Members, Government Officials or other trusted authorities who are responsible and accountable for conducting the election.</p>
+<h2 id="summary">Summary</h2>
+<p>The Key Ceremony is broken into several high-level steps.  Each Guardian must <em>announce</em> their <em>attendance</em> in the key ceremony, generate their own public-private key pairs, and then <em>share</em> those key pairs with the Quorum.  Then the data that is shared is mathematically verified using Non-Interactive Zero Knowledge Proofs, and finally a <em>joint public key</em> is created to encrypt ballots in the election.</p>
+<h3 id="attendance">Attendance</h3>
+<p>Guardians exchange all public keys and ensure each fellow guardian has received an election and auxiliary public key ensuring at all guardians are in attendance.</p>
+<h3 id="key-sharing">Key Sharing</h3>
+<p>Guardians generate a partial key backup for each guardian and share with that designated key with that guardian. Then each designated guardian sends a verification back to the sender. The sender then publishes to the group when all verifications are received. </p>
+<h3 id="joint-key">Joint Key</h3>
+<p>The final step is to publish the joint election key after all keys and backups have been shared. </p>
+<h2 id="glossary">Glossary</h2>
+<ul>
+<li><strong>Guardian</strong> A guardian of the election who holds the ability to partially decrypt the election results</li>
+<li><strong>Key Ceremony Mediator</strong> A mediator to mediate communication (if needed) of information such as keys between the guardians</li>
+<li><strong>Election Key Pair:</strong> Pair of keys (public &amp; secret) used to encrypt/decrypt election</li>
+<li><strong>Auxiliary Key Pair:</strong> Pair of keys (public &amp; secret) used to encrypt/decrypt information sent between guardians</li>
+<li><strong>Election Partial Key Backup:</strong> A point on a secret polynomial and commitments to verify this point for a designated guardian.</li>
+<li><strong>Election Polynomial:</strong> The election polynomial is the mathematical expression that each Guardian defines to solve for his or her private key. A different point associated with the polynomial is shared with each of the other guardians so that the guardians can come together to derive the polynomial function and solve for the private key.</li>
+<li><strong>Joint Key:</strong> Combined public key from election public keys of each guardian</li>
+<li><strong>Quorum:</strong> Quantity of guardians (k) that is required to decrypt the election and is less than the total number of guardians available (n)</li>
+</ul>
+<h2 id="process">Process</h2>
+<p>This is a detailed description of the entire Key Ceremony Process</p>
+<ol>
+<li>The ceremony details are decided upon. These include a <code>number_of_guardians</code> and <code>quorum</code> of guardians required for decryption.</li>
+<li>Each guardian creates a unique <code>id</code> and <code>sequence_order</code>.</li>
+<li>Each guardian must generate their <code>auxiliary key pair</code>.*</li>
+<li>Each guardian must give the other guardians their <code>auxiliary public key</code> directly or through a mediator.</li>
+<li>Each guardian must check if all <code>auxiliary public keys</code> are received.</li>
+<li>Each guardian must generate their <code>election key pair</code> <em>(ElGamal key pair)</em>. This will generate a corresponding Schnorr <code>proof</code> and <code>polynomial</code> used for generating <code>election partial key backups</code> for sharing.</li>
+<li>Each guardian must give the other guardians their <code>election public key</code> directly or through a mediator.</li>
+<li>Each guardian must check if all <code>election public keys</code> are received.</li>
+<li>Each guardian must generate <code>election partial key backup</code> for each other guardian. The guardian will use their <code>polynomial</code> and the designated guardian's <code>sequence_order</code> to create the value. The backup will be encrypted with the designated guardian's <code>auxiliary public key</code>*</li>
+<li>Each guardian must send each encrypted <code>election partial key backup</code> to the designated guardian directly or through a <code>mediator</code>.</li>
+<li>Each guardian checks if all encrypted <code>election partial key backups</code> have been received by their recipient guardian directly or through a mediator.</li>
+<li>Each recipient guardian decrypts each received encrypted <code>election partial key backup</code> with their own <code>auxiliary private key</code>*</li>
+<li>Each recipient guardian verifies each <code>election partial key backup</code> and sends confirmation of verification<ul>
+<li>If the proof verifies, continue</li>
+<li>If the proof fails</li>
+<li>Sender guardian publishes the <code>election partial key backup</code> value sent to recipient as a <code>election partial key challenge</code> where the value is <strong>unencrypted</strong> to all the other guardians **</li>
+<li>Alternate guardian (outside sender or original recipient) attempts to verify key<ul>
+<li>If the proof verifies, continue</li>
+<li>If the proof fails again, the accused (sender guardian) should be evicted and process should be restarted with new guardian.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>On receipt of all verifications of <code>election partial private keys</code> by all guardians, generate and publish <code>joint key</code> from election public keys.</li>
+</ol>
+<p>* <strong>Note:</strong> <em>The auxiliary encrypt and decrypt functions can be overridden to allow different encryption mechanisms other than the default.</em></p>
+<p>** <strong>Note:</strong> <em>The confidentiality of this value is now gone, but since the two Guardians are in the dispute, at least one is misbehaving and could be revealing this data.</em></p>
+<h2 id="files">Files</h2>
+<ul>
+<li><a href="https://github.com/microsoft/electionguard-python/tree/main/src/electionguard/key_ceremony.py"><code>key_ceremony.py</code></a></li>
+<li><a href="https://github.com/microsoft/electionguard-python/tree/main/src/electionguard/guardian.py"><code>guardian.py</code></a></li>
+<li><a href="https://github.com/microsoft/electionguard-python/tree/main/src/electionguard/key_ceremony_mediator.py"><code>key_ceremony_mediator.py</code></a></li>
+</ul>
+<h2 id="usage-example">Usage Example</h2>
+<p>This example demonstrates a convenience method to generate guardians for an election</p>
+<pre><code class="language-python">
+NUMBER_OF_GUARDIANS: int
+QUORUM: int
+
+details: CeremonyDetails
+guardians: List[Guardian]
+
+# Setup Guardians
+for i in range(NUMBER_OF_GUARDIANS):
+  guardians.append(
+    Guardian(f&quot;some_guardian_id_{str(i)}&quot;, i, NUMBER_OF_GUARDIANS, QUORUM)
+  )
+
+mediator = KeyCeremonyMediator(details)
+
+# Attendance (Public Key Share)
+for guardian in guardians:
+  mediator.announce(guardian)
+
+# Orchestation (Private Key Share)
+orchestrated = mediator.orchestrate()
+
+# Verify (Prove the guardians acted in good faith)
+verified = mediator.verify()
+
+# Publish the Joint Public Key
+joint_public_key = mediator.publish_joint_key()
+
+</code></pre>
+<h2 id="implementation-considerations">Implementation Considerations</h2>
+<p>ElectionGuard can be run without the key ceremony.  The key ceremony is the recommended process to generate keys for live end-to-end verifiable elections, however this process may not be necessary for other use cases such as privacy preserving risk limiting audits.</p>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../2_Encrypt_Ballots/" class="btn btn-neutral float-right" title="2. Encrypt Ballots">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href="../0_Configure_Election/" class="btn btn-neutral" title="0. Configure Election"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+      <p>© Microsoft 2020</p>
+    
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/microsoft/electionguard-python/" class="fa fa-github" style="color: #fcfcfc"> GitHub</a>
+        </span>
+    
+    
+      <span><a href="../0_Configure_Election/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../2_Encrypt_Ballots/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme_extra.js" defer></script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>

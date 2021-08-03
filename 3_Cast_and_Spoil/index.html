@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <meta name="author" content="Microsoft">
+  <link rel="canonical" href="https://electionguard-python.readthedocs.io/3_Cast_and_Spoil/">
+  <link rel="shortcut icon" href="../img/favicon.ico">
+  <title>3. Cast and Spoil - ElectionGuard Python</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
+
+  <link rel="stylesheet" href="../css/theme.css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "3. Cast and Spoil";
+    var mkdocs_page_input_path = "3_Cast_and_Spoil.md";
+    var mkdocs_page_url = "/3_Cast_and_Spoil/";
+  </script>
+  
+  <script src="../js/jquery-2.1.1.min.js" defer></script>
+  <script src="../js/modernizr-2.8.3.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+        <a href=".." class="icon icon-home"> ElectionGuard Python</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../Design_and_Architecture/">Design and Architecture</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../Build_and_Run/">Build and Run</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../Project_Workflow/">Project Workflow</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../Election_Manifest/">Election Manifest</a>
+                    </li>
+                </ul>
+                <p class="caption"><span class="caption-text">Steps</span></p>
+                <ul class="current">
+                    <li class="toctree-l1"><a class="reference internal" href="../0_Configure_Election/">0. Configure Election</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../1_Key_Ceremony/">1. Key Ceremony</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../2_Encrypt_Ballots/">2. Encrypt Ballots</a>
+                    </li>
+                    <li class="toctree-l1 current"><a class="reference internal current" href="./">3. Cast and Spoil</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#jurisdictional-differences">Jurisdictional Differences</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#unknown-ballots">Unknown Ballots</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#encrypted-tally">Encrypted Tally</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#glossary">Glossary</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#process">Process</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#ballot-box">Ballot Box</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#class-example">Class Example</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#function-example">Function Example</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#tally">Tally</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#using-the-stateful-class">Using the Stateful Class</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#functional-method">Functional Method</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../4_Decrypt_Tally/">4. Decrypt Tally</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../5_Publish_and_Verify/">5. Publish and Verify</a>
+                    </li>
+                </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="..">ElectionGuard Python</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="..">Docs</a> &raquo;</li>
+    
+      
+        
+          <li>Steps &raquo;</li>
+        
+      
+    
+    <li>3. Cast and Spoil</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        <a href="https://github.com/microsoft/electionguard-python/edit/master/docs/3_Cast_and_Spoil.md"
+          class="icon icon-github"> Edit on GitHub</a>
+      
+    </li>
+  </ul>
+  
+  <hr/>
+</div>
+
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="cast-and-spoil-ballots">Cast and Spoil Ballots</h1>
+<p>Each ballot that is completed by a voter must be either cast or spoiled.  A cast ballot is a ballot that the voter accepts as valid and wishes to include in the official election tally.  A spoiled ballot, also referred to as a challenged ballot, is a ballot that the voter does not accept as valid and wishes to exclude from the official election tally.</p>
+<p>ElectionGuard includes a mechanism to mark a specific ballot as either cast or spoiled.  Cast ballots are included in the tally record, while spoiled ballots are not.  Spoiled ballots are decrypted into plaintext and published along with the rest of the election record.</p>
+<h2 id="jurisdictional-differences">Jurisdictional Differences</h2>
+<p>Depending on the jurisdiction conducting an election the process of casting and spoiling ballots may be handled differently. For this reason, there are multiple ways to interact with the <code>BallotBox</code> and <code>Tally</code>.</p>
+<ul>
+<li>By calling <a href="###-Function-Example">accept_ballot</a> - Ballots can be marked cast or spoiled manually.</li>
+<li>By using the <a href="###-Class-Example">Ballot Box</a> - Ballots can be marked cast or spoiled using a stateful class.</li>
+</ul>
+<h3 id="unknown-ballots">Unknown Ballots</h3>
+<p>In some jurisdictions, there is a limit on the number of ballots that may be marked as spoiled.  If this is the case, you may use the <code>BallotBoxState.UNKNOWN</code> state, or extend the enumeration to support your specific use case.</p>
+<h2 id="encrypted-tally">Encrypted Tally</h2>
+<p>Once all of the ballots are marked as <em>cast</em> or <em>spoiled</em>, all of the encryptions of each option are homomorphically combined to form an encryption of the total number of times that each option was selected in the election.  </p>
+<blockquote>
+<p>This process is completed only for cast ballot.</p>
+<p>The spoiled ballots are simply marked for inclusion in the election results.</p>
+</blockquote>
+<h2 id="glossary">Glossary</h2>
+<ul>
+<li><strong>Ciphertext Ballot</strong> An encrypted representation of a voter's filled-in ballot.</li>
+<li><strong>Submitted Ballot</strong> A wrapper around the <code>CiphertextBallot</code> that represents a ballot that is submitted for inclusion in election results and is either: cast or spoiled.</li>
+<li><strong>Ballot Box</strong> A stateful collection of ballots that are either cast or spoiled.</li>
+<li><strong>Ballot Store</strong> A repository for retaining cast and spoiled ballots.</li>
+<li><strong>Cast Ballot</strong> A ballot which a voter has accepted as valid to be included in the official election tally.</li>
+<li><strong>Spoiled Ballot</strong> A ballot which a voter did not accept as valid and is not included in the tally.</li>
+<li><strong>Unknown Ballot</strong> A ballot which may not yet be determined as cast or spoiled, or that may have been spoiled but is otherwise not published in the election results.</li>
+<li><strong>Homomorphic Tally</strong> An encrypted representation of every selection on every ballot that was cast.  This representation is stored in a <code>CiphertextTally</code> object.</li>
+</ul>
+<h2 id="process">Process</h2>
+<ol>
+<li>Each ballot is loaded into memory (if it is not already).</li>
+<li>Each ballot is verified to be correct according to the specific election metadata and encryption context.</li>
+<li>Each ballot is <code>submitted</code> and identified as either being <code>cast</code> or <code>spoiled</code>.</li>
+<li>The collection of cast and spoiled ballots is cached in the <code>DataStore</code>.</li>
+<li>All ballots are tallied.  The <code>cast</code> ballots are combined to create a <code>CiphertextTally</code> The spoiled ballots are cached for decryption later.</li>
+</ol>
+<h2 id="ballot-box">Ballot Box</h2>
+<p>The ballot box can be interacted with via a stateful class that caches the election context, or via stateless functions.  The following examples demonstrate some ways to interact with the ballot box.</p>
+<p>Depending on the specific election workflow, the <code>BallotBox</code>class  may not be used for a given election.  For instance, in one case a ballot can be <strong>submitted</strong> directly on an electronic device, in which case there is no <code>BallotBox</code>.  In a different workflow, a ballot may be explicitly cast or spoiled in a later step, such as after printing for voter review.</p>
+<p>In all cases, a ballot must be marked as either <code>cast</code> or <code>spoiled</code> to be included in a tally result.</p>
+<h3 id="class-example">Class Example</h3>
+<pre><code class="language-python">
+from electionguard.ballot_box import BallotBox
+
+internal_manifest: InternalManifest
+encryption: CiphertextElection
+store: DataStore
+ballots_to_cast: List[CiphertextBallot]
+ballots_to_spoil: List[CiphertextBallot]
+
+# The Ballot Box is a thin wrapper around the `accept_ballot` function method
+ballot_box = BallotBox(internal_manifest, encryption, store)
+
+# Cast the ballots
+for ballot in ballots_to_cast:
+    submitted_ballot = ballot_box.cast(ballot)
+    # The ballot is both returned, and placed into the ballot store
+    assert(store.get(submitted_ballot.object_id) == submitted_ballot)
+
+# Spoil the ballots
+for ballot in ballots_to_spoil:
+    assert(ballot_box.spoil(ballot) is not None)
+
+</code></pre>
+<h3 id="function-example">Function Example</h3>
+<pre><code class="language-python">
+from electionguard.ballot_box import accept_ballot
+
+internal_manifest: InternalManifest
+encryption: CiphertextElection
+store: DataStore
+ballots_to_cast: List[CiphertextBallot]
+ballots_to_spoil: List[CiphertextBallot]
+
+for ballot in ballots_to_cast:
+    submitted_ballot = accept_ballot(
+        ballot, BallotBoxState.CAST, internal_manifest, encryption, store
+    )
+
+for ballot in ballots_to_spoil:
+    submitted_ballot = accept_ballot(
+        ballot, BallotBoxState.SPOILED, internal_manifest, encryption, store
+    )
+
+</code></pre>
+<h2 id="tally">Tally</h2>
+<p>Generating the encrypted <code>CiphertextTally</code> can be completed by creating a <code>CiphertextTally</code> stateful class and manually marshalling each cast and spoiled ballot.  Using this method is preferable when the collection of ballots is very large</p>
+<p>For convenience, stateless functions are also provided to automatically generate the <code>CiphertextTally</code> from a <code>DataStore</code>.  This method is preferred when the collection of ballots is arbitrarily small, or when the <code>DataStore</code> is overloaded with a custom implementation.</p>
+<h3 id="using-the-stateful-class">Using the Stateful Class</h3>
+<pre><code class="language-python">
+internal_manifest: InternalManifest
+context: CiphertextElectionContext
+
+ballots: List[SubmittedBallot]
+
+tally = CiphertextTally(internal_manifest, context)
+
+for ballot in ballots:
+    assert(tally.append(ballot))
+
+</code></pre>
+<h3 id="functional-method">Functional Method</h3>
+<pre><code class="language-python">
+internal_manifest: InternalManifest
+context: CiphertextElectionContext
+store: DataStore
+
+tally = tally_ballots(store, internal_manifest, context)
+assert(tally is not None)
+
+</code></pre>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../4_Decrypt_Tally/" class="btn btn-neutral float-right" title="4. Decrypt Tally">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href="../2_Encrypt_Ballots/" class="btn btn-neutral" title="2. Encrypt Ballots"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+      <p>© Microsoft 2020</p>
+    
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/microsoft/electionguard-python/" class="fa fa-github" style="color: #fcfcfc"> GitHub</a>
+        </span>
+    
+    
+      <span><a href="../2_Encrypt_Ballots/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../4_Decrypt_Tally/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme_extra.js" defer></script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>

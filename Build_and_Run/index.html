@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <meta name="author" content="Microsoft">
+  <link rel="canonical" href="https://electionguard-python.readthedocs.io/Build_and_Run/">
+  <link rel="shortcut icon" href="../img/favicon.ico">
+  <title>Build and Run - ElectionGuard Python</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
+
+  <link rel="stylesheet" href="../css/theme.css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "Build and Run";
+    var mkdocs_page_input_path = "Build_and_Run.md";
+    var mkdocs_page_url = "/Build_and_Run/";
+  </script>
+  
+  <script src="../js/jquery-2.1.1.min.js" defer></script>
+  <script src="../js/modernizr-2.8.3.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+        <a href=".." class="icon icon-home"> ElectionGuard Python</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../Design_and_Architecture/">Design and Architecture</a>
+                    </li>
+                </ul>
+                <ul class="current">
+                    <li class="toctree-l1 current"><a class="reference internal current" href="./">Build and Run</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#setup">Setup</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#1-initialize-dev-environment">1. Initialize dev environment</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#2-install-the-electionguard-module-in-edit-mode">2. Install the electionguard module in edit mode</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#3-validate-import-of-module-optional">3. Validate import of module (Optional)</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#running">Running</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#option-1-code-coverage">Option 1: Code Coverage</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#option-2-run-tests-in-vs-code">Option 2: Run tests in VS Code</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#option-3-run-test-command">Option 3: Run test command</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../Project_Workflow/">Project Workflow</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../Election_Manifest/">Election Manifest</a>
+                    </li>
+                </ul>
+                <p class="caption"><span class="caption-text">Steps</span></p>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../0_Configure_Election/">0. Configure Election</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../1_Key_Ceremony/">1. Key Ceremony</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../2_Encrypt_Ballots/">2. Encrypt Ballots</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../3_Cast_and_Spoil/">3. Cast and Spoil</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../4_Decrypt_Tally/">4. Decrypt Tally</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../5_Publish_and_Verify/">5. Publish and Verify</a>
+                    </li>
+                </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="..">ElectionGuard Python</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="..">Docs</a> &raquo;</li>
+    
+      
+    
+    <li>Build and Run</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        <a href="https://github.com/microsoft/electionguard-python/edit/master/docs/Build_and_Run.md"
+          class="icon icon-github"> Edit on GitHub</a>
+      
+    </li>
+  </ul>
+  
+  <hr/>
+</div>
+
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="build-and-run">Build and Run</h1>
+<p>These instructions can be used to build and run the project.</p>
+<h2 id="setup">Setup</h2>
+<h3 id="1-initialize-dev-environment">1. Initialize dev environment</h3>
+<pre><code>make environment
+</code></pre>
+<p>OR</p>
+<pre><code>pipenv install --dev
+</code></pre>
+<h3 id="2-install-the-electionguard-module-in-edit-mode">2. Install the <code>electionguard</code> module in edit mode</h3>
+<pre><code>make install
+</code></pre>
+<p>OR</p>
+<pre><code>pipenv run python -m pip install -e .
+</code></pre>
+<p><strong>⚠️ Note:</strong> <em>For Windows without <code>make</code>, use supplied precompiled <strong>gmpy2</strong> package with the <code>--find-links</code> or <code>-f</code> option. The 32 vs 64 bit is based on your installed python version NOT your system.</em></p>
+<p><em><strong>Determine if 64-bit:</strong></em></p>
+<p><em>This code snippet will read <code>true</code> for 64 bit.</em></p>
+<p><code>python -c 'from sys import maxsize; print(maxsize &gt; 2**32)'</code></p>
+<p><em><strong>Install module with link</strong></em></p>
+<ul>
+<li><strong>32-bit:</strong> <code>pipenv run pip install -f packages/gmpy2-2.0.8-cp38-cp38-win32.whl -e .</code></li>
+<li><strong>64-bit:</strong> <code>pipenv run pip install -f packages/gmpy2-2.0.8-cp38-cp38-win_amd64 -e .</code></li>
+</ul>
+<h3 id="3-validate-import-of-module-optional">3. Validate import of module <em>(Optional)</em></h3>
+<pre><code>make validate
+</code></pre>
+<p>OR</p>
+<pre><code>pipenv run python -c 'import electionguard; print(electionguard.__package__ + &quot; successfully imported&quot;)'
+</code></pre>
+<h2 id="running">Running</h2>
+<h3 id="option-1-code-coverage">Option 1: Code Coverage</h3>
+<pre><code>make coverage
+</code></pre>
+<p>OR</p>
+<pre><code>pipenv run coverage report
+</code></pre>
+<h3 id="option-2-run-tests-in-vs-code">Option 2: Run tests in VS Code</h3>
+<p>Install recommended test explorer extensions and run unit tests through tool.</p>
+<p><strong>⚠️ Note:</strong> For Windows, be sure to select the <a href="https://docs.microsoft.com/en-us/visualstudio/python/installing-python-interpreters">virtual environment Python interpreter</a>.</p>
+<h3 id="option-3-run-test-command">Option 3: Run test command</h3>
+<pre><code>make test
+</code></pre>
+<p>OR</p>
+<pre><code>pipenv run python -m pytest /testss
+</code></pre>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../Project_Workflow/" class="btn btn-neutral float-right" title="Project Workflow">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href="../Design_and_Architecture/" class="btn btn-neutral" title="Design and Architecture"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+      <p>© Microsoft 2020</p>
+    
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/microsoft/electionguard-python/" class="fa fa-github" style="color: #fcfcfc"> GitHub</a>
+        </span>
+    
+    
+      <span><a href="../Design_and_Architecture/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../Project_Workflow/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme_extra.js" defer></script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>

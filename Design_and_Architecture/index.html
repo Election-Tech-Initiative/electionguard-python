@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <meta name="author" content="Microsoft">
+  <link rel="canonical" href="https://electionguard-python.readthedocs.io/Design_and_Architecture/">
+  <link rel="shortcut icon" href="../img/favicon.ico">
+  <title>Design and Architecture - ElectionGuard Python</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
+
+  <link rel="stylesheet" href="../css/theme.css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "Design and Architecture";
+    var mkdocs_page_input_path = "Design_and_Architecture.md";
+    var mkdocs_page_url = "/Design_and_Architecture/";
+  </script>
+  
+  <script src="../js/jquery-2.1.1.min.js" defer></script>
+  <script src="../js/modernizr-2.8.3.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+        <a href=".." class="icon icon-home"> ElectionGuard Python</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                    </li>
+                </ul>
+                <ul class="current">
+                    <li class="toctree-l1 current"><a class="reference internal current" href="./">Design and Architecture</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#design">Design</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#simplicity">✅ Simplicity</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#extendable-and-interpretable">✅ Extendable and Interpretable</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#object-oriented-design-ood-functional-methods">✅ Object Oriented Design (OOD) &amp; Functional Methods</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#immutable">✅ Immutable</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#dataclass">dataclass</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#namedtuple">NamedTuple</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#concurrency">✅ Concurrency</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#union-classes">✅ Union Classes</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#exceptions">🚫 Exceptions</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#multiple-inheritance">🚫 Multiple Inheritance</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#architecture">Architecture</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#approachable">🤝 Approachable</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#setup">Setup</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#folder-structure">Folder Structure</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#commands">Commands</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#clean-code">🧹 Clean Code</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#typing">Typing</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#linting">Linting</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#formatting">Formatting</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#testing">🧪 Testing</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#property-based">Property Based</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#continuous-integration">🚀 Continuous Integration</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#math-library">📦 Math Library</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../Build_and_Run/">Build and Run</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../Project_Workflow/">Project Workflow</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../Election_Manifest/">Election Manifest</a>
+                    </li>
+                </ul>
+                <p class="caption"><span class="caption-text">Steps</span></p>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../0_Configure_Election/">0. Configure Election</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../1_Key_Ceremony/">1. Key Ceremony</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../2_Encrypt_Ballots/">2. Encrypt Ballots</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../3_Cast_and_Spoil/">3. Cast and Spoil</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../4_Decrypt_Tally/">4. Decrypt Tally</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../5_Publish_and_Verify/">5. Publish and Verify</a>
+                    </li>
+                </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="..">ElectionGuard Python</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="..">Docs</a> &raquo;</li>
+    
+      
+    
+    <li>Design and Architecture</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        <a href="https://github.com/microsoft/electionguard-python/edit/master/docs/Design_and_Architecture.md"
+          class="icon icon-github"> Edit on GitHub</a>
+      
+    </li>
+  </ul>
+  
+  <hr/>
+</div>
+
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="design-architecture">Design &amp; Architecture</h1>
+<p>This describes the design and architecture of the <code>electionguard-python</code> project.</p>
+<h2 id="design">Design</h2>
+<h3 id="simplicity">✅ Simplicity</h3>
+<p>Simplicity is the first and foremost goal of the code. The intent is for others to be able to <strong>easily transliterate the code to any other programming language</strong> with little more than structures and functions. This simplicity applies to all aspects of the code design, including naming.</p>
+<h3 id="extendable-and-interpretable">✅ Extendable and Interpretable</h3>
+<p>The library is intentionally general-purpose to support the different use cases of "end to end verifiable" voting systems. Different projects may wish to use different layers of the library, including math primitives, encryption functions, and more.</p>
+<h3 id="object-oriented-design-ood-functional-methods">✅ Object Oriented Design (OOD) &amp; Functional Methods</h3>
+<p>An additional goal is to build a familiar object oriented design with underlying functional style methods. This allows users to simply construct objects in an OOP fashion or directly call the underlying methods in a functional way. This design also facilitates easy testing and composition.</p>
+<p>Class methods are used for simplicity, but sophistication with regard to inheritance, object encapsulation, or design patterns is intentionally avoided. These class methods usually rely on the aforementioned functional methods unless the class contains state.</p>
+<h3 id="immutable">✅ Immutable</h3>
+<p>The library prefers immutable objects where possible to encourage simple data structures.</p>
+<h4 id="dataclass">dataclass</h4>
+<p><code>dataclass</code> uses the <code>object.__setattr__</code> pattern in <code>_postinit__</code> functions to support freezing data classes where possible.</p>
+<h4 id="namedtuple">NamedTuple</h4>
+<p><a href="https://docs.python.org/3/library/typing.html#typing.NamedTuple">NamedTuple</a> is frequently used for the library's data structures. They are immutable after creation and have a <code>_replace()</code> method that makes it easy to make a copy replacing only one field.</p>
+<h3 id="concurrency">✅ Concurrency</h3>
+<p>While this library is not explicitly engineered to <em>use</em> concurrency, it's definitely meant to work properly when the caller wants to run more than one thing at a time. This means there is no global, mutable state in the library with the exception of a discrete-log function doing internal memoization, itself explicitly written to be thread-safe.</p>
+<h3 id="union-classes">✅ Union Classes</h3>
+<p>For both naming purposes and usability, union classes are generally preferred. This can alleviate issues with <a href="#multiple-inheritance">multiple inheritance</a></p>
+<h3 id="exceptions">🚫 Exceptions</h3>
+<p>To allow for easier transliteration, the library will not raise exception across the API boundary since this is not available in all languages. Instead, the library will have a variety of functions that indicate failures by returning <code>None</code>; the caller is expected to check if the result is <code>None</code> before any further processing. Python 3 <code>typing</code> calls this sort of result <code>Optional</code>.This tactic also indicates all exceptions raised are expected to be from bugs.</p>
+<h3 id="multiple-inheritance">🚫 Multiple Inheritance</h3>
+<p>Although a handy python feature, for implementation simplicity this feature is not used and should be avoided.</p>
+<h2 id="architecture">Architecture</h2>
+<h3 id="approachable">🤝 Approachable</h3>
+<p>The python setup is designed to be as approachable as possible from the environment to the continuous integration.</p>
+<h4 id="setup">Setup</h4>
+<p>The library contains a <code>Pipfile</code> that can be used with <code>pipenv</code>to ensure the correct dependencies are included, as well as a <code>setup.py</code> to install the package itself. There is also a <code>Makefile</code> which allows for simple <code>make</code> commands to ease new developers into the build process. If the user is a new developer, the recommendation is starting with <a href="https://code.visualstudio.com/">Visual Studio Code</a> since there are many default settings and recommended extensions in the repository.</p>
+<h4 id="folder-structure">Folder Structure</h4>
+<p>The folder structure is kept to a bare minimum. The ElectionGuard library is located in <code>src/electionguard</code> and tests are in <code>tests</code>. Standalone applications or other pieces should be in separate subdirectories. For example, the <code>tests/bench</code> directory contains a simple Chaum-Pedersen proof computation benchmark.</p>
+<h4 id="commands">Commands</h4>
+<p>To simplify the command structure, <a href="https://www.gnu.org/software/make/manual/make.html">make</a> is used. A <code>Makefile</code> sits in the root directory and contains useful commands that can be used to run setup. These are shown in use in the <a href="#continuous-integration">continuous integration</a>.</p>
+<h3 id="clean-code">🧹 Clean Code</h3>
+<p>The library uses several tools to assist developers in maintaining clean code. Visual Studio Code is recommended for easier setup.</p>
+<h4 id="typing">Typing</h4>
+<p>The library uses Python 3 <strong>type hints</strong> throughout and ensures return types are defined. <strong><a href="https://mypy.readthedocs.io/en/stable/">Mypy</a></strong> is used to statically check the typing.</p>
+<h4 id="linting">Linting</h4>
+<p><a href="">Pylint</a> is used for typing; settings are in the <code>.pylinrc</code> file.</p>
+<h4 id="formatting">Formatting</h4>
+<p><a href="">Black</a> is used for auto-formatting and checking the formatting of the python code. Settings are in the <code>pyproject.toml</code> file.</p>
+<h3 id="testing">🧪 Testing</h3>
+<p>The goal of the project is 100% code coverage with an understanding that there are some limitations.</p>
+<h4 id="property-based">Property Based</h4>
+<p>Property testing is helpful for <a href="https://fsharpforfunandprofit.com/posts/property-based-testing-2/">testing certain properties</a>. The library uses <a href="https://hypothesis.readthedocs.io/en/stable/">Hypothesis</a> property-based testing to vigorously exercise the library. The library includes generator functions for all the core datatypes, making them easy to randomly generate.</p>
+<h3 id="continuous-integration">🚀 Continuous Integration</h3>
+<p>GitHub Actions are being used for continuous integration. Cross-platform is a primary goal and the workflows provided demonstrate how a developer can build in Linux, MacOS, and Windows.</p>
+<p>The run workflows can be seen on the GitHub repo page or a user can navigate to <code>.github/workflows</code> to inspect them.</p>
+<h3 id="math-library">📦 Math Library</h3>
+<p><a href="https://gmpy2.readthedocs.io/en/latest/index.html">gmpy2</a> is a multiprecision numeric library that was chosen over Python's built-ins <code>int</code> type for its speed necessary for encryption performance. The current version used is <code>2.0.8</code> which is the most stable version. This is necessary for cross-platform since the library uses precompiled libraries for Windows due to reliance on <code>gmp</code>. The gmpy2 options are chosen over the native Python equivalents as shown below.</p>
+<ul>
+<li><strong>Integers:</strong> <code>int</code> -&gt; <a href="https://gmpy2.readthedocs.io/en/latest/mpz.html"><code>mpz</code></a></li>
+<li><strong>Exponents:</strong> <code>pow</code> -&gt; <code>powmod</code></li>
+</ul>
+<p>With the use of <strong>mypy</strong> for typing and the lack of type presence in <a href="https://github.com/python/typeshed">Typeshed</a> for gmpy2, the library provides a stub in <code>stubs/gmpy2.pyi</code> to ensure the code compiles without warnings.</p>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../Build_and_Run/" class="btn btn-neutral float-right" title="Build and Run">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href=".." class="btn btn-neutral" title="Home"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+      <p>© Microsoft 2020</p>
+    
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/microsoft/electionguard-python/" class="fa fa-github" style="color: #fcfcfc"> GitHub</a>
+        </span>
+    
+    
+      <span><a href=".." style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../Build_and_Run/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme_extra.js" defer></script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>
