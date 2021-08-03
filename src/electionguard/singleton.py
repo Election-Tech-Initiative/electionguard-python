@@ -15,4 +15,4 @@ class Singleton:
 
     def __init__(self) -> None:
         if Singleton.__instance is None:
-            Singleton.__instance = self
+            Singleton.__instance = self  # pylint: disable=unused-private-member

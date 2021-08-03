@@ -4,7 +4,7 @@
 
 ![Github Package Action](https://github.com/microsoft/electionguard-python/workflows/Release%20Build/badge.svg) [![](https://img.shields.io/pypi/v/electionguard)](https://pypi.org/project/electionguard/) [![](https://img.shields.io/pypi/dm/electionguard)](https://pypi.org/project/electionguard/) [![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/microsoft/electionguard-python.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/microsoft/electionguard-python/context:python) [![Total alerts](https://img.shields.io/lgtm/alerts/g/microsoft/electionguard-python.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/microsoft/electionguard-python/alerts/) [![Documentation Status](https://readthedocs.org/projects/electionguard-python/badge/?version=latest)](https://electionguard-python.readthedocs.io) [![license](https://img.shields.io/github/license/microsoft/electionguard)](https://github.com/microsoft/electionguard-python/blob/main/LICENSE)
 
-This repository is a "reference implementation" of ElectionGuard written in Python 3. This implementation can be used to conduct End-to-End Verifiable Elections as well as privacy-enhanced risk-limiting audits.  Components of this library can also be used to construct "Verifiers" to validate the results of an ElectionGuard election.
+This repository is a "reference implementation" of ElectionGuard written in Python 3. This implementation can be used to conduct End-to-End Verifiable Elections as well as privacy-enhanced risk-limiting audits. Components of this library can also be used to construct "Verifiers" to validate the results of an ElectionGuard election.
 
 ## 📁 In This Repository
 
@@ -14,7 +14,7 @@ This repository is a "reference implementation" of ElectionGuard written in Pyth
 | `src/electionguard`     | Source code to the ElectionGuard library |
 | `src/electionguardtest` | sample data and generators for testing   |
 | `stubs`                 | Type annotations for external libraries  |
-| `tests`                 | Tests to exercise this codebase     |
+| `tests`                 | Tests to exercise this codebase          |
 | `CONTRIBUTING.md`       | Guidelines for contributing              |
 | `README.md`             | This README file                         |
 | `LICENSE`               | The license for ElectionGuard-Python.    |
@@ -29,14 +29,14 @@ Learn More in the [ElectionGuard Repository](https://github.com/microsoft/electi
 
 ## 🦸 How Can I use ElectionGuard?
 
-ElectionGuard supports a variety of use cases.  The Primary use case is to generate verifiable end-to-end (E2E) encrypted elections.  The Electionguard process can also be used for other use cases such as privacy enhanced risk-limiting audits (RLAs).
+ElectionGuard supports a variety of use cases. The Primary use case is to generate verifiable end-to-end (E2E) encrypted elections. The Electionguard process can also be used for other use cases such as privacy enhanced risk-limiting audits (RLAs).
 
 ## 💻 Requirements
 
-- [Python 3.8](https://www.python.org/downloads/) is <ins>**required**</ins> to develop this SDK. If developer uses multiple versions of python, [pyenv](https://github.com/pyenv/pyenv) is suggested to assist version management.
+- [Python 3.9.5](https://www.python.org/downloads/) is <ins>**required**</ins> to develop this SDK. If developer uses multiple versions of python, [pyenv](https://github.com/pyenv/pyenv) is suggested to assist version management.
 - [GNU Make](https://www.gnu.org/software/make/manual/make.html) is used to simplify the commands and GitHub Actions. This approach is recommended to simplify the command line experience. This is built in for MacOS and Linux. For Windows, setup is simpler with [Chocolatey](https://chocolatey.org/install) and installing the provided [make package](https://chocolatey.org/packages/make). The other Windows option is [manually installing make](http://gnuwin32.sourceforge.net/packages/make.htm).
 - [Gmpy2](https://gmpy2.readthedocs.io/en/latest/) is used for [Arbitrary-precision arithmetic](https://en.wikipedia.org/wiki/Arbitrary-precision_arithmetic) which
-has its own [installation requirements (native C libraries)](https://gmpy2.readthedocs.io/en/latest/intro.html#installation) on Linux and MacOS.  **⚠️ Note:** _This is not required for Windows since the gmpy2 precompiled libraries are provided._
+  has its own [installation requirements (native C libraries)](https://gmpy2.readthedocs.io/en/latest/intro.html#installation) on Linux and MacOS. **⚠️ Note:** _This is not required for Windows since the gmpy2 precompiled libraries are provided._
 - [pipenv](https://github.com/pypa/pipenv) is used to configure the python environment. Installation instructions can be found [here](https://github.com/pypa/pipenv#installation).
 
 ## 🚀 Quick Start
