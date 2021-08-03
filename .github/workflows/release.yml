@@ -5,14 +5,14 @@ on:
     types: [closed]
 
 env:
-  PYTHON_VERSION: 3.8
-  POETRY_PATH: "$HOME/.poetry/bin" 
+  PYTHON_VERSION: 3.9
+  POETRY_PATH: "$HOME/.poetry/bin"
 
 jobs:
-  code_analysis: 
+  code_analysis:
     name: Code Analysis
     runs-on: ubuntu-latest
-    steps: 
+    steps:
       - name: Checkout Code
         uses: actions/checkout@v2
       - name: Set up Python ${{ env.PYTHON_VERSION }}

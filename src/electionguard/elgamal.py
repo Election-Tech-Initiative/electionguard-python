@@ -1,6 +1,6 @@
 from typing import Iterable, NamedTuple, Optional
 
-from .dlog import discrete_log
+from .discrete_log import DiscreteLog
 from .group import (
     ElementModQ,
     ElementModP,
@@ -48,7 +48,7 @@ class ElGamalCiphertext(NamedTuple):
         :param product: The known product (blinding factor).
         :return: An exponentially encoded plaintext message.
         """
-        return discrete_log(mult_p(self.data, mult_inv_p(product)))
+        return DiscreteLog().discrete_log(mult_p(self.data, mult_inv_p(product)))
 
     def decrypt(self, secret_key: ElementModQ) -> int:
         """
