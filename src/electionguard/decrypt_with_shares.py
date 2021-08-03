@@ -6,7 +6,7 @@ from .decryption_share import (
     DecryptionShare,
     get_shares_for_selection,
 )
-from .dlog import discrete_log
+from .discrete_log import DiscreteLog
 from .group import ElementModP, ElementModQ, mult_p, div_p
 from .tally import (
     CiphertextTally,
@@ -165,7 +165,7 @@ def decrypt_selection_with_decryption_shares(
 
     # Calculate 𝑀=𝐵⁄(∏𝑀𝑖) mod 𝑝.
     decrypted_value = div_p(selection.ciphertext.data, all_shares_product_M)
-    d_log = discrete_log(decrypted_value)
+    d_log = DiscreteLog().discrete_log(decrypted_value)
     return PlaintextTallySelection(
         selection.object_id,
         d_log,
