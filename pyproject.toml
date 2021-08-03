@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "electionguard"
-version = "1.2.2"
+version = "1.2.3"
 description = "ElectionGuard: Support for e2e verified elections."
 license = "MIT"
 authors = ["Microsoft <electionguard@microsoft.com>"]
@@ -19,7 +19,7 @@ classifiers = [
     "Operating System :: MacOS",
     "Operating System :: Microsoft :: Windows",
     "Programming Language :: Python",
-    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9.5",
     "Programming Language :: Python :: Implementation :: CPython",
     "Topic :: Utilities"]
 packages = [{ include = "electionguard", from = "src" }]
@@ -32,7 +32,7 @@ packages = [{ include = "electionguard", from = "src" }]
 "Issue Tracker" = "https://github.com/microsoft/electionguard-python/issues"
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.9.5"
 gmpy2 = ">=2.0.8"
 # For Windows Builds
 # gmpy2 = { path = "./packages/gmpy2-2.0.8-cp38-cp38-win_amd64.whl" } # 64 bit
@@ -44,7 +44,7 @@ psutil = ">=5.7.2"
 
 [tool.poetry.dev-dependencies]
 atomicwrites = "*"
-black = "20.8b1"
+black = "21.7b0"
 coverage = "*"
 docutils = "*"
 hypothesis = ">=5.15.1"
@@ -59,7 +59,7 @@ twine = "*"
 typish = '*'
 
 [tool.black]
-target-version = ['py38']
+target-version = ['py39']
 
 [tool.pylint.'FORMAT']
 max-line-length = 120
@@ -97,7 +97,7 @@ build-backend = "poetry.core.masonry.api"
 
 # Not officially supported
 [mypy]
-python_version = 3.8
+python_version = 3.9
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
