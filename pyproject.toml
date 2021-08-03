@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "electionguard"
-version = "1.2.2"
+version = "1.2.3"
 description = "ElectionGuard: Support for e2e verified elections."
 license = "MIT"
 authors = ["Microsoft <electionguard@microsoft.com>"]
