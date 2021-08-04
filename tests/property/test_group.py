@@ -1,7 +1,8 @@
-import unittest
 from typing import Optional
 
 from hypothesis import given
+
+from tests.base_test_case import BaseTestCase
 
 from electionguard.constants import (
     get_small_prime,
@@ -43,7 +44,7 @@ from electionguardtest.group import (
 )
 
 
-class TestEquality(unittest.TestCase):
+class TestEquality(BaseTestCase):
     """Math equality tests"""
 
     @given(elements_mod_q(), elements_mod_q())
@@ -67,7 +68,7 @@ class TestEquality(unittest.TestCase):
         self.assertEqual(q, q)
 
 
-class TestModularArithmetic(unittest.TestCase):
+class TestModularArithmetic(BaseTestCase):
     """Math Modular Arithmetic tests"""
 
     @given(elements_mod_q())
@@ -181,7 +182,7 @@ class TestModularArithmetic(unittest.TestCase):
         self.assertEqual(None, int_to_q(oversize))
 
 
-class TestOptionalFunctions(unittest.TestCase):
+class TestOptionalFunctions(BaseTestCase):
     """Math Optional Functions tests"""
 
     def test_unwrap(self):

@@ -1,4 +1,3 @@
-import unittest
 from copy import deepcopy
 from datetime import timedelta
 from random import Random
@@ -7,6 +6,8 @@ from typing import Tuple
 from hypothesis import HealthCheck, Phase
 from hypothesis import given, settings
 from hypothesis.strategies import integers
+
+from tests.base_test_case import BaseTestCase
 
 from electionguard.chaum_pedersen import DisjunctiveChaumPedersenProof
 from electionguard.decrypt_with_secrets import (
@@ -47,7 +48,7 @@ election_factory = ElectionFactory.ElectionFactory()
 ballot_factory = BallotFactory.BallotFactory()
 
 
-class TestDecryptWithSecrets(unittest.TestCase):
+class TestDecryptWithSecrets(BaseTestCase):
     """Decrypting with secrets tests"""
 
     @settings(

@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from os import path
 from shutil import rmtree
-from unittest import TestCase
+from tests.base_test_case import BaseTestCase
 
 from electionguard.ballot import (
     PlaintextBallot,
@@ -19,7 +19,7 @@ from electionguard.tally import (
 )
 
 
-class TestPublish(TestCase):
+class TestPublish(BaseTestCase):
     """Publishing tests"""
 
     def test_publish(self) -> None:

@@ -3,7 +3,7 @@
 # pylint: disable=unnecessary-comprehension
 
 from typing import Dict, List
-from unittest import TestCase
+from tests.base_test_case import BaseTestCase
 from electionguard.ballot import SubmittedBallot
 
 from electionguard.ballot_box import BallotBox, BallotBoxState, get_ballots
@@ -50,7 +50,7 @@ election_factory = ElectionFactory.ElectionFactory()
 ballot_factory = BallotFactory.BallotFactory()
 
 
-class TestDecryption(TestCase):
+class TestDecryption(BaseTestCase):
     """Test decryption methods"""
 
     NUMBER_OF_GUARDIANS = 3

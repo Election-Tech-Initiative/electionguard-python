@@ -1,4 +1,4 @@
-from unittest import TestCase
+from tests.base_test_case import BaseTestCase
 
 from electionguard.key_ceremony import (
     AuxiliaryPublicKey,
@@ -24,7 +24,7 @@ NUMBER_OF_GUARDIANS = 5
 QUORUM = 3
 
 
-class TestKeyCeremony(TestCase):
+class TestKeyCeremony(BaseTestCase):
     """Key ceremony tests"""
 
     def test_generate_rsa_auxiliary_key_pair(self):

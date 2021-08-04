@@ -3,7 +3,7 @@
 # pylint: disable=unnecessary-comprehension
 
 from typing import Dict, List, Tuple
-from unittest import TestCase
+from tests.base_test_case import BaseTestCase
 
 from electionguard.ballot_box import BallotBox, BallotBoxState, get_ballots
 from electionguard.data_store import DataStore
@@ -39,7 +39,7 @@ election_factory = ElectionFactory.ElectionFactory()
 ballot_factory = BallotFactory.BallotFactory()
 
 
-class TestDecryptWithShares(TestCase):
+class TestDecryptWithShares(BaseTestCase):
     """Test decrypt with shares methods"""
 
     NUMBER_OF_GUARDIANS = 3

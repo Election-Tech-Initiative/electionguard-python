@@ -1,6 +1,8 @@
 import os
-from unittest import TestCase
 from unittest.mock import patch
+
+from tests.base_test_case import BaseTestCase
+
 
 from electionguard.constants import (
     PrimeOption,
@@ -17,7 +19,7 @@ from electionguard.constants import (
 )
 
 
-class TestConstants(TestCase):
+class TestConstants(BaseTestCase):
     """Election constant tests."""
 
     @patch.dict(os.environ, {"PRIME_OPTION": PrimeOption.Standard.value})

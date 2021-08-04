@@ -1,4 +1,5 @@
-from unittest import TestCase
+from tests.base_test_case import BaseTestCase
+
 from electionguard.ballot import (
     BallotBoxState,
     PlaintextBallot,
@@ -20,7 +21,7 @@ from electionguard.manifest import InternalManifest
 from electionguardtest.election_factory import ElectionFactory
 
 
-class TestCompactBallot(TestCase):
+class TestCompactBallot(BaseTestCase):
     """Test Compact Ballot Variations"""
 
     plaintext_ballot: PlaintextBallot

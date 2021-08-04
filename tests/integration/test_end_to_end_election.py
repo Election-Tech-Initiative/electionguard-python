@@ -3,16 +3,16 @@
 from typing import Callable, Dict, List, Union
 from os import path
 from shutil import rmtree
-from unittest import TestCase
-
 from random import randint
+
+from tests.base_test_case import BaseTestCase
+
 from electionguard.serializable import read_json_file
 from electionguard.type import BALLOT_ID
-
 from electionguard.utils import get_optional
 
 # Step 0 - Configure Election
-from electionguard.constants import ElectionConstants, TEST_ONLY_CONSTANTS
+from electionguard.constants import ElectionConstants, get_constants
 from electionguard.election import CiphertextElectionContext
 from electionguard.election_builder import ElectionBuilder
 from electionguard.manifest import Manifest, InternalManifest
@@ -71,7 +71,7 @@ BALLOTS_DIR = path.join(RESULTS_DIR, "encrypted_ballots")
 SPOILED_DIR = path.join(RESULTS_DIR, "spoiled_ballots")
 
 # pylint: disable=too-many-instance-attributes
-class TestEndToEndElection(TestCase):
+class TestEndToEndElection(BaseTestCase):
     """
     Test a complete simple example of executing an End-to-End encrypted election.
     In a real world scenario all of these steps would not be completed on the same machine.
@@ -279,7 +279,7 @@ class TestEndToEndElection(TestCase):
         self.internal_manifest, self.context = get_optional(
             self.election_builder.build()
         )
-        self.constants = TEST_ONLY_CONSTANTS
+        self.constants = get_constants()
 
         # Move on to encrypting ballots
 

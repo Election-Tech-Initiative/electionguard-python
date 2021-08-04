@@ -1,4 +1,4 @@
-from unittest import TestCase
+from tests.base_test_case import BaseTestCase
 
 from electionguard.election_polynomial import (
     compute_polynomial_coordinate,
@@ -13,7 +13,7 @@ TEST_EXPONENT_MODIFIER = 1
 TEST_POLYNOMIAL_DEGREE = 3
 
 
-class TestElectionPolynomial(TestCase):
+class TestElectionPolynomial(BaseTestCase):
     """Election polynomial tests"""
 
     def test_generate_polynomial(self):

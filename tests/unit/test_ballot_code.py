@@ -1,4 +1,4 @@
-from unittest import TestCase
+from tests.base_test_case import BaseTestCase
 
 from electionguard.group import ZERO_MOD_Q, ONE_MOD_Q, TWO_MOD_Q
 from electionguard.ballot_code import (
@@ -9,7 +9,7 @@ from electionguard.ballot_code import (
 from electionguardtest.election_factory import ElectionFactory
 
 
-class TestBallotCode(TestCase):
+class TestBallotCode(BaseTestCase):
     """Ballot code tests"""
 
     def test_rotate_ballot_code(self):

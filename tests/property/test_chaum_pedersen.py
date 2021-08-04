@@ -1,8 +1,9 @@
-from unittest import TestCase
 from datetime import timedelta
-
 from hypothesis import given, settings, HealthCheck
 from hypothesis.strategies import integers
+
+
+from tests.base_test_case import BaseTestCase
 
 from electionguard.chaum_pedersen import (
     ConstantChaumPedersenProof,
@@ -23,7 +24,7 @@ from electionguardtest.elgamal import elgamal_keypairs
 from electionguardtest.group import elements_mod_q_no_zero, elements_mod_q
 
 
-class TestDisjunctiveChaumPedersen(TestCase):
+class TestDisjunctiveChaumPedersen(BaseTestCase):
     """Disjunctive Chaum Pedersen tests"""
 
     def test_djcp_proofs_simple(self):
@@ -128,7 +129,7 @@ class TestDisjunctiveChaumPedersen(TestCase):
         self.assertFalse(proof.is_valid(message_bad, keypair.public_key, ONE_MOD_Q))
 
 
-class TestChaumPedersen(TestCase):
+class TestChaumPedersen(BaseTestCase):
     """Chaum Pedersen tests"""
 
     def test_cp_proofs_simple(self):
@@ -189,7 +190,7 @@ class TestChaumPedersen(TestCase):
         )
 
 
-class TestConstantChaumPedersen(TestCase):
+class TestConstantChaumPedersen(BaseTestCase):
     """Constant Chaum Pedersen tests"""
 
     def test_ccp_proofs_simple_encryption_of_zero(self):

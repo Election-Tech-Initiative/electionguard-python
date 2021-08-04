@@ -1,4 +1,4 @@
-from unittest import TestCase
+from tests.base_test_case import BaseTestCase
 
 from electionguard.guardian import Guardian
 from electionguard.key_ceremony import (
@@ -19,7 +19,7 @@ GUARDIAN_2 = Guardian(GUARDIAN_2_ID, 2, NUMBER_OF_GUARDIANS, QUORUM)
 GUARDIANS = [GUARDIAN_1, GUARDIAN_2]
 
 
-class TestKeyCeremonyMediator(TestCase):
+class TestKeyCeremonyMediator(BaseTestCase):
     """Key ceremony mediator tests"""
 
     def test_reset(self):

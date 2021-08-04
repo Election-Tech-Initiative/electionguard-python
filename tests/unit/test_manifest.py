@@ -1,5 +1,6 @@
-import unittest
 from datetime import datetime
+
+from tests.base_test_case import BaseTestCase
 
 from electionguard.manifest import (
     ContestDescriptionWithPlaceholders,
@@ -17,7 +18,7 @@ election_factory = ElectionFactory.ElectionFactory()
 ballot_factory = BallotFactory.BallotFactory()
 
 
-class TestManifest(unittest.TestCase):
+class TestManifest(BaseTestCase):
     """Manifest tests"""
 
     def test_simple_manifest_is_valid(self):
@@ -153,7 +154,3 @@ class TestManifest(unittest.TestCase):
         )
 
         self.assertFalse(description.is_valid())
-
-
-if __name__ == "__main__":
-    unittest.main()

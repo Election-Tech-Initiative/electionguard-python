@@ -1,15 +1,16 @@
-import unittest
 from typing import List
 
 from hypothesis import given, assume
 from hypothesis.strategies import integers
+
+from tests.base_test_case import BaseTestCase
 
 from electionguard.group import ElementModQ, int_to_q_unchecked
 from electionguard.nonces import Nonces
 from electionguardtest.group import elements_mod_q
 
 
-class TestNonces(unittest.TestCase):
+class TestNonces(BaseTestCase):
     """Nonces tests"""
 
     @given(elements_mod_q())

@@ -1,7 +1,9 @@
 # pylint: disable=consider-using-with
 from multiprocessing import Pool
-from unittest import TestCase
 from typing import List
+
+from tests.base_test_case import BaseTestCase
+
 from electionguard.scheduler import Scheduler
 
 
@@ -13,7 +15,7 @@ def _exception_callable(something: int):
     raise Exception
 
 
-class TestScheduler(TestCase):
+class TestScheduler(BaseTestCase):
     """Scheduler tests"""
 
     def test_schedule_callable_throws(self):

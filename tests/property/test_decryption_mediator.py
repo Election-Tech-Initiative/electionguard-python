@@ -1,12 +1,13 @@
 # pylint: disable=too-many-instance-attributes
 
-from unittest import TestCase
 from datetime import timedelta
 from typing import Dict, List
 from random import randrange
 
 from hypothesis import given, HealthCheck, settings, Phase
 from hypothesis.strategies import integers, data
+
+from tests.base_test_case import BaseTestCase
 
 from electionguard.ballot import PlaintextBallot, from_ciphertext_ballot
 from electionguard.ballot_box import get_ballots
@@ -45,7 +46,7 @@ election_factory = ElectionFactory.ElectionFactory()
 ballot_factory = BallotFactory.BallotFactory()
 
 
-class TestDecryptionMediator(TestCase):
+class TestDecryptionMediator(BaseTestCase):
     """Test suite for DecryptionMediator"""
 
     NUMBER_OF_GUARDIANS = 3

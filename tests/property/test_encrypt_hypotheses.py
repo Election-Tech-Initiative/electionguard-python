@@ -1,9 +1,10 @@
-import unittest
 from datetime import timedelta
 from typing import List, Dict
 
 from hypothesis import given, HealthCheck, settings, Phase
 from hypothesis.strategies import integers
+
+from tests.base_test_case import BaseTestCase
 
 from electionguard.ballot import CiphertextBallot
 from electionguard.decrypt_with_secrets import decrypt_ballot_with_secret
@@ -25,7 +26,7 @@ from electionguardtest.tally import accumulate_plaintext_ballots
 SEED = ElectionFactory.get_encryption_device().get_hash()
 
 
-class TestElections(unittest.TestCase):
+class TestElections(BaseTestCase):
     """Election hypothesis encryption tests"""
 
     @settings(

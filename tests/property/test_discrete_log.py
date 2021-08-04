@@ -1,7 +1,7 @@
-import unittest
-
 from hypothesis import given
 from hypothesis.strategies import integers
+
+from tests.base_test_case import BaseTestCase
 
 from electionguard.constants import get_generator, get_large_prime
 from electionguard.discrete_log import (
@@ -34,7 +34,7 @@ def _discrete_log_uncached(e: ElementModP) -> int:
     return count
 
 
-class TestDiscreteLogFunctions(unittest.TestCase):
+class TestDiscreteLogFunctions(BaseTestCase):
     """Discrete log tests"""
 
     @given(integers(0, 100))
@@ -74,7 +74,7 @@ class TestDiscreteLogFunctions(unittest.TestCase):
         self.assertEqual(len(cache), len(returned_cache))
 
 
-class TestDiscreteLogClass(unittest.TestCase):
+class TestDiscreteLogClass(BaseTestCase):
     """Discrete log tests"""
 
     @given(integers(0, 1000))

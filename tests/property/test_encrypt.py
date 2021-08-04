@@ -1,4 +1,4 @@
-import unittest
+from unittest import skip
 from copy import deepcopy
 from datetime import timedelta
 from random import Random
@@ -9,6 +9,7 @@ from hypothesis import HealthCheck
 from hypothesis import given, settings
 from hypothesis.strategies import integers
 
+from tests.base_test_case import BaseTestCase
 
 import electionguardtest.ballot_factory as BallotFactory
 import electionguardtest.election_factory as ElectionFactory
@@ -59,7 +60,7 @@ ballot_factory = BallotFactory.BallotFactory()
 SEED = election_factory.get_encryption_device().get_hash()
 
 
-class TestEncrypt(unittest.TestCase):
+class TestEncrypt(BaseTestCase):
     """Encryption tests"""
 
     def test_encrypt_simple_selection_succeeds(self):
@@ -396,7 +397,7 @@ class TestEncrypt(unittest.TestCase):
             )
         )
 
-    @unittest.skip("runs forever")
+    @skip("runs forever")
     @settings(
         deadline=timedelta(milliseconds=2000),
         suppress_health_check=[HealthCheck.too_slow],

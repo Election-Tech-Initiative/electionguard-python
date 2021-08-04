@@ -1,8 +1,10 @@
-import unittest
 from timeit import default_timer as timer
 
 from hypothesis import given
 from hypothesis.strategies import integers
+
+from tests.base_test_case import BaseTestCase
+from tests.property.test_group import elements_mod_q_no_zero
 
 from electionguard.constants import (
     get_generator,
@@ -31,10 +33,9 @@ from electionguard.nonces import Nonces
 from electionguard.scheduler import Scheduler
 from electionguard.utils import get_optional
 from electionguardtest.elgamal import elgamal_keypairs
-from tests.property.test_group import elements_mod_q_no_zero
 
 
-class TestElGamal(unittest.TestCase):
+class TestElGamal(BaseTestCase):
     """ElGamal tests"""
 
     def test_simple_elgamal_encryption_decryption(self):

@@ -1,4 +1,4 @@
-from unittest import TestCase
+from tests.base_test_case import BaseTestCase
 
 from electionguard.logs import (
     get_stream_handler,
@@ -12,7 +12,7 @@ from electionguard.logs import (
 )
 
 
-class TestLogs(TestCase):
+class TestLogs(BaseTestCase):
     """Logging tests"""
 
     def test_log_methods(self):
