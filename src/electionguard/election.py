@@ -1,10 +1,9 @@
+"""Context for election encryption."""
+
 from dataclasses import dataclass
 
+from .constants import get_small_prime, get_large_prime, get_generator
 from .group import (
-    Q,
-    P,
-    R,
-    G,
     ElementModQ,
     ElementModP,
     int_to_p_unchecked,
@@ -15,28 +14,9 @@ from .serializable import Serializable
 
 
 @dataclass(eq=True, unsafe_hash=True)
-class ElectionConstants(Serializable):
-    """
-    The constants for mathematical functions during the election.
-    """
-
-    large_prime = int_to_p_unchecked(P)
-    """large prime or p"""
-
-    small_prime = int_to_q_unchecked(Q)
-    """small prime or q"""
-
-    cofactor = int_to_p_unchecked(R)
-    """cofactor or r"""
-
-    generator = int_to_p_unchecked(G)
-    """generator or g"""
-
-
-@dataclass(eq=True, unsafe_hash=True)
 class CiphertextElectionContext(Serializable):
-    """
-    `CiphertextElectionContext` is the ElectionGuard representation of a specific election
+    """`CiphertextElectionContext` is the ElectionGuard representation of a specific election.
+
     Note: The ElectionGuard Data Spec deviates from the NIST model in that
     this object includes fields that are populated in the course of encrypting an election
     Specifically, `crypto_base_hash`, `crypto_extended_base_hash` and `elgamal_public_key`
@@ -109,9 +89,9 @@ def make_ciphertext_election_context(
     # form the basis of subsequent hash computations.
 
     crypto_base_hash = hash_elems(
-        int_to_p_unchecked(P),
-        int_to_q_unchecked(Q),
-        int_to_p_unchecked(G),
+        int_to_p_unchecked(get_large_prime()),
+        int_to_q_unchecked(get_small_prime()),
+        int_to_p_unchecked(get_generator()),
         number_of_guardians,
         quorum,
         manifest_hash,

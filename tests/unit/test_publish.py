@@ -1,13 +1,14 @@
 from datetime import datetime, timezone
 from os import path
 from shutil import rmtree
-from unittest import TestCase
+from tests.base_test_case import BaseTestCase
 
 from electionguard.ballot import (
     PlaintextBallot,
     make_ciphertext_ballot,
 )
-from electionguard.election import ElectionConstants, make_ciphertext_election_context
+from electionguard.constants import ElectionConstants
+from electionguard.election import make_ciphertext_election_context
 from electionguard.group import ONE_MOD_Q, ONE_MOD_P, int_to_q_unchecked
 from electionguard.guardian import GuardianRecord
 from electionguard.manifest import ElectionType, Manifest
@@ -18,7 +19,7 @@ from electionguard.tally import (
 )
 
 
-class TestPublish(TestCase):
+class TestPublish(BaseTestCase):
     """Publishing tests"""
 
     def test_publish(self) -> None:
@@ -28,7 +29,7 @@ class TestPublish(TestCase):
         context = make_ciphertext_election_context(
             1, 1, ONE_MOD_P, ONE_MOD_Q, ONE_MOD_Q
         )
-        constants = ElectionConstants()
+        constants = ElectionConstants(1, 1, 1, 1)
         devices = []
         guardian_records = [GuardianRecord("", "", ONE_MOD_Q, [], [])]
         encrypted_ballots = []

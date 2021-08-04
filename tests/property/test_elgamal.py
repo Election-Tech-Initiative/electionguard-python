@@ -1,9 +1,16 @@
-import unittest
 from timeit import default_timer as timer
 
 from hypothesis import given
 from hypothesis.strategies import integers
 
+from tests.base_test_case import BaseTestCase
+from tests.property.test_group import elements_mod_q_no_zero
+
+from electionguard.constants import (
+    get_generator,
+    get_small_prime,
+    get_large_prime,
+)
 from electionguard.elgamal import (
     ElGamalKeyPair,
     elgamal_encrypt,
@@ -15,9 +22,6 @@ from electionguard.elgamal import (
 from electionguard.group import (
     ElementModQ,
     g_pow_p,
-    G,
-    P,
-    Q,
     ZERO_MOD_Q,
     TWO_MOD_Q,
     ONE_MOD_Q,
@@ -29,10 +33,9 @@ from electionguard.nonces import Nonces
 from electionguard.scheduler import Scheduler
 from electionguard.utils import get_optional
 from electionguardtest.elgamal import elgamal_keypairs
-from tests.property.test_group import elements_mod_q_no_zero
 
 
-class TestElGamal(unittest.TestCase):
+class TestElGamal(BaseTestCase):
     """ElGamal tests"""
 
     def test_simple_elgamal_encryption_decryption(self):
@@ -41,19 +44,19 @@ class TestElGamal(unittest.TestCase):
         keypair = get_optional(elgamal_keypair_from_secret(secret_key))
         public_key = keypair.public_key
 
-        self.assertLess(public_key.to_int(), P)
+        self.assertLess(public_key.to_int(), get_large_prime())
         elem = g_pow_p(ZERO_MOD_Q)
         self.assertEqual(elem, ONE_MOD_P)  # g^0 == 1
 
         ciphertext = get_optional(elgamal_encrypt(0, nonce, keypair.public_key))
-        self.assertEqual(G, ciphertext.pad.to_int())
+        self.assertEqual(get_generator(), ciphertext.pad.to_int())
         self.assertEqual(
-            pow(ciphertext.pad.to_int(), secret_key.to_int(), P),
-            pow(public_key.to_int(), nonce.to_int(), P),
+            pow(ciphertext.pad.to_int(), secret_key.to_int(), get_large_prime()),
+            pow(public_key.to_int(), nonce.to_int(), get_large_prime()),
         )
         self.assertEqual(
             ciphertext.data.to_int(),
-            pow(public_key.to_int(), nonce.to_int(), P),
+            pow(public_key.to_int(), nonce.to_int(), get_large_prime()),
         )
 
         plaintext = ciphertext.decrypt(keypair.secret_key)
@@ -90,8 +93,8 @@ class TestElGamal(unittest.TestCase):
 
     @given(elgamal_keypairs())
     def test_elgamal_generated_keypairs_are_within_range(self, keypair: ElGamalKeyPair):
-        self.assertLess(keypair.public_key.to_int(), P)
-        self.assertLess(keypair.secret_key.to_int(), Q)
+        self.assertLess(keypair.public_key.to_int(), get_large_prime())
+        self.assertLess(keypair.secret_key.to_int(), get_small_prime())
         self.assertEqual(g_pow_p(keypair.secret_key), keypair.public_key)
 
     @given(

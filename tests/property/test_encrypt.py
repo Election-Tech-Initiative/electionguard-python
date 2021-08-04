@@ -1,4 +1,4 @@
-import unittest
+from unittest import skip
 from copy import deepcopy
 from datetime import timedelta
 from random import Random
@@ -9,10 +9,11 @@ from hypothesis import HealthCheck
 from hypothesis import given, settings
 from hypothesis.strategies import integers
 
+from tests.base_test_case import BaseTestCase
 
 import electionguardtest.ballot_factory as BallotFactory
 import electionguardtest.election_factory as ElectionFactory
-
+from electionguard.constants import get_small_prime
 from electionguard.chaum_pedersen import (
     ConstantChaumPedersenProof,
     DisjunctiveChaumPedersenProof,
@@ -39,7 +40,6 @@ from electionguard.group import (
     TWO_MOD_Q,
     int_to_q,
     add_q,
-    Q,
     TWO_MOD_P,
     mult_p,
 )
@@ -60,14 +60,14 @@ ballot_factory = BallotFactory.BallotFactory()
 SEED = election_factory.get_encryption_device().get_hash()
 
 
-class TestEncrypt(unittest.TestCase):
+class TestEncrypt(BaseTestCase):
     """Encryption tests"""
 
     def test_encrypt_simple_selection_succeeds(self):
 
         # Arrange
         keypair = elgamal_keypair_from_secret(int_to_q(2))
-        nonce = randbelow(Q)
+        nonce = randbelow(get_small_prime())
         metadata = SelectionDescription(
             "some-selection-object-id", "some-candidate-id", 1
         )
@@ -92,7 +92,7 @@ class TestEncrypt(unittest.TestCase):
 
         # Arrange
         keypair = elgamal_keypair_from_secret(int_to_q(2))
-        nonce = randbelow(Q)
+        nonce = randbelow(get_small_prime())
         metadata = SelectionDescription(
             "some-selection-object-id", "some-candidate-id", 1
         )
@@ -241,7 +241,7 @@ class TestEncrypt(unittest.TestCase):
     def test_encrypt_simple_contest_referendum_succeeds(self):
         # Arrange
         keypair = elgamal_keypair_from_secret(int_to_q(2))
-        nonce = randbelow(Q)
+        nonce = randbelow(get_small_prime())
         ballot_selections = [
             SelectionDescription(
                 "some-object-id-affirmative", "some-candidate-id-affirmative", 0
@@ -397,7 +397,7 @@ class TestEncrypt(unittest.TestCase):
             )
         )
 
-    @unittest.skip("runs forever")
+    @skip("runs forever")
     @settings(
         deadline=timedelta(milliseconds=2000),
         suppress_health_check=[HealthCheck.too_slow],

@@ -1,6 +1,6 @@
 # pylint: disable=too-many-public-methods
 
-from unittest import TestCase
+from tests.base_test_case import BaseTestCase
 
 from electionguard.guardian import Guardian
 
@@ -21,7 +21,7 @@ NUMBER_OF_GUARDIANS = 2
 QUORUM = 2
 
 
-class TestGuardian(TestCase):
+class TestGuardian(BaseTestCase):
     """Guardian tests"""
 
     def test_reset(self):

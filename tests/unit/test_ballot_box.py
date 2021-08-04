@@ -1,4 +1,4 @@
-from unittest import TestCase
+from tests.base_test_case import BaseTestCase
 
 from electionguard.ballot import BallotBoxState
 from electionguard.data_store import DataStore
@@ -8,6 +8,7 @@ from electionguard.ballot_box import (
     accept_ballot,
 )
 from electionguard.ballot_validator import ballot_is_valid_for_election
+from electionguard.constants import get_small_prime
 from electionguard.elgamal import elgamal_keypair_from_secret
 from electionguard.encrypt import encrypt_ballot
 from electionguard.group import int_to_q
@@ -21,10 +22,11 @@ ballot_factory = BallotFactory.BallotFactory()
 SEED = election_factory.get_encryption_device().get_hash()
 
 
-class TestBallotBox(TestCase):
+class TestBallotBox(BaseTestCase):
     """Ballot box tests"""
 
     def test_ballot_box_cast_ballot(self):
+        print(get_small_prime())
         # Arrange
         keypair = elgamal_keypair_from_secret(int_to_q(2))
         manifest = election_factory.get_fake_manifest()

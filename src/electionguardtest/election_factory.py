@@ -1,6 +1,7 @@
+"""Factory to create elections for testing purposes."""
+
 from datetime import datetime
 import os
-import uuid
 from dataclasses import dataclass
 from typing import TypeVar, Callable, Optional, Tuple, List
 
@@ -9,11 +10,13 @@ from hypothesis.strategies import (
     emails,
     integers,
     text,
+    uuids,
     SearchStrategy,
 )
 
 from electionguard.ballot import PlaintextBallot
-from electionguard.election import CiphertextElectionContext, ElectionConstants
+from electionguard.constants import ElectionConstants, get_constants
+from electionguard.election import CiphertextElectionContext
 from electionguard.election_builder import ElectionBuilder
 from electionguard.encrypt import EncryptionDevice, contest_from, generate_device_uuid
 from electionguard.group import ElementModP, TWO_MOD_Q
@@ -63,21 +66,23 @@ class AllPublicElectionData:
 
 @dataclass
 class AllPrivateElectionData:
-    """All private data for election"""
+    """All private data for election."""
 
     guardians: List[Guardian]
 
 
 class ElectionFactory:
-    """Factory to create elections"""
+    """Factory to create elections."""
 
     simple_election_manifest_file_name = "election_manifest_simple.json"
 
     def get_simple_manifest_from_file(self) -> Manifest:
+        """Get simple manifest from json file."""
         return self._get_manifest_from_file(self.simple_election_manifest_file_name)
 
     @staticmethod
     def get_hamilton_manifest_from_file() -> Manifest:
+        """Get Hamilton County manifest from json file."""
         with open(
             os.path.join(data, "hamilton-county", "election_manifest.json"), "r"
         ) as subject:
@@ -89,6 +94,7 @@ class ElectionFactory:
     def get_hamilton_manifest_with_encryption_context(
         self,
     ) -> Tuple[AllPublicElectionData, AllPrivateElectionData]:
+        """Get hamilton manifest and context"""
         guardians: List[Guardian] = []
         guardian_records: List[GuardianRecord] = []
 
@@ -111,7 +117,7 @@ class ElectionFactory:
         builder.set_public_key(get_optional(joint_key).joint_public_key)
         builder.set_commitment_hash(get_optional(joint_key).commitment_hash)
         internal_manifest, context = get_optional(builder.build())
-        constants = ElectionConstants()
+        constants = get_constants()
 
         return (
             AllPublicElectionData(
@@ -126,10 +132,7 @@ class ElectionFactory:
 
     @staticmethod
     def get_fake_manifest() -> Manifest:
-        """
-        Get a single fake manifest object that is manually constructed with default values
-        """
-
+        """Get a single fake manifest object that is manually constructed with default values."""
         fake_ballot_style = BallotStyle("some-ballot-style-id")
         fake_ballot_style.geopolitical_unit_ids = ["some-geopoltical-unit-id"]
 
@@ -210,6 +213,7 @@ class ElectionFactory:
     def get_fake_ciphertext_election(
         manifest: Manifest, elgamal_public_key: ElementModP
     ) -> Tuple[InternalManifest, CiphertextElectionContext]:
+        """Get mock election."""
         builder = ElectionBuilder(number_of_guardians=1, quorum=1, manifest=manifest)
         builder.set_public_key(elgamal_public_key)
         builder.set_commitment_hash(TWO_MOD_Q)
@@ -220,9 +224,7 @@ class ElectionFactory:
     def get_fake_ballot(
         self, manifest: Manifest = None, ballot_id: str = None
     ) -> PlaintextBallot:
-        """
-        Get a single Fake Ballot object that is manually constructed with default vaules
-        """
+        """Get a single mock Ballot object that is manually constructed with default values."""
         if manifest is None:
             manifest = self.get_fake_manifest()
 
@@ -247,11 +249,12 @@ class ElectionFactory:
 
     @staticmethod
     def get_encryption_device() -> EncryptionDevice:
+        """Get mock encryption device."""
         return EncryptionDevice(
             generate_device_uuid(),
             12345,
             45678,
-            f"polling-place-{str(uuid.uuid1())}",
+            "polling-place",
         )
 
 
@@ -262,14 +265,16 @@ def get_selection_description_well_formed(
     email_addresses=emails(),
     candidate_id: Optional[str] = None,
     sequence_order: Optional[int] = None,
+    ids=uuids(),
 ) -> Tuple[str, SelectionDescription]:
+    """Get mock well formed selection description."""
     if candidate_id is None:
         candidate_id = draw(email_addresses)
 
-    object_id = f"{candidate_id}-selection"
-
     if sequence_order is None:
         sequence_order = draw(ints)
+
+    object_id = f"{candidate_id}-selection-{draw(ids)}"
 
     return (object_id, SelectionDescription(object_id, candidate_id, sequence_order))
 
@@ -284,6 +289,7 @@ def get_contest_description_well_formed(
     sequence_order: Optional[int] = None,
     electoral_district_id: Optional[str] = None,
 ) -> Tuple[str, ContestDescription]:
+    """Get mock well formed selection contest."""
     object_id = f"{draw(email_addresses)}-contest"
 
     if sequence_order is None:

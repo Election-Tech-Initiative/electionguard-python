@@ -1,8 +1,8 @@
-from unittest import TestCase
+from tests.base_test_case import BaseTestCase
 from electionguard.singleton import Singleton
 
 
-class TestSingleton(TestCase):
+class TestSingleton(BaseTestCase):
     """Singleton tests"""
 
     def test_singleton(self):

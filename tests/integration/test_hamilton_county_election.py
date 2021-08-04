@@ -1,4 +1,4 @@
-import unittest
+from tests.base_test_case import BaseTestCase
 
 import electionguardtest.election_factory as ElectionFactory
 import electionguardtest.ballot_factory as BallotFactory
@@ -7,7 +7,7 @@ election_factory = ElectionFactory.ElectionFactory()
 ballot_factory = BallotFactory.BallotFactory()
 
 
-class TestHamiltonCountyElection(unittest.TestCase):
+class TestHamiltonCountyElection(BaseTestCase):
     """
     Demonstrates a non-trivial example using realistic input data
     """

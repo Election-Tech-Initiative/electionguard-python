@@ -1,15 +1,15 @@
-import unittest
-
 from typing import List, Optional
 
 from hypothesis import given
 
-from electionguard.group import ElementModQ
-from electionguard.hash import hash_elems
+from tests.base_test_case import BaseTestCase
 from tests.property.test_group import elements_mod_p, elements_mod_q
 
+from electionguard.group import ElementModQ
+from electionguard.hash import hash_elems
 
-class TestHash(unittest.TestCase):
+
+class TestHash(BaseTestCase):
     """Hash tests"""
 
     @given(elements_mod_p(), elements_mod_q())

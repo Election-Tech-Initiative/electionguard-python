@@ -1,9 +1,9 @@
-from unittest import TestCase
+from tests.base_test_case import BaseTestCase
 
 from electionguard.rsa import rsa_decrypt, rsa_encrypt, rsa_keypair
 
 
-class TestRSA(TestCase):
+class TestRSA(BaseTestCase):
     """RSA encryption tests"""
 
     def test_rsa_encrypt(self) -> None:

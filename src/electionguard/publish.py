@@ -1,9 +1,14 @@
+"""Demonstration of publish to serialize out the election artifacts."""
+
 from os import path
 from typing import Iterable
 
+from electionguard.serializable import write_json_file
+
 from .ballot import PlaintextBallot, CiphertextBallot, SubmittedBallot
+from .constants import ElectionConstants
 from .guardian import GuardianRecord, PrivateGuardianRecord
-from .election import CiphertextElectionContext, ElectionConstants
+from .election import CiphertextElectionContext
 from .encrypt import EncryptionDevice
 from .manifest import Manifest
 from .tally import PlaintextTally, PublishedCiphertextTally
@@ -36,8 +41,7 @@ def publish(
     guardian_records: Iterable[GuardianRecord],
     results_directory: str = RESULTS_DIR,
 ) -> None:
-    """Publishes the election record as json"""
-
+    """Publish the election record as json."""
     devices_directory = path.join(results_directory, "devices")
     guardian_directory = path.join(results_directory, "guardians")
     ballots_directory = path.join(results_directory, "encrypted_ballots")
@@ -46,7 +50,7 @@ def publish(
     make_directory(results_directory)
     manifest.to_json_file(MANIFEST_FILE_NAME, results_directory)
     context.to_json_file(CONTEXT_FILE_NAME, results_directory)
-    constants.to_json_file(CONSTANTS_FILE_NAME, results_directory)
+    write_json_file(constants, CONSTANTS_FILE_NAME, results_directory)
 
     make_directory(devices_directory)
     for device in devices:
@@ -79,12 +83,11 @@ def publish_private_data(
     guardian_records: Iterable[PrivateGuardianRecord],
     results_directory: str = RESULTS_DIR,
 ) -> None:
-    """
-    Publish the private data for an election.
+    """Publish the private data for an election.
+
     Useful for generating sample data sets.
     Do not use this in a production application.
     """
-
     private_directory = path.join(results_directory, "private")
     plaintext_ballots_directory = path.join(private_directory, "plaintext")
     encrypted_ballots_directory = path.join(private_directory, "encrypted")

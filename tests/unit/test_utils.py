@@ -1,10 +1,11 @@
-from unittest import TestCase
 from datetime import datetime, timezone
+
+from tests.base_test_case import BaseTestCase
 
 from electionguard.utils import to_ticks
 
 
-class TestUtils(TestCase):
+class TestUtils(BaseTestCase):
     """Utility tests"""
 
     def test_conversion_to_ticks_from_utc(self):

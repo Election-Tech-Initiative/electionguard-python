@@ -1,5 +1,6 @@
 from typing import Dict, List
-from unittest import TestCase
+
+from tests.base_test_case import BaseTestCase
 
 from electionguard.auxiliary import AuxiliaryKeyPair
 from electionguard.key_ceremony import (
@@ -19,7 +20,7 @@ from electionguard.type import GUARDIAN_ID
 from electionguardtest.identity_encrypt import identity_auxiliary_encrypt
 
 
-class TestKeyCeremony(TestCase):
+class TestKeyCeremony(BaseTestCase):
     """
     Test the key ceremony entirely from a functional sense
     This demonstrates that no stateful models are required and

@@ -1,9 +1,10 @@
-from unittest import TestCase
 from datetime import timedelta
 from typing import Dict
 
 from hypothesis import given, HealthCheck, settings, Phase
 from hypothesis.strategies import integers
+
+from tests.base_test_case import BaseTestCase
 
 from electionguard.ballot import (
     BallotBoxState,
@@ -25,7 +26,7 @@ from electionguardtest.election_factory import ElectionFactory
 from electionguardtest.tally import accumulate_plaintext_ballots
 
 
-class TestTally(TestCase):
+class TestTally(BaseTestCase):
     """Tally tests"""
 
     @settings(

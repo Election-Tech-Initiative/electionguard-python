@@ -11,10 +11,10 @@ from typing import (
     Sequence as TypedSequence,
 )
 
+from .constants import get_small_prime
 from .group import (
     ElementModPOrQ,
     ElementModQ,
-    Q_MINUS_ONE,
     int_to_q_unchecked,
     ElementModP,
 )
@@ -102,4 +102,6 @@ def hash_elems(*a: CRYPTO_HASHABLE_ALL) -> ElementModQ:
 
     # We don't need the checked version of int_to_q, because the
     # modulo operation here guarantees that we're in bounds.
-    return int_to_q_unchecked(int.from_bytes(h.digest(), byteorder="big") % Q_MINUS_ONE)
+    return int_to_q_unchecked(
+        int.from_bytes(h.digest(), byteorder="big") % (get_small_prime() - 1)
+    )

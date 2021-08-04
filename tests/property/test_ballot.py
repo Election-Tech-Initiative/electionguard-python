@@ -1,17 +1,16 @@
-import unittest
 from typing import Tuple
-
 from datetime import timedelta
-
 from hypothesis import HealthCheck
 from hypothesis import given, settings
+
+from tests.base_test_case import BaseTestCase
 
 from electionguard.ballot import PlaintextBallotSelection
 
 import electionguardtest.ballot_factory as BallotFactory
 
 
-class TestBallot(unittest.TestCase):
+class TestBallot(BaseTestCase):
     """Ballot tests"""
 
     def test_ballot_is_valid(self):
@@ -73,7 +72,3 @@ class TestBallot(unittest.TestCase):
         # Assert
         self.assertFalse(is_valid)
         self.assertTrue(0 <= as_int <= 1)
-
-
-if __name__ == "__main__":
-    unittest.main()

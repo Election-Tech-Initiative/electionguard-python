@@ -1,8 +1,9 @@
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from unittest import TestCase
 from typing import Any, List, Optional
 from os import remove
+
+from tests.base_test_case import BaseTestCase
 
 from electionguard.serializable import (
     set_deserializers,
@@ -54,7 +55,7 @@ EXPECTED_JSON_OBJECT = {
 }
 
 
-class TestSerializable(TestCase):
+class TestSerializable(BaseTestCase):
     """Serializing tests"""
 
     def test_read_iso_date(self) -> None:
