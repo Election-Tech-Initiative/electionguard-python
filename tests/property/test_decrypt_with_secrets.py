@@ -29,7 +29,6 @@ from electionguard.group import (
     TWO_MOD_P,
     ONE_MOD_Q,
     mult_p,
-    int_to_q_unchecked,
 )
 from electionguard.manifest import (
     ContestDescription,
@@ -134,10 +133,7 @@ class TestDecryptWithSecrets(BaseTestCase):
 
         # tamper with the encryption
         malformed_encryption = deepcopy(subject)
-        malformed_message = malformed_encryption.ciphertext._replace(
-            pad=mult_p(subject.ciphertext.pad, TWO_MOD_P)
-        )
-        malformed_encryption.ciphertext = malformed_message
+        malformed_encryption.ciphertext.pad = mult_p(subject.ciphertext.pad, TWO_MOD_P)
 
         # tamper with the proof
         malformed_proof = deepcopy(subject)
@@ -432,7 +428,7 @@ class TestDecryptWithSecrets(BaseTestCase):
         self.assertIsNotNone(subject)
 
         # tamper with the nonce
-        subject.nonce = int_to_q_unchecked(1)
+        subject.nonce = ONE_MOD_Q
 
         result_from_nonce = decrypt_contest_with_nonce(
             subject,

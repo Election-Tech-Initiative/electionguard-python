@@ -15,6 +15,7 @@ from hypothesis.strategies import (
     one_of,
     just,
 )
+from hypothesis.strategies._internal.core import sampled_from
 
 from electionguard.ballot import PlaintextBallotContest, PlaintextBallot
 from electionguard.election import (
@@ -160,7 +161,7 @@ def election_types(draw: _DrawType):
     Generates an `ElectionType`.
     :param draw: Hidden argument, used by Hypothesis.
     """
-    n = draw(integers(0, 7))
+    n = draw(sampled_from(ElectionType))
     return ElectionType(n)
 
 
@@ -170,7 +171,7 @@ def reporting_unit_types(draw: _DrawType):
     Generates a `ReportingUnitType` object.
     :param draw: Hidden argument, used by Hypothesis.
     """
-    n = draw(integers(0, 28))
+    n = draw(sampled_from(ReportingUnitType))
     return ReportingUnitType(n)
 
 
@@ -637,7 +638,9 @@ def ciphertext_elections(draw: _DrawType, manifest: Manifest):
     which the `CiphertextElectionContext` will be associated
     :return: a tuple of a `CiphertextElectionContext` and the secret key associated with it
     """
-    secret_key, public_key = draw(elgamal_keypairs())
+    keypair = draw(elgamal_keypairs())
+    secret_key = keypair.secret_key
+    public_key = keypair.public_key
     commitment_hash = draw(elements_mod_q_no_zero())
     ciphertext_election_with_secret: CIPHERTEXT_ELECTIONS_TUPLE_TYPE = (
         secret_key,

@@ -7,8 +7,8 @@ from electionguard.constants import (
     get_large_prime,
 )
 from electionguard.group import (
-    int_to_p_unchecked,
-    int_to_q_unchecked,
+    ElementModP,
+    ElementModQ,
 )
 
 _T = TypeVar("_T")
@@ -22,9 +22,7 @@ def elements_mod_q(draw: _DrawType):
 
     :param draw: Hidden argument, used by Hypothesis.
     """
-    return int_to_q_unchecked(
-        draw(integers(min_value=0, max_value=get_small_prime() - 1))
-    )
+    return ElementModQ(draw(integers(min_value=0, max_value=get_small_prime() - 1)))
 
 
 @composite
@@ -34,9 +32,7 @@ def elements_mod_q_no_zero(draw: _DrawType):
 
     :param draw: Hidden argument, used by Hypothesis.
     """
-    return int_to_q_unchecked(
-        draw(integers(min_value=1, max_value=get_small_prime() - 1))
-    )
+    return ElementModQ(draw(integers(min_value=1, max_value=get_small_prime() - 1)))
 
 
 @composite
@@ -46,9 +42,7 @@ def elements_mod_p(draw: _DrawType):
 
     :param draw: Hidden argument, used by Hypothesis.
     """
-    return int_to_p_unchecked(
-        draw(integers(min_value=0, max_value=get_large_prime() - 1))
-    )
+    return ElementModP(draw(integers(min_value=0, max_value=get_large_prime() - 1)))
 
 
 @composite
@@ -58,6 +52,4 @@ def elements_mod_p_no_zero(draw: _DrawType):
 
     :param draw: Hidden argument, used by Hypothesis.
     """
-    return int_to_p_unchecked(
-        draw(integers(min_value=1, max_value=get_large_prime() - 1))
-    )
+    return ElementModP(draw(integers(min_value=1, max_value=get_large_prime() - 1)))

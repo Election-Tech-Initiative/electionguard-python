@@ -21,9 +21,7 @@ from electionguard.encrypt import (
     EncryptionMediator,
     encrypt_ballot,
 )
-from electionguard.group import (
-    int_to_q_unchecked,
-)
+from electionguard.group import ONE_MOD_Q
 from electionguard.guardian import Guardian
 from electionguard.key_ceremony import CeremonyDetails
 from electionguard.key_ceremony_mediator import KeyCeremonyMediator
@@ -347,7 +345,7 @@ class TestDecryptionMediator(BaseTestCase):
         store = DataStore()
         for ballot in ballots:
             encrypted_ballot = encrypt_ballot(
-                ballot, internal_manifest, context, int_to_q_unchecked(1)
+                ballot, internal_manifest, context, ONE_MOD_Q
             )
             self.assertIsNotNone(encrypted_ballot)
             # add to the ballot store

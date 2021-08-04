@@ -1,4 +1,5 @@
 from datetime import datetime
+from dataclasses import dataclass
 from typing import List, Optional
 from uuid import getnode
 
@@ -26,11 +27,11 @@ from .manifest import (
     SelectionDescription,
 )
 from .nonces import Nonces
-from .serializable import Serializable
 from .utils import get_optional, get_or_else_optional_func
 
 
-class EncryptionDevice(Serializable):
+@dataclass
+class EncryptionDevice:
     """
     Metadata for encryption device
     """
@@ -46,20 +47,6 @@ class EncryptionDevice(Serializable):
 
     location: str
     """Arbitary string to designate the location of device"""
-
-    def __init__(
-        self,
-        device_id: int,
-        session_id: int,
-        launch_code: int,
-        location: str,
-    ) -> None:
-        self.device_id = device_id
-        self.session_id = session_id
-        self.launch_code = launch_code
-        self.location = location
-
-        log_info(f": EncryptionDevice: Created: UUID: {device_id} at: {location}")
 
     def get_hash(self) -> ElementModQ:
         """

@@ -43,6 +43,7 @@ from electionguard.manifest import (
 from electionguard.utils import get_optional
 
 from electionguardtest.key_ceremony_helper import KeyCeremonyHelper
+from electionguardtest.serialize import from_file_to_dataclass
 
 _T = TypeVar("_T")
 _DrawType = Callable[[SearchStrategy[_T]], _T]
@@ -83,13 +84,12 @@ class ElectionFactory:
     @staticmethod
     def get_hamilton_manifest_from_file() -> Manifest:
         """Get Hamilton County manifest from json file."""
-        with open(
-            os.path.join(data, "hamilton-county", "election_manifest.json"), "r"
-        ) as subject:
-            result = subject.read()
-            target = Manifest.from_json(result)
-
-        return target
+        return from_file_to_dataclass(
+            Manifest,
+            os.path.join(
+                data, os.path.join(data, "hamilton-county", "election_manifest.json")
+            ),
+        )
 
     def get_hamilton_manifest_with_encryption_context(
         self,
@@ -241,11 +241,7 @@ class ElectionFactory:
 
     @staticmethod
     def _get_manifest_from_file(filename: str) -> Manifest:
-        with open(os.path.join(data, filename), "r") as subject:
-            result = subject.read()
-            manifest = Manifest.from_json(result)
-
-        return manifest
+        return from_file_to_dataclass(Manifest, os.path.join(data, filename))
 
     @staticmethod
     def get_encryption_device() -> EncryptionDevice:

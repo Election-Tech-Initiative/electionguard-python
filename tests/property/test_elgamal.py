@@ -26,7 +26,6 @@ from electionguard.group import (
     TWO_MOD_Q,
     ONE_MOD_Q,
     ONE_MOD_P,
-    int_to_q_unchecked,
 )
 from electionguard.logs import log_info
 from electionguard.nonces import Nonces
@@ -44,19 +43,19 @@ class TestElGamal(BaseTestCase):
         keypair = get_optional(elgamal_keypair_from_secret(secret_key))
         public_key = keypair.public_key
 
-        self.assertLess(public_key.to_int(), get_large_prime())
+        self.assertLess(public_key, get_large_prime())
         elem = g_pow_p(ZERO_MOD_Q)
         self.assertEqual(elem, ONE_MOD_P)  # g^0 == 1
 
         ciphertext = get_optional(elgamal_encrypt(0, nonce, keypair.public_key))
-        self.assertEqual(get_generator(), ciphertext.pad.to_int())
+        self.assertEqual(get_generator(), ciphertext.pad)
         self.assertEqual(
-            pow(ciphertext.pad.to_int(), secret_key.to_int(), get_large_prime()),
-            pow(public_key.to_int(), nonce.to_int(), get_large_prime()),
+            pow(ciphertext.pad, secret_key, get_large_prime()),
+            pow(public_key, nonce, get_large_prime()),
         )
         self.assertEqual(
-            ciphertext.data.to_int(),
-            pow(public_key.to_int(), nonce.to_int(), get_large_prime()),
+            ciphertext.data,
+            pow(public_key, nonce, get_large_prime()),
         )
 
         plaintext = ciphertext.decrypt(keypair.secret_key)
@@ -93,8 +92,8 @@ class TestElGamal(BaseTestCase):
 
     @given(elgamal_keypairs())
     def test_elgamal_generated_keypairs_are_within_range(self, keypair: ElGamalKeyPair):
-        self.assertLess(keypair.public_key.to_int(), get_large_prime())
-        self.assertLess(keypair.secret_key.to_int(), get_small_prime())
+        self.assertLess(keypair.public_key, get_large_prime())
+        self.assertLess(keypair.secret_key, get_small_prime())
         self.assertEqual(g_pow_p(keypair.secret_key), keypair.public_key)
 
     @given(
@@ -160,7 +159,7 @@ class TestElGamal(BaseTestCase):
         # Arrange
         scheduler = Scheduler()
         problem_size = 1000
-        random_secret_keys = Nonces(int_to_q_unchecked(3))[0:problem_size]
+        random_secret_keys = Nonces(ElementModQ(3))[0:problem_size]
         log_info(
             f"testing GMPY2 powmod parallelism safety (cpus = {scheduler.cpu_count}, problem_size = {problem_size})"
         )

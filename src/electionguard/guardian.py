@@ -40,14 +40,13 @@ from .key_ceremony import (
 )
 from .logs import log_warning
 from .rsa import rsa_encrypt, rsa_decrypt
-from .serializable import Serializable
 from .schnorr import SchnorrProof
 from .tally import CiphertextTally
 from .type import BALLOT_ID, GUARDIAN_ID
 
 
 @dataclass
-class GuardianRecord(Serializable):
+class GuardianRecord:
     """
     Published record containing all required information per Guardian
     for Election record used in verification processes
@@ -98,7 +97,7 @@ def publish_guardian_record(election_public_key: ElectionPublicKey) -> GuardianR
 
 
 @dataclass
-class PrivateGuardianRecord(Serializable):
+class PrivateGuardianRecord:
     """Unpublishable private record containing information per Guardian."""
 
     guardian_id: GUARDIAN_ID

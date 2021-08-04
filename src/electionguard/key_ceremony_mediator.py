@@ -1,4 +1,5 @@
-from typing import Dict, Iterable, List, NamedTuple, Optional
+from dataclasses import dataclass, field
+from typing import Dict, Iterable, List, Optional
 from .key_ceremony import (
     AuxiliaryPublicKey,
     CeremonyDetails,
@@ -14,19 +15,21 @@ from .key_ceremony import (
 from .type import GUARDIAN_ID, MEDIATOR_ID
 
 
-class GuardianPair(NamedTuple):
+@dataclass(unsafe_hash=True)
+class GuardianPair:
     """Pair of guardians involved in sharing"""
 
     owner_id: GUARDIAN_ID
     designated_id: GUARDIAN_ID
 
 
-class BackupVerificationState(NamedTuple):
+@dataclass
+class BackupVerificationState:
     """The state of the verifications of all guardian election partial key backups"""
 
-    all_sent: bool = False
-    all_verified: bool = False
-    failed_verifications: List[GuardianPair] = []
+    all_sent: bool = field(default=False)
+    all_verified: bool = field(default=False)
+    failed_verifications: List[GuardianPair] = field(default_factory=list)
 
 
 class KeyCeremonyMediator:

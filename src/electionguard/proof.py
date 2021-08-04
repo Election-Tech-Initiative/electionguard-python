@@ -1,6 +1,5 @@
 from enum import Enum
 
-from .serializable import Serializable
 from .utils import space_between_capitals
 
 
@@ -13,7 +12,7 @@ class ProofUsage(Enum):
     SelectionValue = "Prove selection's value (0 or 1)"
 
 
-class Proof(Serializable):
+class Proof:
     """Base class for proofs with name and usage case"""
 
     name: str = "Proof"

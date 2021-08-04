@@ -5,7 +5,7 @@ from hypothesis.strategies import integers
 
 from tests.base_test_case import BaseTestCase
 
-from electionguard.group import ElementModQ, int_to_q_unchecked
+from electionguard.group import ElementModQ
 from electionguard.nonces import Nonces
 from electionguardtest.group import elements_mod_q
 
@@ -30,13 +30,12 @@ class TestNonces(BaseTestCase):
     @given(
         elements_mod_q(),
         elements_mod_q(),
-        integers(min_value=0, max_value=1000000),
     )
-    def test_nonces_seed_matters(self, seed1: ElementModQ, seed2: ElementModQ, i: int):
+    def test_nonces_seed_matters(self, seed1: ElementModQ, seed2: ElementModQ):
         assume(seed1 != seed2)
         n1 = Nonces(seed1)
         n2 = Nonces(seed2)
-        self.assertNotEqual(n1[i], n2[i])
+        self.assertNotEqual(n1[0], n2[0])
 
     @given(elements_mod_q())
     def test_nonces_with_slices(self, seed: ElementModQ):
@@ -56,7 +55,7 @@ class TestNonces(BaseTestCase):
         self.assertEqual(l, l2)
 
     def test_nonces_type_errors(self):
-        n = Nonces(int_to_q_unchecked(3))
+        n = Nonces(ElementModQ(3))
         self.assertRaises(TypeError, len, n)
         self.assertRaises(TypeError, lambda: n[1:])
         self.assertRaises(TypeError, lambda: n.get_with_headers(-1))

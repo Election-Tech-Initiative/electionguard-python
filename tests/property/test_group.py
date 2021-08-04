@@ -27,8 +27,6 @@ from electionguard.group import (
     div_q,
     div_p,
     a_plus_bc_q,
-    int_to_p_unchecked,
-    int_to_q_unchecked,
 )
 from electionguard.utils import (
     flatmap_optional,
@@ -48,15 +46,15 @@ class TestEquality(BaseTestCase):
     """Math equality tests"""
 
     @given(elements_mod_q(), elements_mod_q())
-    def testPsNotEqualToQs(self, q: ElementModQ, q2: ElementModQ):
-        p = int_to_p_unchecked(q.to_int())
-        p2 = int_to_p_unchecked(q2.to_int())
+    def test_p_not_equal_to_q(self, q: ElementModQ, q2: ElementModQ):
+        p = ElementModP(q)
+        p2 = ElementModP(q2)
 
         # same value should imply they're equal
         self.assertEqual(p, q)
         self.assertEqual(q, p)
 
-        if q.to_int() != q2.to_int():
+        if q != q2:
             # these are genuinely different numbers
             self.assertNotEqual(q, q2)
             self.assertNotEqual(p, p2)
@@ -137,32 +135,40 @@ class TestModularArithmetic(BaseTestCase):
     @given(elements_mod_q())
     def test_in_bounds_q(self, q: ElementModQ):
         self.assertTrue(q.is_in_bounds())
-        too_big = q.to_int() + get_small_prime()
-        too_small = q.to_int() - get_small_prime()
-        self.assertFalse(int_to_q_unchecked(too_big).is_in_bounds())
-        self.assertFalse(int_to_q_unchecked(too_small).is_in_bounds())
+        too_big = q + get_small_prime()
+        too_small = q - get_small_prime()
+        self.assertFalse(ElementModQ(too_big, False).is_in_bounds())
+        self.assertFalse(ElementModQ(too_small, False).is_in_bounds())
         self.assertEqual(None, int_to_q(too_big))
         self.assertEqual(None, int_to_q(too_small))
+        with self.assertRaises(OverflowError):
+            ElementModQ(too_big)
+        with self.assertRaises(OverflowError):
+            ElementModQ(too_small)
 
     @given(elements_mod_p())
     def test_in_bounds_p(self, p: ElementModP):
         self.assertTrue(p.is_in_bounds())
-        too_big = p.to_int() + get_large_prime()
-        too_small = p.to_int() - get_large_prime()
-        self.assertFalse(int_to_p_unchecked(too_big).is_in_bounds())
-        self.assertFalse(int_to_p_unchecked(too_small).is_in_bounds())
+        too_big = p + get_large_prime()
+        too_small = p - get_large_prime()
+        self.assertFalse(ElementModP(too_big, False).is_in_bounds())
+        self.assertFalse(ElementModP(too_small, False).is_in_bounds())
         self.assertEqual(None, int_to_p(too_big))
         self.assertEqual(None, int_to_p(too_small))
+        with self.assertRaises(OverflowError):
+            ElementModP(too_big)
+        with self.assertRaises(OverflowError):
+            ElementModP(too_small)
 
     @given(elements_mod_q_no_zero())
     def test_in_bounds_q_no_zero(self, q: ElementModQ):
         self.assertTrue(q.is_in_bounds_no_zero())
         self.assertFalse(ZERO_MOD_Q.is_in_bounds_no_zero())
         self.assertFalse(
-            int_to_q_unchecked(q.to_int() + get_small_prime()).is_in_bounds_no_zero()
+            ElementModQ(q + get_small_prime(), False).is_in_bounds_no_zero()
         )
         self.assertFalse(
-            int_to_q_unchecked(q.to_int() - get_small_prime()).is_in_bounds_no_zero()
+            ElementModQ(q - get_small_prime(), False).is_in_bounds_no_zero()
         )
 
     @given(elements_mod_p_no_zero())
@@ -170,15 +176,15 @@ class TestModularArithmetic(BaseTestCase):
         self.assertTrue(p.is_in_bounds_no_zero())
         self.assertFalse(ZERO_MOD_P.is_in_bounds_no_zero())
         self.assertFalse(
-            int_to_p_unchecked(p.to_int() + get_large_prime()).is_in_bounds_no_zero()
+            ElementModP(p + get_large_prime(), False).is_in_bounds_no_zero()
         )
         self.assertFalse(
-            int_to_p_unchecked(p.to_int() - get_large_prime()).is_in_bounds_no_zero()
+            ElementModP(p - get_large_prime(), False).is_in_bounds_no_zero()
         )
 
     @given(elements_mod_q())
     def test_large_values_rejected_by_int_to_q(self, q: ElementModQ):
-        oversize = q.to_int() + get_small_prime()
+        oversize = q + get_small_prime()
         self.assertEqual(None, int_to_q(oversize))
 
 

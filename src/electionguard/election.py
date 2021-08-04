@@ -6,15 +6,12 @@ from .constants import get_small_prime, get_large_prime, get_generator
 from .group import (
     ElementModQ,
     ElementModP,
-    int_to_p_unchecked,
-    int_to_q_unchecked,
 )
 from .hash import hash_elems
-from .serializable import Serializable
 
 
 @dataclass(eq=True, unsafe_hash=True)
-class CiphertextElectionContext(Serializable):
+class CiphertextElectionContext:
     """`CiphertextElectionContext` is the ElectionGuard representation of a specific election.
 
     Note: The ElectionGuard Data Spec deviates from the NIST model in that
@@ -89,9 +86,9 @@ def make_ciphertext_election_context(
     # form the basis of subsequent hash computations.
 
     crypto_base_hash = hash_elems(
-        int_to_p_unchecked(get_large_prime()),
-        int_to_q_unchecked(get_small_prime()),
-        int_to_p_unchecked(get_generator()),
+        ElementModP(get_large_prime(), False),
+        ElementModQ(get_small_prime(), False),
+        ElementModP(get_generator(), False),
         number_of_guardians,
         quorum,
         manifest_hash,

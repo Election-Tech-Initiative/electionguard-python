@@ -4,10 +4,10 @@ from typing import Callable, Dict, List, Union
 from os import path
 from shutil import rmtree
 from random import randint
+from dataclasses import asdict
 
 from tests.base_test_case import BaseTestCase
 
-from electionguard.serializable import read_json_file
 from electionguard.type import BALLOT_ID
 from electionguard.utils import get_optional
 
@@ -45,8 +45,8 @@ from electionguard.tally import (
 from electionguard.decryption_mediator import DecryptionMediator
 
 # Step 5 - Publish and Verify
-from electionguard.publish import (
-    publish,
+from electionguardtest.export import (
+    export,
     BALLOT_PREFIX,
     CONSTANTS_FILE_NAME,
     CONTEXT_FILE_NAME,
@@ -56,6 +56,7 @@ from electionguard.publish import (
     MANIFEST_FILE_NAME,
     TALLY_FILE_NAME,
 )
+from electionguardtest.serialize import from_file_to_dataclass, construct_path
 
 from electionguardtest.ballot_factory import BallotFactory
 from electionguardtest.election_factory import ElectionFactory, NUMBER_OF_GUARDIANS
@@ -122,7 +123,7 @@ class TestEndToEndElection(BaseTestCase):
         self.step_2_encrypt_votes()
         self.step_3_cast_and_spoil()
         self.step_4_decrypt_tally()
-        self.step_5_publish_and_verify()
+        self.step_5_publish()
 
     def step_0_configure_election(self) -> None:
         """
@@ -479,22 +480,12 @@ class TestEndToEndElection(BaseTestCase):
                             expected == decrypted_selection.tally,
                         )
 
-    def step_5_publish_and_verify(self) -> None:
-        """Publish and verify steps of the election"""
-        self.publish_results()
-        self.verify_results()
-
-        if self.REMOVE_OUTPUT:
-            rmtree(RESULTS_DIR)
-
-    def publish_results(self) -> None:
-        """
-        Publish results/artifacts of the election
-        """
+    def step_5_publish(self) -> None:
+        """Publish results/artifacts of the election."""
 
         self.guardian_records = [guardian.publish() for guardian in self.guardians]
 
-        publish(
+        export(
             self.manifest,
             self.context,
             self.constants,
@@ -512,55 +503,73 @@ class TestEndToEndElection(BaseTestCase):
             path.exists(RESULTS_DIR),
         )
 
-    def verify_results(self) -> None:
-        """Verify results of election"""
+        self.deserialize_data()
+
+        if self.REMOVE_OUTPUT:
+            rmtree(RESULTS_DIR)
+
+    def deserialize_data(self) -> None:
+        """Ensure published data can be deserialized."""
 
         # Deserialize
-        manifest_from_file = Manifest.from_json_file(MANIFEST_FILE_NAME, RESULTS_DIR)
-        self.assertEqual(self.manifest, manifest_from_file)
-
-        context_from_file = CiphertextElectionContext.from_json_file(
-            CONTEXT_FILE_NAME, RESULTS_DIR
+        manifest_from_file = from_file_to_dataclass(
+            Manifest,
+            construct_path(MANIFEST_FILE_NAME, RESULTS_DIR),
         )
-        self.assertEqual(self.context, context_from_file)
+        self.assertEqualAsDicts(self.manifest, manifest_from_file)
 
-        constants_from_file = read_json_file(
-            ElectionConstants, CONSTANTS_FILE_NAME, RESULTS_DIR
+        context_from_file = from_file_to_dataclass(
+            CiphertextElectionContext, construct_path(CONTEXT_FILE_NAME, RESULTS_DIR)
         )
-        self.assertEqual(self.constants, constants_from_file)
+        self.assertEqualAsDicts(self.context, context_from_file)
 
-        device_name = DEVICE_PREFIX + str(self.device.device_id)
-        device_from_file = EncryptionDevice.from_json_file(device_name, DEVICES_DIR)
-        self.assertEqual(self.device, device_from_file)
+        constants_from_file = from_file_to_dataclass(
+            ElectionConstants, construct_path(CONSTANTS_FILE_NAME, RESULTS_DIR)
+        )
+        self.assertEqualAsDicts(self.constants, constants_from_file)
+
+        device_from_file = from_file_to_dataclass(
+            EncryptionDevice,
+            construct_path(DEVICE_PREFIX + str(self.device.device_id), DEVICES_DIR),
+        )
+        self.assertEqualAsDicts(self.device, device_from_file)
 
         for ballot in self.ballot_store.all():
-            name = BALLOT_PREFIX + ballot.object_id
-            ballot_from_file = SubmittedBallot.from_json_file(name, BALLOTS_DIR)
-            self.assertEqual(ballot, ballot_from_file)
+            ballot_from_file = from_file_to_dataclass(
+                SubmittedBallot,
+                construct_path(BALLOT_PREFIX + ballot.object_id, BALLOTS_DIR),
+            )
+            self.assertEqualAsDicts(ballot, ballot_from_file)
 
         for spoiled_ballot in self.plaintext_spoiled_ballots.values():
-            name = BALLOT_PREFIX + spoiled_ballot.object_id
-            spoiled_ballot_from_file = PlaintextTally.from_json_file(name, SPOILED_DIR)
-            self.assertEqual(spoiled_ballot, spoiled_ballot_from_file)
+            spoiled_ballot_from_file = from_file_to_dataclass(
+                PlaintextTally,
+                construct_path(BALLOT_PREFIX + spoiled_ballot.object_id, SPOILED_DIR),
+            )
+            self.assertEqualAsDicts(spoiled_ballot, spoiled_ballot_from_file)
 
-        published_ciphertext_tally_from_file = PublishedCiphertextTally.from_json_file(
-            ENCRYPTED_TALLY_FILE_NAME, RESULTS_DIR
+        published_ciphertext_tally_from_file = from_file_to_dataclass(
+            PublishedCiphertextTally,
+            construct_path(ENCRYPTED_TALLY_FILE_NAME, RESULTS_DIR),
         )
-        self.assertEqual(
-            self.ciphertext_tally.publish(), published_ciphertext_tally_from_file
+        self.assertEqualAsDicts(
+            self.ciphertext_tally.publish(),
+            published_ciphertext_tally_from_file,
         )
 
-        plainttext_tally_from_file = PlaintextTally.from_json_file(
-            TALLY_FILE_NAME, RESULTS_DIR
+        plainttext_tally_from_file = from_file_to_dataclass(
+            PlaintextTally, construct_path(TALLY_FILE_NAME, RESULTS_DIR)
         )
-        self.assertEqual(self.plaintext_tally, plainttext_tally_from_file)
+        self.assertEqualAsDicts(self.plaintext_tally, plainttext_tally_from_file)
 
         for guardian_record in self.guardian_records:
-            set_name = GUARDIAN_PREFIX + guardian_record.guardian_id
-            guardian_record_from_file = GuardianRecord.from_json_file(
-                set_name, GUARDIAN_DIR
+            guardian_record_from_file = from_file_to_dataclass(
+                GuardianRecord,
+                construct_path(
+                    GUARDIAN_PREFIX + guardian_record.guardian_id, GUARDIAN_DIR
+                ),
             )
-            self.assertEqual(guardian_record, guardian_record_from_file)
+            self.assertEqualAsDicts(guardian_record, guardian_record_from_file)
 
     def _assert_message(
         self, name: str, message: str, condition: Union[Callable, bool] = True
@@ -572,6 +581,16 @@ class TestEndToEndElection(BaseTestCase):
 
         print(f"{name}: {message}: {result}")
         self.assertTrue(result)
+
+    def assertEqualAsDicts(self, first: object, second: object):
+        """
+        Specialty assertEqual to compare dataclasses as dictionaries.
+
+        This is relevant specifically to using pydantic dataclasses to import.
+        Pydantic reconstructs dataclasses with name uniqueness to add their validation.
+        This creates a naming issue where the default equality check fails.
+        """
+        self.assertEqual(asdict(first), asdict(second))
 
 
 if __name__ == "__main__":

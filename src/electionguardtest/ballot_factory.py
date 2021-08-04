@@ -1,9 +1,7 @@
-from typing import cast, TypeVar, Callable, List, Tuple
+from typing import TypeVar, Callable, List, Tuple
 import os
 from random import Random, randint
 import uuid
-
-from jsons import KEY_TRANSFORMER_SNAKECASE, loads
 
 from hypothesis.strategies import (
     composite,
@@ -24,6 +22,10 @@ from electionguard.manifest import (
     ContestDescription,
     SelectionDescription,
     InternalManifest,
+)
+from electionguardtest.serialize import (
+    from_file_to_dataclass,
+    from_list_in_file_to_dataclass,
 )
 
 
@@ -142,24 +144,13 @@ class BallotFactory:
 
     @staticmethod
     def _get_ballot_from_file(filename: str) -> PlaintextBallot:
-        with open(os.path.join(data, filename), "r") as subject:
-            result = subject.read()
-            target = PlaintextBallot.from_json(result)
-        return target
+        return from_file_to_dataclass(PlaintextBallot, os.path.join(data, filename))
 
     @staticmethod
     def _get_ballots_from_file(filename: str) -> List[PlaintextBallot]:
-        with open(os.path.join(data, filename), "r") as subject:
-            result = subject.read()
-            target = cast(
-                List[PlaintextBallot],
-                loads(
-                    result,
-                    List[PlaintextBallot],
-                    key_transformer=KEY_TRANSFORMER_SNAKECASE,
-                ),
-            )
-        return target
+        return from_list_in_file_to_dataclass(
+            PlaintextBallot, os.path.join(data, filename)
+        )
 
 
 @composite
@@ -168,13 +159,13 @@ def get_selection_well_formed(
 ) -> Tuple[str, PlaintextBallotSelection]:
     use_none = draw(bools)
     if use_none:
-        extra_data = None
+        extended_data = None
     else:
-        extra_data = draw(txt)
+        extended_data = draw(txt)
     object_id = f"selection-{draw(ids)}"
     return (
         object_id,
-        PlaintextBallotSelection(object_id, draw(vote), draw(bools), extra_data),
+        PlaintextBallotSelection(object_id, draw(vote), draw(bools), extended_data),
     )
 
 
@@ -184,11 +175,11 @@ def get_selection_poorly_formed(
 ) -> Tuple[str, PlaintextBallotSelection]:
     use_none = draw(bools)
     if use_none:
-        extra_data = None
+        extended_data = None
     else:
-        extra_data = draw(txt)
+        extended_data = draw(txt)
     object_id = f"selection-{draw(ids)}"
     return (
         object_id,
-        PlaintextBallotSelection(object_id, draw(vote), draw(bools), extra_data),
+        PlaintextBallotSelection(object_id, draw(vote), draw(bools), extended_data),
     )

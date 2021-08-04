@@ -12,11 +12,10 @@ from electionguard.discrete_log import (
 from electionguard.group import (
     ElementModP,
     ONE_MOD_P,
+    ONE_MOD_Q,
     mult_p,
     g_pow_p,
     int_to_q,
-    int_to_p_unchecked,
-    int_to_q_unchecked,
 )
 from electionguard.utils import get_optional
 
@@ -26,7 +25,7 @@ def _discrete_log_uncached(e: ElementModP) -> int:
     A simpler implementation of discrete_log, only meant for comparison testing of the caching version.
     """
     count = 0
-    g_inv = int_to_p_unchecked(pow(get_generator(), -1, get_large_prime()))
+    g_inv = ElementModP(pow(get_generator(), -1, get_large_prime()), False)
     while e != ONE_MOD_P:
         e = mult_p(e, g_inv)
         count = count + 1
@@ -57,7 +56,7 @@ class TestDiscreteLogFunctions(BaseTestCase):
 
     def test_cached_one(self):
         cache = {ONE_MOD_P: 0}
-        plaintext = int_to_q_unchecked(1)
+        plaintext = ONE_MOD_Q
         ciphertext = g_pow_p(plaintext)
         (plaintext_again, returned_cache) = discrete_log(ciphertext, cache)
 
@@ -66,7 +65,7 @@ class TestDiscreteLogFunctions(BaseTestCase):
 
     async def test_cached_one_async(self):
         cache = {ONE_MOD_P: 0}
-        plaintext = int_to_q_unchecked(1)
+        plaintext = ONE_MOD_Q
         ciphertext = g_pow_p(plaintext)
         (plaintext_again, returned_cache) = await discrete_log_async(ciphertext, cache)
 
@@ -86,14 +85,14 @@ class TestDiscreteLogClass(BaseTestCase):
         self.assertEqual(exp, plaintext_again)
 
     def test_cached_one(self):
-        plaintext = int_to_q_unchecked(1)
+        plaintext = ONE_MOD_Q
         ciphertext = g_pow_p(plaintext)
         plaintext_again = DiscreteLog().discrete_log(ciphertext)
 
         self.assertEqual(1, plaintext_again)
 
     async def test_cached_one_async(self):
-        plaintext = int_to_q_unchecked(1)
+        plaintext = ONE_MOD_Q
         ciphertext = g_pow_p(plaintext)
         plaintext_again = await DiscreteLog().discrete_log_async(ciphertext)
 
