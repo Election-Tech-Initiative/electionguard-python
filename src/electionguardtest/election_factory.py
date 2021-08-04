@@ -2,7 +2,6 @@
 
 from datetime import datetime
 import os
-import uuid
 from dataclasses import dataclass
 from typing import TypeVar, Callable, Optional, Tuple, List
 
@@ -255,7 +254,7 @@ class ElectionFactory:
             generate_device_uuid(),
             12345,
             45678,
-            f"polling-place-{str(uuid.uuid1())}",
+            "polling-place",
         )
 
 
