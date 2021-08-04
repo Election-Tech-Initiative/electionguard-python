@@ -99,8 +99,6 @@ def hash_elems(*a: CRYPTO_HASHABLE_ALL) -> ElementModQ:
 
         h.update((hash_me + "|").encode("utf-8"))
 
-    # We don't need the checked version of int_to_q, because the
-    # modulo operation here guarantees that we're in bounds.
     return ElementModQ(
         int.from_bytes(h.digest(), byteorder="big") % (get_small_prime() - 1)
     )

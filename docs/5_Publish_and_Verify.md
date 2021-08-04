@@ -2,7 +2,7 @@
 
 ## Publish
 
-Publishing the election artifacts helps ensure third parties can verify the election. Refer the specification on the specific details. Below is a breakdown of the objects within the repository. These are files that should be published at the close of the election so others can verify the election.
+Publishing the election artifacts helps ensure third parties can verify the election. Refer to the specification on the specific details. Below is a breakdown of the objects within the repository. These are files that should be published at the close of the election so others can verify the election.
 
 **Election Artifacts**
 
@@ -17,6 +17,8 @@ challenge_ballots: List[PlaintextTally]   # Decrypted challenge ballots
 ciphertext_tally: CiphertextTally         # Encrypted tally
 plaintext_tally: PlaintextTally           # Decrypted tally
 ```
+
+These classes have been defined as `dataclass` to ensure that `asdict` can be used. This ensures ease of serialization to dictionaries within python, but allows customization for those wishing to use custom serialization. `electionguardtest` includes `export.py` which can be used as an example.
 
 ## Verify
 

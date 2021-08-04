@@ -355,7 +355,6 @@ class TestEncrypt(BaseTestCase):
         _id, description = contest_description
         random = Random(random_seed)
         subject = ballot_factory.get_random_contest_from(description, random)
-        print(subject)
 
         # Act
         result = encrypt_contest(

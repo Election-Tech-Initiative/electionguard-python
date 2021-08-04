@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from typing import List
 
-from .constants import get_small_prime
 from .elgamal import ElGamalKeyPair
 from .group import (
     add_q,
@@ -82,7 +81,7 @@ def compute_polynomial_coordinate(
     :return: Polynomial used to share election keys
     """
 
-    _check_exponent_modifier(exponent_modifier)
+    exponent_modifier = ElementModQ(exponent_modifier)
 
     computed_value = ZERO_MOD_Q
     for (i, coefficient) in enumerate(polynomial.coefficients):
@@ -121,7 +120,7 @@ def verify_polynomial_coordinate(
     :return: True if verified on polynomial
     """
 
-    _check_exponent_modifier(exponent_modifier)
+    exponent_modifier = ElementModQ(exponent_modifier)
 
     commitment_output = ONE_MOD_P
     for (i, commitment) in enumerate(commitments):
@@ -131,13 +130,3 @@ def verify_polynomial_coordinate(
 
     value_output = g_pow_p(coordinate)
     return value_output == commitment_output
-
-
-def _check_exponent_modifier(exponent_modifier: int) -> None:
-    """
-    Ensure the exponent modifier (typically sequence order)
-    is between 0 and Q. If not, identify modifier is out of the range
-    """
-    assert (
-        0 < exponent_modifier < get_small_prime()
-    ), "exponent_modifier is out of range"
