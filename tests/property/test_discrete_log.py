@@ -1,3 +1,4 @@
+import asyncio
 from hypothesis import given
 from hypothesis.strategies import integers
 
@@ -11,13 +12,12 @@ from electionguard.discrete_log import (
 )
 from electionguard.group import (
     ElementModP,
+    ElementModQ,
     ONE_MOD_P,
     ONE_MOD_Q,
     mult_p,
     g_pow_p,
-    int_to_q,
 )
-from electionguard.utils import get_optional
 
 
 def _discrete_log_uncached(e: ElementModP) -> int:
@@ -38,20 +38,28 @@ class TestDiscreteLogFunctions(BaseTestCase):
 
     @given(integers(0, 100))
     def test_uncached(self, exp: int):
-        plaintext = get_optional(int_to_q(exp))
+        # Arrange
+        plaintext = ElementModQ(exp)
         exp_plaintext = g_pow_p(plaintext)
+
+        # Act
         plaintext_again = _discrete_log_uncached(exp_plaintext)
 
-        self.assertEqual(exp, plaintext_again)
+        # Assert
+        self.assertEqual(plaintext, plaintext_again)
 
     @given(integers(0, 1000))
     def test_cached(self, exp: int):
+        # Arrange
         cache = {ONE_MOD_P: 0}
-        plaintext = get_optional(int_to_q(exp))
+        plaintext = ElementModQ(exp)
         exp_plaintext = g_pow_p(plaintext)
+
+        # Act
         (plaintext_again, returned_cache) = discrete_log(exp_plaintext, cache)
 
-        self.assertEqual(exp, plaintext_again)
+        # Assert
+        self.assertEqual(plaintext, plaintext_again)
         self.assertEqual(len(cache), len(returned_cache))
 
     def test_cached_one(self):
@@ -60,16 +68,24 @@ class TestDiscreteLogFunctions(BaseTestCase):
         ciphertext = g_pow_p(plaintext)
         (plaintext_again, returned_cache) = discrete_log(ciphertext, cache)
 
-        self.assertEqual(1, plaintext_again)
+        self.assertEqual(plaintext, plaintext_again)
         self.assertEqual(len(cache), len(returned_cache))
 
-    async def test_cached_one_async(self):
+    def test_cached_one_async(self):
+        # Arrange
         cache = {ONE_MOD_P: 0}
         plaintext = ONE_MOD_Q
         ciphertext = g_pow_p(plaintext)
-        (plaintext_again, returned_cache) = await discrete_log_async(ciphertext, cache)
 
-        self.assertEqual(1, plaintext_again)
+        # Act
+        loop = asyncio.new_event_loop()
+        (plaintext_again, returned_cache) = loop.run_until_complete(
+            discrete_log_async(ciphertext, cache)
+        )
+        loop.close()
+
+        # Assert
+        self.assertEqual(plaintext, plaintext_again)
         self.assertEqual(len(cache), len(returned_cache))
 
 
@@ -78,22 +94,38 @@ class TestDiscreteLogClass(BaseTestCase):
 
     @given(integers(0, 1000))
     def test_cached(self, exp: int):
-        plaintext = get_optional(int_to_q(exp))
+        # Arrange
+        plaintext = ElementModQ(exp)
         exp_plaintext = g_pow_p(plaintext)
+
+        # Act
         plaintext_again = DiscreteLog().discrete_log(exp_plaintext)
 
-        self.assertEqual(exp, plaintext_again)
+        # Assert
+        self.assertEqual(plaintext, plaintext_again)
 
     def test_cached_one(self):
+        # Arrange
         plaintext = ONE_MOD_Q
         ciphertext = g_pow_p(plaintext)
+
+        # Act
         plaintext_again = DiscreteLog().discrete_log(ciphertext)
 
-        self.assertEqual(1, plaintext_again)
+        # Assert
+        self.assertEqual(plaintext, plaintext_again)
 
-    async def test_cached_one_async(self):
+    def test_cached_one_async(self):
+        # Arrange
         plaintext = ONE_MOD_Q
         ciphertext = g_pow_p(plaintext)
-        plaintext_again = await DiscreteLog().discrete_log_async(ciphertext)
 
-        self.assertEqual(1, plaintext_again)
+        # Act
+        loop = asyncio.new_event_loop()
+        plaintext_again = loop.run_until_complete(
+            DiscreteLog().discrete_log_async(ciphertext)
+        )
+        loop.close()
+
+        # Assert
+        self.assertEqual(plaintext, plaintext_again)
