@@ -88,15 +88,13 @@ from electionguard.decrypt_with_secrets import (ELECTION_PUBLIC_KEY,
                                                 decrypt_selection_with_nonce,
                                                 decrypt_selection_with_secret,)
 from electionguard.decrypt_with_shares import (AVAILABLE_GUARDIAN_ID,
-                                               ELECTION_PUBLIC_KEY,
                                                GUARDIAN_PUBLIC_KEY,
                                                MISSING_GUARDIAN_ID,
                                                decrypt_ballot,
                                                decrypt_contest_with_decryption_shares,
                                                decrypt_selection_with_decryption_shares,
                                                decrypt_tally,)
-from electionguard.decryption import (ELECTION_PUBLIC_KEY, GUARDIAN_PUBLIC_KEY,
-                                      RECOVERY_PUBLIC_KEY, compensate_decrypt,
+from electionguard.decryption import (RECOVERY_PUBLIC_KEY, compensate_decrypt,
                                       compute_compensated_decryption_share,
                                       compute_compensated_decryption_share_for_ballot,
                                       compute_compensated_decryption_share_for_contest,
@@ -120,13 +118,12 @@ from electionguard.decryption_share import (
                                             CiphertextDecryptionSelection,
                                             CompensatedDecryptionShare,
                                             DecryptionShare,
-                                            ELECTION_PUBLIC_KEY,
                                             ProofOrRecovery,
                                             create_ciphertext_decryption_selection,
                                             get_shares_for_selection,)
 from electionguard.discrete_log import (DLOG_CACHE, DLOG_MAX, DiscreteLog,
                                         compute_discrete_log_cache,
-                                        discrete_log,)
+                                        discrete_log as discrete_log_func)
 from electionguard.election import (CiphertextElectionContext,
                                     make_ciphertext_election_context,)
 from electionguard.election_builder import (ElectionBuilder,)
@@ -166,7 +163,7 @@ from electionguard.hash import (CRYPTO_HASHABLE_ALL, CRYPTO_HASHABLE_T,
                                 hash_elems,)
 from electionguard.key_ceremony import (CeremonyDetails,
                                         ELECTION_JOINT_PUBLIC_KEY,
-                                        ELECTION_PUBLIC_KEY, ElectionJointKey,
+                                        ElectionJointKey,
                                         ElectionKeyPair,
                                         ElectionPartialKeyBackup,
                                         ElectionPartialKeyChallenge,
