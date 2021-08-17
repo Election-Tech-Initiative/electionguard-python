@@ -355,7 +355,7 @@ def _candidate_to_selection_description(
     tell that they're related.
     """
     return SelectionDescription(
-        f"c-{candidate.object_id}", candidate.get_candidate_id(), sequence_order
+        f"c-{candidate.object_id}", sequence_order, candidate.get_candidate_id()
     )
 
 
@@ -617,7 +617,9 @@ def plaintext_voted_ballot(draw: _DrawType, internal_manifest: InternalManifest)
         ]
 
         voted_contests.append(
-            PlaintextBallotContest(contest.object_id, voted_selections)
+            PlaintextBallotContest(
+                contest.object_id, contest.sequence_order, voted_selections
+            )
         )
 
     return PlaintextBallot(str(draw(uuids())), ballot_style.object_id, voted_contests)
