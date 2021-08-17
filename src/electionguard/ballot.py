@@ -546,7 +546,9 @@ def _ciphertext_ballot_context_crypto_hash(
         )
         return ZERO_MOD_Q
 
-    selection_hashes = [selection.crypto_hash for selection in ballot_selections]
+    selection_hashes = [
+        selection.crypto_hash for selection in sequence_order_sort(ballot_selections)
+    ]
 
     return hash_elems(object_id, encryption_seed, *selection_hashes)
 
@@ -910,7 +912,7 @@ def create_ballot_hash(
 ) -> ElementModQ:
     """Create the hash of the ballot contests"""
 
-    contest_hashes = [contest.crypto_hash for contest in contests]
+    contest_hashes = [contest.crypto_hash for contest in sequence_order_sort(contests)]
     return hash_elems(ballot_id, description_hash, *contest_hashes)
 
 
@@ -939,7 +941,7 @@ def make_ciphertext_submitted_ballot(
     if len(contests) == 0:
         log_warning("ciphertext ballot with no contests")
 
-    contest_hashes = [contest.crypto_hash for contest in contests]
+    contest_hashes = [contest.crypto_hash for contest in sequence_order_sort(contests)]
     contest_hash = hash_elems(object_id, manifest_hash, *contest_hashes)
 
     timestamp = to_ticks(datetime.utcnow()) if timestamp is None else timestamp
