@@ -101,12 +101,11 @@ class TestElections(BaseTestCase):
 
             # decrypt the ballot with secret and verify it matches the plaintext
             decrypted_ballot = decrypt_ballot_with_secret(
-                ballot=encrypted_ballot,
-                internal_manifest=internal_manifest,
-                crypto_extended_base_hash=context.crypto_extended_base_hash,
-                public_key=context.elgamal_public_key,
-                secret_key=secret_key,
-                remove_placeholders=True,
+                encrypted_ballot,
+                internal_manifest,
+                context.crypto_extended_base_hash,
+                context.elgamal_public_key,
+                secret_key,
             )
             self.assertEqual(ballots[i], decrypted_ballot)
 

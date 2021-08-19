@@ -10,7 +10,11 @@ from .chaum_pedersen import (
     make_constant_chaum_pedersen,
     make_disjunctive_chaum_pedersen,
 )
-from .election_object_base import ElectionObjectBase
+from .election_object_base import (
+    ElectionObjectBase,
+    OrderedObjectBase,
+    sequence_order_sort,
+)
 from .elgamal import ElGamalCiphertext, elgamal_add
 from .group import add_q, ElementModP, ElementModQ, ZERO_MOD_Q
 from .hash import CryptoHashCheckable, hash_elems
@@ -43,7 +47,7 @@ class ExtendedData:
 
 
 @dataclass(unsafe_hash=True)
-class PlaintextBallotSelection(ElectionObjectBase):
+class PlaintextBallotSelection(OrderedObjectBase):
     """
     A BallotSelection represents an individual selection on a ballot.
 
@@ -112,6 +116,9 @@ class CiphertextSelection(Protocol):
 
     object_id: str
 
+    sequence_order: int
+    """Order the selection."""
+
     description_hash: ElementModQ
     """The SelectionDescription hash"""
 
@@ -121,7 +128,7 @@ class CiphertextSelection(Protocol):
 
 @dataclass(eq=True, unsafe_hash=True)
 class CiphertextBallotSelection(
-    ElectionObjectBase, CiphertextSelection, CryptoHashCheckable
+    OrderedObjectBase, CiphertextSelection, CryptoHashCheckable
 ):
     """
     A CiphertextBallotSelection represents an individual encrypted selection on a ballot.
@@ -238,6 +245,7 @@ def _ciphertext_ballot_selection_crypto_hash_with(
 
 def make_ciphertext_ballot_selection(
     object_id: str,
+    sequence_order: int,
     description_hash: ElementModQ,
     ciphertext: ElGamalCiphertext,
     elgamal_public_key: ElementModP,
@@ -275,19 +283,20 @@ def make_ciphertext_ballot_selection(
         )
 
     return CiphertextBallotSelection(
-        object_id=object_id,
-        description_hash=description_hash,
-        ciphertext=ciphertext,
-        is_placeholder_selection=is_placeholder_selection,
-        nonce=nonce,
-        crypto_hash=crypto_hash,
-        proof=proof,
-        extended_data=extended_data,
+        object_id,
+        sequence_order,
+        description_hash,
+        ciphertext,
+        crypto_hash,
+        is_placeholder_selection,
+        nonce,
+        proof,
+        extended_data,
     )
 
 
 @dataclass(unsafe_hash=True)
-class PlaintextBallotContest(ElectionObjectBase):
+class PlaintextBallotContest(OrderedObjectBase):
     """
     A PlaintextBallotContest represents the selections made by a voter for a specific ContestDescription
 
@@ -368,7 +377,7 @@ class PlaintextBallotContest(ElectionObjectBase):
 
 
 @dataclass
-class CiphertextContest(ElectionObjectBase):
+class CiphertextContest(OrderedObjectBase):
     """
     Base encrypted contest for both tally and ballot
     """
@@ -381,7 +390,7 @@ class CiphertextContest(ElectionObjectBase):
 
 
 @dataclass(unsafe_hash=True)
-class CiphertextBallotContest(ElectionObjectBase, CryptoHashCheckable):
+class CiphertextBallotContest(OrderedObjectBase, CryptoHashCheckable):
     """
     A CiphertextBallotContest represents the selections made by a voter for a specific ContestDescription
 
@@ -537,7 +546,9 @@ def _ciphertext_ballot_context_crypto_hash(
         )
         return ZERO_MOD_Q
 
-    selection_hashes = [selection.crypto_hash for selection in ballot_selections]
+    selection_hashes = [
+        selection.crypto_hash for selection in sequence_order_sort(ballot_selections)
+    ]
 
     return hash_elems(object_id, encryption_seed, *selection_hashes)
 
@@ -559,6 +570,7 @@ def _ciphertext_ballot_contest_aggregate_nonce(
 
 def make_ciphertext_ballot_contest(
     object_id: str,
+    sequence_order: int,
     description_hash: ElementModQ,
     ballot_selections: List[CiphertextBallotSelection],
     elgamal_public_key: ElementModP,
@@ -586,22 +598,23 @@ def make_ciphertext_ballot_contest(
         proof = flatmap_optional(
             aggregate,
             lambda ag: make_constant_chaum_pedersen(
-                message=elgamal_accumulation,
-                constant=number_elected,
-                r=ag,
-                k=elgamal_public_key,
-                seed=proof_seed,
-                hash_header=crypto_extended_base_hash,
+                elgamal_accumulation,
+                number_elected,
+                ag,
+                elgamal_public_key,
+                proof_seed,
+                crypto_extended_base_hash,
             ),
         )
     return CiphertextBallotContest(
-        object_id=object_id,
-        description_hash=description_hash,
-        ballot_selections=ballot_selections,
-        nonce=nonce,
-        ciphertext_accumulation=elgamal_accumulation,
-        crypto_hash=crypto_hash,
-        proof=proof,
+        object_id,
+        sequence_order,
+        description_hash,
+        ballot_selections,
+        elgamal_accumulation,
+        crypto_hash,
+        nonce,
+        proof,
     )
 
 
@@ -899,7 +912,7 @@ def create_ballot_hash(
 ) -> ElementModQ:
     """Create the hash of the ballot contests"""
 
-    contest_hashes = [contest.crypto_hash for contest in contests]
+    contest_hashes = [contest.crypto_hash for contest in sequence_order_sort(contests)]
     return hash_elems(ballot_id, description_hash, *contest_hashes)
 
 
@@ -928,7 +941,7 @@ def make_ciphertext_submitted_ballot(
     if len(contests) == 0:
         log_warning("ciphertext ballot with no contests")
 
-    contest_hashes = [contest.crypto_hash for contest in contests]
+    contest_hashes = [contest.crypto_hash for contest in sequence_order_sort(contests)]
     contest_hash = hash_elems(object_id, manifest_hash, *contest_hashes)
 
     timestamp = to_ticks(datetime.utcnow()) if timestamp is None else timestamp

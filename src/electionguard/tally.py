@@ -13,7 +13,7 @@ from .data_store import DataStore
 from .ballot_validator import ballot_is_valid_for_election
 from .decryption_share import CiphertextDecryptionSelection
 from .election import CiphertextElectionContext
-from .election_object_base import ElectionObjectBase
+from .election_object_base import ElectionObjectBase, OrderedObjectBase
 from .elgamal import ElGamalCiphertext, elgamal_add
 from .group import ElementModQ, ONE_MOD_P, ElementModP
 from .logs import log_warning
@@ -43,6 +43,9 @@ class CiphertextTallySelection(ElectionObjectBase, CiphertextSelection):
     a CiphertextTallySelection is a homomorphic accumulation of all of the
     CiphertextBallotSelection instances for a specific selection in an election.
     """
+
+    sequence_order: int
+    """Order of the selection."""
 
     description_hash: ElementModQ
     """
@@ -77,7 +80,7 @@ class PlaintextTallyContest(ElectionObjectBase):
 
 
 @dataclass
-class CiphertextTallyContest(ElectionObjectBase):
+class CiphertextTallyContest(OrderedObjectBase):
     """
     A CiphertextTallyContest is a container for associating a collection of CiphertextTallySelection
     to a specific ContestDescription
@@ -366,11 +369,16 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
             contest_selections: Dict[str, CiphertextTallySelection] = {}
             for selection in contest.ballot_selections:
                 contest_selections[selection.object_id] = CiphertextTallySelection(
-                    selection.object_id, selection.crypto_hash()
+                    selection.object_id,
+                    selection.sequence_order,
+                    selection.crypto_hash(),
                 )
 
             cast_collection[contest.object_id] = CiphertextTallyContest(
-                contest.object_id, contest.crypto_hash(), contest_selections
+                contest.object_id,
+                contest.sequence_order,
+                contest.crypto_hash(),
+                contest_selections,
             )
 
         return cast_collection
