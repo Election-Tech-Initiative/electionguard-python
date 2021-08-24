@@ -69,7 +69,7 @@ class TestEncrypt(BaseTestCase):
         keypair = elgamal_keypair_from_secret(int_to_q(2))
         nonce = randbelow(get_small_prime())
         metadata = SelectionDescription(
-            "some-selection-object-id", "some-candidate-id", 1
+            "some-selection-object-id", 1, "some-candidate-id"
         )
         hash_context = metadata.crypto_hash()
 
@@ -94,7 +94,7 @@ class TestEncrypt(BaseTestCase):
         keypair = elgamal_keypair_from_secret(int_to_q(2))
         nonce = randbelow(get_small_prime())
         metadata = SelectionDescription(
-            "some-selection-object-id", "some-candidate-id", 1
+            "some-selection-object-id", 1, "some-candidate-id"
         )
         hash_context = metadata.crypto_hash()
 
@@ -241,21 +241,21 @@ class TestEncrypt(BaseTestCase):
         nonce = randbelow(get_small_prime())
         ballot_selections = [
             SelectionDescription(
-                "some-object-id-affirmative", "some-candidate-id-affirmative", 0
+                "some-object-id-affirmative", 0, "some-candidate-id-affirmative"
             ),
             SelectionDescription(
-                "some-object-id-negative", "some-candidate-id-negative", 1
+                "some-object-id-negative", 1, "some-candidate-id-negative"
             ),
         ]
         placeholder_selections = [
             SelectionDescription(
-                "some-object-id-placeholder", "some-candidate-id-placeholder", 2
+                "some-object-id-placeholder", 2, "some-candidate-id-placeholder"
             )
         ]
         metadata = ContestDescriptionWithPlaceholders(
             "some-contest-object-id",
-            "some-electoral-district-id",
             0,
+            "some-electoral-district-id",
             VoteVariationType.one_of_m,
             1,
             1,
@@ -445,15 +445,11 @@ class TestEncrypt(BaseTestCase):
             name="",
             ballot_selections=[
                 SelectionDescription(
-                    object_id="0@A.com-selection",
-                    candidate_id="0@A.com",
-                    sequence_order=0,
+                    "0@A.com-selection",
+                    0,
+                    "0@A.com",
                 ),
-                SelectionDescription(
-                    object_id="0@B.com-selection",
-                    candidate_id="0@B.com",
-                    sequence_order=1,
-                ),
+                SelectionDescription("0@B.com-selection", 1, "0@B.com"),
             ],
             ballot_title=None,
             ballot_subtitle=None,
@@ -499,15 +495,15 @@ class TestEncrypt(BaseTestCase):
             name="",
             ballot_selections=[
                 SelectionDescription(
-                    object_id="0@A.com-selection",
-                    candidate_id="0@A.com",
-                    sequence_order=0,
+                    "0@A.com-selection",
+                    0,
+                    "0@A.com",
                 ),
                 # Note the selection description is the same as the first sequence element
                 SelectionDescription(
-                    object_id="0@A.com-selection",
-                    candidate_id="0@A.com",
-                    sequence_order=1,
+                    "0@A.com-selection",
+                    1,
+                    "0@A.com",
                 ),
             ],
         )

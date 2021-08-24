@@ -5,13 +5,16 @@
     "contests": [
       {
         "object_id": "justice-supreme-court",
+        "sequence_order": 0,
         "ballot_selections": [
           {
             "object_id": "john-adams-selection",
-            "vote": 1
+            "vote": 1,
+            "sequence_order": 0
           },
           {
             "object_id": "write-in-selection",
+            "sequence_order": 3,
             "vote": 1,
             "extended_data": {
               "value": "Susan B. Anthony",
@@ -28,13 +31,16 @@
     "contests": [
       {
         "object_id": "justice-supreme-court",
+        "sequence_order": 0,
         "ballot_selections": [
           {
             "object_id": "john-adams-selection",
+            "sequence_order": 0,
             "vote": 1
           },
           {
             "object_id": "write-in-selection",
+            "sequence_order": 3,
             "vote": 1,
             "extended_data": {
               "value": "Susan B. Anthony",
@@ -51,13 +57,16 @@
     "contests": [
       {
         "object_id": "justice-supreme-court",
+        "sequence_order": 0,
         "ballot_selections": [
           {
             "object_id": "john-adams-selection",
+            "sequence_order": 0,
             "vote": 1
           },
           {
             "object_id": "benjamin-franklin-selection",
+            "sequence_order": 2,
             "vote": 1
           }
         ]
@@ -70,13 +79,16 @@
     "contests": [
       {
         "object_id": "justice-supreme-court",
+        "sequence_order": 0,
         "ballot_selections": [
           {
             "object_id": "john-adams-selection",
+            "sequence_order": 0,
             "vote": 1
           },
           {
             "object_id": "john-hancock-selection",
+            "sequence_order": 2,
             "vote": 1
           }
         ]
@@ -89,22 +101,27 @@
     "contests": [
       {
         "object_id": "justice-supreme-court",
+        "sequence_order": 0,
         "ballot_selections": [
           {
             "object_id": "john-adams-selection",
+            "sequence_order": 0,
             "vote": 1
           },
           {
             "object_id": "john-hancock-selection",
+            "sequence_order": 2,
             "vote": 1
           }
         ]
       },
       {
         "object_id": "referendum-pineapple",
+        "sequence_order": 1,
         "ballot_selections": [
           {
             "object_id": "referendum-pineapple-affirmative-selection",
+            "sequence_order": 0,
             "vote": 1
           }
         ]
@@ -117,13 +134,16 @@
     "contests": [
       {
         "object_id": "justice-supreme-court",
+        "sequence_order": 0,
         "ballot_selections": [
           {
             "object_id": "john-adams-selection",
+            "sequence_order": 0,
             "vote": 1
           },
           {
             "object_id": "write-in-selection",
+            "sequence_order": 3,
             "vote": 1,
             "extended_data": {
               "value": "Susan B. Anthony",
@@ -134,9 +154,11 @@
       },
       {
         "object_id": "referendum-pineapple",
+        "sequence_order": 1,
         "ballot_selections": [
           {
             "object_id": "referendum-pineapple-negative-selection",
+            "sequence_order": 1,
             "vote": 1
           }
         ]

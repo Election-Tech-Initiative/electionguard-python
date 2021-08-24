@@ -4,7 +4,7 @@ from enum import Enum, unique
 from typing import cast, List, Optional, Set, Any
 
 from .ballot import _list_eq
-from .election_object_base import ElectionObjectBase
+from .election_object_base import ElectionObjectBase, OrderedObjectBase
 from .group import ElementModQ
 from .hash import CryptoHashable, hash_elems
 from .logs import log_warning, log_debug
@@ -275,7 +275,7 @@ class Candidate(ElectionObjectBase, CryptoHashable):
 
 
 @dataclass(eq=True, unsafe_hash=True)
-class SelectionDescription(ElectionObjectBase, CryptoHashable):
+class SelectionDescription(OrderedObjectBase, CryptoHashable):
     """
     Data entity for the ballot selections in a contest,
     for example linking candidates and parties to their vote counts.
@@ -290,13 +290,6 @@ class SelectionDescription(ElectionObjectBase, CryptoHashable):
     """
 
     candidate_id: str
-    sequence_order: int
-    """
-    Used for ordering selections in a contest to ensure various encryption primitives are deterministic.
-    The sequence order must be unique and should be representative of how the contests are represnted
-    on a "master" ballot in an external system.  The sequence order is not required to be in the order
-    in which they are displayed to a voter.  Any acceptable range of integer values may be provided.
-    """
 
     def crypto_hash(self) -> ElementModQ:
         """
@@ -309,7 +302,7 @@ class SelectionDescription(ElectionObjectBase, CryptoHashable):
 
 # pylint: disable=too-many-instance-attributes
 @dataclass(unsafe_hash=True)
-class ContestDescription(ElectionObjectBase, CryptoHashable):
+class ContestDescription(OrderedObjectBase, CryptoHashable):
     """
     Use this data entity for describing a contest and linking the contest
     to the associated candidates and parties.
@@ -322,13 +315,6 @@ class ContestDescription(ElectionObjectBase, CryptoHashable):
     """
 
     electoral_district_id: str
-    sequence_order: int
-    """
-    Used for ordering contests in a ballot to ensure various encryption primitives are deterministic.
-    The sequence order must be unique and should be representative of how the contests are represnted
-    on a "master" ballot in an external system.  The sequence order is not required to be in the order
-    in which they are displayed to a voter.  Any acceptable range of integer values may be provided.
-    """
 
     vote_variation: VoteVariationType
 
@@ -875,8 +861,8 @@ def generate_placeholder_selection_from(
     placeholder_object_id = f"{contest.object_id}-{use_sequence_id}"
     return SelectionDescription(
         f"{placeholder_object_id}-placeholder",
-        f"{placeholder_object_id}-candidate",
         use_sequence_id,
+        f"{placeholder_object_id}-candidate",
     )
 
 

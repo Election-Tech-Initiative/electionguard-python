@@ -47,6 +47,7 @@ def decrypt_tally(
         plaintext_contest = decrypt_contest_with_decryption_shares(
             CiphertextContest(
                 contest.object_id,
+                contest.sequence_order,
                 contest.description_hash,
                 list(contest.selections.values()),
             ),
@@ -80,6 +81,7 @@ def decrypt_ballot(
         plaintext_contest = decrypt_contest_with_decryption_shares(
             CiphertextContest(
                 contest.object_id,
+                contest.sequence_order,
                 contest.description_hash,
                 contest.ballot_selections,
             ),

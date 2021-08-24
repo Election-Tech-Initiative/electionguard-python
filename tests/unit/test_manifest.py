@@ -95,23 +95,23 @@ class TestManifest(BaseTestCase):
             name="",
             ballot_selections=[
                 SelectionDescription(
-                    object_id="0@A.com-selection",
-                    candidate_id="0@A.com",
-                    sequence_order=0,
+                    "0@A.com-selection",
+                    0,
+                    "0@A.com",
                 ),
                 SelectionDescription(
-                    object_id="0@B.com-selection",
-                    candidate_id="0@B.com",
-                    sequence_order=1,
+                    "0@B.com-selection",
+                    1,
+                    "0@B.com",
                 ),
             ],
             ballot_title=None,
             ballot_subtitle=None,
             placeholder_selections=[
                 SelectionDescription(
-                    object_id="0@A.com-contest-2-placeholder",
-                    candidate_id="0@A.com-contest-2-candidate",
-                    sequence_order=2,
+                    "0@A.com-contest-2-placeholder",
+                    2,
+                    "0@A.com-contest-2-candidate",
                 )
             ],
         )
@@ -130,24 +130,24 @@ class TestManifest(BaseTestCase):
             name="",
             ballot_selections=[
                 SelectionDescription(
-                    object_id="0@A.com-selection",
-                    candidate_id="0@A.com",
-                    sequence_order=0,
+                    "0@A.com-selection",
+                    0,
+                    "0@A.com",
                 ),
                 # simulate a bad selection description input
                 SelectionDescription(
-                    object_id="0@A.com-selection",
-                    candidate_id="0@A.com",
-                    sequence_order=1,
+                    "0@A.com-selection",
+                    1,
+                    "0@A.com",
                 ),
             ],
             ballot_title=None,
             ballot_subtitle=None,
             placeholder_selections=[
                 SelectionDescription(
-                    object_id="0@A.com-contest-2-placeholder",
-                    candidate_id="0@A.com-contest-2-candidate",
-                    sequence_order=2,
+                    "0@A.com-contest-2-placeholder",
+                    2,
+                    "0@A.com-contest-2-candidate",
                 )
             ],
         )

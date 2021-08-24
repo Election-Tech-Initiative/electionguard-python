@@ -67,6 +67,7 @@ def compute_decryption_share(
             guardian_keys,
             CiphertextContest(
                 contest.object_id,
+                contest.sequence_order,
                 contest.description_hash,
                 list(contest.selections.values()),
             ),
@@ -120,6 +121,7 @@ def compute_compensated_decryption_share(
             missing_guardian_backup,
             CiphertextContest(
                 contest.object_id,
+                contest.sequence_order,
                 contest.description_hash,
                 list(contest.selections.values()),
             ),
@@ -161,7 +163,10 @@ def compute_decryption_share_for_ballot(
         contest_share = compute_decryption_share_for_contest(
             guardian_keys,
             CiphertextContest(
-                contest.object_id, contest.description_hash, contest.ballot_selections
+                contest.object_id,
+                contest.sequence_order,
+                contest.description_hash,
+                contest.ballot_selections,
             ),
             context,
             scheduler,
@@ -211,7 +216,10 @@ def compute_compensated_decryption_share_for_ballot(
             missing_guardian_key,
             missing_guardian_backup,
             CiphertextContest(
-                contest.object_id, contest.description_hash, contest.ballot_selections
+                contest.object_id,
+                contest.sequence_order,
+                contest.description_hash,
+                contest.ballot_selections,
             ),
             context,
             decrypt,
@@ -563,6 +571,7 @@ def reconstruct_decryption_share(
             missing_guardian_key.owner_id,
             CiphertextContest(
                 contest.object_id,
+                contest.sequence_order,
                 contest.description_hash,
                 list(contest.selections.values()),
             ),
@@ -601,7 +610,10 @@ def reconstruct_decryption_share_for_ballot(
         contests[contest.object_id] = reconstruct_decryption_contest(
             missing_guardian_key.owner_id,
             CiphertextContest(
-                contest.object_id, contest.description_hash, contest.ballot_selections
+                contest.object_id,
+                contest.sequence_order,
+                contest.description_hash,
+                contest.ballot_selections,
             ),
             shares,
             lagrange_coefficients,
