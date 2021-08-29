@@ -130,6 +130,7 @@ from electionguard.decrypt_with_secrets import (
 )
 from electionguard.decrypt_with_shares import (
     AVAILABLE_GUARDIAN_ID,
+    ELECTION_PUBLIC_KEY,
     GUARDIAN_PUBLIC_KEY,
     MISSING_GUARDIAN_ID,
     decrypt_ballot,
@@ -138,6 +139,8 @@ from electionguard.decrypt_with_shares import (
     decrypt_tally,
 )
 from electionguard.decryption import (
+    ELECTION_PUBLIC_KEY,
+    GUARDIAN_PUBLIC_KEY,
     RECOVERY_PUBLIC_KEY,
     compensate_decrypt,
     compute_compensated_decryption_share,
@@ -166,6 +169,7 @@ from electionguard.decryption_share import (
     CiphertextDecryptionSelection,
     CompensatedDecryptionShare,
     DecryptionShare,
+    ELECTION_PUBLIC_KEY,
     ProofOrRecovery,
     create_ciphertext_decryption_selection,
     get_shares_for_selection,
@@ -174,8 +178,8 @@ from electionguard.discrete_log import (
     DLOG_CACHE,
     DLOG_MAX,
     DiscreteLog,
+    compute_discrete_log,
     compute_discrete_log_cache,
-    discrete_log as discrete_log_func,
 )
 from electionguard.election import (
     CiphertextElectionContext,
@@ -264,6 +268,7 @@ from electionguard.hash import (
 from electionguard.key_ceremony import (
     CeremonyDetails,
     ELECTION_JOINT_PUBLIC_KEY,
+    ELECTION_PUBLIC_KEY,
     ElectionJointKey,
     ElectionKeyPair,
     ElectionPartialKeyBackup,
@@ -545,6 +550,7 @@ __all__ = [
     "compute_decryption_share_for_ballot",
     "compute_decryption_share_for_contest",
     "compute_decryption_share_for_selection",
+    "compute_discrete_log",
     "compute_discrete_log_cache",
     "compute_lagrange_coefficient",
     "compute_lagrange_coefficients_for_guardian",
