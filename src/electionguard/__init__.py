@@ -190,6 +190,8 @@ from electionguard.election_builder import (
 )
 from electionguard.election_object_base import (
     ElectionObjectBase,
+    OrderedObjectBase,
+    sequence_order_sort,
 )
 from electionguard.election_polynomial import (
     ElectionPolynomial,
@@ -491,6 +493,7 @@ __all__ = [
     "Manifest",
     "NO_VOTE",
     "Nonces",
+    "OrderedObjectBase",
     "PADDING",
     "PUBLIC_COMMITMENT",
     "PUBLIC_EXPONENT",
@@ -684,6 +687,7 @@ __all__ = [
     "schnorr",
     "selection_from",
     "selection_is_valid_for_style",
+    "sequence_order_sort",
     "singleton",
     "space_between_capitals",
     "tally",
