@@ -13,6 +13,7 @@ from .ballot import (
 )
 from .ballot_box import BallotBoxState
 from .election import CiphertextElectionContext
+from .election_object_base import sequence_order_sort
 from .encrypt import encrypt_ballot_contests
 from .group import ElementModQ
 from .manifest import (
@@ -154,21 +155,18 @@ def _get_plaintext_contests(
     )
 
     contests: List[PlaintextBallotContest] = []
-    for manifest_contest in sorted(
-        internal_manifest.contests, key=lambda c: c.sequence_order
-    ):
+    for manifest_contest in sequence_order_sort(internal_manifest.contests):
         contest_in_style = (
             ballot_style_contests.get(manifest_contest.object_id) is not None
         )
 
         # Iterate through selections. If contest not in style, mark placeholder
         selections: List[PlaintextBallotSelection] = []
-        for selection in sorted(
-            manifest_contest.ballot_selections, key=lambda s: s.sequence_order
-        ):
+        for selection in sequence_order_sort(manifest_contest.ballot_selections):
             selections.append(
                 PlaintextBallotSelection(
                     selection.object_id,
+                    selection.sequence_order,
                     YES_VOTE if compact_ballot.selections[index] else NO_VOTE,
                     not contest_in_style,
                     compact_ballot.extended_data.get(index),
@@ -176,7 +174,11 @@ def _get_plaintext_contests(
             )
             index += 1
 
-        contests.append(PlaintextBallotContest(manifest_contest.object_id, selections))
+        contests.append(
+            PlaintextBallotContest(
+                manifest_contest.object_id, manifest_contest.sequence_order, selections
+            )
+        )
     return contests
 
 

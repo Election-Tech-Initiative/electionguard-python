@@ -4,13 +4,16 @@
   "contests": [
     {
       "object_id": "justice-supreme-court",
+      "sequence_order": 0,
       "ballot_selections": [
         {
           "object_id": "john-adams-selection",
+          "sequence_order": 0,
           "vote": 1
         },
         {
           "object_id": "write-in-selection",
+          "sequence_order": 3,
           "vote": 1,
           "extended_data": {
             "value": "Susan B. Anthony",

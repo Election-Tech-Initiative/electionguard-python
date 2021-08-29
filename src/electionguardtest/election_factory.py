@@ -139,9 +139,9 @@ class ElectionFactory:
         fake_referendum_ballot_selections = [
             # Referendum selections are simply a special case of `candidate` in the object model
             SelectionDescription(
-                "some-object-id-affirmative", "some-candidate-id-1", 0
+                "some-object-id-affirmative", 0, "some-candidate-id-1"
             ),
-            SelectionDescription("some-object-id-negative", "some-candidate-id-2", 1),
+            SelectionDescription("some-object-id-negative", 1, "some-candidate-id-2"),
         ]
 
         sequence_order = 0
@@ -149,8 +149,8 @@ class ElectionFactory:
         votes_allowed = 1
         fake_referendum_contest = ReferendumContestDescription(
             "some-referendum-contest-object-id",
-            "some-geopoltical-unit-id",
             sequence_order,
+            "some-geopoltical-unit-id",
             VoteVariationType.one_of_m,
             number_elected,
             votes_allowed,
@@ -160,13 +160,13 @@ class ElectionFactory:
 
         fake_candidate_ballot_selections = [
             SelectionDescription(
-                "some-object-id-candidate-1", "some-candidate-id-1", 0
+                "some-object-id-candidate-1", 0, "some-candidate-id-1"
             ),
             SelectionDescription(
-                "some-object-id-candidate-2", "some-candidate-id-2", 1
+                "some-object-id-candidate-2", 1, "some-candidate-id-2"
             ),
             SelectionDescription(
-                "some-object-id-candidate-3", "some-candidate-id-3", 2
+                "some-object-id-candidate-3", 2, "some-candidate-id-3"
             ),
         ]
 
@@ -175,8 +175,8 @@ class ElectionFactory:
         votes_allowed_2 = 2
         fake_candidate_contest = CandidateContestDescription(
             "some-candidate-contest-object-id",
-            "some-geopoltical-unit-id",
             sequence_order_2,
+            "some-geopoltical-unit-id",
             VoteVariationType.one_of_m,
             number_elected_2,
             votes_allowed_2,
@@ -272,7 +272,7 @@ def get_selection_description_well_formed(
 
     object_id = f"{candidate_id}-selection-{draw(ids)}"
 
-    return (object_id, SelectionDescription(object_id, candidate_id, sequence_order))
+    return (object_id, SelectionDescription(object_id, sequence_order, candidate_id))
 
 
 @composite
@@ -310,8 +310,8 @@ def get_contest_description_well_formed(
 
     contest_description = ContestDescription(
         object_id,
-        electoral_district_id,
         sequence_order,
+        electoral_district_id,
         VoteVariationType.n_of_m,
         number_elected,
         votes_allowed,
