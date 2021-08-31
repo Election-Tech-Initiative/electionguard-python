@@ -91,6 +91,16 @@ def compute_polynomial_coordinate(
     return computed_value
 
 
+@dataclass
+class LagrangeCoefficientsRecord:
+    """
+    Record for lagrange coefficients for specific coordinates, usually the guardian sequence order
+    to be used in the public election record.
+    """
+
+    coefficients: List[ElementModQ]
+
+
 # pylint: disable=unnecessary-comprehension
 def compute_lagrange_coefficient(coordinate: int, *degrees: int) -> ElementModQ:
     """
