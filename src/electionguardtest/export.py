@@ -13,6 +13,7 @@ from typing import Iterable
 
 from electionguard.ballot import PlaintextBallot, CiphertextBallot, SubmittedBallot
 from electionguard.constants import ElectionConstants
+from electionguard.election_polynomial import LagrangeCoefficientsRecord
 from electionguard.guardian import GuardianRecord, PrivateGuardianRecord
 from electionguard.election import CiphertextElectionContext
 from electionguard.encrypt import EncryptionDevice
@@ -25,6 +26,7 @@ RESULTS_DIR = "results"
 MANIFEST_FILE_NAME = "manifest"
 CONTEXT_FILE_NAME = "context"
 CONSTANTS_FILE_NAME = "constants"
+COEFFICIENTS_FILE_NAME = "coefficients"
 ENCRYPTED_TALLY_FILE_NAME = "encrypted_tally"
 TALLY_FILE_NAME = "tally"
 
@@ -46,6 +48,7 @@ def export(
     ciphertext_tally: PublishedCiphertextTally,
     plaintext_tally: PlaintextTally,
     guardian_records: Iterable[GuardianRecord],
+    lagrange_coefficients: LagrangeCoefficientsRecord,
     results_directory: str = RESULTS_DIR,
 ) -> None:
     """Export the data required to publish the election record as json."""
@@ -56,8 +59,8 @@ def export(
 
     to_file(manifest, MANIFEST_FILE_NAME, results_directory)
     to_file(context, CONTEXT_FILE_NAME, results_directory)
-
     to_file(constants, CONSTANTS_FILE_NAME, results_directory)
+    to_file(lagrange_coefficients, COEFFICIENTS_FILE_NAME, results_directory)
 
     for device in devices:
         to_file(device, DEVICE_PREFIX + str(device.device_id), devices_directory)
