@@ -1,5 +1,7 @@
 from typing import Dict, List, Optional
 
+from electionguard.group import ElementModQ
+
 from .ballot import SubmittedBallot
 from .decryption import (
     compute_lagrange_coefficients_for_guardians,
@@ -189,10 +191,13 @@ class DecryptionMediator:
             ] = share
             self._compensated_ballot_shares[ballot_id] = ballot_shares
 
-    def reconstruct_shares_for_tally(self, ciphertext_tally: CiphertextTally) -> None:
-        lagrange_coefficients = compute_lagrange_coefficients_for_guardians(
+    def get_lagrange_coefficients(self) -> Dict[GUARDIAN_ID, ElementModQ]:
+        return compute_lagrange_coefficients_for_guardians(
             list(self._available_guardians.values())
         )
+
+    def reconstruct_shares_for_tally(self, ciphertext_tally: CiphertextTally) -> None:
+        lagrange_coefficients = self.get_lagrange_coefficients()
         for (
             missing_guardian_id,
             missing_guardian_key,

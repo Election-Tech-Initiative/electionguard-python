@@ -43,9 +43,11 @@ from electionguard.tally import (
     PlaintextTally,
 )
 from electionguard.decryption_mediator import DecryptionMediator
+from electionguard.election_polynomial import LagrangeCoefficientsRecord
 
 # Step 5 - Publish and Verify
 from electionguardtest.export import (
+    COEFFICIENTS_FILE_NAME,
     export,
     BALLOT_PREFIX,
     CONSTANTS_FILE_NAME,
@@ -110,6 +112,7 @@ class TestEndToEndElection(BaseTestCase):
     plaintext_tally: PlaintextTally
     plaintext_spoiled_ballots: Dict[str, PlaintextTally]
     decryption_mediator: DecryptionMediator
+    lagrange_coefficients: LagrangeCoefficientsRecord
 
     # Step 5 - Publish
     guardian_records: List[GuardianRecord] = []
@@ -393,6 +396,10 @@ class TestEndToEndElection(BaseTestCase):
                 len(self.decryption_mediator.get_available_guardians()) == count,
             )
 
+        self.lagrange_coefficients = LagrangeCoefficientsRecord(
+            list(self.decryption_mediator.get_lagrange_coefficients().values())
+        )
+
         # Get the plaintext Tally
         self.plaintext_tally = get_optional(
             self.decryption_mediator.get_plaintext_tally(self.ciphertext_tally)
@@ -495,6 +502,7 @@ class TestEndToEndElection(BaseTestCase):
             self.ciphertext_tally.publish(),
             self.plaintext_tally,
             self.guardian_records,
+            self.lagrange_coefficients,
             RESULTS_DIR,
         )
         self._assert_message(
@@ -527,6 +535,12 @@ class TestEndToEndElection(BaseTestCase):
             ElectionConstants, construct_path(CONSTANTS_FILE_NAME, RESULTS_DIR)
         )
         self.assertEqualAsDicts(self.constants, constants_from_file)
+
+        coefficients_from_file = from_file_to_dataclass(
+            LagrangeCoefficientsRecord,
+            construct_path(COEFFICIENTS_FILE_NAME, RESULTS_DIR),
+        )
+        self.assertEqualAsDicts(self.lagrange_coefficients, coefficients_from_file)
 
         device_from_file = from_file_to_dataclass(
             EncryptionDevice,
