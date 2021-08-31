@@ -1,6 +1,7 @@
 """Context for election encryption."""
 
 from dataclasses import dataclass
+from typing import Dict, Optional
 
 from .constants import get_small_prime, get_large_prime, get_generator
 from .group import (
@@ -9,7 +10,7 @@ from .group import (
 )
 from .hash import hash_elems
 
-
+# pylint: disable=too-many-instance-attributes
 @dataclass(eq=True, unsafe_hash=True)
 class CiphertextElectionContext:
     """`CiphertextElectionContext` is the ElectionGuard representation of a specific election.
@@ -51,6 +52,9 @@ class CiphertextElectionContext:
     crypto_extended_base_hash: ElementModQ
     """The `extended base hash code (𝑄')` in specification"""
 
+    extended_data: Optional[Dict[str, str]]
+    """Data to allow extending the context for special cases."""
+
 
 def make_ciphertext_election_context(
     number_of_guardians: int,
@@ -58,6 +62,7 @@ def make_ciphertext_election_context(
     elgamal_public_key: ElementModP,
     commitment_hash: ElementModQ,
     manifest_hash: ElementModQ,
+    extended_data: Optional[Dict[str, str]] = None,
 ) -> CiphertextElectionContext:
     """
     Makes a CiphertextElectionContext object.
@@ -95,11 +100,12 @@ def make_ciphertext_election_context(
     )
     crypto_extended_base_hash = hash_elems(crypto_base_hash, commitment_hash)
     return CiphertextElectionContext(
-        number_of_guardians=number_of_guardians,
-        quorum=quorum,
-        elgamal_public_key=elgamal_public_key,
-        commitment_hash=commitment_hash,
-        manifest_hash=manifest_hash,
-        crypto_base_hash=crypto_base_hash,
-        crypto_extended_base_hash=crypto_extended_base_hash,
+        number_of_guardians,
+        quorum,
+        elgamal_public_key,
+        commitment_hash,
+        manifest_hash,
+        crypto_base_hash,
+        crypto_extended_base_hash,
+        extended_data,
     )
