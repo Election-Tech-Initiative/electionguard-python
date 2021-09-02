@@ -139,5 +139,5 @@ A huge thank you to those who helped to contribute to this project so far, inclu
 [encrypt ballots]: https://github.com/microsoft/electionguard-python/blob/main/docs/2_Encrypt_Ballots.md
 [cast and spoil]: https://github.com/microsoft/electionguard-python/blob/main/docs/3_Cast_and_Spoil.md
 [decrypt tally]: https://github.com/microsoft/electionguard-python/blob/main/docs/4_Decrypt_Tally.md
-[publish and verify]: https://github.com/microsoft/electionguard-python/blob/main/docs/5_Publish_and_Verify.md)
+[publish and verify]: https://github.com/microsoft/electionguard-python/blob/main/docs/5_Publish_and_Verify.md
 [mit license]: https://github.com/microsoft/electionguard-python/blob/main/LICENSE
