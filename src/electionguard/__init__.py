@@ -120,7 +120,6 @@ from electionguard.data_store import (
     ReadOnlyDataStore,
 )
 from electionguard.decrypt_with_secrets import (
-    ELECTION_PUBLIC_KEY,
     decrypt_ballot_with_nonce,
     decrypt_ballot_with_secret,
     decrypt_contest_with_nonce,
@@ -129,18 +128,12 @@ from electionguard.decrypt_with_secrets import (
     decrypt_selection_with_secret,
 )
 from electionguard.decrypt_with_shares import (
-    AVAILABLE_GUARDIAN_ID,
-    ELECTION_PUBLIC_KEY,
-    GUARDIAN_PUBLIC_KEY,
-    MISSING_GUARDIAN_ID,
     decrypt_ballot,
     decrypt_contest_with_decryption_shares,
     decrypt_selection_with_decryption_shares,
     decrypt_tally,
 )
 from electionguard.decryption import (
-    ELECTION_PUBLIC_KEY,
-    GUARDIAN_PUBLIC_KEY,
     RECOVERY_PUBLIC_KEY,
     compensate_decrypt,
     compute_compensated_decryption_share,
@@ -169,7 +162,6 @@ from electionguard.decryption_share import (
     CiphertextDecryptionSelection,
     CompensatedDecryptionShare,
     DecryptionShare,
-    ELECTION_PUBLIC_KEY,
     ProofOrRecovery,
     create_ciphertext_decryption_selection,
     get_shares_for_selection,
@@ -195,6 +187,7 @@ from electionguard.election_object_base import (
 )
 from electionguard.election_polynomial import (
     ElectionPolynomial,
+    LagrangeCoefficientsRecord,
     PUBLIC_COMMITMENT,
     SECRET_COEFFICIENT,
     compute_lagrange_coefficient,
@@ -269,8 +262,6 @@ from electionguard.hash import (
 )
 from electionguard.key_ceremony import (
     CeremonyDetails,
-    ELECTION_JOINT_PUBLIC_KEY,
-    ELECTION_PUBLIC_KEY,
     ElectionJointKey,
     ElectionKeyPair,
     ElectionPartialKeyBackup,
@@ -278,7 +269,6 @@ from electionguard.key_ceremony import (
     ElectionPartialKeyVerification,
     ElectionPublicKey,
     PublicKeySet,
-    VERIFIER_ID,
     combine_election_public_keys,
     generate_election_key_pair,
     generate_election_partial_key_backup,
@@ -377,6 +367,7 @@ from electionguard.type import (
     GUARDIAN_ID,
     MEDIATOR_ID,
     SELECTION_ID,
+    VERIFIER_ID,
 )
 from electionguard.utils import (
     flatmap_optional,
@@ -392,7 +383,6 @@ from electionguard.utils import (
 __all__ = [
     "AUXILIARY_PUBLIC_KEY",
     "AUXILIARY_SECRET_KEY",
-    "AVAILABLE_GUARDIAN_ID",
     "AnnotatedString",
     "AuxiliaryDecrypt",
     "AuxiliaryEncrypt",
@@ -441,8 +431,6 @@ __all__ = [
     "DecryptionShare",
     "DiscreteLog",
     "DisjunctiveChaumPedersenProof",
-    "ELECTION_JOINT_PUBLIC_KEY",
-    "ELECTION_PUBLIC_KEY",
     "ELGAMAL_PUBLIC_KEY",
     "ELGAMAL_SECRET_KEY",
     "ENCRYPTED_MESSAGE",
@@ -472,7 +460,6 @@ __all__ = [
     "ExtendedData",
     "FORMAT",
     "GUARDIAN_ID",
-    "GUARDIAN_PUBLIC_KEY",
     "GeopoliticalUnit",
     "Guardian",
     "GuardianPair",
@@ -484,12 +471,12 @@ __all__ = [
     "KeyCeremonyMediator",
     "LARGE_TEST_CONSTANTS",
     "LOG",
+    "LagrangeCoefficientsRecord",
     "Language",
     "MAX_BITS",
     "MEDIATOR_ID",
     "MEDIUM_TEST_CONSTANTS",
     "MESSAGE",
-    "MISSING_GUARDIAN_ID",
     "Manifest",
     "NO_VOTE",
     "Nonces",
