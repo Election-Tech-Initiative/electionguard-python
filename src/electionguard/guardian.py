@@ -20,11 +20,9 @@ from .decryption_share import CompensatedDecryptionShare, DecryptionShare
 from .election import CiphertextElectionContext
 from .election_polynomial import PUBLIC_COMMITMENT
 from .elgamal import elgamal_combine_public_keys
-from .group import ElementModQ
+from .group import ElementModP, ElementModQ
 from .key_ceremony import (
     CeremonyDetails,
-    ELECTION_JOINT_PUBLIC_KEY,
-    ELECTION_PUBLIC_KEY,
     ElectionKeyPair,
     ElectionPartialKeyBackup,
     ElectionPartialKeyChallenge,
@@ -61,7 +59,7 @@ class GuardianRecord:
     in which the guardian should be processed
     """
 
-    election_public_key: ELECTION_PUBLIC_KEY
+    election_public_key: ElementModP
     """
     Guardian's election public key for encrypting election objects.
     """
@@ -492,7 +490,7 @@ class Guardian:
         return True
 
     # Joint Key
-    def publish_joint_key(self) -> Optional[ELECTION_JOINT_PUBLIC_KEY]:
+    def publish_joint_key(self) -> Optional[ElementModP]:
         """
         Create the joint election key from the public keys of all guardians.
 
