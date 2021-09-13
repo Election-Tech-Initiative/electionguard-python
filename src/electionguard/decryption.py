@@ -39,8 +39,6 @@ from .tally import CiphertextTally
 
 from .type import CONTEST_ID, GUARDIAN_ID, SELECTION_ID
 
-GUARDIAN_PUBLIC_KEY = ElementModP
-ELECTION_PUBLIC_KEY = ElementModP
 RECOVERY_PUBLIC_KEY = ElementModP
 
 

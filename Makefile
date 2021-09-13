@@ -84,6 +84,8 @@ lint:
 
 auto-lint:
 	@echo 💚 AUTO LINT
+	@echo Auto-generating __init__
+	poetry run mkinit src/electionguard -w
 	@echo Reformatting using Black
 	poetry run black .
 	make lint

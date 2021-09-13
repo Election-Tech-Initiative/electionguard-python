@@ -3,10 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Optional, Tuple
 
-from electionguard.key_ceremony import ELECTION_JOINT_PUBLIC_KEY
-
 from .election import CiphertextElectionContext, make_ciphertext_election_context
-from .group import ElementModQ
+from .group import ElementModP, ElementModQ
 from .manifest import Manifest, InternalManifest
 from .utils import get_optional
 
@@ -32,16 +30,14 @@ class ElectionBuilder:
 
     internal_manifest: InternalManifest = field(init=False)
 
-    election_joint_public_key: Optional[ELECTION_JOINT_PUBLIC_KEY] = field(default=None)
+    election_joint_public_key: Optional[ElementModP] = field(default=None)
 
     commitment_hash: Optional[ElementModQ] = field(default=None)
 
     def __post_init__(self) -> None:
         self.internal_manifest = InternalManifest(self.manifest)
 
-    def set_public_key(
-        self, election_joint_public_key: ELECTION_JOINT_PUBLIC_KEY
-    ) -> ElectionBuilder:
+    def set_public_key(self, election_joint_public_key: ElementModP) -> ElectionBuilder:
         """
         Set election public key
         :param election_joint_public_key: elgamal public key for election

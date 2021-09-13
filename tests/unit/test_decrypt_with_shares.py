@@ -3,12 +3,12 @@
 # pylint: disable=unnecessary-comprehension
 
 from typing import Dict, List, Tuple
+
 from tests.base_test_case import BaseTestCase
 
 from electionguard.ballot_box import BallotBox, BallotBoxState, get_ballots
 from electionguard.data_store import DataStore
 from electionguard.decrypt_with_shares import (
-    ELECTION_PUBLIC_KEY,
     decrypt_selection_with_decryption_shares,
     decrypt_ballot,
 )
@@ -22,6 +22,7 @@ from electionguard.decryption import (
 from electionguard.decryption_share import DecryptionShare
 from electionguard.election_builder import ElectionBuilder
 from electionguard.encrypt import EncryptionMediator
+from electionguard.group import ElementModP
 from electionguard.guardian import Guardian
 from electionguard.key_ceremony import CeremonyDetails
 from electionguard.key_ceremony_mediator import KeyCeremonyMediator
@@ -179,7 +180,7 @@ class TestDecryptWithShares(BaseTestCase):
         print(first_selection.object_id)
 
         # precompute decryption shares for specific selection for the guardians
-        shares: Dict[GUARDIAN_ID, Tuple[ELECTION_PUBLIC_KEY, DecryptionShare]] = {
+        shares: Dict[GUARDIAN_ID, Tuple[ElementModP, DecryptionShare]] = {
             guardian.id: (
                 guardian.share_election_public_key().key,
                 compute_decryption_share(

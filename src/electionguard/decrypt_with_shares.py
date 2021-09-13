@@ -17,13 +17,6 @@ from .tally import (
 from .logs import log_warning
 from .type import CONTEST_ID, GUARDIAN_ID, SELECTION_ID
 
-AVAILABLE_GUARDIAN_ID = GUARDIAN_ID
-MISSING_GUARDIAN_ID = GUARDIAN_ID
-
-GUARDIAN_PUBLIC_KEY = ElementModP
-
-ELECTION_PUBLIC_KEY = ElementModP
-
 # The methods in this file can be used to decrypt values if private keys or nonces are not known
 # and the key ceremony is used to share secrets among a quorum of guardians
 
@@ -64,7 +57,7 @@ def decrypt_tally(
 
 def decrypt_ballot(
     ballot: SubmittedBallot,
-    shares: Dict[AVAILABLE_GUARDIAN_ID, DecryptionShare],
+    shares: Dict[GUARDIAN_ID, DecryptionShare],
     crypto_extended_base_hash: ElementModQ,
 ) -> Optional[PlaintextTally]:
     """
@@ -131,9 +124,7 @@ def decrypt_contest_with_decryption_shares(
 
 def decrypt_selection_with_decryption_shares(
     selection: CiphertextSelection,
-    shares: Dict[
-        GUARDIAN_ID, Tuple[ELECTION_PUBLIC_KEY, CiphertextDecryptionSelection]
-    ],
+    shares: Dict[GUARDIAN_ID, Tuple[ElementModP, CiphertextDecryptionSelection]],
     crypto_extended_base_hash: ElementModQ,
     suppress_validity_check: bool = False,
 ) -> Optional[PlaintextTallySelection]:

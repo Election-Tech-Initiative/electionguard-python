@@ -19,16 +19,15 @@ from .elgamal import (
     elgamal_combine_public_keys,
     elgamal_keypair_random,
 )
-from .group import hex_to_q, ElementModP, ElementModQ
+from .group import ElementModP, hex_to_q, ElementModQ
 from .hash import hash_elems
 from .rsa import rsa_keypair, rsa_decrypt, rsa_encrypt
 from .schnorr import SchnorrProof
-from .type import GUARDIAN_ID
+from .type import (
+    GUARDIAN_ID,
+    VERIFIER_ID,
+)
 from .utils import get_optional
-
-ELECTION_PUBLIC_KEY = ElementModP
-ELECTION_JOINT_PUBLIC_KEY = ElementModP
-VERIFIER_ID = str
 
 
 @dataclass
@@ -45,7 +44,7 @@ class ElectionPublicKey:
     The sequence order of the owner guardian
     """
 
-    key: ELECTION_PUBLIC_KEY
+    key: ElementModP
     """
     The election public for the guardian
     Note: This is the same as the first coefficient commitment
@@ -103,7 +102,7 @@ class ElectionJointKey:
     The Election joint key
     """
 
-    joint_public_key: ELECTION_JOINT_PUBLIC_KEY
+    joint_public_key: ElementModP
     """
     The product of the guardian public keys
     K = ∏ ni=1 Ki mod p.

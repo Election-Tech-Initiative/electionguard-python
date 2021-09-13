@@ -19,8 +19,6 @@ from .nonces import Nonces
 
 from .utils import get_optional
 
-ELECTION_PUBLIC_KEY = ElementModP
-
 # The Methods in this file can be used to decrypt values if private keys or nonces are known
 
 

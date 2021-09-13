@@ -6,7 +6,7 @@ from tests.base_test_case import BaseTestCase
 
 from electionguard.constants import get_generator, get_large_prime
 from electionguard.discrete_log import (
-    discrete_log,
+    compute_discrete_log,
     discrete_log_async,
     DiscreteLog,
 )
@@ -56,7 +56,7 @@ class TestDiscreteLogFunctions(BaseTestCase):
         exp_plaintext = g_pow_p(plaintext)
 
         # Act
-        (plaintext_again, returned_cache) = discrete_log(exp_plaintext, cache)
+        (plaintext_again, returned_cache) = compute_discrete_log(exp_plaintext, cache)
 
         # Assert
         self.assertEqual(plaintext, plaintext_again)
@@ -66,7 +66,7 @@ class TestDiscreteLogFunctions(BaseTestCase):
         cache = {ONE_MOD_P: 0}
         plaintext = ONE_MOD_Q
         ciphertext = g_pow_p(plaintext)
-        (plaintext_again, returned_cache) = discrete_log(ciphertext, cache)
+        (plaintext_again, returned_cache) = compute_discrete_log(ciphertext, cache)
 
         self.assertEqual(plaintext, plaintext_again)
         self.assertEqual(len(cache), len(returned_cache))

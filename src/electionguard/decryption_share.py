@@ -11,8 +11,6 @@ from .logs import log_warning
 
 from .type import CONTEST_ID, GUARDIAN_ID, SELECTION_ID
 
-ELECTION_PUBLIC_KEY = ElementModP
-
 
 @dataclass
 class CiphertextCompensatedDecryptionSelection(ElectionObjectBase):
@@ -92,7 +90,7 @@ class CiphertextDecryptionSelection(ElectionObjectBase):
     def is_valid(
         self,
         message: ElGamalCiphertext,
-        election_public_key: ELECTION_PUBLIC_KEY,
+        election_public_key: ElementModP,
         extended_base_hash: ElementModQ,
     ) -> bool:
         """
@@ -295,12 +293,12 @@ class CompensatedDecryptionShare(ElectionObjectBase):
 def get_shares_for_selection(
     selection_id: str,
     shares: Dict[GUARDIAN_ID, DecryptionShare],
-) -> Dict[GUARDIAN_ID, Tuple[ELECTION_PUBLIC_KEY, CiphertextDecryptionSelection]]:
+) -> Dict[GUARDIAN_ID, Tuple[ElementModP, CiphertextDecryptionSelection]]:
     """
     Get all of the cast shares for a specific selection
     """
     selections: Dict[
-        GUARDIAN_ID, Tuple[ELECTION_PUBLIC_KEY, CiphertextDecryptionSelection]
+        GUARDIAN_ID, Tuple[ElementModP, CiphertextDecryptionSelection]
     ] = {}
     for share in shares.values():
         for contest in share.contests.values():

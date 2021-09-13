@@ -13,7 +13,9 @@ DLOG_MAX = 100_000_000
 """The max number to calculate.  This value is used to stop a race condition."""
 
 
-def discrete_log(element: ElementModP, cache: DLOG_CACHE) -> Tuple[int, DLOG_CACHE]:
+def compute_discrete_log(
+    element: ElementModP, cache: DLOG_CACHE
+) -> Tuple[int, DLOG_CACHE]:
     """
     Computes the discrete log (base g, mod p) of the given element,
     with internal caching of results. Should run efficiently when called
@@ -29,8 +31,8 @@ def discrete_log(element: ElementModP, cache: DLOG_CACHE) -> Tuple[int, DLOG_CAC
     if element in cache:
         return (cache[element], cache)
 
-    cache = compute_discrete_log_cache(element, cache)
-    return (cache[element], cache)
+    _cache = compute_discrete_log_cache(element, cache)
+    return (_cache[element], _cache)
 
 
 async def discrete_log_async(
@@ -56,8 +58,8 @@ async def discrete_log_async(
         if element in cache:
             return (cache[element], cache)
 
-        cache = compute_discrete_log_cache(element, cache)
-        return (cache[element], cache)
+        _cache = compute_discrete_log_cache(element, cache)
+        return (_cache[element], _cache)
 
 
 def compute_discrete_log_cache(
@@ -91,7 +93,7 @@ class DiscreteLog(Singleton):
     _mutex = asyncio.Lock()
 
     def discrete_log(self, element: ElementModP) -> int:
-        (result, cache) = discrete_log(element, self._cache)
+        (result, cache) = compute_discrete_log(element, self._cache)
         self._cache = cache
         return result
 
