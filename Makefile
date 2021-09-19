@@ -11,6 +11,7 @@ all: environment install build validate auto-lint coverage
 environment:
 	@echo 🔧 ENVIRONMENT SETUP
 	make install-gmp
+	python -m pip install -U pip
 	pip3 install 'poetry==1.1.6'
 	poetry config virtualenvs.in-project true 
 	poetry install
