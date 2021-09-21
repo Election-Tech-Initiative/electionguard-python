@@ -5,7 +5,7 @@ on:
     types: [closed]
 
 env:
-  PYTHON_VERSION: 3.9
+  PYTHON_VERSION: "3.9.5"
   POETRY_PATH: "$HOME/.poetry/bin"
 
 jobs:
@@ -16,9 +16,8 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v2
       - name: Set up Python ${{ env.PYTHON_VERSION }}
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v2
         with:
-          setup-python-dependencies: false
           python-version: ${{ env.PYTHON_VERSION }}
       - name: Change Directory
         run: cd ${{ github.workspace }}
@@ -46,9 +45,8 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v2
       - name: Set up Python ${{ env.PYTHON_VERSION }}
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v2
         with:
-          setup-python-dependencies: false
           python-version: ${{ env.PYTHON_VERSION }}
       - name: Change Directory
         run: cd ${{ github.workspace }}
@@ -70,9 +68,8 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v2
       - name: Set up Python ${{ env.PYTHON_VERSION }}
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v2
         with:
-          setup-python-dependencies: false
           python-version: ${{ env.PYTHON_VERSION }}
       - name: Change Directory
         run: cd ${{ github.workspace }}
