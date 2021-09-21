@@ -35,8 +35,8 @@ packages = [{ include = "electionguard", from = "src" }]
 python = "^3.9.5"
 gmpy2 = ">=2.0.8"
 # For Windows Builds
-# gmpy2 = { path = "./packages/gmpy2-2.0.8-cp38-cp38-win_amd64.whl" } # 64 bit
-# gmpy2 = { path = "./packages/gmpy2-2.0.8-cp38-cp38-win32.whl" } # 32 bit
+# gmpy2 = { path = "./packages/gmpy2-2.0.8-cp39-cp39-win_amd64.whl" } # 64 bit
+# gmpy2 = { path = "./packages/gmpy2-2.0.8-cp39-cp39-win32.whl" } # 32 bit
 cryptography = ">=3.2"
 psutil = ">=5.7.2"
 
