@@ -28,18 +28,17 @@ OR
 pipenv run python -m pip install -e .
 ```
 
-**⚠️ Note:** _For Windows without `make`, use supplied precompiled **gmpy2** package with the `--find-links` or `-f` option. The 32 vs 64 bit is based on your installed python version NOT your system._
+⚠️ Note: For Windows, use supplied precompiled gmpy2 package. Poetry does not support `pip install --find-links`, so the `pyproject.toml` must be edited.
 
-_**Determine if 64-bit:**_
+**Install gmpy2 for Windows**
+1. Determine if 64-bit:
+    _The 32 vs 64 bit is based on your installed python version NOT your system._
+    This code snippet will read true for 64 bit.
+     `python -c 'from sys import maxsize; print(maxsize > 2**32)'`
+2. Within `pyproject.toml`,
+    - Comment the original `gmpy2` line
+    - Uncomment the corresponding windows `gmpy2` line
 
-_This code snippet will read `true` for 64 bit._
-
-`python -c 'from sys import maxsize; print(maxsize > 2**32)'`
-
-_**Install module with link**_
-
-- **32-bit:** `pipenv run pip install -f packages/gmpy2-2.0.8-cp38-cp38-win32.whl -e .`
-- **64-bit:** `pipenv run pip install -f packages/gmpy2-2.0.8-cp38-cp38-win_amd64 -e .`
 
 ### 3. Validate import of module _(Optional)_
 
