@@ -4,13 +4,13 @@ from electionguard.guardian import Guardian
 from electionguard.key_ceremony import CeremonyDetails, ElectionPartialKeyVerification
 from electionguard.key_ceremony_mediator import GuardianPair, KeyCeremonyMediator
 
-from electionguardtest.identity_encrypt import (
+from electionguard_tools.helpers.identity_encrypt import (
     identity_auxiliary_decrypt,
     identity_auxiliary_encrypt,
 )
 
 
-class KeyCeremonyHelper:
+class KeyCeremonyOrchestrator:
     """Helper to assist in the key ceremony particularly for testing"""
 
     @staticmethod
@@ -29,9 +29,9 @@ class KeyCeremonyHelper:
     def perform_full_ceremony(guardians: List[Guardian], mediator: KeyCeremonyMediator):
         """Perform full key ceremony so joint election key is ready for publish"""
 
-        KeyCeremonyHelper.perform_round_1(guardians, mediator)
-        KeyCeremonyHelper.perform_round_2(guardians, mediator)
-        KeyCeremonyHelper.perform_round_3(guardians, mediator)
+        KeyCeremonyOrchestrator.perform_round_1(guardians, mediator)
+        KeyCeremonyOrchestrator.perform_round_2(guardians, mediator)
+        KeyCeremonyOrchestrator.perform_round_3(guardians, mediator)
 
     @staticmethod
     def perform_round_1(

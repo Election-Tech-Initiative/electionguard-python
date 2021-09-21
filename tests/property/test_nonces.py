@@ -7,7 +7,7 @@ from tests.base_test_case import BaseTestCase
 
 from electionguard.group import ElementModQ
 from electionguard.nonces import Nonces
-from electionguardtest.group import elements_mod_q
+from electionguard_tools.strategies.group import elements_mod_q
 
 
 class TestNonces(BaseTestCase):

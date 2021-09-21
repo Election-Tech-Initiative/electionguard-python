@@ -31,7 +31,7 @@ from electionguard.logs import log_info
 from electionguard.nonces import Nonces
 from electionguard.scheduler import Scheduler
 from electionguard.utils import get_optional
-from electionguardtest.elgamal import elgamal_keypairs
+from electionguard_tools.strategies.elgamal import elgamal_keypairs
 
 
 class TestElGamal(BaseTestCase):

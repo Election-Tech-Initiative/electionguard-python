@@ -13,8 +13,8 @@ from electionguard.elgamal import elgamal_keypair_from_secret
 from electionguard.encrypt import encrypt_ballot
 from electionguard.group import int_to_q
 
-import electionguardtest.ballot_factory as BallotFactory
-import electionguardtest.election_factory as ElectionFactory
+import electionguard_tools.factories.ballot_factory as BallotFactory
+import electionguard_tools.factories.election_factory as ElectionFactory
 
 election_factory = ElectionFactory.ElectionFactory()
 ballot_factory = BallotFactory.BallotFactory()

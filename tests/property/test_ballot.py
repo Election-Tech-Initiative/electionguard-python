@@ -7,7 +7,7 @@ from tests.base_test_case import BaseTestCase
 
 from electionguard.ballot import PlaintextBallotSelection
 
-import electionguardtest.ballot_factory as BallotFactory
+import electionguard_tools.factories.ballot_factory as BallotFactory
 
 
 class TestBallot(BaseTestCase):
