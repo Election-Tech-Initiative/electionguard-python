@@ -1,4 +1,4 @@
-_🚨 Please review the [guidelines for contributing](../CONTRIBUTING.md) to this repository._
+[//]: # (🚨 Please review the CONTRIBUTING.md in this repository. 💔Thank you!)
 
 ### Issue
 *Link your PR to an issue*
