@@ -46,7 +46,7 @@ from electionguard.decryption_mediator import DecryptionMediator
 from electionguard.election_polynomial import LagrangeCoefficientsRecord
 
 # Step 5 - Publish and Verify
-from electionguardtest.export import (
+from electionguard_tools.helpers.export import (
     COEFFICIENTS_FILE_NAME,
     export,
     BALLOT_PREFIX,
@@ -58,11 +58,14 @@ from electionguardtest.export import (
     MANIFEST_FILE_NAME,
     TALLY_FILE_NAME,
 )
-from electionguardtest.serialize import from_file_to_dataclass, construct_path
+from electionguard_tools.helpers.serialize import from_file_to_dataclass, construct_path
 
-from electionguardtest.ballot_factory import BallotFactory
-from electionguardtest.election_factory import ElectionFactory, NUMBER_OF_GUARDIANS
-from electionguardtest.identity_encrypt import (
+from electionguard_tools.factories.ballot_factory import BallotFactory
+from electionguard_tools.factories.election_factory import (
+    ElectionFactory,
+    NUMBER_OF_GUARDIANS,
+)
+from electionguard_tools.helpers.identity_encrypt import (
     identity_auxiliary_encrypt,
     identity_auxiliary_decrypt,
 )

@@ -42,13 +42,15 @@ from electionguard.manifest import (
 )
 from electionguard.utils import get_optional
 
-from electionguardtest.key_ceremony_helper import KeyCeremonyHelper
-from electionguardtest.serialize import from_file_to_dataclass
+from electionguard_tools.helpers.key_ceremony_orchestrator import (
+    KeyCeremonyOrchestrator,
+)
+from electionguard_tools.helpers.serialize import from_file_to_dataclass
 
 _T = TypeVar("_T")
 _DrawType = Callable[[SearchStrategy[_T]], _T]
 
-data = os.path.realpath(os.path.join(__file__, "../../../data"))
+data = os.path.realpath(os.path.join(__file__, "../../../../data"))
 
 NUMBER_OF_GUARDIANS = 5
 QUORUM = 3
@@ -104,9 +106,9 @@ class ElectionFactory:
 
         # Run the Key Ceremony
         ceremony_details = CeremonyDetails(NUMBER_OF_GUARDIANS, QUORUM)
-        guardians = KeyCeremonyHelper.create_guardians(ceremony_details)
+        guardians = KeyCeremonyOrchestrator.create_guardians(ceremony_details)
         mediator = KeyCeremonyMediator("key-ceremony-mediator", ceremony_details)
-        KeyCeremonyHelper.perform_full_ceremony(guardians, mediator)
+        KeyCeremonyOrchestrator.perform_full_ceremony(guardians, mediator)
 
         # Final: Joint Key
         joint_key = mediator.publish_joint_key()

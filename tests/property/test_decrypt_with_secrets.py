@@ -37,10 +37,10 @@ from electionguard.manifest import (
     contest_description_with_placeholders_from,
 )
 
-import electionguardtest.ballot_factory as BallotFactory
-import electionguardtest.election_factory as ElectionFactory
-from electionguardtest.elgamal import elgamal_keypairs
-from electionguardtest.group import elements_mod_q_no_zero
+import electionguard_tools.factories.ballot_factory as BallotFactory
+import electionguard_tools.factories.election_factory as ElectionFactory
+from electionguard_tools.strategies.elgamal import elgamal_keypairs
+from electionguard_tools.strategies.group import elements_mod_q_no_zero
 
 
 election_factory = ElectionFactory.ElectionFactory()

@@ -18,7 +18,7 @@ ciphertext_tally: CiphertextTally         # Encrypted tally
 plaintext_tally: PlaintextTally           # Decrypted tally
 ```
 
-These classes have been defined as `dataclass` to ensure that `asdict` can be used. This ensures ease of serialization to dictionaries within python, but allows customization for those wishing to use custom serialization. `electionguardtest` includes `export.py` which can be used as an example.
+These classes have been defined as `dataclass` to ensure that `asdict` can be used. This ensures ease of serialization to dictionaries within python, but allows customization for those wishing to use custom serialization. `electionguard_tools` includes `export.py` which can be used as an example.
 
 ## Verify
 

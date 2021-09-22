@@ -7,10 +7,10 @@ from electionguard.decryption_mediator import DecryptionMediator
 from electionguard.key_ceremony import ElectionPublicKey
 from electionguard.tally import CiphertextTally
 
-from electionguardtest.identity_encrypt import identity_auxiliary_decrypt
+from electionguard_tools.helpers.identity_encrypt import identity_auxiliary_decrypt
 
 
-class DecryptionHelper:
+class TallyCeremonyOrchestrator:
     """Helper to assist in the decryption process particularly for testing"""
 
     @staticmethod
@@ -24,7 +24,7 @@ class DecryptionHelper:
         """
         Perform the necessary setup to ensure that a mediator can decrypt with all guardians available
         """
-        DecryptionHelper.announcement(
+        TallyCeremonyOrchestrator.announcement(
             available_guardians,
             [guardian.share_election_public_key() for guardian in available_guardians],
             mediator,
@@ -45,7 +45,7 @@ class DecryptionHelper:
         """
         Perform the necessary setup to ensure that a mediator can decrypt when there are guardians missing
         """
-        DecryptionHelper.announcement(
+        TallyCeremonyOrchestrator.announcement(
             available_guardians,
             all_guardians_keys,
             mediator,
@@ -53,7 +53,7 @@ class DecryptionHelper:
             ciphertext_tally,
             ciphertext_ballots,
         )
-        DecryptionHelper.exchange_compensated_decryption_shares(
+        TallyCeremonyOrchestrator.exchange_compensated_decryption_shares(
             available_guardians, mediator, context, ciphertext_tally, ciphertext_ballots
         )
 

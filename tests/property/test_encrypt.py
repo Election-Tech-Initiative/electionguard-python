@@ -11,8 +11,8 @@ from hypothesis.strategies import integers
 
 from tests.base_test_case import BaseTestCase
 
-import electionguardtest.ballot_factory as BallotFactory
-import electionguardtest.election_factory as ElectionFactory
+import electionguard_tools.factories.ballot_factory as BallotFactory
+import electionguard_tools.factories.election_factory as ElectionFactory
 from electionguard.constants import get_small_prime
 from electionguard.chaum_pedersen import (
     ConstantChaumPedersenProof,
@@ -52,8 +52,8 @@ from electionguard.manifest import (
     VoteVariationType,
 )
 
-from electionguardtest.elgamal import elgamal_keypairs
-from electionguardtest.group import elements_mod_q_no_zero
+from electionguard_tools.strategies.elgamal import elgamal_keypairs
+from electionguard_tools.strategies.group import elements_mod_q_no_zero
 
 election_factory = ElectionFactory.ElectionFactory()
 ballot_factory = BallotFactory.BallotFactory()

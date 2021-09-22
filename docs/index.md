@@ -8,16 +8,16 @@ This repository is a "reference implementation" of ElectionGuard written in Pyth
 
 ## 📁 In This Repository
 
-| File/folder             | Description                              |
-| ----------------------- | ---------------------------------------- |
-| `docs`                  | Documentation for using the library      |
-| `src/electionguard`     | Source code to the ElectionGuard library |
-| `src/electionguardtest` | sample data and generators for testing   |
-| `stubs`                 | Type annotations for external libraries  |
-| `tests`                 | Tests to exercise this codebase          |
-| `CONTRIBUTING.md`       | Guidelines for contributing              |
-| `README.md`             | This README file                         |
-| `LICENSE`               | The license for ElectionGuard-Python.    |
+| File/folder               | Description                              |
+| ------------------------- | ---------------------------------------- |
+| `docs`                    | Documentation for using the library      |
+| `src/electionguard`       | Source code to the ElectionGuard library |
+| `src/electionguard_tools` | sample data and generators for testing   |
+| `stubs`                   | Type annotations for external libraries  |
+| `tests`                   | Tests to exercise this codebase          |
+| `CONTRIBUTING.md`         | Guidelines for contributing              |
+| `README.md`               | This README file                         |
+| `LICENSE`                 | The license for ElectionGuard-Python.    |
 
 <br/>
 

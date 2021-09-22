@@ -33,12 +33,19 @@ from electionguard.tally import (
 )
 from electionguard.utils import get_optional
 
-import electionguardtest.ballot_factory as BallotFactory
-import electionguardtest.election_factory as ElectionFactory
-from electionguardtest.election import election_descriptions, plaintext_voted_ballots
-from electionguardtest.decryption_helper import DecryptionHelper
-from electionguardtest.key_ceremony_helper import KeyCeremonyHelper
-from electionguardtest.tally import accumulate_plaintext_ballots
+import electionguard_tools.factories.ballot_factory as BallotFactory
+import electionguard_tools.factories.election_factory as ElectionFactory
+from electionguard_tools.strategies.election import (
+    election_descriptions,
+    plaintext_voted_ballots,
+)
+from electionguard_tools.helpers.tally_ceremony_orchestrator import (
+    TallyCeremonyOrchestrator,
+)
+from electionguard_tools.helpers.key_ceremony_orchestrator import (
+    KeyCeremonyOrchestrator,
+)
+from electionguard_tools.helpers.tally_accumulate import accumulate_plaintext_ballots
 
 election_factory = ElectionFactory.ElectionFactory()
 ballot_factory = BallotFactory.BallotFactory()
@@ -60,10 +67,12 @@ class TestDecryptionMediator(BaseTestCase):
         key_ceremony_mediator = KeyCeremonyMediator(
             "key_ceremony_mediator_mediator", self.CEREMONY_DETAILS
         )
-        self.guardians: List[Guardian] = KeyCeremonyHelper.create_guardians(
+        self.guardians: List[Guardian] = KeyCeremonyOrchestrator.create_guardians(
             self.CEREMONY_DETAILS
         )
-        KeyCeremonyHelper.perform_full_ceremony(self.guardians, key_ceremony_mediator)
+        KeyCeremonyOrchestrator.perform_full_ceremony(
+            self.guardians, key_ceremony_mediator
+        )
         self.joint_public_key = key_ceremony_mediator.publish_joint_key()
         self.assertIsNotNone(self.joint_public_key)
 
@@ -220,7 +229,7 @@ class TestDecryptionMediator(BaseTestCase):
 
         available_guardians = self.guardians
 
-        DecryptionHelper.perform_decryption_setup(
+        TallyCeremonyOrchestrator.perform_decryption_setup(
             available_guardians,
             mediator,
             self.context,
@@ -261,7 +270,7 @@ class TestDecryptionMediator(BaseTestCase):
             guardian.share_election_public_key() for guardian in self.guardians
         ]
 
-        DecryptionHelper.perform_compensated_decryption_setup(
+        TallyCeremonyOrchestrator.perform_compensated_decryption_setup(
             available_guardians,
             all_guardian_keys,
             mediator,
@@ -321,7 +330,7 @@ class TestDecryptionMediator(BaseTestCase):
 
         mediator = DecryptionMediator(self.decryption_mediator_id, context)
         available_guardians = self.guardians
-        DecryptionHelper.perform_decryption_setup(
+        TallyCeremonyOrchestrator.perform_decryption_setup(
             available_guardians, mediator, context, encrypted_tally, []
         )
 
