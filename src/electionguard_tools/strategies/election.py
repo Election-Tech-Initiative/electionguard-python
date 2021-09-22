@@ -44,8 +44,8 @@ from electionguard.manifest import (
     InternalManifest,
 )
 
-from electionguardtest.elgamal import elgamal_keypairs
-from electionguardtest.group import elements_mod_q_no_zero
+from electionguard_tools.strategies.elgamal import elgamal_keypairs
+from electionguard_tools.strategies.group import elements_mod_q_no_zero
 
 
 _T = TypeVar("_T")

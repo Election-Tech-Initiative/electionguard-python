@@ -6,8 +6,10 @@ from electionguard.key_ceremony import (
     ElectionPartialKeyVerification,
 )
 from electionguard.key_ceremony_mediator import KeyCeremonyMediator, GuardianPair
-from electionguardtest.key_ceremony_helper import KeyCeremonyHelper
-from electionguardtest.identity_encrypt import identity_auxiliary_decrypt
+from electionguard_tools.helpers.key_ceremony_orchestrator import (
+    KeyCeremonyOrchestrator,
+)
+from electionguard_tools.helpers.identity_encrypt import identity_auxiliary_decrypt
 
 NUMBER_OF_GUARDIANS = 2
 QUORUM = 2
@@ -67,7 +69,7 @@ class TestKeyCeremonyMediator(BaseTestCase):
 
         # Arrange
         mediator = KeyCeremonyMediator("mediator_backups_exchange", CEREMONY_DETAILS)
-        KeyCeremonyHelper.perform_round_1(self.GUARDIANS, mediator)
+        KeyCeremonyOrchestrator.perform_round_1(self.GUARDIANS, mediator)
 
         # Round 2 - Guardians Only
         self.GUARDIAN_1.generate_election_partial_key_backups()
@@ -114,8 +116,8 @@ class TestKeyCeremonyMediator(BaseTestCase):
         """
         # Arrange
         mediator = KeyCeremonyMediator("mediator_verification", CEREMONY_DETAILS)
-        KeyCeremonyHelper.perform_round_1(self.GUARDIANS, mediator)
-        KeyCeremonyHelper.perform_round_2(self.GUARDIANS, mediator)
+        KeyCeremonyOrchestrator.perform_round_1(self.GUARDIANS, mediator)
+        KeyCeremonyOrchestrator.perform_round_2(self.GUARDIANS, mediator)
 
         # Round 3 - Guardians only
         verification1 = self.GUARDIAN_1.verify_election_partial_key_backup(
@@ -150,8 +152,8 @@ class TestKeyCeremonyMediator(BaseTestCase):
         """
         # Arrange
         mediator = KeyCeremonyMediator("mediator_challenge", CEREMONY_DETAILS)
-        KeyCeremonyHelper.perform_round_1(self.GUARDIANS, mediator)
-        KeyCeremonyHelper.perform_round_2(self.GUARDIANS, mediator)
+        KeyCeremonyOrchestrator.perform_round_1(self.GUARDIANS, mediator)
+        KeyCeremonyOrchestrator.perform_round_2(self.GUARDIANS, mediator)
 
         # Round 3 - Guardians only
         verification1 = self.GUARDIAN_1.verify_election_partial_key_backup(

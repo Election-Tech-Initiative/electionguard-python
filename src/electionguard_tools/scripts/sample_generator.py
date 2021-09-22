@@ -19,10 +19,12 @@ from electionguard.guardian import PrivateGuardianRecord
 from electionguard.tally import tally_ballots
 from electionguard.utils import get_optional
 
-from electionguardtest.ballot_factory import BallotFactory
-from electionguardtest.decryption_helper import DecryptionHelper
-from electionguardtest.election_factory import ElectionFactory, QUORUM
-from electionguardtest.export import (
+from electionguard_tools.factories.ballot_factory import BallotFactory
+from electionguard_tools.factories.election_factory import ElectionFactory, QUORUM
+from electionguard_tools.helpers.tally_ceremony_orchestrator import (
+    TallyCeremonyOrchestrator,
+)
+from electionguard_tools.helpers.export import (
     export_private_data,
     export,
     RESULTS_DIR,
@@ -121,7 +123,7 @@ class ElectionSampleDataGenerator:
                 for guardian in private_data.guardians
             ]
 
-            DecryptionHelper.perform_compensated_decryption_setup(
+            TallyCeremonyOrchestrator.perform_compensated_decryption_setup(
                 available_guardians,
                 all_guardian_keys,
                 mediator,
@@ -130,7 +132,7 @@ class ElectionSampleDataGenerator:
                 spoiled_ciphertext_ballots.values(),
             )
         else:
-            DecryptionHelper.perform_decryption_setup(
+            TallyCeremonyOrchestrator.perform_decryption_setup(
                 available_guardians,
                 mediator,
                 manifest.context,

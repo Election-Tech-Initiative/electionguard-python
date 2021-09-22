@@ -1,7 +1,7 @@
 from tests.base_test_case import BaseTestCase
 
-import electionguardtest.election_factory as ElectionFactory
-import electionguardtest.ballot_factory as BallotFactory
+import electionguard_tools.factories.election_factory as ElectionFactory
+import electionguard_tools.factories.ballot_factory as BallotFactory
 
 election_factory = ElectionFactory.ElectionFactory()
 ballot_factory = BallotFactory.BallotFactory()

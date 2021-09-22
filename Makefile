@@ -86,7 +86,8 @@ lint:
 auto-lint:
 	@echo 💚 AUTO LINT
 	@echo Auto-generating __init__
-	poetry run mkinit src/electionguard -w
+	poetry run mkinit src/electionguard --write --black
+	poetry run mkinit src/electionguard_tools --write --recursive --black
 	@echo Reformatting using Black
 	poetry run black .
 	make lint
@@ -171,7 +172,7 @@ dependency-graph-ci:
 
 # Sample Data
 generate-sample-data:
-	poetry run python3 src/electionguardtest/sample_generator.py -n $(SAMPLE_BALLOT_COUNT) -s $(SAMPLE_BALLOT_SPOIL_RATE)
+	poetry run python3 src/electionguard_tools/scripts/sample_generator.py -n $(SAMPLE_BALLOT_COUNT) -s $(SAMPLE_BALLOT_SPOIL_RATE)
 
 # Publish
 publish:

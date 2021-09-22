@@ -4,7 +4,7 @@ from tests.base_test_case import BaseTestCase
 
 from electionguard.guardian import Guardian
 
-from electionguardtest.identity_encrypt import (
+from electionguard_tools.helpers.identity_encrypt import (
     identity_auxiliary_decrypt,
     identity_auxiliary_encrypt,
 )

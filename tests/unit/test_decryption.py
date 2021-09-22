@@ -40,11 +40,13 @@ from electionguard.tally import tally_ballots
 from electionguard.type import BALLOT_ID, GUARDIAN_ID
 from electionguard.utils import get_optional
 
-import electionguardtest.ballot_factory as BallotFactory
-import electionguardtest.election_factory as ElectionFactory
-from electionguardtest.identity_encrypt import identity_auxiliary_decrypt
-from electionguardtest.key_ceremony_helper import KeyCeremonyHelper
-from electionguardtest.tally import accumulate_plaintext_ballots
+import electionguard_tools.factories.ballot_factory as BallotFactory
+import electionguard_tools.factories.election_factory as ElectionFactory
+from electionguard_tools.helpers.identity_encrypt import identity_auxiliary_decrypt
+from electionguard_tools.helpers.key_ceremony_orchestrator import (
+    KeyCeremonyOrchestrator,
+)
+from electionguard_tools.helpers.tally_accumulate import accumulate_plaintext_ballots
 
 election_factory = ElectionFactory.ElectionFactory()
 ballot_factory = BallotFactory.BallotFactory()
@@ -63,10 +65,10 @@ class TestDecryption(BaseTestCase):
         self.key_ceremony_mediator = KeyCeremonyMediator(
             "key_ceremony_mediator_mediator", self.CEREMONY_DETAILS
         )
-        self.guardians: List[Guardian] = KeyCeremonyHelper.create_guardians(
+        self.guardians: List[Guardian] = KeyCeremonyOrchestrator.create_guardians(
             self.CEREMONY_DETAILS
         )
-        KeyCeremonyHelper.perform_full_ceremony(
+        KeyCeremonyOrchestrator.perform_full_ceremony(
             self.guardians, self.key_ceremony_mediator
         )
         self.joint_public_key = self.key_ceremony_mediator.publish_joint_key()

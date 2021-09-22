@@ -4,7 +4,7 @@ from hypothesis.strategies import composite, SearchStrategy
 
 from electionguard.elgamal import elgamal_keypair_from_secret
 from electionguard.group import ONE_MOD_Q, TWO_MOD_Q
-from electionguardtest.group import elements_mod_q_no_zero
+from electionguard_tools.strategies.group import elements_mod_q_no_zero
 
 _T = TypeVar("_T")
 _DrawType = Callable[[SearchStrategy[_T]], _T]

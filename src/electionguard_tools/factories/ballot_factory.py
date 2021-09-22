@@ -23,7 +23,7 @@ from electionguard.manifest import (
     SelectionDescription,
     InternalManifest,
 )
-from electionguardtest.serialize import (
+from electionguard_tools.helpers.serialize import (
     from_file_to_dataclass,
     from_list_in_file_to_dataclass,
 )
@@ -32,7 +32,7 @@ from electionguardtest.serialize import (
 _T = TypeVar("_T")
 _DrawType = Callable[[SearchStrategy[_T]], _T]
 
-data = os.path.realpath(os.path.join(__file__, "../../../data"))
+data = os.path.realpath(os.path.join(__file__, "../../../../data"))
 
 
 class BallotFactory:
