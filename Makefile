@@ -12,7 +12,7 @@ environment:
 	@echo 🔧 ENVIRONMENT SETUP
 	make install-gmp
 	python -m pip install -U pip
-	pip3 install 'poetry==1.1.6'
+	pip3 install 'poetry==1.1.10'
 	poetry config virtualenvs.in-project true 
 	poetry install
 	@echo 🚨 Be sure to add poetry to PATH
