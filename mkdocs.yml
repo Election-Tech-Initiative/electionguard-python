@@ -22,3 +22,5 @@ nav:
         - 4. Decrypt Tally: 4_Decrypt_Tally.md
         - 5. Publish and Verify: 5_Publish_and_Verify.md
 theme: readthedocs
+plugins:
+  - mkdocs-jupyter

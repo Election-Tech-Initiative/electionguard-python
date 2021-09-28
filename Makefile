@@ -146,6 +146,7 @@ bench:
 # Documentation
 install-mkdocs:
 	pip install mkdocs
+	pip install mkdocs-jupyter
 
 docs-serve:
 	mkdocs serve
