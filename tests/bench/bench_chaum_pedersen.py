@@ -31,14 +31,13 @@ def chaum_pedersen_bench(bi: BenchInput) -> Tuple[float, float]:
     Given an input (instance of the BenchInput tuple), constructs and validates
     a disjunctive Chaum-Pedersen proof, returning the time (in seconds) to do each operation.
     """
-    (keypair, r, s) = bi
-    ciphertext = get_optional(elgamal_encrypt(0, r, keypair.public_key))
+    ciphertext = get_optional(elgamal_encrypt(0, bi.r, bi.keypair.public_key))
     start1 = timer()
     proof = make_disjunctive_chaum_pedersen_zero(
-        ciphertext, r, keypair.public_key, ONE_MOD_Q, s
+        ciphertext, bi.r, bi.keypair.public_key, ONE_MOD_Q, bi.s
     )
     end1 = timer()
-    valid = proof.is_valid(ciphertext, keypair.public_key, ONE_MOD_Q)
+    valid = proof.is_valid(ciphertext, bi.keypair.public_key, ONE_MOD_Q)
     end2 = timer()
     if not valid:
         raise Exception("Wasn't expecting an invalid proof during a benchmark!")
