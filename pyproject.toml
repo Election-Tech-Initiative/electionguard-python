@@ -57,6 +57,7 @@ pytest = "*"
 secretstorage = "*"
 twine = "*"
 typish = '*'
+mkdocs-jupyter = "^0.18.0"
 
 [tool.black]
 target-version = ['py39']

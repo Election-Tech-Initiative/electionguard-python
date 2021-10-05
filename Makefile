@@ -148,7 +148,6 @@ bench:
 install-mkdocs:
 	pip install mkdocs
 	pip install mkdocs-jupyter
-	poetry add mkdocs-jupyter --dev
 
 docs-serve:
 	mkdocs serve
