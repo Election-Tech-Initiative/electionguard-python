@@ -224,7 +224,7 @@ python-versions = ">=3.5"
 name = "importlib-metadata"
 version = "4.8.1"
 description = "Read metadata from Python packages"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.6"
 
@@ -985,7 +985,7 @@ tests = ["codecov", "scikit-build", "cmake", "ninja", "pybind11", "pytest", "pyt
 name = "zipp"
 version = "3.5.0"
 description = "Backport of pathlib-compatible object wrapper for zip files"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.6"
 
@@ -996,7 +996,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9.5"
-content-hash = "4198a0eb7bd8b8b4d51c22645dc1f3cc8933511b0034592a5e9c09f8fb73975a"
+content-hash = "afac2b347e109592d3311b249ebdf25d277efc9f5f024bf97692386d38ebffb1"
 
 [metadata.files]
 appdirs = [

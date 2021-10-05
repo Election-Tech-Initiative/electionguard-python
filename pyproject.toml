@@ -39,7 +39,6 @@ gmpy2 = ">=2.0.8"
 # gmpy2 = { path = "./packages/gmpy2-2.0.8-cp39-cp39-win32.whl" } # 32 bit
 cryptography = ">=3.2"
 psutil = ">=5.7.2"
-importlib-metadata = {version = "*", python = "<3.8"}
 
 [tool.poetry.dev-dependencies]
 atomicwrites = "*"

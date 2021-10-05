@@ -1,3 +1,5 @@
+import importlib.metadata
+
 # <AUTOGEN_INIT>
 from electionguard_tools import factories
 from electionguard_tools import helpers
@@ -195,15 +197,9 @@ __all__ = [
 ]
 
 # </AUTOGEN_INIT>
+
 # single source version from pyproject.toml
 try:
-    # importlib.metadata is present in Python 3.8 and later
-    import importlib.metadata as import_lib_metadata
-except ImportError:
-    # use the shim package importlib-metadata pre-3.8
-    import importlib_metadata as import_lib_metadata
-
-try:
-    __version__ = import_lib_metadata.version(__package__.split("_", maxsplit=1)[0])
-except import_lib_metadata.PackageNotFoundError:
+    __version__ = importlib.metadata.version(__package__.split("_", maxsplit=1)[0])
+except importlib.metadata.PackageNotFoundError:
     __version__ = "0.0.0"
