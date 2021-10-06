@@ -6,7 +6,7 @@ from electionguard.ballot import (
 )
 from electionguard.election import CiphertextElectionContext
 from electionguard.manifest import (
-    InternalManifest,
+    Manifest,
 )
 
 
@@ -23,7 +23,7 @@ class Verification:
 
 def verify_ballot(
     ballot: CiphertextBallot,
-    internal_manifest: InternalManifest,
+    manifest: Manifest,
     context: CiphertextElectionContext,
 ) -> Verification:
     """
@@ -31,7 +31,7 @@ def verify_ballot(
     """
 
     if not ballot.is_valid_encryption(
-        internal_manifest.manifest_hash,
+        manifest.crypto_hash(),
         context.elgamal_public_key,
         context.crypto_extended_base_hash,
     ):
