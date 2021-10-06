@@ -107,6 +107,7 @@ class AnnotatedString(CryptoHashable):
         return hash
 
 
+# pylint: disable=super-init-not-called
 @dataclass(eq=True, unsafe_hash=True)
 class Language(CryptoHashable):
     """
@@ -134,6 +135,7 @@ class Language(CryptoHashable):
         return hash
 
 
+# pylint: disable=super-init-not-called
 @dataclass(eq=True, unsafe_hash=True)
 class InternationalizedText(CryptoHashable):
     """
@@ -158,6 +160,7 @@ class InternationalizedText(CryptoHashable):
         return hash
 
 
+# pylint: disable=super-init-not-called
 @dataclass(eq=True, unsafe_hash=True)
 class ContactInformation(CryptoHashable):
     """
@@ -543,7 +546,7 @@ class ContestDescriptionWithPlaceholders(ContestDescription):
         return None
 
 
-# pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-instance-attributes,super-init-not-called
 @dataclass(unsafe_hash=True)
 class Manifest(CryptoHashable):
     """
