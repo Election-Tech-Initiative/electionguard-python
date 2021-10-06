@@ -162,6 +162,18 @@ class ContactInformation(CryptoHashable):
     phone: Optional[List[AnnotatedString]] = field(default=None)
     name: Optional[str] = field(default=None)
 
+    def __init__(
+        self,
+        address_line: Optional[List[str]] = None,
+        email: Optional[List[AnnotatedString]] = None,
+        phone: Optional[List[AnnotatedString]] = None,
+        name: Optional[str] = None,
+    ):
+        self.address_line = address_line
+        self.email = email
+        self.phone = phone
+        self.name = name
+
     def crypto_hash(self) -> ElementModQ:
         """
         A hash representation of the object
