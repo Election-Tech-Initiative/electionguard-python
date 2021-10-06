@@ -135,6 +135,12 @@ class InternationalizedText(CryptoHashable):
 
     text: List[Language] = field(default_factory=lambda: [])
 
+    def __init__(
+        self,
+        text: List[Language] = None,
+    ):
+        self.text = text if text else list()
+
     def crypto_hash(self) -> ElementModQ:
         """
         A hash representation of the object
