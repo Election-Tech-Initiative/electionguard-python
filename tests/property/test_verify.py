@@ -43,8 +43,8 @@ class TestVerify(BaseTestCase):
         self.assertIsNotNone(encrypted_ballot)
 
         # Act
-        verification = verify_ballot(encrypted_ballot)
+        verification = verify_ballot(encrypted_ballot, internal_manifest, context)
 
         # Assert
         self.assertIsNotNone(verification)
-        self.assertTrue(verification)
+        self.assertTrue(verification.verified)
