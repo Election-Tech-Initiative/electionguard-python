@@ -117,6 +117,14 @@ class Language(CryptoHashable):
     value: str
     language: str = field(default="en")
 
+    def __init__(
+        self,
+        value: str,
+        language: str = "en",
+    ):
+        self.value = value
+        self.language = language
+
     def crypto_hash(self) -> ElementModQ:
         """
         A hash representation of the object
