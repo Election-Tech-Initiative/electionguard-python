@@ -118,6 +118,8 @@ class Language(CryptoHashable):
     value: str
     language: str = field(default="en")
 
+    # explicit `__init__` added as workaround for https://bugs.python.org/issue45081
+    # can potentially be removed with future python version >3.9.7
     def __init__(
         self,
         value: str,
@@ -145,6 +147,8 @@ class InternationalizedText(CryptoHashable):
 
     text: List[Language] = field(default_factory=lambda: [])
 
+    # explicit `__init__` added as workaround for https://bugs.python.org/issue45081
+    # can potentially be removed with future python version >3.9.7
     def __init__(
         self,
         text: List[Language] = None,
@@ -173,6 +177,8 @@ class ContactInformation(CryptoHashable):
     phone: Optional[List[AnnotatedString]] = field(default=None)
     name: Optional[str] = field(default=None)
 
+    # explicit `__init__` added as workaround for https://bugs.python.org/issue45081
+    # can potentially be removed with future python version >3.9.7
     def __init__(
         self,
         address_line: Optional[List[str]] = None,
@@ -575,6 +581,8 @@ class Manifest(CryptoHashable):
     name: Optional[InternationalizedText] = field(default=None)
     contact_information: Optional[ContactInformation] = field(default=None)
 
+    # explicit `__init__` added as workaround for https://bugs.python.org/issue45081
+    # can potentially be removed with future python version >3.9.7
     def __init__(
         self,
         election_scope_id: str,
