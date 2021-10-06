@@ -546,6 +546,34 @@ class Manifest(CryptoHashable):
     name: Optional[InternationalizedText] = field(default=None)
     contact_information: Optional[ContactInformation] = field(default=None)
 
+    def __init__(
+        self,
+        election_scope_id: str,
+        spec_version: str,
+        type: ElectionType,
+        start_date: datetime,
+        end_date: datetime,
+        geopolitical_units: List[GeopoliticalUnit],
+        parties: List[Party],
+        candidates: List[Candidate],
+        contests: List[ContestDescription],
+        ballot_styles: List[BallotStyle],
+        name: Optional[InternationalizedText] = None,
+        contact_information: Optional[ContactInformation] = None,
+    ):
+        self.election_scope_id = election_scope_id
+        self.spec_version = spec_version
+        self.type = type
+        self.start_date = start_date
+        self.end_date = end_date
+        self.geopolitical_units = geopolitical_units
+        self.parties = parties
+        self.candidates = candidates
+        self.contests = contests
+        self.ballot_styles = ballot_styles
+        self.name = name
+        self.contact_information = contact_information
+
     def __eq__(self, other: Any) -> bool:
         return (
             isinstance(other, Manifest)
