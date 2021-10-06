@@ -1,3 +1,6 @@
+import importlib.metadata
+
+# <AUTOGEN_INIT>
 from electionguard_tools import factories
 from electionguard_tools import helpers
 from electionguard_tools import scripts
@@ -192,3 +195,11 @@ __all__ = [
     "to_raw",
     "two_letter_codes",
 ]
+
+# </AUTOGEN_INIT>
+
+# single source version from pyproject.toml
+try:
+    __version__ = importlib.metadata.version(__package__.split("_", maxsplit=1)[0])
+except importlib.metadata.PackageNotFoundError:
+    __version__ = "0.0.0"

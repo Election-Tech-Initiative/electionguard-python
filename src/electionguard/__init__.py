@@ -1,3 +1,6 @@
+import importlib.metadata
+
+# <AUTOGEN_INIT>
 from electionguard import auxiliary
 from electionguard import ballot
 from electionguard import ballot_box
@@ -688,3 +691,11 @@ __all__ = [
     "verify_election_partial_key_challenge",
     "verify_polynomial_coordinate",
 ]
+
+# </AUTOGEN_INIT>
+
+# single source version from pyproject.toml
+try:
+    __version__ = importlib.metadata.version(__package__.split("_", maxsplit=1)[0])
+except importlib.metadata.PackageNotFoundError:
+    __version__ = "0.0.0"
