@@ -72,7 +72,7 @@ Sections:
 
 Step-by-Step Process:
 
-0. [Configure Election](0_Configure_Election.md)
+0. [Configure Election](0_Configure_Election.ipynb)
 1. [Key Ceremony](1_Key_Ceremony.md)
 2. [Encrypt Ballots](2_Encrypt_Ballots.md)
 3. [Cast and Spoil](3_Cast_and_Spoil.md)
