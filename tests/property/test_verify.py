@@ -30,9 +30,9 @@ class TestVerify(BaseTestCase):
     @given(elgamal_keypairs())
     def test_verify_ballot(self, keypair: ElGamalKeyPair):
         # Arrange
-        election = election_factory.get_simple_manifest_from_file()
+        manifest = election_factory.get_simple_manifest_from_file()
         internal_manifest, context = election_factory.get_fake_ciphertext_election(
-            election, keypair.public_key
+            manifest, keypair.public_key
         )
 
         data = ballot_factory.get_simple_ballot_from_file()
@@ -43,8 +43,8 @@ class TestVerify(BaseTestCase):
         self.assertIsNotNone(encrypted_ballot)
 
         # Act
-        verification = verify_ballot(encrypted_ballot)
+        verification = verify_ballot(encrypted_ballot, manifest, context)
 
         # Assert
         self.assertIsNotNone(verification)
-        self.assertTrue(verification)
+        self.assertTrue(verification.verified)
