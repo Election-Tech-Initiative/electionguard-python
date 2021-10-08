@@ -153,7 +153,7 @@ class InternationalizedText(CryptoHashable):
         self,
         text: List[Language] = None,
     ):
-        self.text = text if text else list()
+        self.text = text if text else []
 
     def crypto_hash(self) -> ElementModQ:
         """
