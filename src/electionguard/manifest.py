@@ -785,7 +785,7 @@ class InternalManifest:
         """
         style = self.get_ballot_style(ballot_style_id)
         if style.geopolitical_unit_ids is None:
-            return list()
+            return []
         # pylint: disable=unnecessary-comprehension
         gp_unit_ids = [gp_unit_id for gp_unit_id in style.geopolitical_unit_ids]
         contests = list(
@@ -801,7 +801,7 @@ class InternalManifest:
         For each contest, append the `number_elected` number
         of placeholder selections to the end of the contest collection
         """
-        contests: List[ContestDescriptionWithPlaceholders] = list()
+        contests: List[ContestDescriptionWithPlaceholders] = []
         for contest in manifest.contests:
             placeholder_selections = generate_placeholder_selections_from(
                 contest, contest.number_elected
@@ -880,7 +880,7 @@ def generate_placeholder_selections_from(
     max_sequence_order = max(
         [selection.sequence_order for selection in contest.ballot_selections]
     )
-    selections: List[SelectionDescription] = list()
+    selections: List[SelectionDescription] = []
     for i in range(count):
         sequence_order = max_sequence_order + 1 + i
         selections.append(
