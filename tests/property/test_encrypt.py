@@ -756,8 +756,9 @@ class TestEncrypt(BaseTestCase):
         """
         This test is for https://github.com/microsoft/electionguard-python/issues/459
         """
-        with patch('electionguard.encrypt.encrypt_contest') as patched_contest, \
-             patch('electionguard.encrypt.encrypt_selection') as patched_selection:
+        with patch("electionguard.encrypt.encrypt_contest") as patched_contest, patch(
+            "electionguard.encrypt.encrypt_selection"
+        ) as patched_selection:
             # Arrange
             keypair = elgamal_keypair_from_secret(int_to_q(2))
             manifest = election_factory.get_fake_manifest()
@@ -765,17 +766,20 @@ class TestEncrypt(BaseTestCase):
                 manifest, keypair.public_key
             )
             subject = election_factory.get_fake_ballot(internal_manifest)
-            self.assertTrue(subject.is_valid(internal_manifest.ballot_styles[0].object_id))
+            self.assertTrue(
+                subject.is_valid(internal_manifest.ballot_styles[0].object_id)
+            )
 
             patched_contest.side_effect = encrypt_contest
             patched_selection.side_effect = encrypt_selection
 
-
             # Act
-            encrypt_ballot(subject, internal_manifest, context, SEED, should_verify_proofs=False)
+            encrypt_ballot(
+                subject, internal_manifest, context, SEED, should_verify_proofs=False
+            )
 
             # Assert
             for call in patched_contest.call_args_list:
-                self.assertFalse(call.kwargs.get('should_verify_proofs'))
+                self.assertFalse(call.kwargs.get("should_verify_proofs"))
             for call in patched_selection.call_args_list:
-                self.assertFalse(call.kwargs.get('should_verify_proofs'))
+                self.assertFalse(call.kwargs.get("should_verify_proofs"))

@@ -453,7 +453,11 @@ def encrypt_ballot(
     log_info(f": encryption_seed : {encryption_seed.to_hex()}")
 
     encrypted_contests = encrypt_ballot_contests(
-        ballot, internal_manifest, context, nonce_seed, should_verify_proofs=should_verify_proofs
+        ballot,
+        internal_manifest,
+        context,
+        nonce_seed,
+        should_verify_proofs=should_verify_proofs,
     )
     if encrypted_contests is None:
         return None
@@ -493,7 +497,6 @@ def encrypt_ballot_contests(
 ) -> Optional[List[CiphertextBallotContest]]:
     """Encrypt contests from a plaintext ballot with a specific style"""
     encrypted_contests: List[CiphertextBallotContest] = []
-
 
     # Only iterate on contests for this specific ballot style
     for ballot_style_contest in description.get_contests_for(ballot.style_id):
