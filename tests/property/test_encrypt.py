@@ -1,5 +1,5 @@
 from unittest import skip
-from unittest.mock import patch, ANY
+from unittest.mock import patch
 from copy import deepcopy
 from datetime import timedelta
 from random import Random
@@ -756,14 +756,14 @@ class TestEncrypt(BaseTestCase):
         """
         This test is for https://github.com/microsoft/electionguard-python/issues/459
         """
-        with patch('electionguard.encrypt.encrypt_contest') as patched_contest, patch('electionguard.encrypt.encrypt_selection') as patched_selection:
+        with patch('electionguard.encrypt.encrypt_contest') as patched_contest, \
+             patch('electionguard.encrypt.encrypt_selection') as patched_selection:
             # Arrange
             keypair = elgamal_keypair_from_secret(int_to_q(2))
             manifest = election_factory.get_fake_manifest()
             internal_manifest, context = election_factory.get_fake_ciphertext_election(
                 manifest, keypair.public_key
             )
-            nonce_seed = TWO_MOD_Q
             subject = election_factory.get_fake_ballot(internal_manifest)
             self.assertTrue(subject.is_valid(internal_manifest.ballot_styles[0].object_id))
 
