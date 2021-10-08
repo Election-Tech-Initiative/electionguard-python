@@ -1,4 +1,5 @@
 from unittest import skip
+from unittest.mock import patch, ANY
 from copy import deepcopy
 from datetime import timedelta
 from random import Random
@@ -750,3 +751,31 @@ class TestEncrypt(BaseTestCase):
                         context.crypto_extended_base_hash,
                     )
                 )
+
+    def test_encrypt_ballot_with_verify_proofs_false_passed_on(self):
+        """
+        This test is for https://github.com/microsoft/electionguard-python/issues/459
+        """
+        with patch('electionguard.encrypt.encrypt_contest') as patched_contest, patch('electionguard.encrypt.encrypt_selection') as patched_selection:
+            # Arrange
+            keypair = elgamal_keypair_from_secret(int_to_q(2))
+            manifest = election_factory.get_fake_manifest()
+            internal_manifest, context = election_factory.get_fake_ciphertext_election(
+                manifest, keypair.public_key
+            )
+            nonce_seed = TWO_MOD_Q
+            subject = election_factory.get_fake_ballot(internal_manifest)
+            self.assertTrue(subject.is_valid(internal_manifest.ballot_styles[0].object_id))
+
+            patched_contest.side_effect = encrypt_contest
+            patched_selection.side_effect = encrypt_selection
+
+
+            # Act
+            encrypt_ballot(subject, internal_manifest, context, SEED, should_verify_proofs=False)
+
+            # Assert
+            for call in patched_contest.call_args_list:
+                self.assertFalse(call.kwargs.get('should_verify_proofs'))
+            for call in patched_selection.call_args_list:
+                self.assertFalse(call.kwargs.get('should_verify_proofs'))
