@@ -107,6 +107,7 @@ class AnnotatedString(CryptoHashable):
         return hash
 
 
+# pylint: disable=super-init-not-called
 @dataclass(eq=True, unsafe_hash=True)
 class Language(CryptoHashable):
     """
@@ -117,6 +118,16 @@ class Language(CryptoHashable):
     value: str
     language: str = field(default="en")
 
+    # explicit `__init__` added as workaround for https://bugs.python.org/issue45081
+    # can potentially be removed with future python version >3.9.7
+    def __init__(
+        self,
+        value: str,
+        language: str = "en",
+    ):
+        self.value = value
+        self.language = language
+
     def crypto_hash(self) -> ElementModQ:
         """
         A hash representation of the object
@@ -126,6 +137,7 @@ class Language(CryptoHashable):
         return hash
 
 
+# pylint: disable=super-init-not-called
 @dataclass(eq=True, unsafe_hash=True)
 class InternationalizedText(CryptoHashable):
     """
@@ -134,6 +146,14 @@ class InternationalizedText(CryptoHashable):
     """
 
     text: List[Language] = field(default_factory=lambda: [])
+
+    # explicit `__init__` added as workaround for https://bugs.python.org/issue45081
+    # can potentially be removed with future python version >3.9.7
+    def __init__(
+        self,
+        text: List[Language] = None,
+    ):
+        self.text = text if text else list()
 
     def crypto_hash(self) -> ElementModQ:
         """
@@ -144,6 +164,7 @@ class InternationalizedText(CryptoHashable):
         return hash
 
 
+# pylint: disable=super-init-not-called
 @dataclass(eq=True, unsafe_hash=True)
 class ContactInformation(CryptoHashable):
     """
@@ -155,6 +176,20 @@ class ContactInformation(CryptoHashable):
     email: Optional[List[AnnotatedString]] = field(default=None)
     phone: Optional[List[AnnotatedString]] = field(default=None)
     name: Optional[str] = field(default=None)
+
+    # explicit `__init__` added as workaround for https://bugs.python.org/issue45081
+    # can potentially be removed with future python version >3.9.7
+    def __init__(
+        self,
+        address_line: Optional[List[str]] = None,
+        email: Optional[List[AnnotatedString]] = None,
+        phone: Optional[List[AnnotatedString]] = None,
+        name: Optional[str] = None,
+    ):
+        self.address_line = address_line
+        self.email = email
+        self.phone = phone
+        self.name = name
 
     def crypto_hash(self) -> ElementModQ:
         """
@@ -517,7 +552,7 @@ class ContestDescriptionWithPlaceholders(ContestDescription):
         return None
 
 
-# pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-instance-attributes,super-init-not-called
 @dataclass(unsafe_hash=True)
 class Manifest(CryptoHashable):
     """
@@ -545,6 +580,36 @@ class Manifest(CryptoHashable):
     ballot_styles: List[BallotStyle]
     name: Optional[InternationalizedText] = field(default=None)
     contact_information: Optional[ContactInformation] = field(default=None)
+
+    # explicit `__init__` added as workaround for https://bugs.python.org/issue45081
+    # can potentially be removed with future python version >3.9.7
+    def __init__(
+        self,
+        election_scope_id: str,
+        spec_version: str,
+        type: ElectionType,
+        start_date: datetime,
+        end_date: datetime,
+        geopolitical_units: List[GeopoliticalUnit],
+        parties: List[Party],
+        candidates: List[Candidate],
+        contests: List[ContestDescription],
+        ballot_styles: List[BallotStyle],
+        name: Optional[InternationalizedText] = None,
+        contact_information: Optional[ContactInformation] = None,
+    ):
+        self.election_scope_id = election_scope_id
+        self.spec_version = spec_version
+        self.type = type
+        self.start_date = start_date
+        self.end_date = end_date
+        self.geopolitical_units = geopolitical_units
+        self.parties = parties
+        self.candidates = candidates
+        self.contests = contests
+        self.ballot_styles = ballot_styles
+        self.name = name
+        self.contact_information = contact_information
 
     def __eq__(self, other: Any) -> bool:
         return (
