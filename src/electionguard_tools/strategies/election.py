@@ -182,7 +182,7 @@ def contact_infos(draw: _DrawType):
     :param draw: Hidden argument, used by Hypothesis.
     """
     # empty lists for email and phone, for now
-    return ContactInformation(None, draw(emails()), None, draw(human_names()))
+    return ContactInformation(None, draw(annotated_emails()), None, draw(human_names()))
 
 
 @composite
@@ -255,6 +255,16 @@ def annotated_strings(draw: _DrawType):
     s = draw(languages())
     # We're just reusing the "value" string already associated with the language for now.
     return AnnotatedString(annotation=s.language, value=s.value)
+
+
+@composite
+def annotated_emails(draw: _DrawType):
+    """
+    Generates an `AnnotatedString` object with one `Language` and an associated
+    `value` string (representing an annotated email).
+    :param draw: Hidden argument, used by Hypothesis.
+    """
+    return AnnotatedString(value=draw(emails()))
 
 
 @composite

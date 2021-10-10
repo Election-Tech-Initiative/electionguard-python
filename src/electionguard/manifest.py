@@ -88,6 +88,7 @@ class VoteVariationType(Enum):
     other = "other"
 
 
+# pylint: disable=super-init-not-called
 @dataclass(eq=True, unsafe_hash=True)
 class AnnotatedString(CryptoHashable):
     """
@@ -97,6 +98,16 @@ class AnnotatedString(CryptoHashable):
 
     annotation: str = field(default="")
     value: str = field(default="")
+
+    # explicit `__init__` added as workaround for https://bugs.python.org/issue45081
+    # can potentially be removed with future python version >3.9.7
+    def __init__(
+        self,
+        annotation: str = "",
+        value: str = "",
+    ):
+        self.annotation = annotation
+        self.value = value
 
     def crypto_hash(self) -> ElementModQ:
         """

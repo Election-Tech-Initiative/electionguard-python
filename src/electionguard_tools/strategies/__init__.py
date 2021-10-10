@@ -5,6 +5,7 @@ from electionguard_tools.strategies import group
 from electionguard_tools.strategies.election import (
     CIPHERTEXT_ELECTIONS_TUPLE_TYPE,
     ELECTIONS_AND_BALLOTS_TUPLE_TYPE,
+    annotated_emails,
     annotated_strings,
     ballot_styles,
     candidate_contest_descriptions,
@@ -42,6 +43,7 @@ from electionguard_tools.strategies.group import (
 __all__ = [
     "CIPHERTEXT_ELECTIONS_TUPLE_TYPE",
     "ELECTIONS_AND_BALLOTS_TUPLE_TYPE",
+    "annotated_emails",
     "annotated_strings",
     "ballot_styles",
     "candidate_contest_descriptions",
