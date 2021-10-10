@@ -8,16 +8,19 @@ This repository is a "reference implementation" of ElectionGuard written in Pyth
 
 ## 📁 In This Repository
 
-| File/folder                                         | Description                              |
-| --------------------------------------------------- | ---------------------------------------- |
-| [docs](/docs)                                       | Documentation for using the library      |
-| [src/electionguard](/src/electionguard)             | Source code to the ElectionGuard library |
-| [src/electionguard_tools](/src/electionguard_tools) | sample data and generators for testing   |
-| [stubs](/stubs)                                     | Type annotations for external libraries  |
-| [tests](/tests)                                     | Tests to exercise this codebase          |
-| [CONTRIBUTING.md](/CONTRIBUTING.md)                 | Guidelines for contributing              |
-| [README.md](/README.md)                             | This README file                         |
-| [LICENSE](/LICENSE)                                 | The license for ElectionGuard-Python.    |
+| File/folder                                                | Description                                   |
+| --------------------------------------------------------   | --------------------------------------------  |
+| [docs](/docs)                                              | Documentation for using the library           |
+| [src/electionguard](/src/electionguard)                    | Source code to the ElectionGuard library      |
+| [src/electionguard_tools](/src/electionguard_tools)        | sample data and generators for testing        |
+| [stubs](/stubs)                                            | Type annotations for external libraries       |
+| [tests](/tests)                                            | Tests to exercise this codebase               |
+| [CONTRIBUTING.md](/CONTRIBUTING.md)                        | Guidelines for contributing                   |
+| [README.md](/README.md)                                    | This README file                              |
+| [LICENSE](/LICENSE)                                        | The license for ElectionGuard-Python.         |
+| [data](/data)                                              | Contains election related data.               |
+| [packages](/packages)                                      | Contains Packages.                            |
+| [src/electionguard_verify](/src/electionguard_verify)      | Verifier to validate the validity of a ballot.|
 
 ## ❓ What Is ElectionGuard?
 
