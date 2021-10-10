@@ -5,7 +5,7 @@ on:
     types: [closed]
 
 env:
-  PYTHON_VERSION: "3.9.5"
+  PYTHON_VERSION: 3.9
   POETRY_PATH: "$HOME/.poetry/bin"
 
 jobs:
