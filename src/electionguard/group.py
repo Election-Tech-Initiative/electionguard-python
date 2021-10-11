@@ -8,7 +8,6 @@ made about timing or other side-channels.
 from abc import ABC
 from base64 import b16decode
 from secrets import randbelow
-from sys import maxsize
 from typing import Any, Final, Optional, Union, List
 
 # pylint: disable=no-name-in-module
@@ -20,6 +19,7 @@ from .constants import (
     get_generator,
     PowRadixStyle,
     DEFAULT_POW_RADIX_STYLE,
+    using_test_constants,
 )
 
 
@@ -36,7 +36,10 @@ class BaseElement(ABC, int):
             elem = hex_to_int(elem)
 
         # Convoluted logic because the check request it might be a named arg, or it might be just a regular argument.
-        if not(("check_within_bounds" in kwargs and not kwargs["check_within_bounds"]) or (len(args) > 0 and not args[0])):
+        if not (
+            ("check_within_bounds" in kwargs and not kwargs["check_within_bounds"])
+            or (len(args) > 0 and not args[0])
+        ):
             if not 0 <= elem < cls.get_upper_bound():
                 raise OverflowError
         return super(BaseElement, cls).__new__(cls, elem)
@@ -56,7 +59,9 @@ class BaseElement(ABC, int):
     @classmethod
     def get_upper_bound(cls) -> int:  # pylint: disable=no-self-use
         """Get the upper bound for the element."""
-        return maxsize
+        raise RuntimeError(
+            "control flow should never get here; should go to one of the subclasses"
+        )
 
     def to_hex(self) -> str:
         """
@@ -95,8 +100,33 @@ class BaseElement(ABC, int):
 _negative_one_mpz = xmpz(-1)
 _zero_mpz = xmpz(0)
 _one_mpz = xmpz(1)
-_P_mpz = xmpz(get_large_prime())
-_Q_mpz = xmpz(get_small_prime())
+
+_P_mpz: Optional[xmpz] = None
+_Q_mpz: Optional[xmpz] = None
+
+
+def _get_p_mpz() -> xmpz:
+    if using_test_constants():
+        return xmpz(get_large_prime())
+
+    # pylint: disable=global-statement
+    global _P_mpz
+    if _P_mpz is None:
+        _P_mpz = xmpz(get_large_prime())
+
+    return _P_mpz
+
+
+def _get_q_mpz() -> xmpz:
+    if using_test_constants():
+        return xmpz(get_small_prime())
+
+    # pylint: disable=global-statement
+    global _Q_mpz
+    if _Q_mpz is None:
+        _Q_mpz = xmpz(get_small_prime())
+
+    return _Q_mpz
 
 
 class ElementModQ(BaseElement):
@@ -249,9 +279,11 @@ def int_to_p(input: int) -> Optional[ElementModP]:
 def add_q(*elems: ElementModQorInt) -> ElementModQ:
     """Add together one or more elements in Q, returns the sum mod Q."""
     sum = _zero_mpz
+    q = _get_q_mpz()
+
     for e in elems:
         e = _get_xmpz(e)
-        sum = (sum + e) % _Q_mpz
+        sum = (sum + e) % q
     return ElementModQ(sum)
 
 
@@ -259,27 +291,28 @@ def a_minus_b_q(a: ElementModQorInt, b: ElementModQorInt) -> ElementModQ:
     """Compute (a-b) mod q."""
     a = _get_xmpz(a)
     b = _get_xmpz(b)
-    return ElementModQ((a - b) % _Q_mpz)
+    tmp = (a - b) % _get_q_mpz()
+    return ElementModQ(tmp)
 
 
 def div_p(a: ElementModPOrQorInt, b: ElementModPOrQorInt) -> ElementModP:
     """Compute a/b mod p."""
     b = _get_xmpz(b)
-    inverse = invert(b, _P_mpz)
+    inverse = invert(b, _get_p_mpz())
     return mult_p(a, inverse)
 
 
 def div_q(a: ElementModPOrQorInt, b: ElementModPOrQorInt) -> ElementModQ:
     """Compute a/b mod q."""
     b = _get_xmpz(b)
-    inverse = invert(b, _Q_mpz)
+    inverse = invert(b, _get_q_mpz())
     return mult_q(a, inverse)
 
 
 def negate_q(a: ElementModQorInt) -> ElementModQ:
     """Compute (Q - a) mod q."""
     a = _get_xmpz(a)
-    return ElementModQ(_Q_mpz - a)
+    return ElementModQ(_get_q_mpz() - a)
 
 
 def a_plus_bc_q(
@@ -289,7 +322,7 @@ def a_plus_bc_q(
     a = _get_xmpz(a)
     b = _get_xmpz(b)
     c = _get_xmpz(c)
-    return ElementModQ((a + b * c) % _Q_mpz)
+    return ElementModQ((a + b * c) % _get_q_mpz())
 
 
 def mult_inv_p(e: ElementModPOrQorInt) -> ElementModP:
@@ -300,7 +333,7 @@ def mult_inv_p(e: ElementModPOrQorInt) -> ElementModP:
     """
     e = _get_xmpz(e)
     assert e != 0, "No multiplicative inverse for zero"
-    tmp = powmod(e, _negative_one_mpz, _P_mpz)
+    tmp = powmod(e, _negative_one_mpz, _get_p_mpz())
     return ElementModP(tmp)
 
 
@@ -317,7 +350,7 @@ def pow_p(b: ElementModPOrQorInt, e: ElementModPOrQorInt) -> ElementModP:
 
     b = _get_xmpz(b)
     e = _get_xmpz(e)
-    return ElementModP(powmod(b, e, _P_mpz))
+    return ElementModP(powmod(b, e, _get_p_mpz()))
 
 
 def pow_q(b: ElementModQorInt, e: ElementModQorInt) -> ElementModQ:
@@ -329,7 +362,7 @@ def pow_q(b: ElementModQorInt, e: ElementModQorInt) -> ElementModQ:
     """
     b = _get_xmpz(b)
     e = _get_xmpz(e)
-    return ElementModQ(powmod(b, e, _Q_mpz))
+    return ElementModQ(powmod(b, e, _get_q_mpz()))
 
 
 def mult_p(*elems: ElementModPOrQorInt) -> ElementModP:
@@ -339,9 +372,10 @@ def mult_p(*elems: ElementModPOrQorInt) -> ElementModP:
     :param elems: Zero or more elements in [0,P).
     """
     product = _one_mpz
+    p = _get_p_mpz()
     for x in elems:
         x = _get_xmpz(x)
-        product = (product * x) % _P_mpz
+        product = (product * x) % p
     return ElementModP(product)
 
 
@@ -352,9 +386,10 @@ def mult_q(*elems: ElementModPOrQorInt) -> ElementModQ:
     :param elems: Zero or more elements in [0,Q).
     """
     product = _one_mpz
+    q = _get_q_mpz()
     for x in elems:
         x = _get_xmpz(x)
-        product = (product * x) % _Q_mpz
+        product = (product * x) % q
     return ElementModQ(product)
 
 
@@ -373,7 +408,7 @@ def rand_q() -> ElementModQ:
 
     :return: Random value between 0 and Q
     """
-    return ElementModQ(randbelow(_Q_mpz))
+    return ElementModQ(randbelow(_get_q_mpz()))
 
 
 def rand_range_q(start: ElementModQorInt) -> ElementModQ:
@@ -386,7 +421,7 @@ def rand_range_q(start: ElementModQorInt) -> ElementModQ:
     start = _get_xmpz(start)
     random = 0
     while random < start:
-        random = randbelow(_Q_mpz)
+        random = randbelow(_get_q_mpz())
     return ElementModQ(random)
 
 
@@ -398,9 +433,12 @@ def get_generator_element() -> ElementModP:
     Gets the generator element, g, used to generate the subgroup of elements mod P that
     correspond to valid ciphertexts in our system.
     """
+    if using_test_constants():
+        return ElementModP(get_generator())
+
+    # pylint: disable=global-statement
     global _G_mod_P
     if _G_mod_P is None:
-        # we only want to instantiate this once, because it's going to use a lot of memory
         _G_mod_P = ElementModPWithFastPow(get_generator())
     return _G_mod_P
 
@@ -419,8 +457,11 @@ class PowRadix:
     table_length: int
     k: int
     table: List[List[xmpz]]
+    large_prime: xmpz
 
-    def __init__(self, basis: xmpz, style: PowRadixStyle):
+    def __init__(
+        self, basis: xmpz, style: PowRadixStyle, force_large_prime: Optional[int] = None
+    ):
         """
         The basis is to be used with future calls to the `pow` method, such that
         `PowRadix(basis).pow(e) == powmod(basis, e, P)`, except the computation
@@ -437,6 +478,9 @@ class PowRadix:
         `PowRadixStyle.HIGH_MEMORY_USE` corresponds to 84MB of state per instance of PowRadix.
 
         `PowRadixStyle.EXTREME_MEMORY_USE` corresponds to 537MB of state per instance of PowRadix.
+
+        Normally, the large prime is fetched from the environment, but it can be optionally
+        set using the `force_large_prime` parameter.
         """
 
         self.basis = basis
@@ -455,6 +499,11 @@ class PowRadix:
         else:
             k = 16
 
+        if force_large_prime is not None:
+            self.large_prime = xmpz(force_large_prime)
+        else:
+            self.large_prime = _get_p_mpz()
+
         self.table_length = -(-_e_size // k)  # Double negative to take the ceiling
         self.k = k
         table: List[List[xmpz]] = []
@@ -464,19 +513,24 @@ class PowRadix:
             row = [_one_mpz]
             for _ in range(1, 2 ** k):
                 row.append(running_basis)
-                running_basis = running_basis * row_basis % _P_mpz
+                running_basis = running_basis * row_basis % self.large_prime
             table.append(row)
             row_basis = running_basis
         self.table = table
 
-    def pow(self, e: xmpz) -> xmpz:
-        e = e % _Q_mpz
+    def pow(self, e: xmpz, normalize_e: bool = True) -> xmpz:
+        """
+        Computes the basis to the given exponent, optionally normalizing
+        the exponent beforehand if it's out of range.
+        """
+        if normalize_e:
+            e = e % _get_q_mpz()
 
         if self.k == 0:
-            return powmod(self.basis, e, _P_mpz)
+            return powmod(self.basis, e, self.large_prime)
 
         y = _one_mpz
         for i in range(self.table_length):
             e_slice = e[i * self.k : (i + 1) * self.k]
-            y = y * self.table[i][e_slice] % _P_mpz
+            y = y * self.table[i][e_slice] % self.large_prime
         return y

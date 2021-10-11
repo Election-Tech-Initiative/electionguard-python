@@ -1,7 +1,14 @@
+from datetime import timedelta
 from typing import Optional
 
-from hypothesis import given
+from gmpy2 import powmod, xmpz  # pylint: disable=no-name-in-module
+from hypothesis import given, settings, HealthCheck
 
+from src.electionguard.constants import (
+    PowRadixStyle,
+    STANDARD_CONSTANTS,
+)
+from src.electionguard.group import pow_p, PowRadix
 from tests.base_test_case import BaseTestCase
 
 from electionguard.constants import (
@@ -218,3 +225,44 @@ class TestOptionalFunctions(BaseTestCase):
 
         self.assertEqual(5, get_optional(flatmap_optional(good, lambda x: x + 2)))
         self.assertIsNone(flatmap_optional(bad, lambda x: x + 2))
+
+
+class TestPowRadix(BaseTestCase):
+    """Exercise the PowRadix functionality, should be the same as regular powmod."""
+
+    @settings(
+        deadline=timedelta(milliseconds=2000),
+        suppress_health_check=[HealthCheck.too_slow],
+        max_examples=10,
+    )
+    @given(elements_mod_p_no_zero(), elements_mod_q())
+    def test_powmod_integration(self, p: ElementModP, q: ElementModQ):
+        expected = pow_p(p, q)
+
+        fp1 = p.accelerate_pow(PowRadixStyle.LOW_MEMORY_USE)
+        self.assertEqual(expected, pow_p(fp1, q))
+
+    @settings(
+        deadline=timedelta(milliseconds=2000),
+        suppress_health_check=[HealthCheck.too_slow],
+        max_examples=10,
+    )
+    @given(elements_mod_q(), elements_mod_q())
+    def test_powmod_bignums(self, q1: ElementModQ, q2: ElementModQ):
+        g = STANDARD_CONSTANTS.generator
+        p = STANDARD_CONSTANTS.large_prime
+
+        q1 = xmpz(q1)
+        q2 = xmpz(q2)
+        new_base = powmod(xmpz(g), q1, p)
+        expected = powmod(new_base, q2, p)
+
+        pr_g = PowRadix(g, PowRadixStyle.LOW_MEMORY_USE, force_large_prime=p)
+        pr_new_base = PowRadix(
+            new_base, PowRadixStyle.LOW_MEMORY_USE, force_large_prime=p
+        )
+        actual1 = pr_new_base.pow(q2, normalize_e=False)
+        actual2 = powmod(pr_g.pow(q1, normalize_e=False), q2, p)
+
+        self.assertEqual(expected, actual1)
+        self.assertEqual(expected, actual2)

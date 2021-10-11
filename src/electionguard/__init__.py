@@ -119,6 +119,7 @@ from electionguard.constants import (
     get_generator,
     get_large_prime,
     get_small_prime,
+    using_test_constants,
 )
 from electionguard.data_store import (
     DataStore,
@@ -696,6 +697,7 @@ __all__ = [
     "to_iso_date_string",
     "to_ticks",
     "type",
+    "using_test_constants",
     "utils",
     "verify_election_partial_key_backup",
     "verify_election_partial_key_challenge",
