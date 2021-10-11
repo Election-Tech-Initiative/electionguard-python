@@ -3,11 +3,8 @@
 from dataclasses import dataclass
 from typing import Dict, Optional
 
-from .constants import get_small_prime, get_large_prime, get_generator
-from .group import (
-    ElementModQ,
-    ElementModP,
-)
+from .constants import get_small_prime, get_large_prime
+from .group import ElementModQ, ElementModP, get_generator_element
 from .hash import hash_elems
 
 # pylint: disable=too-many-instance-attributes
@@ -93,7 +90,7 @@ def make_ciphertext_election_context(
     crypto_base_hash = hash_elems(
         ElementModP(get_large_prime(), False),
         ElementModQ(get_small_prime(), False),
-        ElementModP(get_generator(), False),
+        get_generator_element(),
         number_of_guardians,
         quorum,
         manifest_hash,

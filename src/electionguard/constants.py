@@ -79,3 +79,19 @@ get_large_prime = lambda: get_constants().large_prime
 get_small_prime = lambda: get_constants().small_prime
 get_cofactor = lambda: get_constants().cofactor
 get_generator = lambda: get_constants().generator
+
+
+class PowRadixStyle(Enum):
+    """
+    Different acceleration styles for the `PowRadix` acceleration of modular exponentiation.
+    """
+
+    SYSTEM_DEFAULT = 0  # yields whatever DEFAULT_POW_RADIX_STYLE says
+    NO_ACCELERATION = 1
+    LOW_MEMORY_USE = 2  # 4.8MB per instance of PowRadix (see group.py)
+    HIGH_MEMORY_USE = 3  # 84MB per instance
+    EXTREME_MEMORY_USE = 4  # 573MB per instance
+
+
+# todo: get this from an external configuration file
+DEFAULT_POW_RADIX_STYLE = PowRadixStyle.HIGH_MEMORY_USE
