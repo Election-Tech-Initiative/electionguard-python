@@ -28,10 +28,15 @@ class BaseElement(ABC, int):
 
     def __new__(cls, elem: Union[int, str], *args, **kwargs):  # type: ignore
         """Instantiate ElementModT where elem is an int or its hex representation or mpz."""
+
+        # Using args/kwargs rather than newer named arguments to make Python's inheritance system behave.
+
         _ = args  # suppress warnings
         if isinstance(elem, str):
             elem = hex_to_int(elem)
-        if "check_within_bounds" in kwargs and kwargs["check_within_bounds"]:
+
+        # Convoluted logic because the check request it might be a named arg, or it might be just a regular argument.
+        if not(("check_within_bounds" in kwargs and not kwargs["check_within_bounds"]) or (len(args) > 0 and not args[0])):
             if not 0 <= elem < cls.get_upper_bound():
                 raise OverflowError
         return super(BaseElement, cls).__new__(cls, elem)
@@ -295,7 +300,8 @@ def mult_inv_p(e: ElementModPOrQorInt) -> ElementModP:
     """
     e = _get_xmpz(e)
     assert e != 0, "No multiplicative inverse for zero"
-    return ElementModP(powmod(e, _negative_one_mod_q_mpz, _P_mpz))
+    tmp = powmod(e, xmpz(-1), _P_mpz)
+    return ElementModP(tmp)
 
 
 def pow_p(b: ElementModPOrQorInt, e: ElementModPOrQorInt) -> ElementModP:
