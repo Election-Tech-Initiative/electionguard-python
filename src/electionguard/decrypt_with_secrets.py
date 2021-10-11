@@ -142,7 +142,7 @@ def decrypt_contest_with_secret(
         log_warning(f"contest: {contest.object_id} failed validity check")
         return None
 
-    plaintext_selections: List[PlaintextBallotSelection] = list()
+    plaintext_selections: List[PlaintextBallotSelection] = []
     for selection in contest.ballot_selections:
         selection_description = description.selection_for(selection.object_id)
         plaintext_selection = decrypt_selection_with_secret(
@@ -215,7 +215,7 @@ def decrypt_contest_with_nonce(
         )
         return None
 
-    plaintext_selections: List[PlaintextBallotSelection] = list()
+    plaintext_selections: List[PlaintextBallotSelection] = []
     for selection in contest.ballot_selections:
         selection_description = description.selection_for(selection.object_id)
         plaintext_selection = decrypt_selection_with_nonce(
@@ -269,7 +269,7 @@ def decrypt_ballot_with_secret(
         log_warning(f"ballot: {ballot.object_id} failed validity check")
         return None
 
-    plaintext_contests: List[PlaintextBallotContest] = list()
+    plaintext_contests: List[PlaintextBallotContest] = []
 
     for contest in ballot.contests:
         description = internal_manifest.contest_for(contest.object_id)
@@ -334,7 +334,7 @@ def decrypt_ballot_with_nonce(
         )
         return None
 
-    plaintext_contests: List[PlaintextBallotContest] = list()
+    plaintext_contests: List[PlaintextBallotContest] = []
 
     for contest in ballot.contests:
         description = internal_manifest.contest_for(contest.object_id)
