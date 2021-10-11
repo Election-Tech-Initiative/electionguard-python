@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Iterable, Optional
 
 from .discrete_log import DiscreteLog
+from .constants import PowRadixStyle
 from .group import (
     ElementModQ,
     ElementModP,
@@ -12,9 +13,10 @@ from .group import (
     ZERO_MOD_Q,
     TWO_MOD_Q,
     rand_range_q,
+    ElementModPWithFastPow,
 )
 from .hash import hash_elems
-from .logs import log_info, log_error
+from .logs import log_error
 from .utils import get_optional
 
 ELGAMAL_SECRET_KEY = ElementModQ
@@ -27,6 +29,22 @@ class ElGamalKeyPair:
 
     secret_key: ELGAMAL_SECRET_KEY
     public_key: ELGAMAL_PUBLIC_KEY
+
+    def accelerate_pow(
+        self, style: PowRadixStyle = PowRadixStyle.SYSTEM_DEFAULT
+    ) -> "ElGamalKeyPair":
+        """
+        Generates a new ElGamalKeyPair where the internal public key's `ElementModP` is an
+        equivalent `ElementModPWithFastPow`, having the same key value, but with an acceleration
+        structure to radically accelerate `pow_p` operations using that public key. The optional
+        `style` argument specifies how much acceleration will be used.
+
+        Note: calling this function on an ElGamalKeyPair that's already accelerated will just
+        return the original key-pair. This means that it's fine to call this over and over.
+        """
+        if isinstance(self.public_key, ElementModPWithFastPow):
+            return self
+        return ElGamalKeyPair(self.secret_key, self.public_key.accelerate_pow(style))
 
 
 @dataclass
@@ -140,10 +158,6 @@ def elgamal_encrypt(
     gpowp_m = g_pow_p(m)
     pubkey_pow_n = pow_p(public_key, nonce)
     data = mult_p(gpowp_m, pubkey_pow_n)
-
-    log_info(f": publicKey: {public_key.to_hex()}")
-    log_info(f": pad: {pad.to_hex()}")
-    log_info(f": data: {data.to_hex()}")
 
     return ElGamalCiphertext(pad, data)
 
