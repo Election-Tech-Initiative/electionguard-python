@@ -92,11 +92,11 @@ class BaseElement(ABC, int):
 
 
 # Common constants
+_negative_one_mpz = xmpz(-1)
 _zero_mpz = xmpz(0)
 _one_mpz = xmpz(1)
 _P_mpz = xmpz(get_large_prime())
 _Q_mpz = xmpz(get_small_prime())
-_negative_one_mod_q_mpz = xmpz(get_small_prime() - 1)
 
 
 class ElementModQ(BaseElement):
@@ -300,7 +300,7 @@ def mult_inv_p(e: ElementModPOrQorInt) -> ElementModP:
     """
     e = _get_xmpz(e)
     assert e != 0, "No multiplicative inverse for zero"
-    tmp = powmod(e, xmpz(-1), _P_mpz)
+    tmp = powmod(e, _negative_one_mpz, _P_mpz)
     return ElementModP(tmp)
 
 
