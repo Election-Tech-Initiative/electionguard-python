@@ -6,10 +6,10 @@ made about timing or other side-channels.
 """
 
 from abc import ABC
-from typing import Any, Final, Optional, Union, List
 from base64 import b16decode
 from secrets import randbelow
 from sys import maxsize
+from typing import Any, Final, Optional, Union, List
 
 # pylint: disable=no-name-in-module
 from gmpy2 import xmpz, powmod, invert
@@ -26,11 +26,12 @@ from .constants import (
 class BaseElement(ABC, int):
     """An element limited by mod T within [0, T) where T is determined by an upper_bound function."""
 
-    def __new__(cls, elem: Union[int, str], check_within_bounds: bool = True):  # type: ignore
+    def __new__(cls, elem: Union[int, str], *args, **kwargs):  # type: ignore
         """Instantiate ElementModT where elem is an int or its hex representation or mpz."""
+        _ = args  # suppress warnings
         if isinstance(elem, str):
             elem = hex_to_int(elem)
-        if check_within_bounds:
+        if "check_within_bounds" in kwargs and kwargs["check_within_bounds"]:
             if not 0 <= elem < cls.get_upper_bound():
                 raise OverflowError
         return super(BaseElement, cls).__new__(cls, elem)
@@ -134,21 +135,20 @@ class ElementModPWithFastPow(ElementModP):
 
     pow_radix: "PowRadix"
 
-    def __new__(
-        cls,
-        elem: Union[int, str],
-        check_within_bounds: bool = True,
-        style: PowRadixStyle = PowRadixStyle.SYSTEM_DEFAULT,  # pylint: disable=unused-argument
-    ):  # type: ignore
-        return ElementModP.__new__(cls, elem, check_within_bounds)
+    def __new__(cls, elem: Union[int, str], *args, **kwargs):  # type: ignore
+        # This is a hack, but it seems to be reasonably Pythonic to then go ahead and
+        # store a field and treat this as the subtype, even though we're generating
+        # an instance of the super-type. Some discussion of this:
+        # https://stackoverflow.com/questions/10788976/how-do-i-properly-inherit-from-a-superclass-that-has-a-new-method
+        return ElementModP.__new__(cls, elem, args, kwargs)
 
-    def __init__(
-        self,
-        elem: Union[int, str],
-        check_within_bounds: bool = True,
-        style: PowRadixStyle = PowRadixStyle.SYSTEM_DEFAULT,
-    ):  # pylint: disable=unused-argument
-        self.pow_radix = PowRadix(_get_xmpz(self), style)
+    def __init__(self, elem: Union[int, str], *args, **kwargs) -> None:  # type: ignore
+        _ = args  # suppress warnings
+        style: PowRadixStyle = PowRadixStyle.SYSTEM_DEFAULT
+        if "style" in kwargs and isinstance(kwargs["style"], PowRadixStyle):
+            style = kwargs["style"]
+
+        self.pow_radix = PowRadix(_get_xmpz(elem), style)
 
     def pow_p(self, exponent: "ElementModPOrQorInt") -> "ElementModP":
         """
@@ -169,15 +169,15 @@ ZERO_MOD_P: Final[ElementModP] = ElementModP(0)
 ONE_MOD_P: Final[ElementModP] = ElementModP(1)
 TWO_MOD_P: Final[ElementModP] = ElementModP(2)
 
-ElementModPOrQ = Union[ElementModP, ElementModQ]
-ElementModPOrQorInt = Union[ElementModP, ElementModQ, int]
+ElementModPOrQ = BaseElement
+ElementModPOrQorInt = Union[BaseElement, int]
 ElementModQorInt = Union[ElementModQ, int]
 ElementModPorInt = Union[ElementModP, int]
 
 
-def _get_xmpz(input: Union[BaseElement, int]) -> xmpz:
+def _get_xmpz(input: Union[str, ElementModPOrQorInt]) -> xmpz:
     """Get BaseElement or integer as xmpz."""
-    return xmpz(input)
+    return xmpz(hex_to_int(input) if isinstance(input, str) else input)
 
 
 def hex_to_int(input: str) -> int:
@@ -392,6 +392,7 @@ def get_generator_element() -> ElementModP:
     Gets the generator element, g, used to generate the subgroup of elements mod P that
     correspond to valid ciphertexts in our system.
     """
+    global _G_mod_P
     if _G_mod_P is None:
         # we only want to instantiate this once, because it's going to use a lot of memory
         _G_mod_P = ElementModPWithFastPow(get_generator())
@@ -413,15 +414,15 @@ class PowRadix:
     k: int
     table: List[List[xmpz]]
 
-    def __init__(
-        self, basis: xmpz, style: PowRadixStyle = PowRadixStyle.SYSTEM_DEFAULT
-    ):
+    def __init__(self, basis: xmpz, style: PowRadixStyle):
         """
         The basis is to be used with future calls to the `pow` method, such that
         `PowRadix(basis).pow(e) == powmod(basis, e, P)`, except the computation
         will run much faster. By specifying which `PowRadixStyle` to use, the
         table will either use more or less memory, corresponding to greater
         acceleration.
+
+        `PowRadixStyle.SYSTEM_DEFAULT` uses whatever the default configuration is for this installation.
 
         `PowRadixStyle.NO_ACCELERATION` uses no extra memory and just calls `powmod`.
 
