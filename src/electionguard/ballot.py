@@ -556,7 +556,7 @@ def _ciphertext_ballot_context_crypto_hash(
 def _ciphertext_ballot_contest_aggregate_nonce(
     object_id: str, ballot_selections: List[CiphertextBallotSelection]
 ) -> Optional[ElementModQ]:
-    selection_nonces: List[ElementModQ] = list()
+    selection_nonces: List[ElementModQ] = []
     for selection in ballot_selections:
         if selection.nonce is None:
             log_warning(
@@ -792,7 +792,7 @@ class CiphertextBallot(ElectionObjectBase, CryptoHashCheckable):
             return False
 
         # Check the proofs on the ballot
-        valid_proofs: List[bool] = list()
+        valid_proofs: List[bool] = []
 
         for contest in self.contests:
             for selection in contest.ballot_selections:

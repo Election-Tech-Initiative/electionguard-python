@@ -141,7 +141,7 @@ def contest_from(description: ContestDescription) -> PlaintextBallotContest:
     :return: a `BallotContest`
     """
 
-    selections: List[PlaintextBallotSelection] = list()
+    selections: List[PlaintextBallotSelection] = []
 
     for selection_description in description.ballot_selections:
         selections.append(selection_from(selection_description))
@@ -280,7 +280,7 @@ def encrypt_contest(
     contest_nonce = nonce_sequence[contest_description.sequence_order]
     chaum_pedersen_nonce = next(iter(nonce_sequence))
 
-    encrypted_selections: List[CiphertextBallotSelection] = list()
+    encrypted_selections: List[CiphertextBallotSelection] = []
 
     selection_count = 0
 
