@@ -141,7 +141,7 @@ def contest_from(description: ContestDescription) -> PlaintextBallotContest:
     :return: a `BallotContest`
     """
 
-    selections: List[PlaintextBallotSelection] = list()
+    selections: List[PlaintextBallotSelection] = []
 
     for selection_description in description.ballot_selections:
         selections.append(selection_from(selection_description))
@@ -280,7 +280,7 @@ def encrypt_contest(
     contest_nonce = nonce_sequence[contest_description.sequence_order]
     chaum_pedersen_nonce = next(iter(nonce_sequence))
 
-    encrypted_selections: List[CiphertextBallotSelection] = list()
+    encrypted_selections: List[CiphertextBallotSelection] = []
 
     selection_count = 0
 
@@ -309,6 +309,7 @@ def encrypt_contest(
                     elgamal_public_key,
                     crypto_extended_base_hash,
                     contest_nonce,
+                    should_verify_proofs=should_verify_proofs,
                 )
                 break
 
@@ -321,6 +322,7 @@ def encrypt_contest(
                 elgamal_public_key,
                 crypto_extended_base_hash,
                 contest_nonce,
+                should_verify_proofs=should_verify_proofs,
             )
 
         if encrypted_selection is None:
@@ -352,7 +354,7 @@ def encrypt_contest(
             crypto_extended_base_hash=crypto_extended_base_hash,
             nonce_seed=contest_nonce,
             is_placeholder=True,
-            should_verify_proofs=True,
+            should_verify_proofs=should_verify_proofs,
         )
         if encrypted_selection is None:
             return None  # log will have happened earlier
@@ -451,7 +453,11 @@ def encrypt_ballot(
     log_info(f": encryption_seed : {encryption_seed.to_hex()}")
 
     encrypted_contests = encrypt_ballot_contests(
-        ballot, internal_manifest, context, nonce_seed
+        ballot,
+        internal_manifest,
+        context,
+        nonce_seed,
+        should_verify_proofs=should_verify_proofs,
     )
     if encrypted_contests is None:
         return None
@@ -487,6 +493,7 @@ def encrypt_ballot_contests(
     description: InternalManifest,
     context: CiphertextElectionContext,
     nonce_seed: ElementModQ,
+    should_verify_proofs: bool = True,
 ) -> Optional[List[CiphertextBallotContest]]:
     """Encrypt contests from a plaintext ballot with a specific style"""
     encrypted_contests: List[CiphertextBallotContest] = []
@@ -509,6 +516,7 @@ def encrypt_ballot_contests(
             context.elgamal_public_key,
             context.crypto_extended_base_hash,
             nonce_seed,
+            should_verify_proofs=should_verify_proofs,
         )
 
         if encrypted_contest is None:

@@ -121,7 +121,7 @@ class DecryptionMediator:
         # a consuming application should implement better validation of the guardian state
         # before announcing a guardian is available for decryption.
         for guardian_id, public_key in missing_guardians.items():
-            if guardian_id in self._missing_guardians.keys():
+            if guardian_id in self._missing_guardians:
                 if self._missing_guardians[guardian_id] != public_key:
                     log_warning(
                         (
