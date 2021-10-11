@@ -69,6 +69,7 @@ from electionguard_tools.scripts import (
 from electionguard_tools.strategies import (
     CIPHERTEXT_ELECTIONS_TUPLE_TYPE,
     ELECTIONS_AND_BALLOTS_TUPLE_TYPE,
+    annotated_emails,
     annotated_strings,
     ballot_styles,
     candidate_contest_descriptions,
@@ -133,6 +134,7 @@ __all__ = [
     "TALLY_FILE_NAME",
     "TallyCeremonyOrchestrator",
     "accumulate_plaintext_ballots",
+    "annotated_emails",
     "annotated_strings",
     "ballot_factory",
     "ballot_styles",
