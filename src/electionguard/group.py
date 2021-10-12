@@ -80,7 +80,7 @@ class BaseElement(ABC, int):
 
 
 class ElementModQ(BaseElement):
-    """An element of the larger `mod p` space, i.e., in [0, P), where P is a 4096-bit prime."""
+    """An element of the smaller `mod q` space, i.e., in [0, Q), where Q is a 256-bit prime."""
 
     @classmethod
     def get_upper_bound(cls) -> int:
