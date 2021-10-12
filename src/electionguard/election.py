@@ -99,7 +99,7 @@ def make_ciphertext_election_context(
     return CiphertextElectionContext(
         number_of_guardians,
         quorum,
-        elgamal_public_key,
+        elgamal_public_key.accelerate_pow(),
         commitment_hash,
         manifest_hash,
         crypto_base_hash,

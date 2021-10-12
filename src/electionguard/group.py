@@ -153,12 +153,14 @@ class ElementModP(BaseElement):
 
     def accelerate_pow(
         self, style: PowRadixStyle = PowRadixStyle.SYSTEM_DEFAULT
-    ) -> "ElementModPWithFastPow":
+    ) -> "ElementModP":
         """
         Returns a new `ElementModPWithFastPow` that's equivalent to this `ElementModP`, but where
         modular exponentiation will go significantly faster. Does not mutate the current object.
         """
-        return ElementModPWithFastPow(self, False, style)
+        if style == PowRadixStyle.NO_ACCELERATION:
+            return self
+        return ElementModPWithFastPow(self, check_within_bounds=False, style=style)
 
 
 class ElementModPWithFastPow(ElementModP):
@@ -172,17 +174,14 @@ class ElementModPWithFastPow(ElementModP):
 
     def __new__(cls, elem: Union[int, str], *args, **kwargs):  # type: ignore
         # This is a hack, but it seems to be reasonably Pythonic to then go ahead and
-        # store a field and treat this as the subtype, even though we're generating
-        # an instance of the super-type. Some discussion of this:
+        # store a field and treat this as the subtype, even though it looks like we're
+        # generating an instance of the super-type. Some discussion of this:
         # https://stackoverflow.com/questions/10788976/how-do-i-properly-inherit-from-a-superclass-that-has-a-new-method
         return ElementModP.__new__(cls, elem, args, kwargs)
 
     def __init__(self, elem: Union[int, str], *args, **kwargs) -> None:  # type: ignore
         _ = args  # suppress warnings
-        style: PowRadixStyle = PowRadixStyle.SYSTEM_DEFAULT
-        if "style" in kwargs and isinstance(kwargs["style"], PowRadixStyle):
-            style = kwargs["style"]
-
+        style: PowRadixStyle = kwargs.get("style", PowRadixStyle.SYSTEM_DEFAULT)
         self.pow_radix = PowRadix(_get_xmpz(elem), style)
 
     def pow_p(self, exponent: "ElementModPOrQorInt") -> "ElementModP":
@@ -193,6 +192,14 @@ class ElementModPWithFastPow(ElementModP):
           x = base.pow_p(exponent)
         """
         return ElementModP(self.pow_radix.pow(_get_xmpz(exponent)))
+
+    def accelerate_pow(
+        self, style: PowRadixStyle = PowRadixStyle.SYSTEM_DEFAULT
+    ) -> ElementModP:
+        """
+        Accelerating something which has already been accelerated is a no-op.
+        """
+        return self
 
 
 # Common constants
@@ -506,6 +513,7 @@ class PowRadix:
 
         self.table_length = -(-_e_size // k)  # Double negative to take the ceiling
         self.k = k
+
         table: List[List[xmpz]] = []
         row_basis = basis
         running_basis = row_basis
