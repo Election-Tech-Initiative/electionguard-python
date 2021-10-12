@@ -71,8 +71,12 @@ if __name__ == "__main__":
         std_verify = stdev([t[1] for t in timing_data])
         verify_speed[powRadixStyle] = avg_verify
 
-        print(f"  Creating Chaum-Pedersen proofs:   {avg_proof*1000:10.6f} +/- {std_proof*1000:.6f} ms / proof")
-        print(f"  Validating Chaum-Pedersen proofs: {avg_verify*1000:10.6f} +/- {std_verify*1000:.6f} ms / proof")
+        print(
+            f"  Creating Chaum-Pedersen proofs:   {avg_proof*1000:10.6f} +/- {std_proof*1000:.6f} ms / proof"
+        )
+        print(
+            f"  Validating Chaum-Pedersen proofs: {avg_verify*1000:10.6f} +/- {std_verify*1000:.6f} ms / proof"
+        )
 
     for powRadixStyle in PowRadixStyle:
         if powRadixStyle != PowRadixStyle.NO_ACCELERATION:
