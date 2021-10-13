@@ -81,5 +81,5 @@ make test
 OR
 
 ```
-pipenv run python -m pytest /testss
+pipenv run python -m pytest /tests
 ```
