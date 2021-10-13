@@ -159,27 +159,25 @@ install-mkdocs:
 	pip install mkdocs-jupyter
 
 docs-serve:
-	mkdocs serve
+	poetry run mkdocs serve
 
 docs-build:
-	mkdocs build
+	poetry run mkdocs build
 
 docs-deploy:
 	@echo 🚀 DEPLOY to Github Pages
-	mkdocs gh-deploy --force
+	poetry run mkdocs gh-deploy --force
 
 docs-deploy-ci:
 	@echo 🚀 DEPLOY to Github Pages
-	pip install mkdocs
-	mkdocs gh-deploy --force
+	poetry run mkdocs gh-deploy --force
 
 dependency-graph:
 	poetry run pydeps --noshow --max-bacon 2 -o dependency-graph.svg src/electionguard
 
 dependency-graph-ci:
 	sudo apt install graphviz
-	pip install pydeps
-	pydeps --noshow --max-bacon 2 -o dependency-graph.svg src/electionguard
+	poetry run pydeps --noshow --max-bacon 2 -o dependency-graph.svg src/electionguard
 
 # Sample Data
 generate-sample-data:
