@@ -46,7 +46,7 @@ class ElectionPolynomial:
     """
 
     coefficients: List[PolynomialCoefficients]
-    """A list of value, commitment and proof coefficients"""
+    """List of coefficient values, commitments and proofs"""
 
 
 def generate_polynomial(
