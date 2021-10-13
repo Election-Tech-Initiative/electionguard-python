@@ -2,6 +2,9 @@
 
 CODE_COVERAGE ?= 90
 OS ?= $(shell python -c 'import platform; print(platform.system())')
+ifeq ($(OS), Linux)
+PKG_MGR ?= $(shell python -c 'import subprocess as sub; print(next(filter(None, (sub.getstatusoutput(f"command -v {pm}")[0] == 0 and pm for pm in ["apt-get", "pacman"])), "undefined"))')
+endif
 IS_64_BIT ?= $(shell python -c 'from sys import maxsize; print(maxsize > 2**32)')
 SAMPLE_BALLOT_COUNT ?= 5
 SAMPLE_BALLOT_SPOIL_RATE ?= 50
@@ -54,9 +57,15 @@ install-gmp-mac:
 
 install-gmp-linux:
 	@echo 🐧 LINUX INSTALL
+ifeq ($(PKG_MGR), apt-get)
 	sudo apt-get install libgmp-dev
 	sudo apt-get install libmpfr-dev
 	sudo apt-get install libmpc-dev
+else ifeq ($(PKG_MGR), pacman)
+	sudo pacman -S gmp
+else ifeq ($(PKG_MGR), undefined)
+	@echo "We could not install GMP automatically for your Linux distribution. Please, install GMP manually."
+endif
 
 install-gmp-windows:
 	@echo 🏁 WINDOWS INSTALL
