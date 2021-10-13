@@ -10,6 +10,7 @@ from .auxiliary import (
 from .election_polynomial import (
     PUBLIC_COMMITMENT,
     compute_polynomial_coordinate,
+    PolynomialCoefficients,
     ElectionPolynomial,
     generate_polynomial,
     verify_polynomial_coordinate,
@@ -91,8 +92,8 @@ class ElectionKeyPair:
             self.owner_id,
             self.sequence_order,
             self.key_pair.public_key,
-            self.polynomial.coefficient_commitments,
-            self.polynomial.coefficient_proofs,
+            self.polynomial.coefficients.commitments,
+            self.polynomial.coefficients.proofs,
         )
 
 
@@ -301,8 +302,8 @@ def generate_election_partial_key_challenge(
         backup.designated_id,
         backup.designated_sequence_order,
         compute_polynomial_coordinate(backup.designated_sequence_order, polynomial),
-        polynomial.coefficient_commitments,
-        polynomial.coefficient_proofs,
+        polynomial.coefficients.commitments,
+        polynomial.coefficients.proofs,
     )
 
 

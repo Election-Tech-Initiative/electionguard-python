@@ -21,6 +21,20 @@ from .schnorr import make_schnorr_proof, SchnorrProof
 SECRET_COEFFICIENT = ElementModQ  # Secret coefficient of election polynomial
 PUBLIC_COMMITMENT = ElementModP  # Public commitment of election polynomial
 
+@dataclass
+class PolynomialCoefficients:
+    """
+    A set of coefficients that define an Election Polynomal 
+    """
+
+    values: SECRET_COEFFICIENT 
+    """The secret coefficient `a_ij` """
+    
+    commitments: PUBLIC_COMMITMENT
+    """The public key `K_ij` generated from secret coefficient"""
+
+    proofs: SchnorrProof
+    """A proof of possession of the private key for the secret coefficient"""
 
 @dataclass
 class ElectionPolynomial:
@@ -31,14 +45,8 @@ class ElectionPolynomial:
     be discovered by a quorum of n guardians corresponding to n coefficients.
     """
 
-    coefficients: List[SECRET_COEFFICIENT]
-    """The secret coefficients `a_ij` """
-
-    coefficient_commitments: List[PUBLIC_COMMITMENT]
-    """The public keys `K_ij`generated from secret coefficients"""
-
-    coefficient_proofs: List[SchnorrProof]
-    """A proof of posession of the private key for each secret coefficient"""
+    coefficients: List[PolynomialCoefficients]
+    """A list of value, commitment and proof coefficients"""
 
 
 def generate_polynomial(
@@ -67,7 +75,7 @@ def generate_polynomial(
         coefficients.append(coefficient)
         commitments.append(commitment)
         proofs.append(proof)
-    return ElectionPolynomial(coefficients, commitments, proofs)
+    return ElectionPolynomial(PolynomialCoefficients(coefficients, commitments, proofs))
 
 
 def compute_polynomial_coordinate(
@@ -84,7 +92,7 @@ def compute_polynomial_coordinate(
     exponent_modifier = ElementModQ(exponent_modifier)
 
     computed_value = ZERO_MOD_Q
-    for (i, coefficient) in enumerate(polynomial.coefficients):
+    for (i, coefficient) in enumerate(polynomial.coefficients.values):
         exponent = pow_q(exponent_modifier, i)
         factor = mult_q(coefficient, exponent)
         computed_value = add_q(computed_value, factor)

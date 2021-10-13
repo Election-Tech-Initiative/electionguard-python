@@ -189,6 +189,7 @@ from electionguard.election_object_base import (
     sequence_order_sort,
 )
 from electionguard.election_polynomial import (
+    PolynomialCoefficients,
     ElectionPolynomial,
     LagrangeCoefficientsRecord,
     PUBLIC_COMMITMENT,
@@ -449,6 +450,7 @@ __all__ = [
     "ElectionPartialKeyBackup",
     "ElectionPartialKeyChallenge",
     "ElectionPartialKeyVerification",
+    "PolynomialCoefficients",
     "ElectionPolynomial",
     "ElectionPublicKey",
     "ElectionType",

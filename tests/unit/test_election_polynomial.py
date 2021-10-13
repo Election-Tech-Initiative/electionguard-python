@@ -2,6 +2,7 @@ from tests.base_test_case import BaseTestCase
 
 from electionguard.election_polynomial import (
     compute_polynomial_coordinate,
+    PolynomialCoefficients,
     ElectionPolynomial,
     generate_polynomial,
     verify_polynomial_coordinate,
@@ -25,11 +26,11 @@ class TestElectionPolynomial(BaseTestCase):
 
     def test_compute_polynomial_coordinate(self):
         # Arrange
-        polynomial = ElectionPolynomial(
+        polynomial = ElectionPolynomial(PolynomialCoefficients(
             [ONE_MOD_Q, TWO_MOD_Q],
             [ONE_MOD_P, TWO_MOD_P],
             [],
-        )
+        ))
 
         # Act
         value = compute_polynomial_coordinate(TEST_EXPONENT_MODIFIER, polynomial)
@@ -47,6 +48,6 @@ class TestElectionPolynomial(BaseTestCase):
         # Assert
         self.assertTrue(
             verify_polynomial_coordinate(
-                value, TEST_EXPONENT_MODIFIER, polynomial.coefficient_commitments
+                value, TEST_EXPONENT_MODIFIER, polynomial.coefficients.commitments
             )
         )
