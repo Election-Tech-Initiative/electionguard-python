@@ -81,5 +81,5 @@ make test
 OR
 
 ```
-poetry run python -m pytest /testss
+poetry run python -m pytest /tests
 ```
