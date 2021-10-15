@@ -13,7 +13,7 @@ make environment
 OR
 
 ```
-pipenv install --dev
+poetry install --dev
 ```
 
 ### 2. Install the `electionguard` module in edit mode
@@ -25,7 +25,7 @@ make install
 OR
 
 ```
-pipenv run python -m pip install -e .
+poetry run python -m pip install -e .
 ```
 
 ⚠️ Note: For Windows, use supplied precompiled gmpy2 package. Poetry does not support `pip install --find-links`, so the `pyproject.toml` must be edited.
@@ -49,7 +49,7 @@ make validate
 OR
 
 ```
-pipenv run python -c 'import electionguard; print(electionguard.__package__ + " successfully imported")'
+poetry run python -c 'import electionguard; print(electionguard.__package__ + " successfully imported")'
 ```
 
 ## Running
@@ -63,7 +63,7 @@ make coverage
 OR
 
 ```
-pipenv run coverage report
+poetry run coverage report
 ```
 
 ### Option 2: Run tests in VS Code
@@ -81,5 +81,5 @@ make test
 OR
 
 ```
-pipenv run python -m pytest /testss
+poetry run python -m pytest /tests
 ```
