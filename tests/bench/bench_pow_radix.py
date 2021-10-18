@@ -4,7 +4,12 @@ from timeit import default_timer as timer
 from typing import Dict, Tuple
 
 from electionguard.chaum_pedersen import make_disjunctive_chaum_pedersen_zero
-from electionguard.constants import PowRadixStyle
+from electionguard.constants import (
+    PowRadixOption,
+    push_new_constants,
+    PrimeOption,
+    pop_constants,
+)
 from electionguard.elgamal import elgamal_encrypt, elgamal_keypair_random
 from electionguard.group import ElementModQ, ONE_MOD_Q, ElementModP
 from electionguard.nonces import Nonces
@@ -39,6 +44,8 @@ def chaum_pedersen_bench(bi: BenchInput) -> Tuple[float, float]:
 
 
 if __name__ == "__main__":
+    push_new_constants(PrimeOption.Standard)  # make sure we're not using test constants
+
     speedup: Dict[int, float] = {}
     size = 500
     r_values = list(Nonces(ElementModQ(31337))[0:size])
@@ -48,10 +55,11 @@ if __name__ == "__main__":
     proof_speed = {}
     verify_speed = {}
 
-    for powRadixStyle in PowRadixStyle:
-        print(f"Benchmark: {str(powRadixStyle)}, problem size: {size}")
+    for powRadixOption in PowRadixOption:
+        print(f"Benchmark: {str(powRadixOption)}, problem size: {size}")
+        push_new_constants(pow_radix_option=powRadixOption)
         precompute_start = timer()
-        faster_keypair = keypair.accelerate_pow(powRadixStyle)
+        faster_keypair = keypair.accelerate_pow()
         precompute_end = timer()
         print(f"  Precompute time: {precompute_end - precompute_start:.3f} sec")
 
@@ -65,29 +73,33 @@ if __name__ == "__main__":
 
         avg_proof = mean([t[0] for t in timing_data])
         std_proof = stdev([t[0] for t in timing_data])
-        proof_speed[powRadixStyle] = avg_proof
+        proof_speed[powRadixOption] = avg_proof
 
         avg_verify = mean([t[1] for t in timing_data])
         std_verify = stdev([t[1] for t in timing_data])
-        verify_speed[powRadixStyle] = avg_verify
+        verify_speed[powRadixOption] = avg_verify
 
         print(
-            f"  Creating Chaum-Pedersen proofs:   {avg_proof*1000:10.6f} +/- {std_proof*1000:.6f} ms / proof"
+            f"  Creating Chaum-Pedersen proofs:   {avg_proof*1000:7.3f} +/- {std_proof*1000:.3f} ms / proof"
         )
         print(
-            f"  Validating Chaum-Pedersen proofs: {avg_verify*1000:10.6f} +/- {std_verify*1000:.6f} ms / proof"
+            f"  Validating Chaum-Pedersen proofs: {avg_verify*1000:7.3f} +/- {std_verify*1000:.3f} ms / proof"
         )
+        pop_constants()
 
-    for powRadixStyle in PowRadixStyle:
-        if powRadixStyle != PowRadixStyle.NO_ACCELERATION:
+    for powRadixOption in PowRadixOption:
+        if powRadixOption != PowRadixOption.NO_ACCELERATION:
             proof_ratio = (
-                proof_speed[PowRadixStyle.NO_ACCELERATION] / proof_speed[powRadixStyle]
+                proof_speed[PowRadixOption.NO_ACCELERATION]
+                / proof_speed[powRadixOption]
             )
             verify_ratio = (
-                verify_speed[PowRadixStyle.NO_ACCELERATION]
-                / verify_speed[powRadixStyle]
+                verify_speed[PowRadixOption.NO_ACCELERATION]
+                / verify_speed[powRadixOption]
             )
-            print(f"Speedup of {powRadixStyle:32} for proofs      : {proof_ratio: .3f}")
             print(
-                f"Speedup of {powRadixStyle:32} for verification: {verify_ratio: .3f}"
+                f"Speedup of {powRadixOption:32} for proofs      : {proof_ratio: .3f}"
+            )
+            print(
+                f"Speedup of {powRadixOption:32} for verification: {verify_ratio: .3f}"
             )

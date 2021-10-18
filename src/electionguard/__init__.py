@@ -30,6 +30,7 @@ from electionguard import key_ceremony_mediator
 from electionguard import logs
 from electionguard import manifest
 from electionguard import nonces
+from electionguard import powradix
 from electionguard import proof
 from electionguard import rsa
 from electionguard import scheduler
@@ -104,22 +105,31 @@ from electionguard.chaum_pedersen import (
     make_disjunctive_chaum_pedersen_zero,
 )
 from electionguard.constants import (
-    DEFAULT_POW_RADIX_STYLE,
     EXTRA_SMALL_TEST_CONSTANTS,
+    ElectionConstantInternals,
     ElectionConstants,
     LARGE_TEST_CONSTANTS,
     MEDIUM_TEST_CONSTANTS,
-    PowRadixStyle,
     PrimeOption,
     SMALL_TEST_CONSTANTS,
     STANDARD_CONSTANTS,
+    create_constant_internals,
     create_constants,
-    flush_saved_constants,
     get_cofactor,
     get_constants,
+    get_g_mpz,
+    get_g_powradix,
     get_generator,
+    get_internals,
     get_large_prime,
+    get_p_mpz,
+    get_powradix_option,
+    get_q_mpz,
+    get_r_mpz,
     get_small_prime,
+    pop_constants,
+    push_new_constants,
+    push_new_constants_from_environment,
     using_test_constants,
 )
 from electionguard.data_store import (
@@ -233,7 +243,6 @@ from electionguard.group import (
     ElementModPorInt,
     ElementModQ,
     ElementModQorInt,
-    PowRadix,
     a_minus_b_q,
     a_plus_bc_q,
     add_q,
@@ -333,6 +342,10 @@ from electionguard.manifest import (
 )
 from electionguard.nonces import (
     Nonces,
+)
+from electionguard.powradix import (
+    PowRadix,
+    PowRadixOption,
 )
 from electionguard.proof import (
     Proof,
@@ -434,7 +447,6 @@ __all__ = [
     "ContestDescriptionWithPlaceholders",
     "CryptoHashCheckable",
     "CryptoHashable",
-    "DEFAULT_POW_RADIX_STYLE",
     "DLOG_CACHE",
     "DLOG_MAX",
     "DataStore",
@@ -449,6 +461,7 @@ __all__ = [
     "ElGamalCiphertext",
     "ElGamalKeyPair",
     "ElectionBuilder",
+    "ElectionConstantInternals",
     "ElectionConstants",
     "ElectionGuardLog",
     "ElectionJointKey",
@@ -504,7 +517,7 @@ __all__ = [
     "PlaintextTallyContest",
     "PlaintextTallySelection",
     "PowRadix",
-    "PowRadixStyle",
+    "PowRadixOption",
     "PrimeOption",
     "PrivateGuardianRecord",
     "Proof",
@@ -567,6 +580,7 @@ __all__ = [
     "contest_is_valid_for_style",
     "create_ballot_hash",
     "create_ciphertext_decryption_selection",
+    "create_constant_internals",
     "create_constants",
     "data_store",
     "decrypt_ballot",
@@ -605,7 +619,6 @@ __all__ = [
     "expand_compact_plaintext_ballot",
     "expand_compact_submitted_ballot",
     "flatmap_optional",
-    "flush_saved_constants",
     "from_ciphertext_ballot",
     "g_pow_p",
     "generate_device_uuid",
@@ -622,13 +635,20 @@ __all__ = [
     "get_cofactor",
     "get_constants",
     "get_file_handler",
+    "get_g_mpz",
+    "get_g_powradix",
     "get_generator",
     "get_generator_element",
     "get_hash_for_device",
+    "get_internals",
     "get_large_prime",
     "get_optional",
     "get_or_else_optional",
     "get_or_else_optional_func",
+    "get_p_mpz",
+    "get_powradix_option",
+    "get_q_mpz",
+    "get_r_mpz",
     "get_shares_for_selection",
     "get_small_prime",
     "get_stream_handler",
@@ -673,10 +693,14 @@ __all__ = [
     "negate_q",
     "nonces",
     "partially_decrypt",
+    "pop_constants",
     "pow_p",
     "pow_q",
+    "powradix",
     "proof",
     "publish_guardian_record",
+    "push_new_constants",
+    "push_new_constants_from_environment",
     "rand_q",
     "rand_range_q",
     "reconstruct_decryption_contest",

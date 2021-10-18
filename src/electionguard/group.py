@@ -8,7 +8,7 @@ made about timing or other side-channels.
 from abc import ABC
 from base64 import b16decode
 from secrets import randbelow
-from typing import Any, Final, Optional, Union, List
+from typing import Any, Final, Optional, Union
 
 # pylint: disable=no-name-in-module
 from gmpy2 import xmpz, powmod, invert
@@ -16,11 +16,14 @@ from gmpy2 import xmpz, powmod, invert
 from .constants import (
     get_large_prime,
     get_small_prime,
+    get_g_mpz,
+    get_p_mpz,
+    get_q_mpz,
     get_generator,
-    PowRadixStyle,
-    DEFAULT_POW_RADIX_STYLE,
-    using_test_constants,
+    get_g_powradix,
+    get_powradix_option,
 )
+from .powradix import PowRadix
 
 
 class BaseElement(ABC, int):
@@ -36,11 +39,11 @@ class BaseElement(ABC, int):
 
     def __ne__(self, other: Any) -> bool:
         """Overload != (not equal to) operator."""
-        return isinstance(other, (BaseElement, int)) and not int(self) != other
+        return isinstance(other, (BaseElement, int)) and int(self) != int(other)
 
     def __eq__(self, other: Any) -> bool:
         """Overload == (equal to) operator."""
-        return isinstance(other, (BaseElement, int)) and int(self) == other
+        return isinstance(other, (BaseElement, int)) and int(self) == int(other)
 
     def __hash__(self) -> int:
         """Overload the hashing function."""
@@ -91,33 +94,6 @@ _negative_one_mpz = xmpz(-1)
 _zero_mpz = xmpz(0)
 _one_mpz = xmpz(1)
 
-_P_mpz: Optional[xmpz] = None
-_Q_mpz: Optional[xmpz] = None
-
-
-def _get_p_mpz() -> xmpz:
-    if using_test_constants():
-        return xmpz(get_large_prime())
-
-    # pylint: disable=global-statement
-    global _P_mpz
-    if _P_mpz is None:
-        _P_mpz = xmpz(get_large_prime())
-
-    return _P_mpz
-
-
-def _get_q_mpz() -> xmpz:
-    if using_test_constants():
-        return xmpz(get_small_prime())
-
-    # pylint: disable=global-statement
-    global _Q_mpz
-    if _Q_mpz is None:
-        _Q_mpz = xmpz(get_small_prime())
-
-    return _Q_mpz
-
 
 class ElementModQ(BaseElement):
     """An element of the smaller `mod q` space, i.e., in [0, Q), where Q is a 256-bit prime."""
@@ -149,18 +125,14 @@ class ElementModP(BaseElement):
         """
         b = _get_xmpz(self)
         e = _get_xmpz(exponent)
-        return ElementModP(powmod(b, e, _get_p_mpz()))
+        return ElementModP(powmod(b, e, get_p_mpz()))
 
-    def accelerate_pow(
-        self, style: PowRadixStyle = PowRadixStyle.SYSTEM_DEFAULT
-    ) -> "ElementModP":
+    def accelerate_pow(self) -> "ElementModP":
         """
         Returns a new `ElementModPAcceleratedPow` that's equivalent to this `ElementModP`, but where
         modular exponentiation will go significantly faster. Does not mutate the current object.
         """
-        if style == PowRadixStyle.NO_ACCELERATION:
-            return self
-        return ElementModPAcceleratedPow(self, style=style)
+        return ElementModPAcceleratedPow(self)
 
 
 class ElementModPAcceleratedPow(ElementModP):
@@ -170,20 +142,23 @@ class ElementModPAcceleratedPow(ElementModP):
     to run significantly faster.
     """
 
-    pow_radix: "PowRadix"
+    pow_radix: PowRadix
 
-    def __new__(cls, elem: Union[int, str], style: PowRadixStyle):  # type: ignore
-        _ = style  # suppress unused argument check
-
+    def __new__(cls, elem: Union[int, str]):  # type: ignore
         # We need additional complexity here because the base class of ElementModP has
         # a __new__ and __init__ method. Some discussion of this:
         # https://stackoverflow.com/questions/10788976/how-do-i-properly-inherit-from-a-superclass-that-has-a-new-method
         return ElementModP.__new__(cls, elem)
 
-    def __init__(
-        self, elem: Union[int, str], style: PowRadixStyle = PowRadixStyle.SYSTEM_DEFAULT
-    ) -> None:
-        self.pow_radix = PowRadix(_get_xmpz(elem), style)
+    def __init__(self, elem: Union[int, str]) -> None:
+        # special case for g, since we've already accelerated it
+        elem_mpz = _get_xmpz(elem)
+        if elem_mpz == get_g_mpz():
+            self.pow_radix = get_g_powradix()
+        else:
+            self.pow_radix = PowRadix(
+                _get_xmpz(elem), get_powradix_option(), get_q_mpz(), get_p_mpz()
+            )
 
     def pow_p(self, exponent: "ElementModPOrQorInt") -> ElementModP:
         """
@@ -194,9 +169,7 @@ class ElementModPAcceleratedPow(ElementModP):
         """
         return ElementModP(self.pow_radix.pow(_get_xmpz(exponent)))
 
-    def accelerate_pow(
-        self, style: PowRadixStyle = PowRadixStyle.SYSTEM_DEFAULT
-    ) -> ElementModP:
+    def accelerate_pow(self) -> ElementModP:
         """
         Accelerating something which has already been accelerated is a no-op.
         """
@@ -279,7 +252,7 @@ def int_to_p(input: int) -> Optional[ElementModP]:
 def add_q(*elems: ElementModQorInt) -> ElementModQ:
     """Add together one or more elements in Q, returns the sum mod Q."""
     sum = _zero_mpz
-    q = _get_q_mpz()
+    q = get_q_mpz()
 
     for e in elems:
         e = _get_xmpz(e)
@@ -291,28 +264,28 @@ def a_minus_b_q(a: ElementModQorInt, b: ElementModQorInt) -> ElementModQ:
     """Compute (a-b) mod q."""
     a = _get_xmpz(a)
     b = _get_xmpz(b)
-    tmp = (a - b) % _get_q_mpz()
+    tmp = (a - b) % get_q_mpz()
     return ElementModQ(tmp)
 
 
 def div_p(a: ElementModPOrQorInt, b: ElementModPOrQorInt) -> ElementModP:
     """Compute a/b mod p."""
     b = _get_xmpz(b)
-    inverse = invert(b, _get_p_mpz())
+    inverse = invert(b, get_p_mpz())
     return mult_p(a, inverse)
 
 
 def div_q(a: ElementModPOrQorInt, b: ElementModPOrQorInt) -> ElementModQ:
     """Compute a/b mod q."""
     b = _get_xmpz(b)
-    inverse = invert(b, _get_q_mpz())
+    inverse = invert(b, get_q_mpz())
     return mult_q(a, inverse)
 
 
 def negate_q(a: ElementModQorInt) -> ElementModQ:
     """Compute (Q - a) mod q."""
     a = _get_xmpz(a)
-    return ElementModQ(_get_q_mpz() - a)
+    return ElementModQ(get_q_mpz() - a)
 
 
 def a_plus_bc_q(
@@ -322,7 +295,7 @@ def a_plus_bc_q(
     a = _get_xmpz(a)
     b = _get_xmpz(b)
     c = _get_xmpz(c)
-    return ElementModQ((a + b * c) % _get_q_mpz())
+    return ElementModQ((a + b * c) % get_q_mpz())
 
 
 def mult_inv_p(e: ElementModPOrQorInt) -> ElementModP:
@@ -333,7 +306,7 @@ def mult_inv_p(e: ElementModPOrQorInt) -> ElementModP:
     """
     e = _get_xmpz(e)
     assert e != 0, "No multiplicative inverse for zero"
-    tmp = powmod(e, _negative_one_mpz, _get_p_mpz())
+    tmp = powmod(e, _negative_one_mpz, get_p_mpz())
     return ElementModP(tmp)
 
 
@@ -350,7 +323,7 @@ def pow_p(b: ElementModPOrQorInt, e: ElementModPOrQorInt) -> ElementModP:
 
     b = _get_xmpz(b)
     e = _get_xmpz(e)
-    return ElementModP(powmod(b, e, _get_p_mpz()))
+    return ElementModP(powmod(b, e, get_p_mpz()))
 
 
 def pow_q(b: ElementModQorInt, e: ElementModQorInt) -> ElementModQ:
@@ -362,7 +335,7 @@ def pow_q(b: ElementModQorInt, e: ElementModQorInt) -> ElementModQ:
     """
     b = _get_xmpz(b)
     e = _get_xmpz(e)
-    return ElementModQ(powmod(b, e, _get_q_mpz()))
+    return ElementModQ(powmod(b, e, get_q_mpz()))
 
 
 def mult_p(*elems: ElementModPOrQorInt) -> ElementModP:
@@ -372,7 +345,7 @@ def mult_p(*elems: ElementModPOrQorInt) -> ElementModP:
     :param elems: Zero or more elements in [0,P).
     """
     product = _one_mpz
-    p = _get_p_mpz()
+    p = get_p_mpz()
     for x in elems:
         x = _get_xmpz(x)
         product = (product * x) % p
@@ -386,7 +359,7 @@ def mult_q(*elems: ElementModPOrQorInt) -> ElementModQ:
     :param elems: Zero or more elements in [0,Q).
     """
     product = _one_mpz
-    q = _get_q_mpz()
+    q = get_q_mpz()
     for x in elems:
         x = _get_xmpz(x)
         product = (product * x) % q
@@ -399,11 +372,7 @@ def g_pow_p(e: ElementModPOrQorInt) -> ElementModP:
 
     :param e: An element in [0,P).
     """
-    if _G_mod_P is not None:
-        # special case for speed: g_pow_p's performance is central to all sorts
-        # of computations that we run.
-        return _G_mod_P.pow_p(e)
-    return pow_p(get_generator_element(), e)
+    return ElementModP(get_g_powradix().pow(_get_xmpz(e)))
 
 
 def rand_q() -> ElementModQ:
@@ -412,7 +381,7 @@ def rand_q() -> ElementModQ:
 
     :return: Random value between 0 and Q
     """
-    return ElementModQ(randbelow(_get_q_mpz()))
+    return ElementModQ(randbelow(get_q_mpz()))
 
 
 def rand_range_q(start: ElementModQorInt) -> ElementModQ:
@@ -425,11 +394,8 @@ def rand_range_q(start: ElementModQorInt) -> ElementModQ:
     start = _get_xmpz(start)
     random = 0
     while random < start:
-        random = randbelow(_get_q_mpz())
+        random = randbelow(get_q_mpz())
     return ElementModQ(random)
-
-
-_G_mod_P: Optional[ElementModPAcceleratedPow] = None
 
 
 def get_generator_element() -> ElementModP:
@@ -437,107 +403,4 @@ def get_generator_element() -> ElementModP:
     Gets the generator element, g, used to generate the subgroup of elements mod P that
     correspond to valid ciphertexts in our system.
     """
-    if using_test_constants():
-        return ElementModP(get_generator())
-
-    # pylint: disable=global-statement
-    global _G_mod_P
-    if _G_mod_P is None:
-        _G_mod_P = ElementModPAcceleratedPow(
-            get_generator(), style=PowRadixStyle.SYSTEM_DEFAULT
-        )
-    return _G_mod_P
-
-
-# Modular exponentiation performance improvements via Olivier Pereira
-# https://github.com/pereira/expo-fixed-basis/blob/main/powradix.py
-
-# Size of the exponent
-_e_size = 256
-
-# Radix method
-class PowRadix:
-    """Internal class, used for accelerating modular exponentiation."""
-
-    basis: xmpz
-    table_length: int
-    k: int
-    table: List[List[xmpz]]
-    large_prime: xmpz
-
-    def __init__(
-        self, basis: xmpz, style: PowRadixStyle, force_large_prime: Optional[int] = None
-    ):
-        """
-        The basis is to be used with future calls to the `pow` method, such that
-        `PowRadix(basis).pow(e) == powmod(basis, e, P)`, except the computation
-        will run much faster. By specifying which `PowRadixStyle` to use, the
-        table will either use more or less memory, corresponding to greater
-        acceleration.
-
-        `PowRadixStyle.SYSTEM_DEFAULT` uses whatever the default configuration is for this installation.
-
-        `PowRadixStyle.NO_ACCELERATION` uses no extra memory and just calls `powmod`.
-
-        `PowRadixStyle.LOW_MEMORY_USE` corresponds to 4.2MB of state per instance of PowRadix.
-
-        `PowRadixStyle.HIGH_MEMORY_USE` corresponds to 84MB of state per instance of PowRadix.
-
-        `PowRadixStyle.EXTREME_MEMORY_USE` corresponds to 537MB of state per instance of PowRadix.
-
-        Normally, the large prime is fetched from the environment, but it can be optionally
-        set using the `force_large_prime` parameter.
-        """
-
-        self.basis = basis
-
-        if style == PowRadixStyle.SYSTEM_DEFAULT:
-            style = DEFAULT_POW_RADIX_STYLE
-
-        if style == PowRadixStyle.NO_ACCELERATION:
-            self.k = 0
-            return
-
-        if style == PowRadixStyle.LOW_MEMORY_USE:
-            k = 8
-        elif style == PowRadixStyle.HIGH_MEMORY_USE:
-            k = 13
-        else:
-            k = 16
-
-        if force_large_prime is not None:
-            self.large_prime = xmpz(force_large_prime)
-        else:
-            self.large_prime = _get_p_mpz()
-
-        self.table_length = -(-_e_size // k)  # Double negative to take the ceiling
-        self.k = k
-
-        table: List[List[xmpz]] = []
-        row_basis = basis
-        running_basis = row_basis
-        for _ in range(self.table_length):
-            row = [_one_mpz]
-            for _ in range(1, 2 ** k):
-                row.append(running_basis)
-                running_basis = running_basis * row_basis % self.large_prime
-            table.append(row)
-            row_basis = running_basis
-        self.table = table
-
-    def pow(self, e: xmpz, normalize_e: bool = True) -> xmpz:
-        """
-        Computes the basis to the given exponent, optionally normalizing
-        the exponent beforehand if it's out of range.
-        """
-        if normalize_e:
-            e = e % _get_q_mpz()
-
-        if self.k == 0:
-            return powmod(self.basis, e, self.large_prime)
-
-        y = _one_mpz
-        for i in range(self.table_length):
-            e_slice = e[i * self.k : (i + 1) * self.k]
-            y = y * self.table[i][e_slice] % self.large_prime
-        return y
+    return ElementModPAcceleratedPow(get_generator())

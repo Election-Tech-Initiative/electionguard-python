@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from typing import Iterable, Optional
 
 from .discrete_log import DiscreteLog
-from .constants import PowRadixStyle
 from .group import (
     ElementModQ,
     ElementModP,
@@ -30,9 +29,7 @@ class ElGamalKeyPair:
     secret_key: ELGAMAL_SECRET_KEY
     public_key: ELGAMAL_PUBLIC_KEY
 
-    def accelerate_pow(
-        self, style: PowRadixStyle = PowRadixStyle.SYSTEM_DEFAULT
-    ) -> "ElGamalKeyPair":
+    def accelerate_pow(self) -> "ElGamalKeyPair":
         """
         Generates a new ElGamalKeyPair where the internal public key's `ElementModP` is an
         equivalent `ElementModPAcceleratedPow`, having the same key value, but with an acceleration
@@ -44,7 +41,7 @@ class ElGamalKeyPair:
         """
         if isinstance(self.public_key, ElementModPAcceleratedPow):
             return self
-        return ElGamalKeyPair(self.secret_key, self.public_key.accelerate_pow(style))
+        return ElGamalKeyPair(self.secret_key, self.public_key.accelerate_pow())
 
 
 @dataclass
