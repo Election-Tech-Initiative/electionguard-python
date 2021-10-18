@@ -41,8 +41,8 @@ def chaum_pedersen_bench(bi: BenchInput) -> Tuple[float, float]:
 if __name__ == "__main__":
     speedup: Dict[int, float] = {}
     size = 500
-    r_values = Nonces(ElementModQ(31337))[0:size]
-    s_values = Nonces(ElementModQ(31338))[0:size]
+    r_values = list(Nonces(ElementModQ(31337))[0:size])
+    s_values = list(Nonces(ElementModQ(31338))[0:size])
     keypair = elgamal_keypair_random()
 
     proof_speed = {}

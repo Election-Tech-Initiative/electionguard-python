@@ -76,10 +76,14 @@ class DisjunctiveChaumPedersenProof(Proof):
         v1 = self.proof_one_response
         in_bounds_alpha = alpha.is_valid_residue()
         in_bounds_beta = beta.is_valid_residue()
-        in_bounds_a0 = a0.is_valid_residue()
-        in_bounds_b0 = b0.is_valid_residue()
-        in_bounds_a1 = a1.is_valid_residue()
-        in_bounds_b1 = b1.is_valid_residue()
+
+        # checks simplified from is_valid_residue to is_in_bounds, yielding a significant speedup without
+        # loss of security, per discussion with Olivier Pereira and Josh Benaloh.
+        in_bounds_a0 = a0.is_in_bounds()
+        in_bounds_b0 = b0.is_in_bounds()
+        in_bounds_a1 = a1.is_in_bounds()
+        in_bounds_b1 = b1.is_in_bounds()
+
         in_bounds_c0 = c0.is_in_bounds()
         in_bounds_c1 = c1.is_in_bounds()
         in_bounds_v0 = v0.is_in_bounds()

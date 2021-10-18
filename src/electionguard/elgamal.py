@@ -13,7 +13,7 @@ from .group import (
     ZERO_MOD_Q,
     TWO_MOD_Q,
     rand_range_q,
-    ElementModPWithFastPow,
+    ElementModPAcceleratedPow,
 )
 from .hash import hash_elems
 from .logs import log_error
@@ -35,14 +35,14 @@ class ElGamalKeyPair:
     ) -> "ElGamalKeyPair":
         """
         Generates a new ElGamalKeyPair where the internal public key's `ElementModP` is an
-        equivalent `ElementModPWithFastPow`, having the same key value, but with an acceleration
+        equivalent `ElementModPAcceleratedPow`, having the same key value, but with an acceleration
         structure to radically accelerate `pow_p` operations using that public key. The optional
         `style` argument specifies how much acceleration will be used.
 
         Note: calling this function on an ElGamalKeyPair that's already accelerated will just
         return the original key-pair. This means that it's fine to call this over and over.
         """
-        if isinstance(self.public_key, ElementModPWithFastPow):
+        if isinstance(self.public_key, ElementModPAcceleratedPow):
             return self
         return ElGamalKeyPair(self.secret_key, self.public_key.accelerate_pow(style))
 

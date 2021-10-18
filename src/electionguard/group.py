@@ -155,15 +155,15 @@ class ElementModP(BaseElement):
         self, style: PowRadixStyle = PowRadixStyle.SYSTEM_DEFAULT
     ) -> "ElementModP":
         """
-        Returns a new `ElementModPWithFastPow` that's equivalent to this `ElementModP`, but where
+        Returns a new `ElementModPAcceleratedPow` that's equivalent to this `ElementModP`, but where
         modular exponentiation will go significantly faster. Does not mutate the current object.
         """
         if style == PowRadixStyle.NO_ACCELERATION:
             return self
-        return ElementModPWithFastPow(self, style=style)
+        return ElementModPAcceleratedPow(self, style=style)
 
 
-class ElementModPWithFastPow(ElementModP):
+class ElementModPAcceleratedPow(ElementModP):
     """
     An element that's equivalent to a regular `ElementModP`, except that when used as
     the base of a modular exponentiation, internal state will allow this computation
@@ -243,10 +243,7 @@ def hex_to_q(input: str) -> Optional[ElementModQ]:
     Returns `None` if the number is out of the allowed [0,Q) range.
     """
     result = ElementModQ(input)
-    if result.is_in_bounds():
-        return result
-    else:
-        return None
+    return result if result.is_in_bounds() else None
 
 
 def int_to_q(input: int) -> Optional[ElementModQ]:
@@ -256,10 +253,7 @@ def int_to_q(input: int) -> Optional[ElementModQ]:
     Returns `None` if the number is out of the allowed [0,Q) range.
     """
     result = ElementModQ(input)
-    if result.is_in_bounds():
-        return result
-    else:
-        return None
+    return result if result.is_in_bounds() else None
 
 
 def hex_to_p(input: str) -> Optional[ElementModP]:
@@ -269,10 +263,7 @@ def hex_to_p(input: str) -> Optional[ElementModP]:
     Returns `None` if the number is out of the allowed [0,Q) range.
     """
     result = ElementModP(input)
-    if result.is_in_bounds():
-        return result
-    else:
-        return None
+    return result if result.is_in_bounds() else None
 
 
 def int_to_p(input: int) -> Optional[ElementModP]:
@@ -282,10 +273,7 @@ def int_to_p(input: int) -> Optional[ElementModP]:
     Returns `None` if the number is out of the allowed [0,P) range.
     """
     result = ElementModP(input)
-    if result.is_in_bounds():
-        return result
-    else:
-        return None
+    return result if result.is_in_bounds() else None
 
 
 def add_q(*elems: ElementModQorInt) -> ElementModQ:
@@ -441,7 +429,7 @@ def rand_range_q(start: ElementModQorInt) -> ElementModQ:
     return ElementModQ(random)
 
 
-_G_mod_P: Optional[ElementModPWithFastPow] = None
+_G_mod_P: Optional[ElementModPAcceleratedPow] = None
 
 
 def get_generator_element() -> ElementModP:
@@ -455,7 +443,7 @@ def get_generator_element() -> ElementModP:
     # pylint: disable=global-statement
     global _G_mod_P
     if _G_mod_P is None:
-        _G_mod_P = ElementModPWithFastPow(
+        _G_mod_P = ElementModPAcceleratedPow(
             get_generator(), style=PowRadixStyle.SYSTEM_DEFAULT
         )
     return _G_mod_P
