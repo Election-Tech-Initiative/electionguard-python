@@ -25,7 +25,7 @@ def _discrete_log_uncached(e: ElementModP) -> int:
     A simpler implementation of discrete_log, only meant for comparison testing of the caching version.
     """
     count = 0
-    g_inv = ElementModP(pow(get_generator(), -1, get_large_prime()), False)
+    g_inv = ElementModP(pow(get_generator(), -1, get_large_prime()))
     while e != ONE_MOD_P:
         e = mult_p(e, g_inv)
         count = count + 1

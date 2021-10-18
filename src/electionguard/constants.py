@@ -1,8 +1,8 @@
 """Creating and managing mathematic constants for the election."""
-from os import getenv
-
 from dataclasses import dataclass
 from enum import Enum
+from typing import Optional
+from os import getenv
 
 
 class PrimeOption(Enum):
@@ -28,7 +28,7 @@ class ElectionConstants:
     generator: int
     """generator or g"""  # 2^r mod p
 
-    prime_option: "PrimeOption"
+    prime_option: PrimeOption
     """whether we're using test or standard primes"""
 
 
@@ -69,9 +69,29 @@ LARGE_TEST_CONSTANTS = create_constants(
     PrimeOption.TestOnly,
 )
 
+_saved_constants: Optional[ElectionConstants] = None
+
+
+def flush_saved_constants() -> None:
+    """
+    Removed any saved constants. The next time get_constants is called,
+    the ElectionConstants will be reloaded from the environment.
+    """
+
+    # pylint: disable=global-statement
+    global _saved_constants
+    _saved_constants = None
+
 
 def get_constants() -> ElectionConstants:
     """Get constants for the election by the option for the primes."""
+
+    # pylint: disable=global-statement
+    global _saved_constants
+
+    if _saved_constants is not None:
+        return _saved_constants
+
     env_option = getenv("PRIME_OPTION")
     option: PrimeOption = (
         PrimeOption(env_option) if env_option is not None else PrimeOption.Standard
@@ -81,7 +101,8 @@ def get_constants() -> ElectionConstants:
         PrimeOption.Standard: STANDARD_CONSTANTS,
         PrimeOption.TestOnly: LARGE_TEST_CONSTANTS,
     }
-    return option_map.get(option) or STANDARD_CONSTANTS
+    _saved_constants = option_map.get(option) or STANDARD_CONSTANTS
+    return _saved_constants
 
 
 get_large_prime = lambda: get_constants().large_prime

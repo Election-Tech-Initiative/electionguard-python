@@ -82,7 +82,7 @@ class TestSchnorr(BaseTestCase):
             ZERO_MOD_P, proof.commitment, proof.challenge, proof.response
         )
         proof3 = SchnorrProof(
-            ElementModP(get_large_prime(), False),
+            ElementModP(get_large_prime()),
             proof.commitment,
             proof.challenge,
             proof.response,

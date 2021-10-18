@@ -1,10 +1,11 @@
-# This is just enough stubs for GMPY2 to allow ELectionGuard's use of it to typecheck.
-
-# This file started by running `stubgen -p gmpy2`, and then hacking the output manually
-# until all the warnings went away. As such, several things here are probably very wrong.
-# Still, it's useful to be able to get a clean bill of health from mypy.
-
 from typing import Union, Any, Tuple, Text, Optional, Iterator, List, overload
+
+"""
+Stub of gympy2 mpz & xmpz to support typecheck.
+
+Created by running `stubgen -p gmpy2`, and then modifying the output manually
+Necessary to support mypy typechecking
+"""
 
 class mpz(int):
     def __new__(

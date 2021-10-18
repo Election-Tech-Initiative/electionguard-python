@@ -26,22 +26,12 @@ from .constants import (
 class BaseElement(ABC, int):
     """An element limited by mod T within [0, T) where T is determined by an upper_bound function."""
 
-    def __new__(cls, elem: Union[int, str], *args, **kwargs):  # type: ignore
+    def __new__(cls, elem: Union[int, str]):  # type: ignore
         """Instantiate ElementModT where elem is an int or its hex representation or mpz."""
 
-        # Using args/kwargs rather than newer named arguments to make Python's inheritance system behave.
-
-        _ = args  # suppress warnings
         if isinstance(elem, str):
             elem = hex_to_int(elem)
 
-        # Convoluted logic because the check request it might be a named arg, or it might be just a regular argument.
-        if not (
-            ("check_within_bounds" in kwargs and not kwargs["check_within_bounds"])
-            or (len(args) > 0 and not args[0])
-        ):
-            if not 0 <= elem < cls.get_upper_bound():
-                raise OverflowError
         return super(BaseElement, cls).__new__(cls, elem)
 
     def __ne__(self, other: Any) -> bool:
@@ -151,6 +141,16 @@ class ElementModP(BaseElement):
         residue = pow_p(self, get_small_prime()) == ONE_MOD_P
         return self.is_in_bounds() and residue
 
+    def pow_p(self, exponent: "ElementModPOrQorInt") -> "ElementModP":
+        """
+        Computes self ^ exponent mod p. Note, these two calls are equivalent::
+          x = pow_p(base, exponent)
+          x = base.pow_p(exponent)
+        """
+        b = _get_xmpz(self)
+        e = _get_xmpz(exponent)
+        return ElementModP(powmod(b, e, _get_p_mpz()))
+
     def accelerate_pow(
         self, style: PowRadixStyle = PowRadixStyle.SYSTEM_DEFAULT
     ) -> "ElementModP":
@@ -160,7 +160,7 @@ class ElementModP(BaseElement):
         """
         if style == PowRadixStyle.NO_ACCELERATION:
             return self
-        return ElementModPWithFastPow(self, check_within_bounds=False, style=style)
+        return ElementModPWithFastPow(self, style=style)
 
 
 class ElementModPWithFastPow(ElementModP):
@@ -172,19 +172,20 @@ class ElementModPWithFastPow(ElementModP):
 
     pow_radix: "PowRadix"
 
-    def __new__(cls, elem: Union[int, str], *args, **kwargs):  # type: ignore
-        # This is a hack, but it seems to be reasonably Pythonic to then go ahead and
-        # store a field and treat this as the subtype, even though it looks like we're
-        # generating an instance of the super-type. Some discussion of this:
-        # https://stackoverflow.com/questions/10788976/how-do-i-properly-inherit-from-a-superclass-that-has-a-new-method
-        return ElementModP.__new__(cls, elem, args, kwargs)
+    def __new__(cls, elem: Union[int, str], style: PowRadixStyle):  # type: ignore
+        _ = style  # suppress unused argument check
 
-    def __init__(self, elem: Union[int, str], *args, **kwargs) -> None:  # type: ignore
-        _ = args  # suppress warnings
-        style: PowRadixStyle = kwargs.get("style", PowRadixStyle.SYSTEM_DEFAULT)
+        # We need additional complexity here because the base class of ElementModP has
+        # a __new__ and __init__ method. Some discussion of this:
+        # https://stackoverflow.com/questions/10788976/how-do-i-properly-inherit-from-a-superclass-that-has-a-new-method
+        return ElementModP.__new__(cls, elem)
+
+    def __init__(
+        self, elem: Union[int, str], style: PowRadixStyle = PowRadixStyle.SYSTEM_DEFAULT
+    ) -> None:
         self.pow_radix = PowRadix(_get_xmpz(elem), style)
 
-    def pow_p(self, exponent: "ElementModPOrQorInt") -> "ElementModP":
+    def pow_p(self, exponent: "ElementModPOrQorInt") -> ElementModP:
         """
         Computes self ^ exponent mod p, taking advantage of the internal acceleration
         structure. Note, these two calls are equivalent::
@@ -241,9 +242,10 @@ def hex_to_q(input: str) -> Optional[ElementModQ]:
 
     Returns `None` if the number is out of the allowed [0,Q) range.
     """
-    try:
-        return ElementModQ(input)
-    except OverflowError:
+    result = ElementModQ(input)
+    if result.is_in_bounds():
+        return result
+    else:
         return None
 
 
@@ -253,9 +255,10 @@ def int_to_q(input: int) -> Optional[ElementModQ]:
 
     Returns `None` if the number is out of the allowed [0,Q) range.
     """
-    try:
-        return ElementModQ(input)
-    except OverflowError:
+    result = ElementModQ(input)
+    if result.is_in_bounds():
+        return result
+    else:
         return None
 
 
@@ -265,9 +268,10 @@ def hex_to_p(input: str) -> Optional[ElementModP]:
 
     Returns `None` if the number is out of the allowed [0,Q) range.
     """
-    try:
-        return ElementModP(input)
-    except OverflowError:
+    result = ElementModP(input)
+    if result.is_in_bounds():
+        return result
+    else:
         return None
 
 
@@ -277,9 +281,10 @@ def int_to_p(input: int) -> Optional[ElementModP]:
 
     Returns `None` if the number is out of the allowed [0,P) range.
     """
-    try:
-        return ElementModP(input)
-    except OverflowError:
+    result = ElementModP(input)
+    if result.is_in_bounds():
+        return result
+    else:
         return None
 
 
@@ -352,7 +357,7 @@ def pow_p(b: ElementModPOrQorInt, e: ElementModPOrQorInt) -> ElementModP:
     :param e: An element in [0,P).
     """
 
-    if isinstance(b, ElementModPWithFastPow):
+    if isinstance(b, ElementModP):
         return b.pow_p(e)
 
     b = _get_xmpz(b)
@@ -406,6 +411,10 @@ def g_pow_p(e: ElementModPOrQorInt) -> ElementModP:
 
     :param e: An element in [0,P).
     """
+    if _G_mod_P is not None:
+        # special case for speed: g_pow_p's performance is central to all sorts
+        # of computations that we run.
+        return _G_mod_P.pow_p(e)
     return pow_p(get_generator_element(), e)
 
 
@@ -432,7 +441,7 @@ def rand_range_q(start: ElementModQorInt) -> ElementModQ:
     return ElementModQ(random)
 
 
-_G_mod_P: Optional[ElementModP] = None
+_G_mod_P: Optional[ElementModPWithFastPow] = None
 
 
 def get_generator_element() -> ElementModP:
@@ -446,7 +455,9 @@ def get_generator_element() -> ElementModP:
     # pylint: disable=global-statement
     global _G_mod_P
     if _G_mod_P is None:
-        _G_mod_P = ElementModPWithFastPow(get_generator())
+        _G_mod_P = ElementModPWithFastPow(
+            get_generator(), style=PowRadixStyle.SYSTEM_DEFAULT
+        )
     return _G_mod_P
 
 

@@ -88,8 +88,8 @@ def make_ciphertext_election_context(
     # form the basis of subsequent hash computations.
 
     crypto_base_hash = hash_elems(
-        ElementModP(get_large_prime(), False),
-        ElementModQ(get_small_prime(), False),
+        ElementModP(get_large_prime()),
+        ElementModQ(get_small_prime()),
         get_generator_element(),
         number_of_guardians,
         quorum,
