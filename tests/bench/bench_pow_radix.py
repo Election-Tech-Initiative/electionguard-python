@@ -57,8 +57,8 @@ if __name__ == "__main__":
 
     for powRadixOption in PowRadixOption:
         print(f"Benchmark: {str(powRadixOption)}, problem size: {size}")
-        push_new_constants(pow_radix_option=powRadixOption)
         precompute_start = timer()
+        push_new_constants(pow_radix_option=powRadixOption)
         faster_keypair = keypair.accelerate_pow()
         precompute_end = timer()
         print(f"  Precompute time: {precompute_end - precompute_start:.3f} sec")
