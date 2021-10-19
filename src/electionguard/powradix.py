@@ -50,7 +50,11 @@ class PowRadix:
         `PowRadixOption.EXTREME_MEMORY_USE` corresponds to 537MB of state per instance of PowRadix.
         """
 
+        # we save local copies for speed, since we want the pow function to go as fast as absolutely possible
+        self.large_prime = large_prime
+        self.small_prime = small_prime
         self.basis = basis
+
         e_size = 256  # Size of the exponent
         one_mpz = xmpz(1)
 
@@ -64,10 +68,6 @@ class PowRadix:
             k = 13
         else:
             k = 16
-
-        # we save local copies for speed, since we want the pow function to go as fast as absolutely possible
-        self.large_prime = large_prime
-        self.small_prime = small_prime
 
         self.table_length = -(-e_size // k)  # Double negative to take the ceiling
         self.k = k
