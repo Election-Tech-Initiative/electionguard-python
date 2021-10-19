@@ -401,6 +401,12 @@ def rand_range_q(start: ElementModQorInt) -> ElementModQ:
 def get_generator_element() -> ElementModP:
     """
     Gets the generator element, g, used to generate the subgroup of elements mod P that
-    correspond to valid ciphertexts in our system.
+    correspond to valid ciphertexts in our system. If you want to use the generator
+    for modular exponentiation, don't use this. Instead, use `g_pow_p`, which will be
+    optimized to run significantly faster.
     """
-    return ElementModPAcceleratedPow(get_generator())
+
+    # Tradeoff: so long as we know we'll never use the result as the first argument
+    # to pow_p(), then this is going to be faster than going through the constructor
+    # of ElementModPAcceleratedPow.
+    return ElementModP(get_generator())

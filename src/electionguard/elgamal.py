@@ -13,6 +13,8 @@ from .group import (
     TWO_MOD_Q,
     rand_range_q,
     ElementModPAcceleratedPow,
+    ONE_MOD_P,
+    get_generator_element,
 )
 from .hash import hash_elems
 from .logs import log_error
@@ -152,7 +154,15 @@ def elgamal_encrypt(
         return None
 
     pad = g_pow_p(nonce)
-    gpowp_m = g_pow_p(m)
+
+    # special case for m==0, or m==1, corresponding to the two most
+    # common values for ballot plaintexts
+    if m == 0:
+        gpowp_m = ONE_MOD_P
+    elif m == 1:
+        gpowp_m = get_generator_element()
+    else:
+        gpowp_m = g_pow_p(m)
     pubkey_pow_n = pow_p(public_key, nonce)
     data = mult_p(gpowp_m, pubkey_pow_n)
 

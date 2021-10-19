@@ -7,6 +7,7 @@ from typing import List
 # pylint: disable=no-name-in-module
 from gmpy2 import xmpz
 
+from .logs import log_warning
 from .powradix import PowRadix, PowRadixOption
 
 
@@ -155,6 +156,11 @@ def push_new_constants(
     Given one of the possible options for how the primes should be, pushes those primes into
     use in the system. This can be undone later on by calling pop_constants().
     """
+
+    if prime_option == PrimeOption.TestOnly:
+        log_warning(
+            "Using PrimeOption.TestOnly parameters; this is faster for tests, but not suitable for production use"
+        )
 
     _saved_constants.append(
         LARGE_TEST_CONSTANTS
