@@ -22,12 +22,12 @@ SECRET_COEFFICIENT = ElementModQ  # Secret coefficient of election polynomial
 PUBLIC_COMMITMENT = ElementModP  # Public commitment of election polynomial
 
 @dataclass
-class PolynomialCoefficients:
+class Coefficient:
     """
     A set of coefficients that define an Election Polynomal 
     """
 
-    values: SECRET_COEFFICIENT 
+    value: SECRET_COEFFICIENT 
     """The secret coefficient `a_ij` """
     
     commitments: PUBLIC_COMMITMENT
@@ -46,8 +46,15 @@ class ElectionPolynomial:
     """
 
     coefficients: List[PolynomialCoefficients]
-    """List of coefficient values, commitments and proofs"""
+    """List of coefficient value, commitments and proofs"""
 
+    def get_commitments(self) -> List[PUBLIC_COMMITMENT]:
+        """Access the list of public keys generated from secret coefficient"""
+        return List[PUBLIC_COMMITMENT]
+
+    def get_proofs(self) -> List[SchnorrProof]:
+        """Access the list of proof of possesion of the private key for the secret coefficient"""
+        return List[SchnorrProof]
 
 def generate_polynomial(
     number_of_coefficients: int, nonce: ElementModQ = None
@@ -75,7 +82,7 @@ def generate_polynomial(
         coefficients.append(coefficient)
         commitments.append(commitment)
         proofs.append(proof)
-    return ElectionPolynomial(PolynomialCoefficients(coefficients, commitments, proofs))
+    return ElectionPolynomial(Coefficient(coefficient, commitments, proofs))
 
 
 def compute_polynomial_coordinate(
@@ -92,9 +99,9 @@ def compute_polynomial_coordinate(
     exponent_modifier = ElementModQ(exponent_modifier)
 
     computed_value = ZERO_MOD_Q
-    for (i, coefficient) in enumerate(polynomial.coefficients.values):
+    for (i, coefficient) in enumerate(polynomial.coefficient):
         exponent = pow_q(exponent_modifier, i)
-        factor = mult_q(coefficient, exponent)
+        factor = mult_q(coefficient.value, exponent)
         computed_value = add_q(computed_value, factor)
     return computed_value
 

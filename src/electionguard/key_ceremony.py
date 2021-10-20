@@ -92,8 +92,8 @@ class ElectionKeyPair:
             self.owner_id,
             self.sequence_order,
             self.key_pair.public_key,
-            self.polynomial.coefficients.commitments,
-            self.polynomial.coefficients.proofs,
+            self.polynomial.get_commitments,
+            self.polynomial.get_proofs,
         )
 
 
@@ -302,8 +302,8 @@ def generate_election_partial_key_challenge(
         backup.designated_id,
         backup.designated_sequence_order,
         compute_polynomial_coordinate(backup.designated_sequence_order, polynomial),
-        polynomial.coefficients.commitments,
-        polynomial.coefficients.proofs,
+        polynomial.get_commitments,
+        polynomial.get_proofs,
     )
 
 
