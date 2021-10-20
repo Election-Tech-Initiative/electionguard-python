@@ -45,7 +45,7 @@ class ElectionPolynomial:
     be discovered by a quorum of n guardians corresponding to n coefficients.
     """
 
-    coefficients: List[PolynomialCoefficients]
+    coefficients: List[Coefficient]
     """List of coefficient value, commitments and proofs"""
 
     def get_commitments(self) -> List[PUBLIC_COMMITMENT]:
