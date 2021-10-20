@@ -26,11 +26,17 @@ class TestElectionPolynomial(BaseTestCase):
         self.assertIsNotNone(polynomial)
 
     def test_compute_polynomial_coordinate(self):
+        # create proofs
+        proof = make_schnorr_proof(ElGamalKeyPair([ONE_MOD_Q, TWO_MOD_Q],
+                                                  [ONE_MOD_P, TWO_MOD_P]),
+                                                  rand_q())
+
         # Arrange
         polynomial = ElectionPolynomial(
-            Coefficient(ONE_MOD_Q, TWO_MOD_Q,),
-            Coefficient(ONE_MOD_P, TWO_MOD_P,)
-            )
+            Coefficient([ONE_MOD_Q, TWO_MOD_Q],
+                        [ONE_MOD_P, TWO_MOD_P],
+                        proof)
+        )
 
         # Act
         value = compute_polynomial_coordinate(TEST_EXPONENT_MODIFIER, polynomial)
@@ -48,6 +54,6 @@ class TestElectionPolynomial(BaseTestCase):
         # Assert
         self.assertTrue(
             verify_polynomial_coordinate(
-                value, TEST_EXPONENT_MODIFIER, polynomial.get_commitments
+                value, TEST_EXPONENT_MODIFIER, polynomial.get_commitments()
             )
         )

@@ -30,10 +30,10 @@ class Coefficient:
     value: SECRET_COEFFICIENT 
     """The secret coefficient `a_ij` """
     
-    commitments: PUBLIC_COMMITMENT
+    commitment: PUBLIC_COMMITMENT
     """The public key `K_ij` generated from secret coefficient"""
 
-    proofs: SchnorrProof
+    proof: SchnorrProof
     """A proof of possession of the private key for the secret coefficient"""
 
 @dataclass
@@ -50,11 +50,11 @@ class ElectionPolynomial:
 
     def get_commitments(self) -> List[PUBLIC_COMMITMENT]:
         """Access the list of public keys generated from secret coefficient"""
-        return List[PUBLIC_COMMITMENT]
+        return coefficient.commitment for coefficient in self.coefficients
 
     def get_proofs(self) -> List[SchnorrProof]:
         """Access the list of proof of possesion of the private key for the secret coefficient"""
-        return List[SchnorrProof]
+        return return coefficient.proof for coefficient in self.coefficients
 
 def generate_polynomial(
     number_of_coefficients: int, nonce: ElementModQ = None
@@ -66,23 +66,18 @@ def generate_polynomial(
     :param nonce: an optional nonce parameter that may be provided (useful for testing)
     :return: Polynomial used to share election keys
     """
-    coefficients: List[SECRET_COEFFICIENT] = []
-    commitments: List[PUBLIC_COMMITMENT] = []
-    proofs: List[SchnorrProof] = []
+    coefficients: List[Coefficient] = []
 
     for i in range(number_of_coefficients):
         # Note: the nonce value is not safe.  it is designed for testing only.
         # this method should be called without the nonce in production.
-        coefficient = add_q(nonce, i) if nonce is not None else rand_q()
+        value = add_q(nonce, i) if nonce is not None else rand_q()
         commitment = g_pow_p(coefficient)
-        proof = make_schnorr_proof(
-            ElGamalKeyPair(coefficient, commitment), rand_q()
-        )  # TODO Alternate schnoor proof method that doesn't need KeyPair
-
+        # TODO Alternate schnoor proof method that doesn't need KeyPair
+        proof = make_schnorr_proof(ElGamalKeyPair(coefficient, commitment), rand_q())
+        coefficient = Coefficient(value, commitment, proof)
         coefficients.append(coefficient)
-        commitments.append(commitment)
-        proofs.append(proof)
-    return ElectionPolynomial(Coefficient(coefficient, commitments, proofs))
+    return ElectionPolynomial(coefficient)
 
 
 def compute_polynomial_coordinate(
@@ -99,9 +94,9 @@ def compute_polynomial_coordinate(
     exponent_modifier = ElementModQ(exponent_modifier)
 
     computed_value = ZERO_MOD_Q
-    for (i, coefficient) in enumerate(polynomial.coefficient):
+    for (i, coefficient) in enumerate(polynomial.coefficients):
         exponent = pow_q(exponent_modifier, i)
-        factor = mult_q(coefficient.value, exponent)
+        factor = mult_q(coefficients.value, exponent)
         computed_value = add_q(computed_value, factor)
     return computed_value
 
