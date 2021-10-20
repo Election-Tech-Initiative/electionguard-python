@@ -6,9 +6,10 @@ from electionguard_verify import verify
 from electionguard_verify.verify import (
     Verification,
     verify_ballot,
+    verify_decryption,
 )
 
-__all__ = ["Verification", "verify", "verify_ballot"]
+__all__ = ["Verification", "verify", "verify_ballot", "verify_decryption"]
 
 # </AUTOGEN_INIT>
 

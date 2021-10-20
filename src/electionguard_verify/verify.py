@@ -1,13 +1,16 @@
 from dataclasses import dataclass
-from typing import Optional
+from typing import Dict, Optional
 
 from electionguard.ballot import (
     CiphertextBallot,
 )
 from electionguard.election import CiphertextElectionContext
+from electionguard.key_ceremony import ElectionPublicKey
 from electionguard.manifest import (
     Manifest,
 )
+from electionguard.type import GUARDIAN_ID
+from electionguard.tally import PlaintextTally
 
 
 @dataclass
@@ -39,5 +42,28 @@ def verify_ballot(
             False,
             message=f"verify_ballot: mismatching ballot encryption {ballot.object_id}",
         )
+
+    return Verification(True, message=None)
+
+
+def verify_decryption(
+    tally: PlaintextTally,
+    election_public_keys: Dict[GUARDIAN_ID, ElectionPublicKey],
+    context: CiphertextElectionContext,
+) -> Verification:
+    for _, contest in tally.contests.items():
+        for selection_id, selection in contest.selections.items():
+            for share in selection.shares:
+                election_public_key = election_public_keys.get(share.guardian_id).key
+                if not share.proof.is_valid(
+                    selection.message,
+                    election_public_key,
+                    share.share,
+                    context.crypto_extended_base_hash,
+                ):
+                    return Verification(
+                        False,
+                        message=f"verify_decryption: {selection_id} selection is not valid",
+                    )
 
     return Verification(True, message=None)
