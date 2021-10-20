@@ -10,7 +10,6 @@ from .auxiliary import (
 from .election_polynomial import (
     PUBLIC_COMMITMENT,
     compute_polynomial_coordinate,
-    PolynomialCoefficients,
     ElectionPolynomial,
     generate_polynomial,
     verify_polynomial_coordinate,
