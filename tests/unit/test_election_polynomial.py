@@ -26,7 +26,7 @@ class TestElectionPolynomial(BaseTestCase):
         self.assertIsNotNone(polynomial)
 
     def test_compute_polynomial_coordinate(self):
-        # create proofs
+        # create proof
         proof = make_schnorr_proof(ElGamalKeyPair([ONE_MOD_Q, TWO_MOD_Q],
                                                   [ONE_MOD_P, TWO_MOD_P]),
                                                   rand_q())
