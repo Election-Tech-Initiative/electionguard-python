@@ -74,9 +74,8 @@ def generate_polynomial(
         value = add_q(nonce, i) if nonce is not None else rand_q()
         commitment = g_pow_p(coefficient)
         # TODO Alternate schnoor proof method that doesn't need KeyPair
-        proof = make_schnorr_proof(ElGamalKeyPair(coefficient, commitment), rand_q())
+        proof = make_schnorr_proof(ElGamalKeyPair(value, commitment), rand_q())
         coefficient = Coefficient(value, commitment, proof)
-        coefficients.append(coefficient)
     return ElectionPolynomial(coefficient)
 
 
