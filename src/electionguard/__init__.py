@@ -190,6 +190,7 @@ from electionguard.election_object_base import (
 )
 from electionguard.election_polynomial import (
     ElectionPolynomial,
+    Coefficient
     LagrangeCoefficientsRecord,
     PUBLIC_COMMITMENT,
     SECRET_COEFFICIENT,
