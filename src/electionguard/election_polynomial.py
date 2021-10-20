@@ -54,7 +54,7 @@ class ElectionPolynomial:
 
     def get_proofs(self) -> List[SchnorrProof]:
         """Access the list of proof of possesion of the private key for the secret coefficient"""
-        return return coefficient.proof for coefficient in self.coefficients
+        return coefficient.proof for coefficient in self.coefficients
 
 def generate_polynomial(
     number_of_coefficients: int, nonce: ElementModQ = None
