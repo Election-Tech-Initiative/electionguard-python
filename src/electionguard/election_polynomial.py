@@ -50,11 +50,11 @@ class ElectionPolynomial:
 
     def get_commitments(self) -> List[PUBLIC_COMMITMENT]:
         """Access the list of public keys generated from secret coefficient"""
-        return coefficient.commitment for coefficient in self.coefficients
+        return [coefficient.commitment for coefficient in self.coefficients]
 
     def get_proofs(self) -> List[SchnorrProof]:
         """Access the list of proof of possesion of the private key for the secret coefficient"""
-        return coefficient.proof for coefficient in self.coefficients
+        return [coefficient.proof for coefficient in self.coefficients]
 
 def generate_polynomial(
     number_of_coefficients: int, nonce: ElementModQ = None
