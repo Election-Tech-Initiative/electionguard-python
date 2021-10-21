@@ -29,6 +29,7 @@ class TestElectionPolynomial(BaseTestCase):
         # create proofs
         proof_one = make_schnorr_proof(ElGamalKeyPair(ONE_MOD_Q, ONE_MOD_P), rand_q())
         proof_two = make_schnorr_proof(ElGamalKeyPair(TWO_MOD_Q, TWO_MOD_P), rand_q())
+        
         # Arrange
         polynomial = ElectionPolynomial([Coefficient(ONE_MOD_Q, ONE_MOD_P, proof_one),
                                          Coefficient(TWO_MOD_Q, TWO_MOD_P, proof_two)]
