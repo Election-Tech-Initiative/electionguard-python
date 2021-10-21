@@ -72,11 +72,13 @@ def generate_polynomial(
         # Note: the nonce value is not safe.  it is designed for testing only.
         # this method should be called without the nonce in production.
         value = add_q(nonce, i) if nonce is not None else rand_q()
-        commitment = g_pow_p(coefficient)
-        # TODO Alternate schnoor proof method that doesn't need KeyPair
-        proof = make_schnorr_proof(ElGamalKeyPair(value, commitment), rand_q())
+        commitment = g_pow_p(value)
+        proof = make_schnorr_proof(
+                ElGamalKeyPair(value, commitment), rand_q()
+                ) # TODO Alternate schnoor proof method that doesn't need KeyPair
         coefficient = Coefficient(value, commitment, proof)
-    return ElectionPolynomial(coefficient)
+        coefficients.append(coefficient)
+    return ElectionPolynomial(coefficients)
 
 
 def compute_polynomial_coordinate(
@@ -95,7 +97,7 @@ def compute_polynomial_coordinate(
     computed_value = ZERO_MOD_Q
     for (i, coefficient) in enumerate(polynomial.coefficients):
         exponent = pow_q(exponent_modifier, i)
-        factor = mult_q(coefficients.value, exponent)
+        factor = mult_q(coefficient.value, exponent)
         computed_value = add_q(computed_value, factor)
     return computed_value
 

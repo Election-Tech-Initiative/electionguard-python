@@ -27,16 +27,12 @@ class TestElectionPolynomial(BaseTestCase):
 
     def test_compute_polynomial_coordinate(self):
         # create proofs
-        proof = make_schnorr_proof(ElGamalKeyPair([ONE_MOD_Q, TWO_MOD_Q],
-                                                  [ONE_MOD_P, TWO_MOD_P]),
-                                                  rand_q())
+        proof_one = make_schnorr_proof(ElGamalKeyPair(ONE_MOD_Q, ONE_MOD_P), rand_q())
+        proof_two = make_schnorr_proof(ElGamalKeyPair(TWO_MOD_Q, TWO_MOD_P), rand_q())
 
         # Arrange
-        polynomial = ElectionPolynomial(
-            Coefficient([ONE_MOD_Q, TWO_MOD_Q],
-                        [ONE_MOD_P, TWO_MOD_P],
-                        proof)
-        )
+        polynomial = ElectionPolynomial([Coefficient(ONE_MOD_Q, ONE_MOD_P, proof_one),
+                                         Coefficient(TWO_MOD_Q, TWO_MOD_P, proof_two)]
 
         # Act
         value = compute_polynomial_coordinate(TEST_EXPONENT_MODIFIER, polynomial)
