@@ -217,7 +217,7 @@ def generate_election_key_pair(
     """
     polynomial = generate_polynomial(quorum, nonce)
     key_pair = ElGamalKeyPair(
-        polynomial.coefficients[0], polynomial.coefficient_commitments[0]
+        polynomial.coefficients[0].value, polynomial.coefficients[0].commitment
     )
     return ElectionKeyPair(guardian_id, sequence_order, key_pair, polynomial)
 

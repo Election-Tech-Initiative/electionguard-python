@@ -24,12 +24,12 @@ PUBLIC_COMMITMENT = ElementModP  # Public commitment of election polynomial
 @dataclass
 class Coefficient:
     """
-    A set of coefficients that define an Election Polynomal 
+    A set of coefficients that define an Election Polynomal
     """
 
-    value: SECRET_COEFFICIENT 
+    value: SECRET_COEFFICIENT
     """The secret coefficient `a_ij` """
-    
+
     commitment: PUBLIC_COMMITMENT
     """The public key `K_ij` generated from secret coefficient"""
 
@@ -69,13 +69,13 @@ def generate_polynomial(
     coefficients: List[Coefficient] = []
 
     for i in range(number_of_coefficients):
-        # Note: the nonce value is not safe.  it is designed for testing only.
+        # Note: the nonce value is not safe. it is designed for testing only.
         # this method should be called without the nonce in production.
         value = add_q(nonce, i) if nonce is not None else rand_q()
         commitment = g_pow_p(value)
         proof = make_schnorr_proof(
-                ElGamalKeyPair(value, commitment), rand_q()
-                ) # TODO Alternate schnoor proof method that doesn't need KeyPair
+            ElGamalKeyPair(value, commitment), rand_q()
+        ) # TODO Alternate schnoor proof method that doesn't need KeyPair
         coefficient = Coefficient(value, commitment, proof)
         coefficients.append(coefficient)
     return ElectionPolynomial(coefficients)
