@@ -215,7 +215,7 @@ release-zip-ci:
 	mv dependency-graph.svg electionguard
 	zip -r electionguard.zip electionguard
 
-generate-release-notes:
+release-notes:
 	@echo 📝 GENERATE RELEASE NOTES
 	export MILESTONE_NUM=$(cat $GITHUB_EVENT_PATH | jq '.milestone.number')
 	export MILESTONE_URL=$(cat $GITHUB_EVENT_PATH | jq '.milestone.url')
