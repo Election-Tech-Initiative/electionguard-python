@@ -19,7 +19,7 @@ from .group import ElementModQ, ONE_MOD_P, ElementModP
 from .logs import log_warning
 from .manifest import InternalManifest
 from .scheduler import Scheduler
-from .type import BALLOT_ID, CONTEST_ID, SELECTION_ID
+from .type import BallotId, ContestId, SelectionId
 
 
 @dataclass
@@ -76,7 +76,7 @@ class PlaintextTallyContest(ElectionObjectBase):
     A plaintext Tally Contest is a collection of plaintext selections
     """
 
-    selections: Dict[SELECTION_ID, PlaintextTallySelection]
+    selections: Dict[SelectionId, PlaintextTallySelection]
 
 
 @dataclass
@@ -91,7 +91,7 @@ class CiphertextTallyContest(OrderedObjectBase):
     The ContestDescription hash
     """
 
-    selections: Dict[SELECTION_ID, CiphertextTallySelection]
+    selections: Dict[SelectionId, CiphertextTallySelection]
     """
     A collection of CiphertextTallySelection mapped by SelectionDescription.object_id
     """
@@ -130,7 +130,7 @@ class CiphertextTallyContest(OrderedObjectBase):
 
         # iterate through the tally selections and add the new value to the total
         results: List[
-            Tuple[SELECTION_ID, Optional[ElGamalCiphertext]]
+            Tuple[SelectionId, Optional[ElGamalCiphertext]]
         ] = scheduler.schedule(
             self._accumulate_selections,
             [
@@ -148,10 +148,10 @@ class CiphertextTallyContest(OrderedObjectBase):
 
     @staticmethod
     def _accumulate_selections(
-        key: SELECTION_ID,
+        key: SelectionId,
         selection_tally: CiphertextTallySelection,
         contest_selections: List[CiphertextBallotSelection],
-    ) -> Tuple[SELECTION_ID, Optional[ElGamalCiphertext]]:
+    ) -> Tuple[SelectionId, Optional[ElGamalCiphertext]]:
         use_selection = None
         for selection in contest_selections:
             if key == selection.object_id:
@@ -174,7 +174,7 @@ class PlaintextTally(ElectionObjectBase):
     The plaintext representation of all contests in the election
     """
 
-    contests: Dict[CONTEST_ID, PlaintextTallyContest]
+    contests: Dict[ContestId, PlaintextTallyContest]
 
 
 @dataclass
@@ -183,7 +183,7 @@ class PublishedCiphertextTally(ElectionObjectBase):
     A published version of the ciphertext tally
     """
 
-    contests: Dict[CONTEST_ID, CiphertextTallyContest]
+    contests: Dict[ContestId, CiphertextTallyContest]
 
 
 @dataclass
@@ -195,11 +195,11 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
     _internal_manifest: InternalManifest
     _encryption: CiphertextElectionContext
 
-    cast_ballot_ids: Set[BALLOT_ID] = field(default_factory=lambda: set())
+    cast_ballot_ids: Set[BallotId] = field(default_factory=lambda: set())
     """A local cache of ballots id's that have already been cast"""
-    spoiled_ballot_ids: Set[BALLOT_ID] = field(default_factory=lambda: set())
+    spoiled_ballot_ids: Set[BallotId] = field(default_factory=lambda: set())
 
-    contests: Dict[CONTEST_ID, CiphertextTallyContest] = field(init=False)
+    contests: Dict[ContestId, CiphertextTallyContest] = field(init=False)
     """
     A collection of each contest and selection in an election.
     Retains an encrypted representation of a tally for each selection
@@ -262,7 +262,7 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
         Append a collection of Ballots to the tally and recalculate
         """
         cast_ballot_selections: Dict[
-            SELECTION_ID, Dict[BALLOT_ID, ElGamalCiphertext]
+            SelectionId, Dict[BallotId, ElGamalCiphertext]
         ] = {}
         for ballot in ballots:
             # get the value of the dict
@@ -314,7 +314,7 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
 
     @staticmethod
     def _accumulate(
-        id: str, ballot_selections: Dict[BALLOT_ID, ElGamalCiphertext]
+        id: str, ballot_selections: Dict[BallotId, ElGamalCiphertext]
     ) -> Tuple[str, ElGamalCiphertext]:
         return (
             id,
@@ -357,7 +357,7 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
     @staticmethod
     def _build_tally_collection(
         internal_manifest: InternalManifest,
-    ) -> Dict[CONTEST_ID, CiphertextTallyContest]:
+    ) -> Dict[ContestId, CiphertextTallyContest]:
         """
         Build the object graph for the tally from the InternalManifest
         """
@@ -386,12 +386,12 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
     def _execute_accumulate(
         self,
         ciphertext_selections_by_selection_id: Dict[
-            str, Dict[BALLOT_ID, ElGamalCiphertext]
+            str, Dict[BallotId, ElGamalCiphertext]
         ],
         scheduler: Optional[Scheduler] = None,
     ) -> bool:
 
-        result_set: List[Tuple[SELECTION_ID, ElGamalCiphertext]]
+        result_set: List[Tuple[SelectionId, ElGamalCiphertext]]
         if not scheduler:
             scheduler = Scheduler()
         result_set = scheduler.schedule(

@@ -8,7 +8,7 @@ from dataclasses import asdict
 
 from tests.base_test_case import BaseTestCase
 
-from electionguard.type import BALLOT_ID
+from electionguard.type import BallotId
 from electionguard.utils import get_optional
 
 # Step 0 - Configure Election
@@ -106,9 +106,9 @@ class TestEndToEndElection(BaseTestCase):
     ciphertext_ballots: List[CiphertextBallot] = []
 
     # Step 3 - Cast and Spoil
-    ballot_store: DataStore[BALLOT_ID, SubmittedBallot]
+    ballot_store: DataStore[BallotId, SubmittedBallot]
     ballot_box: BallotBox
-    submitted_ballots: Dict[BALLOT_ID, SubmittedBallot]
+    submitted_ballots: Dict[BallotId, SubmittedBallot]
 
     # Step 4 - Decrypt Tally
     ciphertext_tally: CiphertextTally

@@ -12,15 +12,15 @@ from .key_ceremony import (
     combine_election_public_keys,
     verify_election_partial_key_challenge,
 )
-from .type import GUARDIAN_ID, MEDIATOR_ID
+from .type import GuardianId, MediatorId
 
 
 @dataclass(unsafe_hash=True)
 class GuardianPair:
     """Pair of guardians involved in sharing"""
 
-    owner_id: GUARDIAN_ID
-    designated_id: GUARDIAN_ID
+    owner_id: GuardianId
+    designated_id: GuardianId
 
 
 @dataclass
@@ -37,13 +37,13 @@ class KeyCeremonyMediator:
     KeyCeremonyMediator for assisting communication between guardians
     """
 
-    id: MEDIATOR_ID
+    id: MediatorId
     ceremony_details: CeremonyDetails
 
     # From Guardians
     # Round 1
-    _auxiliary_public_keys: Dict[GUARDIAN_ID, AuxiliaryPublicKey]
-    _election_public_keys: Dict[GUARDIAN_ID, ElectionPublicKey]
+    _auxiliary_public_keys: Dict[GuardianId, AuxiliaryPublicKey]
+    _election_public_keys: Dict[GuardianId, ElectionPublicKey]
 
     # Round 2
     _election_partial_key_backups: Dict[GuardianPair, ElectionPartialKeyBackup]
@@ -53,11 +53,11 @@ class KeyCeremonyMediator:
         GuardianPair, ElectionPartialKeyVerification
     ]
 
-    def __init__(self, id: MEDIATOR_ID, ceremony_details: CeremonyDetails):
+    def __init__(self, id: MediatorId, ceremony_details: CeremonyDetails):
         self.id = id
         self.ceremony_details = ceremony_details
-        self._auxiliary_public_keys: Dict[GUARDIAN_ID, AuxiliaryPublicKey] = {}
-        self._election_public_keys: Dict[GUARDIAN_ID, ElectionPublicKey] = {}
+        self._auxiliary_public_keys: Dict[GuardianId, AuxiliaryPublicKey] = {}
+        self._election_public_keys: Dict[GuardianId, ElectionPublicKey] = {}
         self._election_partial_key_backups: Dict[
             GuardianPair, ElectionPartialKeyBackup
         ] = {}
@@ -88,7 +88,7 @@ class KeyCeremonyMediator:
         )
 
     def share_announced(
-        self, requesting_guardian_id: Optional[GUARDIAN_ID] = None
+        self, requesting_guardian_id: Optional[GuardianId] = None
     ) -> Optional[List[PublicKeySet]]:
         """
         When all guardians have announced, share their public keys indicating their announcement
@@ -128,7 +128,7 @@ class KeyCeremonyMediator:
         )
 
     def share_backups(
-        self, requesting_guardian_id: Optional[GUARDIAN_ID] = None
+        self, requesting_guardian_id: Optional[GuardianId] = None
     ) -> Optional[List[ElectionPartialKeyBackup]]:
         """
         Share all backups designated for a specific guardian
@@ -234,7 +234,7 @@ class KeyCeremonyMediator:
             len(self._election_public_keys) == self.ceremony_details.number_of_guardians
         )
 
-    def _get_announced_guardians(self) -> Iterable[GUARDIAN_ID]:
+    def _get_announced_guardians(self) -> Iterable[GuardianId]:
         return self._election_public_keys.keys()
 
     # Election Partial Key Backups
@@ -264,7 +264,7 @@ class KeyCeremonyMediator:
         )
 
     def _share_election_partial_key_backups_to_guardian(
-        self, guardian_id: GUARDIAN_ID
+        self, guardian_id: GuardianId
     ) -> List[ElectionPartialKeyBackup]:
         """
         Share all election partial key backups for designated guardian

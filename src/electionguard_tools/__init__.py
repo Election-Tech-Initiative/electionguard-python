@@ -67,8 +67,8 @@ from electionguard_tools.scripts import (
     sample_generator,
 )
 from electionguard_tools.strategies import (
-    CIPHERTEXT_ELECTIONS_TUPLE_TYPE,
-    ELECTIONS_AND_BALLOTS_TUPLE_TYPE,
+    CiphertextElectionsTupleType,
+    ElectionsAndBallotsTupleType,
     annotated_emails,
     annotated_strings,
     ballot_styles,
@@ -108,7 +108,7 @@ __all__ = [
     "AllPublicElectionData",
     "BALLOT_PREFIX",
     "BallotFactory",
-    "CIPHERTEXT_ELECTIONS_TUPLE_TYPE",
+    "CiphertextElectionsTupleType",
     "COEFFICIENTS_FILE_NAME",
     "CONSTANTS_FILE_NAME",
     "CONTEXT_FILE_NAME",
@@ -117,7 +117,7 @@ __all__ = [
     "DEFAULT_USE_ALL_GUARDIANS",
     "DEFAULT_USE_PRIVATE_DATA",
     "DEVICE_PREFIX",
-    "ELECTIONS_AND_BALLOTS_TUPLE_TYPE",
+    "ElectionsAndBallotsTupleType",
     "ENCRYPTED_TALLY_FILE_NAME",
     "ElectionFactory",
     "ElectionSampleDataGenerator",

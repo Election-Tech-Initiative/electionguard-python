@@ -8,7 +8,7 @@ from .auxiliary import (
     AuxiliaryPublicKey,
 )
 from .election_polynomial import (
-    PUBLIC_COMMITMENT,
+    PublicCommitment,
     compute_polynomial_coordinate,
     ElectionPolynomial,
     generate_polynomial,
@@ -24,8 +24,8 @@ from .hash import hash_elems
 from .rsa import rsa_keypair, rsa_decrypt, rsa_encrypt
 from .schnorr import SchnorrProof
 from .type import (
-    GUARDIAN_ID,
-    VERIFIER_ID,
+    GuardianId,
+    VerifierId,
 )
 from .utils import get_optional
 
@@ -34,7 +34,7 @@ from .utils import get_optional
 class ElectionPublicKey:
     """A tuple of election public key and owner information"""
 
-    owner_id: GUARDIAN_ID
+    owner_id: GuardianId
     """
     The id of the owner guardian
     """
@@ -50,7 +50,7 @@ class ElectionPublicKey:
     Note: This is the same as the first coefficient commitment
     """
 
-    coefficient_commitments: List[PUBLIC_COMMITMENT]
+    coefficient_commitments: List[PublicCommitment]
     """
     The commitments for the coefficients in the secret polynomial
     """
@@ -65,7 +65,7 @@ class ElectionPublicKey:
 class ElectionKeyPair:
     """A tuple of election key pair, proof and polynomial"""
 
-    owner_id: GUARDIAN_ID
+    owner_id: GuardianId
     """
     The id of the owner guardian
     """
@@ -118,12 +118,12 @@ class ElectionJointKey:
 class ElectionPartialKeyBackup:
     """Election partial key backup used for key sharing"""
 
-    owner_id: GUARDIAN_ID
+    owner_id: GuardianId
     """
     The Id of the guardian that generated this backup
     """
 
-    designated_id: GUARDIAN_ID
+    designated_id: GuardianId
     """
     The Id of the guardian to receive this backup
     """
@@ -159,9 +159,9 @@ class PublicKeySet:
 class ElectionPartialKeyVerification:
     """Verification of election partial key used in key sharing"""
 
-    owner_id: GUARDIAN_ID
-    designated_id: GUARDIAN_ID
-    verifier_id: GUARDIAN_ID
+    owner_id: GuardianId
+    designated_id: GuardianId
+    verifier_id: GuardianId
     verified: bool
 
 
@@ -169,17 +169,17 @@ class ElectionPartialKeyVerification:
 class ElectionPartialKeyChallenge:
     """Challenge of election partial key used in key sharing"""
 
-    owner_id: GUARDIAN_ID
-    designated_id: GUARDIAN_ID
+    owner_id: GuardianId
+    designated_id: GuardianId
     designated_sequence_order: int
 
     value: ElementModQ
-    coefficient_commitments: List[PUBLIC_COMMITMENT]
+    coefficient_commitments: List[PublicCommitment]
     coefficient_proofs: List[SchnorrProof]
 
 
 def generate_elgamal_auxiliary_key_pair(
-    owner_id: GUARDIAN_ID, sequence_order: int
+    owner_id: GuardianId, sequence_order: int
 ) -> AuxiliaryKeyPair:
     """
     Generate auxiliary key pair using elgamal
@@ -195,7 +195,7 @@ def generate_elgamal_auxiliary_key_pair(
 
 
 def generate_rsa_auxiliary_key_pair(
-    owner_id: GUARDIAN_ID, sequence_order: int
+    owner_id: GuardianId, sequence_order: int
 ) -> AuxiliaryKeyPair:
     """
     Generate auxiliary key pair using RSA
@@ -223,7 +223,7 @@ def generate_election_key_pair(
 
 
 def generate_election_partial_key_backup(
-    owner_id: GUARDIAN_ID,
+    owner_id: GuardianId,
     polynomial: ElectionPolynomial,
     designated_auxiliary_public_key: AuxiliaryPublicKey,
     encrypt: AuxiliaryEncrypt = rsa_encrypt,
@@ -307,7 +307,7 @@ def generate_election_partial_key_challenge(
 
 
 def verify_election_partial_key_challenge(
-    verifier_id: VERIFIER_ID, challenge: ElectionPartialKeyChallenge
+    verifier_id: VerifierId, challenge: ElectionPartialKeyChallenge
 ) -> ElectionPartialKeyVerification:
     """
     Verify a challenge to a previous verification of a partial key backup

@@ -15,7 +15,7 @@ from electionguard.encrypt import EncryptionMediator
 from electionguard.key_ceremony import CeremonyDetails
 from electionguard.key_ceremony_mediator import KeyCeremonyMediator
 from electionguard.tally import tally_ballots
-from electionguard.type import GUARDIAN_ID
+from electionguard.type import GuardianId
 from electionguard.utils import get_optional
 
 from electionguard_verify.verify import (
@@ -92,7 +92,7 @@ class TestVerify(BaseTestCase):
         ciphertext_tally = tally_ballots(ballot_store, internal_manifest, context)
 
         # precompute decryption shares for specific selection for the guardians
-        shares: Dict[GUARDIAN_ID, DecryptionShare] = {
+        shares: Dict[GuardianId, DecryptionShare] = {
             guardian.id: compute_decryption_share(
                 guardian._election_keys,
                 ciphertext_tally,

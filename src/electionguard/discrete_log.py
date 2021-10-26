@@ -8,14 +8,14 @@ from .constants import get_generator
 from .singleton import Singleton
 from .group import ElementModP, ONE_MOD_P, mult_p
 
-DLOG_CACHE = Dict[ElementModP, int]
+DLogCache = Dict[ElementModP, int]
 DLOG_MAX = 100_000_000
 """The max number to calculate.  This value is used to stop a race condition."""
 
 
 def compute_discrete_log(
-    element: ElementModP, cache: DLOG_CACHE
-) -> Tuple[int, DLOG_CACHE]:
+    element: ElementModP, cache: DLogCache
+) -> Tuple[int, DLogCache]:
     """
     Computes the discrete log (base g, mod p) of the given element,
     with internal caching of results. Should run efficiently when called
@@ -37,9 +37,9 @@ def compute_discrete_log(
 
 async def discrete_log_async(
     element: ElementModP,
-    cache: DLOG_CACHE,
+    cache: DLogCache,
     mutex: asyncio.Lock = asyncio.Lock(),
-) -> Tuple[int, DLOG_CACHE]:
+) -> Tuple[int, DLogCache]:
     """
     Computes the discrete log (base g, mod p) of the given element,
     with internal caching of results. Should run efficiently when called
@@ -63,7 +63,7 @@ async def discrete_log_async(
 
 
 def compute_discrete_log_cache(
-    element: ElementModP, cache: DLOG_CACHE
+    element: ElementModP, cache: DLogCache
 ) -> Dict[ElementModP, int]:
     """
     Compute a discrete log cache up to the specified element.
@@ -89,7 +89,7 @@ class DiscreteLog(Singleton):
     A class instance of the discrete log that includes a cache.
     """
 
-    _cache: DLOG_CACHE = {ONE_MOD_P: 0}
+    _cache: DLogCache = {ONE_MOD_P: 0}
     _mutex = asyncio.Lock()
 
     def discrete_log(self, element: ElementModP) -> int:

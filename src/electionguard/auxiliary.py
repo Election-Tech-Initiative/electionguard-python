@@ -1,19 +1,19 @@
 from dataclasses import dataclass
 from typing import Callable, Optional
 
-from .type import GUARDIAN_ID
+from .type import GuardianId
 
-MESSAGE = str
-AUXILIARY_PUBLIC_KEY = str
-AUXILIARY_SECRET_KEY = str
-ENCRYPTED_MESSAGE = str
+_Message = str
+_AuxiliaryPublicKey = str
+_AuxiliarySecretKey = str
+_EncryptedMessage = str
 
 
 @dataclass
 class AuxiliaryPublicKey:
     """A tuple of auxiliary public key and owner information that can be shared between guardians"""
 
-    owner_id: GUARDIAN_ID
+    owner_id: GuardianId
     """
     The unique identifier of the guardian owning the key
     """
@@ -23,7 +23,7 @@ class AuxiliaryPublicKey:
     The sequence order of the auxiliary public key (usually the guardian's sequence order)
     """
 
-    key: AUXILIARY_PUBLIC_KEY
+    key: _AuxiliaryPublicKey
     """
     A string representation of the Auxiliary public key that can be shared between guardians.
     It is up to the external `AuxiliaryEncrypt` function to know how to parse this value
@@ -34,7 +34,7 @@ class AuxiliaryPublicKey:
 class AuxiliaryKeyPair:
     """A tuple of a secret key and public key."""
 
-    owner_id: GUARDIAN_ID
+    owner_id: GuardianId
     """
     The unique identifier of the guardian owning the key
     """
@@ -44,10 +44,10 @@ class AuxiliaryKeyPair:
     The sequence order of the auxiliary public key (usually the guardian's sequence order)
     """
 
-    secret_key: AUXILIARY_SECRET_KEY
+    secret_key: _AuxiliarySecretKey
     """The secret or private key"""
 
-    public_key: AUXILIARY_PUBLIC_KEY
+    public_key: _AuxiliaryPublicKey
     """
     A string representation of the Auxiliary public key that can be shared between guardians.
     It is up to the external `AuxiliaryEncrypt` function to know how to parse this value
@@ -59,11 +59,11 @@ class AuxiliaryKeyPair:
 
 
 AuxiliaryEncrypt = Callable[
-    [MESSAGE, AUXILIARY_PUBLIC_KEY], Optional[ENCRYPTED_MESSAGE]
+    [_Message, _AuxiliaryPublicKey], Optional[_EncryptedMessage]
 ]
 """A callable type that represents the auxiliary encryption scheme."""
 
 AuxiliaryDecrypt = Callable[
-    [ENCRYPTED_MESSAGE, AUXILIARY_SECRET_KEY], Optional[MESSAGE]
+    [_EncryptedMessage, _AuxiliarySecretKey], Optional[_Message]
 ]
 """A callable type that represents the auxiliary decryption scheme."""

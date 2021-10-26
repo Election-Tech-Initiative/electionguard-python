@@ -3,8 +3,8 @@ from electionguard_tools.strategies import elgamal
 from electionguard_tools.strategies import group
 
 from electionguard_tools.strategies.election import (
-    CIPHERTEXT_ELECTIONS_TUPLE_TYPE,
-    ELECTIONS_AND_BALLOTS_TUPLE_TYPE,
+    CiphertextElectionsTupleType,
+    ElectionsAndBallotsTupleType,
     annotated_emails,
     annotated_strings,
     ballot_styles,
@@ -41,8 +41,8 @@ from electionguard_tools.strategies.group import (
 )
 
 __all__ = [
-    "CIPHERTEXT_ELECTIONS_TUPLE_TYPE",
-    "ELECTIONS_AND_BALLOTS_TUPLE_TYPE",
+    "CiphertextElectionsTupleType",
+    "ElectionsAndBallotsTupleType",
     "annotated_emails",
     "annotated_strings",
     "ballot_styles",

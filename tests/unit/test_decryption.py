@@ -37,7 +37,7 @@ from electionguard.guardian import Guardian
 from electionguard.key_ceremony import CeremonyDetails, ElectionKeyPair
 from electionguard.key_ceremony_mediator import KeyCeremonyMediator
 from electionguard.tally import tally_ballots
-from electionguard.type import BALLOT_ID, GUARDIAN_ID
+from electionguard.type import BallotId, GuardianId
 from electionguard.utils import get_optional
 
 import electionguard_tools.factories.ballot_factory as BallotFactory
@@ -173,7 +173,7 @@ class TestDecryption(BaseTestCase):
         self.ciphertext_tally = tally_ballots(
             ballot_store, self.internal_manifest, self.context
         )
-        self.ciphertext_ballots: Dict[BALLOT_ID, SubmittedBallot] = get_ballots(
+        self.ciphertext_ballots: Dict[BallotId, SubmittedBallot] = get_ballots(
             ballot_store, BallotBoxState.SPOILED
         )
 
@@ -463,7 +463,7 @@ class TestDecryption(BaseTestCase):
         tally = self.ciphertext_tally
 
         # Act
-        compensated_shares: Dict[GUARDIAN_ID, CompensatedDecryptionShare] = {
+        compensated_shares: Dict[GuardianId, CompensatedDecryptionShare] = {
             available_guardian.id: compute_compensated_decryption_share(
                 available_guardian.share_election_public_key(),
                 available_guardian._auxiliary_keys,
@@ -504,7 +504,7 @@ class TestDecryption(BaseTestCase):
         ballot = list(self.ciphertext_ballots.values())[0]
 
         # Act
-        compensated_ballot_shares: Dict[GUARDIAN_ID, CompensatedDecryptionShare] = {}
+        compensated_ballot_shares: Dict[GuardianId, CompensatedDecryptionShare] = {}
         for available_guardian in available_guardians:
             compensated_share = compute_compensated_decryption_share_for_ballot(
                 available_guardian.share_election_public_key(),
@@ -550,7 +550,7 @@ class TestDecryption(BaseTestCase):
         ballot = self.ciphertext_ballots[self.fake_spoiled_ballot.object_id]
 
         # Act
-        compensated_shares: Dict[GUARDIAN_ID, CompensatedDecryptionShare] = {
+        compensated_shares: Dict[GuardianId, CompensatedDecryptionShare] = {
             available_guardian.id: get_optional(
                 compute_compensated_decryption_share_for_ballot(
                     available_guardian.share_election_public_key(),
