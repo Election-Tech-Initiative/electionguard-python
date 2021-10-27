@@ -135,10 +135,8 @@ class TestModularArithmetic(BaseTestCase):
     @given(elements_mod_q())
     def test_in_bounds_q(self, q: ElementModQ):
         self.assertTrue(q.is_in_bounds())
-        too_big = q + get_small_prime()
-        too_small = q - get_small_prime()
-        self.assertFalse(ElementModQ(too_big, False).is_in_bounds())
-        self.assertFalse(ElementModQ(too_small, False).is_in_bounds())
+        too_big = int(q) + get_small_prime()
+        too_small = int(q) - get_small_prime()
         self.assertEqual(None, int_to_q(too_big))
         self.assertEqual(None, int_to_q(too_small))
         with self.assertRaises(OverflowError):
@@ -149,10 +147,8 @@ class TestModularArithmetic(BaseTestCase):
     @given(elements_mod_p())
     def test_in_bounds_p(self, p: ElementModP):
         self.assertTrue(p.is_in_bounds())
-        too_big = p + get_large_prime()
-        too_small = p - get_large_prime()
-        self.assertFalse(ElementModP(too_big, False).is_in_bounds())
-        self.assertFalse(ElementModP(too_small, False).is_in_bounds())
+        too_big = int(p) + get_large_prime()
+        too_small = int(p) - get_large_prime()
         self.assertEqual(None, int_to_p(too_big))
         self.assertEqual(None, int_to_p(too_small))
         with self.assertRaises(OverflowError):
@@ -164,27 +160,15 @@ class TestModularArithmetic(BaseTestCase):
     def test_in_bounds_q_no_zero(self, q: ElementModQ):
         self.assertTrue(q.is_in_bounds_no_zero())
         self.assertFalse(ZERO_MOD_Q.is_in_bounds_no_zero())
-        self.assertFalse(
-            ElementModQ(q + get_small_prime(), False).is_in_bounds_no_zero()
-        )
-        self.assertFalse(
-            ElementModQ(q - get_small_prime(), False).is_in_bounds_no_zero()
-        )
 
     @given(elements_mod_p_no_zero())
     def test_in_bounds_p_no_zero(self, p: ElementModP):
         self.assertTrue(p.is_in_bounds_no_zero())
         self.assertFalse(ZERO_MOD_P.is_in_bounds_no_zero())
-        self.assertFalse(
-            ElementModP(p + get_large_prime(), False).is_in_bounds_no_zero()
-        )
-        self.assertFalse(
-            ElementModP(p - get_large_prime(), False).is_in_bounds_no_zero()
-        )
 
     @given(elements_mod_q())
     def test_large_values_rejected_by_int_to_q(self, q: ElementModQ):
-        oversize = q + get_small_prime()
+        oversize = int(q) + get_small_prime()
         self.assertEqual(None, int_to_q(oversize))
 
 
