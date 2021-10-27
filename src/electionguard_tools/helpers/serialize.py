@@ -19,6 +19,7 @@ from pydantic.json import pydantic_encoder
 from pydantic.tools import parse_raw_as, parse_obj_as
 
 from electionguard.group import hex_to_int, int_to_hex
+from electionguard.group import BaseElement
 
 T = TypeVar("T")
 
@@ -122,6 +123,8 @@ def custom_encoder(obj: Any) -> Any:
         new_dict = asdict(obj)
         obj = _recursive_replace(new_dict, int, _get_int_encoder())
         return obj
+    elif isinstance(obj, BaseElement):
+        return obj.to_hex()
     return pydantic_encoder(obj)
 
 
