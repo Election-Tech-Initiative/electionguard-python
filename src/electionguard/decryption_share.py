@@ -297,9 +297,7 @@ def get_shares_for_selection(
     """
     Get all of the cast shares for a specific selection
     """
-    selections: Dict[
-        GuardianId, Tuple[ElementModP, CiphertextDecryptionSelection]
-    ] = {}
+    selections: Dict[GuardianId, Tuple[ElementModP, CiphertextDecryptionSelection]] = {}
     for share in shares.values():
         for contest in share.contests.values():
             for selection in contest.selections.values():

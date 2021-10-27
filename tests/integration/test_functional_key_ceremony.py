@@ -178,9 +178,7 @@ class TestKeyCeremony(BaseTestCase):
             received_verifications.append(verification)
             self.received_verifications[verification.owner_id] = received_verifications
 
-    def _guardian_checks_returned_verifications(
-        self, key_owner_id: GuardianId
-    ) -> None:
+    def _guardian_checks_returned_verifications(self, key_owner_id: GuardianId) -> None:
         """
         Guardian checks that all backups have been
         verified sucessfully
