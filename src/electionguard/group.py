@@ -5,9 +5,12 @@ in the sense that performance may be less than hand-optimized C code, and no gua
 made about timing or other side-channels.
 """
 
+from __future__ import annotations
+
 from abc import ABC
-from typing import Any, Final, Optional, Union
+from typing import Any, Callable, Final, Generator, Optional, Union
 from base64 import b16decode
+from numbers import Number
 from secrets import randbelow
 from sys import maxsize
 
@@ -17,8 +20,10 @@ from gmpy2 import mpz, powmod, invert
 from .constants import get_large_prime, get_small_prime, get_generator
 
 
-class BaseElement(ABC, int):
+class BaseElement(ABC, Number):
     """An element limited by mod T within [0, T) where T is determined by an upper_bound function."""
+
+    value = 0
 
     def __new__(cls, elem: Union[int, str], check_within_bounds: bool = True):  # type: ignore
         """Instantiate ElementModT where elem is an int or its hex representation or mpz."""
@@ -26,8 +31,108 @@ class BaseElement(ABC, int):
             elem = hex_to_int(elem)
         if check_within_bounds:
             if not 0 <= elem < cls.get_upper_bound():
-                raise OverflowError
-        return super(BaseElement, cls).__new__(cls, elem)
+                raise OverflowError(elem, cls.get_upper_bound())
+
+        self = super(BaseElement, cls).__new__(cls)
+        self.value = int(elem)
+
+        return self
+
+    def __getnewargs__(self) -> tuple:
+        return (BaseElement.__int__(self),)
+
+    def __int__(self) -> int:
+        return self.value
+
+    def __repr__(self) -> str:
+        return f"{int(self)}"
+
+    def __add__(self, other: Any) -> BaseElement:
+        """a + b"""
+        if isinstance(other, (self.__class__, int)):
+            return self.__class__(int(self) + int(other))
+
+        return NotImplemented
+
+    def __radd__(self, other: Any) -> BaseElement:
+        """a + b"""
+        if isinstance(other, (self.__class__, int)):
+            return self.__class__(int(other) + int(self))
+
+        return NotImplemented
+
+    def __sub__(self, other: Any) -> BaseElement:
+        """a - b"""
+        if isinstance(other, (self.__class__, int)):
+            return self.__class__(int(self) - int(other))
+
+        return NotImplemented
+
+    def __rsub__(self, other: Any) -> BaseElement:
+        """a - b"""
+        if isinstance(other, (self.__class__, int)):
+            return self.__class__(int(other) - int(self))
+
+        return NotImplemented
+
+    def __mul__(self, other: Any) -> BaseElement:
+        """a * b"""
+        if isinstance(other, (self.__class__, int)):
+            return self.__class__(int(self) * int(other))
+
+        return NotImplemented
+
+    def __rmul__(self, other: Any) -> BaseElement:
+        """a * b"""
+        if isinstance(other, (self.__class__, int)):
+            return self.__class__(int(other) * int(self))
+
+        return NotImplemented
+
+    def __pow__(self, other: Any, modulo: int = None) -> BaseElement:
+        """a ** b"""
+        if isinstance(other, (BaseElement, int)):
+            if modulo:
+                return self.__class__((int(self) ** int(other)) % modulo)
+
+            return self.__class__(int(self) ** int(other))
+
+        return NotImplemented
+
+    def __rpow__(self, other: Any) -> BaseElement:
+        """a ** b"""
+        if isinstance(other, (self.__class__, int)):
+            return self.__class__(int(other) ** int(self))
+
+        return NotImplemented
+
+    def __lt__(self, other: Any) -> bool:
+        """a < b"""
+        if isinstance(other, (self.__class__, int)):
+            return int(self) < int(other)
+
+        return NotImplemented
+
+    def __le__(self, other: Any) -> bool:
+        """a <= b"""
+        if isinstance(other, (self.__class__, int)):
+            return int(self) <= int(other)
+
+        return NotImplemented
+
+    def __gt__(self, other: Any) -> bool:
+        """a > b"""
+        if isinstance(other, (self.__class__, int)):
+            return int(self) > int(other)
+
+        return NotImplemented
+
+    def __ge__(self, other: Any) -> bool:
+        """a >= b"""
+        if isinstance(other, (self.__class__, int)):
+            return int(self) >= int(other)
+
+        return NotImplemented
 
     def __ne__(self, other: Any) -> bool:
         """Overload != (not equal to) operator."""
@@ -39,7 +144,7 @@ class BaseElement(ABC, int):
 
     def __hash__(self) -> int:
         """Overload the hashing function."""
-        return hash(self.__int__())
+        return hash(int(self))
 
     @classmethod
     def get_upper_bound(cls) -> int:  # pylint: disable=no-self-use
@@ -52,7 +157,7 @@ class BaseElement(ABC, int):
 
         This is preferable to directly accessing `elem`, whose representation might change.
         """
-        return int_to_hex(self.__int__())
+        return int_to_hex(int(self))
 
     def to_hex_bytes(self) -> bytes:
         """
@@ -62,13 +167,14 @@ class BaseElement(ABC, int):
         """
         return b16decode(self.to_hex())
 
+    # pylint: disable=no-self-use
     def is_in_bounds(self) -> bool:
         """
         Validate that the element is actually within the bounds of [0,Q).
 
         Returns true if all is good, false if something's wrong.
         """
-        return 0 <= self.__int__() < self.get_upper_bound()
+        return True
 
     def is_in_bounds_no_zero(self) -> bool:
         """
@@ -76,7 +182,17 @@ class BaseElement(ABC, int):
 
         Returns true if all is good, false if something's wrong.
         """
-        return 1 <= self.__int__() < self.get_upper_bound()
+        return int(self) >= 1
+
+    @classmethod
+    def __get_validators__(cls) -> Generator[Callable[[Any], Any], None, None]:
+        yield cls.validate
+
+    @classmethod
+    def validate(cls, v: Any) -> BaseElement:
+        if not isinstance(v, (cls, int)):
+            raise TypeError("Invalid value")
+        return cls(int(v))
 
 
 class ElementModQ(BaseElement):
@@ -119,6 +235,8 @@ ElementModPorInt = Union[ElementModP, int]
 
 def _get_mpz(input: Union[BaseElement, int]) -> mpz:
     """Get BaseElement or integer as mpz."""
+    if isinstance(input, BaseElement):
+        return mpz(int(input))
     return mpz(input)
 
 
