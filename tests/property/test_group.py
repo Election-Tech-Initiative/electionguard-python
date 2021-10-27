@@ -65,9 +65,54 @@ class TestEquality(BaseTestCase):
         self.assertEqual(p, p)
         self.assertEqual(q, q)
 
+    # pylint: disable=comparison-with-itself
+    @given(elements_mod_q())
+    def test_comparison(self, q: ElementModQ):
+        self.assertFalse(q < q)
+        self.assertTrue(q <= q)
+        self.assertFalse(q > q)
+        self.assertTrue(q >= q)
+
+        self.assertTrue(q < q + 1)
+        self.assertTrue(q <= q + 1)
+        self.assertFalse(q > q + 1)
+        self.assertFalse(q >= q + 1)
+
+        self.assertFalse(q + 1 < q)
+        self.assertFalse(q + 1 <= q)
+        self.assertTrue(q + 1 > q)
+        self.assertTrue(q + 1 >= q)
+
 
 class TestModularArithmetic(BaseTestCase):
     """Math Modular Arithmetic tests"""
+
+    @given(elements_mod_q())
+    def test_add_radd(self, q: ElementModQ):
+        self.assertEqual(q + 0, q)
+        self.assertEqual(0 + q, q)
+
+    @given(elements_mod_q())
+    def test_sub_rsub(self, q: ElementModQ):
+        self.assertEqual(q - 0, q)
+        max_q = get_small_prime() - 1
+        self.assertEqual(max_q - q, int(max_q) - int(q))
+
+    @given(elements_mod_q())
+    def test_mul_rmul(self, q: ElementModQ):
+        self.assertEqual(q * 1, q)
+        self.assertEqual(1 * q, q)
+
+    @given(elements_mod_q_no_zero())
+    def test_truediv_rtruediv(self, q: ElementModQ):
+        self.assertEqual(q / 1, q)
+        max_q = get_small_prime() - 1
+        self.assertEqual(max_q / q, int(max_q) // int(q))
+
+    @given(elements_mod_q())
+    def test_pow_rpow(self, q: ElementModQ):
+        self.assertEqual(q ** 1, q)
+        self.assertEqual(1 ** q, 1)
 
     @given(elements_mod_q())
     def test_add_q(self, q: ElementModQ):

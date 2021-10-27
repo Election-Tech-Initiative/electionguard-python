@@ -23,7 +23,7 @@ from .constants import get_large_prime, get_small_prime, get_generator
 class BaseElement(ABC, Number):
     """An element limited by mod T within [0, T) where T is determined by an upper_bound function."""
 
-    value = 0
+    value: int = 0
 
     def __new__(cls, elem: Union[int, str], check_within_bounds: bool = True):  # type: ignore
         """Instantiate ElementModT where elem is an int or its hex representation or mpz."""
@@ -86,6 +86,20 @@ class BaseElement(ABC, Number):
         """a * b"""
         if isinstance(other, (self.__class__, int)):
             return self.__class__(int(other) * int(self))
+
+        return NotImplemented
+
+    def __truediv__(self, other: Any) -> BaseElement:
+        """a / b"""
+        if isinstance(other, (self.__class__, int)):
+            return self.__class__(int(self) // int(other))
+
+        return NotImplemented
+
+    def __rtruediv__(self, other: Any) -> BaseElement:
+        """a / b"""
+        if isinstance(other, (self.__class__, int)):
+            return self.__class__(int(other) // int(self))
 
         return NotImplemented
 
