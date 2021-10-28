@@ -1,5 +1,7 @@
 from tests.base_test_case import BaseTestCase
-
+from electionguard.schnorr import make_schnorr_proof
+from electionguard.elgamal import ElGamalKeyPair
+from electionguard.group import rand_q
 from electionguard.election_polynomial import (
     Coefficient,
     compute_polynomial_coordinate,
