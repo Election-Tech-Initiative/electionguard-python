@@ -105,6 +105,8 @@ jobs:
         run: make install
       - name: Get Version
         run: echo "PACKAGE_VERSION=$(echo $VERSION | poetry version --short)" >> $GITHUB_ENV
+      - name: Generate release notes
+        run: make release-notes
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1.0.0
@@ -115,6 +117,7 @@ jobs:
           release_name: Release ${{ env.PACKAGE_VERSION }}
           draft: false
           prerelease: false
+          body_path: ./release_notes.md
       - name: Dependency Graph
         run: make dependency-graph-ci
       - name: Upload Dependency Graph as Artifact
