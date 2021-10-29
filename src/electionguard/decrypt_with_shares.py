@@ -15,7 +15,7 @@ from .tally import (
     PlaintextTallySelection,
 )
 from .logs import log_warning
-from .type import CONTEST_ID, GUARDIAN_ID, SELECTION_ID
+from .type import ContestId, GuardianId, SelectionId
 
 # The methods in this file can be used to decrypt values if private keys or nonces are not known
 # and the key ceremony is used to share secrets among a quorum of guardians
@@ -23,7 +23,7 @@ from .type import CONTEST_ID, GUARDIAN_ID, SELECTION_ID
 
 def decrypt_tally(
     tally: CiphertextTally,
-    shares: Dict[GUARDIAN_ID, DecryptionShare],
+    shares: Dict[GuardianId, DecryptionShare],
     crypto_extended_base_hash: ElementModQ,
 ) -> Optional[PlaintextTally]:
     """
@@ -34,7 +34,7 @@ def decrypt_tally(
     :param context: the Ciphertextelectioncontext
     :return: A PlaintextTally or None if there is an error
     """
-    contests: Dict[CONTEST_ID, PlaintextTallyContest] = {}
+    contests: Dict[ContestId, PlaintextTallyContest] = {}
 
     for contest in tally.contests.values():
         plaintext_contest = decrypt_contest_with_decryption_shares(
@@ -57,7 +57,7 @@ def decrypt_tally(
 
 def decrypt_ballot(
     ballot: SubmittedBallot,
-    shares: Dict[GUARDIAN_ID, DecryptionShare],
+    shares: Dict[GuardianId, DecryptionShare],
     crypto_extended_base_hash: ElementModQ,
 ) -> Optional[PlaintextTally]:
     """
@@ -68,7 +68,7 @@ def decrypt_ballot(
     :param crypto_extended_base_hash: The extended base hash
     :return: A PlaintextTally or None if there is an error
     """
-    contests: Dict[CONTEST_ID, PlaintextTallyContest] = {}
+    contests: Dict[ContestId, PlaintextTallyContest] = {}
 
     for contest in ballot.contests:
         plaintext_contest = decrypt_contest_with_decryption_shares(
@@ -91,7 +91,7 @@ def decrypt_ballot(
 
 def decrypt_contest_with_decryption_shares(
     contest: CiphertextContest,
-    shares: Dict[GUARDIAN_ID, DecryptionShare],
+    shares: Dict[GuardianId, DecryptionShare],
     crypto_extended_base_hash: ElementModQ,
 ) -> Optional[PlaintextTallyContest]:
     """
@@ -102,7 +102,7 @@ def decrypt_contest_with_decryption_shares(
     :param crypto_extended_base_hash: the extended base hash code (𝑄') for the election
     :return: a collection of `PlaintextTallyContest` or `None` if there is an error
     """
-    plaintext_selections: Dict[SELECTION_ID, PlaintextTallySelection] = {}
+    plaintext_selections: Dict[SelectionId, PlaintextTallySelection] = {}
 
     for selection in contest.selections:
         tally_shares = get_shares_for_selection(selection.object_id, shares)
@@ -124,7 +124,7 @@ def decrypt_contest_with_decryption_shares(
 
 def decrypt_selection_with_decryption_shares(
     selection: CiphertextSelection,
-    shares: Dict[GUARDIAN_ID, Tuple[ElementModP, CiphertextDecryptionSelection]],
+    shares: Dict[GuardianId, Tuple[ElementModP, CiphertextDecryptionSelection]],
     crypto_extended_base_hash: ElementModQ,
     suppress_validity_check: bool = False,
 ) -> Optional[PlaintextTallySelection]:

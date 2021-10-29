@@ -12,7 +12,7 @@ from .data_store import DataStore
 from .election import CiphertextElectionContext
 from .logs import log_warning
 from .manifest import InternalManifest
-from .type import BALLOT_ID
+from .type import BallotId
 
 
 @dataclass
@@ -79,7 +79,7 @@ def accept_ballot(
 
 def get_ballots(
     store: DataStore, state: Optional[BallotBoxState]
-) -> Dict[BALLOT_ID, SubmittedBallot]:
+) -> Dict[BallotId, SubmittedBallot]:
     """Get ballots from the store optionally filtering on state."""
     return {
         ballot_id: ballot

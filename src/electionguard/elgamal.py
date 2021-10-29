@@ -17,16 +17,16 @@ from .hash import hash_elems
 from .logs import log_info, log_error
 from .utils import get_optional
 
-ELGAMAL_SECRET_KEY = ElementModQ
-ELGAMAL_PUBLIC_KEY = ElementModP
+ElGamalSecretKey = ElementModQ
+ElGamalPublicKey = ElementModP
 
 
 @dataclass
 class ElGamalKeyPair:
     """A tuple of an ElGamal secret key and public key."""
 
-    secret_key: ELGAMAL_SECRET_KEY
-    public_key: ELGAMAL_PUBLIC_KEY
+    secret_key: ElGamalSecretKey
+    public_key: ElGamalPublicKey
 
 
 @dataclass

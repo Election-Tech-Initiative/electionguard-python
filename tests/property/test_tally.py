@@ -20,7 +20,7 @@ from electionguard.tally import CiphertextTally, tally_ballots, tally_ballot
 
 from electionguard_tools.strategies.election import (
     elections_and_ballots,
-    ELECTIONS_AND_BALLOTS_TUPLE_TYPE,
+    ElectionsAndBallotsTupleType,
 )
 from electionguard_tools.factories.election_factory import ElectionFactory
 from electionguard_tools.helpers.tally_accumulate import accumulate_plaintext_ballots
@@ -38,7 +38,7 @@ class TestTally(BaseTestCase):
     )
     @given(integers(2, 5).flatmap(lambda n: elections_and_ballots(n)))
     def test_tally_cast_ballots_accumulates_valid_tally(
-        self, everything: ELECTIONS_AND_BALLOTS_TUPLE_TYPE
+        self, everything: ElectionsAndBallotsTupleType
     ):
         # Arrange
         (
@@ -83,7 +83,7 @@ class TestTally(BaseTestCase):
     )
     @given(integers(1, 3).flatmap(lambda n: elections_and_ballots(n)))
     def test_tally_spoiled_ballots_accumulates_valid_tally(
-        self, everything: ELECTIONS_AND_BALLOTS_TUPLE_TYPE
+        self, everything: ElectionsAndBallotsTupleType
     ):
         # Arrange
         (
@@ -131,7 +131,7 @@ class TestTally(BaseTestCase):
     )
     @given(integers(1, 3).flatmap(lambda n: elections_and_ballots(n)))
     def test_tally_ballot_invalid_input_fails(
-        self, everything: ELECTIONS_AND_BALLOTS_TUPLE_TYPE
+        self, everything: ElectionsAndBallotsTupleType
     ):
 
         # Arrange

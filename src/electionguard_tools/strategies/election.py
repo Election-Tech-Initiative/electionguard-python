@@ -635,7 +635,7 @@ def plaintext_voted_ballot(draw: _DrawType, internal_manifest: InternalManifest)
     return PlaintextBallot(str(draw(uuids())), ballot_style.object_id, voted_contests)
 
 
-CIPHERTEXT_ELECTIONS_TUPLE_TYPE = Tuple[ElementModQ, CiphertextElectionContext]
+CiphertextElectionsTupleType = Tuple[ElementModQ, CiphertextElectionContext]
 
 
 @composite
@@ -654,7 +654,7 @@ def ciphertext_elections(draw: _DrawType, manifest: Manifest):
     secret_key = keypair.secret_key
     public_key = keypair.public_key
     commitment_hash = draw(elements_mod_q_no_zero())
-    ciphertext_election_with_secret: CIPHERTEXT_ELECTIONS_TUPLE_TYPE = (
+    ciphertext_election_with_secret: CiphertextElectionsTupleType = (
         secret_key,
         make_ciphertext_election_context(
             number_of_guardians=1,
@@ -667,7 +667,7 @@ def ciphertext_elections(draw: _DrawType, manifest: Manifest):
     return ciphertext_election_with_secret
 
 
-ELECTIONS_AND_BALLOTS_TUPLE_TYPE = Tuple[
+ElectionsAndBallotsTupleType = Tuple[
     Manifest,
     InternalManifest,
     List[PlaintextBallot],
@@ -698,7 +698,7 @@ def elections_and_ballots(draw: _DrawType, num_ballots: int = 3):
 
     secret_key, context = draw(ciphertext_elections(manifest))
 
-    mock_election: ELECTIONS_AND_BALLOTS_TUPLE_TYPE = (
+    mock_election: ElectionsAndBallotsTupleType = (
         manifest,
         internal_manifest,
         ballots,
