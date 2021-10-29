@@ -1,11 +1,5 @@
 from typing import Optional
 
-from dataclasses import asdict, dataclass
-import json
-
-from pydantic.json import pydantic_encoder
-from pydantic.tools import parse_raw_as, parse_obj_as
-
 from hypothesis import given
 
 from tests.base_test_case import BaseTestCase
@@ -48,58 +42,6 @@ from electionguard_tools.strategies.group import (
 )
 
 
-class TestBaseElement(BaseTestCase):
-    """BaseElement tests"""
-
-    @given(elements_mod_q())
-    def test_add_radd(self, q: ElementModQ):
-        self.assertEqual(q + 0, q)
-        self.assertEqual(0 + q, q)
-
-        with self.assertRaises(OverflowError):
-            _ = q + get_small_prime()
-
-        with self.assertRaises(OverflowError):
-            _ = get_small_prime() + q
-
-    @given(elements_mod_q_no_zero())
-    def test_sub_rsub(self, q: ElementModQ):
-        self.assertEqual(q - 0, q)
-        max_q = get_small_prime() - 1
-        self.assertEqual(max_q - q, int(max_q) - int(q))
-
-        with self.assertRaises(OverflowError):
-            _ = q - get_small_prime()
-
-        with self.assertRaises(OverflowError):
-            _ = 0 - q
-
-    @given(elements_mod_q_no_zero())
-    def test_mul_rmul(self, q: ElementModQ):
-        self.assertEqual(q * 1, q)
-        self.assertEqual(1 * q, q)
-
-        with self.assertRaises(OverflowError):
-            _ = q * get_small_prime()
-
-        with self.assertRaises(OverflowError):
-            _ = get_small_prime() * q
-
-    @given(elements_mod_q_no_zero())
-    def test_truediv_rtruediv(self, q: ElementModQ):
-        self.assertEqual(q / 1, q)
-        max_q = get_small_prime() - 1
-        self.assertEqual(max_q / q, int(max_q) // int(q))
-
-    @given(elements_mod_q_no_zero())
-    def test_pow_rpow(self, q: ElementModQ):
-        self.assertEqual(q ** 1, q)
-        self.assertEqual(1 ** q, 1)
-
-        with self.assertRaises(OverflowError):
-            _ = get_small_prime() ** q
-
-
 class TestEquality(BaseTestCase):
     """Math equality tests"""
 
@@ -122,24 +64,6 @@ class TestEquality(BaseTestCase):
         # of course, we're going to make sure that a number is equal to itself
         self.assertEqual(p, p)
         self.assertEqual(q, q)
-
-    # pylint: disable=comparison-with-itself
-    @given(elements_mod_q())
-    def test_comparison(self, q: ElementModQ):
-        self.assertFalse(q < q)
-        self.assertTrue(q <= q)
-        self.assertFalse(q > q)
-        self.assertTrue(q >= q)
-
-        self.assertTrue(q < q + 1)
-        self.assertTrue(q <= q + 1)
-        self.assertFalse(q > q + 1)
-        self.assertFalse(q >= q + 1)
-
-        self.assertFalse(q + 1 < q)
-        self.assertFalse(q + 1 <= q)
-        self.assertTrue(q + 1 > q)
-        self.assertTrue(q + 1 >= q)
 
 
 class TestModularArithmetic(BaseTestCase):
@@ -294,55 +218,3 @@ class TestOptionalFunctions(BaseTestCase):
 
         self.assertEqual(5, get_optional(flatmap_optional(good, lambda x: x + 2)))
         self.assertIsNone(flatmap_optional(bad, lambda x: x + 2))
-
-
-@dataclass
-class ElementSet:
-    """Test dataclass with ElementModP and ElementModQ"""
-
-    mod_p: ElementModP
-    mod_q: ElementModQ
-
-
-class TestSerializationDeserialization(BaseTestCase):
-    """Serialization And Deserialization tests"""
-
-    obj: ElementSet
-    expected_dict: dict
-    expected_json: str
-
-    def setUp(self):
-        super().setUp()
-        p, q = 123, 124
-        self.obj = ElementSet(mod_p=p, mod_q=q)
-        self.expected_dict = {
-            "mod_p": p,
-            "mod_q": q,
-        }
-        self.expected_json = json.dumps(self.expected_dict, indent=4)
-
-    def test_stdlib_serialization(self):
-        self.assertEqual(self.expected_dict, asdict(self.obj))
-
-    def test_stdlib_deserialization(self):
-        self.assertEqual(self.obj, ElementSet(**self.expected_dict))
-
-    def test_pydantic_serialization(self):
-        self.assertEqual(
-            self.expected_json, json.dumps(self.obj, indent=4, default=pydantic_encoder)
-        )
-
-    def test_pydantic_deserialization(self):
-        self.assertEqualAsDicts(self.obj, parse_obj_as(ElementSet, self.expected_dict))
-        self.assertEqualAsDicts(self.obj, parse_raw_as(ElementSet, self.expected_json))
-
-    # pulled from tests/integration/test_end_to_end_election.py
-    def assertEqualAsDicts(self, first: object, second: object):
-        """
-        Specialty assertEqual to compare dataclasses as dictionaries.
-
-        This is relevant specifically to using pydantic dataclasses to import.
-        Pydantic reconstructs dataclasses with name uniqueness to add their validation.
-        This creates a naming issue where the default equality check fails.
-        """
-        self.assertEqual(asdict(first), asdict(second))

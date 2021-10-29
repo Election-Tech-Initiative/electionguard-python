@@ -181,7 +181,6 @@ class BaseElement(ABC, Number):
         """
         return b16decode(self.to_hex())
 
-    # pylint: disable=no-self-use
     def is_in_bounds(self) -> bool:
         """
         Validate that the element is actually within the bounds of [0,Q).
