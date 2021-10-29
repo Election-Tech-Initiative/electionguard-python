@@ -165,10 +165,10 @@ class TestModularArithmetic(BaseTestCase):
         self.assertTrue(q.is_in_bounds_no_zero())
         self.assertFalse(ZERO_MOD_Q.is_in_bounds_no_zero())
         self.assertFalse(
-            ElementModQ(int(q) + get_large_prime(), False).is_in_bounds_no_zero()
+            ElementModQ(int(q) + get_small_prime(), False).is_in_bounds_no_zero()
         )
         self.assertFalse(
-            ElementModQ(int(q) - get_large_prime(), False).is_in_bounds_no_zero()
+            ElementModQ(int(q) - get_small_prime(), False).is_in_bounds_no_zero()
         )
 
     @given(elements_mod_p_no_zero())
