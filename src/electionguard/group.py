@@ -188,7 +188,7 @@ class BaseElement(ABC, Number):
 
         Returns true if all is good, false if something's wrong.
         """
-        return True
+        return 0 <= int(self) < self.get_upper_bound()
 
     def is_in_bounds_no_zero(self) -> bool:
         """
@@ -196,7 +196,7 @@ class BaseElement(ABC, Number):
 
         Returns true if all is good, false if something's wrong.
         """
-        return int(self) >= 1
+        return 1 <= int(self) < self.get_upper_bound()
 
     @classmethod
     def __get_validators__(cls) -> Generator[Callable[[Any], Any], None, None]:
