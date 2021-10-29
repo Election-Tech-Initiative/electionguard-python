@@ -18,7 +18,7 @@ from .tally import (
     CiphertextTally,
     PlaintextTally,
 )
-from .type import BALLOT_ID, GUARDIAN_ID, MEDIATOR_ID
+from .type import BallotId, GuardianId, MediatorId
 
 
 class DecryptionMediator:
@@ -28,24 +28,24 @@ class DecryptionMediator:
     """
 
     # pylint: disable=too-many-instance-attributes
-    id: MEDIATOR_ID
+    id: MediatorId
     _context: CiphertextElectionContext
 
     # Guardians
-    _available_guardians: Dict[GUARDIAN_ID, ElectionPublicKey]
-    _missing_guardians: Dict[GUARDIAN_ID, ElectionPublicKey]
+    _available_guardians: Dict[GuardianId, ElectionPublicKey]
+    _missing_guardians: Dict[GuardianId, ElectionPublicKey]
 
     # Decryption Shares
-    _tally_shares: Dict[GUARDIAN_ID, DecryptionShare]
-    _ballot_shares: Dict[BALLOT_ID, Dict[GUARDIAN_ID, DecryptionShare]]
+    _tally_shares: Dict[GuardianId, DecryptionShare]
+    _ballot_shares: Dict[BallotId, Dict[GuardianId, DecryptionShare]]
 
     # Compensated Shares
     _compensated_tally_shares: Dict[GuardianPair, CompensatedDecryptionShare]
     _compensated_ballot_shares: Dict[
-        BALLOT_ID, Dict[GuardianPair, CompensatedDecryptionShare]
+        BallotId, Dict[GuardianPair, CompensatedDecryptionShare]
     ]
 
-    def __init__(self, id: MEDIATOR_ID, context: CiphertextElectionContext):
+    def __init__(self, id: MediatorId, context: CiphertextElectionContext):
         """Initialize the decryption mediator."""
         self.id = id
         self._context = context
@@ -63,7 +63,7 @@ class DecryptionMediator:
         self,
         guardian_key: ElectionPublicKey,
         tally_share: DecryptionShare,
-        ballot_shares: Dict[BALLOT_ID, Optional[DecryptionShare]] = None,
+        ballot_shares: Dict[BallotId, Optional[DecryptionShare]] = None,
     ) -> None:
         """
         Announce that a Guardian is present and participating in the decryption.
@@ -109,7 +109,7 @@ class DecryptionMediator:
         """Check the guardian's collections of keys and ensure the public keys match for the guardians."""
         # Check this guardian's collection of public keys
         # for other guardians that have not announced
-        missing_guardians: Dict[GUARDIAN_ID, ElectionPublicKey] = {
+        missing_guardians: Dict[GuardianId, ElectionPublicKey] = {
             guardian_key.owner_id: guardian_key
             for guardian_key in guardian_keys
             if guardian_key.owner_id not in self._available_guardians
@@ -180,7 +180,7 @@ class DecryptionMediator:
         ] = tally_compensation_share
 
     def receive_ballot_compensation_shares(
-        self, ballot_compensation_shares: Dict[BALLOT_ID, CompensatedDecryptionShare]
+        self, ballot_compensation_shares: Dict[BallotId, CompensatedDecryptionShare]
     ) -> None:
         for ballot_id, share in ballot_compensation_shares.items():
             ballot_shares = self._compensated_ballot_shares.get(ballot_id)
@@ -191,7 +191,7 @@ class DecryptionMediator:
             ] = share
             self._compensated_ballot_shares[ballot_id] = ballot_shares
 
-    def get_lagrange_coefficients(self) -> Dict[GUARDIAN_ID, ElementModQ]:
+    def get_lagrange_coefficients(self) -> Dict[GuardianId, ElementModQ]:
         return compute_lagrange_coefficients_for_guardians(
             list(self._available_guardians.values())
         )
@@ -277,7 +277,7 @@ class DecryptionMediator:
 
     def get_plaintext_ballots(
         self, ciphertext_ballots: List[SubmittedBallot]
-    ) -> Optional[Dict[BALLOT_ID, PlaintextTally]]:
+    ) -> Optional[Dict[BallotId, PlaintextTally]]:
         """
         Get the plaintext ballots for the election by composing each Guardian's
         decrypted representation of each selection into a decrypted representation
@@ -308,15 +308,15 @@ class DecryptionMediator:
         return ballots
 
     def _save_tally_share(
-        self, guardian_id: GUARDIAN_ID, guardians_tally_share: DecryptionShare
+        self, guardian_id: GuardianId, guardians_tally_share: DecryptionShare
     ) -> None:
         """Save a guardians tally share."""
         self._tally_shares[guardian_id] = guardians_tally_share
 
     def _save_ballot_shares(
         self,
-        guardian_id: GUARDIAN_ID,
-        guardians_ballot_shares: Dict[BALLOT_ID, Optional[DecryptionShare]],
+        guardian_id: GuardianId,
+        guardians_ballot_shares: Dict[BallotId, Optional[DecryptionShare]],
     ) -> None:
         """Save a guardian's set of ballot shares."""
         for ballot_id, guardian_ballot_share in guardians_ballot_shares.items():
@@ -340,7 +340,7 @@ class DecryptionMediator:
         """"""
         self._missing_guardians[guardian_key.owner_id] = guardian_key
 
-    def _ready_to_decrypt(self, shares: Dict[GUARDIAN_ID, DecryptionShare]) -> bool:
+    def _ready_to_decrypt(self, shares: Dict[GuardianId, DecryptionShare]) -> bool:
         """Shares are ready to decrypt."""
         # If all guardian shares are represented including if necessary
         # the missing guardians reconstructed shares, the decryption can be made
@@ -348,9 +348,9 @@ class DecryptionMediator:
 
 
 def _filter_by_missing_guardian(
-    missing_guardian_id: GUARDIAN_ID,
+    missing_guardian_id: GuardianId,
     shares: Dict[GuardianPair, CompensatedDecryptionShare],
-) -> Dict[GUARDIAN_ID, CompensatedDecryptionShare]:
+) -> Dict[GuardianId, CompensatedDecryptionShare]:
     """
     Filter a guardian pair and compensated share dictionary by missing guardian.
     """

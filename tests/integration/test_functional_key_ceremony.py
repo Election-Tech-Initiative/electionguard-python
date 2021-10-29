@@ -16,7 +16,7 @@ from electionguard.key_ceremony import (
     verify_election_partial_key_backup,
     verify_election_partial_key_challenge,
 )
-from electionguard.type import GUARDIAN_ID
+from electionguard.type import GuardianId
 from electionguard_tools.helpers.identity_encrypt import identity_auxiliary_encrypt
 
 
@@ -28,8 +28,8 @@ class TestKeyCeremony(BaseTestCase):
     """
 
     # Basic Types
-    SENDER_ID = GUARDIAN_ID
-    RECEIVER_ID = GUARDIAN_ID
+    SENDER_ID = GuardianId
+    RECEIVER_ID = GuardianId
 
     # Key Ceremony Inputs
     NUMBER_OF_GUARDIANS = 5
@@ -89,7 +89,7 @@ class TestKeyCeremony(BaseTestCase):
         self._publish_joint_key()
 
     def _guardian_generates_keys(
-        self, guardian_id: GUARDIAN_ID, sequence_order: int
+        self, guardian_id: GuardianId, sequence_order: int
     ) -> None:
         """Guardian generates their keys"""
 
@@ -107,7 +107,7 @@ class TestKeyCeremony(BaseTestCase):
         self.assertIsNotNone(auxiliary_key_pair)
         self.auxiliary_key_pairs[guardian_id] = auxiliary_key_pair
 
-    def _guardian_share_keys(self, guardian_id: GUARDIAN_ID) -> None:
+    def _guardian_share_keys(self, guardian_id: GuardianId) -> None:
         """Guardian shares public keys"""
         auxiliary_key_pair = self.auxiliary_key_pairs[guardian_id]
         election_key_pair = self.election_key_pairs[guardian_id]
@@ -137,7 +137,7 @@ class TestKeyCeremony(BaseTestCase):
             backups.append(backup)
         self.sent_backups[sender_id] = backups
 
-    def _guardian_shares_backups(self, sender_id: GUARDIAN_ID) -> None:
+    def _guardian_shares_backups(self, sender_id: GuardianId) -> None:
         """Mock round robin to demonstrate sharing of backups"""
 
         backups_to_send = self.sent_backups[sender_id]
@@ -178,9 +178,7 @@ class TestKeyCeremony(BaseTestCase):
             received_verifications.append(verification)
             self.received_verifications[verification.owner_id] = received_verifications
 
-    def _guardian_checks_returned_verifications(
-        self, key_owner_id: GUARDIAN_ID
-    ) -> None:
+    def _guardian_checks_returned_verifications(self, key_owner_id: GuardianId) -> None:
         """
         Guardian checks that all backups have been
         verified sucessfully
@@ -190,7 +188,7 @@ class TestKeyCeremony(BaseTestCase):
         for verification in verifications:
             self.assertTrue(verification.verified)
 
-    def _guardian_challenges(self, guardian_ids: List[GUARDIAN_ID]):
+    def _guardian_challenges(self, guardian_ids: List[GuardianId]):
         key_owner_id = guardian_ids[0]
         original_verification = self.received_verifications[key_owner_id][0]
         failed_verification = ElectionPartialKeyVerification(

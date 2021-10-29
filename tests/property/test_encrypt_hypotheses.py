@@ -16,7 +16,7 @@ from electionguard.nonces import Nonces
 from electionguard_tools.strategies.election import (
     election_descriptions,
     elections_and_ballots,
-    ELECTIONS_AND_BALLOTS_TUPLE_TYPE,
+    ElectionsAndBallotsTupleType,
 )
 from electionguard_tools.factories.election_factory import ElectionFactory
 from electionguard_tools.strategies.group import elements_mod_q
@@ -56,7 +56,7 @@ class TestElections(BaseTestCase):
     )
     def test_accumulation_encryption_decryption(
         self,
-        everything: ELECTIONS_AND_BALLOTS_TUPLE_TYPE,
+        everything: ElectionsAndBallotsTupleType,
         nonce: ElementModQ,
     ):
         """

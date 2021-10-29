@@ -18,8 +18,8 @@ from .group import (
 )
 from .schnorr import make_schnorr_proof, SchnorrProof
 
-SECRET_COEFFICIENT = ElementModQ  # Secret coefficient of election polynomial
-PUBLIC_COMMITMENT = ElementModP  # Public commitment of election polynomial
+SecretCoefficient = ElementModQ  # Secret coefficient of election polynomial
+PublicCommitment = ElementModP  # Public commitment of election polynomial
 
 
 @dataclass
@@ -31,10 +31,10 @@ class ElectionPolynomial:
     be discovered by a quorum of n guardians corresponding to n coefficients.
     """
 
-    coefficients: List[SECRET_COEFFICIENT]
+    coefficients: List[SecretCoefficient]
     """The secret coefficients `a_ij` """
 
-    coefficient_commitments: List[PUBLIC_COMMITMENT]
+    coefficient_commitments: List[PublicCommitment]
     """The public keys `K_ij`generated from secret coefficients"""
 
     coefficient_proofs: List[SchnorrProof]
@@ -51,8 +51,8 @@ def generate_polynomial(
     :param nonce: an optional nonce parameter that may be provided (useful for testing)
     :return: Polynomial used to share election keys
     """
-    coefficients: List[SECRET_COEFFICIENT] = []
-    commitments: List[PUBLIC_COMMITMENT] = []
+    coefficients: List[SecretCoefficient] = []
+    commitments: List[PublicCommitment] = []
     proofs: List[SchnorrProof] = []
 
     for i in range(number_of_coefficients):
@@ -119,7 +119,7 @@ def compute_lagrange_coefficient(coordinate: int, *degrees: int) -> ElementModQ:
 def verify_polynomial_coordinate(
     coordinate: ElementModQ,
     exponent_modifier: int,
-    commitments: List[PUBLIC_COMMITMENT],
+    commitments: List[PublicCommitment],
 ) -> bool:
     """
     Verify a polynomial coordinate value is in fact on the polynomial's curve

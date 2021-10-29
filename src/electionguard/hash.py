@@ -48,18 +48,18 @@ class CryptoHashCheckable(Protocol):
 
 
 # All the "atomic" types that we know how to hash.
-CRYPTO_HASHABLE_T = Union[CryptoHashable, ElementModPOrQ, str, int, None]
+CryptoHashableT = Union[CryptoHashable, ElementModPOrQ, str, int, None]
 
 # "Compound" types that we know how to hash. Note that we're using Sequence, rather than List,
 # because Sequences are read-only, and thus safely covariant. All this really means is that
 # we promise never to mutate any list that you pass to hash_elems.
-CRYPTO_HASHABLE_ALL = Union[
-    TypedSequence[CRYPTO_HASHABLE_T],
-    CRYPTO_HASHABLE_T,
+CryptoHashableAll = Union[
+    TypedSequence[CryptoHashableT],
+    CryptoHashableT,
 ]
 
 
-def hash_elems(*a: CRYPTO_HASHABLE_ALL) -> ElementModQ:
+def hash_elems(*a: CryptoHashableAll) -> ElementModQ:
     """
     Given zero or more elements, calculate their cryptographic hash
     using SHA256. Allowed element types are `ElementModP`, `ElementModQ`,

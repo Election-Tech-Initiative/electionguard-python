@@ -27,7 +27,7 @@ from electionguard.guardian import Guardian
 from electionguard.key_ceremony import CeremonyDetails
 from electionguard.key_ceremony_mediator import KeyCeremonyMediator
 from electionguard.tally import tally_ballots
-from electionguard.type import GUARDIAN_ID
+from electionguard.type import GuardianId
 from electionguard.utils import get_optional
 
 import electionguard_tools.factories.ballot_factory as BallotFactory
@@ -182,7 +182,7 @@ class TestDecryptWithShares(BaseTestCase):
         print(first_selection.object_id)
 
         # precompute decryption shares for specific selection for the guardians
-        shares: Dict[GUARDIAN_ID, Tuple[ElementModP, DecryptionShare]] = {
+        shares: Dict[GuardianId, Tuple[ElementModP, DecryptionShare]] = {
             guardian.id: (
                 guardian.share_election_public_key().key,
                 compute_decryption_share(
