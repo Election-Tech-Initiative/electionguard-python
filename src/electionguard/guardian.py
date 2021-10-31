@@ -18,7 +18,7 @@ from .decryption import (
 )
 from .decryption_share import CompensatedDecryptionShare, DecryptionShare
 from .election import CiphertextElectionContext
-from .election_polynomial import PUBLIC_COMMITMENT
+from .election_polynomial import PublicCommitment
 from .elgamal import elgamal_combine_public_keys
 from .group import ElementModP, ElementModQ
 from .key_ceremony import (
@@ -40,7 +40,7 @@ from .logs import log_warning
 from .rsa import rsa_encrypt, rsa_decrypt
 from .schnorr import SchnorrProof
 from .tally import CiphertextTally
-from .type import BALLOT_ID, GUARDIAN_ID
+from .type import BallotId, GuardianId
 
 
 @dataclass
@@ -50,7 +50,7 @@ class GuardianRecord:
     for Election record used in verification processes
     """
 
-    guardian_id: GUARDIAN_ID
+    guardian_id: GuardianId
     """Unique identifier of the guardian"""
 
     sequence_order: int
@@ -64,7 +64,7 @@ class GuardianRecord:
     Guardian's election public key for encrypting election objects.
     """
 
-    election_commitments: List[PUBLIC_COMMITMENT]
+    election_commitments: List[PublicCommitment]
     """
     Commitment for each coeffficient of the guardians secret polynomial.
     First commitment is and should be identical to election_public_key.
@@ -98,7 +98,7 @@ def publish_guardian_record(election_public_key: ElectionPublicKey) -> GuardianR
 class PrivateGuardianRecord:
     """Unpublishable private record containing information per Guardian."""
 
-    guardian_id: GUARDIAN_ID
+    guardian_id: GuardianId
     """Unique identifier of the guardian"""
 
     election_keys: ElectionKeyPair
@@ -107,20 +107,20 @@ class PrivateGuardianRecord:
     auxiliary_keys: AuxiliaryKeyPair
     """Private auxiliary key pair of this guardian"""
 
-    backups_to_share: Dict[GUARDIAN_ID, ElectionPartialKeyBackup]
+    backups_to_share: Dict[GuardianId, ElectionPartialKeyBackup]
     """This guardian's partial key backups that will be shared to other guardians"""
 
-    guardian_auxiliary_public_keys: Dict[GUARDIAN_ID, AuxiliaryPublicKey]
+    guardian_auxiliary_public_keys: Dict[GuardianId, AuxiliaryPublicKey]
     """Received auxiliary public keys that are shared with this guardian"""
 
-    guardian_election_public_keys: Dict[GUARDIAN_ID, ElectionPublicKey]
+    guardian_election_public_keys: Dict[GuardianId, ElectionPublicKey]
     """Received election public keys that are shared with this guardian"""
 
-    guardian_election_partial_key_backups: Dict[GUARDIAN_ID, ElectionPartialKeyBackup]
+    guardian_election_partial_key_backups: Dict[GuardianId, ElectionPartialKeyBackup]
     """Received partial key backups that are shared with this guardian"""
 
     guardian_election_partial_key_verifications: Dict[
-        GUARDIAN_ID, ElectionPartialKeyVerification
+        GuardianId, ElectionPartialKeyVerification
     ]
     """Verifications of other guardian's backups"""
 
@@ -141,29 +141,29 @@ class Guardian:
     _auxiliary_keys: AuxiliaryKeyPair
     _election_keys: ElectionKeyPair
 
-    _backups_to_share: Dict[GUARDIAN_ID, ElectionPartialKeyBackup]
+    _backups_to_share: Dict[GuardianId, ElectionPartialKeyBackup]
     """
     The collection of this guardian's partial key backups that will be shared to other guardians
     """
 
     # From Other Guardians
-    _guardian_auxiliary_public_keys: Dict[GUARDIAN_ID, AuxiliaryPublicKey]
+    _guardian_auxiliary_public_keys: Dict[GuardianId, AuxiliaryPublicKey]
     """
     The collection of other guardians' auxiliary public keys that are shared with this guardian
     """
 
-    _guardian_election_public_keys: Dict[GUARDIAN_ID, ElectionPublicKey]
+    _guardian_election_public_keys: Dict[GuardianId, ElectionPublicKey]
     """
     The collection of other guardians' election public keys that are shared with this guardian
     """
 
-    _guardian_election_partial_key_backups: Dict[GUARDIAN_ID, ElectionPartialKeyBackup]
+    _guardian_election_partial_key_backups: Dict[GuardianId, ElectionPartialKeyBackup]
     """
     The collection of other guardians' partial key backups that are shared with this guardian
     """
 
     _guardian_election_partial_key_verifications: Dict[
-        GUARDIAN_ID, ElectionPartialKeyVerification
+        GuardianId, ElectionPartialKeyVerification
     ]
     """
     The collection of other guardians' verifications that they shared their backups correctly
@@ -276,7 +276,7 @@ class Guardian:
     def generate_auxiliary_key_pair(
         self,
         generate_auxiliary_key_pair: Callable[
-            [GUARDIAN_ID, int], AuxiliaryKeyPair
+            [GuardianId, int], AuxiliaryKeyPair
         ] = generate_rsa_auxiliary_key_pair,
     ) -> None:
         """
@@ -376,7 +376,7 @@ class Guardian:
 
     # Election Partial Key Backup
     def share_election_partial_key_backup(
-        self, designated_id: GUARDIAN_ID
+        self, designated_id: GuardianId
     ) -> Optional[ElectionPartialKeyBackup]:
         """
         Share election partial key backup with another guardian.
@@ -418,7 +418,7 @@ class Guardian:
     # Verification
     def verify_election_partial_key_backup(
         self,
-        guardian_id: GUARDIAN_ID,
+        guardian_id: GuardianId,
         decrypt: AuxiliaryDecrypt = rsa_decrypt,
     ) -> Optional[ElectionPartialKeyVerification]:
         """
@@ -437,7 +437,7 @@ class Guardian:
         )
 
     def publish_election_backup_challenge(
-        self, guardian_id: GUARDIAN_ID
+        self, guardian_id: GuardianId
     ) -> Optional[ElectionPartialKeyChallenge]:
         """
         Publish election backup challenge of election partial key verification.
@@ -508,7 +508,7 @@ class Guardian:
         return elgamal_combine_public_keys(public_keys)
 
     def share_other_guardian_key(
-        self, guardian_id: GUARDIAN_ID
+        self, guardian_id: GuardianId
     ) -> Optional[ElectionPublicKey]:
         """Share other guardians keys shared during key ceremony"""
         return self._guardian_election_public_keys.get(guardian_id)
@@ -531,7 +531,7 @@ class Guardian:
 
     def compute_ballot_shares(
         self, ballots: List[SubmittedBallot], context: CiphertextElectionContext
-    ) -> Dict[BALLOT_ID, Optional[DecryptionShare]]:
+    ) -> Dict[BallotId, Optional[DecryptionShare]]:
         """
         Compute the decryption shares of ballots.
 
@@ -551,7 +551,7 @@ class Guardian:
 
     def compute_compensated_tally_share(
         self,
-        missing_guardian_id: GUARDIAN_ID,
+        missing_guardian_id: GuardianId,
         tally: CiphertextTally,
         context: CiphertextElectionContext,
         decrypt: AuxiliaryDecrypt = rsa_decrypt,
@@ -586,11 +586,11 @@ class Guardian:
 
     def compute_compensated_ballot_shares(
         self,
-        missing_guardian_id: GUARDIAN_ID,
+        missing_guardian_id: GuardianId,
         ballots: List[SubmittedBallot],
         context: CiphertextElectionContext,
         decrypt: AuxiliaryDecrypt = rsa_decrypt,
-    ) -> Dict[BALLOT_ID, Optional[CompensatedDecryptionShare]]:
+    ) -> Dict[BallotId, Optional[CompensatedDecryptionShare]]:
         """
         Compute the compensated decryption share of each ballots for a missing guardian.
 
@@ -600,7 +600,7 @@ class Guardian:
         :param decrypt: Auxiliary decrypt method
         :return: Compensated decryption shares of ballots or None if failure
         """
-        shares: Dict[BALLOT_ID, Optional[CompensatedDecryptionShare]] = {
+        shares: Dict[BallotId, Optional[CompensatedDecryptionShare]] = {
             ballot.object_id: None for ballot in ballots
         }
         # Ensure missing guardian information available
@@ -631,8 +631,8 @@ _SHARE = TypeVar("_SHARE")
 
 
 def get_valid_ballot_shares(
-    ballot_shares: Dict[BALLOT_ID, Optional[_SHARE]]
-) -> Dict[BALLOT_ID, _SHARE]:
+    ballot_shares: Dict[BallotId, Optional[_SHARE]]
+) -> Dict[BallotId, _SHARE]:
     """Get valid ballot shares."""
     filtered_shares = {}
     for ballot_id, ballot_share in ballot_shares.items():

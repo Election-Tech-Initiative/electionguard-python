@@ -214,3 +214,16 @@ release-zip-ci:
 	mv dist electionguard
 	mv dependency-graph.svg electionguard
 	zip -r electionguard.zip electionguard
+
+release-notes:
+	@echo 📝 GENERATE RELEASE NOTES
+	export MILESTONE_NUM=$(cat $GITHUB_EVENT_PATH | jq '.milestone.number')
+	export MILESTONE_URL=$(cat $GITHUB_EVENT_PATH | jq '.milestone.url')
+	export MILESTONE_TITLE=$(cat $GITHUB_EVENT_PATH | jq '.milestone.title')
+	export MILESTONE_DESCRIPTION=$(cat $GITHUB_EVENT_PATH | jq '.milestone.description')
+	touch release_notes.md
+	echo "# $MILESTONE_TITLE" >> release_notes.md
+	echo "$MILESTONE_DESCRIPTION" >> release_notes.md
+	echo -en "\n" >> release_notes.md
+	echo "## Issues" >> release_notes.md
+	curl "${GITHUB_API_URL}/${GITHUB_REPOSITORY}/issues?milestone=${MILESTONE_NUM}&state=all" | jq '.[].title' | while read i; do echo "[$i]($MILESTONE_URL)" >> release_notes.md; done

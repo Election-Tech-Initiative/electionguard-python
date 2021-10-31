@@ -9,7 +9,7 @@ from electionguard.key_ceremony import ElectionPublicKey
 from electionguard.manifest import (
     Manifest,
 )
-from electionguard.type import GUARDIAN_ID
+from electionguard.type import GuardianId
 from electionguard.tally import PlaintextTally
 
 
@@ -48,7 +48,7 @@ def verify_ballot(
 
 def verify_decryption(
     tally: PlaintextTally,
-    election_public_keys: Dict[GUARDIAN_ID, ElectionPublicKey],
+    election_public_keys: Dict[GuardianId, ElectionPublicKey],
     context: CiphertextElectionContext,
 ) -> Verification:
     for _, contest in tally.contests.items():
