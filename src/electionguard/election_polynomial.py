@@ -21,6 +21,7 @@ from .schnorr import make_schnorr_proof, SchnorrProof
 SECRET_COEFFICIENT = ElementModQ  # Secret coefficient of election polynomial
 PUBLIC_COMMITMENT = ElementModP  # Public commitment of election polynomial
 
+
 @dataclass
 class Coefficient:
     """
@@ -35,6 +36,7 @@ class Coefficient:
 
     proof: SchnorrProof
     """A proof of possession of the private key for the secret coefficient"""
+
 
 @dataclass
 class ElectionPolynomial:
@@ -56,6 +58,7 @@ class ElectionPolynomial:
         """Access the list of proof of possesion of the private key for the secret coefficient"""
         return [coefficient.proof for coefficient in self.coefficients]
 
+
 def generate_polynomial(
     number_of_coefficients: int, nonce: ElementModQ = None
 ) -> ElectionPolynomial:
@@ -75,7 +78,7 @@ def generate_polynomial(
         commitment = g_pow_p(value)
         proof = make_schnorr_proof(
             ElGamalKeyPair(value, commitment), rand_q()
-        ) # TODO Alternate schnoor proof method that doesn't need KeyPair
+        )  # TODO Alternate schnoor proof method that doesn't need KeyPair
         coefficient = Coefficient(value, commitment, proof)
         coefficients.append(coefficient)
     return ElectionPolynomial(coefficients)
