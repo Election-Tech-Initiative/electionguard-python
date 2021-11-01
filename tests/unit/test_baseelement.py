@@ -42,9 +42,6 @@ class TestElementModQ(BaseTestCase):
         with self.assertRaises(OverflowError):
             _ = 1 + ElementModQ(max_q)
 
-        with self.assertRaises(OverflowError):
-            _ = ONE_MOD_Q + ElementModQ(max_q)
-
     def test_sub_rsub(self):
         self.assertEqual(TWO_MOD_Q - 1, ONE_MOD_Q)
         self.assertEqual(2 - ONE_MOD_Q, ONE_MOD_Q)
@@ -58,9 +55,6 @@ class TestElementModQ(BaseTestCase):
 
         with self.assertRaises(OverflowError):
             _ = 0 - ONE_MOD_Q
-
-        with self.assertRaises(OverflowError):
-            _ = ZERO_MOD_Q - ONE_MOD_Q
 
     def test_mul_rmul(self):
         self.assertEqual(TWO_MOD_Q * 1, TWO_MOD_Q)
@@ -126,9 +120,6 @@ class TestElementModP(BaseTestCase):
         with self.assertRaises(OverflowError):
             _ = 1 + ElementModP(max_p)
 
-        with self.assertRaises(OverflowError):
-            _ = ONE_MOD_P + ElementModP(max_p)
-
     def test_sub_rsub(self):
         self.assertEqual(TWO_MOD_P - 1, ONE_MOD_P)
         self.assertEqual(2 - ONE_MOD_P, ONE_MOD_P)
@@ -142,9 +133,6 @@ class TestElementModP(BaseTestCase):
 
         with self.assertRaises(OverflowError):
             _ = 0 - ONE_MOD_P
-
-        with self.assertRaises(OverflowError):
-            _ = ZERO_MOD_P - ONE_MOD_P
 
     def test_mul_rmul(self):
         self.assertEqual(TWO_MOD_P * 1, TWO_MOD_P)
