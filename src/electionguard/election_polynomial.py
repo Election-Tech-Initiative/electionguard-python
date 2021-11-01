@@ -18,8 +18,8 @@ from .group import (
 )
 from .schnorr import make_schnorr_proof, SchnorrProof
 
-SecretCoefficient = ElementModQ  # Secret coefficient of election polynomial
-PublicCommitment = ElementModP  # Public commitment of election polynomial
+SECRET_COEFFICIENT = ElementModQ  # Secret coefficient of election polynomial
+PUBLIC_COMMITMENT = ElementModP  # Public commitment of election polynomial
 
 
 @dataclass
