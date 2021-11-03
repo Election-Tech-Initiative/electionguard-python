@@ -185,8 +185,8 @@ from electionguard.election_object_base import (
     sequence_order_sort,
 )
 from electionguard.election_polynomial import (
-    ElectionPolynomial,
     Coefficient,
+    ElectionPolynomial,
     LagrangeCoefficientsRecord,
     PublicCommitment,
     SecretCoefficient,
@@ -410,6 +410,7 @@ __all__ = [
     "CiphertextTally",
     "CiphertextTallyContest",
     "CiphertextTallySelection",
+    "Coefficient",
     "CompactPlaintextBallot",
     "CompactSubmittedBallot",
     "CompensatedDecryptionShare",
@@ -443,7 +444,6 @@ __all__ = [
     "ElectionPartialKeyBackup",
     "ElectionPartialKeyChallenge",
     "ElectionPartialKeyVerification",
-    "Coefficient",
     "ElectionPolynomial",
     "ElectionPublicKey",
     "ElectionType",

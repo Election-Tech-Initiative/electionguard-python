@@ -18,8 +18,8 @@ from .group import (
 )
 from .schnorr import make_schnorr_proof, SchnorrProof
 
-SECRET_COEFFICIENT = ElementModQ  # Secret coefficient of election polynomial
-PUBLIC_COMMITMENT = ElementModP  # Public commitment of election polynomial
+SecretCoefficient = ElementModQ  # Secret coefficient of election polynomial
+PublicCommitment = ElementModP  # Public commitment of election polynomial
 
 
 @dataclass
@@ -28,10 +28,10 @@ class Coefficient:
     A set of coefficients that define an Election Polynomal
     """
 
-    value: SECRET_COEFFICIENT
+    value: SecretCoefficient
     """The secret coefficient `a_ij` """
 
-    commitment: PUBLIC_COMMITMENT
+    commitment: PublicCommitment
     """The public key `K_ij` generated from secret coefficient"""
 
     proof: SchnorrProof
@@ -50,7 +50,7 @@ class ElectionPolynomial:
     coefficients: List[Coefficient]
     """List of coefficient value, commitments and proofs"""
 
-    def get_commitments(self) -> List[PUBLIC_COMMITMENT]:
+    def get_commitments(self) -> List[PublicCommitment]:
         """Access the list of public keys generated from secret coefficient"""
         return [coefficient.commitment for coefficient in self.coefficients]
 
@@ -70,7 +70,6 @@ def generate_polynomial(
     :return: Polynomial used to share election keys
     """
     coefficients: List[Coefficient] = []
-
 
     for i in range(number_of_coefficients):
         # Note: the nonce value is not safe. it is designed for testing only.
