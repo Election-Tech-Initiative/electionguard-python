@@ -25,7 +25,7 @@ PublicCommitment = ElementModP  # Public commitment of election polynomial
 @dataclass
 class Coefficient:
     """
-    A set of coefficients that define an Election Polynomal
+    A coefficient of an Election Polynomial
     """
 
     value: SecretCoefficient
