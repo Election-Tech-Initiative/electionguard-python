@@ -50,12 +50,10 @@ class TestKeyCeremony(BaseTestCase):
         self.assertIsNotNone(election_key_pair.key_pair.public_key)
         self.assertIsNotNone(election_key_pair.key_pair.secret_key)
         self.assertIsNotNone(election_key_pair.polynomial)
-        self.assertEqual(
-            len(election_key_pair.polynomial.coefficient_commitments), QUORUM
-        )
-        self.assertEqual(len(election_key_pair.polynomial.coefficient_proofs), QUORUM)
-        for proof in election_key_pair.polynomial.coefficient_proofs:
-            self.assertTrue(proof.is_valid())
+
+        self.assertEqual(len(election_key_pair.polynomial.coefficients), QUORUM)
+        for coefficient in election_key_pair.polynomial.coefficients:
+            self.assertTrue(coefficient.proof.is_valid())
 
     def test_generate_election_partial_key_backup(self):
         # Arrange

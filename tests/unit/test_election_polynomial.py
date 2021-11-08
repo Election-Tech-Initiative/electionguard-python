@@ -1,6 +1,9 @@
 from tests.base_test_case import BaseTestCase
-
+from electionguard.schnorr import make_schnorr_proof
+from electionguard.elgamal import ElGamalKeyPair
+from electionguard.group import rand_q
 from electionguard.election_polynomial import (
+    Coefficient,
     compute_polynomial_coordinate,
     ElectionPolynomial,
     generate_polynomial,
@@ -24,13 +27,17 @@ class TestElectionPolynomial(BaseTestCase):
         self.assertIsNotNone(polynomial)
 
     def test_compute_polynomial_coordinate(self):
+        # create proofs
+        proof_one = make_schnorr_proof(ElGamalKeyPair(ONE_MOD_Q, ONE_MOD_P), rand_q())
+        proof_two = make_schnorr_proof(ElGamalKeyPair(TWO_MOD_Q, TWO_MOD_P), rand_q())
+
         # Arrange
         polynomial = ElectionPolynomial(
-            [ONE_MOD_Q, TWO_MOD_Q],
-            [ONE_MOD_P, TWO_MOD_P],
-            [],
+            [
+                Coefficient(ONE_MOD_Q, ONE_MOD_P, proof_one),
+                Coefficient(TWO_MOD_Q, TWO_MOD_P, proof_two),
+            ]
         )
-
         # Act
         value = compute_polynomial_coordinate(TEST_EXPONENT_MODIFIER, polynomial)
 
@@ -47,6 +54,6 @@ class TestElectionPolynomial(BaseTestCase):
         # Assert
         self.assertTrue(
             verify_polynomial_coordinate(
-                value, TEST_EXPONENT_MODIFIER, polynomial.coefficient_commitments
+                value, TEST_EXPONENT_MODIFIER, polynomial.get_commitments()
             )
         )

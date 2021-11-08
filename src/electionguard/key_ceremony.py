@@ -91,8 +91,8 @@ class ElectionKeyPair:
             self.owner_id,
             self.sequence_order,
             self.key_pair.public_key,
-            self.polynomial.coefficient_commitments,
-            self.polynomial.coefficient_proofs,
+            self.polynomial.get_commitments(),
+            self.polynomial.get_proofs(),
         )
 
 
@@ -217,7 +217,7 @@ def generate_election_key_pair(
     """
     polynomial = generate_polynomial(quorum, nonce)
     key_pair = ElGamalKeyPair(
-        polynomial.coefficients[0], polynomial.coefficient_commitments[0]
+        polynomial.coefficients[0].value, polynomial.coefficients[0].commitment
     )
     return ElectionKeyPair(guardian_id, sequence_order, key_pair, polynomial)
 
@@ -301,8 +301,8 @@ def generate_election_partial_key_challenge(
         backup.designated_id,
         backup.designated_sequence_order,
         compute_polynomial_coordinate(backup.designated_sequence_order, polynomial),
-        polynomial.coefficient_commitments,
-        polynomial.coefficient_proofs,
+        polynomial.get_commitments(),
+        polynomial.get_proofs(),
     )
 
 

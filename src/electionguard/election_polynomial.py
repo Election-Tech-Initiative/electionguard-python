@@ -23,6 +23,22 @@ PublicCommitment = ElementModP  # Public commitment of election polynomial
 
 
 @dataclass
+class Coefficient:
+    """
+    A coefficient of an Election Polynomial
+    """
+
+    value: SecretCoefficient
+    """The secret coefficient `a_ij` """
+
+    commitment: PublicCommitment
+    """The public key `K_ij` generated from secret coefficient"""
+
+    proof: SchnorrProof
+    """A proof of possession of the private key for the secret coefficient"""
+
+
+@dataclass
 class ElectionPolynomial:
     """
     A polynomial defined by coefficients
@@ -31,14 +47,16 @@ class ElectionPolynomial:
     be discovered by a quorum of n guardians corresponding to n coefficients.
     """
 
-    coefficients: List[SecretCoefficient]
-    """The secret coefficients `a_ij` """
+    coefficients: List[Coefficient]
+    """List of coefficient value, commitments and proofs"""
 
-    coefficient_commitments: List[PublicCommitment]
-    """The public keys `K_ij`generated from secret coefficients"""
+    def get_commitments(self) -> List[PublicCommitment]:
+        """Access the list of public keys generated from secret coefficient"""
+        return [coefficient.commitment for coefficient in self.coefficients]
 
-    coefficient_proofs: List[SchnorrProof]
-    """A proof of posession of the private key for each secret coefficient"""
+    def get_proofs(self) -> List[SchnorrProof]:
+        """Access the list of proof of possesion of the private key for the secret coefficient"""
+        return [coefficient.proof for coefficient in self.coefficients]
 
 
 def generate_polynomial(
@@ -51,23 +69,19 @@ def generate_polynomial(
     :param nonce: an optional nonce parameter that may be provided (useful for testing)
     :return: Polynomial used to share election keys
     """
-    coefficients: List[SecretCoefficient] = []
-    commitments: List[PublicCommitment] = []
-    proofs: List[SchnorrProof] = []
+    coefficients: List[Coefficient] = []
 
     for i in range(number_of_coefficients):
-        # Note: the nonce value is not safe.  it is designed for testing only.
+        # Note: the nonce value is not safe. it is designed for testing only.
         # this method should be called without the nonce in production.
-        coefficient = add_q(nonce, i) if nonce is not None else rand_q()
-        commitment = g_pow_p(coefficient)
+        value = add_q(nonce, i) if nonce is not None else rand_q()
+        commitment = g_pow_p(value)
         proof = make_schnorr_proof(
-            ElGamalKeyPair(coefficient, commitment), rand_q()
+            ElGamalKeyPair(value, commitment), rand_q()
         )  # TODO Alternate schnoor proof method that doesn't need KeyPair
-
+        coefficient = Coefficient(value, commitment, proof)
         coefficients.append(coefficient)
-        commitments.append(commitment)
-        proofs.append(proof)
-    return ElectionPolynomial(coefficients, commitments, proofs)
+    return ElectionPolynomial(coefficients)
 
 
 def compute_polynomial_coordinate(
@@ -86,7 +100,7 @@ def compute_polynomial_coordinate(
     computed_value = ZERO_MOD_Q
     for (i, coefficient) in enumerate(polynomial.coefficients):
         exponent = pow_q(exponent_modifier, i)
-        factor = mult_q(coefficient, exponent)
+        factor = mult_q(coefficient.value, exponent)
         computed_value = add_q(computed_value, factor)
     return computed_value
 
