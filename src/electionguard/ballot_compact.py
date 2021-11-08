@@ -9,7 +9,7 @@ from .ballot import (
     PlaintextBallot,
     PlaintextBallotContest,
     PlaintextBallotSelection,
-    create_ballot_hash,
+    make_ciphertext_submitted_ballot,
 )
 from .ballot_box import BallotBoxState
 from .election import CiphertextElectionContext
@@ -97,11 +97,8 @@ def expand_compact_submitted_ballot(
             plaintext_ballot, internal_manifest, context, nonce_seed
         )
     )
-    crypto_hash = create_ballot_hash(
-        plaintext_ballot.object_id, internal_manifest.manifest_hash, contests
-    )
 
-    return SubmittedBallot(
+    return make_ciphertext_submitted_ballot(
         plaintext_ballot.object_id,
         plaintext_ballot.style_id,
         internal_manifest.manifest_hash,
@@ -109,8 +106,6 @@ def expand_compact_submitted_ballot(
         contests,
         compact_ballot.code,
         compact_ballot.timestamp,
-        crypto_hash,
-        compact_ballot.ballot_nonce,
         compact_ballot.ballot_box_state,
     )
 
