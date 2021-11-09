@@ -4,7 +4,6 @@ from hypothesis import given
 from hypothesis.strategies import integers
 
 from tests.base_test_case import BaseTestCase
-from tests.property.test_group import elements_mod_q_no_zero
 
 from electionguard.constants import (
     get_generator,
@@ -32,6 +31,7 @@ from electionguard.nonces import Nonces
 from electionguard.scheduler import Scheduler
 from electionguard.utils import get_optional
 from electionguard_tools.strategies.elgamal import elgamal_keypairs
+from electionguard_tools.strategies.group import elements_mod_q_no_zero
 
 
 class TestElGamal(BaseTestCase):
