@@ -1,12 +1,6 @@
 from hypothesis import given, assume
 
 from tests.base_test_case import BaseTestCase
-from tests.property.test_elgamal import elgamal_keypairs
-from tests.property.test_group import (
-    elements_mod_q,
-    elements_mod_p_no_zero,
-    elements_mod_p,
-)
 
 from electionguard.constants import get_large_prime
 from electionguard.elgamal import ElGamalKeyPair, elgamal_keypair_from_secret
@@ -22,6 +16,12 @@ from electionguard.schnorr import (
     SchnorrProof,
 )
 from electionguard.utils import get_optional
+from electionguard_tools.strategies.elgamal import elgamal_keypairs
+from electionguard_tools.strategies.group import (
+    elements_mod_q,
+    elements_mod_p_no_zero,
+    elements_mod_p,
+)
 
 
 class TestSchnorr(BaseTestCase):
