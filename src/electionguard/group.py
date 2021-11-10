@@ -7,10 +7,9 @@ made about timing or other side-channels.
 
 from __future__ import annotations
 
-from abc import ABC
-from typing import Any, Callable, Final, Generator, Optional, Union
+from functools import wraps
+from typing import Any, Callable, Final, Optional, Union
 from base64 import b16decode
-from numbers import Number
 from secrets import randbelow
 from sys import maxsize
 
@@ -20,10 +19,58 @@ from gmpy2 import mpz, powmod, invert
 from .constants import get_large_prime, get_small_prime, get_generator
 
 
-class BaseElement(ABC, Number):
-    """An element limited by mod T within [0, T) where T is determined by an upper_bound function."""
+class BaseElementMeta(type):
+    """Metaclass to cast return type of int functions to subclass type"""
 
-    value: int = 0
+    def __new__(cls, name: str, bases: tuple, attrs: dict) -> BaseElementMeta:
+        obj = super().__new__(cls, name, bases, attrs)
+
+        for k, v in int.__dict__.items():
+            # do not override base existing (__hash__, __new__, __doc__, etc)
+            if k in attrs:
+                continue
+
+            # do not override functions meant to return `int`/`float`
+            if k in ["__int__", "__float__"]:
+                continue
+
+            # do not override, manually overriden methods
+            if k in ["__eq__", "__ne__", "__hash__"]:
+                continue
+
+            # override the return types to return subclass type
+            if getattr(v, "__objclass__", None) is int:
+                setattr(obj, k, obj.cast_as_subclass(v))
+
+        return obj
+
+    def cast_as_subclass(cls, obj: Any) -> Callable:
+        def convert(value: Any) -> Any:
+            if value.__class__ is int:
+                return cls(value)
+
+            if value.__class__ is float:
+                if value == int(value):
+                    return cls(int(value))
+
+                raise TypeError(f"{cls.__name__} does not support float values.")
+
+            if value is NotImplemented:
+                raise TypeError(
+                    f"{cls.__name__} only interacts with int, ElementModP, or ElementModQ"
+                )
+
+            return value
+
+        @wraps(obj)
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
+            return convert(obj(*args, **kwargs))
+
+        return wrapper
+
+
+class BaseElement(int, metaclass=BaseElementMeta):
+    """An element limited by mod T within [0, T) where T is determined by an upper_bound function."""
 
     def __new__(cls, elem: Union[int, str], check_within_bounds: bool = True):  # type: ignore
         """Instantiate ElementModT where elem is an int or its hex representation or mpz."""
@@ -33,120 +80,7 @@ class BaseElement(ABC, Number):
             if not 0 <= elem < cls.get_upper_bound():
                 raise OverflowError(elem, cls.get_upper_bound())
 
-        self = super(BaseElement, cls).__new__(cls)
-        self.value = int(elem)
-
-        return self
-
-    def __getnewargs__(self) -> tuple:
-        return (BaseElement.__int__(self),)
-
-    def __int__(self) -> int:
-        return self.value
-
-    def __repr__(self) -> str:
-        return f"{int(self)}"
-
-    def __add__(self, other: Any) -> BaseElement:
-        """a + b"""
-        if isinstance(other, (self.__class__, int)):
-            return self.__class__(int(self) + int(other))
-
-        return NotImplemented
-
-    def __radd__(self, other: Any) -> BaseElement:
-        """a + b"""
-        if isinstance(other, (self.__class__, int)):
-            return self.__class__(int(other) + int(self))
-
-        return NotImplemented
-
-    def __sub__(self, other: Any) -> BaseElement:
-        """a - b"""
-        if isinstance(other, (self.__class__, int)):
-            return self.__class__(int(self) - int(other))
-
-        return NotImplemented
-
-    def __rsub__(self, other: Any) -> BaseElement:
-        """a - b"""
-        if isinstance(other, (self.__class__, int)):
-            return self.__class__(int(other) - int(self))
-
-        return NotImplemented
-
-    def __mul__(self, other: Any) -> BaseElement:
-        """a * b"""
-        if isinstance(other, (self.__class__, int)):
-            return self.__class__(int(self) * int(other))
-
-        return NotImplemented
-
-    def __rmul__(self, other: Any) -> BaseElement:
-        """a * b"""
-        if isinstance(other, (self.__class__, int)):
-            return self.__class__(int(other) * int(self))
-
-        return NotImplemented
-
-    def __truediv__(self, other: Any) -> BaseElement:
-        """a / b"""
-        if isinstance(other, (self.__class__, int)):
-            return self.__class__(int(self) // int(other))
-
-        return NotImplemented
-
-    def __rtruediv__(self, other: Any) -> BaseElement:
-        """a / b"""
-        if isinstance(other, (self.__class__, int)):
-            return self.__class__(int(other) // int(self))
-
-        return NotImplemented
-
-    def __pow__(self, other: Any, modulo: int = None) -> BaseElement:
-        """a ** b"""
-        if isinstance(other, (BaseElement, int)):
-            if modulo:
-                return self.__class__((int(self) ** int(other)) % modulo)
-
-            return self.__class__(int(self) ** int(other))
-
-        return NotImplemented
-
-    def __rpow__(self, other: Any) -> BaseElement:
-        """a ** b"""
-        if isinstance(other, (self.__class__, int)):
-            return self.__class__(int(other) ** int(self))
-
-        return NotImplemented
-
-    def __lt__(self, other: Any) -> bool:
-        """a < b"""
-        if isinstance(other, (self.__class__, int)):
-            return int(self) < int(other)
-
-        return NotImplemented
-
-    def __le__(self, other: Any) -> bool:
-        """a <= b"""
-        if isinstance(other, (self.__class__, int)):
-            return int(self) <= int(other)
-
-        return NotImplemented
-
-    def __gt__(self, other: Any) -> bool:
-        """a > b"""
-        if isinstance(other, (self.__class__, int)):
-            return int(self) > int(other)
-
-        return NotImplemented
-
-    def __ge__(self, other: Any) -> bool:
-        """a >= b"""
-        if isinstance(other, (self.__class__, int)):
-            return int(self) >= int(other)
-
-        return NotImplemented
+        return super().__new__(cls, elem)
 
     def __ne__(self, other: Any) -> bool:
         """Overload != (not equal to) operator."""
@@ -197,16 +131,6 @@ class BaseElement(ABC, Number):
         """
         return 1 <= int(self) < self.get_upper_bound()
 
-    @classmethod
-    def __get_validators__(cls) -> Generator[Callable[[Any], Any], None, None]:
-        yield cls.validate
-
-    @classmethod
-    def validate(cls, v: Any) -> BaseElement:
-        if not isinstance(v, (cls, int)):
-            raise TypeError("Invalid value")
-        return cls(int(v))
-
 
 class ElementModQ(BaseElement):
     """An element of the smaller `mod q` space, i.e., in [0, Q), where Q is a 256-bit prime."""
@@ -248,8 +172,6 @@ ElementModPorInt = Union[ElementModP, int]
 
 def _get_mpz(input: Union[BaseElement, int]) -> mpz:
     """Get BaseElement or integer as mpz."""
-    if isinstance(input, BaseElement):
-        return mpz(int(input))
     return mpz(input)
 
 

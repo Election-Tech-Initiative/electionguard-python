@@ -219,6 +219,7 @@ from electionguard.encrypt import (
 )
 from electionguard.group import (
     BaseElement,
+    BaseElementMeta,
     ElementModP,
     ElementModPOrQ,
     ElementModPOrQorInt,
@@ -393,6 +394,7 @@ __all__ = [
     "BallotId",
     "BallotStyle",
     "BaseElement",
+    "BaseElementMeta",
     "Candidate",
     "CandidateContestDescription",
     "CeremonyDetails",

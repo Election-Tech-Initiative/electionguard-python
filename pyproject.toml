@@ -92,11 +92,6 @@ disable = '''
 branch = true
 source = ["src/electionguard"]
 
-[tool.coverage.report]
-exclude_lines = [
-    "return NotImplemented",
-    ]
-
 [tool.coverage.html]
 directory = "coverage_html_report"
 
