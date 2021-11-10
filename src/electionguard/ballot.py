@@ -850,7 +850,7 @@ class SubmittedBallot(CiphertextBallot):
     def __eq__(self, other: Any) -> bool:
         return (
             isinstance(other, SubmittedBallot)
-            and super.__eq__(self, other)
+            and super().__eq__(other)
             and self.state == other.state
         )
 
