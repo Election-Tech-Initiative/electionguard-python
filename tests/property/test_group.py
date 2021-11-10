@@ -47,12 +47,16 @@ class TestEquality(BaseTestCase):
 
     @given(elements_mod_q(), elements_mod_q())
     def test_p_not_equal_to_q(self, q: ElementModQ, q2: ElementModQ):
+        i = int(q)
+        i2 = int(q2)
         p = ElementModP(q)
         p2 = ElementModP(q2)
 
         # same value should imply they're equal
         self.assertEqual(p, q)
         self.assertEqual(q, p)
+        self.assertEqual(p, i)
+        self.assertEqual(q, i)
 
         if q != q2:
             # these are genuinely different numbers
@@ -60,6 +64,10 @@ class TestEquality(BaseTestCase):
             self.assertNotEqual(p, p2)
             self.assertNotEqual(q, p2)
             self.assertNotEqual(p, q2)
+            self.assertNotEqual(q, i2)
+            self.assertNotEqual(p, i2)
+            self.assertNotEqual(q2, i)
+            self.assertNotEqual(p2, i)
 
         # of course, we're going to make sure that a number is equal to itself
         self.assertEqual(p, p)

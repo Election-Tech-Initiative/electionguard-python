@@ -31,7 +31,7 @@ class BaseElement(ABC, int):
 
     def __ne__(self, other: Any) -> bool:
         """Overload != (not equal to) operator."""
-        return isinstance(other, (BaseElement, int)) and not int(self) != other
+        return not self == other
 
     def __eq__(self, other: Any) -> bool:
         """Overload == (equal to) operator."""
