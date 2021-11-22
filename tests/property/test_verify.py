@@ -1,17 +1,19 @@
 # pylint: disable=protected-access
 from datetime import timedelta
 from typing import Dict
-from hypothesis import HealthCheck, Phase
-from hypothesis import given, settings
+from hypothesis import given, HealthCheck, settings, Phase
+from hypothesis.strategies import integers
+
 from tests.base_test_case import BaseTestCase
 
+from electionguard.ballot import BallotBoxState, from_ciphertext_ballot
 from electionguard.data_store import DataStore
 from electionguard.decryption import compute_decryption_share
 from electionguard.decryption_share import DecryptionShare
 from electionguard.decrypt_with_shares import decrypt_tally
 from electionguard.election_builder import ElectionBuilder
 from electionguard.elgamal import ElGamalKeyPair
-from electionguard.encrypt import EncryptionMediator
+from electionguard.encrypt import EncryptionMediator, encrypt_ballot
 from electionguard.key_ceremony import CeremonyDetails
 from electionguard.key_ceremony_mediator import KeyCeremonyMediator
 from electionguard.tally import tally_ballots
@@ -21,10 +23,15 @@ from electionguard.utils import get_optional
 from electionguard_verify.verify import (
     verify_ballot,
     verify_decryption,
+    verify_aggregation,
 )
 
 import electionguard_tools.factories.ballot_factory as BallotFactory
 import electionguard_tools.factories.election_factory as ElectionFactory
+from electionguard_tools.strategies.election import (
+    elections_and_ballots,
+    ElectionsAndBallotsTupleType,
+)
 from electionguard_tools.strategies.elgamal import elgamal_keypairs
 from electionguard_tools.helpers.key_ceremony_orchestrator import (
     KeyCeremonyOrchestrator,
@@ -107,6 +114,51 @@ class TestVerify(BaseTestCase):
 
         # Act
         verification = verify_decryption(plaintext_tally, election_public_keys, context)
+
+        # Assert
+        self.assertIsNotNone(verification)
+        self.assertTrue(verification.verified)
+
+    @settings(
+        deadline=timedelta(milliseconds=2000),
+        suppress_health_check=[HealthCheck.too_slow],
+        max_examples=10,
+        # disabling the "shrink" phase, because it runs very slowly
+        phases=[Phase.explicit, Phase.reuse, Phase.generate, Phase.target],
+    )
+    @given(integers(1, 3).flatmap(lambda n: elections_and_ballots(n)))
+    def test_verify_aggregation(self, everything: ElectionsAndBallotsTupleType):
+        # Arrange
+        (
+            _election_description,
+            internal_manifest,
+            ballots,
+            _secret_key,
+            context,
+        ) = everything
+
+        # encrypt each ballot
+        store = DataStore()
+        encryption_seed = election_factory.get_encryption_device().get_hash()
+        for ballot in ballots:
+            encrypted_ballot = encrypt_ballot(
+                ballot, internal_manifest, context, encryption_seed
+            )
+            encryption_seed = encrypted_ballot.code
+            self.assertIsNotNone(encrypted_ballot)
+            # add to the ballot store
+            store.set(
+                encrypted_ballot.object_id,
+                from_ciphertext_ballot(encrypted_ballot, BallotBoxState.SPOILED),
+            )
+
+        # Generate Tally
+        submitted_ballots = store.all()
+        tally = tally_ballots(store, internal_manifest, context)
+        self.assertIsNotNone(tally)
+
+        # Act
+        verification = verify_aggregation(submitted_ballots, tally)
 
         # Assert
         self.assertIsNotNone(verification)

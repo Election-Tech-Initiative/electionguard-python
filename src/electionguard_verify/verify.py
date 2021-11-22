@@ -1,16 +1,14 @@
 from dataclasses import dataclass
-from typing import Dict, Optional
+from typing import Dict, Optional, List
 
-from electionguard.ballot import (
-    CiphertextBallot,
-)
+from electionguard.ballot import CiphertextBallot, SubmittedBallot
 from electionguard.election import CiphertextElectionContext
 from electionguard.key_ceremony import ElectionPublicKey
 from electionguard.manifest import (
     Manifest,
 )
 from electionguard.type import GuardianId
-from electionguard.tally import PlaintextTally
+from electionguard.tally import PlaintextTally, CiphertextTally
 
 
 @dataclass
@@ -65,5 +63,19 @@ def verify_decryption(
                         False,
                         message=f"verify_decryption: {selection_id} selection is not valid",
                     )
+
+    return Verification(True, message=None)
+
+
+def verify_aggregation(
+    submitted_ballots: List[SubmittedBallot],
+    tally: CiphertextTally,
+) -> Verification:
+    for ballot in submitted_ballots:
+        if ballot not in tally:
+            return Verification(
+                False,
+                message=f"verify_aggregation: ballot {ballot.object_id} missing from tally",
+            )
 
     return Verification(True, message=None)
