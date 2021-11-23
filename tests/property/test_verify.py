@@ -158,7 +158,9 @@ class TestVerify(BaseTestCase):
         self.assertIsNotNone(tally)
 
         # Act
-        verification = verify_aggregation(submitted_ballots, tally)
+        verification = verify_aggregation(
+            submitted_ballots, tally, internal_manifest, context
+        )
 
         # Assert
         self.assertIsNotNone(verification)

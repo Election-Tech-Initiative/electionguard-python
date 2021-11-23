@@ -5,6 +5,7 @@ from electionguard.ballot import CiphertextBallot, SubmittedBallot
 from electionguard.election import CiphertextElectionContext
 from electionguard.key_ceremony import ElectionPublicKey
 from electionguard.manifest import (
+    InternalManifest,
     Manifest,
 )
 from electionguard.type import GuardianId
@@ -70,12 +71,23 @@ def verify_decryption(
 def verify_aggregation(
     submitted_ballots: List[SubmittedBallot],
     tally: CiphertextTally,
+    internal_manifest: InternalManifest,
+    context: CiphertextElectionContext,
 ) -> Verification:
-    for ballot in submitted_ballots:
-        if ballot not in tally:
-            return Verification(
-                False,
-                message=f"verify_aggregation: ballot {ballot.object_id} missing from tally",
-            )
+    new_tally = CiphertextTally("verify", internal_manifest, context)
 
-    return Verification(True, message=None)
+    for ballot in submitted_ballots:
+        new_tally.append(ballot)
+
+    if (
+        isinstance(tally, CiphertextTally)
+        and new_tally.cast_ballot_ids == tally.cast_ballot_ids
+        and new_tally.spoiled_ballot_ids == tally.spoiled_ballot_ids
+        and new_tally.contests == tally.contests
+    ):
+        return Verification(True, message=None)
+
+    return Verification(
+        False,
+        message="verify_aggregation: aggregated value of ballots doesn't matches with tally",
+    )
