@@ -102,7 +102,7 @@ def _recursive_replace(object, type_: Type, replace: Callable[[Any], Any]):
 class NumberEncodeOption(Enum):
     """Option for encoding numbers."""
 
-    Default = "default"
+    Int = "int"
     Hex = "hex"
     # Base64 = "base64"
 
