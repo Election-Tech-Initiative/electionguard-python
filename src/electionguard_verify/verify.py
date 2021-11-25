@@ -71,10 +71,10 @@ def verify_decryption(
 def verify_aggregation(
     submitted_ballots: List[SubmittedBallot],
     tally: CiphertextTally,
-    internal_manifest: InternalManifest,
+    manifest: Manifest,
     context: CiphertextElectionContext,
 ) -> Verification:
-    new_tally = CiphertextTally("verify", internal_manifest, context)
+    new_tally = CiphertextTally("verify", InternalManifest(manifest), context)
 
     for ballot in submitted_ballots:
         new_tally.append(ballot)

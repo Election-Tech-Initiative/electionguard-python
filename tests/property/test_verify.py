@@ -16,6 +16,7 @@ from electionguard.elgamal import ElGamalKeyPair
 from electionguard.encrypt import EncryptionMediator, encrypt_ballot
 from electionguard.key_ceremony import CeremonyDetails
 from electionguard.key_ceremony_mediator import KeyCeremonyMediator
+from electionguard.manifest import InternalManifest
 from electionguard.tally import tally_ballots
 from electionguard.type import GuardianId
 from electionguard.utils import get_optional
@@ -127,15 +128,16 @@ class TestVerify(BaseTestCase):
         phases=[Phase.explicit, Phase.reuse, Phase.generate, Phase.target],
     )
     @given(integers(1, 3).flatmap(lambda n: elections_and_ballots(n)))
-    def test_verify_aggregation(self, everything: ElectionsAndBallotsTupleType):
+    def test_verify_aggregation(self, election_details: ElectionsAndBallotsTupleType):
         # Arrange
         (
-            _election_description,
-            internal_manifest,
+            manifest,
+            _internal_manifest,
             ballots,
             _secret_key,
             context,
-        ) = everything
+        ) = election_details
+        internal_manifest = InternalManifest(manifest)
 
         # encrypt each ballot
         store = DataStore()
@@ -158,9 +160,7 @@ class TestVerify(BaseTestCase):
         self.assertIsNotNone(tally)
 
         # Act
-        verification = verify_aggregation(
-            submitted_ballots, tally, internal_manifest, context
-        )
+        verification = verify_aggregation(submitted_ballots, tally, manifest, context)
 
         # Assert
         self.assertIsNotNone(verification)
