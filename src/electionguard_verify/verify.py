@@ -1,16 +1,15 @@
 from dataclasses import dataclass
-from typing import Dict, Optional
+from typing import Dict, Optional, List
 
-from electionguard.ballot import (
-    CiphertextBallot,
-)
+from electionguard.ballot import CiphertextBallot, SubmittedBallot
 from electionguard.election import CiphertextElectionContext
 from electionguard.key_ceremony import ElectionPublicKey
 from electionguard.manifest import (
+    InternalManifest,
     Manifest,
 )
 from electionguard.type import GuardianId
-from electionguard.tally import PlaintextTally
+from electionguard.tally import PlaintextTally, CiphertextTally
 
 
 @dataclass
@@ -67,3 +66,28 @@ def verify_decryption(
                     )
 
     return Verification(True, message=None)
+
+
+def verify_aggregation(
+    submitted_ballots: List[SubmittedBallot],
+    tally: CiphertextTally,
+    manifest: Manifest,
+    context: CiphertextElectionContext,
+) -> Verification:
+    new_tally = CiphertextTally("verify", InternalManifest(manifest), context)
+
+    for ballot in submitted_ballots:
+        new_tally.append(ballot)
+
+    if (
+        isinstance(tally, CiphertextTally)
+        and new_tally.cast_ballot_ids == tally.cast_ballot_ids
+        and new_tally.spoiled_ballot_ids == tally.spoiled_ballot_ids
+        and new_tally.contests == tally.contests
+    ):
+        return Verification(True, message=None)
+
+    return Verification(
+        False,
+        message="verify_aggregation: aggregated value of ballots doesn't matches with tally",
+    )
