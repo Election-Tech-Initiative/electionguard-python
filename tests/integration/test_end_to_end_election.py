@@ -93,8 +93,8 @@ class TestEndToEndElection(BaseTestCase):
     NUMBER_OF_GUARDIANS = 5
     QUORUM = 3
 
-    REMOVE_RAW_OUTPUT = False
-    REMOVE_ZIP_OUTPUT = False
+    REMOVE_RAW_OUTPUT = True
+    REMOVE_ZIP_OUTPUT = True
 
     # Step 0 - Configure Election
     manifest: Manifest
