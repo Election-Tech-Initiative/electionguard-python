@@ -17,7 +17,7 @@ class KeyCeremonyOrchestrator:
     def create_guardians(ceremony_details: CeremonyDetails) -> List[Guardian]:
         return [
             Guardian(
-                "guardian_" + str(i + 1),
+                str(i + 1),
                 i + 1,
                 ceremony_details.number_of_guardians,
                 ceremony_details.quorum,

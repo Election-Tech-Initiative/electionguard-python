@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 from typing import Callable, Dict, List, Union
-from os import path
-from shutil import rmtree
+from os import path, remove
+from shutil import rmtree, make_archive
 from random import randint
 from dataclasses import asdict
 
@@ -18,7 +18,7 @@ from electionguard.election_builder import ElectionBuilder
 from electionguard.manifest import Manifest, InternalManifest
 
 # Step 1 - Key Ceremony
-from electionguard.guardian import Guardian, GuardianRecord
+from electionguard.guardian import Guardian, GuardianRecord, PrivateGuardianRecord
 from electionguard.key_ceremony_mediator import KeyCeremonyMediator
 
 # Step 2 - Encrypt Votes
@@ -48,8 +48,15 @@ from electionguard.election_polynomial import LagrangeCoefficientsRecord
 # Step 5 - Publish and Verify
 from electionguard_tools.helpers.export import (
     COEFFICIENTS_FILE_NAME,
+    DEVICES_DIR,
+    GUARDIANS_DIR,
+    PRIVATE_DATA_DIR,
+    SPOILED_BALLOTS_DIR,
+    SUBMITTED_BALLOTS_DIR,
     export,
-    BALLOT_PREFIX,
+    ELECTION_RECORD_DIR,
+    SUBMITTED_BALLOT_PREFIX,
+    SPOILED_BALLOT_PREFIX,
     CONSTANTS_FILE_NAME,
     CONTEXT_FILE_NAME,
     DEVICE_PREFIX,
@@ -57,6 +64,7 @@ from electionguard_tools.helpers.export import (
     GUARDIAN_PREFIX,
     MANIFEST_FILE_NAME,
     TALLY_FILE_NAME,
+    export_private_data,
 )
 from electionguard_tools.helpers.serialize import from_file_to_dataclass, construct_path
 
@@ -70,11 +78,10 @@ from electionguard_tools.helpers.identity_encrypt import (
     identity_auxiliary_decrypt,
 )
 
-RESULTS_DIR = "test-results"
-DEVICES_DIR = path.join(RESULTS_DIR, "devices")
-GUARDIAN_DIR = path.join(RESULTS_DIR, "guardians")
-BALLOTS_DIR = path.join(RESULTS_DIR, "encrypted_ballots")
-SPOILED_DIR = path.join(RESULTS_DIR, "spoiled_ballots")
+devices_directory = path.join(ELECTION_RECORD_DIR, DEVICES_DIR)
+guardians_directory = path.join(ELECTION_RECORD_DIR, GUARDIANS_DIR)
+submitted_ballots_directory = path.join(ELECTION_RECORD_DIR, SUBMITTED_BALLOTS_DIR)
+spoiled_ballots_directory = path.join(ELECTION_RECORD_DIR, SPOILED_BALLOTS_DIR)
 
 # pylint: disable=too-many-instance-attributes
 class TestEndToEndElection(BaseTestCase):
@@ -86,7 +93,8 @@ class TestEndToEndElection(BaseTestCase):
     NUMBER_OF_GUARDIANS = 5
     QUORUM = 3
 
-    REMOVE_OUTPUT = False
+    REMOVE_RAW_OUTPUT = False
+    REMOVE_ZIP_OUTPUT = False
 
     # Step 0 - Configure Election
     manifest: Manifest
@@ -119,6 +127,7 @@ class TestEndToEndElection(BaseTestCase):
 
     # Step 5 - Publish
     guardian_records: List[GuardianRecord] = []
+    private_guardian_records: List[PrivateGuardianRecord] = []
 
     def test_end_to_end_election(self) -> None:
         """
@@ -180,7 +189,7 @@ class TestEndToEndElection(BaseTestCase):
         for i in range(self.NUMBER_OF_GUARDIANS):
             self.guardians.append(
                 Guardian(
-                    "guardian_" + str(i + 1),
+                    str(i + 1),
                     i + 1,
                     self.NUMBER_OF_GUARDIANS,
                     self.QUORUM,
@@ -494,6 +503,9 @@ class TestEndToEndElection(BaseTestCase):
         """Publish results/artifacts of the election."""
 
         self.guardian_records = [guardian.publish() for guardian in self.guardians]
+        self.private_guardian_records = [
+            guardian.export_private_data() for guardian in self.guardians
+        ]
 
         export(
             self.manifest,
@@ -506,18 +518,37 @@ class TestEndToEndElection(BaseTestCase):
             self.plaintext_tally,
             self.guardian_records,
             self.lagrange_coefficients,
-            RESULTS_DIR,
         )
         self._assert_message(
             "Publish",
-            f"Artifacts published to: {RESULTS_DIR}",
-            path.exists(RESULTS_DIR),
+            f"Election Record published to: {ELECTION_RECORD_DIR}",
+            path.exists(ELECTION_RECORD_DIR),
         )
+
+        export_private_data(
+            self.plaintext_ballots,
+            self.ciphertext_ballots,
+            self.private_guardian_records,
+        )
+        self._assert_message(
+            "Export private data",
+            f"Private data exported to: {PRIVATE_DATA_DIR}",
+            path.exists(PRIVATE_DATA_DIR),
+        )
+
+        ZIP_SUFFIX = "zip"
+        make_archive(ELECTION_RECORD_DIR, ZIP_SUFFIX, ELECTION_RECORD_DIR)
+        make_archive(PRIVATE_DATA_DIR, ZIP_SUFFIX, PRIVATE_DATA_DIR)
 
         self.deserialize_data()
 
-        if self.REMOVE_OUTPUT:
-            rmtree(RESULTS_DIR)
+        if self.REMOVE_RAW_OUTPUT:
+            rmtree(ELECTION_RECORD_DIR)
+            rmtree(PRIVATE_DATA_DIR)
+
+        if self.REMOVE_ZIP_OUTPUT:
+            remove(f"{ELECTION_RECORD_DIR}.{ZIP_SUFFIX}")
+            remove(f"{PRIVATE_DATA_DIR}.{ZIP_SUFFIX}")
 
     def deserialize_data(self) -> None:
         """Ensure published data can be deserialized."""
@@ -525,49 +556,58 @@ class TestEndToEndElection(BaseTestCase):
         # Deserialize
         manifest_from_file = from_file_to_dataclass(
             Manifest,
-            construct_path(MANIFEST_FILE_NAME, RESULTS_DIR),
+            construct_path(MANIFEST_FILE_NAME, ELECTION_RECORD_DIR),
         )
         self.assertEqualAsDicts(self.manifest, manifest_from_file)
 
         context_from_file = from_file_to_dataclass(
-            CiphertextElectionContext, construct_path(CONTEXT_FILE_NAME, RESULTS_DIR)
+            CiphertextElectionContext,
+            construct_path(CONTEXT_FILE_NAME, ELECTION_RECORD_DIR),
         )
         self.assertEqualAsDicts(self.context, context_from_file)
 
         constants_from_file = from_file_to_dataclass(
-            ElectionConstants, construct_path(CONSTANTS_FILE_NAME, RESULTS_DIR)
+            ElectionConstants, construct_path(CONSTANTS_FILE_NAME, ELECTION_RECORD_DIR)
         )
         self.assertEqualAsDicts(self.constants, constants_from_file)
 
         coefficients_from_file = from_file_to_dataclass(
             LagrangeCoefficientsRecord,
-            construct_path(COEFFICIENTS_FILE_NAME, RESULTS_DIR),
+            construct_path(COEFFICIENTS_FILE_NAME, ELECTION_RECORD_DIR),
         )
         self.assertEqualAsDicts(self.lagrange_coefficients, coefficients_from_file)
 
         device_from_file = from_file_to_dataclass(
             EncryptionDevice,
-            construct_path(DEVICE_PREFIX + str(self.device.device_id), DEVICES_DIR),
+            construct_path(
+                DEVICE_PREFIX + str(self.device.device_id), devices_directory
+            ),
         )
         self.assertEqualAsDicts(self.device, device_from_file)
 
         for ballot in self.ballot_store.all():
             ballot_from_file = from_file_to_dataclass(
                 SubmittedBallot,
-                construct_path(BALLOT_PREFIX + ballot.object_id, BALLOTS_DIR),
+                construct_path(
+                    SUBMITTED_BALLOT_PREFIX + ballot.object_id,
+                    submitted_ballots_directory,
+                ),
             )
             self.assertEqualAsDicts(ballot, ballot_from_file)
 
         for spoiled_ballot in self.plaintext_spoiled_ballots.values():
             spoiled_ballot_from_file = from_file_to_dataclass(
                 PlaintextTally,
-                construct_path(BALLOT_PREFIX + spoiled_ballot.object_id, SPOILED_DIR),
+                construct_path(
+                    SPOILED_BALLOT_PREFIX + spoiled_ballot.object_id,
+                    spoiled_ballots_directory,
+                ),
             )
             self.assertEqualAsDicts(spoiled_ballot, spoiled_ballot_from_file)
 
         published_ciphertext_tally_from_file = from_file_to_dataclass(
             PublishedCiphertextTally,
-            construct_path(ENCRYPTED_TALLY_FILE_NAME, RESULTS_DIR),
+            construct_path(ENCRYPTED_TALLY_FILE_NAME, ELECTION_RECORD_DIR),
         )
         self.assertEqualAsDicts(
             self.ciphertext_tally.publish(),
@@ -575,7 +615,7 @@ class TestEndToEndElection(BaseTestCase):
         )
 
         plainttext_tally_from_file = from_file_to_dataclass(
-            PlaintextTally, construct_path(TALLY_FILE_NAME, RESULTS_DIR)
+            PlaintextTally, construct_path(TALLY_FILE_NAME, ELECTION_RECORD_DIR)
         )
         self.assertEqualAsDicts(self.plaintext_tally, plainttext_tally_from_file)
 
@@ -583,7 +623,7 @@ class TestEndToEndElection(BaseTestCase):
             guardian_record_from_file = from_file_to_dataclass(
                 GuardianRecord,
                 construct_path(
-                    GUARDIAN_PREFIX + guardian_record.guardian_id, GUARDIAN_DIR
+                    GUARDIAN_PREFIX + guardian_record.guardian_id, guardians_directory
                 ),
             )
             self.assertEqualAsDicts(guardian_record, guardian_record_from_file)

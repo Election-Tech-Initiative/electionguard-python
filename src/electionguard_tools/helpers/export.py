@@ -22,19 +22,29 @@ from electionguard.tally import PlaintextTally, PublishedCiphertextTally
 
 from .serialize import to_file
 
-RESULTS_DIR = "results"
+# Public
+ELECTION_RECORD_DIR = "election_record"
+DEVICES_DIR = "encryption_devices"
+GUARDIANS_DIR = "guardians"
+SUBMITTED_BALLOTS_DIR = "submitted_ballots"
+SPOILED_BALLOTS_DIR = "spoiled_ballots"
+
 MANIFEST_FILE_NAME = "manifest"
 CONTEXT_FILE_NAME = "context"
 CONSTANTS_FILE_NAME = "constants"
 COEFFICIENTS_FILE_NAME = "coefficients"
 ENCRYPTED_TALLY_FILE_NAME = "encrypted_tally"
 TALLY_FILE_NAME = "tally"
-
+SUBMITTED_BALLOT_PREFIX = "submitted_ballot_"
+SPOILED_BALLOT_PREFIX = "spoiled_ballot_"
 DEVICE_PREFIX = "device_"
-BALLOT_PREFIX = "ballot_"
-
-PLAINTEXT_BALLOT_PREFIX = "plaintext_ballot_"
 GUARDIAN_PREFIX = "guardian_"
+
+# Private
+PRIVATE_DATA_DIR = "election_private_data"
+PLAINTEXT_BALLOT_PREFIX = "plaintext_ballot_"
+CIPHERTEXT_BALLOT_PREFIX = "ciphertext_ballot_"
+PRIVATE_GUARDIAN_PREFIX = "private_guardian_"
 
 
 # TODO #148 Revert PlaintextTally to PublishedPlaintextTally after moving spoiled info
@@ -43,24 +53,24 @@ def export(
     context: CiphertextElectionContext,
     constants: ElectionConstants,
     devices: Iterable[EncryptionDevice],
-    ciphertext_ballots: Iterable[SubmittedBallot],
+    submitted_ballots: Iterable[SubmittedBallot],
     spoiled_ballots: Iterable[PlaintextTally],
     ciphertext_tally: PublishedCiphertextTally,
     plaintext_tally: PlaintextTally,
     guardian_records: Iterable[GuardianRecord],
     lagrange_coefficients: LagrangeCoefficientsRecord,
-    results_directory: str = RESULTS_DIR,
+    election_record_directory: str = ELECTION_RECORD_DIR,
 ) -> None:
-    """Export the data required to publish the election record as json."""
-    devices_directory = path.join(results_directory, "devices")
-    guardian_directory = path.join(results_directory, "guardians")
-    ballots_directory = path.join(results_directory, "encrypted_ballots")
-    spoiled_directory = path.join(results_directory, "spoiled_ballots")
+    """Export a publishable election record"""
+    devices_directory = path.join(election_record_directory, DEVICES_DIR)
+    guardian_directory = path.join(election_record_directory, GUARDIANS_DIR)
+    ballots_directory = path.join(election_record_directory, SUBMITTED_BALLOTS_DIR)
+    spoiled_directory = path.join(election_record_directory, SPOILED_BALLOTS_DIR)
 
-    to_file(manifest, MANIFEST_FILE_NAME, results_directory)
-    to_file(context, CONTEXT_FILE_NAME, results_directory)
-    to_file(constants, CONSTANTS_FILE_NAME, results_directory)
-    to_file(lagrange_coefficients, COEFFICIENTS_FILE_NAME, results_directory)
+    to_file(manifest, MANIFEST_FILE_NAME, election_record_directory)
+    to_file(context, CONTEXT_FILE_NAME, election_record_directory)
+    to_file(constants, CONSTANTS_FILE_NAME, election_record_directory)
+    to_file(lagrange_coefficients, COEFFICIENTS_FILE_NAME, election_record_directory)
 
     for device in devices:
         to_file(device, DEVICE_PREFIX + str(device.device_id), devices_directory)
@@ -73,38 +83,39 @@ def export(
                 guardian_directory,
             )
 
-    for ballot in ciphertext_ballots:
-        to_file(ballot, BALLOT_PREFIX + ballot.object_id, ballots_directory)
+    for ballot in submitted_ballots:
+        to_file(ballot, SUBMITTED_BALLOT_PREFIX + ballot.object_id, ballots_directory)
 
     for spoiled_ballot in spoiled_ballots:
         to_file(
-            spoiled_ballot, BALLOT_PREFIX + spoiled_ballot.object_id, spoiled_directory
+            spoiled_ballot,
+            SPOILED_BALLOT_PREFIX + spoiled_ballot.object_id,
+            spoiled_directory,
         )
 
-    to_file(ciphertext_tally, ENCRYPTED_TALLY_FILE_NAME, results_directory)
-    to_file(plaintext_tally, TALLY_FILE_NAME, results_directory)
+    to_file(ciphertext_tally, ENCRYPTED_TALLY_FILE_NAME, election_record_directory)
+    to_file(plaintext_tally, TALLY_FILE_NAME, election_record_directory)
 
 
 def export_private_data(
     plaintext_ballots: Iterable[PlaintextBallot],
     ciphertext_ballots: Iterable[CiphertextBallot],
     private_guardian_records: Iterable[PrivateGuardianRecord],
-    results_directory: str = RESULTS_DIR,
+    private_directory: str = PRIVATE_DATA_DIR,
 ) -> None:
-    """Export the private data for an election.
+    """Export non-publishable private data for an election.
 
     Useful for generating sample data sets.
     WARNING: DO NOT USE this in a production application.
     """
-    private_directory = path.join(results_directory, "private")
-    gaurdians_directory = path.join(private_directory, "guardians")
-    plaintext_ballots_directory = path.join(private_directory, "plaintext")
-    encrypted_ballots_directory = path.join(private_directory, "encrypted")
+    gaurdians_directory = path.join(private_directory, "private_guardians")
+    plaintext_ballots_directory = path.join(private_directory, "plaintext_ballots")
+    encrypted_ballots_directory = path.join(private_directory, "ciphertext_ballots")
 
     for private_guardian_record in private_guardian_records:
         to_file(
             private_guardian_record,
-            GUARDIAN_PREFIX + private_guardian_record.guardian_id,
+            PRIVATE_GUARDIAN_PREFIX + private_guardian_record.guardian_id,
             gaurdians_directory,
         )
 
@@ -118,6 +129,6 @@ def export_private_data(
     for ciphertext_ballot in ciphertext_ballots:
         to_file(
             ciphertext_ballot,
-            BALLOT_PREFIX + ciphertext_ballot.object_id,
+            CIPHERTEXT_BALLOT_PREFIX + ciphertext_ballot.object_id,
             encrypted_ballots_directory,
         )
