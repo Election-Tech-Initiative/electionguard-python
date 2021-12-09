@@ -356,6 +356,6 @@ def _filter_by_missing_guardian(
     """
     missing_guardian_shares = {}
     for pair, share in shares.items():
-        if pair.designated_id is missing_guardian_id:
+        if pair.designated_id == missing_guardian_id:
             missing_guardian_shares[pair.owner_id] = share
     return missing_guardian_shares
