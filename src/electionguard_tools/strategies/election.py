@@ -1,3 +1,4 @@
+from copy import deepcopy
 from functools import reduce
 from random import Random
 from typing import TypeVar, Callable, List, Optional, Tuple
@@ -623,7 +624,7 @@ def plaintext_voted_ballot(draw: _DrawType, internal_manifest: InternalManifest)
     for contest in contests:
         assert contest.is_valid(), "every contest needs to be valid"
         n = contest.number_elected  # we need exactly this many 1's, and the rest 0's
-        ballot_selections = contest.ballot_selections
+        ballot_selections = deepcopy(contest.ballot_selections)
         assert len(ballot_selections) >= n
 
         random = Random(draw(integers()))

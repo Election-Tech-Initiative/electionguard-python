@@ -16,7 +16,6 @@ from electionguard.elgamal import ElGamalKeyPair
 from electionguard.encrypt import EncryptionMediator, encrypt_ballot
 from electionguard.key_ceremony import CeremonyDetails
 from electionguard.key_ceremony_mediator import KeyCeremonyMediator
-from electionguard.manifest import InternalManifest
 from electionguard.tally import tally_ballots
 from electionguard.type import GuardianId
 from electionguard.utils import get_optional
@@ -121,7 +120,7 @@ class TestVerify(BaseTestCase):
         self.assertTrue(verification.verified)
 
     @settings(
-        deadline=timedelta(milliseconds=2000),
+        deadline=timedelta(milliseconds=10000),
         suppress_health_check=[HealthCheck.too_slow],
         max_examples=10,
         # disabling the "shrink" phase, because it runs very slowly
@@ -132,12 +131,11 @@ class TestVerify(BaseTestCase):
         # Arrange
         (
             manifest,
-            _internal_manifest,
+            internal_manifest,
             ballots,
             _secret_key,
             context,
         ) = election_details
-        internal_manifest = InternalManifest(manifest)
 
         # encrypt each ballot
         store = DataStore()
