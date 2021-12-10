@@ -27,7 +27,8 @@ from electionguard_tools.helpers.tally_ceremony_orchestrator import (
 from electionguard_tools.helpers.export import (
     export_private_data,
     export,
-    RESULTS_DIR,
+    ELECTION_RECORD_DIR,
+    PRIVATE_DATA_DIR,
 )
 
 
@@ -66,7 +67,8 @@ class ElectionSampleDataGenerator:
         """
 
         # Clear the results directory
-        rmtree(RESULTS_DIR, ignore_errors=True)
+        rmtree(ELECTION_RECORD_DIR, ignore_errors=True)
+        rmtree(PRIVATE_DATA_DIR, ignore_errors=True)
 
         # Configure the election
         (
