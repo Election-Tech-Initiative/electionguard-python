@@ -133,7 +133,7 @@ A huge thank you to those who helped to contribute to this project so far, inclu
 [contributing]: https://github.com/microsoft/electionguard-python/blob/main/CONTRIBUTING.md
 [security]: https://github.com/microsoft/electionguard-python/blob/main/SECURITY.md
 
-[Design and Architecture]: https://github.com/microsoft/electionguard-python/blob/main/docs/Design_and_Architecture.md]
+[Design and Architecture]: https://github.com/microsoft/electionguard-python/blob/main/docs/Design_and_Architecture.md
 
 [build and run]: https://github.com/microsoft/electionguard-python/blob/main/docs/Build_and_Run.md
 [project workflow]: https://github.com/microsoft/electionguard-python/blob/main/docs/Project_Workflow.md
