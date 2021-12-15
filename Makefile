@@ -19,6 +19,8 @@ environment:
 	poetry config virtualenvs.in-project true 
 	poetry install
 	@echo 🚨 Be sure to add poetry to PATH
+	wget -O sample-data.zip https://github.com/microsoft/electionguard/releases/download/v0.95.0/sample-data.zip
+	unzip sample-data.zip
 
 install:
 	@echo 🔧 INSTALL
@@ -181,7 +183,7 @@ dependency-graph-ci:
 
 # Sample Data
 generate-sample-data:
-	poetry run python3 src/electionguard_tools/scripts/sample_generator.py -n $(SAMPLE_BALLOT_COUNT) -s $(SAMPLE_BALLOT_SPOIL_RATE)
+	poetry run python3 src/electionguard_tools/scripts/sample_generator.py -m "hamilton-general" -n $(SAMPLE_BALLOT_COUNT) -s $(SAMPLE_BALLOT_SPOIL_RATE)
 
 # Publish
 publish:

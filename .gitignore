@@ -6,6 +6,8 @@ __pycache__/
 # C extensions
 *.so
 
+data/0.95.0/
+
 # Distribution / packaging
 .Python
 build/
@@ -146,3 +148,6 @@ election_private_data.zip
 
 # VS Code
 .vscode/settings.json
+sample-data.zip
+
+results/
