@@ -19,10 +19,10 @@ environment:
 	poetry config virtualenvs.in-project true 
 	poetry install
 	@echo 🚨 Be sure to add poetry to PATH
-	ifeq ($(OS), Windows)
-		choco install wget
-		choco install unzip
-	endif
+ifeq ($(OS), Windows)
+	choco install wget
+	choco install unzip
+endif
 	wget https://github.com/microsoft/electionguard/releases/download/v0.95.0/sample-data.zip
 	unzip -o sample-data.zip
 	unzip sample-data.zip
