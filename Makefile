@@ -1,4 +1,4 @@
-.PHONY: all openssl-fix install install-gmp install-gmp-mac install-gmp-linux install-gmp-windows install-mkdocs auto-lint validate test test-example bench coverage coverage-html coverage-xml coverage-erase generate-sample-data
+.PHONY: all environment openssl-fix install install-gmp install-gmp-mac install-gmp-linux install-gmp-windows install-mkdocs auto-lint validate test test-example bench coverage coverage-html coverage-xml coverage-erase generate-sample-data
 
 CODE_COVERAGE ?= 90
 OS ?= $(shell python -c 'import platform; print(platform.system())')
@@ -19,7 +19,12 @@ environment:
 	poetry config virtualenvs.in-project true 
 	poetry install
 	@echo 🚨 Be sure to add poetry to PATH
-	wget -O sample-data.zip https://github.com/microsoft/electionguard/releases/download/v0.95.0/sample-data.zip
+	ifeq ($(OS), Windows)
+		choco install wget
+		choco install unzip
+	endif
+	wget https://github.com/microsoft/electionguard/releases/download/v0.95.0/sample-data.zip
+	unzip -o sample-data.zip
 	unzip sample-data.zip
 
 install:
