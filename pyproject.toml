@@ -37,6 +37,7 @@ gmpy2 = ">=2.0.8"
 # gmpy2 = { path = "./packages/gmpy2-2.0.8-cp39-cp39-win32.whl" } # 32 bit
 cryptography = ">=3.2"
 psutil = ">=5.7.2"
+pydantic = "^1.8.2"
 
 [tool.poetry.dev-dependencies]
 atomicwrites = "*"
@@ -53,7 +54,6 @@ mkinit = "^0.3.3"
 mypy = "^0.910"
 pydeps = "*"
 pylint = "*"
-pydantic = "^1.8.2"
 pytest = "*"
 secretstorage = "*"
 twine = "*"
