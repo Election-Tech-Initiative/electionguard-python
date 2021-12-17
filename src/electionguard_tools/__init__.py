@@ -68,6 +68,8 @@ from electionguard_tools.helpers import (
 )
 from electionguard_tools.scripts import (
     DEFAULT_NUMBER_OF_BALLOTS,
+    DEFAULT_SAMPLE_MANIFEST,
+    DEFAULT_SPEC_VERSION,
     DEFAULT_SPOIL_RATE,
     DEFAULT_USE_ALL_GUARDIANS,
     DEFAULT_USE_PRIVATE_DATA,
@@ -121,6 +123,8 @@ __all__ = [
     "CONTEXT_FILE_NAME",
     "CiphertextElectionsTupleType",
     "DEFAULT_NUMBER_OF_BALLOTS",
+    "DEFAULT_SAMPLE_MANIFEST",
+    "DEFAULT_SPEC_VERSION",
     "DEFAULT_SPOIL_RATE",
     "DEFAULT_USE_ALL_GUARDIANS",
     "DEFAULT_USE_PRIVATE_DATA",

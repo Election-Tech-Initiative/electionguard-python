@@ -11,6 +11,7 @@ from electionguard.ballot import (
 from electionguard.data_store import DataStore
 from electionguard.ballot_box import BallotBox, get_ballots
 from electionguard.decryption_mediator import DecryptionMediator
+from electionguard.election_polynomial import LagrangeCoefficientsRecord
 from electionguard.encrypt import (
     EncryptionDevice,
     EncryptionMediator,
@@ -36,6 +37,8 @@ DEFAULT_NUMBER_OF_BALLOTS = 5
 DEFAULT_SPOIL_RATE = 50
 DEFAULT_USE_ALL_GUARDIANS = False
 DEFAULT_USE_PRIVATE_DATA = False
+DEFAULT_SPEC_VERSION = "0.95.0"
+DEFAULT_SAMPLE_MANIFEST = "hamilton-general"
 
 
 class ElectionSampleDataGenerator:
@@ -61,6 +64,8 @@ class ElectionSampleDataGenerator:
         spoil_rate: int = DEFAULT_SPOIL_RATE,
         use_all_guardians: bool = DEFAULT_USE_ALL_GUARDIANS,
         use_private_data: bool = DEFAULT_USE_PRIVATE_DATA,
+        spec_version: str = DEFAULT_SPEC_VERSION,
+        sample_manifest: str = DEFAULT_SAMPLE_MANIFEST,
     ):
         """
         Generate the sample data set
@@ -71,10 +76,13 @@ class ElectionSampleDataGenerator:
         rmtree(PRIVATE_DATA_DIR, ignore_errors=True)
 
         # Configure the election
+        # TODO: pass the spec version and the manifest name in
         (
             manifest,
             private_data,
-        ) = self.election_factory.get_hamilton_manifest_with_encryption_context()
+        ) = self.election_factory.get_sample_manifest_with_encryption_context(
+            spec_version, sample_manifest
+        )
         plaintext_ballots = (
             self.ballot_factory.generate_fake_plaintext_ballots_for_election(
                 manifest.internal_manifest, number_of_ballots
@@ -158,6 +166,9 @@ class ElectionSampleDataGenerator:
                 ciphertext_tally.publish(),
                 plaintext_tally,
                 manifest.guardians,
+                LagrangeCoefficientsRecord(
+                    list(mediator.get_lagrange_coefficients().values())
+                ),
             )
 
             if use_private_data:
@@ -187,6 +198,16 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Generate sample ballot data",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+
+    parser.add_argument(
+        "-m",
+        "--manifest",
+        metavar="<manifest>",
+        default=DEFAULT_SAMPLE_MANIFEST,
+        type=str,
+        help="The manifest to use to generate sample data.",
+        choices=["full", "hamilton-general", "minimal", "small"],
     )
     parser.add_argument(
         "-n",
@@ -218,8 +239,21 @@ if __name__ == "__main__":
         action="store_true",
         help="Include private data when generating.",
     )
+    parser.add_argument(
+        "-v",
+        "--version",
+        default=DEFAULT_SPEC_VERSION,
+        type=str,
+        help="The spec version to use.",
+        choices=[DEFAULT_SPEC_VERSION],
+    )
     args = parser.parse_args()
 
     ElectionSampleDataGenerator().generate(
-        args.number_of_ballots, args.spoil_rate, args.all_guardians, args.private_data
+        args.number_of_ballots,
+        args.spoil_rate,
+        args.all_guardians,
+        args.private_data,
+        args.version,
+        args.manifest,
     )

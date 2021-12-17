@@ -84,6 +84,16 @@ class ElectionFactory:
         return self._get_manifest_from_file(self.simple_election_manifest_file_name)
 
     @staticmethod
+    def get_manifest_from_file(spec_version: str, sample_manifest: str) -> Manifest:
+        """Get simple manifest from json file."""
+        return from_file_to_dataclass(
+            Manifest,
+            os.path.join(
+                data, spec_version, "sample", sample_manifest, "manifest.json"
+            ),
+        )
+
+    @staticmethod
     def get_hamilton_manifest_from_file() -> Manifest:
         """Get Hamilton County manifest from json file."""
         return from_file_to_dataclass(
@@ -93,15 +103,15 @@ class ElectionFactory:
             ),
         )
 
-    def get_hamilton_manifest_with_encryption_context(
-        self,
+    def get_sample_manifest_with_encryption_context(
+        self, spec_version: str, sample_manifest: str
     ) -> Tuple[AllPublicElectionData, AllPrivateElectionData]:
         """Get hamilton manifest and context"""
         guardians: List[Guardian] = []
         guardian_records: List[GuardianRecord] = []
 
         # Configure the election builder
-        manifest = self.get_hamilton_manifest_from_file()
+        manifest = self.get_manifest_from_file(spec_version, sample_manifest)
         builder = ElectionBuilder(NUMBER_OF_GUARDIANS, QUORUM, manifest)
 
         # Run the Key Ceremony
