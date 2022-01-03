@@ -8,7 +8,6 @@ made about timing or other side-channels.
 from abc import ABC, abstractmethod
 from typing import Any, Final, Optional, Tuple, Union
 from base64 import b16decode
-from pydantic import PrivateAttr
 from secrets import randbelow
 from sys import maxsize
 
@@ -55,7 +54,7 @@ class BaseElement(Serializable, ABC):
 
     data: str
 
-    _value: mpz = PrivateAttr(default_factory=_mpz_zero)
+    _value: mpz = Private(default_factory=_mpz_zero)
     """Internal math representation of element"""
 
     def __init__(self, data: Union[int, str], check_within_bounds: bool = True) -> None:

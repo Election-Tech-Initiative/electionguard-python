@@ -95,11 +95,11 @@ def compute_polynomial_coordinate(
     :return: Polynomial used to share election keys
     """
 
-    exponent_modifier = ElementModQ(exponent_modifier)
+    exponent_modifier_mod_q = ElementModQ(exponent_modifier)
 
     computed_value = ZERO_MOD_Q
     for (i, coefficient) in enumerate(polynomial.coefficients):
-        exponent = pow_q(exponent_modifier, i)
+        exponent = pow_q(exponent_modifier_mod_q, i)
         factor = mult_q(coefficient.value, exponent)
         computed_value = add_q(computed_value, factor)
     return computed_value
@@ -144,11 +144,11 @@ def verify_polynomial_coordinate(
     :return: True if verified on polynomial
     """
 
-    exponent_modifier = ElementModQ(exponent_modifier)
+    exponent_modifier_mod_q = ElementModQ(exponent_modifier)
 
     commitment_output = ONE_MOD_P
     for (i, commitment) in enumerate(commitments):
-        exponent = pow_p(exponent_modifier, i)
+        exponent = pow_p(exponent_modifier_mod_q, i)
         factor = pow_p(commitment, exponent)
         commitment_output = mult_p(commitment_output, factor)
 

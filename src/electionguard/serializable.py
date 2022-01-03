@@ -1,4 +1,6 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, PrivateAttr
+
+Private = PrivateAttr
 
 
 class Serializable(BaseModel):
