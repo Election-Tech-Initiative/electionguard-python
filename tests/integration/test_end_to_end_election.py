@@ -639,7 +639,7 @@ class TestEndToEndElection(BaseTestCase):
         print(f"{name}: {message}: {result}")
         self.assertTrue(result)
 
-    def assertEqualAsDicts(self, first: object, second: object):
+    def assertEqualAsDicts(self, first: object, second: object) -> None:
         """
         Specialty assertEqual to compare dataclasses as dictionaries.
 
