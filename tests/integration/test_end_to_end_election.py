@@ -46,6 +46,7 @@ from electionguard.decryption_mediator import DecryptionMediator
 from electionguard.election_polynomial import LagrangeCoefficientsRecord
 
 # Step 5 - Publish and Verify
+from electionguard.serialize import from_file, construct_path
 from electionguard_tools.helpers.export import (
     COEFFICIENTS_FILE_NAME,
     DEVICES_DIR,
@@ -66,7 +67,6 @@ from electionguard_tools.helpers.export import (
     TALLY_FILE_NAME,
     export_private_data,
 )
-from electionguard_tools.helpers.serialize import from_file_to_dataclass, construct_path
 
 from electionguard_tools.factories.ballot_factory import BallotFactory
 from electionguard_tools.factories.election_factory import (
@@ -554,30 +554,30 @@ class TestEndToEndElection(BaseTestCase):
         """Ensure published data can be deserialized."""
 
         # Deserialize
-        manifest_from_file = from_file_to_dataclass(
+        manifest_from_file = from_file(
             Manifest,
             construct_path(MANIFEST_FILE_NAME, ELECTION_RECORD_DIR),
         )
         self.assertEqualAsDicts(self.manifest, manifest_from_file)
 
-        context_from_file = from_file_to_dataclass(
+        context_from_file = from_file(
             CiphertextElectionContext,
             construct_path(CONTEXT_FILE_NAME, ELECTION_RECORD_DIR),
         )
         self.assertEqualAsDicts(self.context, context_from_file)
 
-        constants_from_file = from_file_to_dataclass(
+        constants_from_file = from_file(
             ElectionConstants, construct_path(CONSTANTS_FILE_NAME, ELECTION_RECORD_DIR)
         )
         self.assertEqualAsDicts(self.constants, constants_from_file)
 
-        coefficients_from_file = from_file_to_dataclass(
+        coefficients_from_file = from_file(
             LagrangeCoefficientsRecord,
             construct_path(COEFFICIENTS_FILE_NAME, ELECTION_RECORD_DIR),
         )
         self.assertEqualAsDicts(self.lagrange_coefficients, coefficients_from_file)
 
-        device_from_file = from_file_to_dataclass(
+        device_from_file = from_file(
             EncryptionDevice,
             construct_path(
                 DEVICE_PREFIX + str(self.device.device_id), devices_directory
@@ -586,7 +586,7 @@ class TestEndToEndElection(BaseTestCase):
         self.assertEqualAsDicts(self.device, device_from_file)
 
         for ballot in self.ballot_store.all():
-            ballot_from_file = from_file_to_dataclass(
+            ballot_from_file = from_file(
                 SubmittedBallot,
                 construct_path(
                     SUBMITTED_BALLOT_PREFIX + ballot.object_id,
@@ -596,7 +596,7 @@ class TestEndToEndElection(BaseTestCase):
             self.assertEqualAsDicts(ballot, ballot_from_file)
 
         for spoiled_ballot in self.plaintext_spoiled_ballots.values():
-            spoiled_ballot_from_file = from_file_to_dataclass(
+            spoiled_ballot_from_file = from_file(
                 PlaintextTally,
                 construct_path(
                     SPOILED_BALLOT_PREFIX + spoiled_ballot.object_id,
@@ -605,7 +605,7 @@ class TestEndToEndElection(BaseTestCase):
             )
             self.assertEqualAsDicts(spoiled_ballot, spoiled_ballot_from_file)
 
-        published_ciphertext_tally_from_file = from_file_to_dataclass(
+        published_ciphertext_tally_from_file = from_file(
             PublishedCiphertextTally,
             construct_path(ENCRYPTED_TALLY_FILE_NAME, ELECTION_RECORD_DIR),
         )
@@ -614,13 +614,13 @@ class TestEndToEndElection(BaseTestCase):
             published_ciphertext_tally_from_file,
         )
 
-        plainttext_tally_from_file = from_file_to_dataclass(
+        plainttext_tally_from_file = from_file(
             PlaintextTally, construct_path(TALLY_FILE_NAME, ELECTION_RECORD_DIR)
         )
         self.assertEqualAsDicts(self.plaintext_tally, plainttext_tally_from_file)
 
         for guardian_record in self.guardian_records:
-            guardian_record_from_file = from_file_to_dataclass(
+            guardian_record_from_file = from_file(
                 GuardianRecord,
                 construct_path(
                     GUARDIAN_PREFIX + guardian_record.guardian_id, guardians_directory

@@ -14,7 +14,7 @@ from sys import maxsize
 # pylint: disable=no-name-in-module
 from gmpy2 import mpz, powmod, invert
 
-from .serializable import Serializable, Private
+from .serialize import Serializable, Private
 from .constants import get_large_prime, get_small_prime, get_generator
 
 

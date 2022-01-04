@@ -9,9 +9,10 @@ from electionguard.manifest import (
     SelectionDescription,
     VoteVariationType,
 )
+from electionguard.serialize import from_raw, to_raw
 import electionguard_tools.factories.election_factory as ElectionFactory
 import electionguard_tools.factories.ballot_factory as BallotFactory
-from electionguard_tools.helpers.serialize import from_raw, to_raw
+
 
 election_factory = ElectionFactory.ElectionFactory()
 ballot_factory = BallotFactory.BallotFactory()

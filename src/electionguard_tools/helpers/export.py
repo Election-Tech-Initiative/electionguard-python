@@ -18,9 +18,9 @@ from electionguard.guardian import GuardianRecord, PrivateGuardianRecord
 from electionguard.election import CiphertextElectionContext
 from electionguard.encrypt import EncryptionDevice
 from electionguard.manifest import Manifest
+from electionguard.serialize import to_file
 from electionguard.tally import PlaintextTally, PublishedCiphertextTally
 
-from .serialize import to_file
 
 # Public
 ELECTION_RECORD_DIR = "election_record"
