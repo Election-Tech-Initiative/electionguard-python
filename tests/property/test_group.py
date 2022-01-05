@@ -46,7 +46,7 @@ class TestEquality(BaseTestCase):
     """Math equality tests"""
 
     @given(elements_mod_q(), elements_mod_q())
-    def test_p_not_equal_to_q(self, q: ElementModQ, q2: ElementModQ):
+    def test_p_not_equal_to_q(self, q: ElementModQ, q2: ElementModQ) -> None:
         i = int(q)
         i2 = int(q2)
         p = ElementModP(q.get_value())
@@ -78,54 +78,54 @@ class TestModularArithmetic(BaseTestCase):
     """Math Modular Arithmetic tests"""
 
     @given(elements_mod_q())
-    def test_add_q(self, q: ElementModQ):
+    def test_add_q(self, q: ElementModQ) -> None:
         as_int = add_q(q, 1)
         as_elem = add_q(q, ElementModQ(1))
         self.assertEqual(as_int, as_elem)
 
     @given(elements_mod_q())
-    def test_a_plus_bc_q(self, q: ElementModQ):
+    def test_a_plus_bc_q(self, q: ElementModQ) -> None:
         as_int = a_plus_bc_q(q, 1, 1)
         as_elem = a_plus_bc_q(q, ElementModQ(1), ElementModQ(1))
         self.assertEqual(as_int, as_elem)
 
     @given(elements_mod_q())
-    def test_a_minus_b_q(self, q: ElementModQ):
+    def test_a_minus_b_q(self, q: ElementModQ) -> None:
         as_int = a_minus_b_q(q, 1)
         as_elem = a_minus_b_q(q, ElementModQ(1))
         self.assertEqual(as_int, as_elem)
 
     @given(elements_mod_q())
-    def test_div_q(self, q: ElementModQ):
+    def test_div_q(self, q: ElementModQ) -> None:
         as_int = div_q(q, 1)
         as_elem = div_q(q, ElementModQ(1))
         self.assertEqual(as_int, as_elem)
 
     @given(elements_mod_p())
-    def test_div_p(self, p: ElementModQ):
+    def test_div_p(self, p: ElementModQ) -> None:
         as_int = div_p(p, 1)
         as_elem = div_p(p, ElementModP(1))
         self.assertEqual(as_int, as_elem)
 
-    def test_no_mult_inv_of_zero(self):
+    def test_no_mult_inv_of_zero(self) -> None:
         self.assertRaises(Exception, mult_inv_p, ZERO_MOD_P)
 
     @given(elements_mod_p_no_zero())
-    def test_mult_inverses(self, elem: ElementModP):
+    def test_mult_inverses(self, elem: ElementModP) -> None:
         inv = mult_inv_p(elem)
         self.assertEqual(mult_p(elem, inv), ONE_MOD_P)
 
     @given(elements_mod_p())
-    def test_mult_identity(self, elem: ElementModP):
+    def test_mult_identity(self, elem: ElementModP) -> None:
         self.assertEqual(elem, mult_p(elem))
 
-    def test_mult_noargs(self):
+    def test_mult_noargs(self) -> None:
         self.assertEqual(ONE_MOD_P, mult_p())
 
-    def test_add_noargs(self):
+    def test_add_noargs(self) -> None:
         self.assertEqual(ZERO_MOD_Q, add_q())
 
-    def test_properties_for_constants(self):
+    def test_properties_for_constants(self) -> None:
         self.assertNotEqual(get_generator(), 1)
         self.assertEqual(
             (get_cofactor() * get_small_prime()) % get_large_prime(),
@@ -135,13 +135,13 @@ class TestModularArithmetic(BaseTestCase):
         self.assertLess(get_generator(), get_large_prime())
         self.assertLess(get_cofactor(), get_large_prime())
 
-    def test_simple_powers(self):
+    def test_simple_powers(self) -> None:
         gp = int_to_p(get_generator())
         self.assertEqual(gp, g_pow_p(ONE_MOD_Q))
         self.assertEqual(ONE_MOD_P, g_pow_p(ZERO_MOD_Q))
 
     @given(elements_mod_q())
-    def test_in_bounds_q(self, q: ElementModQ):
+    def test_in_bounds_q(self, q: ElementModQ) -> None:
         self.assertTrue(q.is_in_bounds())
         too_big = q + get_small_prime()
         too_small = q - get_small_prime()
@@ -155,7 +155,7 @@ class TestModularArithmetic(BaseTestCase):
             ElementModQ(too_small)
 
     @given(elements_mod_p())
-    def test_in_bounds_p(self, p: ElementModP):
+    def test_in_bounds_p(self, p: ElementModP) -> None:
         self.assertTrue(p.is_in_bounds())
         too_big = p + get_large_prime()
         too_small = p - get_large_prime()
@@ -180,7 +180,7 @@ class TestModularArithmetic(BaseTestCase):
         )
 
     @given(elements_mod_p_no_zero())
-    def test_in_bounds_p_no_zero(self, p: ElementModP):
+    def test_in_bounds_p_no_zero(self, p: ElementModP) -> None:
         self.assertTrue(p.is_in_bounds_no_zero())
         self.assertFalse(ZERO_MOD_P.is_in_bounds_no_zero())
         self.assertFalse(
@@ -191,7 +191,7 @@ class TestModularArithmetic(BaseTestCase):
         )
 
     @given(elements_mod_q())
-    def test_large_values_rejected_by_int_to_q(self, q: ElementModQ):
+    def test_large_values_rejected_by_int_to_q(self, q: ElementModQ) -> None:
         oversize = q + get_small_prime()
         self.assertEqual(None, int_to_q(oversize))
 
@@ -199,28 +199,28 @@ class TestModularArithmetic(BaseTestCase):
 class TestOptionalFunctions(BaseTestCase):
     """Math Optional Functions tests"""
 
-    def test_unwrap(self):
+    def test_unwrap(self) -> None:
         good: Optional[int] = 3
         bad: Optional[int] = None
 
         self.assertEqual(get_optional(good), 3)
         self.assertRaises(Exception, get_optional, bad)
 
-    def test_match(self):
+    def test_match(self) -> None:
         good: Optional[int] = 3
         bad: Optional[int] = None
 
         self.assertEqual(5, match_optional(good, lambda: 1, lambda x: x + 2))
         self.assertEqual(1, match_optional(bad, lambda: 1, lambda x: x + 2))
 
-    def test_get_or_else(self):
+    def test_get_or_else(self) -> None:
         good: Optional[int] = 3
         bad: Optional[int] = None
 
         self.assertEqual(3, get_or_else_optional(good, 5))
         self.assertEqual(5, get_or_else_optional(bad, 5))
 
-    def test_flatmap(self):
+    def test_flatmap(self) -> None:
         good: Optional[int] = 3
         bad: Optional[int] = None
 
