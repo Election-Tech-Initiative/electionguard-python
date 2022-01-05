@@ -1,7 +1,7 @@
 import json
 import os
 from pathlib import Path
-from typing import Any, Type, TypeVar, Union
+from typing import Any, List, Type, TypeVar, Union
 
 from pydantic import BaseModel, PrivateAttr
 from pydantic.json import pydantic_encoder
@@ -55,6 +55,17 @@ def from_file(type_: Type[_T], path: Union[str, Path]) -> _T:
     with open(path, "r", encoding=_encoding) as json_file:
         data = json.load(json_file)
     return parse_obj_as(type_, data)
+
+
+def from_list_in_file(type_: Type[_T], path: Union[str, Path]) -> List[_T]:
+    """Deserialize json file that has an array of certain type."""
+
+    with open(path, "r", encoding=_encoding) as json_file:
+        data = json.load(json_file)
+        ls: List[_T] = []
+        for item in data:
+            ls.append(parse_obj_as(type_, item))
+    return ls
 
 
 def to_file(

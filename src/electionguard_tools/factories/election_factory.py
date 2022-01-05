@@ -40,12 +40,13 @@ from electionguard.manifest import (
     CandidateContestDescription,
     ReferendumContestDescription,
 )
+from electionguard.serialize import from_file
 from electionguard.utils import get_optional
 
 from electionguard_tools.helpers.key_ceremony_orchestrator import (
     KeyCeremonyOrchestrator,
 )
-from electionguard_tools.helpers.serialize import from_file_to_dataclass
+
 
 _T = TypeVar("_T")
 _DrawType = Callable[[SearchStrategy[_T]], _T]
@@ -96,7 +97,7 @@ class ElectionFactory:
     @staticmethod
     def get_hamilton_manifest_from_file() -> Manifest:
         """Get Hamilton County manifest from json file."""
-        return from_file_to_dataclass(
+        return from_file(
             Manifest,
             os.path.join(
                 data, os.path.join(data, "hamilton-county", "election_manifest.json")
@@ -253,7 +254,7 @@ class ElectionFactory:
 
     @staticmethod
     def _get_manifest_from_file(filename: str) -> Manifest:
-        return from_file_to_dataclass(Manifest, os.path.join(data, filename))
+        return from_file(Manifest, os.path.join(data, filename))
 
     @staticmethod
     def get_encryption_device() -> EncryptionDevice:

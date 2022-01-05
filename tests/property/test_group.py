@@ -49,8 +49,8 @@ class TestEquality(BaseTestCase):
     def test_p_not_equal_to_q(self, q: ElementModQ, q2: ElementModQ):
         i = int(q)
         i2 = int(q2)
-        p = ElementModP(q)
-        p2 = ElementModP(q2)
+        p = ElementModP(q.get_value())
+        p2 = ElementModP(q2.get_value())
 
         # same value should imply they're equal
         self.assertEqual(p, q)

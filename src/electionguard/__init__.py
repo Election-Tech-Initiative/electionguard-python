@@ -34,6 +34,7 @@ from electionguard import proof
 from electionguard import rsa
 from electionguard import scheduler
 from electionguard import schnorr
+from electionguard import serialize
 from electionguard import singleton
 from electionguard import tally
 from electionguard import type
@@ -171,6 +172,7 @@ from electionguard.discrete_log import (
     DiscreteLog,
     compute_discrete_log,
     compute_discrete_log_cache,
+    discrete_log_async,
 )
 from electionguard.election import (
     CiphertextElectionContext,
@@ -347,6 +349,17 @@ from electionguard.schnorr import (
     SchnorrProof,
     make_schnorr_proof,
 )
+from electionguard.serialize import (
+    Private,
+    Serializable,
+    construct_path,
+    from_file,
+    from_list_in_file,
+    from_raw,
+    get_schema,
+    to_file,
+    to_raw,
+)
 from electionguard.singleton import (
     Singleton,
 )
@@ -488,6 +501,7 @@ __all__ = [
     "PlaintextTallyContest",
     "PlaintextTallySelection",
     "PrimeOption",
+    "Private",
     "PrivateGuardianRecord",
     "Proof",
     "ProofOrRecovery",
@@ -507,6 +521,7 @@ __all__ = [
     "SecretCoefficient",
     "SelectionDescription",
     "SelectionId",
+    "Serializable",
     "Singleton",
     "SubmittedBallot",
     "VerifierId",
@@ -545,6 +560,7 @@ __all__ = [
     "compute_polynomial_coordinate",
     "compute_recovery_public_key",
     "constants",
+    "construct_path",
     "contest_description_with_placeholders_from",
     "contest_from",
     "contest_is_valid_for_style",
@@ -568,6 +584,7 @@ __all__ = [
     "decryption_mediator",
     "decryption_share",
     "discrete_log",
+    "discrete_log_async",
     "div_p",
     "div_q",
     "election",
@@ -589,6 +606,9 @@ __all__ = [
     "expand_compact_submitted_ballot",
     "flatmap_optional",
     "from_ciphertext_ballot",
+    "from_file",
+    "from_list_in_file",
+    "from_raw",
     "g_pow_p",
     "generate_device_uuid",
     "generate_election_key_pair",
@@ -610,6 +630,7 @@ __all__ = [
     "get_optional",
     "get_or_else_optional",
     "get_or_else_optional_func",
+    "get_schema",
     "get_shares_for_selection",
     "get_small_prime",
     "get_stream_handler",
@@ -672,12 +693,15 @@ __all__ = [
     "selection_from",
     "selection_is_valid_for_style",
     "sequence_order_sort",
+    "serialize",
     "singleton",
     "space_between_capitals",
     "tally",
     "tally_ballot",
     "tally_ballots",
+    "to_file",
     "to_iso_date_string",
+    "to_raw",
     "to_ticks",
     "type",
     "utils",

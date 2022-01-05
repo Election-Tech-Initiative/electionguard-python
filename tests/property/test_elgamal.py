@@ -50,12 +50,12 @@ class TestElGamal(BaseTestCase):
         ciphertext = get_optional(elgamal_encrypt(0, nonce, keypair.public_key))
         self.assertEqual(get_generator(), ciphertext.pad)
         self.assertEqual(
-            pow(ciphertext.pad, secret_key, get_large_prime()),
-            pow(public_key, nonce, get_large_prime()),
+            pow(ciphertext.pad.get_value(), secret_key.get_value(), get_large_prime()),
+            pow(public_key.get_value(), nonce.get_value(), get_large_prime()),
         )
         self.assertEqual(
-            ciphertext.data,
-            pow(public_key, nonce, get_large_prime()),
+            ciphertext.data.get_value(),
+            pow(public_key.get_value(), nonce.get_value(), get_large_prime()),
         )
 
         plaintext = ciphertext.decrypt(keypair.secret_key)
