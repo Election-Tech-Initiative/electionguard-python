@@ -112,6 +112,14 @@ class BaseElement(Serializable, ABC):
         """Overload >= (greater than or equal) operator."""
         return self.__gt__(other) or self.__eq__(other)
 
+    def __add__(self, other: Any) -> Any:
+        """Overload addition operator."""
+        return self.get_value() + other
+
+    def __sub__(self, other: Any) -> Any:
+        """Overload subtraction operator."""
+        return self.get_value() - other
+
     def __hash__(self) -> int:
         """Overload the hashing function."""
         return hash(self.get_value())
