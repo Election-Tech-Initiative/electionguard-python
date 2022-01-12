@@ -87,7 +87,7 @@ class ElectionFactory:
     @staticmethod
     def get_manifest_from_file(spec_version: str, sample_manifest: str) -> Manifest:
         """Get simple manifest from json file."""
-        return from_file_to_dataclass(
+        return from_file(
             Manifest,
             os.path.join(
                 data, spec_version, "sample", sample_manifest, "manifest.json"
