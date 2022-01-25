@@ -1,5 +1,5 @@
 from datetime import timedelta
-from hypothesis import given, settings, HealthCheck
+from hypothesis import given, settings, HealthCheck, Phase
 from hypothesis.strategies import integers
 
 
@@ -155,6 +155,7 @@ class TestChaumPedersen(BaseTestCase):
         deadline=timedelta(milliseconds=2000),
         suppress_health_check=[HealthCheck.too_slow],
         max_examples=10,
+        phases=[Phase.explicit, Phase.reuse, Phase.generate, Phase.target],
     )
     @given(
         elgamal_keypairs(),

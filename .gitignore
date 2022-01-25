@@ -145,6 +145,7 @@ election_record
 election_private_data
 election_record.zip
 election_private_data.zip
+schemas
 
 # VS Code
 .vscode/settings.json

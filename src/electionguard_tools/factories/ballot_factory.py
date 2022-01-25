@@ -23,10 +23,7 @@ from electionguard.manifest import (
     SelectionDescription,
     InternalManifest,
 )
-from electionguard_tools.helpers.serialize import (
-    from_file_to_dataclass,
-    from_list_in_file_to_dataclass,
-)
+from electionguard.serialize import from_file, from_list_in_file
 
 
 _T = TypeVar("_T")
@@ -146,13 +143,11 @@ class BallotFactory:
 
     @staticmethod
     def _get_ballot_from_file(filename: str) -> PlaintextBallot:
-        return from_file_to_dataclass(PlaintextBallot, os.path.join(data, filename))
+        return from_file(PlaintextBallot, os.path.join(data, filename))
 
     @staticmethod
     def _get_ballots_from_file(filename: str) -> List[PlaintextBallot]:
-        return from_list_in_file_to_dataclass(
-            PlaintextBallot, os.path.join(data, filename)
-        )
+        return from_list_in_file(PlaintextBallot, os.path.join(data, filename))
 
 
 @composite

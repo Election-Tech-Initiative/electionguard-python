@@ -5,8 +5,8 @@ in the sense that performance may be less than hand-optimized C code, and no gua
 made about timing or other side-channels.
 """
 
-from abc import ABC
-from typing import Any, Final, Optional, Union
+from abc import ABC, abstractmethod
+from typing import Any, Final, Optional, Tuple, Union
 from base64 import b16decode
 from secrets import randbelow
 from sys import maxsize
@@ -14,53 +14,137 @@ from sys import maxsize
 # pylint: disable=no-name-in-module
 from gmpy2 import mpz, powmod, invert
 
+from .serialize import Serializable, Private
 from .constants import get_large_prime, get_small_prime, get_generator
 
 
-class BaseElement(ABC, int):
+def hex_to_int(input: str) -> int:
+    """Given a hex string representing bytes, returns an int."""
+    return int(input, 16)
+
+
+def int_to_hex(input: int) -> str:
+    """Given an int, returns a hex string representing bytes."""
+    hex = format(input, "02X")
+    if len(hex) % 2:
+        hex = "0" + hex
+    return hex
+
+
+_zero = mpz(0)
+
+
+def _mpz_zero() -> mpz:
+    return _zero
+
+
+def _convert_to_element(data: Union[int, str]) -> Tuple[str, int]:
+    """Convert element to consistent types"""
+    if isinstance(data, str):
+        hex = data
+        integer = hex_to_int(data)
+    else:
+        hex = int_to_hex(data)
+        integer = data
+    return (hex, integer)
+
+
+class BaseElement(Serializable, ABC):
     """An element limited by mod T within [0, T) where T is determined by an upper_bound function."""
 
-    def __new__(cls, elem: Union[int, str], check_within_bounds: bool = True):  # type: ignore
-        """Instantiate ElementModT where elem is an int or its hex representation or mpz."""
-        if isinstance(elem, str):
-            elem = hex_to_int(elem)
+    data: str
+
+    _value: mpz = Private(default_factory=_mpz_zero)
+    """Internal math representation of element"""
+
+    def __init__(self, data: Union[int, str], check_within_bounds: bool = True) -> None:
+        """Instantiate element mod T where element is an int or its hex representation."""
+        (hex, integer) = _convert_to_element(data)
+        super().__init__(data=hex)
+        self._value = mpz(integer)
+
         if check_within_bounds:
-            if not 0 <= elem < cls.get_upper_bound():
+            if not self.is_in_bounds():
                 raise OverflowError
-        return super(BaseElement, cls).__new__(cls, elem)
+
+    def __str__(self) -> str:
+        """Overload string representation"""
+        return self.data
+
+    def __repr__(self) -> str:
+        """Overload object representation"""
+        return self.data
+
+    def __int__(self) -> int:
+        """Overload int conversion."""
+        return int(self.get_value())
+
+    def __eq__(self, other: Any) -> bool:
+        """Overload == (equal to) operator."""
+        return (
+            isinstance(other, BaseElement)
+            and int(self.get_value()) == int(other.get_value())
+        ) or (isinstance(other, int) and int(self.get_value()) == other)
 
     def __ne__(self, other: Any) -> bool:
         """Overload != (not equal to) operator."""
         return not self == other
 
-    def __eq__(self, other: Any) -> bool:
-        """Overload == (equal to) operator."""
-        return isinstance(other, (BaseElement, int)) and int(self) == other
+    def __lt__(self, other: Any) -> bool:
+        """Overload <= (less than) operator."""
+        return (
+            isinstance(other, BaseElement)
+            and int(self.get_value()) < int(other.get_value())
+        ) or (isinstance(other, int) and int(self.get_value()) < other)
+
+    def __le__(self, other: Any) -> bool:
+        """Overload <= (less than or equal) operator."""
+        return self.__lt__(other) or self.__eq__(other)
+
+    def __gt__(self, other: Any) -> bool:
+        """Overload > (greater than) operator."""
+        return (
+            isinstance(other, BaseElement)
+            and int(self.get_value()) > int(other.get_value())
+        ) or (isinstance(other, int) and int(self.get_value()) > other)
+
+    def __ge__(self, other: Any) -> bool:
+        """Overload >= (greater than or equal) operator."""
+        return self.__gt__(other) or self.__eq__(other)
+
+    def __add__(self, other: Any) -> Any:
+        """Overload addition operator."""
+        return self.get_value() + other
+
+    def __sub__(self, other: Any) -> Any:
+        """Overload subtraction operator."""
+        return self.get_value() - other
 
     def __hash__(self) -> int:
         """Overload the hashing function."""
-        return hash(self.__int__())
+        return hash(self.get_value())
 
-    @classmethod
-    def get_upper_bound(cls) -> int:  # pylint: disable=no-self-use
+    @abstractmethod
+    def get_upper_bound(self) -> int:
         """Get the upper bound for the element."""
         return maxsize
+
+    def get_value(self) -> mpz:
+        """Get internal value for math calculations"""
+        return self._value
 
     def to_hex(self) -> str:
         """
         Convert from the element to the hex representation of bytes.
-
-        This is preferable to directly accessing `elem`, whose representation might change.
         """
-        return int_to_hex(self.__int__())
+        return self.data
 
     def to_hex_bytes(self) -> bytes:
         """
         Convert from the element to the representation of bytes by first going through hex.
-
-        This is preferable to directly accessing `elem`, whose representation might change.
         """
-        return b16decode(self.to_hex())
+
+        return b16decode(self.data)
 
     def is_in_bounds(self) -> bool:
         """
@@ -68,7 +152,7 @@ class BaseElement(ABC, int):
 
         Returns true if all is good, false if something's wrong.
         """
-        return 0 <= self.__int__() < self.get_upper_bound()
+        return 0 <= self.get_value() < self.get_upper_bound()
 
     def is_in_bounds_no_zero(self) -> bool:
         """
@@ -76,14 +160,13 @@ class BaseElement(ABC, int):
 
         Returns true if all is good, false if something's wrong.
         """
-        return 1 <= self.__int__() < self.get_upper_bound()
+        return 1 <= self.get_value() < self.get_upper_bound()
 
 
 class ElementModQ(BaseElement):
     """An element of the smaller `mod q` space, i.e., in [0, Q), where Q is a 256-bit prime."""
 
-    @classmethod
-    def get_upper_bound(cls) -> int:
+    def get_upper_bound(self) -> int:
         """Get the upper bound for the element."""
         return get_small_prime()
 
@@ -91,8 +174,7 @@ class ElementModQ(BaseElement):
 class ElementModP(BaseElement):
     """An element of the larger `mod p` space, i.e., in [0, P), where P is a 4096-bit prime."""
 
-    @classmethod
-    def get_upper_bound(cls) -> int:
+    def get_upper_bound(self) -> int:
         """Get the upper bound for the element."""
         return get_large_prime()
 
@@ -119,20 +201,9 @@ ElementModPorInt = Union[ElementModP, int]
 
 def _get_mpz(input: Union[BaseElement, int]) -> mpz:
     """Get BaseElement or integer as mpz."""
+    if isinstance(input, BaseElement):
+        return input.get_value()
     return mpz(input)
-
-
-def hex_to_int(input: str) -> int:
-    """Given a hex string representing bytes, returns an int."""
-    return int(input, 16)
-
-
-def int_to_hex(input: int) -> str:
-    """Given an int, returns a hex string representing bytes."""
-    hex = format(input, "02X")
-    if len(hex) % 2:
-        hex = "0" + hex
-    return hex
 
 
 def hex_to_q(input: str) -> Optional[ElementModQ]:

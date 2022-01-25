@@ -9,9 +9,10 @@ from electionguard.manifest import (
     SelectionDescription,
     VoteVariationType,
 )
+from electionguard.serialize import from_raw, to_raw
 import electionguard_tools.factories.election_factory as ElectionFactory
 import electionguard_tools.factories.ballot_factory as BallotFactory
-from electionguard_tools.helpers.serialize import from_raw, to_raw
+
 
 election_factory = ElectionFactory.ElectionFactory()
 ballot_factory = BallotFactory.BallotFactory()
@@ -20,7 +21,7 @@ ballot_factory = BallotFactory.BallotFactory()
 class TestManifest(BaseTestCase):
     """Manifest tests"""
 
-    def test_simple_manifest_is_valid(self):
+    def test_simple_manifest_is_valid(self) -> None:
 
         # Act
         subject = election_factory.get_simple_manifest_from_file()
@@ -30,7 +31,7 @@ class TestManifest(BaseTestCase):
         self.assertEqual(subject.election_scope_id, "jefferson-county-primary")
         self.assertTrue(subject.is_valid())
 
-    def test_simple_manifest_can_serialize(self):
+    def test_simple_manifest_can_serialize(self) -> None:
         # Arrange
         subject = election_factory.get_simple_manifest_from_file()
         intermediate = to_raw(subject)
@@ -42,7 +43,7 @@ class TestManifest(BaseTestCase):
         self.assertIsNotNone(result.election_scope_id)
         self.assertEqual(result.election_scope_id, "jefferson-county-primary")
 
-    def test_manifest_has_deterministic_hash(self):
+    def test_manifest_has_deterministic_hash(self) -> None:
 
         # Act
         subject1 = election_factory.get_simple_manifest_from_file()
@@ -51,7 +52,7 @@ class TestManifest(BaseTestCase):
         # Assert
         self.assertEqual(subject1.crypto_hash(), subject2.crypto_hash())
 
-    def test_manifest_hash_is_consistent_regardless_of_format(self):
+    def test_manifest_hash_is_consistent_regardless_of_format(self) -> None:
 
         # Act
         subject1 = election_factory.get_simple_manifest_from_file()
@@ -72,7 +73,7 @@ class TestManifest(BaseTestCase):
 
     def test_manifest_from_file_generates_consistent_internal_description_contest_hashes(
         self,
-    ):
+    ) -> None:
         # Arrange
         comparator = election_factory.get_simple_manifest_from_file()
         subject = InternalManifest(comparator)
@@ -84,7 +85,7 @@ class TestManifest(BaseTestCase):
                 if expected.object_id == actual.object_id:
                     self.assertEqual(expected.crypto_hash(), actual.crypto_hash())
 
-    def test_contest_description_valid_input_succeeds(self):
+    def test_contest_description_valid_input_succeeds(self) -> None:
         description = ContestDescriptionWithPlaceholders(
             object_id="0@A.com-contest",
             electoral_district_id="0@A.com-gp-unit",
@@ -118,7 +119,7 @@ class TestManifest(BaseTestCase):
 
         self.assertTrue(description.is_valid())
 
-    def test_contest_description_invalid_input_fails(self):
+    def test_contest_description_invalid_input_fails(self) -> None:
 
         description = ContestDescriptionWithPlaceholders(
             object_id="0@A.com-contest",
