@@ -90,7 +90,12 @@ class ElectionFactory:
         return from_file(
             Manifest,
             os.path.join(
-                data, spec_version, "sample", sample_manifest, "manifest.json"
+                data,
+                spec_version,
+                "sample",
+                sample_manifest,
+                "election_record",
+                "manifest.json",
             ),
         )
 
