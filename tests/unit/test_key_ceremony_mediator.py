@@ -1,3 +1,4 @@
+from typing import List
 from tests.base_test_case import BaseTestCase
 
 from electionguard.guardian import Guardian
@@ -9,7 +10,6 @@ from electionguard.key_ceremony_mediator import KeyCeremonyMediator, GuardianPai
 from electionguard_tools.helpers.key_ceremony_orchestrator import (
     KeyCeremonyOrchestrator,
 )
-from electionguard_tools.helpers.identity_encrypt import identity_auxiliary_decrypt
 
 NUMBER_OF_GUARDIANS = 2
 QUORUM = 2
@@ -21,9 +21,9 @@ GUARDIAN_2_ID = "Guardian 2"
 class TestKeyCeremonyMediator(BaseTestCase):
     """Key ceremony mediator tests"""
 
-    GUARDIAN_1 = None
-    GUARDIAN_2 = None
-    GUARDIANS = []
+    GUARDIAN_1: Guardian
+    GUARDIAN_2: Guardian
+    GUARDIANS: List[Guardian] = []
 
     def setUp(self) -> None:
         super().setUp()
@@ -31,7 +31,7 @@ class TestKeyCeremonyMediator(BaseTestCase):
         self.GUARDIAN_2 = Guardian(GUARDIAN_2_ID, 2, NUMBER_OF_GUARDIANS, QUORUM)
         self.GUARDIANS = [self.GUARDIAN_1, self.GUARDIAN_2]
 
-    def test_reset(self):
+    def test_reset(self) -> None:
         # Arrange
         mediator = KeyCeremonyMediator("mediator_reset", CEREMONY_DETAILS)
         new_ceremony_details = CeremonyDetails(3, 3)
@@ -39,20 +39,20 @@ class TestKeyCeremonyMediator(BaseTestCase):
         mediator.reset(new_ceremony_details)
         self.assertEqual(mediator.ceremony_details, new_ceremony_details)
 
-    def test_take_attendance(self):
+    def test_take_attendance(self) -> None:
         """Round 1: Mediator takes attendance and guardians announce"""
 
         # Arrange
         mediator = KeyCeremonyMediator("mediator_attendance", CEREMONY_DETAILS)
 
         # Act
-        mediator.announce(self.GUARDIAN_1.share_public_keys())
+        mediator.announce(self.GUARDIAN_1.share_key())
 
         # Assert
         self.assertFalse(mediator.all_guardians_announced())
 
         # Act
-        mediator.announce(self.GUARDIAN_2.share_public_keys())
+        mediator.announce(self.GUARDIAN_2.share_key())
 
         # Assert
         self.assertTrue(mediator.all_guardians_announced())
@@ -64,7 +64,7 @@ class TestKeyCeremonyMediator(BaseTestCase):
         self.assertIsNotNone(guardian_key_sets)
         self.assertEqual(len(guardian_key_sets), NUMBER_OF_GUARDIANS)
 
-    def test_exchange_of_backups(self):
+    def test_exchange_of_backups(self) -> None:
         """Round 2: Exchange of election partial key backups"""
 
         # Arrange
@@ -110,7 +110,7 @@ class TestKeyCeremonyMediator(BaseTestCase):
         self.assertEqual(guardian2_backups[0], backup_from_1_for_2)
 
     # Partial Key Verifications
-    def test_partial_key_backup_verification_success(self):
+    def test_partial_key_backup_verification_success(self) -> None:
         """
         Test for the happy path of the verification process where each key is successfully verified and no bad actors.
         """
@@ -121,10 +121,10 @@ class TestKeyCeremonyMediator(BaseTestCase):
 
         # Round 3 - Guardians only
         verification1 = self.GUARDIAN_1.verify_election_partial_key_backup(
-            GUARDIAN_2_ID, identity_auxiliary_decrypt
+            GUARDIAN_2_ID,
         )
         verification2 = self.GUARDIAN_2.verify_election_partial_key_backup(
-            GUARDIAN_1_ID, identity_auxiliary_decrypt
+            GUARDIAN_1_ID,
         )
 
         # Act
@@ -144,7 +144,7 @@ class TestKeyCeremonyMediator(BaseTestCase):
         self.assertTrue(mediator.all_backups_verified())
         self.assertIsNotNone(joint_key)
 
-    def test_partial_key_backup_verification_failure(self):
+    def test_partial_key_backup_verification_failure(self) -> None:
         """
         In this case, the recipient guardian does not correctly verify the sent key backup.
         This failed verificaton requires the sender create a challenge and a new verifier
@@ -157,7 +157,7 @@ class TestKeyCeremonyMediator(BaseTestCase):
 
         # Round 3 - Guardians only
         verification1 = self.GUARDIAN_1.verify_election_partial_key_backup(
-            GUARDIAN_2_ID, identity_auxiliary_decrypt
+            GUARDIAN_2_ID,
         )
 
         # Act

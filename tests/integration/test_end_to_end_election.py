@@ -73,10 +73,6 @@ from electionguard_tools.factories.election_factory import (
     ElectionFactory,
     NUMBER_OF_GUARDIANS,
 )
-from electionguard_tools.helpers.identity_encrypt import (
-    identity_auxiliary_encrypt,
-    identity_auxiliary_decrypt,
-)
 
 devices_directory = path.join(ELECTION_RECORD_DIR, DEVICES_DIR)
 guardians_directory = path.join(ELECTION_RECORD_DIR, GUARDIANS_DIR)
@@ -204,14 +200,14 @@ class TestEndToEndElection(BaseTestCase):
         # ROUND 1: Public Key Sharing
         # Announce
         for guardian in self.guardians:
-            self.mediator.announce(guardian.share_public_keys())
+            self.mediator.announce(guardian.share_key())
 
         # Share Keys
         for guardian in self.guardians:
             announced_keys = get_optional(self.mediator.share_announced())
-            for key_set in announced_keys:
-                if guardian.id is not key_set.election.owner_id:
-                    guardian.save_guardian_public_keys(key_set)
+            for key in announced_keys:
+                if guardian.id is not key.owner_id:
+                    guardian.save_guardian_key(key)
 
         self._assert_message(
             KeyCeremonyMediator.all_guardians_announced.__qualname__,
@@ -222,9 +218,7 @@ class TestEndToEndElection(BaseTestCase):
         # ROUND 2: Election Partial Key Backup Sharing
         # Share Backups
         for sending_guardian in self.guardians:
-            sending_guardian.generate_election_partial_key_backups(
-                identity_auxiliary_encrypt
-            )
+            sending_guardian.generate_election_partial_key_backups()
             backups = []
             for designated_guardian in self.guardians:
                 if designated_guardian.id != sending_guardian.id:
@@ -267,7 +261,7 @@ class TestEndToEndElection(BaseTestCase):
                 if designated_guardian.id is not backup_owner.id:
                     verification = (
                         designated_guardian.verify_election_partial_key_backup(
-                            backup_owner.id, identity_auxiliary_decrypt
+                            backup_owner.id
                         )
                     )
                     verifications.append(get_optional(verification))
@@ -391,7 +385,7 @@ class TestEndToEndElection(BaseTestCase):
         # Announce each guardian as present
         count = 0
         for guardian in self.guardians:
-            guardian_key = guardian.share_election_public_key()
+            guardian_key = guardian.share_key()
             tally_share = guardian.compute_tally_share(
                 self.ciphertext_tally, self.context
             )

@@ -42,7 +42,6 @@ from electionguard.utils import get_optional
 
 import electionguard_tools.factories.ballot_factory as BallotFactory
 import electionguard_tools.factories.election_factory as ElectionFactory
-from electionguard_tools.helpers.identity_encrypt import identity_auxiliary_decrypt
 from electionguard_tools.helpers.key_ceremony_orchestrator import (
     KeyCeremonyOrchestrator,
 )
@@ -224,20 +223,17 @@ class TestDecryption(BaseTestCase):
         guardian = self.guardians[0]
         missing_guardian = self.guardians[2]
 
-        public_key = guardian.share_election_public_key()
-        auxiliary_keys = guardian._auxiliary_keys
-        missing_guardian_public_key = missing_guardian.share_election_public_key()
+        public_key = guardian.share_key()
+        missing_guardian_public_key = missing_guardian.share_key()
         missing_guardian_backup = missing_guardian._backups_to_share.get(guardian.id)
 
         # Act
         share = compute_compensated_decryption_share(
             public_key,
-            auxiliary_keys,
             missing_guardian_public_key,
             missing_guardian_backup,
             self.ciphertext_tally,
             self.context,
-            identity_auxiliary_decrypt,
         )
 
         # Assert
@@ -269,9 +265,9 @@ class TestDecryption(BaseTestCase):
         available_guardian_1 = self.guardians[0]
         available_guardian_2 = self.guardians[1]
         missing_guardian = self.guardians[2]
-        available_guardian_1_key = available_guardian_1.share_election_public_key()
-        available_guardian_2_key = available_guardian_2.share_election_public_key()
-        missing_guardian_key = missing_guardian.share_election_public_key()
+        available_guardian_1_key = available_guardian_1.share_key()
+        available_guardian_2_key = available_guardian_2.share_key()
+        missing_guardian_key = missing_guardian.share_key()
 
         first_selection = [
             selection
@@ -313,23 +309,19 @@ class TestDecryption(BaseTestCase):
 
         # compute compensations shares for the missing guardian
         compensation_0 = compute_compensated_decryption_share_for_selection(
-            available_guardian_1.share_election_public_key(),
-            available_guardian_1._auxiliary_keys,
-            missing_guardian.share_election_public_key(),
+            available_guardian_1.share_key(),
+            missing_guardian.share_key(),
             missing_guardian.share_election_partial_key_backup(available_guardian_1.id),
             first_selection,
             self.context,
-            identity_auxiliary_decrypt,
         )
 
         compensation_1 = compute_compensated_decryption_share_for_selection(
-            available_guardian_2.share_election_public_key(),
-            available_guardian_2._auxiliary_keys,
-            missing_guardian.share_election_public_key(),
+            available_guardian_2.share_key(),
+            missing_guardian.share_key(),
             missing_guardian.share_election_partial_key_backup(available_guardian_2.id),
             first_selection,
             self.context,
-            identity_auxiliary_decrypt,
         )
 
         self.assertIsNotNone(compensation_0)
@@ -396,15 +388,15 @@ class TestDecryption(BaseTestCase):
             first_selection,
             {
                 available_guardian_1.id: (
-                    available_guardian_1.share_election_public_key().key,
+                    available_guardian_1.share_key().key,
                     share_0,
                 ),
                 available_guardian_2.id: (
-                    available_guardian_2.share_election_public_key().key,
+                    available_guardian_2.share_key().key,
                     share_1,
                 ),
                 missing_guardian.id: (
-                    missing_guardian.share_election_public_key().key,
+                    missing_guardian.share_key().key,
                     share_2,
                 ),
             },
@@ -436,13 +428,11 @@ class TestDecryption(BaseTestCase):
         )
 
         result = compute_compensated_decryption_share_for_selection(
-            available_guardian.share_election_public_key(),
-            available_guardian._auxiliary_keys,
-            missing_guardian.share_election_public_key(),
+            available_guardian.share_key(),
+            missing_guardian.share_key(),
             incorrect_backup,
             first_selection,
             self.context,
-            identity_auxiliary_decrypt,
         )
 
         # Assert
@@ -452,10 +442,10 @@ class TestDecryption(BaseTestCase):
         # Arrange
         available_guardians = self.guardians[0:2]
         available_guardians_keys = [
-            guardian.share_election_public_key() for guardian in available_guardians
+            guardian.share_key() for guardian in available_guardians
         ]
         missing_guardian = self.guardians[2]
-        missing_guardian_key = missing_guardian.share_election_public_key()
+        missing_guardian_key = missing_guardian.share_key()
         missing_guardian_backups = {
             backup.designated_id: backup
             for backup in missing_guardian.share_election_partial_key_backups()
@@ -465,13 +455,11 @@ class TestDecryption(BaseTestCase):
         # Act
         compensated_shares: Dict[GuardianId, CompensatedDecryptionShare] = {
             available_guardian.id: compute_compensated_decryption_share(
-                available_guardian.share_election_public_key(),
-                available_guardian._auxiliary_keys,
+                available_guardian.share_key(),
                 missing_guardian_key,
                 missing_guardian_backups[available_guardian.id],
                 tally,
                 self.context,
-                identity_auxiliary_decrypt,
             )
             for available_guardian in available_guardians
         }
@@ -493,10 +481,10 @@ class TestDecryption(BaseTestCase):
         # Arrange
         available_guardians = self.guardians[0:2]
         available_guardians_keys = [
-            guardian.share_election_public_key() for guardian in available_guardians
+            guardian.share_key() for guardian in available_guardians
         ]
         missing_guardian = self.guardians[2]
-        missing_guardian_key = missing_guardian.share_election_public_key()
+        missing_guardian_key = missing_guardian.share_key()
         missing_guardian_backups = {
             backup.designated_id: backup
             for backup in missing_guardian.share_election_partial_key_backups()
@@ -507,13 +495,11 @@ class TestDecryption(BaseTestCase):
         compensated_ballot_shares: Dict[GuardianId, CompensatedDecryptionShare] = {}
         for available_guardian in available_guardians:
             compensated_share = compute_compensated_decryption_share_for_ballot(
-                available_guardian.share_election_public_key(),
-                available_guardian._auxiliary_keys,
+                available_guardian.share_key(),
                 missing_guardian_key,
                 missing_guardian_backups[available_guardian.id],
                 ballot,
                 self.context,
-                identity_auxiliary_decrypt,
             )
             if compensated_share:
                 compensated_ballot_shares[available_guardian.id] = compensated_share
@@ -539,10 +525,10 @@ class TestDecryption(BaseTestCase):
         # Arrange
         available_guardians = self.guardians[0:2]
         available_guardians_keys = [
-            guardian.share_election_public_key() for guardian in available_guardians
+            guardian.share_key() for guardian in available_guardians
         ]
         missing_guardian = self.guardians[2]
-        missing_guardian_key = missing_guardian.share_election_public_key()
+        missing_guardian_key = missing_guardian.share_key()
         missing_guardian_backups = {
             backup.designated_id: backup
             for backup in missing_guardian.share_election_partial_key_backups()
@@ -553,13 +539,11 @@ class TestDecryption(BaseTestCase):
         compensated_shares: Dict[GuardianId, CompensatedDecryptionShare] = {
             available_guardian.id: get_optional(
                 compute_compensated_decryption_share_for_ballot(
-                    available_guardian.share_election_public_key(),
-                    available_guardian._auxiliary_keys,
+                    available_guardian.share_key(),
                     missing_guardian_key,
                     missing_guardian_backups[available_guardian.id],
                     ballot,
                     self.context,
-                    identity_auxiliary_decrypt,
                 )
             )
             for available_guardian in available_guardians

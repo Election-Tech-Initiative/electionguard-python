@@ -199,7 +199,7 @@ class TestDecryptionMediator(BaseTestCase):
             self.context,
         )
         guardian = self.guardians[0]
-        guardian_key = self.guardians[0].share_election_public_key()
+        guardian_key = self.guardians[0].share_key()
         tally_share = guardian.compute_tally_share(self.ciphertext_tally, self.context)
         ballot_shares = {}
 
@@ -266,9 +266,7 @@ class TestDecryptionMediator(BaseTestCase):
         )
 
         available_guardians = self.guardians[0:2]
-        all_guardian_keys = [
-            guardian.share_election_public_key() for guardian in self.guardians
-        ]
+        all_guardian_keys = [guardian.share_key() for guardian in self.guardians]
 
         TallyCeremonyOrchestrator.perform_compensated_decryption_setup(
             available_guardians,
