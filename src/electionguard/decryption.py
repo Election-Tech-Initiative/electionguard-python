@@ -4,7 +4,6 @@ from electionguard.chaum_pedersen import ChaumPedersenProof, make_chaum_pedersen
 from electionguard.elgamal import ElGamalCiphertext
 from electionguard.utils import get_optional
 
-from .auxiliary import AuxiliaryDecrypt, AuxiliaryKeyPair
 from .ballot import (
     SubmittedBallot,
     CiphertextSelection,
@@ -33,7 +32,6 @@ from .group import (
 )
 from .key_ceremony import ElectionKeyPair, ElectionPartialKeyBackup, ElectionPublicKey
 from .logs import log_warning
-from .rsa import rsa_decrypt
 from .scheduler import Scheduler
 from .tally import CiphertextTally
 
@@ -86,24 +84,20 @@ def compute_decryption_share(
 
 def compute_compensated_decryption_share(
     guardian_key: ElectionPublicKey,
-    guardian_auxiliary_keys: AuxiliaryKeyPair,
     missing_guardian_key: ElectionPublicKey,
     missing_guardian_backup: ElectionPartialKeyBackup,
     tally: CiphertextTally,
     context: CiphertextElectionContext,
-    decrypt: AuxiliaryDecrypt = rsa_decrypt,
     scheduler: Optional[Scheduler] = None,
 ) -> Optional[CompensatedDecryptionShare]:
     """
     Compute the compensated decryption for all of the contests in the Ciphertext Tally
 
     :param guardian_key: Guardian's election public key
-    :param guardian_auxiliary_keys: Guardian's auxiliary key pair
     :param missing_guardian_key: Missing guardian's election public key
     :param missing_guardian_backup: Missing guardian's election partial key backup
     :param tally: Encrypted tally to get decryption share of
     :param context: Election context
-    :param decrypt: Auxiliary decryption method
     :param scheduler: Scheduler
     :return: Return a guardian's compensated decryption share of tally for the missing guardian
         or None if error
@@ -114,7 +108,6 @@ def compute_compensated_decryption_share(
     for contest in tally.contests.values():
         contest_share = compute_compensated_decryption_share_for_contest(
             guardian_key,
-            guardian_auxiliary_keys,
             missing_guardian_key,
             missing_guardian_backup,
             CiphertextContest(
@@ -124,7 +117,6 @@ def compute_compensated_decryption_share(
                 list(contest.selections.values()),
             ),
             context,
-            decrypt,
             scheduler,
         )
         if contest_share is None:
@@ -183,24 +175,20 @@ def compute_decryption_share_for_ballot(
 
 def compute_compensated_decryption_share_for_ballot(
     guardian_key: ElectionPublicKey,
-    guardian_auxiliary_keys: AuxiliaryKeyPair,
     missing_guardian_key: ElectionPublicKey,
     missing_guardian_backup: ElectionPartialKeyBackup,
     ballot: SubmittedBallot,
     context: CiphertextElectionContext,
-    decrypt: AuxiliaryDecrypt = rsa_decrypt,
     scheduler: Optional[Scheduler] = None,
 ) -> Optional[CompensatedDecryptionShare]:
     """
     Compute the compensated decryption for a single ballot
 
     :param guardian_key: Guardian's election public key
-    :param guardian_auxiliary_keys: Guardian's auxiliary key pair
     :param missing_guardian_key: Missing guardian's election public key
     :param missing_guardian_backup: Missing guardian's election partial key backup
     :param ballot: Encrypted ballot to get decryption share of
     :param context: Election context
-    :param decrypt: Auxiliary decryption method
     :param scheduler: Scheduler
     :return: Return a guardian's compensated decryption share of ballot for the missing guardian
         or None if error
@@ -210,7 +198,6 @@ def compute_compensated_decryption_share_for_ballot(
     for contest in ballot.contests:
         contest_share = compute_compensated_decryption_share_for_contest(
             guardian_key,
-            guardian_auxiliary_keys,
             missing_guardian_key,
             missing_guardian_backup,
             CiphertextContest(
@@ -220,7 +207,6 @@ def compute_compensated_decryption_share_for_ballot(
                 contest.ballot_selections,
             ),
             context,
-            decrypt,
             scheduler,
         )
         if contest_share is None:
@@ -277,19 +263,16 @@ def compute_decryption_share_for_contest(
 
 def compute_compensated_decryption_share_for_contest(
     guardian_key: ElectionPublicKey,
-    guardian_auxiliary_keys: AuxiliaryKeyPair,
     missing_guardian_key: ElectionPublicKey,
     missing_guardian_backup: ElectionPartialKeyBackup,
     contest: CiphertextContest,
     context: CiphertextElectionContext,
-    decrypt: AuxiliaryDecrypt = rsa_decrypt,
     scheduler: Optional[Scheduler] = None,
 ) -> Optional[CiphertextCompensatedDecryptionContest]:
     """
     Compute the compensated decryption share for a single contest
 
     :param guardian_key: The election public key of the available guardian that will partially decrypt the selection
-    :param guardian_auxiliary_keys: Auxiliary keys for the available guardian
     :param missing_guardian_key: Election public key of the guardian that is missing
     :param missing_guardian_backup: Election partial key backup of the missing guardian
     :param contest: The specific contest to decrypt
@@ -308,12 +291,10 @@ def compute_compensated_decryption_share_for_contest(
         [
             (
                 guardian_key,
-                guardian_auxiliary_keys,
                 missing_guardian_key,
                 missing_guardian_backup,
                 selection,
                 context,
-                decrypt,
             )
             for selection in contest.selections
         ],
@@ -373,19 +354,16 @@ def compute_decryption_share_for_selection(
 
 def compute_compensated_decryption_share_for_selection(
     guardian_key: ElectionPublicKey,
-    guardian_auxiliary_keys: AuxiliaryKeyPair,
     missing_guardian_key: ElectionPublicKey,
     missing_guardian_backup: ElectionPartialKeyBackup,
     selection: CiphertextSelection,
     context: CiphertextElectionContext,
-    decrypt: AuxiliaryDecrypt = rsa_decrypt,
 ) -> Optional[CiphertextCompensatedDecryptionSelection]:
     """
     Compute a compensated decryption share for a specific selection using the
     available guardian's share of the missing guardian's private key polynomial
 
     :param guardian_key: The election public key of the available guardian that will partially decrypt the selection
-    :param guardian_auxiliary_keys: Auxiliary keys for the available guardian
     :param missing_guardian_key: Election public key of the guardian that is missing
     :param missing_guardian_backup: Election partial key backup of the missing guardian
     :param selection: The specific selection to decrypt
@@ -394,17 +372,15 @@ def compute_compensated_decryption_share_for_selection(
     """
 
     compensated = compensate_decrypt(
-        guardian_auxiliary_keys,
         missing_guardian_backup,
         selection.ciphertext,
         context.crypto_extended_base_hash,
-        decrypt=decrypt,
     )
 
     if compensated is None:
         log_warning(
             (
-                f"compute compensated decryption share failed for {guardian_auxiliary_keys.owner_id} "
+                f"compute compensated decryption share failed for {guardian_key.owner_id} "
                 f"missing: {missing_guardian_key.owner_id} {selection.object_id}"
             )
         )
@@ -477,42 +453,27 @@ def partially_decrypt(
 
 
 def compensate_decrypt(
-    guardian_auxiliary_keys: AuxiliaryKeyPair,
     missing_guardian_backup: ElectionPartialKeyBackup,
     ciphertext: ElGamalCiphertext,
     extended_base_hash: ElementModQ,
     nonce_seed: ElementModQ = None,
-    decrypt: AuxiliaryDecrypt = rsa_decrypt,
 ) -> Optional[Tuple[ElementModP, ChaumPedersenProof]]:
     """
     Compute a compensated partial decryption of an elgamal encryption
     on behalf of the missing guardian
 
-    :param guardian_auxiliary_keys: Auxiliary key pair for guardian decrypting
     :param missing_guardian_backup: Missing guardians backup
     :param ciphertext: the `ElGamalCiphertext` that will be partially decrypted
     :param extended_base_hash: the extended base hash of the election that
                                 was used to generate t he ElGamal Ciphertext
     :param nonce_seed: an optional value used to generate the `ChaumPedersenProof`
                         if no value is provided, a random number will be used.
-    :param decrypt: an `AuxiliaryDecrypt` function to decrypt the missing guardina private key backup
     :return: a `Tuple[ElementModP, ChaumPedersenProof]` of the decryption and its proof
     """
     if nonce_seed is None:
         nonce_seed = rand_q()
 
-    decrypted_value = decrypt(
-        missing_guardian_backup.encrypted_value, guardian_auxiliary_keys.secret_key
-    )
-    if decrypted_value is None:
-        log_warning(
-            (
-                f"compensate decrypt guardian {guardian_auxiliary_keys.owner_id}"
-                f" failed decryption for {missing_guardian_backup.owner_id}"
-            )
-        )
-        return None
-    partial_secret_key = get_optional(hex_to_q(decrypted_value))
+    partial_secret_key = get_optional(hex_to_q(missing_guardian_backup.value))
 
     # 𝑀_{𝑖,l} = 𝐴^P𝑖_{l}
     partial_decryption = ciphertext.partial_decrypt(partial_secret_key)

@@ -1,14 +1,12 @@
 from dataclasses import dataclass, field
 from typing import Dict, Iterable, List, Optional
 from .key_ceremony import (
-    AuxiliaryPublicKey,
     CeremonyDetails,
     ElectionJointKey,
     ElectionPartialKeyBackup,
     ElectionPartialKeyChallenge,
     ElectionPartialKeyVerification,
     ElectionPublicKey,
-    PublicKeySet,
     combine_election_public_keys,
     verify_election_partial_key_challenge,
 )
@@ -42,7 +40,6 @@ class KeyCeremonyMediator:
 
     # From Guardians
     # Round 1
-    _auxiliary_public_keys: Dict[GuardianId, AuxiliaryPublicKey]
     _election_public_keys: Dict[GuardianId, ElectionPublicKey]
 
     # Round 2
@@ -56,7 +53,6 @@ class KeyCeremonyMediator:
     def __init__(self, id: MediatorId, ceremony_details: CeremonyDetails):
         self.id = id
         self.ceremony_details = ceremony_details
-        self._auxiliary_public_keys: Dict[GuardianId, AuxiliaryPublicKey] = {}
         self._election_public_keys: Dict[GuardianId, ElectionPublicKey] = {}
         self._election_partial_key_backups: Dict[
             GuardianPair, ElectionPartialKeyBackup
@@ -69,13 +65,12 @@ class KeyCeremonyMediator:
         ] = {}
 
     # ROUND 1: Announce guardians with public keys
-    def announce(self, public_key_set: PublicKeySet) -> None:
+    def announce(self, key: ElectionPublicKey) -> None:
         """
         Announce the guardian as present and participating the Key Ceremony
-        :param public_key_set: Both the guardians public keys
+        :param key: Guardian's election public key
         """
-        self._receive_election_public_key(public_key_set.election)
-        self._receive_auxiliary_public_key(public_key_set.auxiliary)
+        self._receive_election_public_key(key)
 
     def all_guardians_announced(self) -> bool:
         """
@@ -83,28 +78,22 @@ class KeyCeremonyMediator:
         :return: True if all guardians in attendance are announced
         """
         return (
-            self._all_auxiliary_public_keys_available()
-            and self._all_election_public_keys_available()
+            len(self._election_public_keys) == self.ceremony_details.number_of_guardians
         )
 
     def share_announced(
         self, requesting_guardian_id: Optional[GuardianId] = None
-    ) -> Optional[List[PublicKeySet]]:
+    ) -> Optional[List[ElectionPublicKey]]:
         """
         When all guardians have announced, share their public keys indicating their announcement
         """
         if not self.all_guardians_announced():
             return None
 
-        guardian_keys: List[PublicKeySet] = []
+        guardian_keys: List[ElectionPublicKey] = []
         for guardian_id in self._get_announced_guardians():
             if guardian_id is not requesting_guardian_id:
-                guardian_keys.append(
-                    PublicKeySet(
-                        self._election_public_keys[guardian_id],
-                        self._auxiliary_public_keys[guardian_id],
-                    )
-                )
+                guardian_keys.append(self._election_public_keys[guardian_id])
         return guardian_keys
 
     # ROUND 2: Share Election Partial Key Backups for compensating
@@ -193,29 +182,10 @@ class KeyCeremonyMediator:
         :param ceremony_details: Ceremony details of election
         """
         self.ceremony_details = ceremony_details
-        self._auxiliary_public_keys = {}
         self._election_public_keys = {}
         self._election_partial_key_backups = {}
         self._election_partial_key_challenges = {}
         self._election_partial_key_verifications = {}
-
-    # Auxiliary Public Keys
-    def _receive_auxiliary_public_key(self, public_key: AuxiliaryPublicKey) -> None:
-        """
-        Receive auxiliary public key from guardian
-        :param public_key: Auxiliary public key
-        """
-        self._auxiliary_public_keys[public_key.owner_id] = public_key
-
-    def _all_auxiliary_public_keys_available(self) -> bool:
-        """
-        True if all auxiliary public key for all guardians available
-        :return: All auxiliary public backups for all guardians available
-        """
-        return (
-            len(self._auxiliary_public_keys)
-            == self.ceremony_details.number_of_guardians
-        )
 
     # Election Public Keys
     def _receive_election_public_key(self, public_key: ElectionPublicKey) -> None:
@@ -224,15 +194,6 @@ class KeyCeremonyMediator:
         :param public_key: election public key
         """
         self._election_public_keys[public_key.owner_id] = public_key
-
-    def _all_election_public_keys_available(self) -> bool:
-        """
-        True if all election public keys for all guardians available
-        :return: All election public keys for all guardians available
-        """
-        return (
-            len(self._election_public_keys) == self.ceremony_details.number_of_guardians
-        )
 
     def _get_announced_guardians(self) -> Iterable[GuardianId]:
         return self._election_public_keys.keys()
