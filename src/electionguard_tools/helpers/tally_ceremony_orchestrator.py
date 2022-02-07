@@ -7,8 +7,6 @@ from electionguard.decryption_mediator import DecryptionMediator
 from electionguard.key_ceremony import ElectionPublicKey
 from electionguard.tally import CiphertextTally
 
-from electionguard_tools.helpers.identity_encrypt import identity_auxiliary_decrypt
-
 
 class TallyCeremonyOrchestrator:
     """Helper to assist in the decryption process particularly for testing"""
@@ -26,7 +24,7 @@ class TallyCeremonyOrchestrator:
         """
         TallyCeremonyOrchestrator.announcement(
             available_guardians,
-            [guardian.share_election_public_key() for guardian in available_guardians],
+            [guardian.share_key() for guardian in available_guardians],
             mediator,
             context,
             ciphertext_tally,
@@ -74,7 +72,7 @@ class TallyCeremonyOrchestrator:
 
         # Announce available guardians
         for available_guardian in available_guardians:
-            guardian_key = available_guardian.share_election_public_key()
+            guardian_key = available_guardian.share_key()
             tally_share = available_guardian.compute_tally_share(
                 ciphertext_tally, context
             )
@@ -119,7 +117,6 @@ class TallyCeremonyOrchestrator:
                     missing_guardian.owner_id,
                     ciphertext_tally,
                     context,
-                    identity_auxiliary_decrypt,
                 )
                 if tally_share is not None:
                     mediator.receive_tally_compensation_share(tally_share)
@@ -129,7 +126,6 @@ class TallyCeremonyOrchestrator:
                         missing_guardian.owner_id,
                         ciphertext_ballots,
                         context,
-                        identity_auxiliary_decrypt,
                     )
                 )
                 mediator.receive_ballot_compensation_shares(ballot_shares)

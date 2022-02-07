@@ -4,11 +4,6 @@ from electionguard.guardian import Guardian
 from electionguard.key_ceremony import CeremonyDetails, ElectionPartialKeyVerification
 from electionguard.key_ceremony_mediator import GuardianPair, KeyCeremonyMediator
 
-from electionguard_tools.helpers.identity_encrypt import (
-    identity_auxiliary_decrypt,
-    identity_auxiliary_encrypt,
-)
-
 
 class KeyCeremonyOrchestrator:
     """Helper to assist in the key ceremony particularly for testing"""
@@ -40,12 +35,12 @@ class KeyCeremonyOrchestrator:
         """Perform Round 1 including announcing guardians and sharing public keys"""
 
         for guardian in guardians:
-            mediator.announce(guardian.share_public_keys())
+            mediator.announce(guardian.share_key())
 
         for guardian in guardians:
             other_guardian_keys = mediator.share_announced(guardian.id)
-            for guardian_public_keys in other_guardian_keys:
-                guardian.save_guardian_public_keys(guardian_public_keys)
+            for guardian_key in other_guardian_keys:
+                guardian.save_guardian_key(guardian_key)
 
     @staticmethod
     def perform_round_2(
@@ -54,7 +49,7 @@ class KeyCeremonyOrchestrator:
         """Perform Round 2 including generating backups and sharing backups"""
 
         for guardian in guardians:
-            guardian.generate_election_partial_key_backups(identity_auxiliary_encrypt)
+            guardian.generate_election_partial_key_backups()
             mediator.receive_backups(guardian.share_election_partial_key_backups())
 
         for guardian in guardians:
@@ -72,7 +67,7 @@ class KeyCeremonyOrchestrator:
                 if guardian.id is not other_guardian.id:
                     verifications.append(
                         guardian.verify_election_partial_key_backup(
-                            other_guardian.id, identity_auxiliary_decrypt
+                            other_guardian.id,
                         )
                     )
                 mediator.receive_backup_verifications(verifications)
