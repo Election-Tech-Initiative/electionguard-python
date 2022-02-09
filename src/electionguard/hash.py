@@ -99,6 +99,4 @@ def hash_elems(*a: CryptoHashableAll) -> ElementModQ:
 
         h.update((hash_me + "|").encode("utf-8"))
 
-    return ElementModQ(
-        int.from_bytes(h.digest(), byteorder="big") % (get_small_prime() - 1)
-    )
+    return ElementModQ(int.from_bytes(h.digest(), byteorder="big") % get_small_prime())
