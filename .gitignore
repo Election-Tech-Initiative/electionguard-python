@@ -149,6 +149,6 @@ schemas
 
 # VS Code
 .vscode/settings.json
-sample-data.zip
+sample-data.zip*
 
 results/
