@@ -1,4 +1,4 @@
-.PHONY: all environment openssl-fix install install-gmp install-gmp-mac install-gmp-linux install-gmp-windows install-mkdocs auto-lint validate test test-example bench coverage coverage-html coverage-xml coverage-erase generate-sample-data
+.PHONY: all environment openssl-fix install install-gmp install-gmp-mac install-gmp-linux install-gmp-windows install-mkdocs auto-lint validate test test-example bench coverage coverage-html coverage-xml coverage-erase fetch-sample-data generate-sample-data
 
 CODE_COVERAGE ?= 90
 OS ?= $(shell python3 -c 'import platform; print(platform.system())')
@@ -19,13 +19,7 @@ environment:
 	poetry config virtualenvs.in-project true 
 	poetry install
 	@echo 🚨 Be sure to add poetry to PATH
-ifeq ($(OS), Windows)
-	choco install wget
-	choco install unzip
-endif
-	wget https://github.com/microsoft/electionguard/releases/download/v0.95.0/sample-data.zip
-	unzip -o sample-data.zip
-	unzip sample-data.zip
+	make fetch-sample-data
 
 install:
 	@echo 🔧 INSTALL
@@ -187,7 +181,18 @@ dependency-graph-ci:
 	poetry run pydeps --noshow --max-bacon 2 -o dependency-graph.svg src/electionguard
 
 # Sample Data
+fetch-sample-data:
+	@echo ⬇️ FETCH Sample Data
+ifeq ($(OS), Windows)
+	choco install wget
+	choco install unzip
+endif
+	wget https://github.com/microsoft/electionguard/releases/download/v0.95.0/sample-data.zip
+	unzip -o sample-data.zip
+	unzip sample-data.zip
+
 generate-sample-data:
+	@echo 🔁 GENERATE Sample Data
 	poetry run python3 src/electionguard_tools/scripts/sample_generator.py -m "hamilton-general" -n $(SAMPLE_BALLOT_COUNT) -s $(SAMPLE_BALLOT_SPOIL_RATE)
 
 # Publish
