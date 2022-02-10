@@ -1,5 +1,4 @@
 from electionguard_tools.helpers import export
-from electionguard_tools.helpers import identity_encrypt
 from electionguard_tools.helpers import key_ceremony_orchestrator
 from electionguard_tools.helpers import tally_accumulate
 from electionguard_tools.helpers import tally_ceremony_orchestrator
@@ -26,10 +25,6 @@ from electionguard_tools.helpers.export import (
     TALLY_FILE_NAME,
     export,
     export_private_data,
-)
-from electionguard_tools.helpers.identity_encrypt import (
-    identity_auxiliary_decrypt,
-    identity_auxiliary_encrypt,
 )
 from electionguard_tools.helpers.key_ceremony_orchestrator import (
     KeyCeremonyOrchestrator,
@@ -66,9 +61,6 @@ __all__ = [
     "accumulate_plaintext_ballots",
     "export",
     "export_private_data",
-    "identity_auxiliary_decrypt",
-    "identity_auxiliary_encrypt",
-    "identity_encrypt",
     "key_ceremony_orchestrator",
     "tally_accumulate",
     "tally_ceremony_orchestrator",

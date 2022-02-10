@@ -129,8 +129,7 @@ class ElectionSampleDataGenerator:
         if not use_all_guardians:
             available_guardians = private_data.guardians[0:QUORUM]
             all_guardian_keys = [
-                guardian.share_election_public_key()
-                for guardian in private_data.guardians
+                guardian.share_key() for guardian in private_data.guardians
             ]
 
             TallyCeremonyOrchestrator.perform_compensated_decryption_setup(
@@ -180,9 +179,7 @@ class ElectionSampleDataGenerator:
                         PrivateGuardianRecord(
                             guardian.id,
                             guardian._election_keys,
-                            guardian._auxiliary_keys,
                             guardian._backups_to_share,
-                            guardian._guardian_auxiliary_public_keys,
                             guardian._guardian_election_public_keys,
                             guardian._guardian_election_partial_key_backups,
                             guardian._guardian_election_partial_key_verifications,

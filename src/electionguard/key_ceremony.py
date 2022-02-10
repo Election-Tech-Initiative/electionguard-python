@@ -1,12 +1,6 @@
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List
 
-from .auxiliary import (
-    AuxiliaryDecrypt,
-    AuxiliaryEncrypt,
-    AuxiliaryKeyPair,
-    AuxiliaryPublicKey,
-)
 from .election_polynomial import (
     PublicCommitment,
     compute_polynomial_coordinate,
@@ -17,11 +11,9 @@ from .election_polynomial import (
 from .elgamal import (
     ElGamalKeyPair,
     elgamal_combine_public_keys,
-    elgamal_keypair_random,
 )
 from .group import ElementModP, hex_to_q, ElementModQ
 from .hash import hash_elems
-from .rsa import rsa_keypair, rsa_decrypt, rsa_encrypt
 from .schnorr import SchnorrProof
 from .type import (
     GuardianId,
@@ -133,9 +125,9 @@ class ElectionPartialKeyBackup:
     The sequence order of the designated guardian
     """
 
-    encrypted_value: str
+    value: str
     """
-    The encrypted coordinate corresponding to a secret election polynomial
+    The coordinate corresponding to a secret election polynomial
     """
 
 
@@ -145,14 +137,6 @@ class CeremonyDetails:
 
     number_of_guardians: int
     quorum: int
-
-
-@dataclass
-class PublicKeySet:
-    """A convenience set of public auxiliary and election keys"""
-
-    election: ElectionPublicKey
-    auxiliary: AuxiliaryPublicKey
 
 
 @dataclass
@@ -178,35 +162,6 @@ class ElectionPartialKeyChallenge:
     coefficient_proofs: List[SchnorrProof]
 
 
-def generate_elgamal_auxiliary_key_pair(
-    owner_id: GuardianId, sequence_order: int
-) -> AuxiliaryKeyPair:
-    """
-    Generate auxiliary key pair using elgamal
-    :return: Auxiliary key pair
-    """
-    elgamal_key_pair = elgamal_keypair_random()
-    return AuxiliaryKeyPair(
-        owner_id,
-        sequence_order,
-        elgamal_key_pair.secret_key.to_hex(),
-        elgamal_key_pair.public_key.to_hex(),
-    )
-
-
-def generate_rsa_auxiliary_key_pair(
-    owner_id: GuardianId, sequence_order: int
-) -> AuxiliaryKeyPair:
-    """
-    Generate auxiliary key pair using RSA
-    :return: Auxiliary key pair
-    """
-    rsa_key_pair = rsa_keypair()
-    return AuxiliaryKeyPair(
-        owner_id, sequence_order, rsa_key_pair.private_key, rsa_key_pair.public_key
-    )
-
-
 def generate_election_key_pair(
     guardian_id: str, sequence_order: int, quorum: int, nonce: ElementModQ = None
 ) -> ElectionKeyPair:
@@ -225,28 +180,22 @@ def generate_election_key_pair(
 def generate_election_partial_key_backup(
     owner_id: GuardianId,
     polynomial: ElectionPolynomial,
-    designated_auxiliary_public_key: AuxiliaryPublicKey,
-    encrypt: AuxiliaryEncrypt = rsa_encrypt,
-) -> Optional[ElectionPartialKeyBackup]:
+    designated_guardian_key: ElectionPublicKey,
+) -> ElectionPartialKeyBackup:
     """
     Generate election partial key backup for sharing
     :param owner_id: Owner of election key
     :param polynomial: The owner's Election polynomial
-    :param auxiliary_public_key: The Auxiliary public key
-    :param encrypt: Function to encrypt using auxiliary key
     :return: Election partial key backup
     """
     value = compute_polynomial_coordinate(
-        designated_auxiliary_public_key.sequence_order, polynomial
+        designated_guardian_key.sequence_order, polynomial
     )
-    encrypted_value = encrypt(value.to_hex(), designated_auxiliary_public_key.key)
-    if encrypted_value is None:
-        return None
     return ElectionPartialKeyBackup(
         owner_id,
-        designated_auxiliary_public_key.owner_id,
-        designated_auxiliary_public_key.sequence_order,
-        encrypted_value,
+        designated_guardian_key.owner_id,
+        designated_guardian_key.sequence_order,
+        value.to_hex(),
     )
 
 
@@ -254,26 +203,15 @@ def verify_election_partial_key_backup(
     verifier_id: str,
     backup: ElectionPartialKeyBackup,
     election_public_key: ElectionPublicKey,
-    verifier_auxiliary_key_pair: AuxiliaryKeyPair,
-    decrypt: AuxiliaryDecrypt = rsa_decrypt,
 ) -> ElectionPartialKeyVerification:
     """
     Verify election partial key backup contain point on owners polynomial
     :param verifier_id: Verifier of the partial key backup
     :param backup: Other guardian's election partial key backup
     :param election_public_key: Other guardian's election public key
-    :param auxiliary_key_pair: Auxiliary key pair
-    :param decrypt: Decryption function using auxiliary key
     """
 
-    decrypted_value = decrypt(
-        backup.encrypted_value, verifier_auxiliary_key_pair.secret_key
-    )
-    if decrypted_value is None:
-        return ElectionPartialKeyVerification(
-            backup.owner_id, backup.designated_id, verifier_id, False
-        )
-    value = get_optional(hex_to_q(decrypted_value))
+    value = get_optional(hex_to_q(backup.value))
     return ElectionPartialKeyVerification(
         backup.owner_id,
         backup.designated_id,

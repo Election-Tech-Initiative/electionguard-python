@@ -32,7 +32,6 @@ from electionguard.utils import get_optional
 
 import electionguard_tools.factories.ballot_factory as BallotFactory
 import electionguard_tools.factories.election_factory as ElectionFactory
-from electionguard_tools.helpers.identity_encrypt import identity_auxiliary_decrypt
 from electionguard_tools.helpers.key_ceremony_orchestrator import (
     KeyCeremonyOrchestrator,
 )
@@ -184,7 +183,7 @@ class TestDecryptWithShares(BaseTestCase):
         # precompute decryption shares for specific selection for the guardians
         shares: Dict[GuardianId, Tuple[ElementModP, DecryptionShare]] = {
             guardian.id: (
-                guardian.share_election_public_key().key,
+                guardian.share_key().key,
                 compute_decryption_share(
                     guardian._election_keys,
                     self.ciphertext_tally,
@@ -261,9 +260,8 @@ class TestDecryptWithShares(BaseTestCase):
 
         compensated_shares = {
             available_guardian.id: compute_compensated_decryption_share_for_ballot(
-                available_guardian.share_election_public_key(),
-                available_guardian._auxiliary_keys,
-                missing_guardian.share_election_public_key(),
+                available_guardian.share_key(),
+                missing_guardian.share_key(),
                 get_optional(
                     available_guardian._guardian_election_partial_key_backups.get(
                         missing_guardian.id
@@ -271,17 +269,16 @@ class TestDecryptWithShares(BaseTestCase):
                 ),
                 encrypted_ballot,
                 self.context,
-                identity_auxiliary_decrypt,
             )
             for available_guardian in available_guardians
         }
 
         lagrange_coefficients = compute_lagrange_coefficients_for_guardians(
-            [guardian.share_election_public_key() for guardian in available_guardians]
+            [guardian.share_key() for guardian in available_guardians]
         )
 
         reconstructed_share = reconstruct_decryption_share_for_ballot(
-            missing_guardian.share_election_public_key(),
+            missing_guardian.share_key(),
             encrypted_ballot,
             compensated_shares,
             lagrange_coefficients,

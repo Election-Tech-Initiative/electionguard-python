@@ -1,7 +1,6 @@
 import importlib.metadata
 
 # <AUTOGEN_INIT>
-from electionguard import auxiliary
 from electionguard import ballot
 from electionguard import ballot_box
 from electionguard import ballot_code
@@ -31,7 +30,6 @@ from electionguard import logs
 from electionguard import manifest
 from electionguard import nonces
 from electionguard import proof
-from electionguard import rsa
 from electionguard import scheduler
 from electionguard import schnorr
 from electionguard import serialize
@@ -40,12 +38,6 @@ from electionguard import tally
 from electionguard import type
 from electionguard import utils
 
-from electionguard.auxiliary import (
-    AuxiliaryDecrypt,
-    AuxiliaryEncrypt,
-    AuxiliaryKeyPair,
-    AuxiliaryPublicKey,
-)
 from electionguard.ballot import (
     BallotBoxState,
     CiphertextBallot,
@@ -270,13 +262,10 @@ from electionguard.key_ceremony import (
     ElectionPartialKeyChallenge,
     ElectionPartialKeyVerification,
     ElectionPublicKey,
-    PublicKeySet,
     combine_election_public_keys,
     generate_election_key_pair,
     generate_election_partial_key_backup,
     generate_election_partial_key_challenge,
-    generate_elgamal_auxiliary_key_pair,
-    generate_rsa_auxiliary_key_pair,
     verify_election_partial_key_backup,
     verify_election_partial_key_challenge,
 )
@@ -329,18 +318,6 @@ from electionguard.nonces import (
 from electionguard.proof import (
     Proof,
     ProofUsage,
-)
-from electionguard.rsa import (
-    BYTE_ORDER,
-    ISO_ENCODING,
-    KEY_SIZE,
-    MAX_BITS,
-    PADDING,
-    PUBLIC_EXPONENT,
-    RSAKeyPair,
-    rsa_decrypt,
-    rsa_encrypt,
-    rsa_keypair,
 )
 from electionguard.scheduler import (
     Scheduler,
@@ -395,11 +372,6 @@ from electionguard.utils import (
 
 __all__ = [
     "AnnotatedString",
-    "AuxiliaryDecrypt",
-    "AuxiliaryEncrypt",
-    "AuxiliaryKeyPair",
-    "AuxiliaryPublicKey",
-    "BYTE_ORDER",
     "BackupVerificationState",
     "BallotBox",
     "BallotBoxState",
@@ -475,24 +447,19 @@ __all__ = [
     "GuardianId",
     "GuardianPair",
     "GuardianRecord",
-    "ISO_ENCODING",
     "InternalManifest",
     "InternationalizedText",
-    "KEY_SIZE",
     "KeyCeremonyMediator",
     "LARGE_TEST_CONSTANTS",
     "LOG",
     "LagrangeCoefficientsRecord",
     "Language",
-    "MAX_BITS",
     "MEDIUM_TEST_CONSTANTS",
     "Manifest",
     "MediatorId",
     "NO_VOTE",
     "Nonces",
     "OrderedObjectBase",
-    "PADDING",
-    "PUBLIC_EXPONENT",
     "Party",
     "PlaintextBallot",
     "PlaintextBallotContest",
@@ -507,9 +474,7 @@ __all__ = [
     "ProofOrRecovery",
     "ProofUsage",
     "PublicCommitment",
-    "PublicKeySet",
     "PublishedCiphertextTally",
-    "RSAKeyPair",
     "ReadOnlyDataStore",
     "RecoveryPublicKey",
     "ReferendumContestDescription",
@@ -531,7 +496,6 @@ __all__ = [
     "a_plus_bc_q",
     "accept_ballot",
     "add_q",
-    "auxiliary",
     "ballot",
     "ballot_box",
     "ballot_code",
@@ -614,11 +578,9 @@ __all__ = [
     "generate_election_key_pair",
     "generate_election_partial_key_backup",
     "generate_election_partial_key_challenge",
-    "generate_elgamal_auxiliary_key_pair",
     "generate_placeholder_selection_from",
     "generate_placeholder_selections_from",
     "generate_polynomial",
-    "generate_rsa_auxiliary_key_pair",
     "get_ballot_code",
     "get_ballots",
     "get_cofactor",
@@ -684,10 +646,6 @@ __all__ = [
     "reconstruct_decryption_contest",
     "reconstruct_decryption_share",
     "reconstruct_decryption_share_for_ballot",
-    "rsa",
-    "rsa_decrypt",
-    "rsa_encrypt",
-    "rsa_keypair",
     "scheduler",
     "schnorr",
     "selection_from",
