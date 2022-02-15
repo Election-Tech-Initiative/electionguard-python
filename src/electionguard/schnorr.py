@@ -48,9 +48,17 @@ class SchnorrProof(Proof):
         in_bounds_u = u.is_in_bounds()
 
         c = hash_elems(k, h)
+        valid_challenge = c == self.challenge
+
         valid_proof = g_pow_p(u) == mult_p(h, pow_p(k, c))
 
-        success = valid_public_key and in_bounds_h and in_bounds_u and valid_proof
+        success = (
+            valid_public_key
+            and in_bounds_h
+            and in_bounds_u
+            and valid_challenge
+            and valid_proof
+        )
         if not success:
             log_warning(
                 "found an invalid Schnorr proof: %s",
@@ -59,6 +67,7 @@ class SchnorrProof(Proof):
                         "in_bounds_h": in_bounds_h,
                         "in_bounds_u": in_bounds_u,
                         "valid_public_key": valid_public_key,
+                        "valid_challenge": valid_challenge,
                         "valid_proof": valid_proof,
                         "proof": self,
                     }
