@@ -165,9 +165,7 @@ class ElectionSampleDataGenerator:
                 ciphertext_tally.publish(),
                 plaintext_tally,
                 manifest.guardians,
-                LagrangeCoefficientsRecord(
-                    list(mediator.get_lagrange_coefficients().values())
-                ),
+                LagrangeCoefficientsRecord(mediator.get_lagrange_coefficients()),
             )
 
             if use_private_data:
