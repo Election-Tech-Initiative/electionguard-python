@@ -12,7 +12,7 @@ from .elgamal import (
     ElGamalKeyPair,
     elgamal_combine_public_keys,
 )
-from .group import ElementModP, hex_to_q, ElementModQ
+from .group import ElementModP, ElementModQ
 from .hash import hash_elems
 from .schnorr import SchnorrProof
 from .type import (
@@ -125,7 +125,7 @@ class ElectionPartialKeyBackup:
     The sequence order of the designated guardian
     """
 
-    value: str
+    coordinate: ElementModQ
     """
     The coordinate corresponding to a secret election polynomial
     """
@@ -195,7 +195,7 @@ def generate_election_partial_key_backup(
         owner_id,
         designated_guardian_key.owner_id,
         designated_guardian_key.sequence_order,
-        value.to_hex(),
+        value,
     )
 
 
@@ -211,7 +211,7 @@ def verify_election_partial_key_backup(
     :param election_public_key: Other guardian's election public key
     """
 
-    value = get_optional(hex_to_q(backup.value))
+    value = backup.coordinate
     return ElectionPartialKeyVerification(
         backup.owner_id,
         backup.designated_id,
