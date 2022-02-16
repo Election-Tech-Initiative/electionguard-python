@@ -403,7 +403,7 @@ class TestEndToEndElection(BaseTestCase):
             )
 
         self.lagrange_coefficients = LagrangeCoefficientsRecord(
-            list(self.decryption_mediator.get_lagrange_coefficients().values())
+            self.decryption_mediator.get_lagrange_coefficients()
         )
 
         # Get the plaintext Tally
