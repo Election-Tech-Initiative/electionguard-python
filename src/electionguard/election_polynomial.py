@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List
+from typing import Dict, List
 
 from .elgamal import ElGamalKeyPair
 from .group import (
@@ -17,6 +17,7 @@ from .group import (
     ZERO_MOD_Q,
 )
 from .schnorr import make_schnorr_proof, SchnorrProof
+from .type import GuardianId
 
 SecretCoefficient = ElementModQ  # Secret coefficient of election polynomial
 PublicCommitment = ElementModP  # Public commitment of election polynomial
@@ -112,7 +113,7 @@ class LagrangeCoefficientsRecord:
     to be used in the public election record.
     """
 
-    coefficients: List[ElementModQ]
+    coefficients: Dict[GuardianId, ElementModQ]
 
 
 # pylint: disable=unnecessary-comprehension
