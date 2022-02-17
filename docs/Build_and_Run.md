@@ -28,16 +28,31 @@ OR
 poetry run python -m pip install -e .
 ```
 
-⚠️ Note: For Windows, use supplied precompiled gmpy2 package. Poetry does not support `pip install --find-links`, so the `pyproject.toml` must be edited.
+!!! warning "Note: gmpy2 Windows Installation"
 
-**Install gmpy2 for Windows**
-1. Determine if 64-bit:
-    _The 32 vs 64 bit is based on your installed python version NOT your system._
-    This code snippet will read true for 64 bit.
-     `python -c 'from sys import maxsize; print(maxsize > 2**32)'`
-2. Within `pyproject.toml`,
-    - Comment the original `gmpy2` line
-    - Uncomment the corresponding windows `gmpy2` line
+    **Recommended: Use Windows Subsystem for Linux (WSL)**
+
+    _WSL supports the generic workflow for installtion._
+
+    1. Install [WSL](https://docs.microsoft.com/en-us/windows/wsl/install). 
+    2. Return to **1. Initialize dev environment**
+
+    **Alternative: Install pre-compiled binary**
+
+    _Poetry does not support `pip install --find-links`, so the `pyproject.toml` must be edited and utilize a local pre-compiled binary of the gmpy2 package._
+
+    1. Determine if 64-bit:
+        _The 32 vs 64 bit is based on your installed python version NOT your system._
+        This code snippet will read true for 64 bit.
+    ```py
+    python -c 'from sys import maxsize; print(maxsize > 2**32)'
+    ```
+    2. Download [pre-compiled binary](https://www.lfd.uci.edu/~gohlke/pythonlibs/#gmpy) into project folder
+    3. Within `pyproject.toml`, replace `gmpy2` reference with direct path to downloaded file.
+    ```py
+    gmpy2 = { path = "./packages/gmpy2-2.0.8-cp39-cp39-win_amd64.whl" }
+    ```
+    3. Run `make install`
 
 
 ### 3. Validate import of module _(Optional)_

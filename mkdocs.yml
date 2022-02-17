@@ -24,3 +24,7 @@ nav:
 theme: readthedocs
 plugins:
   - mkdocs-jupyter
+markdown_extensions:
+- admonition
+- pymdownx.details
+- pymdownx.superfences
