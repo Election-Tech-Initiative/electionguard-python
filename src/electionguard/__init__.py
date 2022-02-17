@@ -168,6 +168,7 @@ from electionguard.discrete_log import (
 )
 from electionguard.election import (
     CiphertextElectionContext,
+    Configuration,
     make_ciphertext_election_context,
 )
 from electionguard.election_builder import (
@@ -399,6 +400,7 @@ __all__ = [
     "CompactPlaintextBallot",
     "CompactSubmittedBallot",
     "CompensatedDecryptionShare",
+    "Configuration",
     "ConstantChaumPedersenProof",
     "ContactInformation",
     "ContestDescription",
