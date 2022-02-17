@@ -1,6 +1,6 @@
 """Context for election encryption."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Dict, Optional
 
 from .constants import get_small_prime, get_large_prime, get_generator
@@ -9,6 +9,17 @@ from .group import (
     ElementModP,
 )
 from .hash import hash_elems
+
+
+@dataclass
+class Configuration:
+    """Configuration of election to allow edge cases."""
+
+    allow_overvotes: bool = field(default=False)
+    """
+    Allow overvotes, votes exceeding selection limit, for the election.
+    """
+
 
 # pylint: disable=too-many-instance-attributes
 @dataclass(eq=True, unsafe_hash=True)
@@ -54,6 +65,9 @@ class CiphertextElectionContext:
 
     extended_data: Optional[Dict[str, str]]
     """Data to allow extending the context for special cases."""
+
+    configuration: Configuration = field(default_factory=Configuration)
+    """Configuration for the election edge cases."""
 
 
 def make_ciphertext_election_context(
