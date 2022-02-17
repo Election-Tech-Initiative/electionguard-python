@@ -2,7 +2,6 @@ from typing import Dict, List, Optional, Tuple
 from electionguard.chaum_pedersen import ChaumPedersenProof, make_chaum_pedersen
 
 from electionguard.elgamal import ElGamalCiphertext
-from electionguard.utils import get_optional
 
 from .ballot import (
     SubmittedBallot,
@@ -24,7 +23,6 @@ from .group import (
     ElementModP,
     ElementModQ,
     ONE_MOD_P,
-    hex_to_q,
     mult_p,
     pow_p,
     pow_q,
@@ -473,7 +471,7 @@ def compensate_decrypt(
     if nonce_seed is None:
         nonce_seed = rand_q()
 
-    partial_secret_key = get_optional(hex_to_q(missing_guardian_backup.value))
+    partial_secret_key = missing_guardian_backup.coordinate
 
     # 𝑀_{𝑖,l} = 𝐴^P𝑖_{l}
     partial_decryption = ciphertext.partial_decrypt(partial_secret_key)
