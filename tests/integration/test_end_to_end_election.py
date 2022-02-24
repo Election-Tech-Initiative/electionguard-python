@@ -587,6 +587,13 @@ class TestEndToEndElection(BaseTestCase):
                     submitted_ballots_directory,
                 ),
             )
+            self.assertTrue(
+                ballot_from_file.is_valid_encryption(
+                    self.internal_manifest.manifest_hash,
+                    self.context.elgamal_public_key,
+                    self.context.crypto_extended_base_hash,
+                )
+            )
             self.assertEqualAsDicts(ballot, ballot_from_file)
 
         for spoiled_ballot in self.plaintext_spoiled_ballots.values():

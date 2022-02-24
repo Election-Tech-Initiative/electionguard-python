@@ -1,5 +1,6 @@
 from dataclasses import dataclass
-from typing import Iterable, Optional
+from typing import Any, Iterable, Optional
+
 
 from .discrete_log import DiscreteLog
 from .group import (
@@ -42,6 +43,11 @@ class ElGamalCiphertext:
 
     data: ElementModP
     """encrypted data or beta"""
+
+    def __eq__(self, other: Any) -> bool:
+        if isinstance(other, ElGamalCiphertext):
+            return self.pad == other.pad and self.data == other.data
+        return False
 
     def decrypt_known_product(self, product: ElementModP) -> int:
         """
