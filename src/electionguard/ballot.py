@@ -70,7 +70,6 @@ class PlaintextBallotSelection(OrderedObjectBase):
     is_placeholder_selection: bool = field(default=False)
     """Determines if this is a placeholder selection"""
 
-    # TODO: ISSUE #35: encrypt/decrypt
     extended_data: Optional[ExtendedData] = field(default=None)
     """
     an optional field of arbitrary data, such as the value of a write-in candidate
@@ -172,7 +171,6 @@ class CiphertextBallotSelection(
     proof: Optional[DisjunctiveChaumPedersenProof] = field(default=None)
     """The proof that demonstrates the selection is an encryption of 0 or 1, and was encrypted using the `nonce`"""
 
-    # TODO: ISSUE #35: encrypt/decrypt
     extended_data: Optional[ElGamalCiphertext] = field(default=None)
     """encrypted representation of the extended_data field"""
 
@@ -315,6 +313,11 @@ class PlaintextBallotContest(OrderedObjectBase):
     )
     """Collection of ballot selections"""
 
+    extended_data: Optional[ExtendedData] = field(default=None)
+    """
+    an optional field of arbitrary data, such as overvote notification
+    """
+
     def is_valid(
         self,
         expected_object_id: str,
@@ -368,8 +371,10 @@ class PlaintextBallotContest(OrderedObjectBase):
         return True
 
     def __eq__(self, other: Any) -> bool:
-        return isinstance(other, PlaintextBallotContest) and _list_eq(
-            self.ballot_selections, other.ballot_selections
+        return (
+            isinstance(other, PlaintextBallotContest)
+            and _list_eq(self.ballot_selections, other.ballot_selections)
+            and self.extended_data == other.extended_data
         )
 
     def __ne__(self, other: Any) -> bool:
@@ -426,6 +431,9 @@ class CiphertextBallotContest(OrderedObjectBase, CryptoHashCheckable):
     The proof demonstrates the sum of the selections does not exceed the maximum
     available selections for the contest, and that the proof was generated with the nonce
     """
+
+    extended_data: Optional[ElGamalCiphertext] = field(default=None)
+    """encrypted representation of the extended_data field"""
 
     def __eq__(self, other: Any) -> bool:
         return (
@@ -580,6 +588,7 @@ def make_ciphertext_ballot_contest(
     crypto_hash: Optional[ElementModQ] = None,
     proof: Optional[ConstantChaumPedersenProof] = None,
     nonce: Optional[ElementModQ] = None,
+    extended_data: Optional[ElGamalCiphertext] = None,
 ) -> CiphertextBallotContest:
     """
     Constructs a `CipherTextBallotContest` object. Most of the parameters here match up to fields
@@ -615,6 +624,7 @@ def make_ciphertext_ballot_contest(
         crypto_hash,
         nonce,
         proof,
+        extended_data,
     )
 
 
