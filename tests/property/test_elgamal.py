@@ -17,6 +17,7 @@ from electionguard.elgamal import (
     elgamal_keypair_from_secret,
     elgamal_keypair_random,
     elgamal_combine_public_keys,
+    hashed_elgamal_encrypt,
 )
 from electionguard.group import (
     ElementModQ,
@@ -183,3 +184,24 @@ class TestElGamal(BaseTestCase):
         end2 = timer()
         scheduler.close()
         log_info(f"Parallelism speedup: {(end2 - end1) / (end1 - start):.3f}")
+
+    def test_hashed_elgamal_encryption(self) -> None:
+        """
+        Ensure Hashed ElGamal encrypts and decrypts as expected.
+        """
+
+        # Arrange
+        message = b"mock_message"
+        keypair = elgamal_keypair_random()
+        nonce = ONE_MOD_Q
+        seed = ONE_MOD_Q
+
+        # Act
+        encrypted_message = hashed_elgamal_encrypt(
+            message, nonce, keypair.public_key, seed
+        )
+        decrypted_message = encrypted_message.decrypt(keypair.secret_key, seed)
+
+        # Assert
+        self.assertIsNotNone(encrypted_message)
+        self.assertEqual(message, decrypted_message)

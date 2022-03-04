@@ -15,6 +15,7 @@ from .group import (
     rand_range_q,
 )
 from .hash import hash_elems
+from .hmac import get_hmac
 from .logs import log_info, log_error
 from .utils import get_optional
 
@@ -95,6 +96,57 @@ class ElGamalCiphertext:
         return hash_elems(self.pad, self.data)
 
 
+@dataclass
+class HashedElGamalCiphertext:
+    """
+    A hashed version of ElGamal Ciphertext with less size restrictions.
+    Create one with `hashed_elgamal_encrypt`. Add them with `elgamal_add`.
+    Decrypt using one of the supplied instance methods.
+    """
+
+    pad: ElementModP
+    """pad or alpha"""
+
+    data: bytes
+    """encrypted data or beta"""
+
+    mac: ElementModQ
+    """message authentication code for hmac"""
+
+    def decrypt(self, secret_key: ElementModQ, encryption_seed: ElementModQ) -> bytes:
+        """
+        Decrypt an ElGamal ciphertext using a known ElGamal secret key.
+
+        :param secret_key: The corresponding ElGamal secret key.
+        :param encryption_seed: Encryption seed (Q) for election.
+        :return: Decrypted plaintext message.
+        """
+
+        session_key = hash_elems(self.pad, pow_p(self.pad, secret_key))
+        mac_key = get_hmac(
+            session_key.to_hex_bytes(),
+            encryption_seed.to_hex_bytes(),
+            _MAC_KEY_SIZE,
+        )
+        to_mac = self.pad.data + self.data
+        mac = get_hmac(mac_key.to_hex_bytes(), to_mac.to_hex_bytes())
+
+        if mac != self.mac:
+            log_error("MAC verification failed in decryption.")
+            return None
+        (ciphertext_chunks, bit_length) = _get_chunks(self.data)
+        data = b""
+        for i, block in enumerate(ciphertext_chunks):
+            data_key = get_hmac(
+                session_key.to_hex_bytes(),
+                encryption_seed.to_hex_bytes(),
+                bit_length,
+                (i + 1),
+            )
+            data += bytes([a ^ b for (a, b) in zip(block, data_key)])
+        return data
+
+
 def elgamal_keypair_from_secret(a: ElementModQ) -> Optional[ElGamalKeyPair]:
     """
     Given an ElGamal secret key (typically, a random number in [2,Q)), returns
@@ -128,12 +180,12 @@ def elgamal_combine_public_keys(keys: Iterable[ElementModP]) -> ElementModP:
 
 
 def elgamal_encrypt(
-    m: int, nonce: ElementModQ, public_key: ElementModP
+    message: int, nonce: ElementModQ, public_key: ElGamalPublicKey
 ) -> Optional[ElGamalCiphertext]:
     """
-    Encrypts a message with a given random nonce and an ElGamal public key.
+    Encrypts a set length message with a given random nonce and an ElGamal public key.
 
-    :param m: Message to elgamal_encrypt; must be an integer in [0,Q).
+    :param message: Known length message (m) to elgamal_encrypt; must be an integer in [0,Q).
     :param nonce: Randomly chosen nonce in [1,Q).
     :param public_key: ElGamal public key.
     :return: An `ElGamalCiphertext`.
@@ -143,7 +195,7 @@ def elgamal_encrypt(
         return None
 
     pad = g_pow_p(nonce)
-    gpowp_m = g_pow_p(m)
+    gpowp_m = g_pow_p(message)
     pubkey_pow_n = pow_p(public_key, nonce)
     data = mult_p(gpowp_m, pubkey_pow_n)
 
@@ -152,6 +204,71 @@ def elgamal_encrypt(
     log_info(f": data: {data.to_hex()}")
 
     return ElGamalCiphertext(pad, data)
+
+
+_MAC_KEY_SIZE = 256
+
+
+def hashed_elgamal_encrypt(
+    message: bytes,
+    nonce: ElementModQ,
+    public_key: ElGamalPublicKey,
+    encryption_seed: ElementModQ,
+):
+    """
+    Encrypts a variable length byte message with a given random nonce and an ElGamal public key.
+
+    :param message: message (m) to encrypt; must be in bytes.
+    :param nonce: Randomly chosen nonce in [1, Q).
+    :param public_key: ElGamal public key.
+    :param encryption_seed: Encryption seed (Q) for election.
+    """
+
+    pad = g_pow_p(nonce)
+    pubkey_pow_n = pow_p(public_key, nonce)
+
+    session_key = hash_elems(pad, pubkey_pow_n)
+
+    (message_chunks, bit_length) = _get_chunks(message)
+    data = b""
+    for i, block in enumerate(message_chunks):
+        data_key = get_hmac(
+            session_key.to_hex_bytes(),
+            encryption_seed.to_hex_bytes(),
+            bit_length,
+            (i + 1),
+        )
+        data += bytes([a ^ b for (a, b) in zip(block, data_key)])
+
+    mac_key = get_hmac(
+        session_key.to_hex_bytes(), encryption_seed.to_hex_bytes(), _MAC_KEY_SIZE
+    )
+    to_mac = pad.to_hex_bytes() + data
+    mac = get_hmac(mac_key.to_hex_bytes(), to_mac.to_hex_bytes())
+
+    log_info(f": publicKey: {public_key.to_hex()}")
+    log_info(f": pad: {pad.to_hex()}")
+    log_info(f": data: {data}")
+    log_info(f": mac: {mac}")
+
+    return HashedElGamalCiphertext(pad, data, mac)
+
+
+_BLOCK_SIZE = 32
+
+
+def _get_chunks(message: bytes):
+    remainder = len(message) % _BLOCK_SIZE
+    if remainder:
+        message.append(bytes([0 for _n in _BLOCK_SIZE - remainder]))
+    number_of_blocks = int(len(message) / _BLOCK_SIZE)
+    return (
+        [
+            message[_BLOCK_SIZE * i : _BLOCK_SIZE * (i + 1)]
+            for i in range(number_of_blocks)
+        ],
+        len(message) * 8,
+    )
 
 
 def elgamal_add(*ciphertexts: ElGamalCiphertext) -> ElGamalCiphertext:
