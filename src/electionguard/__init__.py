@@ -24,6 +24,7 @@ from electionguard import encrypt
 from electionguard import group
 from electionguard import guardian
 from electionguard import hash
+from electionguard import hmac
 from electionguard import key_ceremony
 from electionguard import key_ceremony_mediator
 from electionguard import logs
@@ -254,6 +255,9 @@ from electionguard.hash import (
     CryptoHashableAll,
     CryptoHashableT,
     hash_elems,
+)
+from electionguard.hmac import (
+    get_hmac,
 )
 from electionguard.key_ceremony import (
     CeremonyDetails,
@@ -590,6 +594,7 @@ __all__ = [
     "get_file_handler",
     "get_generator",
     "get_hash_for_device",
+    "get_hmac",
     "get_large_prime",
     "get_optional",
     "get_or_else_optional",
@@ -606,6 +611,7 @@ __all__ = [
     "hex_to_int",
     "hex_to_p",
     "hex_to_q",
+    "hmac",
     "int_to_hex",
     "int_to_p",
     "int_to_q",
