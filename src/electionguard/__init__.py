@@ -373,6 +373,7 @@ from electionguard.utils import (
     get_or_else_optional_func,
     match_optional,
     space_between_capitals,
+    to_hex_bytes,
     to_iso_date_string,
     to_ticks,
 )
@@ -670,6 +671,7 @@ __all__ = [
     "tally_ballot",
     "tally_ballots",
     "to_file",
+    "to_hex_bytes",
     "to_iso_date_string",
     "to_raw",
     "to_ticks",

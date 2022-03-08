@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, Iterable, Optional
+from typing import Any, Iterable, Optional, Union
 
 
 from .discrete_log import DiscreteLog
@@ -13,14 +13,18 @@ from .group import (
     ZERO_MOD_Q,
     TWO_MOD_Q,
     rand_range_q,
+    hex_to_q,
 )
 from .hash import hash_elems
 from .hmac import get_hmac
 from .logs import log_info, log_error
-from .utils import get_optional
+from .utils import get_optional, to_hex_bytes
 
 ElGamalSecretKey = ElementModQ
 ElGamalPublicKey = ElementModP
+
+_MAC_KEY_SIZE = 256
+_BLOCK_SIZE = 32
 
 
 @dataclass
@@ -113,7 +117,9 @@ class HashedElGamalCiphertext:
     mac: ElementModQ
     """message authentication code for hmac"""
 
-    def decrypt(self, secret_key: ElementModQ, encryption_seed: ElementModQ) -> bytes:
+    def decrypt(
+        self, secret_key: ElementModQ, encryption_seed: ElementModQ
+    ) -> Union[bytes, None]:
         """
         Decrypt an ElGamal ciphertext using a known ElGamal secret key.
 
@@ -128,8 +134,8 @@ class HashedElGamalCiphertext:
             encryption_seed.to_hex_bytes(),
             _MAC_KEY_SIZE,
         )
-        to_mac = self.pad.data + self.data
-        mac = get_hmac(mac_key.to_hex_bytes(), to_mac.to_hex_bytes())
+        to_mac = self.pad.to_hex_bytes() + self.data
+        mac = get_hmac(to_hex_bytes(mac_key), to_hex_bytes(to_mac))
 
         if mac != self.mac:
             log_error("MAC verification failed in decryption.")
@@ -206,15 +212,12 @@ def elgamal_encrypt(
     return ElGamalCiphertext(pad, data)
 
 
-_MAC_KEY_SIZE = 256
-
-
 def hashed_elgamal_encrypt(
     message: bytes,
     nonce: ElementModQ,
     public_key: ElGamalPublicKey,
     encryption_seed: ElementModQ,
-):
+) -> HashedElGamalCiphertext:
     """
     Encrypts a variable length byte message with a given random nonce and an ElGamal public key.
 
@@ -244,23 +247,22 @@ def hashed_elgamal_encrypt(
         session_key.to_hex_bytes(), encryption_seed.to_hex_bytes(), _MAC_KEY_SIZE
     )
     to_mac = pad.to_hex_bytes() + data
-    mac = get_hmac(mac_key.to_hex_bytes(), to_mac.to_hex_bytes())
+    mac = get_hmac(to_hex_bytes(mac_key), to_hex_bytes(to_mac))
 
     log_info(f": publicKey: {public_key.to_hex()}")
     log_info(f": pad: {pad.to_hex()}")
-    log_info(f": data: {data}")
-    log_info(f": mac: {mac}")
+    log_info(f": data: {data!r}")
+    log_info(f": mac: {mac!r}")
 
-    return HashedElGamalCiphertext(pad, data, mac)
+    return HashedElGamalCiphertext(
+        pad, data, get_optional(hex_to_q(mac.decode("utf-8")))
+    )
 
 
-_BLOCK_SIZE = 32
-
-
-def _get_chunks(message: bytes):
+def _get_chunks(message: bytes) -> tuple[list[bytes], int]:
     remainder = len(message) % _BLOCK_SIZE
     if remainder:
-        message.append(bytes([0 for _n in _BLOCK_SIZE - remainder]))
+        message += bytes([0 for _n in range(_BLOCK_SIZE - remainder)])
     number_of_blocks = int(len(message) / _BLOCK_SIZE)
     return (
         [
