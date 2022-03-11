@@ -3,9 +3,6 @@
 from hmac import digest
 from typing import Optional
 
-from .hash import hash_elems
-
-
 _BYTE_LENGTH = 4
 _BYTE_ORDER = "little"
 
@@ -27,7 +24,7 @@ def get_hmac(
     if length:
         message = _fix_message_length(message, length, start)
 
-    return digest(key, message, hash_elems().to_hex())
+    return digest(key, message, "SHA256")
 
 
 def _fix_message_length(msg: bytes, length: int, start: int = 0) -> bytes:
