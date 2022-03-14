@@ -233,7 +233,7 @@ def hashed_elgamal_encrypt(
     session_key = hash_elems(pad, pubkey_pow_n)
 
     (message_chunks, bit_length) = _get_chunks(message)
-    data = b""
+    data = b''
     for i, block in enumerate(message_chunks):
         data_key = get_hmac(
             session_key.to_hex_bytes(),
@@ -247,7 +247,7 @@ def hashed_elgamal_encrypt(
         session_key.to_hex_bytes(), encryption_seed.to_hex_bytes(), _MAC_KEY_SIZE
     )
     to_mac = pad.to_hex_bytes() + data
-    mac = get_hmac(to_hex_bytes(mac_key), to_hex_bytes(to_mac))
+    mac = get_hmac(mac_key, to_mac)
 
     log_info(f": publicKey: {public_key.to_hex()}")
     log_info(f": pad: {pad.to_hex()}")
@@ -255,7 +255,7 @@ def hashed_elgamal_encrypt(
     log_info(f": mac: {mac!r}")
 
     return HashedElGamalCiphertext(
-        pad, data, get_optional(hex_to_q(mac.decode("utf-8")))
+        pad, data, get_optional(hex_to_q(mac.hex()))
     )
 
 
