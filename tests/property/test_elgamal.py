@@ -210,3 +210,4 @@ class TestElGamal(BaseTestCase):
         self.assertIsNotNone(encrypted_message)
         self.assertIsNotNone(decrypted_message)
         self.assertEqual(message.decode(), decrypted_message.decode().rstrip('\x00'))
+        # decrypted message is coming back with padded 0 at the end of the string.  Removing them for the check
