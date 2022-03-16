@@ -233,7 +233,7 @@ def hashed_elgamal_encrypt(
     session_key = hash_elems(pad, pubkey_pow_n)
 
     (message_chunks, bit_length) = _get_chunks(message)
-    data = b''
+    data = b""
     for i, block in enumerate(message_chunks):
         data_key = get_hmac(
             session_key.to_hex_bytes(),
@@ -253,11 +253,9 @@ def hashed_elgamal_encrypt(
     log_info(f": pad: {pad.to_hex()}")
     log_info(f": data: {data!r}")
     log_info(f": mac: {mac.hex()}")
-    log_info(f"to_mac {to_mac}")
+    log_info(f"to_mac {to_mac!r}")
 
-    return HashedElGamalCiphertext(
-        pad, data, get_optional(hex_to_q(mac.hex()))
-    )
+    return HashedElGamalCiphertext(pad, data, get_optional(hex_to_q(mac.hex())))
 
 
 def _get_chunks(message: bytes) -> tuple[list[bytes], int]:
