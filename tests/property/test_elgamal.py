@@ -188,6 +188,7 @@ class TestElGamal(BaseTestCase):
         scheduler.close()
         log_info(f"Parallelism speedup: {(end2 - end1) / (end1 - start):.3f}")
 
+    # Changed to use the standard primes here for the emgamal test
     @patch.dict(os.environ, {"PRIME_OPTION": PrimeOption.Standard.value})
     def test_hashed_elgamal_encryption(self) -> None:
         """
