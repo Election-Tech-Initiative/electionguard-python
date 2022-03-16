@@ -135,9 +135,9 @@ class HashedElGamalCiphertext:
             _MAC_KEY_SIZE,
         )
         to_mac = self.pad.to_hex_bytes() + self.data
-        mac = get_hmac(to_hex_bytes(mac_key), to_hex_bytes(to_mac))
+        mac = get_hmac(mac_key, to_mac).hex()
 
-        if mac != self.mac:
+        if mac != self.mac.to_hex():
             log_error("MAC verification failed in decryption.")
             return None
         (ciphertext_chunks, bit_length) = _get_chunks(self.data)
@@ -252,7 +252,8 @@ def hashed_elgamal_encrypt(
     log_info(f": publicKey: {public_key.to_hex()}")
     log_info(f": pad: {pad.to_hex()}")
     log_info(f": data: {data!r}")
-    log_info(f": mac: {mac!r}")
+    log_info(f": mac: {mac.hex()}")
+    log_info(f"to_mac {to_mac}")
 
     return HashedElGamalCiphertext(
         pad, data, get_optional(hex_to_q(mac.hex()))
