@@ -18,7 +18,7 @@ from .group import (
 from .hash import hash_elems
 from .hmac import get_hmac
 from .logs import log_info, log_error
-from .utils import get_optional, to_hex_bytes
+from .utils import get_optional
 
 ElGamalSecretKey = ElementModQ
 ElGamalPublicKey = ElementModP
