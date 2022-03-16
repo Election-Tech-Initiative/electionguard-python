@@ -24,6 +24,7 @@ from electionguard import encrypt
 from electionguard import group
 from electionguard import guardian
 from electionguard import hash
+from electionguard import hmac
 from electionguard import key_ceremony
 from electionguard import key_ceremony_mediator
 from electionguard import logs
@@ -195,11 +196,13 @@ from electionguard.elgamal import (
     ElGamalKeyPair,
     ElGamalPublicKey,
     ElGamalSecretKey,
+    HashedElGamalCiphertext,
     elgamal_add,
     elgamal_combine_public_keys,
     elgamal_encrypt,
     elgamal_keypair_from_secret,
     elgamal_keypair_random,
+    hashed_elgamal_encrypt,
 )
 from electionguard.encrypt import (
     EncryptionDevice,
@@ -254,6 +257,9 @@ from electionguard.hash import (
     CryptoHashableAll,
     CryptoHashableT,
     hash_elems,
+)
+from electionguard.hmac import (
+    get_hmac,
 )
 from electionguard.key_ceremony import (
     CeremonyDetails,
@@ -367,6 +373,7 @@ from electionguard.utils import (
     get_or_else_optional_func,
     match_optional,
     space_between_capitals,
+    to_hex_bytes,
     to_iso_date_string,
     to_ticks,
 )
@@ -449,6 +456,7 @@ __all__ = [
     "GuardianId",
     "GuardianPair",
     "GuardianRecord",
+    "HashedElGamalCiphertext",
     "InternalManifest",
     "InternationalizedText",
     "KeyCeremonyMediator",
@@ -590,6 +598,7 @@ __all__ = [
     "get_file_handler",
     "get_generator",
     "get_hash_for_device",
+    "get_hmac",
     "get_large_prime",
     "get_optional",
     "get_or_else_optional",
@@ -603,9 +612,11 @@ __all__ = [
     "guardian",
     "hash",
     "hash_elems",
+    "hashed_elgamal_encrypt",
     "hex_to_int",
     "hex_to_p",
     "hex_to_q",
+    "hmac",
     "int_to_hex",
     "int_to_p",
     "int_to_q",
@@ -660,6 +671,7 @@ __all__ = [
     "tally_ballot",
     "tally_ballots",
     "to_file",
+    "to_hex_bytes",
     "to_iso_date_string",
     "to_raw",
     "to_ticks",
