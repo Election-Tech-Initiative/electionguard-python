@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 from re import sub
 from typing import Callable, Optional, TypeVar
+from base64 import b16decode
 
 _T = TypeVar("_T")
 _U = TypeVar("_U")
@@ -59,6 +60,14 @@ def flatmap_optional(
     if optional is None:
         return None
     return mapper(optional)
+
+
+def to_hex_bytes(data: bytes) -> bytes:
+    """
+    Convert from the element to the representation of bytes by first going through hex.
+    """
+
+    return b16decode(data)
 
 
 def to_ticks(date_time: datetime) -> int:
