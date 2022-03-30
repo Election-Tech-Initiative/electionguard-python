@@ -7,7 +7,7 @@ from tests.base_test_case import BaseTestCase
 from electionguard.constants import get_generator, get_large_prime
 from electionguard.discrete_log import (
     compute_discrete_log,
-    discrete_log_async,
+    compute_discrete_log_async,
     DiscreteLog,
 )
 from electionguard.group import (
@@ -80,7 +80,7 @@ class TestDiscreteLogFunctions(BaseTestCase):
         # Act
         loop = asyncio.new_event_loop()
         (plaintext_again, returned_cache) = loop.run_until_complete(
-            discrete_log_async(ciphertext, cache)
+            compute_discrete_log_async(ciphertext, cache)
         )
         loop.close()
 

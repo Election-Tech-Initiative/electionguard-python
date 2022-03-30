@@ -164,6 +164,7 @@ from electionguard.discrete_log import (
     DLogCache,
     DiscreteLog,
     compute_discrete_log,
+    compute_discrete_log_async,
     compute_discrete_log_cache,
     discrete_log_async,
 )

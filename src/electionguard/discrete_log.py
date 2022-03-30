@@ -35,7 +35,7 @@ def compute_discrete_log(
     return (_cache[element], _cache)
 
 
-async def discrete_log_async(
+async def compute_discrete_log_async(
     element: ElementModP,
     cache: DLogCache,
     mutex: asyncio.Lock = asyncio.Lock(),
