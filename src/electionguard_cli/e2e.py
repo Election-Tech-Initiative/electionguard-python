@@ -1,10 +1,8 @@
-from email.policy import default
 import click
 from electionguard import guardian
 from electionguard.manifest import Manifest
 from electionguard_tools.factories.election_factory import (
     ElectionFactory,
-    NUMBER_OF_GUARDIANS,
 )
 
 @click.command()
@@ -28,6 +26,9 @@ def start(guardian_count, quorum):
     click.echo(f"Quorum: {quorum}")
     click.echo(f"{'-'*40}\n")
 
+    if (not manifest.is_valid()):
+        click.echo('bad bad bad')
+        return
 
-if __name__ == '__main__':
+def cli():
     start()
