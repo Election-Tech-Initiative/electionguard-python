@@ -1,5 +1,6 @@
 import click
 from electionguard.manifest import Manifest
+from electionguard_cli.hello import hello
 from electionguard_tools.factories.election_factory import (
     ElectionFactory,
 )
@@ -7,11 +8,6 @@ from electionguard_tools.factories.election_factory import (
 @click.group()
 def cli():
     pass
-
-@click.command()
-def hello():
-    """Simply prints world. This is just an example of an arbitrary second command and should be deleted as soon as there is a real command other than e2e."""
-    click.echo('world')
 
 @click.command()
 @click.option('--guardian-count', prompt='Number of guardians', help='The number of guardians that will participate in the key ceremony and tally.', type=click.INT)

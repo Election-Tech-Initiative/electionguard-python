@@ -9,7 +9,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'eg = electionguard_cli:cli',
+            'eg = start:cli',
         ],
     },
 )
