@@ -21,15 +21,23 @@ class DiscreteLogExponentError(ValueError):
 
     def __init__(self, exponent: int, max_exponent: int = _DLOG_MAX_EXPONENT) -> None:
         message = (
-            f"Discrete log exponent of ${exponent} exceeds maximum of ${max_exponent}."
+            f"Discrete log exponent of {exponent} exceeds maximum of {max_exponent}."
         )
         super().__init__(message)
+
+
+class DiscreteLogNotFoundError(ValueError):
+    """Raised when the discrete value could not be found in cache."""
+
+    def __init__(self, element: int) -> None:
+        super().__init__(f"Discrete log of {element} could not be found in cache.")
 
 
 def compute_discrete_log(
     element: ElementModP,
     cache: DiscreteLogCache,
     max_exponent: int = _DLOG_MAX_EXPONENT,
+    lazy_evaluation: bool = True,
 ) -> Tuple[int, DiscreteLogCache]:
     """
     Computes the discrete log (base g, mod p) of the given element,
@@ -45,6 +53,8 @@ def compute_discrete_log(
 
     if element in cache:
         return (cache[element], cache)
+    elif not lazy_evaluation:
+        raise DiscreteLogNotFoundError(element)
 
     _cache = compute_discrete_log_cache(element, cache, max_exponent)
     return (_cache[element], _cache)
@@ -55,6 +65,7 @@ async def compute_discrete_log_async(
     cache: DiscreteLogCache,
     mutex: asyncio.Lock = asyncio.Lock(),
     max_exponent: int = _DLOG_MAX_EXPONENT,
+    lazy_evaluation: bool = True,
 ) -> Tuple[int, DiscreteLogCache]:
     """
     Computes the discrete log (base g, mod p) of the given element,
@@ -73,6 +84,8 @@ async def compute_discrete_log_async(
     async with mutex:
         if element in cache:
             return (cache[element], cache)
+        elif not lazy_evaluation:
+            raise DiscreteLogNotFoundError(element)
 
         _cache = compute_discrete_log_cache(element, cache, max_exponent)
         return (_cache[element], _cache)
@@ -143,15 +156,19 @@ class DiscreteLog(Singleton):
     _cache: DiscreteLogCache = {ONE_MOD_P: 0}
     _mutex = asyncio.Lock()
     _max_exponent: int = _DLOG_MAX_EXPONENT
+    _lazy_evaluation: bool = True
 
     def set_max_exponent(self, max_exponent: int) -> None:
         self._max_exponent = max_exponent
+
+    def set_lazy_evaluation(self, lazy_evaluation: bool) -> None:
+        self._lazy_evaluation = lazy_evaluation
 
     def precompute_cache(self, exponent: int) -> None:
         if exponent > self._max_exponent:
             exponent = self._max_exponent
 
-        self._cache = precompute_discrete_log_cache(exponent)
+        self._cache = precompute_discrete_log_cache(exponent, self._cache)
 
     async def precompute_cache_async(self, exponent: int) -> None:
         if exponent > self._max_exponent:
@@ -161,13 +178,15 @@ class DiscreteLog(Singleton):
             self._cache = precompute_discrete_log_cache(exponent)
 
     def discrete_log(self, element: ElementModP) -> int:
-        (result, cache) = compute_discrete_log(element, self._cache, self._max_exponent)
+        (result, cache) = compute_discrete_log(
+            element, self._cache, self._max_exponent, self._lazy_evaluation
+        )
         self._cache = cache
         return result
 
     async def discrete_log_async(self, element: ElementModP) -> int:
         (result, cache) = await compute_discrete_log_async(
-            element, self._cache, self._mutex, self._max_exponent
+            element, self._cache, self._mutex, self._max_exponent, self._lazy_evaluation
         )
         self._cache = cache
         return result
