@@ -8,6 +8,9 @@ The ElectionGuard CLI can be installed via [setuptools](https://click.palletspro
 
 # Run the CLI
 
-Now the end-to-end command is available to run from anywhere in the virual environment like this;
+Now the end-to-end command is available to run from anywhere in the virual environment with the `eg` command.  Common commands:
 
-1. `e2e --help`
+- Get help, prints available commands: `eg --help`
+- Print verison: `eg --version`
+- Get help about how to run an end to end election test: `eg e2e --help`
+- Run end-to-end election test: `eg e2e`
