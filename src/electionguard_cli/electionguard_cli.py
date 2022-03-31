@@ -1,15 +1,23 @@
 import click
-from electionguard import guardian
 from electionguard.manifest import Manifest
 from electionguard_tools.factories.election_factory import (
     ElectionFactory,
 )
 
+@click.group()
+def cli():
+    pass
+
+@click.command()
+def hello():
+    """Simply prints world. This is just an example of an arbitrary second command and should be deleted as soon as there is a real command other than e2e."""
+    click.echo('world')
+
 @click.command()
 @click.option('--guardian-count', prompt='Number of guardians', help='The number of guardians that will participate in the key ceremony and tally.', type=click.INT)
 @click.option('--quorum', prompt='Quorum', help='The minimum number of guardians required to show up to the tally.', type=click.INT)
 
-def start(guardian_count, quorum):
+def e2e(guardian_count, quorum):
     """Runs through an end-to-end election."""
 
     def print_header(s: str):
@@ -35,8 +43,8 @@ def start(guardian_count, quorum):
     print_value("Quorum", quorum)
 
     if (not manifest.is_valid()):
-        click.echo('bad bad bad')
+        click.echo('manifest file is invalid')
         return
 
-def cli():
-    start()
+cli.add_command(hello)
+cli.add_command(e2e)

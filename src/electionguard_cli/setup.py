@@ -9,7 +9,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'e2e = e2e:cli',
+            'eg = electionguard_cli:cli',
         ],
     },
 )
