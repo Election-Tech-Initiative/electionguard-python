@@ -6,7 +6,7 @@ from typing import Dict, Tuple
 
 from .constants import get_generator
 from .singleton import Singleton
-from .group import ElementModP, ONE_MOD_P, mult_p
+from .group import BaseElement, ElementModP, ONE_MOD_P, mult_p
 
 DiscreteLogCache = Dict[ElementModP, int]
 
@@ -29,7 +29,7 @@ class DiscreteLogExponentError(ValueError):
 class DiscreteLogNotFoundError(ValueError):
     """Raised when the discrete value could not be found in cache."""
 
-    def __init__(self, element: int) -> None:
+    def __init__(self, element: BaseElement) -> None:
         super().__init__(f"Discrete log of {element} could not be found in cache.")
 
 
@@ -53,7 +53,7 @@ def compute_discrete_log(
 
     if element in cache:
         return (cache[element], cache)
-    elif not lazy_evaluation:
+    if not lazy_evaluation:
         raise DiscreteLogNotFoundError(element)
 
     _cache = compute_discrete_log_cache(element, cache, max_exponent)
@@ -84,7 +84,7 @@ async def compute_discrete_log_async(
     async with mutex:
         if element in cache:
             return (cache[element], cache)
-        elif not lazy_evaluation:
+        if not lazy_evaluation:
             raise DiscreteLogNotFoundError(element)
 
         _cache = compute_discrete_log_cache(element, cache, max_exponent)
