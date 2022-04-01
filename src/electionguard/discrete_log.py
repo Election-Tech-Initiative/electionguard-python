@@ -158,6 +158,9 @@ class DiscreteLog(Singleton):
     _max_exponent: int = _DLOG_MAX_EXPONENT
     _lazy_evaluation: bool = True
 
+    def get_cache(self) -> DiscreteLogCache:
+        return self._cache
+
     def set_max_exponent(self, max_exponent: int) -> None:
         self._max_exponent = max_exponent
 
