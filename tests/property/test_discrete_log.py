@@ -6,7 +6,6 @@ from tests.base_test_case import BaseTestCase
 
 from electionguard.constants import get_generator, get_large_prime
 from electionguard.discrete_log import (
-    DiscreteLogExponentError,
     compute_discrete_log,
     compute_discrete_log_async,
     DiscreteLog,
