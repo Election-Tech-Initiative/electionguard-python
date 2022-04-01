@@ -1,4 +1,9 @@
+import pprint
 import click
+from electionguard.data_store import DataStore
+from electionguard.ballot_box import BallotBox, get_ballots
+from electionguard_tools.factories.ballot_factory import BallotFactory
+from electionguard.encrypt import EncryptionMediator
 from electionguard.election import CiphertextElectionContext
 from electionguard.election_builder import ElectionBuilder
 from electionguard.guardian import Guardian
@@ -9,6 +14,20 @@ from electionguard_tools.factories.election_factory import (
     ElectionFactory,
 )
 from typing import Callable, Dict, List, Union, Tuple, Optional
+from electionguard.ballot import (
+    BallotBoxState,
+    CiphertextBallot,
+    PlaintextBallot,
+    SubmittedBallot,
+)
+from electionguard.tally import (
+    PublishedCiphertextTally,
+    tally_ballots,
+    CiphertextTally,
+    PlaintextTally,
+)
+from electionguard.decryption_mediator import DecryptionMediator
+from electionguard.election_polynomial import LagrangeCoefficientsRecord
 
 @click.command()
 @click.option('--guardian-count', prompt='Number of guardians', help='The number of guardians that will participate in the key ceremony and tally.', type=click.INT)
@@ -24,18 +43,8 @@ def e2e(guardian_count, quorum):
     def print_value(name: str, value: any) -> None:
         click.echo(click.style(name + ": ") + click.style(value, fg='yellow'))
 
-    def get_manifest() -> Optional[Manifest]:
-        # todo: get manifest from params
-        manifest = ElectionFactory().get_simple_manifest_from_file()
-        if (not manifest.is_valid()):
-            click.echo('manifest file is invalid')
-            return None
-        return manifest
-
-
-    def print_manifest() -> None:
+    def print_manifest(manifest: Manifest) -> None:
         manifest_name = manifest.name.text[0].value
-        print_header('Election Summary')
         print_value("Name", manifest_name)
         print_value("Scope", manifest.election_scope_id)
         print_value("Geopolitical Units", len(manifest.geopolitical_units))
@@ -46,7 +55,17 @@ def e2e(guardian_count, quorum):
         print_value("Guardians", guardian_count)
         print_value("Quorum", quorum)
 
-    def run_key_ceremony(manifest: Manifest, number_of_guardians: int, quorum: int) -> None:
+    def get_manifest() -> Optional[Manifest]:
+        # todo: get manifest from params
+        print_header('Retrieving manifest')
+        manifest = ElectionFactory().get_simple_manifest_from_file()
+        if (not manifest.is_valid()):
+            click.echo('manifest file is invalid')
+            return None
+        print_manifest(manifest)
+        return manifest
+
+    def get_guardians(number_of_guardians: int) -> List[Guardian]:
         guardians: List[Guardian] = []
         for i in range(number_of_guardians):
             guardians.append(
@@ -57,6 +76,10 @@ def e2e(guardian_count, quorum):
                     quorum,
                 )
             )
+        return guardians
+
+    def run_key_ceremony(guardians: List[Guardian]) -> None:
+        print_header("Performing key ceremony")
         mediator: KeyCeremonyMediator = KeyCeremonyMediator(
             "mediator_1", guardians[0].ceremony_details
         )
@@ -115,11 +138,12 @@ def e2e(guardian_count, quorum):
 
         # FINAL: Publish Joint Key
         joint_key = mediator.publish_joint_key()
-        print_value("Joint Key", joint_key)
+        print_value("Joint Key", joint_key.joint_public_key)
         return get_optional(joint_key)
 
-    def build_election(joint_key) -> Tuple[InternalManifest, CiphertextElectionContext]:
-        # Build the Election
+    def build_election(joint_key, guardian_count, quorum, manifest) -> Tuple[InternalManifest, CiphertextElectionContext]:
+        print_header("Building election")
+
         election_builder = ElectionBuilder(
             guardian_count, quorum, manifest
         )
@@ -131,9 +155,113 @@ def e2e(guardian_count, quorum):
             election_builder.build()
         )
 
+    def encrypt_votes() -> List[CiphertextBallot]:
+        print_header("Encrypting votes")
+        # Get Ballots
+        # todo: parameterize the plaintext ballot file
+        plaintext_ballots = BallotFactory().get_simple_ballots_from_file()
+        click.echo(f"Loaded ballots: {len(plaintext_ballots)}")
+
+        # Configure the Encryption Device
+        device = ElectionFactory.get_encryption_device()
+        encrypter = EncryptionMediator(
+            internal_manifest, context, device
+        )
+        click.echo(f"Ready to encrypt at location: {device.location}")
+
+        ciphertext_ballots: List[CiphertextBallot] = []
+        # Encrypt the Ballots
+        for plaintext_ballot in plaintext_ballots:
+            encrypted_ballot = encrypter.encrypt(plaintext_ballot)
+            click.echo(f"Encrypting ballot: {plaintext_ballot.object_id}")
+            ciphertext_ballots.append(get_optional(encrypted_ballot))
+        return ciphertext_ballots
+
+    def cast_and_spoil(ballot_store: DataStore, internal_manifest: InternalManifest, context: CiphertextElectionContext, ciphertext_ballots: List[CiphertextBallot]) -> None:
+        # Configure the Ballot Box
+        ballot_box = BallotBox(
+            internal_manifest, context, ballot_store
+        )
+
+        # spoil the 1st ballot, cast the rest
+        first = True
+        for ballot in ciphertext_ballots:
+            if first:
+                submitted_ballot = ballot_box.spoil(ballot)
+            else:
+                submitted_ballot = ballot_box.cast(ballot)
+            first = False
+
+            click.echo(f"Submitted Ballot Id: {ballot.object_id} state: {get_optional(submitted_ballot).state}")
+
+    def decrypt_tally(ballot_store: DataStore, guardians: List[Guardian], ciphertext_ballots: List[CiphertextBallot]):
+        print_header("Decrypting tally")
+        ciphertext_tally = get_optional(
+            tally_ballots(ballot_store, internal_manifest, context)
+        )
+        submitted_ballots = get_ballots(ballot_store, BallotBoxState.SPOILED)
+        click.echo("Decrypting tally")
+        print_value("Cast ballots", ciphertext_tally.cast())
+        print_value("Spoiled ballots", ciphertext_tally.cast())
+        print_value("Total ballots", len(ciphertext_tally))
+
+        # Configure the Decryption
+        submitted_ballots_list = list(submitted_ballots.values())
+        decryption_mediator = DecryptionMediator(
+            "decryption-mediator",
+            context,
+        )
+
+        # Announce each guardian as present
+        count = 0
+        for guardian in guardians:
+            guardian_key = guardian.share_key()
+            tally_share = guardian.compute_tally_share(
+                ciphertext_tally, context
+            )
+            ballot_shares = guardian.compute_ballot_shares(
+                submitted_ballots_list, context
+            )
+            decryption_mediator.announce(
+                guardian_key, get_optional(tally_share), ballot_shares
+            )
+            count += 1
+            click.echo(f"Guardian Present: {guardian.id}")
+
+        lagrange_coefficients = LagrangeCoefficientsRecord(
+            decryption_mediator.get_lagrange_coefficients()
+        )
+
+        # Get the plaintext Tally
+        plaintext_tally = get_optional(
+            decryption_mediator.get_plaintext_tally(ciphertext_tally)
+        )
+        click.echo("Tally Decrypted:")
+        for contest in plaintext_tally.contests.values():
+            click.echo(f"Contest: {contest.object_id}")
+            for selection in contest.selections.values():
+                click.echo(f"  Selection '{selection.object_id}' received: {selection.tally} votes")
+
+
+        # Get the plaintext Spoiled Ballots
+        plaintext_spoiled_ballots = get_optional(
+            decryption_mediator.get_plaintext_ballots(submitted_ballots_list)
+        )
+        click.echo("")
+        click.echo("Spoiled Ballot Decrypted:")
+        first_ballot_id = ciphertext_ballots[0].object_id
+        spoiled_ballot = plaintext_spoiled_ballots[first_ballot_id]
+        for contest in spoiled_ballot.contests.values():
+            click.echo(f"Contest: {contest.object_id}")
+            for selection in contest.selections.values():
+                click.echo(f"  Selection '{selection.object_id}' received {selection.tally} vote")
+
     manifest: Manifest = get_manifest()
     if (manifest is None): return
-    print_manifest()
-
-    joint_key = run_key_ceremony(manifest, guardian_count, quorum)
-    internal_manifest, context = build_election(joint_key)
+    guardians = get_guardians(guardian_count)
+    joint_key = run_key_ceremony(guardians)
+    internal_manifest, context = build_election(joint_key, guardian_count, quorum, manifest)
+    ciphertext_ballots = encrypt_votes()
+    ballot_store = DataStore()
+    cast_and_spoil(ballot_store, internal_manifest, context, ciphertext_ballots)
+    decrypt_tally(ballot_store, guardians, ciphertext_ballots)
