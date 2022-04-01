@@ -168,25 +168,23 @@ class DiscreteLog(Singleton):
         if exponent > self._max_exponent:
             exponent = self._max_exponent
 
-        self._cache = precompute_discrete_log_cache(exponent, self._cache)
+        precompute_discrete_log_cache(exponent, self._cache)
 
     async def precompute_cache_async(self, exponent: int) -> None:
         if exponent > self._max_exponent:
             exponent = self._max_exponent
 
         async with self._mutex:
-            self._cache = precompute_discrete_log_cache(exponent)
+            precompute_discrete_log_cache(exponent)
 
     def discrete_log(self, element: ElementModP) -> int:
-        (result, cache) = compute_discrete_log(
+        (result, _cache) = compute_discrete_log(
             element, self._cache, self._max_exponent, self._lazy_evaluation
         )
-        self._cache = cache
         return result
 
     async def discrete_log_async(self, element: ElementModP) -> int:
-        (result, cache) = await compute_discrete_log_async(
+        (result, _cache) = await compute_discrete_log_async(
             element, self._cache, self._mutex, self._max_exponent, self._lazy_evaluation
         )
-        self._cache = cache
         return result
