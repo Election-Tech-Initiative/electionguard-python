@@ -37,7 +37,7 @@ class TestDiscreteLogFunctions(BaseTestCase):
     """Discrete log tests"""
 
     @given(integers(0, 100))
-    def test_uncached(self, exp: int):
+    def test_uncached(self, exp: int) -> None:
         # Arrange
         plaintext = ElementModQ(exp)
         exp_plaintext = g_pow_p(plaintext)
@@ -49,7 +49,7 @@ class TestDiscreteLogFunctions(BaseTestCase):
         self.assertEqual(plaintext, plaintext_again)
 
     @given(integers(0, 1000))
-    def test_cached(self, exp: int):
+    def test_cached(self, exp: int) -> None:
         # Arrange
         cache = {ONE_MOD_P: 0}
         plaintext = ElementModQ(exp)
@@ -62,7 +62,7 @@ class TestDiscreteLogFunctions(BaseTestCase):
         self.assertEqual(plaintext, plaintext_again)
         self.assertEqual(len(cache), len(returned_cache))
 
-    def test_cached_one(self):
+    def test_cached_one(self) -> None:
         cache = {ONE_MOD_P: 0}
         plaintext = ONE_MOD_Q
         ciphertext = g_pow_p(plaintext)
@@ -71,7 +71,7 @@ class TestDiscreteLogFunctions(BaseTestCase):
         self.assertEqual(plaintext, plaintext_again)
         self.assertEqual(len(cache), len(returned_cache))
 
-    def test_cached_one_async(self):
+    def test_cached_one_async(self) -> None:
         # Arrange
         cache = {ONE_MOD_P: 0}
         plaintext = ONE_MOD_Q
@@ -93,7 +93,7 @@ class TestDiscreteLogClass(BaseTestCase):
     """Discrete log tests"""
 
     @given(integers(0, 1000))
-    def test_cached(self, exp: int):
+    def test_cached(self, exp: int) -> None:
         # Arrange
         plaintext = ElementModQ(exp)
         exp_plaintext = g_pow_p(plaintext)
@@ -104,7 +104,7 @@ class TestDiscreteLogClass(BaseTestCase):
         # Assert
         self.assertEqual(plaintext, plaintext_again)
 
-    def test_cached_one(self):
+    def test_cached_one(self) -> None:
         # Arrange
         plaintext = ONE_MOD_Q
         ciphertext = g_pow_p(plaintext)
@@ -115,7 +115,7 @@ class TestDiscreteLogClass(BaseTestCase):
         # Assert
         self.assertEqual(plaintext, plaintext_again)
 
-    def test_cached_one_async(self):
+    def test_cached_one_async(self) -> None:
         # Arrange
         plaintext = ONE_MOD_Q
         ciphertext = g_pow_p(plaintext)
