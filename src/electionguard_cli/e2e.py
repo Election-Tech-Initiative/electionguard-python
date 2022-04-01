@@ -2,6 +2,7 @@ import pprint
 import click
 from electionguard.data_store import DataStore
 from electionguard.ballot_box import BallotBox, get_ballots
+from electionguard.type import BallotId
 from electionguard_tools.factories.ballot_factory import BallotFactory
 from electionguard.encrypt import EncryptionMediator
 from electionguard.election import CiphertextElectionContext
@@ -160,7 +161,7 @@ def e2e(guardian_count, quorum):
         # Get Ballots
         # todo: parameterize the plaintext ballot file
         plaintext_ballots = BallotFactory().get_simple_ballots_from_file()
-        click.echo(f"Loaded ballots: {len(plaintext_ballots)}")
+        print_value("Loaded ballots", len(plaintext_ballots))
 
         # Configure the Encryption Device
         device = ElectionFactory.get_encryption_device()
@@ -194,7 +195,7 @@ def e2e(guardian_count, quorum):
 
             click.echo(f"Submitted Ballot Id: {ballot.object_id} state: {get_optional(submitted_ballot).state}")
 
-    def decrypt_tally(ballot_store: DataStore, guardians: List[Guardian], ciphertext_ballots: List[CiphertextBallot]):
+    def decrypt_tally(ballot_store: DataStore, guardians: List[Guardian], ciphertext_ballots: List[CiphertextBallot]) -> Tuple[CiphertextBallot, Dict[BallotId, PlaintextTally]]:
         print_header("Decrypting tally")
         ciphertext_tally = get_optional(
             tally_ballots(ballot_store, internal_manifest, context)
@@ -236,21 +237,25 @@ def e2e(guardian_count, quorum):
         plaintext_tally = get_optional(
             decryption_mediator.get_plaintext_tally(ciphertext_tally)
         )
-        click.echo("Tally Decrypted:")
-        for contest in plaintext_tally.contests.values():
-            click.echo(f"Contest: {contest.object_id}")
-            for selection in contest.selections.values():
-                click.echo(f"  Selection '{selection.object_id}' received: {selection.tally} votes")
-
 
         # Get the plaintext Spoiled Ballots
         plaintext_spoiled_ballots = get_optional(
             decryption_mediator.get_plaintext_ballots(submitted_ballots_list)
         )
-        click.echo("")
-        click.echo("Spoiled Ballot Decrypted:")
-        first_ballot_id = ciphertext_ballots[0].object_id
-        spoiled_ballot = plaintext_spoiled_ballots[first_ballot_id]
+
+        return (plaintext_tally, plaintext_spoiled_ballots)
+
+    def print_tally(plaintext_tally):
+        print_header('Decrypted tally')
+        for contest in plaintext_tally.contests.values():
+            click.echo(f"Contest: {contest.object_id}")
+            for selection in contest.selections.values():
+                click.echo(f"  Selection '{selection.object_id}' received: {selection.tally} votes")
+
+    def print_spoiled_ballot(plaintext_spoiled_ballots: Dict[BallotId, PlaintextTally]) -> None:
+        ballot_id = list(plaintext_spoiled_ballots)[0]
+        print_header(f"Spoiled ballot '{ballot_id}'")
+        spoiled_ballot = plaintext_spoiled_ballots[ballot_id]
         for contest in spoiled_ballot.contests.values():
             click.echo(f"Contest: {contest.object_id}")
             for selection in contest.selections.values():
@@ -264,4 +269,6 @@ def e2e(guardian_count, quorum):
     ciphertext_ballots = encrypt_votes()
     ballot_store = DataStore()
     cast_and_spoil(ballot_store, internal_manifest, context, ciphertext_ballots)
-    decrypt_tally(ballot_store, guardians, ciphertext_ballots)
+    (tally, spoiled_ballots) = decrypt_tally(ballot_store, guardians, ciphertext_ballots)
+    print_tally(tally)
+    print_spoiled_ballot(spoiled_ballots)
