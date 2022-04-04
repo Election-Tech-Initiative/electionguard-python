@@ -1,22 +1,16 @@
-from typing import Dict, List, Tuple
-from cli_models.build_election_results import BuildElectionResults
+from typing import List
 import click
 from e2e_steps.e2e_step_base import E2eStepBase
 
+from electionguard_cli.cli_models import BuildElectionResults, E2eDecryptResults
 from electionguard.data_store import DataStore
 from electionguard.ballot_box import get_ballots
-from electionguard.election import CiphertextElectionContext
-from electionguard.type import BallotId
 from electionguard.guardian import Guardian
-from electionguard.manifest import InternalManifest
 from electionguard.utils import get_optional
 from electionguard.ballot import (
     BallotBoxState,
 )
-from electionguard.tally import (
-    tally_ballots,
-    PlaintextTally,
-)
+from electionguard.tally import tally_ballots
 from electionguard.decryption_mediator import DecryptionMediator
 from electionguard.election_polynomial import LagrangeCoefficientsRecord
 
@@ -29,7 +23,7 @@ class DecryptStep(E2eStepBase):
         ballot_store: DataStore,
         guardians: List[Guardian],
         build_election_results: BuildElectionResults,
-    ) -> Tuple[PlaintextTally, Dict[BallotId, PlaintextTally]]:
+    ) -> E2eDecryptResults:
         self.print_header("Decrypting tally")
         internal_manifest = build_election_results.internal_manifest
         context = build_election_results.context
@@ -80,4 +74,4 @@ class DecryptStep(E2eStepBase):
             decryption_mediator.get_plaintext_ballots(submitted_ballots_list)
         )
 
-        return (plaintext_tally, plaintext_spoiled_ballots)
+        return E2eDecryptResults(plaintext_tally, plaintext_spoiled_ballots)
