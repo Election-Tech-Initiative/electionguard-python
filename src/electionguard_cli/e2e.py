@@ -1,14 +1,10 @@
-from typing import Dict, List, Any, Optional
+from typing import List, Any, Optional
 import click
-from e2e_steps import ElectionBuilderStep, KeyCeremonyStep, SubmitVotesStep, DecryptStep
+from e2e_steps import ElectionBuilderStep, KeyCeremonyStep, SubmitVotesStep, DecryptStep, PrintResultsStep
 from electionguard.ballot import PlaintextBallot
 
-from electionguard.type import BallotId
 from electionguard.guardian import Guardian
 from electionguard.manifest import InternationalizedText, Manifest
-from electionguard.tally import (
-    PlaintextTally,
-)
 from electionguard_tools.factories.ballot_factory import BallotFactory
 from electionguard_tools.factories.election_factory import (
     ElectionFactory,
@@ -82,27 +78,6 @@ def e2e(guardian_count: int, quorum: int) -> None:
 
 
 
-    def print_tally(plaintext_tally: PlaintextTally) -> None:
-        print_header("Decrypted tally")
-        for contest in plaintext_tally.contests.values():
-            click.echo(f"Contest: {contest.object_id}")
-            for selection in contest.selections.values():
-                click.echo(
-                    f"  Selection '{selection.object_id}' received: {selection.tally} votes"
-                )
-
-    def print_spoiled_ballot(
-        plaintext_spoiled_ballots: Dict[BallotId, PlaintextTally]
-    ) -> None:
-        ballot_id = list(plaintext_spoiled_ballots)[0]
-        print_header(f"Spoiled ballot '{ballot_id}'")
-        spoiled_ballot = plaintext_spoiled_ballots[ballot_id]
-        for contest in spoiled_ballot.contests.values():
-            click.echo(f"Contest: {contest.object_id}")
-            for selection in contest.selections.values():
-                click.echo(
-                    f"  Selection '{selection.object_id}' received {selection.tally} vote"
-                )
 
 
     # get user inputs
@@ -119,5 +94,4 @@ def e2e(guardian_count: int, quorum: int) -> None:
     (tally, spoiled_ballots) = DecryptStep().decrypt_tally(ballot_store, guardians, internal_manifest, context)
 
     # print results
-    print_tally(tally)
-    print_spoiled_ballot(spoiled_ballots)
+    PrintResultsStep().print_election_results(tally, spoiled_ballots)
