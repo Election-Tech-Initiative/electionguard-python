@@ -8,7 +8,6 @@ from electionguard.encrypt import EncryptionMediator
 from electionguard.election import CiphertextElectionContext
 from electionguard.election_builder import ElectionBuilder
 from electionguard.guardian import Guardian
-from electionguard.key_ceremony_mediator import KeyCeremonyMediator
 from electionguard.manifest import InternalManifest, Manifest
 from electionguard.utils import get_optional
 from electionguard_tools.factories.election_factory import (
@@ -18,13 +17,9 @@ from typing import Dict, List, Tuple, Optional
 from electionguard.ballot import (
     BallotBoxState,
     CiphertextBallot,
-    PlaintextBallot,
-    SubmittedBallot,
 )
 from electionguard.tally import (
-    PublishedCiphertextTally,
     tally_ballots,
-    CiphertextTally,
     PlaintextTally,
 )
 from electionguard.decryption_mediator import DecryptionMediator
