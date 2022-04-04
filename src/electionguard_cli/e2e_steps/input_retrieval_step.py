@@ -1,7 +1,8 @@
-from typing import List, Optional, Tuple
+from typing import List, Optional
+from cli_models.e2e_inputs import E2eInputs
 from e2e_steps.e2e_step_base import E2eStepBase
-from electionguard.ballot import PlaintextBallot
 
+from electionguard.ballot import PlaintextBallot
 from electionguard.guardian import Guardian
 from electionguard.manifest import InternationalizedText, Manifest
 from electionguard_tools.factories.ballot_factory import BallotFactory
@@ -53,11 +54,13 @@ class InputRetrievalStep(E2eStepBase):
             )
         return guardians
 
-    def get_inputs(self, guardian_count: int, quorum: int) -> Tuple[List[Guardian], Manifest, List[PlaintextBallot]]:
+    def get_inputs(
+        self, guardian_count: int, quorum: int
+    ) -> E2eInputs:
         self.print_header("Retrieving Inputs")
         guardians = self.get_guardians(guardian_count, quorum)
         manifest: Manifest = self.get_manifest()
         ballots = self.get_ballots()
         self.print_value("Guardians", guardian_count)
         self.print_value("Quorum", quorum)
-        return (guardians, manifest, ballots)
+        return E2eInputs(guardian_count, quorum, guardians, manifest, ballots)

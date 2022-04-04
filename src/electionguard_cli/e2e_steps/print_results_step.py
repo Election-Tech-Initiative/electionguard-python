@@ -7,6 +7,7 @@ from electionguard.tally import (
     PlaintextTally,
 )
 
+
 class PrintResultsStep(E2eStepBase):
     """Responsible for printing the results of an end-to-end election"""
 
@@ -32,6 +33,8 @@ class PrintResultsStep(E2eStepBase):
                     f"  Selection '{selection.object_id}' received {selection.tally} vote"
                 )
 
-    def print_election_results(self, tally: PlaintextTally, spoiled_ballots: Dict[BallotId, PlaintextTally]):
+    def print_election_results(
+        self, tally: PlaintextTally, spoiled_ballots: Dict[BallotId, PlaintextTally]
+    ):
         self.print_tally(tally)
         self.print_spoiled_ballot(spoiled_ballots)

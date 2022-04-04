@@ -1,4 +1,5 @@
 from typing import Dict, List, Tuple
+from cli_models.build_election_results import BuildElectionResults
 import click
 from e2e_steps.e2e_step_base import E2eStepBase
 
@@ -22,11 +23,16 @@ from electionguard.election_polynomial import LagrangeCoefficientsRecord
 
 class DecryptStep(E2eStepBase):
     """Responsible for decrypting a tally and/or cast ballots"""
-    
+
     def decrypt_tally(
-        self, ballot_store: DataStore, guardians: List[Guardian], internal_manifest: InternalManifest, context: CiphertextElectionContext
+        self,
+        ballot_store: DataStore,
+        guardians: List[Guardian],
+        build_election_results: BuildElectionResults,
     ) -> Tuple[PlaintextTally, Dict[BallotId, PlaintextTally]]:
         self.print_header("Decrypting tally")
+        internal_manifest = build_election_results.internal_manifest
+        context = build_election_results.context
         ciphertext_tally = get_optional(
             tally_ballots(ballot_store, internal_manifest, context)
         )
