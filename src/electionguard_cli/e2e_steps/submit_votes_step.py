@@ -1,6 +1,7 @@
 from typing import List
 import click
 
+from e2e_steps.e2e_step_base import E2eStepBase
 from electionguard.data_store import DataStore
 from electionguard.ballot_box import BallotBox
 from electionguard.encrypt import EncryptionMediator
@@ -11,15 +12,14 @@ from electionguard.ballot import (
     CiphertextBallot,
     PlaintextBallot,
 )
-from electionguard_tools.factories.ballot_factory import BallotFactory
 from electionguard_tools.factories.election_factory import (
     ElectionFactory,
 )
 
-from e2e_steps.e2e_step_base import E2eStepBase
-
 
 class SubmitVotesStep(E2eStepBase):
+    """Responsible for encrypting votes and storing them in a ballot store"""
+
     def __encrypt_ballots(
         self, plaintext_ballots: List[PlaintextBallot], encrypter: EncryptionMediator
     ) -> List[CiphertextBallot]:
@@ -32,12 +32,9 @@ class SubmitVotesStep(E2eStepBase):
         return ciphertext_ballots
 
     def encrypt_votes(
-        self, internal_manifest: InternalManifest, context: CiphertextElectionContext
+        self, plaintext_ballots: List[PlaintextBallot], internal_manifest: InternalManifest, context: CiphertextElectionContext
     ) -> List[CiphertextBallot]:
         self.print_header("Encrypting votes")
-        # Get Ballots
-        # todo: parameterize the plaintext ballot file
-        plaintext_ballots = BallotFactory().get_simple_ballots_from_file()
         self.print_value("Loaded ballots", len(plaintext_ballots))
 
         # Configure the Encryption Device
@@ -70,10 +67,10 @@ class SubmitVotesStep(E2eStepBase):
             )
 
     def submit_votes(
-        self, internal_manifest: InternalManifest, context: CiphertextElectionContext
+        self, ballots: List[PlaintextBallot], internal_manifest: InternalManifest, context: CiphertextElectionContext
     ) -> DataStore:
         ballot_store: DataStore = DataStore()
-        ciphertext_ballots = self.encrypt_votes(internal_manifest, context)
+        ciphertext_ballots = self.encrypt_votes(ballots, internal_manifest, context)
         self.cast_and_spoil(
             ballot_store, internal_manifest, context, ciphertext_ballots
         )
