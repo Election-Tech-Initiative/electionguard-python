@@ -1,14 +1,15 @@
 from typing import Dict, List, Tuple, Any, Optional
 import click
-from e2e_steps.key_ceremony_step import KeyCeremonyStep
+from e2e_steps import (
+    ElectionBuilderStep,
+    KeyCeremonyStep
+)
 
 from electionguard.data_store import DataStore
 from electionguard.ballot_box import BallotBox, get_ballots
-from electionguard.key_ceremony import ElectionJointKey
 from electionguard.type import BallotId
 from electionguard.encrypt import EncryptionMediator
 from electionguard.election import CiphertextElectionContext
-from electionguard.election_builder import ElectionBuilder
 from electionguard.guardian import Guardian
 from electionguard.manifest import InternalManifest, InternationalizedText, Manifest
 from electionguard.utils import get_optional
@@ -89,20 +90,6 @@ def e2e(guardian_count: int, quorum: int) -> None:
             )
         return guardians
 
-    def build_election(
-        joint_key: ElectionJointKey,
-        guardian_count: int,
-        quorum: int,
-        manifest: Manifest,
-    ) -> Tuple[InternalManifest, CiphertextElectionContext]:
-        print_header("Building election")
-
-        election_builder = ElectionBuilder(guardian_count, quorum, manifest)
-        election_builder.set_public_key(joint_key.joint_public_key)
-        election_builder.set_commitment_hash(joint_key.commitment_hash)
-        build_result = election_builder.build()
-        return get_optional(build_result)
-
     def encrypt_votes() -> List[CiphertextBallot]:
         print_header("Encrypting votes")
         # Get Ballots
@@ -113,7 +100,7 @@ def e2e(guardian_count: int, quorum: int) -> None:
         # Configure the Encryption Device
         device = ElectionFactory.get_encryption_device()
         encrypter = EncryptionMediator(internal_manifest, context, device)
-        click.echo(f"Ready to encrypt at location: {device.location}")
+        print_value("Print location", device.location)
 
         ciphertext_ballots: List[CiphertextBallot] = []
         # Encrypt the Ballots
@@ -222,8 +209,10 @@ def e2e(guardian_count: int, quorum: int) -> None:
 
     manifest: Manifest = get_manifest()
     guardians = get_guardians(guardian_count)
+
+    # perform election
     joint_key = KeyCeremonyStep().run_key_ceremony(guardians)
-    internal_manifest, context = build_election(
+    internal_manifest, context = ElectionBuilderStep().build_election(
         joint_key, guardian_count, quorum, manifest
     )
     ciphertext_ballots = encrypt_votes()
