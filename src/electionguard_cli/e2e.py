@@ -1,19 +1,17 @@
+from typing import Dict, List, Tuple, Any, Optional
 import click
 from e2e_steps.key_ceremony_step import KeyCeremonyStep
+
 from electionguard.data_store import DataStore
 from electionguard.ballot_box import BallotBox, get_ballots
+from electionguard.key_ceremony import ElectionJointKey
 from electionguard.type import BallotId
-from electionguard_tools.factories.ballot_factory import BallotFactory
 from electionguard.encrypt import EncryptionMediator
 from electionguard.election import CiphertextElectionContext
 from electionguard.election_builder import ElectionBuilder
 from electionguard.guardian import Guardian
-from electionguard.manifest import InternalManifest, Manifest
+from electionguard.manifest import InternalManifest, InternationalizedText, Manifest
 from electionguard.utils import get_optional
-from electionguard_tools.factories.election_factory import (
-    ElectionFactory,
-)
-from typing import Dict, List, Tuple, Optional
 from electionguard.ballot import (
     BallotBoxState,
     CiphertextBallot,
@@ -24,23 +22,41 @@ from electionguard.tally import (
 )
 from electionguard.decryption_mediator import DecryptionMediator
 from electionguard.election_polynomial import LagrangeCoefficientsRecord
+from electionguard_tools.factories.ballot_factory import BallotFactory
+from electionguard_tools.factories.election_factory import (
+    ElectionFactory,
+)
+
 
 @click.command()
-@click.option('--guardian-count', prompt='Number of guardians', help='The number of guardians that will participate in the key ceremony and tally.', type=click.INT)
-@click.option('--quorum', prompt='Quorum', help='The minimum number of guardians required to show up to the tally.', type=click.INT)
-def e2e(guardian_count, quorum):
+@click.option(
+    "--guardian-count",
+    prompt="Number of guardians",
+    help="The number of guardians that will participate in the key ceremony and tally.",
+    type=click.INT,
+)
+@click.option(
+    "--quorum",
+    prompt="Quorum",
+    help="The minimum number of guardians required to show up to the tally.",
+    type=click.INT,
+)
+def e2e(guardian_count: int, quorum: int) -> None:
     """Runs through an end-to-end election."""
 
     def print_header(s: str) -> None:
-        click.secho(f"{'-'*40}", fg='green')
-        click.secho(s, fg='green')
-        click.secho(f"{'-'*40}", fg='green')
+        click.secho(f"{'-'*40}", fg="green")
+        click.secho(s, fg="green")
+        click.secho(f"{'-'*40}", fg="green")
 
-    def print_value(name: str, value: any) -> None:
-        click.echo(click.style(name + ": ") + click.style(value, fg='yellow'))
+    def print_value(name: str, value: Any) -> None:
+        click.echo(click.style(name + ": ") + click.style(value, fg="yellow"))
 
     def print_manifest(manifest: Manifest) -> None:
-        manifest_name = manifest.name.text[0].value
+        def get_first_value(text: Optional[InternationalizedText]) -> str:
+            return "" if text is None else text.text[0].value
+
+        manifest_name = get_first_value(manifest.name)
         print_value("Name", manifest_name)
         print_value("Scope", manifest.election_scope_id)
         print_value("Geopolitical Units", len(manifest.geopolitical_units))
@@ -51,13 +67,12 @@ def e2e(guardian_count, quorum):
         print_value("Guardians", guardian_count)
         print_value("Quorum", quorum)
 
-    def get_manifest() -> Optional[Manifest]:
+    def get_manifest() -> Manifest:
         # todo: get manifest from params
-        print_header('Retrieving manifest')
-        manifest = ElectionFactory().get_simple_manifest_from_file()
-        if (not manifest.is_valid()):
-            click.echo('manifest file is invalid')
-            return None
+        print_header("Retrieving manifest")
+        manifest: Manifest = ElectionFactory().get_simple_manifest_from_file()
+        if not manifest.is_valid():
+            raise ValueError("manifest file is invalid")
         print_manifest(manifest)
         return manifest
 
@@ -74,19 +89,19 @@ def e2e(guardian_count, quorum):
             )
         return guardians
 
-    def build_election(joint_key, guardian_count, quorum, manifest) -> Tuple[InternalManifest, CiphertextElectionContext]:
+    def build_election(
+        joint_key: ElectionJointKey,
+        guardian_count: int,
+        quorum: int,
+        manifest: Manifest,
+    ) -> Tuple[InternalManifest, CiphertextElectionContext]:
         print_header("Building election")
 
-        election_builder = ElectionBuilder(
-            guardian_count, quorum, manifest
-        )
-        election_builder.set_public_key(get_optional(joint_key).joint_public_key)
-        election_builder.set_commitment_hash(
-            get_optional(joint_key).commitment_hash
-        )
-        return get_optional(
-            election_builder.build()
-        )
+        election_builder = ElectionBuilder(guardian_count, quorum, manifest)
+        election_builder.set_public_key(joint_key.joint_public_key)
+        election_builder.set_commitment_hash(joint_key.commitment_hash)
+        build_result = election_builder.build()
+        return get_optional(build_result)
 
     def encrypt_votes() -> List[CiphertextBallot]:
         print_header("Encrypting votes")
@@ -97,9 +112,7 @@ def e2e(guardian_count, quorum):
 
         # Configure the Encryption Device
         device = ElectionFactory.get_encryption_device()
-        encrypter = EncryptionMediator(
-            internal_manifest, context, device
-        )
+        encrypter = EncryptionMediator(internal_manifest, context, device)
         click.echo(f"Ready to encrypt at location: {device.location}")
 
         ciphertext_ballots: List[CiphertextBallot] = []
@@ -110,11 +123,14 @@ def e2e(guardian_count, quorum):
             ciphertext_ballots.append(get_optional(encrypted_ballot))
         return ciphertext_ballots
 
-    def cast_and_spoil(ballot_store: DataStore, internal_manifest: InternalManifest, context: CiphertextElectionContext, ciphertext_ballots: List[CiphertextBallot]) -> None:
+    def cast_and_spoil(
+        ballot_store: DataStore,
+        internal_manifest: InternalManifest,
+        context: CiphertextElectionContext,
+        ciphertext_ballots: List[CiphertextBallot],
+    ) -> None:
         # Configure the Ballot Box
-        ballot_box = BallotBox(
-            internal_manifest, context, ballot_store
-        )
+        ballot_box = BallotBox(internal_manifest, context, ballot_store)
 
         # spoil the 1st ballot, cast the rest
         first = True
@@ -125,9 +141,13 @@ def e2e(guardian_count, quorum):
                 submitted_ballot = ballot_box.cast(ballot)
             first = False
 
-            click.echo(f"Submitted Ballot Id: {ballot.object_id} state: {get_optional(submitted_ballot).state}")
+            click.echo(
+                f"Submitted Ballot Id: {ballot.object_id} state: {get_optional(submitted_ballot).state}"
+            )
 
-    def decrypt_tally(ballot_store: DataStore, guardians: List[Guardian], ciphertext_ballots: List[CiphertextBallot]) -> Tuple[CiphertextBallot, Dict[BallotId, PlaintextTally]]:
+    def decrypt_tally(
+        ballot_store: DataStore, guardians: List[Guardian]
+    ) -> Tuple[PlaintextTally, Dict[BallotId, PlaintextTally]]:
         print_header("Decrypting tally")
         ciphertext_tally = get_optional(
             tally_ballots(ballot_store, internal_manifest, context)
@@ -149,9 +169,7 @@ def e2e(guardian_count, quorum):
         count = 0
         for guardian in guardians:
             guardian_key = guardian.share_key()
-            tally_share = guardian.compute_tally_share(
-                ciphertext_tally, context
-            )
+            tally_share = guardian.compute_tally_share(ciphertext_tally, context)
             ballot_shares = guardian.compute_ballot_shares(
                 submitted_ballots_list, context
             )
@@ -163,6 +181,9 @@ def e2e(guardian_count, quorum):
 
         lagrange_coefficients = LagrangeCoefficientsRecord(
             decryption_mediator.get_lagrange_coefficients()
+        )
+        click.echo(
+            f"retrieved {len(lagrange_coefficients.coefficients)} lagrange coefficients"
         )
 
         # Get the plaintext Tally
@@ -177,30 +198,37 @@ def e2e(guardian_count, quorum):
 
         return (plaintext_tally, plaintext_spoiled_ballots)
 
-    def print_tally(plaintext_tally):
-        print_header('Decrypted tally')
+    def print_tally(plaintext_tally: PlaintextTally) -> None:
+        print_header("Decrypted tally")
         for contest in plaintext_tally.contests.values():
             click.echo(f"Contest: {contest.object_id}")
             for selection in contest.selections.values():
-                click.echo(f"  Selection '{selection.object_id}' received: {selection.tally} votes")
+                click.echo(
+                    f"  Selection '{selection.object_id}' received: {selection.tally} votes"
+                )
 
-    def print_spoiled_ballot(plaintext_spoiled_ballots: Dict[BallotId, PlaintextTally]) -> None:
+    def print_spoiled_ballot(
+        plaintext_spoiled_ballots: Dict[BallotId, PlaintextTally]
+    ) -> None:
         ballot_id = list(plaintext_spoiled_ballots)[0]
         print_header(f"Spoiled ballot '{ballot_id}'")
         spoiled_ballot = plaintext_spoiled_ballots[ballot_id]
         for contest in spoiled_ballot.contests.values():
             click.echo(f"Contest: {contest.object_id}")
             for selection in contest.selections.values():
-                click.echo(f"  Selection '{selection.object_id}' received {selection.tally} vote")
+                click.echo(
+                    f"  Selection '{selection.object_id}' received {selection.tally} vote"
+                )
 
     manifest: Manifest = get_manifest()
-    if (manifest is None): return
     guardians = get_guardians(guardian_count)
     joint_key = KeyCeremonyStep().run_key_ceremony(guardians)
-    internal_manifest, context = build_election(joint_key, guardian_count, quorum, manifest)
+    internal_manifest, context = build_election(
+        joint_key, guardian_count, quorum, manifest
+    )
     ciphertext_ballots = encrypt_votes()
-    ballot_store = DataStore()
+    ballot_store: DataStore = DataStore()
     cast_and_spoil(ballot_store, internal_manifest, context, ciphertext_ballots)
-    (tally, spoiled_ballots) = decrypt_tally(ballot_store, guardians, ciphertext_ballots)
+    (tally, spoiled_ballots) = decrypt_tally(ballot_store, guardians)
     print_tally(tally)
     print_spoiled_ballot(spoiled_ballots)
