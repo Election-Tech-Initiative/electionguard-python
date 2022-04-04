@@ -1,5 +1,6 @@
-from e2e_steps.e2e_step_base import E2eStepBase
 from typing import Dict
+from electionguard_cli.cli_models import E2eDecryptResults
+from e2e_steps.e2e_step_base import E2eStepBase
 import click
 
 from electionguard.type import BallotId
@@ -34,7 +35,7 @@ class PrintResultsStep(E2eStepBase):
                 )
 
     def print_election_results(
-        self, tally: PlaintextTally, spoiled_ballots: Dict[BallotId, PlaintextTally]
-    ):
-        self.print_tally(tally)
-        self.print_spoiled_ballot(spoiled_ballots)
+        self, decrypt_results: E2eDecryptResults
+    ) -> None:
+        self.print_tally(decrypt_results.plaintext_tally)
+        self.print_spoiled_ballot(decrypt_results.plaintext_spoiled_ballots)
