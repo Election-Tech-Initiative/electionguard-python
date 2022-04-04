@@ -1,4 +1,5 @@
 from typing import List
+from cli_models.e2e_inputs import E2eInputs
 from e2e_steps.e2e_step_base import E2eStepBase
 from electionguard.key_ceremony import (
     CeremonyDetails,
@@ -74,9 +75,10 @@ class KeyCeremonyStep(E2eStepBase):
                     verifications.append(get_optional(verification))
             mediator.receive_backup_verifications(verifications)
 
-    def run_key_ceremony(self, guardians: List[Guardian]) -> ElectionJointKey:
+    def run_key_ceremony(self, election_inputs: E2eInputs) -> ElectionJointKey:
         self.print_header("Performing key ceremony")
 
+        guardians = election_inputs.guardians
         mediator: KeyCeremonyMediator = self.__get_mediator(
             guardians[0].ceremony_details
         )

@@ -1,7 +1,7 @@
 from typing import List
 import click
-
 from e2e_steps.e2e_step_base import E2eStepBase
+from electionguard_cli.cli_models import E2eInputs, BuildElectionResults
 from electionguard.data_store import DataStore
 from electionguard.ballot_box import BallotBox
 from electionguard.encrypt import EncryptionMediator
@@ -32,7 +32,10 @@ class SubmitVotesStep(E2eStepBase):
         return ciphertext_ballots
 
     def encrypt_votes(
-        self, plaintext_ballots: List[PlaintextBallot], internal_manifest: InternalManifest, context: CiphertextElectionContext
+        self,
+        plaintext_ballots: List[PlaintextBallot],
+        internal_manifest: InternalManifest,
+        context: CiphertextElectionContext,
     ) -> List[CiphertextBallot]:
         self.print_header("Encrypting votes")
         self.print_value("Loaded ballots", len(plaintext_ballots))
@@ -53,7 +56,7 @@ class SubmitVotesStep(E2eStepBase):
         # Configure the Ballot Box
         ballot_box = BallotBox(internal_manifest, context, ballot_store)
 
-        # spoil the 1st ballot, cast the rest
+        # todo: find a way for users to choose which ballot(s) to spoil
         first = True
         for ballot in ciphertext_ballots:
             if first:
@@ -67,8 +70,13 @@ class SubmitVotesStep(E2eStepBase):
             )
 
     def submit_votes(
-        self, ballots: List[PlaintextBallot], internal_manifest: InternalManifest, context: CiphertextElectionContext
+        self,
+        e2e_inputs: E2eInputs,
+        build_election_results: BuildElectionResults
     ) -> DataStore:
+        ballots = e2e_inputs.ballots
+        internal_manifest = build_election_results.internal_manifest
+        context = build_election_results.context
         ballot_store: DataStore = DataStore()
         ciphertext_ballots = self.encrypt_votes(ballots, internal_manifest, context)
         self.cast_and_spoil(
