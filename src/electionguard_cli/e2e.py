@@ -1,21 +1,15 @@
 from typing import Dict, List, Tuple, Any, Optional
 import click
-from e2e_steps import (
-    ElectionBuilderStep,
-    KeyCeremonyStep
-)
+from e2e_steps import ElectionBuilderStep, KeyCeremonyStep, SubmitVotesStep
 
 from electionguard.data_store import DataStore
-from electionguard.ballot_box import BallotBox, get_ballots
+from electionguard.ballot_box import get_ballots
 from electionguard.type import BallotId
-from electionguard.encrypt import EncryptionMediator
-from electionguard.election import CiphertextElectionContext
 from electionguard.guardian import Guardian
-from electionguard.manifest import InternalManifest, InternationalizedText, Manifest
+from electionguard.manifest import InternationalizedText, Manifest
 from electionguard.utils import get_optional
 from electionguard.ballot import (
     BallotBoxState,
-    CiphertextBallot,
 )
 from electionguard.tally import (
     tally_ballots,
@@ -89,48 +83,6 @@ def e2e(guardian_count: int, quorum: int) -> None:
                 )
             )
         return guardians
-
-    def encrypt_votes() -> List[CiphertextBallot]:
-        print_header("Encrypting votes")
-        # Get Ballots
-        # todo: parameterize the plaintext ballot file
-        plaintext_ballots = BallotFactory().get_simple_ballots_from_file()
-        print_value("Loaded ballots", len(plaintext_ballots))
-
-        # Configure the Encryption Device
-        device = ElectionFactory.get_encryption_device()
-        encrypter = EncryptionMediator(internal_manifest, context, device)
-        print_value("Print location", device.location)
-
-        ciphertext_ballots: List[CiphertextBallot] = []
-        # Encrypt the Ballots
-        for plaintext_ballot in plaintext_ballots:
-            encrypted_ballot = encrypter.encrypt(plaintext_ballot)
-            click.echo(f"Encrypting ballot: {plaintext_ballot.object_id}")
-            ciphertext_ballots.append(get_optional(encrypted_ballot))
-        return ciphertext_ballots
-
-    def cast_and_spoil(
-        ballot_store: DataStore,
-        internal_manifest: InternalManifest,
-        context: CiphertextElectionContext,
-        ciphertext_ballots: List[CiphertextBallot],
-    ) -> None:
-        # Configure the Ballot Box
-        ballot_box = BallotBox(internal_manifest, context, ballot_store)
-
-        # spoil the 1st ballot, cast the rest
-        first = True
-        for ballot in ciphertext_ballots:
-            if first:
-                submitted_ballot = ballot_box.spoil(ballot)
-            else:
-                submitted_ballot = ballot_box.cast(ballot)
-            first = False
-
-            click.echo(
-                f"Submitted Ballot Id: {ballot.object_id} state: {get_optional(submitted_ballot).state}"
-            )
 
     def decrypt_tally(
         ballot_store: DataStore, guardians: List[Guardian]
@@ -215,9 +167,7 @@ def e2e(guardian_count: int, quorum: int) -> None:
     internal_manifest, context = ElectionBuilderStep().build_election(
         joint_key, guardian_count, quorum, manifest
     )
-    ciphertext_ballots = encrypt_votes()
-    ballot_store: DataStore = DataStore()
-    cast_and_spoil(ballot_store, internal_manifest, context, ciphertext_ballots)
+    ballot_store = SubmitVotesStep().submit_votes(internal_manifest, context)
     (tally, spoiled_ballots) = decrypt_tally(ballot_store, guardians)
     print_tally(tally)
     print_spoiled_ballot(spoiled_ballots)
