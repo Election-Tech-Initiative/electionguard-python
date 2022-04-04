@@ -1,9 +1,8 @@
 import click
-from electionguard_cli.e2e import e2e
-from electionguard_cli.hello import hello
+from electionguard_cli.commands import e2e, hello
 
 @click.group()
-def cli():
+def cli() -> None:
     pass
 
 cli.add_command(hello)
