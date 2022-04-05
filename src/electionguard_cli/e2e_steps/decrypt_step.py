@@ -33,7 +33,7 @@ class DecryptStep(E2eStepBase):
         submitted_ballots = get_ballots(ballot_store, BallotBoxState.SPOILED)
         click.echo("Decrypting tally")
         self.print_value("Cast ballots", ciphertext_tally.cast())
-        self.print_value("Spoiled ballots", ciphertext_tally.cast())
+        self.print_value("Spoiled ballots", ciphertext_tally.spoiled())
         self.print_value("Total ballots", len(ciphertext_tally))
 
         # Configure the Decryption

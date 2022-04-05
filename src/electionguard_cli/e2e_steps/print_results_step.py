@@ -17,9 +17,7 @@ class PrintResultsStep(E2eStepBase):
         for contest in plaintext_tally.contests.values():
             click.echo(f"Contest: {contest.object_id}")
             for selection in contest.selections.values():
-                click.echo(
-                    f"  Selection '{selection.object_id}' received: {selection.tally} votes"
-                )
+                self.print_value(f"  {selection.object_id}", f"{selection.tally} votes")
 
     def print_spoiled_ballot(
         self, plaintext_spoiled_ballots: Dict[BallotId, PlaintextTally]
@@ -30,9 +28,7 @@ class PrintResultsStep(E2eStepBase):
         for contest in spoiled_ballot.contests.values():
             click.echo(f"Contest: {contest.object_id}")
             for selection in contest.selections.values():
-                click.echo(
-                    f"  Selection '{selection.object_id}' received {selection.tally} vote"
-                )
+                self.print_value(f"  {selection.object_id}", f"{selection.tally} votes")
 
     def print_election_results(self, decrypt_results: E2eDecryptResults) -> None:
         self.print_tally(decrypt_results.plaintext_tally)
