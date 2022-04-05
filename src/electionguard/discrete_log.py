@@ -20,10 +20,9 @@ class DiscreteLogExponentError(ValueError):
     """Raised when the max exponent is larger than the system allows."""
 
     def __init__(self, exponent: int, max_exponent: int = _DLOG_MAX_EXPONENT) -> None:
-        message = (
+        super().__init__(
             f"Discrete log exponent of {exponent} exceeds maximum of {max_exponent}."
         )
-        super().__init__(message)
 
 
 class DiscreteLogNotFoundError(ValueError):
@@ -136,6 +135,8 @@ def compute_discrete_log_cache(
 
     max_element = list(cache)[-1]
     exponent = cache[max_element]
+    if exponent > max_exponent:
+        raise DiscreteLogExponentError(exponent, max_exponent)
 
     g = ElementModP(get_generator(), False)
 
