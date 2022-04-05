@@ -56,7 +56,6 @@ class SubmitVotesStep(E2eStepBase):
         # Configure the Ballot Box
         ballot_box = BallotBox(internal_manifest, context, ballot_store)
 
-        # todo: find a way for users to choose which ballot(s) to spoil
         first = True
         for ballot in ciphertext_ballots:
             if first:
