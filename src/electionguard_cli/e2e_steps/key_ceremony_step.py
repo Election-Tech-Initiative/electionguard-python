@@ -1,6 +1,5 @@
 from typing import List
-from cli_models.e2e_inputs import E2eInputs
-from e2e_steps.e2e_step_base import E2eStepBase
+
 from electionguard.key_ceremony import (
     CeremonyDetails,
     ElectionJointKey,
@@ -9,6 +8,9 @@ from electionguard.key_ceremony import (
 from electionguard.guardian import Guardian
 from electionguard.key_ceremony_mediator import KeyCeremonyMediator
 from electionguard.utils import get_optional
+
+from ..cli_models.e2e_inputs import E2eInputs
+from .e2e_step_base import E2eStepBase
 
 
 class KeyCeremonyStep(E2eStepBase):

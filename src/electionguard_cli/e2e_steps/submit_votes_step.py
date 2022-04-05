@@ -1,7 +1,6 @@
 from typing import List
 import click
-from e2e_steps.e2e_step_base import E2eStepBase
-from electionguard_cli.cli_models import E2eInputs, BuildElectionResults
+
 from electionguard.data_store import DataStore
 from electionguard.ballot_box import BallotBox
 from electionguard.encrypt import EncryptionMediator
@@ -15,6 +14,9 @@ from electionguard.ballot import (
 from electionguard_tools.factories.election_factory import (
     ElectionFactory,
 )
+
+from ..cli_models import E2eInputs, BuildElectionResults
+from .e2e_step_base import E2eStepBase
 
 
 class SubmitVotesStep(E2eStepBase):

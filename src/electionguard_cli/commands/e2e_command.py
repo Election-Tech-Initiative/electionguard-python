@@ -1,5 +1,5 @@
 import click
-from e2e_steps import (
+from ..e2e_steps import (
     ElectionBuilderStep,
     KeyCeremonyStep,
     SubmitVotesStep,

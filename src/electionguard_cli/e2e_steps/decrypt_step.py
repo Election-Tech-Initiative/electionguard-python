@@ -1,6 +1,5 @@
 from typing import List
 import click
-from e2e_steps.e2e_step_base import E2eStepBase
 
 from electionguard_cli.cli_models import BuildElectionResults, E2eDecryptResults
 from electionguard.data_store import DataStore
@@ -13,6 +12,8 @@ from electionguard.ballot import (
 from electionguard.tally import tally_ballots
 from electionguard.decryption_mediator import DecryptionMediator
 from electionguard.election_polynomial import LagrangeCoefficientsRecord
+
+from .e2e_step_base import E2eStepBase
 
 
 class DecryptStep(E2eStepBase):
