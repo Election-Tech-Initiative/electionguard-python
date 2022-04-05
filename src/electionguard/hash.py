@@ -30,7 +30,6 @@ class CryptoHashable(Protocol):
         """
         Generates a hash given the fields on the implementing instance.
         """
-        ...
 
 
 @runtime_checkable
@@ -44,7 +43,6 @@ class CryptoHashCheckable(Protocol):
         """
         Generates a hash with a given seed that can be checked later against the seed and class metadata.
         """
-        ...
 
 
 # All the "atomic" types that we know how to hash.
