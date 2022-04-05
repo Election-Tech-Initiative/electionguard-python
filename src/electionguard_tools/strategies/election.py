@@ -177,16 +177,6 @@ def reporting_unit_types(draw: _DrawType):
 
 
 @composite
-def annotated_emails(draw: _DrawType):
-    """
-    Generates a `Email` object with an arbitrary two-letter string as annotation and an
-    email format string as value.
-    :param draw: Hidden argument, used by Hypothesis.
-    """
-    return AnnotatedString(draw(two_letter_codes()), draw(emails()))
-
-
-@composite
 def contact_infos(draw: _DrawType):
     """
     Generates a `ContactInformation` object.
@@ -275,11 +265,11 @@ def annotated_strings(draw: _DrawType):
 @composite
 def annotated_emails(draw: _DrawType):
     """
-    Generates an `AnnotatedString` object with one `Language` and an associated
-    `value` string (representing an annotated email).
+    Generates a `Email` object with an arbitrary two-letter string as annotation and an
+    email format string as value.
     :param draw: Hidden argument, used by Hypothesis.
     """
-    return AnnotatedString(value=draw(emails()))
+    return AnnotatedString(draw(two_letter_codes()), draw(emails()))
 
 
 @composite

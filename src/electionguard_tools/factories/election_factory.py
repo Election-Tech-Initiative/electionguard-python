@@ -51,7 +51,7 @@ from electionguard_tools.helpers.key_ceremony_orchestrator import (
 _T = TypeVar("_T")
 _DrawType = Callable[[SearchStrategy[_T]], _T]
 
-data = os.path.realpath(os.path.join(__file__, "../../../../data"))
+_data = os.path.realpath(os.path.join(__file__, "../../../../data"))
 
 NUMBER_OF_GUARDIANS = 5
 QUORUM = 3
@@ -90,7 +90,7 @@ class ElectionFactory:
         return from_file(
             Manifest,
             os.path.join(
-                data,
+                _data,
                 spec_version,
                 "sample",
                 sample_manifest,
@@ -105,7 +105,7 @@ class ElectionFactory:
         return from_file(
             Manifest,
             os.path.join(
-                data, os.path.join(data, "hamilton-county", "election_manifest.json")
+                _data, os.path.join(_data, "hamilton-county", "election_manifest.json")
             ),
         )
 
@@ -259,7 +259,7 @@ class ElectionFactory:
 
     @staticmethod
     def _get_manifest_from_file(filename: str) -> Manifest:
-        return from_file(Manifest, os.path.join(data, filename))
+        return from_file(Manifest, os.path.join(_data, filename))
 
     @staticmethod
     def get_encryption_device() -> EncryptionDevice:
@@ -319,7 +319,7 @@ def get_contest_description_well_formed(
     number_elected = min(first_int, second_int)
     votes_allowed = number_elected
 
-    selection_descriptions: List[SelectionDescription] = list()
+    selection_descriptions: List[SelectionDescription] = []
     for i in range(max(first_int, second_int)):
         selection: Tuple[str, SelectionDescription] = draw(selections)
         _, selection_description = selection

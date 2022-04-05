@@ -3,7 +3,6 @@ from electionguard_tools.factories import election_factory
 
 from electionguard_tools.factories.ballot_factory import (
     BallotFactory,
-    data,
     get_selection_poorly_formed,
     get_selection_well_formed,
 )
@@ -13,7 +12,6 @@ from electionguard_tools.factories.election_factory import (
     ElectionFactory,
     NUMBER_OF_GUARDIANS,
     QUORUM,
-    data,
     get_contest_description_well_formed,
     get_selection_description_well_formed,
 )
@@ -26,7 +24,6 @@ __all__ = [
     "NUMBER_OF_GUARDIANS",
     "QUORUM",
     "ballot_factory",
-    "data",
     "election_factory",
     "get_contest_description_well_formed",
     "get_selection_description_well_formed",

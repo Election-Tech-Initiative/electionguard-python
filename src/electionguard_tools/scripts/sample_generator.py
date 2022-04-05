@@ -26,8 +26,8 @@ from electionguard_tools.helpers.tally_ceremony_orchestrator import (
     TallyCeremonyOrchestrator,
 )
 from electionguard_tools.helpers.export import (
+    export_record,
     export_private_data,
-    export,
     ELECTION_RECORD_DIR,
     PRIVATE_DATA_DIR,
 )
@@ -155,7 +155,7 @@ class ElectionSampleDataGenerator:
         )
 
         if plaintext_tally:
-            export(
+            export_record(
                 manifest.manifest,
                 manifest.context,
                 manifest.constants,
