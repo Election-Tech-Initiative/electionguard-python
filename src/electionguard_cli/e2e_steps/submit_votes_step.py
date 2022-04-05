@@ -18,42 +18,46 @@ from electionguard_tools.factories.election_factory import (
 
 
 class SubmitVotesStep(E2eStepBase):
-    """Responsible for encrypting votes and storing them in a ballot store"""
+    """Responsible for encrypting votes and storing them in a ballot store."""
 
     def __encrypt_ballots(
         self, plaintext_ballots: List[PlaintextBallot], encrypter: EncryptionMediator
     ) -> List[CiphertextBallot]:
         ciphertext_ballots: List[CiphertextBallot] = []
-        # Encrypt the Ballots
         for plaintext_ballot in plaintext_ballots:
             click.echo(f"Encrypting ballot: {plaintext_ballot.object_id}")
             encrypted_ballot = encrypter.encrypt(plaintext_ballot)
             ciphertext_ballots.append(get_optional(encrypted_ballot))
         return ciphertext_ballots
 
-    def encrypt_votes(
+    def __get_encrypter(
+        self,
+        internal_manifest: InternalManifest,
+        context: CiphertextElectionContext,
+    ) -> EncryptionMediator:
+        device = ElectionFactory.get_encryption_device()
+        self.print_value("Device location", device.location)
+        encrypter = EncryptionMediator(internal_manifest, context, device)
+        return encrypter
+
+    def __encrypt_votes(
         self,
         plaintext_ballots: List[PlaintextBallot],
         internal_manifest: InternalManifest,
         context: CiphertextElectionContext,
     ) -> List[CiphertextBallot]:
-        self.print_header("Encrypting votes")
-        self.print_value("Loaded ballots", len(plaintext_ballots))
+        self.print_value("Ballots to encrypt", len(plaintext_ballots))
+        encrypter = self.__get_encrypter(internal_manifest, context)
+        encrypted_ballots = self.__encrypt_ballots(plaintext_ballots, encrypter)
+        return encrypted_ballots
 
-        # Configure the Encryption Device
-        device = ElectionFactory.get_encryption_device()
-        encrypter = EncryptionMediator(internal_manifest, context, device)
-        self.print_value("Device location", device.location)
-        return self.__encrypt_ballots(plaintext_ballots, encrypter)
-
-    def cast_and_spoil(
+    def __cast_and_spoil(
         self,
         ballot_store: DataStore,
         internal_manifest: InternalManifest,
         context: CiphertextElectionContext,
         ciphertext_ballots: List[CiphertextBallot],
     ) -> None:
-        # Configure the Ballot Box
         ballot_box = BallotBox(internal_manifest, context, ballot_store)
 
         first = True
@@ -75,8 +79,8 @@ class SubmitVotesStep(E2eStepBase):
         internal_manifest = build_election_results.internal_manifest
         context = build_election_results.context
         ballot_store: DataStore = DataStore()
-        ciphertext_ballots = self.encrypt_votes(ballots, internal_manifest, context)
-        self.cast_and_spoil(
+        ciphertext_ballots = self.__encrypt_votes(ballots, internal_manifest, context)
+        self.__cast_and_spoil(
             ballot_store, internal_manifest, context, ciphertext_ballots
         )
         return ballot_store

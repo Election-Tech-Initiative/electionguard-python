@@ -1,8 +1,7 @@
 from typing import Dict
-from electionguard_cli.cli_models import E2eDecryptResults
-from e2e_steps.e2e_step_base import E2eStepBase
 import click
-
+from e2e_steps.e2e_step_base import E2eStepBase
+from electionguard_cli.cli_models import E2eDecryptResults
 from electionguard.type import BallotId
 from electionguard.tally import (
     PlaintextTally,
@@ -10,7 +9,7 @@ from electionguard.tally import (
 
 
 class PrintResultsStep(E2eStepBase):
-    """Responsible for printing the results of an end-to-end election"""
+    """Responsible for printing the results of an end-to-end election."""
 
     def print_tally(self, plaintext_tally: PlaintextTally) -> None:
         self.print_header("Decrypted tally")

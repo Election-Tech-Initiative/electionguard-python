@@ -12,7 +12,7 @@ from electionguard_tools.factories.election_factory import (
 
 
 class InputRetrievalStep(E2eStepBase):
-    """Responsible for retrieving and displaying user provided inputs"""
+    """Responsible for retrieving and displaying user provided inputs."""
 
     def get_ballots(self) -> List[PlaintextBallot]:
         ballots: List[PlaintextBallot] = BallotFactory().get_simple_ballots_from_file()

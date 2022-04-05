@@ -5,7 +5,7 @@ from electionguard.manifest import Manifest
 
 
 class E2eInputs:
-    """Responsible for holding the inputs to an end-to-end election"""
+    """Responsible for holding the inputs to an end-to-end election."""
 
     def __init__(
         self,

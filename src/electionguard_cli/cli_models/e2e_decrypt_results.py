@@ -4,7 +4,7 @@ from electionguard.type import BallotId
 
 
 class E2eDecryptResults:
-    """Responsible for holding the results of decrypting an election"""
+    """Responsible for holding the results of decrypting an election."""
 
     def __init__(
         self,
