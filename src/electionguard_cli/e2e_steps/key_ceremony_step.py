@@ -27,7 +27,7 @@ class KeyCeremonyStep(E2eStepBase):
         )
         return mediator
 
-    def __share_Keys(
+    def __share_keys(
         self, announced_keys: List[ElectionPublicKey], guardians: List[Guardian]
     ) -> None:
         for guardian in guardians:
@@ -83,7 +83,7 @@ class KeyCeremonyStep(E2eStepBase):
             guardians[0].ceremony_details
         )
         announced_keys = self.__announce_guardians(mediator, guardians)
-        self.__share_Keys(announced_keys, guardians)
+        self.__share_keys(announced_keys, guardians)
         if not mediator.all_guardians_announced():
             raise ValueError("All guardians failed to announce successfully")
         self.__share_backups(mediator, guardians)
