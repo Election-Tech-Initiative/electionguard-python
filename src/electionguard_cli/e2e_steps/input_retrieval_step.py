@@ -15,7 +15,6 @@ class InputRetrievalStep(E2eStepBase):
     """Responsible for retrieving and displaying user provided inputs"""
 
     def get_ballots(self) -> List[PlaintextBallot]:
-        # todo: parameterize the plaintext ballot file
         ballots: List[PlaintextBallot] = BallotFactory().get_simple_ballots_from_file()
         return ballots
 
@@ -33,7 +32,6 @@ class InputRetrievalStep(E2eStepBase):
         self.print_value("Ballot Styles", len(manifest.ballot_styles))
 
     def get_manifest(self) -> Manifest:
-        # todo: get manifest from params
         self.print_header("Retrieving manifest")
         manifest: Manifest = ElectionFactory().get_simple_manifest_from_file()
         if not manifest.is_valid():
