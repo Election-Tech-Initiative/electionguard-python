@@ -20,6 +20,12 @@ class Configuration:
     Allow overvotes, votes exceeding selection limit, for the election.
     """
 
+    max_votes: int = field(default=1_000_000)
+    """
+    Maximum votes, the maximum votes allowed on a selection for an aggregate ballot or tally.
+    This can also be seen as the maximum ballots where a selection on a ballot can only have one vote.
+    """
+
 
 # pylint: disable=too-many-instance-attributes
 @dataclass(eq=True, unsafe_hash=True)
