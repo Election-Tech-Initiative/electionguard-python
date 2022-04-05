@@ -54,9 +54,7 @@ class InputRetrievalStep(E2eStepBase):
             )
         return guardians
 
-    def get_inputs(
-        self, guardian_count: int, quorum: int
-    ) -> E2eInputs:
+    def get_inputs(self, guardian_count: int, quorum: int) -> E2eInputs:
         self.print_header("Retrieving Inputs")
         guardians = self.get_guardians(guardian_count, quorum)
         manifest: Manifest = self.get_manifest()

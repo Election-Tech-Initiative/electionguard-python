@@ -34,8 +34,6 @@ class PrintResultsStep(E2eStepBase):
                     f"  Selection '{selection.object_id}' received {selection.tally} vote"
                 )
 
-    def print_election_results(
-        self, decrypt_results: E2eDecryptResults
-    ) -> None:
+    def print_election_results(self, decrypt_results: E2eDecryptResults) -> None:
         self.print_tally(decrypt_results.plaintext_tally)
         self.print_spoiled_ballot(decrypt_results.plaintext_spoiled_ballots)
