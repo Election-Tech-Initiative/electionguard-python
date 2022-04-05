@@ -1,9 +1,9 @@
-from electionguard_cli.cli_models import E2eInputs, BuildElectionResults
-
-from e2e_steps.e2e_step_base import E2eStepBase
 from electionguard.key_ceremony import ElectionJointKey
 from electionguard.election_builder import ElectionBuilder
 from electionguard.utils import get_optional
+
+from ..cli_models import E2eInputs, BuildElectionResults
+from .e2e_step_base import E2eStepBase
 
 
 class ElectionBuilderStep(E2eStepBase):
