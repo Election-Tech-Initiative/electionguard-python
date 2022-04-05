@@ -1,6 +1,5 @@
 from typing import Dict
 import click
-from e2e_steps.e2e_step_base import E2eStepBase
 from electionguard_cli.cli_models import E2eDecryptResults
 from electionguard.type import BallotId
 from electionguard.tally import (
