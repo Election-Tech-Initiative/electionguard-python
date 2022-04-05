@@ -1,6 +1,4 @@
 from typing import List, Optional
-from cli_models.e2e_inputs import E2eInputs
-from e2e_steps.e2e_step_base import E2eStepBase
 
 from electionguard.ballot import PlaintextBallot
 from electionguard.guardian import Guardian
@@ -9,6 +7,9 @@ from electionguard_tools.factories.ballot_factory import BallotFactory
 from electionguard_tools.factories.election_factory import (
     ElectionFactory,
 )
+
+from ..cli_models.e2e_inputs import E2eInputs
+from .e2e_step_base import E2eStepBase
 
 
 class InputRetrievalStep(E2eStepBase):

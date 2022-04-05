@@ -7,6 +7,9 @@ from electionguard.tally import (
     PlaintextTally,
 )
 
+from ..cli_models import E2eDecryptResults
+from .e2e_step_base import E2eStepBase
+
 
 class PrintResultsStep(E2eStepBase):
     """Responsible for printing the results of an end-to-end election."""
