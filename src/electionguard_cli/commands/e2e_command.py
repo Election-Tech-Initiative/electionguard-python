@@ -30,8 +30,12 @@ def e2e(guardian_count: int, quorum: int) -> None:
 
     # perform election
     joint_key = KeyCeremonyStep().run_key_ceremony(election_inputs)
-    build_election_results = ElectionBuilderStep().build_election(election_inputs, joint_key)
-    ballot_store = SubmitVotesStep().submit_votes(election_inputs, build_election_results)
+    build_election_results = ElectionBuilderStep().build_election(
+        election_inputs, joint_key
+    )
+    ballot_store = SubmitVotesStep().submit_votes(
+        election_inputs, build_election_results
+    )
     decrypt_results = DecryptStep().decrypt_tally(
         ballot_store, election_inputs.guardians, build_election_results
     )

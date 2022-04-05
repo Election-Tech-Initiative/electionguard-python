@@ -70,9 +70,7 @@ class SubmitVotesStep(E2eStepBase):
             )
 
     def submit_votes(
-        self,
-        e2e_inputs: E2eInputs,
-        build_election_results: BuildElectionResults
+        self, e2e_inputs: E2eInputs, build_election_results: BuildElectionResults
     ) -> DataStore:
         ballots = e2e_inputs.ballots
         internal_manifest = build_election_results.internal_manifest
