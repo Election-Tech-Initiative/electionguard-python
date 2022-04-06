@@ -138,7 +138,7 @@ class TestEndToEndElection(BaseTestCase):
 
     def step_0_configure_election(self) -> None:
         """
-        To conduct an election, load an `Manifest` file
+        To conduct an election, load an `Manifest` file.
         """
 
         # Load a pre-configured Election Description
@@ -178,7 +178,7 @@ class TestEndToEndElection(BaseTestCase):
         """
         Using the NUMBER_OF_GUARDIANS, generate public-private keypairs and share
         representations of those keys with QUORUM of other Guardians.  Then, combine
-        the public election keys to make a joint election key that is used to encrypt ballots
+        the public election keys to make a joint election key that is used to encrypt ballots.
         """
 
         # Setup Guardians
@@ -295,7 +295,7 @@ class TestEndToEndElection(BaseTestCase):
 
     def step_2_encrypt_votes(self) -> None:
         """
-        Using the `CiphertextElectionContext` encrypt ballots for the election
+        Using the `CiphertextElectionContext` encrypt ballots for the election.
         """
 
         # Configure the Encryption Device
@@ -331,7 +331,7 @@ class TestEndToEndElection(BaseTestCase):
     def step_3_cast_and_spoil(self) -> None:
         """
         Accept each ballot by marking it as either cast or spoiled.
-        This example demonstrates one way to accept ballots using the `BallotBox` class
+        This example demonstrates one way to accept ballots using the `BallotBox` class.
         """
 
         # Configure the Ballot Box

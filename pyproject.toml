@@ -20,7 +20,11 @@ classifiers = [
     "Operating System :: Microsoft :: Windows",
     "Programming Language :: Python",
     "Topic :: Utilities"]
-packages = [{ include = "electionguard", from = "src" }]
+packages = [
+  { include = "electionguard", from = "src" }, 
+  { include = "electionguard_cli", from = "src" },
+]
+
 
 [tool.poetry.urls]
 "GitHub Pages" = "https://microsoft.github.io/electionguard-python"
@@ -34,6 +38,7 @@ python = "^3.9.5"
 gmpy2 = "^2.0.8"
 psutil = ">=5.7.2"
 pydantic = "1.9.0"
+click = "^8.1.0"
 
 [tool.poetry.dev-dependencies]
 atomicwrites = "*"
@@ -55,6 +60,9 @@ pytest = "*"
 secretstorage = "*"
 twine = "*"
 typish = '*'
+
+[tool.poetry.scripts]
+eg = 'electionguard_cli.start:cli'
 
 [tool.black]
 target-version = ['py39']

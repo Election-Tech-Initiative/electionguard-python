@@ -99,6 +99,7 @@ auto-lint:
 	poetry run mkinit src/electionguard --write --black
 	poetry run mkinit src/electionguard_tools --write --recursive --black
 	poetry run mkinit src/electionguard_verify --write --black
+	poetry run mkinit src/electionguard_cli --write --recursive --black
 	@echo Reformatting using Black
 	poetry run black .
 	make lint
