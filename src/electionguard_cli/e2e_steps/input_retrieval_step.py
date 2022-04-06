@@ -4,15 +4,20 @@ from typing import List, Optional
 from electionguard.ballot import PlaintextBallot
 from electionguard.guardian import Guardian
 from electionguard.manifest import InternationalizedText, Manifest
-from electionguard_tools.factories.ballot_factory import BallotFactory
+from electionguard.serialize import from_file_wrapper, from_list_in_file_wrapper
 
 from ..cli_models.e2e_inputs import E2eInputs
 from .e2e_step_base import E2eStepBase
-from electionguard.serialize import from_file_wrapper
 
 
 class InputRetrievalStep(E2eStepBase):
     """Responsible for retrieving and displaying user provided inputs."""
+
+    def get_ballots(self, ballots_file: TextIOWrapper) -> List[PlaintextBallot]:
+        ballots: List[PlaintextBallot] = from_list_in_file_wrapper(
+            PlaintextBallot, ballots_file
+        )
+        return ballots
 
     def print_manifest(self, manifest: Manifest) -> None:
         def get_first_value(text: Optional[InternationalizedText]) -> str:
@@ -49,12 +54,16 @@ class InputRetrievalStep(E2eStepBase):
         return guardians
 
     def get_inputs(
-        self, guardian_count: int, quorum: int, manifest_file: TextIOWrapper
+        self,
+        guardian_count: int,
+        quorum: int,
+        manifest_file: TextIOWrapper,
+        ballots_file: TextIOWrapper,
     ) -> E2eInputs:
         self.print_header("Retrieving Inputs")
         guardians = self.get_guardians(guardian_count, quorum)
         manifest: Manifest = self.get_manifest(manifest_file)
-        ballots = self.get_ballots()
+        ballots = self.get_ballots(ballots_file)
         self.print_value("Guardians", guardian_count)
         self.print_value("Quorum", quorum)
         return E2eInputs(guardian_count, quorum, guardians, manifest, ballots)

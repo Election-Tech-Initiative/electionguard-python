@@ -26,14 +26,24 @@ from ..e2e_steps import (
 @click.option(
     "--manifest",
     prompt="Manifest file",
-    help="The location of am election manifest.",
+    help="The location of an election manifest.",
     type=click.File(),
 )
-def e2e(guardian_count: int, quorum: int, manifest: TextIOWrapper) -> None:
+@click.option(
+    "--ballots",
+    prompt="Ballots file",
+    help="The location of a file that contains plaintext ballots.",
+    type=click.File(),
+)
+def e2e(
+    guardian_count: int, quorum: int, manifest: TextIOWrapper, ballots: TextIOWrapper
+) -> None:
     """Runs through an end-to-end election."""
 
     # get user inputs
-    election_inputs = InputRetrievalStep().get_inputs(guardian_count, quorum, manifest)
+    election_inputs = InputRetrievalStep().get_inputs(
+        guardian_count, quorum, manifest, ballots
+    )
 
     # perform election
     joint_key = KeyCeremonyStep().run_key_ceremony(election_inputs)

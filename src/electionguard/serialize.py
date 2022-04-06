@@ -76,6 +76,16 @@ def from_list_in_file(type_: Type[_T], path: Union[str, Path]) -> List[_T]:
     return ls
 
 
+def from_list_in_file_wrapper(type_: Type[_T], file: TextIOWrapper) -> List[_T]:
+    """Deserialize json file that has an array of certain type."""
+
+    data = json.load(file)
+    ls: List[_T] = []
+    for item in data:
+        ls.append(parse_obj_as(type_, item))
+    return ls
+
+
 def to_file(
     data: Any,
     target_file_name: str,
