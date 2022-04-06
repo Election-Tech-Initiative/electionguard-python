@@ -35,14 +35,26 @@ from ..e2e_steps import (
     help="The location of a file that contains plaintext ballots.",
     type=click.File(),
 )
+@click.option(
+    "--spoil-id",
+    prompt="Object-id of ballot to spoil",
+    help="The object-id of a ballot within the ballots file to spoil",
+    type=click.STRING,
+    default=None,
+    prompt_required=False,
+)
 def e2e(
-    guardian_count: int, quorum: int, manifest: TextIOWrapper, ballots: TextIOWrapper
+    guardian_count: int,
+    quorum: int,
+    manifest: TextIOWrapper,
+    ballots: TextIOWrapper,
+    spoil_id: str,
 ) -> None:
     """Runs through an end-to-end election."""
 
     # get user inputs
     election_inputs = InputRetrievalStep().get_inputs(
-        guardian_count, quorum, manifest, ballots
+        guardian_count, quorum, manifest, ballots, spoil_id
     )
 
     # perform election
@@ -58,4 +70,4 @@ def e2e(
     )
 
     # print results
-    PrintResultsStep().print_election_results(decrypt_results)
+    PrintResultsStep().print_election_results(election_inputs, decrypt_results)
