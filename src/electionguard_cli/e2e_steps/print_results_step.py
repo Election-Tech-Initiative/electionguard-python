@@ -1,4 +1,3 @@
-from queue import Empty
 from typing import Dict
 import click
 from electionguard_cli.cli_models import E2eDecryptResults
