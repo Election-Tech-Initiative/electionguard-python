@@ -54,7 +54,6 @@ from electionguard_tools.helpers.export import (
     PRIVATE_DATA_DIR,
     SPOILED_BALLOTS_DIR,
     SUBMITTED_BALLOTS_DIR,
-    export,
     ELECTION_RECORD_DIR,
     SUBMITTED_BALLOT_PREFIX,
     SPOILED_BALLOT_PREFIX,
@@ -66,6 +65,7 @@ from electionguard_tools.helpers.export import (
     MANIFEST_FILE_NAME,
     TALLY_FILE_NAME,
     export_private_data,
+    export_record,
 )
 
 from electionguard_tools.factories.ballot_factory import BallotFactory
@@ -501,7 +501,7 @@ class TestEndToEndElection(BaseTestCase):
             guardian.export_private_data() for guardian in self.guardians
         ]
 
-        export(
+        export_record(
             self.manifest,
             self.context,
             self.constants,

@@ -29,7 +29,7 @@ from electionguard.serialize import from_file, from_list_in_file
 _T = TypeVar("_T")
 _DrawType = Callable[[SearchStrategy[_T]], _T]
 
-data = os.path.realpath(os.path.join(__file__, "../../../../data"))
+_data = os.path.realpath(os.path.join(__file__, "../../../../data"))
 
 
 class BallotFactory:
@@ -64,7 +64,7 @@ class BallotFactory:
         if not suppress_validity_check:
             assert description.is_valid(), "the contest description must be valid"
 
-        selections: List[PlaintextBallotSelection] = list()
+        selections: List[PlaintextBallotSelection] = []
 
         voted = 0
 
@@ -143,11 +143,11 @@ class BallotFactory:
 
     @staticmethod
     def _get_ballot_from_file(filename: str) -> PlaintextBallot:
-        return from_file(PlaintextBallot, os.path.join(data, filename))
+        return from_file(PlaintextBallot, os.path.join(_data, filename))
 
     @staticmethod
     def _get_ballots_from_file(filename: str) -> List[PlaintextBallot]:
-        return from_list_in_file(PlaintextBallot, os.path.join(data, filename))
+        return from_list_in_file(PlaintextBallot, os.path.join(_data, filename))
 
 
 @composite

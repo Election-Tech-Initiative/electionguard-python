@@ -82,11 +82,11 @@ endif
 lint:
 	@echo 💚 LINT
 	@echo 1.Pylint
-	poetry run pylint ./src/**/*.py ./tests/**/*.py
+	poetry run pylint ./src ./tests
 	@echo 2.Black Formatting
 	poetry run black --check .
 	@echo 3.Mypy Static Typing
-	poetry run mypy src/electionguard stubs
+	poetry run mypy src/electionguard src/electionguard_cli stubs
 	@echo 4.Package Metadata
 	poetry build
 	poetry run twine check dist/*

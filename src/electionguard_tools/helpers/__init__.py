@@ -23,8 +23,8 @@ from electionguard_tools.helpers.export import (
     SUBMITTED_BALLOTS_DIR,
     SUBMITTED_BALLOT_PREFIX,
     TALLY_FILE_NAME,
-    export,
     export_private_data,
+    export_record,
 )
 from electionguard_tools.helpers.key_ceremony_orchestrator import (
     KeyCeremonyOrchestrator,
@@ -61,6 +61,7 @@ __all__ = [
     "accumulate_plaintext_ballots",
     "export",
     "export_private_data",
+    "export_record",
     "key_ceremony_orchestrator",
     "tally_accumulate",
     "tally_ceremony_orchestrator",

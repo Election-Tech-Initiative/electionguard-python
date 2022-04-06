@@ -48,7 +48,7 @@ PRIVATE_GUARDIAN_PREFIX = "private_guardian_"
 
 
 # TODO #148 Revert PlaintextTally to PublishedPlaintextTally after moving spoiled info
-def export(
+def export_record(
     manifest: Manifest,
     context: CiphertextElectionContext,
     constants: ElectionConstants,
