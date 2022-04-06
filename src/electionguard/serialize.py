@@ -1,3 +1,4 @@
+from io import TextIOWrapper
 import json
 import os
 from pathlib import Path
@@ -47,6 +48,13 @@ def to_raw(data: Any) -> Any:
     """Serialize data to raw json format."""
 
     return json.dumps(data, indent=_indent, default=pydantic_encoder)
+
+
+def from_file_wrapper(type_: Type[_T], file: TextIOWrapper) -> _T:
+    """Deserialize json file as type."""
+
+    data = json.load(file)
+    return parse_obj_as(type_, data)
 
 
 def from_file(type_: Type[_T], path: Union[str, Path]) -> _T:

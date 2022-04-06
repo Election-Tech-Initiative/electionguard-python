@@ -1,3 +1,4 @@
+from io import TextIOWrapper
 import click
 from ..e2e_steps import (
     ElectionBuilderStep,
@@ -22,11 +23,17 @@ from ..e2e_steps import (
     help="The minimum number of guardians required to show up to the tally.",
     type=click.INT,
 )
-def e2e(guardian_count: int, quorum: int) -> None:
+@click.option(
+    "--manifest",
+    prompt="Manifest file",
+    help="The location of am election manifest.",
+    type=click.File(),
+)
+def e2e(guardian_count: int, quorum: int, manifest: TextIOWrapper) -> None:
     """Runs through an end-to-end election."""
 
     # get user inputs
-    election_inputs = InputRetrievalStep().get_inputs(guardian_count, quorum)
+    election_inputs = InputRetrievalStep().get_inputs(guardian_count, quorum, manifest)
 
     # perform election
     joint_key = KeyCeremonyStep().run_key_ceremony(election_inputs)
