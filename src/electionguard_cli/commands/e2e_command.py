@@ -62,7 +62,7 @@ def e2e(
 
     # get user inputs
     election_inputs = InputRetrievalStep().get_inputs(
-        guardian_count, quorum, manifest, ballots, spoil_id
+        guardian_count, quorum, manifest, ballots, spoil_id, output_path
     )
 
     # perform election
@@ -81,4 +81,4 @@ def e2e(
     PrintResultsStep().print_election_results(election_inputs, decrypt_results)
 
     # publish election record
-    ElectionRecordStep().run(output_path)
+    ElectionRecordStep().run(election_inputs, build_election_results)
