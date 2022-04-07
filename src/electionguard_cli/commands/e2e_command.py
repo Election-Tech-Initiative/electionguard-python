@@ -7,6 +7,7 @@ from ..e2e_steps import (
     DecryptStep,
     PrintResultsStep,
     InputRetrievalStep,
+    ElectionRecordStep,
 )
 
 
@@ -38,10 +39,16 @@ from ..e2e_steps import (
 @click.option(
     "--spoil-id",
     prompt="Object-id of ballot to spoil",
-    help="The object-id of a ballot within the ballots file to spoil",
+    help="The object-id of a ballot within the ballots file to spoil.",
     type=click.STRING,
     default=None,
     prompt_required=False,
+)
+@click.option(
+    "--output-path",
+    help="An optional directory in which to place the output election record. If no value provied then an election record will not be generated.",
+    type=click.Path(exists=True, file_okay=False, writable=True, dir_okay=True),
+    default=None,
 )
 def e2e(
     guardian_count: int,
@@ -49,6 +56,7 @@ def e2e(
     manifest: TextIOWrapper,
     ballots: TextIOWrapper,
     spoil_id: str,
+    output_path: str,
 ) -> None:
     """Runs through an end-to-end election."""
 
@@ -71,3 +79,6 @@ def e2e(
 
     # print results
     PrintResultsStep().print_election_results(election_inputs, decrypt_results)
+
+    # publish election record
+    ElectionRecordStep().run(output_path)
