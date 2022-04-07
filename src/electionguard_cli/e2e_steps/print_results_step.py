@@ -13,14 +13,14 @@ from .e2e_step_base import E2eStepBase
 class PrintResultsStep(E2eStepBase):
     """Responsible for printing the results of an end-to-end election."""
 
-    def __print_tally(self, plaintext_tally: PlaintextTally) -> None:
+    def _print_tally(self, plaintext_tally: PlaintextTally) -> None:
         self.print_header("Decrypted tally")
         for contest in plaintext_tally.contests.values():
             click.echo(f"Contest: {contest.object_id}")
             for selection in contest.selections.values():
                 self.print_value(f"  {selection.object_id}", f"{selection.tally} votes")
 
-    def __print_spoiled_ballot(
+    def _print_spoiled_ballot(
         self,
         plaintext_spoiled_ballots: Dict[BallotId, PlaintextTally],
         election_inputs: E2eInputs,
@@ -36,8 +36,8 @@ class PrintResultsStep(E2eStepBase):
     def print_election_results(
         self, election_inputs: E2eInputs, decrypt_results: E2eDecryptResults
     ) -> None:
-        self.__print_tally(decrypt_results.plaintext_tally)
+        self._print_tally(decrypt_results.plaintext_tally)
         if election_inputs.spoil_id is not None:
-            self.__print_spoiled_ballot(
+            self._print_spoiled_ballot(
                 decrypt_results.plaintext_spoiled_ballots, election_inputs
             )
