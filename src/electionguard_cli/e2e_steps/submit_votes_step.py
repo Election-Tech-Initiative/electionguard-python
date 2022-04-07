@@ -22,10 +22,6 @@ from .e2e_step_base import E2eStepBase
 class SubmitVotesStep(E2eStepBase):
     """Responsible for encrypting votes and storing them in a ballot store."""
 
-    ###########################
-    # Public Methods
-    ###########################
-
     def submit_votes(
         self, e2e_inputs: E2eInputs, build_election_results: BuildElectionResults
     ) -> DataStore:
@@ -38,10 +34,6 @@ class SubmitVotesStep(E2eStepBase):
             ballot_store, internal_manifest, context, ciphertext_ballots, e2e_inputs
         )
         return ballot_store
-
-    ###########################
-    # Private Methods
-    ###########################
 
     def _get_encrypter(
         self,

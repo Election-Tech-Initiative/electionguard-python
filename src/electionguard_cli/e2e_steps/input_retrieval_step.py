@@ -13,10 +13,6 @@ from .e2e_step_base import E2eStepBase
 class InputRetrievalStep(E2eStepBase):
     """Responsible for retrieving and displaying user provided inputs."""
 
-    ###########################
-    # Public Mehtods
-    ###########################
-
     def get_inputs(
         self,
         guardian_count: int,
@@ -32,10 +28,6 @@ class InputRetrievalStep(E2eStepBase):
         self.print_value("Guardians", guardian_count)
         self.print_value("Quorum", quorum)
         return E2eInputs(guardian_count, quorum, guardians, manifest, ballots, spoil_id)
-
-    ###########################
-    # Private Methods
-    ###########################
 
     @staticmethod
     def _get_ballots(ballots_file: TextIOWrapper) -> List[PlaintextBallot]:
