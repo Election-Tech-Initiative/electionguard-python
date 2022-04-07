@@ -8,7 +8,8 @@ from .ballot import (
     PlaintextBallotContest,
     PlaintextBallotSelection,
 )
-from .group import ElementModP, ElementModQ
+from .elgamal import ElGamalPublicKey, ElGamalSecretKey
+from .group import ElementModQ
 from .logs import log_warning
 from .manifest import (
     InternalManifest,
@@ -25,8 +26,8 @@ from .utils import get_optional
 def decrypt_selection_with_secret(
     selection: CiphertextBallotSelection,
     description: SelectionDescription,
-    public_key: ElementModP,
-    secret_key: ElementModQ,
+    public_key: ElGamalPublicKey,
+    secret_key: ElGamalSecretKey,
     crypto_extended_base_hash: ElementModQ,
     suppress_validity_check: bool = False,
 ) -> Optional[PlaintextBallotSelection]:
@@ -62,7 +63,7 @@ def decrypt_selection_with_secret(
 def decrypt_selection_with_nonce(
     selection: CiphertextBallotSelection,
     description: SelectionDescription,
-    public_key: ElementModP,
+    public_key: ElGamalPublicKey,
     crypto_extended_base_hash: ElementModQ,
     nonce_seed: Optional[ElementModQ] = None,
     suppress_validity_check: bool = False,
@@ -118,8 +119,8 @@ def decrypt_selection_with_nonce(
 def decrypt_contest_with_secret(
     contest: CiphertextBallotContest,
     description: ContestDescriptionWithPlaceholders,
-    public_key: ElementModP,
-    secret_key: ElementModQ,
+    public_key: ElGamalPublicKey,
+    secret_key: ElGamalSecretKey,
     crypto_extended_base_hash: ElementModQ,
     suppress_validity_check: bool = False,
     remove_placeholders: bool = True,
@@ -173,7 +174,7 @@ def decrypt_contest_with_secret(
 def decrypt_contest_with_nonce(
     contest: CiphertextBallotContest,
     description: ContestDescriptionWithPlaceholders,
-    public_key: ElementModP,
+    public_key: ElGamalPublicKey,
     crypto_extended_base_hash: ElementModQ,
     nonce_seed: Optional[ElementModQ] = None,
     suppress_validity_check: bool = False,
@@ -247,8 +248,8 @@ def decrypt_ballot_with_secret(
     ballot: CiphertextBallot,
     internal_manifest: InternalManifest,
     crypto_extended_base_hash: ElementModQ,
-    public_key: ElementModP,
-    secret_key: ElementModQ,
+    public_key: ElGamalPublicKey,
+    secret_key: ElGamalSecretKey,
     suppress_validity_check: bool = False,
     remove_placeholders: bool = True,
 ) -> Optional[PlaintextBallot]:
@@ -297,7 +298,7 @@ def decrypt_ballot_with_nonce(
     ballot: CiphertextBallot,
     internal_manifest: InternalManifest,
     crypto_extended_base_hash: ElementModQ,
-    public_key: ElementModP,
+    public_key: ElGamalPublicKey,
     nonce: Optional[ElementModQ] = None,
     suppress_validity_check: bool = False,
     remove_placeholders: bool = True,

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from .elgamal import ElGamalKeyPair
+from .elgamal import ElGamalKeyPair, ElGamalPublicKey
 from .group import (
     ElementModQ,
     ElementModP,
@@ -20,7 +20,7 @@ class SchnorrProof(Proof):
     Representation of a Schnorr proof
     """
 
-    public_key: ElementModP
+    public_key: ElGamalPublicKey
     """k in the spec"""
     commitment: ElementModP
     """h in the spec"""

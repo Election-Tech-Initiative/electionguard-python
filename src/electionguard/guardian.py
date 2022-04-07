@@ -13,7 +13,7 @@ from .decryption import (
 from .decryption_share import CompensatedDecryptionShare, DecryptionShare
 from .election import CiphertextElectionContext
 from .election_polynomial import PublicCommitment
-from .elgamal import elgamal_combine_public_keys
+from .elgamal import ElGamalPublicKey, elgamal_combine_public_keys
 from .group import ElementModP, ElementModQ
 from .key_ceremony import (
     CeremonyDetails,
@@ -50,7 +50,7 @@ class GuardianRecord:
     in which the guardian should be processed
     """
 
-    election_public_key: ElementModP
+    election_public_key: ElGamalPublicKey
     """
     Guardian's election public key for encrypting election objects.
     """

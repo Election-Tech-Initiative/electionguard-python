@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from typing import Dict, Optional
 
 from .constants import get_small_prime, get_large_prime, get_generator
+from .elgamal import ElGamalPublicKey
 from .group import (
     ElementModQ,
     ElementModP,
@@ -51,7 +52,7 @@ class CiphertextElectionContext:
     The quorum of guardians necessary to decrypt an election.  Must be less than `number_of_guardians`
     """
 
-    elgamal_public_key: ElementModP
+    elgamal_public_key: ElGamalPublicKey
     """the `joint public key (K)` in the specification"""
 
     commitment_hash: ElementModQ
@@ -79,7 +80,7 @@ class CiphertextElectionContext:
 def make_ciphertext_election_context(
     number_of_guardians: int,
     quorum: int,
-    elgamal_public_key: ElementModP,
+    elgamal_public_key: ElGamalPublicKey,
     commitment_hash: ElementModQ,
     manifest_hash: ElementModQ,
     extended_data: Optional[Dict[str, str]] = None,

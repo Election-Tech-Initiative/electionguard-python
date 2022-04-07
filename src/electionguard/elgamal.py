@@ -63,7 +63,7 @@ class ElGamalCiphertext:
         """
         return DiscreteLog().discrete_log(mult_p(self.data, mult_inv_p(product)))
 
-    def decrypt(self, secret_key: ElementModQ) -> int:
+    def decrypt(self, secret_key: ElGamalSecretKey) -> int:
         """
         Decrypt an ElGamal ciphertext using a known ElGamal secret key.
 
@@ -72,7 +72,9 @@ class ElGamalCiphertext:
         """
         return self.decrypt_known_product(pow_p(self.pad, secret_key))
 
-    def decrypt_known_nonce(self, public_key: ElementModP, nonce: ElementModQ) -> int:
+    def decrypt_known_nonce(
+        self, public_key: ElGamalPublicKey, nonce: ElementModQ
+    ) -> int:
         """
         Decrypt an ElGamal ciphertext using a known nonce and the ElGamal public key.
 
@@ -82,7 +84,7 @@ class ElGamalCiphertext:
         """
         return self.decrypt_known_product(pow_p(public_key, nonce))
 
-    def partial_decrypt(self, secret_key: ElementModQ) -> ElementModP:
+    def partial_decrypt(self, secret_key: ElGamalSecretKey) -> ElementModP:
         """
         Partially Decrypts an ElGamal ciphertext with a known ElGamal secret key.
 
@@ -118,7 +120,7 @@ class HashedElGamalCiphertext:
     """message authentication code for hmac"""
 
     def decrypt(
-        self, secret_key: ElementModQ, encryption_seed: ElementModQ
+        self, secret_key: ElGamalSecretKey, encryption_seed: ElementModQ
     ) -> Union[bytes, None]:
         """
         Decrypt an ElGamal ciphertext using a known ElGamal secret key.
@@ -175,7 +177,7 @@ def elgamal_keypair_random() -> ElGamalKeyPair:
     return get_optional(elgamal_keypair_from_secret(rand_range_q(TWO_MOD_Q)))
 
 
-def elgamal_combine_public_keys(keys: Iterable[ElementModP]) -> ElementModP:
+def elgamal_combine_public_keys(keys: Iterable[ElGamalPublicKey]) -> ElGamalPublicKey:
     """
     Combine multiple elgamal public keys into a joint key
 
