@@ -22,6 +22,27 @@ from .e2e_step_base import E2eStepBase
 class SubmitVotesStep(E2eStepBase):
     """Responsible for encrypting votes and storing them in a ballot store."""
 
+    ###########################
+    # Public Methods
+    ###########################
+
+    def submit_votes(
+        self, e2e_inputs: E2eInputs, build_election_results: BuildElectionResults
+    ) -> DataStore:
+        ballots = e2e_inputs.ballots
+        internal_manifest = build_election_results.internal_manifest
+        context = build_election_results.context
+        ballot_store: DataStore = DataStore()
+        ciphertext_ballots = self._encrypt_votes(ballots, internal_manifest, context)
+        SubmitVotesStep._cast_and_spoil(
+            ballot_store, internal_manifest, context, ciphertext_ballots, e2e_inputs
+        )
+        return ballot_store
+
+    ###########################
+    # Private Methods
+    ###########################
+
     def _get_encrypter(
         self,
         internal_manifest: InternalManifest,
@@ -40,11 +61,24 @@ class SubmitVotesStep(E2eStepBase):
     ) -> List[CiphertextBallot]:
         self.print_value("Ballots to encrypt", len(plaintext_ballots))
         encrypter = self._get_encrypter(internal_manifest, context)
-        encrypted_ballots = _encrypt_ballots(plaintext_ballots, encrypter)
+        encrypted_ballots = SubmitVotesStep._encrypt_ballots(
+            plaintext_ballots, encrypter
+        )
         return encrypted_ballots
 
+    @staticmethod
+    def _encrypt_ballots(
+        plaintext_ballots: List[PlaintextBallot], encrypter: EncryptionMediator
+    ) -> List[CiphertextBallot]:
+        ciphertext_ballots: List[CiphertextBallot] = []
+        for plaintext_ballot in plaintext_ballots:
+            click.echo(f"Encrypting ballot: {plaintext_ballot.object_id}")
+            encrypted_ballot = encrypter.encrypt(plaintext_ballot)
+            ciphertext_ballots.append(get_optional(encrypted_ballot))
+        return ciphertext_ballots
+
+    @staticmethod
     def _cast_and_spoil(
-        self,
         ballot_store: DataStore,
         internal_manifest: InternalManifest,
         context: CiphertextElectionContext,
@@ -63,48 +97,3 @@ class SubmitVotesStep(E2eStepBase):
             click.echo(
                 f"Submitted Ballot Id: {ballot.object_id} state: {get_optional(submitted_ballot).state}"
             )
-
-    def submit_votes(
-        self, e2e_inputs: E2eInputs, build_election_results: BuildElectionResults
-    ) -> DataStore:
-        ballots = e2e_inputs.ballots
-        internal_manifest = build_election_results.internal_manifest
-        context = build_election_results.context
-        ballot_store: DataStore = DataStore()
-        ciphertext_ballots = self._encrypt_votes(ballots, internal_manifest, context)
-        self._cast_and_spoil(
-            ballot_store, internal_manifest, context, ciphertext_ballots, e2e_inputs
-        )
-        return ballot_store
-
-
-def _cast_and_spoil(
-    ballot_store: DataStore,
-    internal_manifest: InternalManifest,
-    context: CiphertextElectionContext,
-    ciphertext_ballots: List[CiphertextBallot],
-) -> None:
-    ballot_box = BallotBox(internal_manifest, context, ballot_store)
-
-    first = True
-    for ballot in ciphertext_ballots:
-        if first:
-            submitted_ballot = ballot_box.spoil(ballot)
-        else:
-            submitted_ballot = ballot_box.cast(ballot)
-        first = False
-
-        click.echo(
-            f"Submitted Ballot Id: {ballot.object_id} state: {get_optional(submitted_ballot).state}"
-        )
-
-
-def _encrypt_ballots(
-    plaintext_ballots: List[PlaintextBallot], encrypter: EncryptionMediator
-) -> List[CiphertextBallot]:
-    ciphertext_ballots: List[CiphertextBallot] = []
-    for plaintext_ballot in plaintext_ballots:
-        click.echo(f"Encrypting ballot: {plaintext_ballot.object_id}")
-        encrypted_ballot = encrypter.encrypt(plaintext_ballot)
-        ciphertext_ballots.append(get_optional(encrypted_ballot))
-    return ciphertext_ballots
