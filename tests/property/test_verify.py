@@ -84,13 +84,13 @@ class TestVerify(BaseTestCase):
         )
         guardians = KeyCeremonyOrchestrator.create_guardians(CEREMONY_DETAILS)
         KeyCeremonyOrchestrator.perform_full_ceremony(guardians, key_ceremony_mediator)
-        joint_public_key = key_ceremony_mediator.publish_joint_key()
+        joint_public_key = key_ceremony_mediator.publish_election_key()
         election_public_keys = key_ceremony_mediator._election_public_keys
 
         # Setup the election
         manifest = election_factory.get_fake_manifest()
         builder = ElectionBuilder(NUMBER_OF_GUARDIANS, QUORUM, manifest)
-        builder.set_public_key(joint_public_key.joint_public_key)
+        builder.set_public_key(joint_public_key.public_key)
         builder.set_commitment_hash(joint_public_key.commitment_hash)
         internal_manifest, context = get_optional(builder.build())
 
@@ -101,7 +101,7 @@ class TestVerify(BaseTestCase):
         # precompute decryption shares for specific selection for the guardians
         shares: Dict[GuardianId, DecryptionShare] = {
             guardian.id: compute_decryption_share(
-                guardian._election_keys,
+                guardian._key_pair,
                 ciphertext_tally,
                 context,
             )

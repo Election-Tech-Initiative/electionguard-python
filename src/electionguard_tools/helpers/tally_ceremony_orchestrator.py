@@ -4,7 +4,7 @@ from electionguard.election import CiphertextElectionContext
 
 from electionguard.guardian import Guardian, get_valid_ballot_shares
 from electionguard.decryption_mediator import DecryptionMediator
-from electionguard.key_ceremony import ElectionPublicKey
+from electionguard.key_ceremony import GuardianPublicKey
 from electionguard.tally import CiphertextTally
 
 
@@ -34,7 +34,7 @@ class TallyCeremonyOrchestrator:
     @staticmethod
     def perform_compensated_decryption_setup(
         available_guardians: List[Guardian],
-        all_guardians_keys: List[ElectionPublicKey],
+        all_guardians_keys: List[GuardianPublicKey],
         mediator: DecryptionMediator,
         context: CiphertextElectionContext,
         ciphertext_tally: CiphertextTally,
@@ -58,7 +58,7 @@ class TallyCeremonyOrchestrator:
     @staticmethod
     def announcement(
         available_guardians: List[Guardian],
-        all_guardians_keys: List[ElectionPublicKey],
+        all_guardians_keys: List[GuardianPublicKey],
         mediator: DecryptionMediator,
         context: CiphertextElectionContext,
         ciphertext_tally: CiphertextTally,

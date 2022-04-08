@@ -28,7 +28,7 @@ from .group import (
     pow_q,
     rand_q,
 )
-from .key_ceremony import ElectionKeyPair, ElectionPartialKeyBackup, ElectionPublicKey
+from .key_ceremony import GuardianKeyPair, ElectionPartialKeyBackup, GuardianPublicKey
 from .logs import log_warning
 from .scheduler import Scheduler
 from .tally import CiphertextTally
@@ -39,7 +39,7 @@ RecoveryPublicKey = ElementModP
 
 
 def compute_decryption_share(
-    guardian_keys: ElectionKeyPair,
+    guardian_keys: GuardianKeyPair,
     tally: CiphertextTally,
     context: CiphertextElectionContext,
     scheduler: Optional[Scheduler] = None,
@@ -75,14 +75,14 @@ def compute_decryption_share(
     return DecryptionShare(
         tally.object_id,
         guardian_keys.owner_id,
-        guardian_keys.share().key,
+        guardian_keys.share().public_key,
         contests,
     )
 
 
 def compute_compensated_decryption_share(
-    guardian_key: ElectionPublicKey,
-    missing_guardian_key: ElectionPublicKey,
+    guardian_key: GuardianPublicKey,
+    missing_guardian_key: GuardianPublicKey,
     missing_guardian_backup: ElectionPartialKeyBackup,
     tally: CiphertextTally,
     context: CiphertextElectionContext,
@@ -125,13 +125,13 @@ def compute_compensated_decryption_share(
         tally.object_id,
         guardian_key.owner_id,
         missing_guardian_key.owner_id,
-        guardian_key.key,
+        guardian_key.public_key,
         contests,
     )
 
 
 def compute_decryption_share_for_ballot(
-    guardian_keys: ElectionKeyPair,
+    guardian_keys: GuardianKeyPair,
     ballot: SubmittedBallot,
     context: CiphertextElectionContext,
     scheduler: Optional[Scheduler] = None,
@@ -166,14 +166,14 @@ def compute_decryption_share_for_ballot(
     return DecryptionShare(
         ballot.object_id,
         guardian_keys.owner_id,
-        guardian_keys.share().key,
+        guardian_keys.share().public_key,
         contests,
     )
 
 
 def compute_compensated_decryption_share_for_ballot(
-    guardian_key: ElectionPublicKey,
-    missing_guardian_key: ElectionPublicKey,
+    guardian_key: GuardianPublicKey,
+    missing_guardian_key: GuardianPublicKey,
     missing_guardian_backup: ElectionPartialKeyBackup,
     ballot: SubmittedBallot,
     context: CiphertextElectionContext,
@@ -215,13 +215,13 @@ def compute_compensated_decryption_share_for_ballot(
         ballot.object_id,
         guardian_key.owner_id,
         missing_guardian_key.owner_id,
-        guardian_key.key,
+        guardian_key.public_key,
         contests,
     )
 
 
 def compute_decryption_share_for_contest(
-    guardian_keys: ElectionKeyPair,
+    guardian_keys: GuardianKeyPair,
     contest: CiphertextContest,
     context: CiphertextElectionContext,
     scheduler: Optional[Scheduler] = None,
@@ -260,8 +260,8 @@ def compute_decryption_share_for_contest(
 
 
 def compute_compensated_decryption_share_for_contest(
-    guardian_key: ElectionPublicKey,
-    missing_guardian_key: ElectionPublicKey,
+    guardian_key: GuardianPublicKey,
+    missing_guardian_key: GuardianPublicKey,
     missing_guardian_backup: ElectionPartialKeyBackup,
     contest: CiphertextContest,
     context: CiphertextElectionContext,
@@ -314,7 +314,7 @@ def compute_compensated_decryption_share_for_contest(
 
 
 def compute_decryption_share_for_selection(
-    guardian_keys: ElectionKeyPair,
+    guardian_keys: GuardianKeyPair,
     selection: CiphertextSelection,
     context: CiphertextElectionContext,
 ) -> Optional[CiphertextDecryptionSelection]:
@@ -351,8 +351,8 @@ def compute_decryption_share_for_selection(
 
 
 def compute_compensated_decryption_share_for_selection(
-    guardian_key: ElectionPublicKey,
-    missing_guardian_key: ElectionPublicKey,
+    guardian_key: GuardianPublicKey,
+    missing_guardian_key: GuardianPublicKey,
     missing_guardian_backup: ElectionPartialKeyBackup,
     selection: CiphertextSelection,
     context: CiphertextElectionContext,
@@ -415,7 +415,7 @@ def compute_compensated_decryption_share_for_selection(
 
 
 def partially_decrypt(
-    guardian_keys: ElectionKeyPair,
+    guardian_keys: GuardianKeyPair,
     elgamal: ElGamalCiphertext,
     extended_base_hash: ElementModQ,
     nonce_seed: ElementModQ = None,
@@ -489,8 +489,8 @@ def compensate_decrypt(
 
 
 def compute_recovery_public_key(
-    guardian_key: ElectionPublicKey,
-    missing_guardian_key: ElectionPublicKey,
+    guardian_key: GuardianPublicKey,
+    missing_guardian_key: GuardianPublicKey,
 ) -> RecoveryPublicKey:
     """
     Compute the recovery public key,
@@ -499,14 +499,14 @@ def compute_recovery_public_key(
     """
 
     pub_key = ONE_MOD_P
-    for index, commitment in enumerate(missing_guardian_key.coefficient_commitments):
+    for index, commitment in enumerate(missing_guardian_key.commitments):
         exponent = pow_q(guardian_key.sequence_order, index)
         pub_key = mult_p(pub_key, pow_p(commitment, exponent))
     return pub_key
 
 
 def reconstruct_decryption_share(
-    missing_guardian_key: ElectionPublicKey,
+    missing_guardian_key: GuardianPublicKey,
     tally: CiphertextTally,
     shares: Dict[GuardianId, CompensatedDecryptionShare],
     lagrange_coefficients: Dict[GuardianId, ElementModQ],
@@ -539,13 +539,13 @@ def reconstruct_decryption_share(
     return DecryptionShare(
         tally.object_id,
         missing_guardian_key.owner_id,
-        missing_guardian_key.key,
+        missing_guardian_key.public_key,
         contests,
     )
 
 
 def reconstruct_decryption_share_for_ballot(
-    missing_guardian_key: ElectionPublicKey,
+    missing_guardian_key: GuardianPublicKey,
     ballot: SubmittedBallot,
     shares: Dict[GuardianId, CompensatedDecryptionShare],
     lagrange_coefficients: Dict[GuardianId, ElementModQ],
@@ -579,7 +579,7 @@ def reconstruct_decryption_share_for_ballot(
     return DecryptionShare(
         ballot.object_id,
         missing_guardian_key.owner_id,
-        missing_guardian_key.key,
+        missing_guardian_key.public_key,
         contests,
     )
 
@@ -639,7 +639,7 @@ def reconstruct_decryption_contest(
 
 
 def compute_lagrange_coefficients_for_guardians(
-    available_guardians_keys: List[ElectionPublicKey],
+    available_guardians_keys: List[GuardianPublicKey],
 ) -> Dict[GuardianId, ElementModQ]:
     """
     Produce all Lagrange coefficients for a collection of available
@@ -654,8 +654,8 @@ def compute_lagrange_coefficients_for_guardians(
 
 
 def compute_lagrange_coefficients_for_guardian(
-    guardian_key: ElectionPublicKey,
-    other_guardians_keys: List[ElectionPublicKey],
+    guardian_key: GuardianPublicKey,
+    other_guardians_keys: List[GuardianPublicKey],
 ) -> ElementModQ:
     """
     Produce a Lagrange coefficient for a single Guardian, to be used when reconstructing a missing share.

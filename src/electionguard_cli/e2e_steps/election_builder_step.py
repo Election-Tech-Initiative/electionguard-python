@@ -1,4 +1,4 @@
-from electionguard.key_ceremony import ElectionJointKey
+from electionguard.key_ceremony import ElectionKey
 from electionguard.election_builder import ElectionBuilder
 from electionguard.utils import get_optional
 
@@ -12,7 +12,7 @@ class ElectionBuilderStep(E2eStepBase):
     def build_election(
         self,
         election_inputs: E2eInputs,
-        joint_key: ElectionJointKey,
+        election_key: ElectionKey,
     ) -> BuildElectionResults:
         self.print_header("Building election")
 
@@ -21,8 +21,8 @@ class ElectionBuilderStep(E2eStepBase):
             election_inputs.quorum,
             election_inputs.manifest,
         )
-        election_builder.set_public_key(joint_key.joint_public_key)
-        election_builder.set_commitment_hash(joint_key.commitment_hash)
+        election_builder.set_public_key(election_key.public_key)
+        election_builder.set_commitment_hash(election_key.commitment_hash)
         build_result = election_builder.build()
         internal_manifest, context = get_optional(build_result)
         return BuildElectionResults(internal_manifest, context)

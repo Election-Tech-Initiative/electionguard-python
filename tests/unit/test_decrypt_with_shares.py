@@ -60,12 +60,12 @@ class TestDecryptWithShares(BaseTestCase):
         KeyCeremonyOrchestrator.perform_full_ceremony(
             self.guardians, self.key_ceremony_mediator
         )
-        self.joint_public_key = self.key_ceremony_mediator.publish_joint_key()
+        self.joint_public_key = self.key_ceremony_mediator.publish_election_key()
 
         # Setup the election
         manifest = election_factory.get_fake_manifest()
         builder = ElectionBuilder(self.NUMBER_OF_GUARDIANS, self.QUORUM, manifest)
-        builder.set_public_key(self.joint_public_key.joint_public_key)
+        builder.set_public_key(self.joint_public_key.public_key)
         builder.set_commitment_hash(self.joint_public_key.commitment_hash)
         self.internal_manifest, self.context = get_optional(builder.build())
 
@@ -183,9 +183,9 @@ class TestDecryptWithShares(BaseTestCase):
         # precompute decryption shares for specific selection for the guardians
         shares: Dict[GuardianId, Tuple[ElementModP, DecryptionShare]] = {
             guardian.id: (
-                guardian.share_key().key,
+                guardian.share_key().public_key,
                 compute_decryption_share(
-                    guardian._election_keys,
+                    guardian._key_pair,
                     self.ciphertext_tally,
                     self.context,
                 )
@@ -214,7 +214,7 @@ class TestDecryptWithShares(BaseTestCase):
         encrypted_ballot = self.encrypted_fake_cast_ballot
         shares = {
             available_guardian.id: compute_decryption_share_for_ballot(
-                available_guardian._election_keys,
+                available_guardian._key_pair,
                 encrypted_ballot,
                 self.context,
             )
@@ -251,7 +251,7 @@ class TestDecryptWithShares(BaseTestCase):
 
         available_shares = {
             available_guardian.id: compute_decryption_share_for_ballot(
-                available_guardian._election_keys,
+                available_guardian._key_pair,
                 encrypted_ballot,
                 self.context,
             )

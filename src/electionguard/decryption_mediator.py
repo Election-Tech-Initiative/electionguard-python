@@ -11,7 +11,7 @@ from .decryption import (
 from .decryption_share import DecryptionShare, CompensatedDecryptionShare
 from .decrypt_with_shares import decrypt_ballot, decrypt_tally
 from .election import CiphertextElectionContext
-from .key_ceremony import ElectionPublicKey
+from .key_ceremony import GuardianPublicKey
 from .key_ceremony_mediator import GuardianPair
 from .logs import log_info, log_warning
 from .tally import (
@@ -32,8 +32,8 @@ class DecryptionMediator:
     _context: CiphertextElectionContext
 
     # Guardians
-    _available_guardians: Dict[GuardianId, ElectionPublicKey]
-    _missing_guardians: Dict[GuardianId, ElectionPublicKey]
+    _available_guardians: Dict[GuardianId, GuardianPublicKey]
+    _missing_guardians: Dict[GuardianId, GuardianPublicKey]
 
     # Decryption Shares
     _tally_shares: Dict[GuardianId, DecryptionShare]
@@ -61,7 +61,7 @@ class DecryptionMediator:
 
     def announce(
         self,
-        guardian_key: ElectionPublicKey,
+        key: GuardianPublicKey,
         tally_share: DecryptionShare,
         ballot_shares: Dict[BallotId, Optional[DecryptionShare]] = None,
     ) -> None:
@@ -74,7 +74,7 @@ class DecryptionMediator:
         :param tally_share: Guardian's decryption share of the tally
         :param ballot_shares: Guardian's decryption shares of the ballots
         """
-        guardian_id = guardian_key.owner_id
+        guardian_id = key.owner_id
 
         # Only allow a guardian to announce once
         if guardian_id in self._available_guardians:
@@ -86,9 +86,9 @@ class DecryptionMediator:
         if ballot_shares is not None:
             self._save_ballot_shares(guardian_id, ballot_shares)
 
-        self._mark_available(guardian_key)
+        self._mark_available(key)
 
-    def announce_missing(self, missing_guardian_key: ElectionPublicKey) -> None:
+    def announce_missing(self, missing_guardian_key: GuardianPublicKey) -> None:
         """
         Announce that a Guardian is missing and not participating in the decryption.
 
@@ -103,16 +103,14 @@ class DecryptionMediator:
 
         self._mark_missing(missing_guardian_key)
 
-    def validate_missing_guardians(
-        self, guardian_keys: List[ElectionPublicKey]
-    ) -> bool:
+    def validate_missing_guardians(self, keys: List[GuardianPublicKey]) -> bool:
         """Check the guardian's collections of keys and ensure the public keys match for the guardians."""
         # Check this guardian's collection of public keys
         # for other guardians that have not announced
-        missing_guardians: Dict[GuardianId, ElectionPublicKey] = {
-            guardian_key.owner_id: guardian_key
-            for guardian_key in guardian_keys
-            if guardian_key.owner_id not in self._available_guardians
+        missing_guardians: Dict[GuardianId, GuardianPublicKey] = {
+            key.owner_id: key
+            for key in keys
+            if key.owner_id not in self._available_guardians
         }
 
         # Check that the public keys match for any missing guardians already reported
@@ -155,14 +153,14 @@ class DecryptionMediator:
             return False
         return True
 
-    def get_available_guardians(self) -> List[ElectionPublicKey]:
+    def get_available_guardians(self) -> List[GuardianPublicKey]:
         """
         Get all available guardian keys
         :return: All available guardians election public keys
         """
         return list(self._available_guardians.values())
 
-    def get_missing_guardians(self) -> List[ElectionPublicKey]:
+    def get_missing_guardians(self) -> List[GuardianPublicKey]:
         """
         Get all missing guardian keys
         :return: All missing guardians election public keys
@@ -327,7 +325,7 @@ class DecryptionMediator:
                 shares[guardian_id] = guardian_ballot_share
             self._ballot_shares[ballot_id] = shares
 
-    def _mark_available(self, guardian_key: ElectionPublicKey) -> None:
+    def _mark_available(self, guardian_key: GuardianPublicKey) -> None:
         """
         This guardian removes itself from the missing list since it generated a valid share.
         """
@@ -336,7 +334,7 @@ class DecryptionMediator:
         if guardian_id in self._missing_guardians:
             self._missing_guardians.pop(guardian_id)
 
-    def _mark_missing(self, guardian_key: ElectionPublicKey) -> None:
+    def _mark_missing(self, guardian_key: GuardianPublicKey) -> None:
         """"""
         self._missing_guardians[guardian_key.owner_id] = guardian_key
 

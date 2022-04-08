@@ -127,14 +127,14 @@ class ElectionFactory:
         mediator = KeyCeremonyMediator("key-ceremony-mediator", ceremony_details)
         KeyCeremonyOrchestrator.perform_full_ceremony(guardians, mediator)
 
-        # Final: Joint Key
-        joint_key = mediator.publish_joint_key()
+        # Final: Election Key
+        election_key = mediator.publish_election_key()
 
         # Publish Guardian Records
         guardian_records = [guardian.publish() for guardian in guardians]
 
-        builder.set_public_key(get_optional(joint_key).joint_public_key)
-        builder.set_commitment_hash(get_optional(joint_key).commitment_hash)
+        builder.set_public_key(get_optional(election_key).public_key)
+        builder.set_commitment_hash(get_optional(election_key).commitment_hash)
         internal_manifest, context = get_optional(builder.build())
         constants = get_constants()
 

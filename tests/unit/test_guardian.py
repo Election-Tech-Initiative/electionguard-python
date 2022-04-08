@@ -67,9 +67,9 @@ class TestGuardian(BaseTestCase):
 
         # Assert
         self.assertIsNotNone(key)
-        self.assertIsNotNone(key.key)
+        self.assertIsNotNone(key.public_key)
         self.assertEqual(key.owner_id, SENDER_GUARDIAN_ID)
-        for proof in key.coefficient_proofs:
+        for proof in key.proofs:
             self.assertTrue(proof.is_valid())
 
     def test_save_guardian_key(self) -> None:
@@ -105,7 +105,7 @@ class TestGuardian(BaseTestCase):
         # Assert
         self.assertTrue(guardian.all_guardian_keys_received())
 
-    def test_generate_election_key_pair(self) -> None:
+    def test_generate_guardian_key_pair(self) -> None:
         # Arrange
         guardian = Guardian(
             SENDER_GUARDIAN_ID, SENDER_SEQUENCE_ORDER, NUMBER_OF_GUARDIANS, QUORUM
@@ -113,13 +113,13 @@ class TestGuardian(BaseTestCase):
         first_public_key = guardian.share_key()
 
         # Act
-        guardian.generate_election_key_pair()
+        guardian.generate_key_pair()
         second_public_key = guardian.share_key()
 
         # Assert
         self.assertIsNotNone(second_public_key)
-        self.assertIsNotNone(second_public_key.key)
-        self.assertNotEqual(first_public_key.key, second_public_key.key)
+        self.assertIsNotNone(second_public_key.public_key)
+        self.assertNotEqual(first_public_key.public_key, second_public_key.public_key)
 
     def test_share_backups(self) -> None:
         # Arrange
@@ -261,12 +261,12 @@ class TestGuardian(BaseTestCase):
 
         # Assert
         self.assertIsNotNone(challenge)
-        self.assertIsNotNone(challenge.value)
+        self.assertIsNotNone(challenge.coordinate)
         self.assertEqual(challenge.owner_id, guardian.id)
         self.assertEqual(challenge.designated_id, other_guardian.id)
-        self.assertEqual(len(challenge.coefficient_commitments), QUORUM)
-        self.assertEqual(len(challenge.coefficient_proofs), QUORUM)
-        for proof in challenge.coefficient_proofs:
+        self.assertEqual(len(challenge.commitments), QUORUM)
+        self.assertEqual(len(challenge.proofs), QUORUM)
+        for proof in challenge.proofs:
             proof.is_valid()
 
     def test_save_election_partial_key_verification(self) -> None:
@@ -322,7 +322,7 @@ class TestGuardian(BaseTestCase):
         # Assert
         self.assertTrue(all_saved)
 
-    def test_publish_joint_key(self) -> None:
+    def test_publish_election_key(self) -> None:
         # Arrange
         # Round 1
         guardian = Guardian(
@@ -343,22 +343,22 @@ class TestGuardian(BaseTestCase):
         )
 
         # Act
-        joint_key = guardian.publish_joint_key()
+        election_key = guardian.publish_election_key()
 
         # Assert
-        self.assertIsNone(joint_key)
+        self.assertIsNone(election_key)
 
         # Act
         guardian.save_guardian_key(other_guardian.share_key())
-        joint_key = guardian.publish_joint_key()
+        election_key = guardian.publish_election_key()
 
         # Assert
-        self.assertIsNone(joint_key)
+        self.assertIsNone(election_key)
 
         # Act
         guardian.save_election_partial_key_verification(verification)
-        joint_key = guardian.publish_joint_key()
+        election_key = guardian.publish_election_key()
 
         # Assert
-        self.assertIsNotNone(joint_key)
-        self.assertNotEqual(joint_key, guardian.share_key().key)
+        self.assertIsNotNone(election_key)
+        self.assertNotEqual(election_key, guardian.share_key().public_key)

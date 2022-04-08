@@ -90,7 +90,7 @@ class CiphertextDecryptionSelection(ElectionObjectBase):
     def is_valid(
         self,
         message: ElGamalCiphertext,
-        election_public_key: ElGamalPublicKey,
+        public_key: ElGamalPublicKey,
         extended_base_hash: ElementModQ,
     ) -> bool:
         """
@@ -98,7 +98,7 @@ class CiphertextDecryptionSelection(ElectionObjectBase):
         specific ElGamal key pair, public key, and election context.
 
         :param message: the `ElGamalCiphertext` to compare
-        :param election_public_key: the `ElementModP Election Public Key for the Guardian
+        :param public_key: The public key for the Guardian
         :param extended_base_hash: The `ElementModQ` election extended base hash.
         """
         # verify we have a proof or recovered parts
@@ -122,7 +122,7 @@ class CiphertextDecryptionSelection(ElectionObjectBase):
 
         if self.proof is not None and not self.proof.is_valid(
             message,
-            election_public_key,
+            public_key,
             self.share,
             extended_base_hash,
         ):

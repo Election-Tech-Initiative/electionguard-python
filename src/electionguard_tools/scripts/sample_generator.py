@@ -176,7 +176,7 @@ class ElectionSampleDataGenerator:
                         # pylint: disable=protected-access
                         PrivateGuardianRecord(
                             guardian.id,
-                            guardian._election_keys,
+                            guardian._key_pair,
                             guardian._backups_to_share,
                             guardian._guardian_election_public_keys,
                             guardian._guardian_election_partial_key_backups,

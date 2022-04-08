@@ -274,17 +274,17 @@ class TestEndToEndElection(BaseTestCase):
         )
 
         # FINAL: Publish Joint Key
-        joint_key = self.mediator.publish_joint_key()
+        election_key = self.mediator.publish_election_key()
         self._assert_message(
-            KeyCeremonyMediator.publish_joint_key.__qualname__,
+            KeyCeremonyMediator.publish_election_key.__qualname__,
             "Publishes the Joint Election Key",
-            joint_key is not None,
+            election_key is not None,
         )
 
         # Build the Election
-        self.election_builder.set_public_key(get_optional(joint_key).joint_public_key)
+        self.election_builder.set_public_key(get_optional(election_key).public_key)
         self.election_builder.set_commitment_hash(
-            get_optional(joint_key).commitment_hash
+            get_optional(election_key).commitment_hash
         )
         self.internal_manifest, self.context = get_optional(
             self.election_builder.build()

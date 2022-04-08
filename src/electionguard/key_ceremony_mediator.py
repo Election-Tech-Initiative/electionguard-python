@@ -2,12 +2,12 @@ from dataclasses import dataclass, field
 from typing import Dict, Iterable, List, Optional
 from .key_ceremony import (
     CeremonyDetails,
-    ElectionJointKey,
+    ElectionKey,
     ElectionPartialKeyBackup,
     ElectionPartialKeyChallenge,
     ElectionPartialKeyVerification,
-    ElectionPublicKey,
-    combine_election_public_keys,
+    GuardianPublicKey,
+    create_election_key,
     verify_election_partial_key_challenge,
 )
 from .type import GuardianId, MediatorId
@@ -40,7 +40,7 @@ class KeyCeremonyMediator:
 
     # From Guardians
     # Round 1
-    _election_public_keys: Dict[GuardianId, ElectionPublicKey]
+    _election_public_keys: Dict[GuardianId, GuardianPublicKey]
 
     # Round 2
     _election_partial_key_backups: Dict[GuardianPair, ElectionPartialKeyBackup]
@@ -53,7 +53,7 @@ class KeyCeremonyMediator:
     def __init__(self, id: MediatorId, ceremony_details: CeremonyDetails):
         self.id = id
         self.ceremony_details = ceremony_details
-        self._election_public_keys: Dict[GuardianId, ElectionPublicKey] = {}
+        self._election_public_keys: Dict[GuardianId, GuardianPublicKey] = {}
         self._election_partial_key_backups: Dict[
             GuardianPair, ElectionPartialKeyBackup
         ] = {}
@@ -65,7 +65,7 @@ class KeyCeremonyMediator:
         ] = {}
 
     # ROUND 1: Announce guardians with public keys
-    def announce(self, key: ElectionPublicKey) -> None:
+    def announce(self, key: GuardianPublicKey) -> None:
         """
         Announce the guardian as present and participating the Key Ceremony
         :param key: Guardian's election public key
@@ -83,14 +83,14 @@ class KeyCeremonyMediator:
 
     def share_announced(
         self, requesting_guardian_id: Optional[GuardianId] = None
-    ) -> Optional[List[ElectionPublicKey]]:
+    ) -> Optional[List[GuardianPublicKey]]:
         """
         When all guardians have announced, share their public keys indicating their announcement
         """
         if not self.all_guardians_announced():
             return None
 
-        guardian_keys: List[ElectionPublicKey] = []
+        guardian_keys: List[GuardianPublicKey] = []
         for guardian_id in self._get_announced_guardians():
             if guardian_id is not requesting_guardian_id:
                 guardian_keys.append(self._election_public_keys[guardian_id])
@@ -165,8 +165,7 @@ class KeyCeremonyMediator:
             self._receive_election_partial_key_verification(verification)
         return verification
 
-    # FINAL: Publish joint public election key
-    def publish_joint_key(self) -> Optional[ElectionJointKey]:
+    def publish_election_key(self) -> Optional[ElectionKey]:
         """
         Publish joint election key from the public keys of all guardians
         :return: Joint key for election
@@ -174,7 +173,7 @@ class KeyCeremonyMediator:
         if not self.all_backups_verified():
             return None
 
-        return combine_election_public_keys(list(self._election_public_keys.values()))
+        return create_election_key(list(self._election_public_keys.values()))
 
     def reset(self, ceremony_details: CeremonyDetails) -> None:
         """
@@ -188,7 +187,7 @@ class KeyCeremonyMediator:
         self._election_partial_key_verifications = {}
 
     # Election Public Keys
-    def _receive_election_public_key(self, public_key: ElectionPublicKey) -> None:
+    def _receive_election_public_key(self, public_key: GuardianPublicKey) -> None:
         """
         Receive election public key from guardian
         :param public_key: election public key

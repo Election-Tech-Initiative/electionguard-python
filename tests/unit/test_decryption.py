@@ -34,7 +34,7 @@ from electionguard.group import (
 from electionguard.election_builder import ElectionBuilder
 from electionguard.encrypt import EncryptionMediator
 from electionguard.guardian import Guardian
-from electionguard.key_ceremony import CeremonyDetails, ElectionKeyPair
+from electionguard.key_ceremony import CeremonyDetails, GuardianKeyPair
 from electionguard.key_ceremony_mediator import KeyCeremonyMediator
 from electionguard.tally import tally_ballots
 from electionguard.type import BallotId, GuardianId
@@ -70,12 +70,12 @@ class TestDecryption(BaseTestCase):
         KeyCeremonyOrchestrator.perform_full_ceremony(
             self.guardians, self.key_ceremony_mediator
         )
-        self.joint_public_key = self.key_ceremony_mediator.publish_joint_key()
+        self.joint_public_key = self.key_ceremony_mediator.publish_election_key()
 
         # Setup the election
         manifest = election_factory.get_fake_manifest()
         builder = ElectionBuilder(self.NUMBER_OF_GUARDIANS, self.QUORUM, manifest)
-        builder.set_public_key(self.joint_public_key.joint_public_key)
+        builder.set_public_key(self.joint_public_key.public_key)
         builder.set_commitment_hash(self.joint_public_key.commitment_hash)
         self.internal_manifest, self.context = get_optional(builder.build())
 
@@ -189,13 +189,11 @@ class TestDecryption(BaseTestCase):
         # Act
         # Guardian doesn't give keys
         broken_secret_key = ZERO_MOD_Q
-        broken_guardian_key_pair = ElectionKeyPair(
+        broken_guardian_key_pair = GuardianKeyPair(
             guardian.id,
             guardian.sequence_order,
-            ElGamalKeyPair(
-                broken_secret_key, guardian._election_keys.key_pair.public_key
-            ),
-            guardian._election_keys.polynomial,
+            ElGamalKeyPair(broken_secret_key, guardian._key_pair.key_pair.public_key),
+            guardian._key_pair.polynomial,
         )
 
         broken_share = compute_decryption_share(
@@ -210,7 +208,7 @@ class TestDecryption(BaseTestCase):
         # Act
         # Normal use case
         share = compute_decryption_share(
-            guardian._election_keys,
+            guardian._key_pair,
             self.ciphertext_tally,
             self.context,
         )
@@ -250,7 +248,7 @@ class TestDecryption(BaseTestCase):
 
         # act
         result = compute_decryption_share_for_selection(
-            self.guardians[0]._election_keys, first_selection, self.context
+            self.guardians[0]._key_pair, first_selection, self.context
         )
 
         # assert
@@ -297,11 +295,11 @@ class TestDecryption(BaseTestCase):
 
         # compute their shares
         share_0 = compute_decryption_share_for_selection(
-            available_guardian_1._election_keys, first_selection, self.context
+            available_guardian_1._key_pair, first_selection, self.context
         )
 
         share_1 = compute_decryption_share_for_selection(
-            available_guardian_2._election_keys, first_selection, self.context
+            available_guardian_2._key_pair, first_selection, self.context
         )
 
         self.assertIsNotNone(share_0)
@@ -388,15 +386,15 @@ class TestDecryption(BaseTestCase):
             first_selection,
             {
                 available_guardian_1.id: (
-                    available_guardian_1.share_key().key,
+                    available_guardian_1.share_key().public_key,
                     share_0,
                 ),
                 available_guardian_2.id: (
-                    available_guardian_2.share_key().key,
+                    available_guardian_2.share_key().public_key,
                     share_1,
                 ),
                 missing_guardian.id: (
-                    missing_guardian.share_key().key,
+                    missing_guardian.share_key().public_key,
                     share_2,
                 ),
             },

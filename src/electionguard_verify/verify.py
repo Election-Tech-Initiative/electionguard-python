@@ -3,7 +3,7 @@ from typing import Dict, Optional, List
 
 from electionguard.ballot import CiphertextBallot, SubmittedBallot
 from electionguard.election import CiphertextElectionContext
-from electionguard.key_ceremony import ElectionPublicKey
+from electionguard.key_ceremony import GuardianPublicKey
 from electionguard.manifest import (
     InternalManifest,
     Manifest,
@@ -47,13 +47,15 @@ def verify_ballot(
 
 def verify_decryption(
     tally: PlaintextTally,
-    election_public_keys: Dict[GuardianId, ElectionPublicKey],
+    election_public_keys: Dict[GuardianId, GuardianPublicKey],
     context: CiphertextElectionContext,
 ) -> Verification:
     for _, contest in tally.contests.items():
         for selection_id, selection in contest.selections.items():
             for share in selection.shares:
-                election_public_key = election_public_keys.get(share.guardian_id).key
+                election_public_key = election_public_keys.get(
+                    share.guardian_id
+                ).public_key
                 if not share.proof.is_valid(
                     selection.message,
                     election_public_key,

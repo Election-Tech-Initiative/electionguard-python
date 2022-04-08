@@ -3,12 +3,12 @@ from typing import Dict, List
 from tests.base_test_case import BaseTestCase
 
 from electionguard.key_ceremony import (
-    ElectionKeyPair,
+    GuardianKeyPair,
     ElectionPartialKeyBackup,
     ElectionPartialKeyVerification,
-    ElectionPublicKey,
-    combine_election_public_keys,
-    generate_election_key_pair,
+    GuardianPublicKey,
+    create_election_key,
+    generate_guardian_key_pair,
     generate_election_partial_key_backup,
     generate_election_partial_key_challenge,
     verify_election_partial_key_backup,
@@ -33,8 +33,8 @@ class TestKeyCeremony(BaseTestCase):
     QUORUM = 3
 
     # ROUND 1
-    election_key_pairs: Dict[str, ElectionKeyPair] = {}
-    guardian_keys: Dict[str, ElectionPublicKey] = {}
+    guardian_key_pairs: Dict[str, GuardianKeyPair] = {}
+    guardian_keys: Dict[str, GuardianPublicKey] = {}
 
     # ROUND 2
     sent_backups: Dict[SENDER_ID, List[ElectionPartialKeyBackup]] = {}
@@ -53,7 +53,7 @@ class TestKeyCeremony(BaseTestCase):
         # Each guardian generates their own keys
         for guardian_id, sequence_order in zip(guardian_ids, guardian_sequence_orders):
             self._guardian_generates_keys(guardian_id, sequence_order)
-        self.assertEqual(len(self.election_key_pairs), self.NUMBER_OF_GUARDIANS)
+        self.assertEqual(len(self.guardian_key_pairs), self.NUMBER_OF_GUARDIANS)
 
         # Each guardian shares their keys
         for guardian_id in guardian_ids:
@@ -81,7 +81,7 @@ class TestKeyCeremony(BaseTestCase):
 
         # CREATE JOINT KEY
         # If all backups are verified, publish joint key
-        self._publish_joint_key()
+        self._publish_election_key()
 
     def _guardian_generates_keys(
         self, guardian_id: GuardianId, sequence_order: int
@@ -89,16 +89,16 @@ class TestKeyCeremony(BaseTestCase):
         """Guardian generates their keys"""
 
         # Create Election Key Pair
-        election_key_pair = generate_election_key_pair(
+        guardian_key_pair = generate_guardian_key_pair(
             guardian_id, sequence_order, self.QUORUM
         )
-        self.assertIsNotNone(election_key_pair)
-        self.election_key_pairs[guardian_id] = election_key_pair
+        self.assertIsNotNone(guardian_key_pair)
+        self.guardian_key_pairs[guardian_id] = guardian_key_pair
 
     def _guardian_share_keys(self, guardian_id: GuardianId) -> None:
         """Guardian shares public keys"""
-        election_key_pair = self.election_key_pairs[guardian_id]
-        key = election_key_pair.share()
+        key_pair = self.guardian_key_pairs[guardian_id]
+        key = key_pair.share()
         self.assertIsNotNone(key)
         self.guardian_keys[guardian_id] = key
 
@@ -114,7 +114,7 @@ class TestKeyCeremony(BaseTestCase):
             if recipient_guardian.owner_id is sender_id:
                 continue
 
-            senders_polynomial = self.election_key_pairs[sender_id].polynomial
+            senders_polynomial = self.guardian_key_pairs[sender_id].polynomial
             backup = generate_election_partial_key_backup(
                 sender_id,
                 senders_polynomial,
@@ -140,7 +140,7 @@ class TestKeyCeremony(BaseTestCase):
         verifications = []
 
         for backup in self.received_backups[verifier_id]:
-            owner_public_key = self.election_key_pairs[backup.owner_id].share()
+            owner_public_key = self.guardian_key_pairs[backup.owner_id].share()
             verification = verify_election_partial_key_backup(
                 verifier_id,
                 backup,
@@ -193,9 +193,9 @@ class TestKeyCeremony(BaseTestCase):
             if backup.designated_id == designated_id
         ][0]
         self.assertIsNotNone(designated_backup)
-        election_key_pair = self.election_key_pairs[key_owner_id]
+        key_pair = self.guardian_key_pairs[key_owner_id]
         challenge = generate_election_partial_key_challenge(
-            designated_backup, election_key_pair.polynomial
+            designated_backup, key_pair.polynomial
         )
 
         # Get a mediator to verify who is not the owner or originally designated guardian who previously verified
@@ -213,9 +213,9 @@ class TestKeyCeremony(BaseTestCase):
 
         self.received_verifications[key_owner_id][0] = verification
 
-    def _publish_joint_key(self) -> None:
+    def _publish_election_key(self) -> None:
         guardian_public_keys = [
-            keys.share() for keys in self.election_key_pairs.values()
+            keys.share() for keys in self.guardian_key_pairs.values()
         ]
-        election_joint_key = combine_election_public_keys(guardian_public_keys)
-        self.assertIsNotNone(election_joint_key)
+        election_key = create_election_key(guardian_public_keys)
+        self.assertIsNotNone(election_key)

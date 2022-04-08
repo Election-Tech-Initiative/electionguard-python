@@ -73,7 +73,7 @@ class TestDecryptionMediator(BaseTestCase):
         KeyCeremonyOrchestrator.perform_full_ceremony(
             self.guardians, key_ceremony_mediator
         )
-        self.joint_public_key = key_ceremony_mediator.publish_joint_key()
+        self.joint_public_key = key_ceremony_mediator.publish_election_key()
         self.assertIsNotNone(self.joint_public_key)
 
         # Setup the election
@@ -82,7 +82,7 @@ class TestDecryptionMediator(BaseTestCase):
 
         self.assertIsNone(builder.build())  # Can't build without the public key
 
-        builder.set_public_key(self.joint_public_key.joint_public_key)
+        builder.set_public_key(self.joint_public_key.public_key)
         builder.set_commitment_hash(self.joint_public_key.commitment_hash)
         self.internal_manifest, self.context = get_optional(builder.build())
 
@@ -153,7 +153,7 @@ class TestDecryptionMediator(BaseTestCase):
         self.assertTrue(
             self.encrypted_fake_cast_ballot.is_valid_encryption(
                 self.internal_manifest.manifest_hash,
-                self.joint_public_key.joint_public_key,
+                self.joint_public_key.public_key,
                 self.context.crypto_extended_base_hash,
             )
         )
@@ -312,7 +312,7 @@ class TestDecryptionMediator(BaseTestCase):
         description = values.draw(election_descriptions(parties, contests))
         builder = ElectionBuilder(self.NUMBER_OF_GUARDIANS, self.QUORUM, description)
         internal_manifest, context = (
-            builder.set_public_key(self.joint_public_key.joint_public_key)
+            builder.set_public_key(self.joint_public_key.public_key)
             .set_commitment_hash(self.joint_public_key.commitment_hash)
             .build()
         )

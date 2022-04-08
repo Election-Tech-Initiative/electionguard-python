@@ -13,16 +13,18 @@ from .decryption import (
 from .decryption_share import CompensatedDecryptionShare, DecryptionShare
 from .election import CiphertextElectionContext
 from .election_polynomial import PublicCommitment
-from .elgamal import ElGamalPublicKey, elgamal_combine_public_keys
-from .group import ElementModP, ElementModQ
+from .elgamal import ElGamalPublicKey
+from .group import ElementModQ
 from .key_ceremony import (
     CeremonyDetails,
-    ElectionKeyPair,
+    ElectionKey,
+    GuardianKeyPair,
     ElectionPartialKeyBackup,
     ElectionPartialKeyChallenge,
     ElectionPartialKeyVerification,
-    ElectionPublicKey,
-    generate_election_key_pair,
+    GuardianPublicKey,
+    create_election_key,
+    generate_guardian_key_pair,
     generate_election_partial_key_backup,
     generate_election_partial_key_challenge,
     verify_election_partial_key_backup,
@@ -50,38 +52,38 @@ class GuardianRecord:
     in which the guardian should be processed
     """
 
-    election_public_key: ElGamalPublicKey
+    public_key: ElGamalPublicKey
     """
-    Guardian's election public key for encrypting election objects.
+    Guardian's public key for encrypting election objects.
     """
 
-    election_commitments: List[PublicCommitment]
+    commitments: List[PublicCommitment]
     """
     Commitment for each coeffficient of the guardians secret polynomial.
-    First commitment is and should be identical to election_public_key.
+    First commitment is and should be identical to public_key.
     """
 
-    election_proofs: List[SchnorrProof]
+    proofs: List[SchnorrProof]
     """
     Proofs for each commitment for each coeffficient of the guardians secret polynomial.
-    First proof is the proof for the election_public_key.
+    First proof is the proof for the public_key.
     """
 
 
-def publish_guardian_record(election_public_key: ElectionPublicKey) -> GuardianRecord:
+def publish_guardian_record(public_key: GuardianPublicKey) -> GuardianRecord:
     """
     Published record containing all required information per Guardian
     for Election record used in verification processes
 
-    :param election_public_key: Guardian's election public key
+    :param public_key: Guardian's public key
     :return: Guardian's record
     """
     return GuardianRecord(
-        election_public_key.owner_id,
-        election_public_key.sequence_order,
-        election_public_key.key,
-        election_public_key.coefficient_commitments,
-        election_public_key.coefficient_proofs,
+        public_key.owner_id,
+        public_key.sequence_order,
+        public_key.public_key,
+        public_key.commitments,
+        public_key.proofs,
     )
 
 
@@ -92,25 +94,22 @@ class PrivateGuardianRecord:
     guardian_id: GuardianId
     """Unique identifier of the guardian"""
 
-    election_keys: ElectionKeyPair
+    key_pair: GuardianKeyPair
     """Private election Key pair of this guardian"""
 
-    backups_to_share: Dict[GuardianId, ElectionPartialKeyBackup]
-    """This guardian's partial key backups that will be shared to other guardians"""
+    generated_key_shares: Dict[GuardianId, ElectionPartialKeyBackup]
+    """This guardian's key shares that will be shared to other guardians"""
 
-    guardian_election_public_keys: Dict[GuardianId, ElectionPublicKey]
-    """Received election public keys that are shared with this guardian"""
+    public_keys: Dict[GuardianId, GuardianPublicKey]
+    """Received guardian public keys that are shared with this guardian"""
 
-    guardian_election_partial_key_backups: Dict[GuardianId, ElectionPartialKeyBackup]
-    """Received partial key backups that are shared with this guardian"""
+    key_shares: Dict[GuardianId, ElectionPartialKeyBackup]
+    """Received guardian key shares that are shared with this guardian"""
 
-    guardian_election_partial_key_verifications: Dict[
-        GuardianId, ElectionPartialKeyVerification
-    ]
-    """Verifications of other guardian's backups"""
+    key_share_verifications: Dict[GuardianId, ElectionPartialKeyVerification]
+    """Verifications of other guardian's key shares"""
 
 
-# pylint: disable=too-many-instance-attributes
 class Guardian:
     """
     Guardian of election responsible for safeguarding information and decrypting results.
@@ -123,7 +122,7 @@ class Guardian:
     sequence_order: int  # Cannot be zero
     ceremony_details: CeremonyDetails
 
-    _election_keys: ElectionKeyPair
+    _key_pair: GuardianKeyPair
 
     _backups_to_share: Dict[GuardianId, ElectionPartialKeyBackup]
     """
@@ -131,7 +130,7 @@ class Guardian:
     """
 
     # From Other Guardians
-    _guardian_election_public_keys: Dict[GuardianId, ElectionPublicKey]
+    _guardian_keys: Dict[GuardianId, GuardianPublicKey]
     """
     The collection of other guardians' election public keys that are shared with this guardian
     """
@@ -170,11 +169,11 @@ class Guardian:
         self.sequence_order = sequence_order
         self.set_ceremony_details(number_of_guardians, quorum)
         self._backups_to_share = {}
-        self._guardian_election_public_keys = {}
+        self._guardian_keys = {}
         self._guardian_election_partial_key_backups = {}
         self._guardian_election_partial_key_verifications = {}
 
-        self.generate_election_key_pair(nonce_seed if nonce_seed is not None else None)
+        self.generate_key_pair(nonce_seed if nonce_seed is not None else None)
 
     def reset(self, number_of_guardians: int, quorum: int) -> None:
         """
@@ -184,23 +183,23 @@ class Guardian:
         :param quorum: Quorum of guardians required to decrypt
         """
         self._backups_to_share.clear()
-        self._guardian_election_public_keys.clear()
+        self._guardian_keys.clear()
         self._guardian_election_partial_key_backups.clear()
         self._guardian_election_partial_key_verifications.clear()
         self.set_ceremony_details(number_of_guardians, quorum)
-        self.generate_election_key_pair()
+        self.generate_key_pair()
 
     def publish(self) -> GuardianRecord:
         """Publish record of guardian with all required information."""
-        return publish_guardian_record(self._election_keys.share())
+        return publish_guardian_record(self._key_pair.share())
 
     def export_private_data(self) -> PrivateGuardianRecord:
         """Export private data of guardian. Warning cannot be published."""
         return PrivateGuardianRecord(
             self.id,
-            self._election_keys,
+            self._key_pair,
             self._backups_to_share,
-            self._guardian_election_public_keys,
+            self._guardian_keys,
             self._guardian_election_partial_key_backups,
             self._guardian_election_partial_key_verifications,
         )
@@ -215,28 +214,28 @@ class Guardian:
         self.ceremony_details = CeremonyDetails(number_of_guardians, quorum)
 
     # Public Keys
-    def generate_election_key_pair(self, nonce: ElementModQ = None) -> None:
+    def generate_key_pair(self, nonce: ElementModQ = None) -> None:
         """Generate election key pair for encrypting/decrypting election."""
-        self._election_keys = generate_election_key_pair(
+        self._key_pair = generate_guardian_key_pair(
             self.id, self.sequence_order, self.ceremony_details.quorum, nonce
         )
         self.save_guardian_key(self.share_key())
 
-    def share_key(self) -> ElectionPublicKey:
+    def share_key(self) -> GuardianPublicKey:
         """
         Share election public key with another guardian.
 
         :return: Election public key
         """
-        return self._election_keys.share()
+        return self._key_pair.share()
 
-    def save_guardian_key(self, key: ElectionPublicKey) -> None:
+    def save_guardian_key(self, key: GuardianPublicKey) -> None:
         """
         Save public election keys for another guardian.
 
         :param key: Election public key
         """
-        self._guardian_election_public_keys[key.owner_id] = key
+        self._guardian_keys[key.owner_id] = key
 
     def all_guardian_keys_received(self) -> bool:
         """
@@ -244,18 +243,15 @@ class Guardian:
 
         :return: All keys backups received
         """
-        return (
-            len(self._guardian_election_public_keys)
-            == self.ceremony_details.number_of_guardians
-        )
+        return len(self._guardian_keys) == self.ceremony_details.number_of_guardians
 
     def generate_election_partial_key_backups(self) -> bool:
         """
         Generate all election partial key backups based on existing public keys.
         """
-        for guardian in self._guardian_election_public_keys.values():
+        for guardian in self._guardian_keys.values():
             backup = generate_election_partial_key_backup(
-                self.id, self._election_keys.polynomial, guardian
+                self.id, self._key_pair.polynomial, guardian
             )
             if backup is None:
                 log_warning(
@@ -320,7 +316,7 @@ class Guardian:
         :return: Election partial key verification or None
         """
         backup = self._guardian_election_partial_key_backups.get(guardian_id)
-        public_key = self._guardian_election_public_keys.get(guardian_id)
+        public_key = self._guardian_keys.get(guardian_id)
         if backup is None or public_key is None:
             return None
         return verify_election_partial_key_backup(self.id, backup, public_key)
@@ -338,7 +334,7 @@ class Guardian:
         if backup_in_question is None:
             return None
         return generate_election_partial_key_challenge(
-            backup_in_question, self._election_keys.polynomial
+            backup_in_question, self._key_pair.polynomial
         )
 
     def verify_election_partial_key_challenge(
@@ -379,28 +375,24 @@ class Guardian:
         return True
 
     # Joint Key
-    def publish_joint_key(self) -> Optional[ElementModP]:
+    def publish_election_key(self) -> Optional[ElectionKey]:
         """
         Create the joint election key from the public keys of all guardians.
 
-        :return: Optional joint key for election
+        :return: Optional election key for election
         """
         if not self.all_guardian_keys_received():
             return None
         if not self.all_election_partial_key_backups_verified():
             return None
 
-        public_keys = map(
-            lambda public_key: public_key.key,
-            self._guardian_election_public_keys.values(),
-        )
-        return elgamal_combine_public_keys(public_keys)
+        return create_election_key(list(self._guardian_keys.values()))
 
     def share_other_guardian_key(
         self, guardian_id: GuardianId
-    ) -> Optional[ElectionPublicKey]:
+    ) -> Optional[GuardianPublicKey]:
         """Share other guardians keys shared during key ceremony"""
-        return self._guardian_election_public_keys.get(guardian_id)
+        return self._guardian_keys.get(guardian_id)
 
     def compute_tally_share(
         self, tally: CiphertextTally, context: CiphertextElectionContext
@@ -413,7 +405,7 @@ class Guardian:
         :return: Decryption share of tally or None if failure
         """
         return compute_decryption_share(
-            self._election_keys,
+            self._key_pair,
             tally,
             context,
         )
@@ -431,7 +423,7 @@ class Guardian:
         shares = {}
         for ballot in ballots:
             share = compute_decryption_share_for_ballot(
-                self._election_keys,
+                self._key_pair,
                 ballot,
                 context,
             )
@@ -453,9 +445,7 @@ class Guardian:
         :return: Compensated decryption share of tally or None if failure
         """
         # Ensure missing guardian information available
-        missing_guardian_key = self._guardian_election_public_keys.get(
-            missing_guardian_id
-        )
+        missing_guardian_key = self._guardian_keys.get(missing_guardian_id)
         missing_guardian_backup = self._guardian_election_partial_key_backups.get(
             missing_guardian_id
         )
@@ -487,9 +477,7 @@ class Guardian:
             ballot.object_id: None for ballot in ballots
         }
         # Ensure missing guardian information available
-        missing_guardian_key = self._guardian_election_public_keys.get(
-            missing_guardian_id
-        )
+        missing_guardian_key = self._guardian_keys.get(missing_guardian_id)
         missing_guardian_backup = self._guardian_election_partial_key_backups.get(
             missing_guardian_id
         )

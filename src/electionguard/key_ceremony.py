@@ -24,39 +24,40 @@ from .utils import get_optional
 
 
 @dataclass
-class ElectionPublicKey:
-    """A tuple of election public key and owner information"""
+class GuardianPublicKey:
+    """A record of the public info of guardian including election public key and owner information"""
 
     owner_id: GuardianId
-    """
-    The id of the owner guardian
-    """
+    """Unique identifier of the guardian"""
 
     sequence_order: int
     """
-    The sequence order of the owner guardian
+    Unique sequence order of the guardian indicating the order
+    in which the guardian should be processed
     """
 
-    key: ElGamalPublicKey
+    public_key: ElGamalPublicKey
     """
-    The election public for the guardian
+    The public key for the guardian
     Note: This is the same as the first coefficient commitment
     """
 
-    coefficient_commitments: List[PublicCommitment]
+    commitments: List[PublicCommitment]
     """
-    The commitments for the coefficients in the secret polynomial
+    Commitment for each coeffficient of the guardians secret polynomial.
+    First commitment is and should be identical to public_key.
     """
 
-    coefficient_proofs: List[SchnorrProof]
+    proofs: List[SchnorrProof]
     """
-    The proofs for the coefficients in the secret polynomial
+    Proofs for each commitment for each coeffficient of the guardians secret polynomial.
+    First proof is the proof for the public_key.
     """
 
 
 @dataclass
-class ElectionKeyPair:
-    """A tuple of election key pair, proof and polynomial"""
+class GuardianKeyPair:
+    """A tuple of a guardian key pair, proof and polynomial"""
 
     owner_id: GuardianId
     """
@@ -78,9 +79,9 @@ class ElectionKeyPair:
     The secret polynomial for the guardian
     """
 
-    def share(self) -> ElectionPublicKey:
+    def share(self) -> GuardianPublicKey:
         """Share the election public key and associated data"""
-        return ElectionPublicKey(
+        return GuardianPublicKey(
             self.owner_id,
             self.sequence_order,
             self.key_pair.public_key,
@@ -90,12 +91,13 @@ class ElectionKeyPair:
 
 
 @dataclass
-class ElectionJointKey:
+class ElectionKey:
     """
-    The Election joint key
+    The public Election Key used for encrypting ballots in the election.
+    This is a joint key of all the guardians public keys.
     """
 
-    joint_public_key: ElGamalPublicKey
+    public_key: ElGamalPublicKey
     """
     The product of the guardian public keys
     K = ∏ ni=1 Ki mod p.
@@ -158,14 +160,14 @@ class ElectionPartialKeyChallenge:
     designated_id: GuardianId
     designated_sequence_order: int
 
-    value: ElementModQ
-    coefficient_commitments: List[PublicCommitment]
-    coefficient_proofs: List[SchnorrProof]
+    coordinate: ElementModQ
+    commitments: List[PublicCommitment]
+    proofs: List[SchnorrProof]
 
 
-def generate_election_key_pair(
+def generate_guardian_key_pair(
     guardian_id: str, sequence_order: int, quorum: int, nonce: ElementModQ = None
-) -> ElectionKeyPair:
+) -> GuardianKeyPair:
     """
     Generate election key pair, proof, and polynomial
     :param quorum: Quorum of guardians needed to decrypt
@@ -175,13 +177,13 @@ def generate_election_key_pair(
     key_pair = ElGamalKeyPair(
         polynomial.coefficients[0].value, polynomial.coefficients[0].commitment
     )
-    return ElectionKeyPair(guardian_id, sequence_order, key_pair, polynomial)
+    return GuardianKeyPair(guardian_id, sequence_order, key_pair, polynomial)
 
 
 def generate_election_partial_key_backup(
     owner_id: GuardianId,
     polynomial: ElectionPolynomial,
-    designated_guardian_key: ElectionPublicKey,
+    designated_guardian_key: GuardianPublicKey,
 ) -> ElectionPartialKeyBackup:
     """
     Generate election partial key backup for sharing
@@ -203,7 +205,7 @@ def generate_election_partial_key_backup(
 def verify_election_partial_key_backup(
     verifier_id: str,
     backup: ElectionPartialKeyBackup,
-    election_public_key: ElectionPublicKey,
+    election_public_key: GuardianPublicKey,
 ) -> ElectionPartialKeyVerification:
     """
     Verify election partial key backup contain point on owners polynomial
@@ -212,15 +214,15 @@ def verify_election_partial_key_backup(
     :param election_public_key: Other guardian's election public key
     """
 
-    value = backup.coordinate
+    coordinate = backup.coordinate
     return ElectionPartialKeyVerification(
         backup.owner_id,
         backup.designated_id,
         verifier_id,
         verify_polynomial_coordinate(
-            value,
+            coordinate,
             backup.designated_sequence_order,
-            election_public_key.coefficient_commitments,
+            election_public_key.commitments,
         ),
     )
 
@@ -259,30 +261,28 @@ def verify_election_partial_key_challenge(
         challenge.designated_id,
         verifier_id,
         verify_polynomial_coordinate(
-            challenge.value,
+            challenge.coordinate,
             challenge.designated_sequence_order,
-            challenge.coefficient_commitments,
+            challenge.commitments,
         ),
     )
 
 
-def combine_election_public_keys(
-    election_public_keys: List[ElectionPublicKey],
-) -> ElectionJointKey:
+def create_election_key(
+    guardian_public_keys: List[GuardianPublicKey],
+) -> ElectionKey:
     """
     Creates a joint election key from the public keys of all guardians
     :param election_public_keys: all public keys of the guardians
     :return: ElectionJointKey for election
     """
-    public_keys = [set.key for set in election_public_keys]
+    public_keys = [set.public_key for set in guardian_public_keys]
     commitments = [
-        commitment
-        for set in election_public_keys
-        for commitment in set.coefficient_commitments
+        commitment for set in guardian_public_keys for commitment in set.commitments
     ]
 
-    return ElectionJointKey(
-        joint_public_key=elgamal_combine_public_keys(public_keys),
+    return ElectionKey(
+        public_key=elgamal_combine_public_keys(public_keys),
         commitment_hash=get_optional(
             hash_elems(commitments)
         ),  # H(K 1,0 , K 2,0 ... , K n,0 )

@@ -133,11 +133,11 @@ class TestKeyCeremonyMediator(BaseTestCase):
         # Assert
         self.assertFalse(mediator.get_verification_state().all_sent)
         self.assertFalse(mediator.all_backups_verified())
-        self.assertIsNone(mediator.publish_joint_key())
+        self.assertIsNone(mediator.publish_election_key())
 
         # Act
         mediator.receive_backup_verifications([verification2])
-        joint_key = mediator.publish_joint_key()
+        joint_key = mediator.publish_election_key()
 
         # Assert
         self.assertTrue(mediator.get_verification_state().all_sent)
@@ -174,7 +174,7 @@ class TestKeyCeremonyMediator(BaseTestCase):
         # Assert
         self.assertTrue(state.all_sent)
         self.assertFalse(state.all_verified)
-        self.assertIsNone(mediator.publish_joint_key())
+        self.assertIsNone(mediator.publish_election_key())
         self.assertEqual(len(state.failed_verifications), 1)
         self.assertEqual(
             state.failed_verifications[0], GuardianPair(GUARDIAN_1_ID, GUARDIAN_2_ID)
@@ -185,7 +185,7 @@ class TestKeyCeremonyMediator(BaseTestCase):
         mediator.verify_challenge(challenge)
         new_state = mediator.get_verification_state()
         all_verified = mediator.all_backups_verified()
-        joint_key = mediator.publish_joint_key()
+        joint_key = mediator.publish_election_key()
 
         # Assert
         self.assertTrue(new_state.all_sent)
