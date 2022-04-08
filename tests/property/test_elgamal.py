@@ -149,12 +149,12 @@ class TestElGamal(BaseTestCase):
         public_keys = [random_keypair.public_key, random_keypair_two.public_key]
 
         # Act
-        joint_key = elgamal_combine_public_keys(public_keys)
+        election_key = elgamal_combine_public_keys(public_keys)
 
         # Assert
-        self.assertIsNotNone(joint_key)
-        self.assertNotEqual(joint_key, random_keypair.public_key)
-        self.assertNotEqual(joint_key, random_keypair_two.public_key)
+        self.assertIsNotNone(election_key)
+        self.assertNotEqual(election_key, random_keypair.public_key)
+        self.assertNotEqual(election_key, random_keypair_two.public_key)
 
     def test_gmpy2_parallelism_is_safe(self) -> None:
         """

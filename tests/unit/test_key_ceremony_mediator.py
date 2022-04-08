@@ -137,12 +137,12 @@ class TestKeyCeremonyMediator(BaseTestCase):
 
         # Act
         mediator.receive_backup_verifications([verification2])
-        joint_key = mediator.publish_election_key()
+        election_key = mediator.publish_election_key()
 
         # Assert
         self.assertTrue(mediator.get_verification_state().all_sent)
         self.assertTrue(mediator.all_backups_verified())
-        self.assertIsNotNone(joint_key)
+        self.assertIsNotNone(election_key)
 
     def test_partial_key_backup_verification_failure(self) -> None:
         """
@@ -185,11 +185,11 @@ class TestKeyCeremonyMediator(BaseTestCase):
         mediator.verify_challenge(challenge)
         new_state = mediator.get_verification_state()
         all_verified = mediator.all_backups_verified()
-        joint_key = mediator.publish_election_key()
+        election_key = mediator.publish_election_key()
 
         # Assert
         self.assertTrue(new_state.all_sent)
         self.assertTrue(new_state.all_verified)
         self.assertEqual(len(new_state.failed_verifications), 0)
         self.assertTrue(all_verified)
-        self.assertIsNotNone(joint_key)
+        self.assertIsNotNone(election_key)
