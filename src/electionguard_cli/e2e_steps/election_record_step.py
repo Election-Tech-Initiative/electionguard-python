@@ -1,5 +1,5 @@
 import click
-from electionguard_cli.cli_models.e2e_build_election_results import BuildElectionResults
+from electionguard_cli.cli_models import BuildElectionResults, E2eSubmitResults
 from electionguard_cli.cli_models.e2e_inputs import E2eInputs
 from electionguard_cli.e2e_steps.e2e_step_base import E2eStepBase
 from electionguard.constants import get_constants
@@ -17,7 +17,10 @@ class ElectionRecordStep(E2eStepBase):
     """Responsible for publishing an election record after an election has completed."""
 
     def run(
-        self, election_inputs: E2eInputs, build_election_results: BuildElectionResults
+        self,
+        election_inputs: E2eInputs,
+        build_election_results: BuildElectionResults,
+        submit_results: E2eSubmitResults,
     ) -> None:
         self.print_header("Election Record")
         click.echo(election_inputs.output_path)
@@ -33,8 +36,8 @@ class ElectionRecordStep(E2eStepBase):
         #     election_inputs.manifest,
         #     build_election_results.context,
         #     constants,
-        #     [device],
-        #     ballot_store.all(),
+        #     [submit_results.device],
+        #     submit_results.ballot_store.all(),
         #     plaintext_spoiled_ballots.values(),
         #     ciphertext_tally.publish(),
         #     plaintext_tally,

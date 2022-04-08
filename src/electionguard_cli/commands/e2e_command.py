@@ -70,15 +70,15 @@ def e2e(
     build_election_results = ElectionBuilderStep().build_election(
         election_inputs, joint_key
     )
-    ballot_store = SubmitVotesStep().submit_votes(
+    submit_results = SubmitVotesStep().submit_votes(
         election_inputs, build_election_results
     )
     decrypt_results = DecryptStep().decrypt_tally(
-        ballot_store, election_inputs.guardians, build_election_results
+        submit_results.data_store, election_inputs.guardians, build_election_results
     )
 
     # print results
     PrintResultsStep().print_election_results(election_inputs, decrypt_results)
 
     # publish election record
-    ElectionRecordStep().run(election_inputs, build_election_results)
+    ElectionRecordStep().run(election_inputs, build_election_results, submit_results)
