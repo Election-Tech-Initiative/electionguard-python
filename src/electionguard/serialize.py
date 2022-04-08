@@ -1,3 +1,4 @@
+from io import TextIOWrapper
 import json
 import os
 from pathlib import Path
@@ -49,6 +50,13 @@ def to_raw(data: Any) -> Any:
     return json.dumps(data, indent=_indent, default=pydantic_encoder)
 
 
+def from_file_wrapper(type_: Type[_T], file: TextIOWrapper) -> _T:
+    """Deserialize json file as type."""
+
+    data = json.load(file)
+    return parse_obj_as(type_, data)
+
+
 def from_file(type_: Type[_T], path: Union[str, Path]) -> _T:
     """Deserialize json file as type."""
 
@@ -65,6 +73,16 @@ def from_list_in_file(type_: Type[_T], path: Union[str, Path]) -> List[_T]:
         ls: List[_T] = []
         for item in data:
             ls.append(parse_obj_as(type_, item))
+    return ls
+
+
+def from_list_in_file_wrapper(type_: Type[_T], file: TextIOWrapper) -> List[_T]:
+    """Deserialize json file that has an array of certain type."""
+
+    data = json.load(file)
+    ls: List[_T] = []
+    for item in data:
+        ls.append(parse_obj_as(type_, item))
     return ls
 
 
