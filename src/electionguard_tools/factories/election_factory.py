@@ -18,8 +18,9 @@ from electionguard.ballot import PlaintextBallot
 from electionguard.constants import ElectionConstants, get_constants
 from electionguard.election import CiphertextElectionContext
 from electionguard.election_builder import ElectionBuilder
+from electionguard.elgamal import ElGamalPublicKey
 from electionguard.encrypt import EncryptionDevice, contest_from, generate_device_uuid
-from electionguard.group import ElementModP, TWO_MOD_Q
+from electionguard.group import TWO_MOD_Q
 from electionguard.guardian import Guardian, GuardianRecord
 from electionguard.key_ceremony import CeremonyDetails
 from electionguard.key_ceremony_mediator import KeyCeremonyMediator
@@ -229,7 +230,7 @@ class ElectionFactory:
 
     @staticmethod
     def get_fake_ciphertext_election(
-        manifest: Manifest, elgamal_public_key: ElementModP
+        manifest: Manifest, elgamal_public_key: ElGamalPublicKey
     ) -> Tuple[InternalManifest, CiphertextElectionContext]:
         """Get mock election."""
         builder = ElectionBuilder(number_of_guardians=1, quorum=1, manifest=manifest)

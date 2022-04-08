@@ -15,8 +15,8 @@ from .election_object_base import (
     OrderedObjectBase,
     sequence_order_sort,
 )
-from .elgamal import ElGamalCiphertext, elgamal_add
-from .group import add_q, ElementModP, ElementModQ, ZERO_MOD_Q
+from .elgamal import ElGamalCiphertext, ElGamalPublicKey, elgamal_add
+from .group import add_q, ElementModQ, ZERO_MOD_Q
 from .hash import CryptoHashCheckable, hash_elems
 from .logs import log_warning
 from .utils import to_ticks, flatmap_optional
@@ -177,7 +177,7 @@ class CiphertextBallotSelection(
     def is_valid_encryption(
         self,
         encryption_seed: ElementModQ,
-        elgamal_public_key: ElementModP,
+        elgamal_public_key: ElGamalPublicKey,
         crypto_extended_base_hash: ElementModQ,
     ) -> bool:
         """
@@ -246,7 +246,7 @@ def make_ciphertext_ballot_selection(
     sequence_order: int,
     description_hash: ElementModQ,
     ciphertext: ElGamalCiphertext,
-    elgamal_public_key: ElementModP,
+    elgamal_public_key: ElGamalPublicKey,
     crypto_extended_base_hash: ElementModQ,
     proof_seed: ElementModQ,
     selection_representation: int,
@@ -482,7 +482,7 @@ class CiphertextBallotContest(OrderedObjectBase, CryptoHashCheckable):
     def is_valid_encryption(
         self,
         encryption_seed: ElementModQ,
-        elgamal_public_key: ElementModP,
+        elgamal_public_key: ElGamalPublicKey,
         crypto_extended_base_hash: ElementModQ,
     ) -> bool:
         """
@@ -581,7 +581,7 @@ def make_ciphertext_ballot_contest(
     sequence_order: int,
     description_hash: ElementModQ,
     ballot_selections: List[CiphertextBallotSelection],
-    elgamal_public_key: ElementModP,
+    elgamal_public_key: ElGamalPublicKey,
     crypto_extended_base_hash: ElementModQ,
     proof_seed: ElementModQ,
     number_elected: int,
@@ -769,7 +769,7 @@ class CiphertextBallot(ElectionObjectBase, CryptoHashCheckable):
     def is_valid_encryption(
         self,
         encryption_seed: ElementModQ,
-        elgamal_public_key: ElementModP,
+        elgamal_public_key: ElGamalPublicKey,
         crypto_extended_base_hash: ElementModQ,
     ) -> bool:
         """

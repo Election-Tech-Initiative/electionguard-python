@@ -17,8 +17,8 @@ from .ballot import (
 
 from .ballot_code import get_hash_for_device
 from .election import CiphertextElectionContext
-from .elgamal import elgamal_encrypt
-from .group import ElementModP, ElementModQ, rand_q
+from .elgamal import ElGamalPublicKey, elgamal_encrypt
+from .group import ElementModQ, rand_q
 from .logs import log_info, log_warning
 from .manifest import (
     InternalManifest,
@@ -154,7 +154,7 @@ def contest_from(description: ContestDescription) -> PlaintextBallotContest:
 def encrypt_selection(
     selection: PlaintextBallotSelection,
     selection_description: SelectionDescription,
-    elgamal_public_key: ElementModP,
+    elgamal_public_key: ElGamalPublicKey,
     crypto_extended_base_hash: ElementModQ,
     nonce_seed: ElementModQ,
     is_placeholder: bool = False,
@@ -237,7 +237,7 @@ def encrypt_selection(
 def encrypt_contest(
     contest: PlaintextBallotContest,
     contest_description: ContestDescriptionWithPlaceholders,
-    elgamal_public_key: ElementModP,
+    elgamal_public_key: ElGamalPublicKey,
     crypto_extended_base_hash: ElementModQ,
     nonce_seed: ElementModQ,
     should_verify_proofs: bool = True,

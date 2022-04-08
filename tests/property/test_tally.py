@@ -4,6 +4,7 @@ from typing import Dict
 from hypothesis import given, HealthCheck, settings, Phase
 from hypothesis.strategies import integers
 
+
 from tests.base_test_case import BaseTestCase
 
 from electionguard.ballot import (
@@ -12,9 +13,9 @@ from electionguard.ballot import (
     from_ciphertext_ballot,
 )
 from electionguard.data_store import DataStore
-
+from electionguard.elgamal import ElGamalSecretKey
 from electionguard.encrypt import encrypt_ballot
-from electionguard.group import ElementModQ, ONE_MOD_Q
+from electionguard.group import ONE_MOD_Q
 from electionguard.tally import CiphertextTally, tally_ballots, tally_ballot
 
 
@@ -218,7 +219,7 @@ class TestTally(BaseTestCase):
 
     @staticmethod
     def _decrypt_with_secret(
-        tally: CiphertextTally, secret_key: ElementModQ
+        tally: CiphertextTally, secret_key: ElGamalSecretKey
     ) -> Dict[str, int]:
         """
         Demonstrates how to decrypt a tally with a known secret key

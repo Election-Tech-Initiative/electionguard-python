@@ -3,7 +3,7 @@ from typing import Dict, Optional, Tuple, Union
 
 from .chaum_pedersen import ChaumPedersenProof
 from .election_object_base import ElectionObjectBase
-from .elgamal import ElGamalCiphertext
+from .elgamal import ElGamalCiphertext, ElGamalPublicKey
 
 from .group import ElementModP, ElementModQ
 
@@ -90,7 +90,7 @@ class CiphertextDecryptionSelection(ElectionObjectBase):
     def is_valid(
         self,
         message: ElGamalCiphertext,
-        election_public_key: ElementModP,
+        election_public_key: ElGamalPublicKey,
         extended_base_hash: ElementModQ,
     ) -> bool:
         """
@@ -251,7 +251,7 @@ class DecryptionShare(ElectionObjectBase):
     The Available Guardian that this share belongs to
     """
 
-    public_key: ElementModP
+    public_key: ElGamalPublicKey
     """
     The election public key for the guardian
     """
@@ -279,7 +279,7 @@ class CompensatedDecryptionShare(ElectionObjectBase):
     The Missing Guardian for whom this share is calculated on behalf of
     """
 
-    public_key: ElementModP
+    public_key: ElGamalPublicKey
     """
     The election public key for the guardian
     """

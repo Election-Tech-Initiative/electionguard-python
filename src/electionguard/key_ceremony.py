@@ -10,9 +10,10 @@ from .election_polynomial import (
 )
 from .elgamal import (
     ElGamalKeyPair,
+    ElGamalPublicKey,
     elgamal_combine_public_keys,
 )
-from .group import ElementModP, ElementModQ
+from .group import ElementModQ
 from .hash import hash_elems
 from .schnorr import SchnorrProof
 from .type import (
@@ -36,7 +37,7 @@ class ElectionPublicKey:
     The sequence order of the owner guardian
     """
 
-    key: ElementModP
+    key: ElGamalPublicKey
     """
     The election public for the guardian
     Note: This is the same as the first coefficient commitment
@@ -94,7 +95,7 @@ class ElectionJointKey:
     The Election joint key
     """
 
-    joint_public_key: ElementModP
+    joint_public_key: ElGamalPublicKey
     """
     The product of the guardian public keys
     K = ∏ ni=1 Ki mod p.
