@@ -145,7 +145,7 @@ _last_names = [
 
 
 @composite
-def human_names(draw: _DrawType):
+def human_names(draw: _DrawType) -> str:
     """
     Generates a string with a human first and last name.
     :param draw: Hidden argument, used by Hypothesis.
@@ -157,7 +157,7 @@ def human_names(draw: _DrawType):
 
 
 @composite
-def election_types(draw: _DrawType):
+def election_types(draw: _DrawType) -> ElectionType:
     """
     Generates an `ElectionType`.
     :param draw: Hidden argument, used by Hypothesis.
@@ -167,7 +167,7 @@ def election_types(draw: _DrawType):
 
 
 @composite
-def reporting_unit_types(draw: _DrawType):
+def reporting_unit_types(draw: _DrawType) -> ReportingUnitType:
     """
     Generates a `ReportingUnitType` object.
     :param draw: Hidden argument, used by Hypothesis.
@@ -177,7 +177,7 @@ def reporting_unit_types(draw: _DrawType):
 
 
 @composite
-def contact_infos(draw: _DrawType):
+def contact_infos(draw: _DrawType) -> ContactInformation:
     """
     Generates a `ContactInformation` object.
     :param draw: Hidden argument, used by Hypothesis.
@@ -191,7 +191,7 @@ def contact_infos(draw: _DrawType):
 
 
 @composite
-def two_letter_codes(draw: _DrawType, min_size=2, max_size=2):
+def two_letter_codes(draw: _DrawType, min_size=2, max_size=2) -> _DrawType:
     """
     Generates a string with only a few characters, by default 2 letters
     from `a` to `z`, but configurable with the `min_size` and `max_size`
@@ -209,7 +209,7 @@ def two_letter_codes(draw: _DrawType, min_size=2, max_size=2):
 
 
 @composite
-def languages(draw: _DrawType):
+def languages(draw: _DrawType) -> Language:
     """
     Generates a `Language` object with an arbitrary two-letter string as the code and
     something messier for the text ostensibly written in that language.
@@ -219,7 +219,7 @@ def languages(draw: _DrawType):
 
 
 @composite
-def language_human_names(draw: _DrawType):
+def language_human_names(draw: _DrawType) -> Language:
     """
     Generates a `Language` object with an arbitrary two-letter string as the code and
     a human name for the text ostensibly written in that language.
@@ -229,7 +229,7 @@ def language_human_names(draw: _DrawType):
 
 
 @composite
-def internationalized_texts(draw: _DrawType):
+def internationalized_texts(draw: _DrawType) -> InternationalizedText:
     """
     Generates an `InternationalizedText` object with a list of `Language` objects
     within (representing a multilingual string).
@@ -239,7 +239,7 @@ def internationalized_texts(draw: _DrawType):
 
 
 @composite
-def internationalized_human_names(draw: _DrawType):
+def internationalized_human_names(draw: _DrawType) -> InternationalizedText:
     """
     Generates an `InternationalizedText` object with a list of `Language` objects
     within (representing a multilingual human name).
@@ -251,7 +251,7 @@ def internationalized_human_names(draw: _DrawType):
 
 
 @composite
-def annotated_strings(draw: _DrawType):
+def annotated_strings(draw: _DrawType) -> AnnotatedString:
     """
     Generates an `AnnotatedString` object with one `Language` and an associated
     `value` string.
@@ -263,7 +263,7 @@ def annotated_strings(draw: _DrawType):
 
 
 @composite
-def annotated_emails(draw: _DrawType):
+def annotated_emails(draw: _DrawType) -> AnnotatedString:
     """
     Generates a `Email` object with an arbitrary two-letter string as annotation and an
     email format string as value.
@@ -274,8 +274,8 @@ def annotated_emails(draw: _DrawType):
 
 @composite
 def ballot_styles(
-    draw: _DrawType, party_ids: List[Party], geo_units: List[GeopoliticalUnit]
-):
+    draw: _DrawType, party_ids: Optional[List[Party]], geo_units: List[GeopoliticalUnit]
+) -> BallotStyle:
     """
     Generates a `BallotStyle` object, which rolls up a list of parties and
     geopolitical units (passed as arguments), with some additional information
