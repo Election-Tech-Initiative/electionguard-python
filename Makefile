@@ -104,6 +104,20 @@ auto-lint:
 	poetry run black .
 	make lint
 	
+pylint:
+	@echo 💚 PYLINT
+	@echo Pylint
+	poetry run pylint ./src ./tests
+
+blackformat:
+	@echo 💚 blackformat
+	@echo Black Formatting
+	poetry run black --check .
+
+mypy:
+	@echo 💚 Mypy Static Typing
+	poetry run mypy src/electionguard src/electionguard_cli stubs
+
 validate: 
 	@echo ✅ VALIDATE
 	@poetry run python3 -c 'import electionguard; print(electionguard.__package__ + " successfully imported")'
