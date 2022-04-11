@@ -1,5 +1,6 @@
 import click
 from electionguard_cli.cli_models import BuildElectionResults, E2eSubmitResults
+from electionguard_cli.cli_models.e2e_decrypt_results import E2eDecryptResults
 from electionguard_cli.cli_models.e2e_inputs import E2eInputs
 from electionguard_cli.e2e_steps.e2e_step_base import E2eStepBase
 from electionguard.constants import get_constants
@@ -21,6 +22,7 @@ class ElectionRecordStep(E2eStepBase):
         election_inputs: E2eInputs,
         build_election_results: BuildElectionResults,
         submit_results: E2eSubmitResults,
+        decrypt_results: E2eDecryptResults,
     ) -> None:
         self.print_header("Election Record")
         click.echo(election_inputs.output_path)
@@ -32,18 +34,18 @@ class ElectionRecordStep(E2eStepBase):
         ]
 
         constants = get_constants()
-        # export_record(
-        #     election_inputs.manifest,
-        #     build_election_results.context,
-        #     constants,
-        #     [submit_results.device],
-        #     submit_results.ballot_store.all(),
-        #     plaintext_spoiled_ballots.values(),
-        #     ciphertext_tally.publish(),
-        #     plaintext_tally,
-        #     guardian_records,
-        #     lagrange_coefficients,
-        # )
+        export_record(
+            election_inputs.manifest,
+            build_election_results.context,
+            constants,
+            [submit_results.device],
+            submit_results.data_store.all(),
+            decrypt_results.plaintext_spoiled_ballots.values(),
+            decrypt_results.ciphertext_tally.publish(),
+            decrypt_results.plaintext_tally,
+            guardian_records,
+            decrypt_results.lagrange_coefficients,
+        )
         # self._assert_message(
         #     "Publish",
         #     f"Election Record published to: {ELECTION_RECORD_DIR}",

@@ -81,4 +81,6 @@ def e2e(
     PrintResultsStep().print_election_results(election_inputs, decrypt_results)
 
     # publish election record
-    ElectionRecordStep().run(election_inputs, build_election_results, submit_results)
+    ElectionRecordStep().run(
+        election_inputs, build_election_results, submit_results, decrypt_results
+    )
