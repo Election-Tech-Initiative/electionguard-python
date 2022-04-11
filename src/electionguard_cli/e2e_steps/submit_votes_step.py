@@ -35,7 +35,7 @@ class SubmitVotesStep(E2eStepBase):
         SubmitVotesStep._cast_and_spoil(
             ballot_store, internal_manifest, context, ciphertext_ballots, e2e_inputs
         )
-        return E2eSubmitResults(ballot_store, device)
+        return E2eSubmitResults(ballot_store, device, ciphertext_ballots)
 
     def _get_encrypter(
         self,
