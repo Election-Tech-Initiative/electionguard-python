@@ -46,7 +46,8 @@ from ..e2e_steps import (
 )
 @click.option(
     "--output-file",
-    help="A file name for saving an output election record (e.g. './election.zip'). If no value provided then an election record will not be generated.",
+    help="A file name for saving an output election record (e.g. './election.zip')."
+    + " If no value provided then an election record will not be generated.",
     type=click.Path(exists=False),
     default=None,
 )

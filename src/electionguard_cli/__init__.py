@@ -7,9 +7,11 @@ from electionguard_cli.cli_models import (
     BuildElectionResults,
     E2eDecryptResults,
     E2eInputs,
+    E2eSubmitResults,
     e2e_build_election_results,
     e2e_decrypt_results,
     e2e_inputs,
+    e2e_submit_results,
 )
 from electionguard_cli.commands import (
     e2e,
@@ -45,6 +47,7 @@ __all__ = [
     "E2eDecryptResults",
     "E2eInputs",
     "E2eStepBase",
+    "E2eSubmitResults",
     "ElectionBuilderStep",
     "ElectionRecordStep",
     "InputRetrievalStep",
@@ -62,6 +65,7 @@ __all__ = [
     "e2e_inputs",
     "e2e_step_base",
     "e2e_steps",
+    "e2e_submit_results",
     "election_builder_step",
     "election_record_step",
     "hello",

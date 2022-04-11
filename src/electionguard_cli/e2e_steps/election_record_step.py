@@ -1,7 +1,7 @@
 from shutil import make_archive
 from os.path import splitext
-import click
 import tempfile
+import click
 from electionguard_cli.cli_models import BuildElectionResults, E2eSubmitResults
 from electionguard_cli.cli_models.e2e_decrypt_results import E2eDecryptResults
 from electionguard_cli.cli_models.e2e_inputs import E2eInputs
