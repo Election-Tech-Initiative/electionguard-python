@@ -15,7 +15,7 @@ class E2eInputs:
         manifest: Manifest,
         ballots: List[PlaintextBallot],
         spoil_id: str,
-        output_path: str,
+        output_file: str,
     ):
         self.guardian_count = guardian_count
         self.quorum = quorum
@@ -23,7 +23,7 @@ class E2eInputs:
         self.manifest = manifest
         self.ballots = ballots
         self.spoil_id = spoil_id
-        self.output_path = output_path
+        self.output_file = output_file
 
     guardian_count: int
     quorum: int
@@ -31,4 +31,4 @@ class E2eInputs:
     manifest: Manifest
     ballots: List[PlaintextBallot]
     spoil_id: str
-    output_path: str
+    output_file: str

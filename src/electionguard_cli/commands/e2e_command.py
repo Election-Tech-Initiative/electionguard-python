@@ -45,9 +45,9 @@ from ..e2e_steps import (
     prompt_required=False,
 )
 @click.option(
-    "--output-path",
-    help="An optional directory in which to place the output election record. If no value provied then an election record will not be generated.",
-    type=click.Path(exists=True, file_okay=False, writable=True, dir_okay=True),
+    "--output-file",
+    help="A file name for saving an output election record (e.g. './election.zip'). If no value provided then an election record will not be generated.",
+    type=click.Path(exists=False),
     default=None,
 )
 def e2e(
@@ -56,13 +56,13 @@ def e2e(
     manifest: TextIOWrapper,
     ballots: TextIOWrapper,
     spoil_id: str,
-    output_path: str,
+    output_file: str,
 ) -> None:
     """Runs through an end-to-end election."""
 
     # get user inputs
     election_inputs = InputRetrievalStep().get_inputs(
-        guardian_count, quorum, manifest, ballots, spoil_id, output_path
+        guardian_count, quorum, manifest, ballots, spoil_id, output_file
     )
 
     # perform election
