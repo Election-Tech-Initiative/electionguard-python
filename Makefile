@@ -82,11 +82,11 @@ endif
 lint:
 	@echo 💚 LINT
 	@echo 1.Pylint
-	poetry run pylint ./src ./tests
+	make pylint
 	@echo 2.Black Formatting
-	poetry run black --check .
+	make blackcheck
 	@echo 3.Mypy Static Typing
-	poetry run mypy src/electionguard src/electionguard_cli stubs
+	make mypy
 	@echo 4.Package Metadata
 	poetry build
 	poetry run twine check dist/*
@@ -101,9 +101,21 @@ auto-lint:
 	poetry run mkinit src/electionguard_verify --write --black
 	poetry run mkinit src/electionguard_cli --write --recursive --black
 	@echo Reformatting using Black
-	poetry run black .
+	make blackformat
 	make lint
 	
+pylint:
+	poetry run pylint ./src ./tests
+
+blackformat:
+	poetry run black .
+
+blackcheck:
+	poetry run black --check .
+
+mypy:
+	poetry run mypy src/electionguard src/electionguard_cli stubs
+
 validate: 
 	@echo ✅ VALIDATE
 	@poetry run python3 -c 'import electionguard; print(electionguard.__package__ + " successfully imported")'
