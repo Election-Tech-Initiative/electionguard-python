@@ -1,7 +1,7 @@
 from shutil import make_archive
 from os.path import splitext
-import tempfile
-import click
+from tempfile import TemporaryDirectory
+from click import echo
 from electionguard_cli.cli_models import BuildElectionResults, E2eSubmitResults
 from electionguard_cli.cli_models.e2e_decrypt_results import E2eDecryptResults
 from electionguard_cli.cli_models.e2e_inputs import E2eInputs
@@ -14,9 +14,7 @@ from electionguard_tools.helpers.export import export_record
 class ElectionRecordStep(E2eStepBase):
     """Responsible for publishing an election record after an election has completed."""
 
-    REMOVE_RAW_OUTPUT = True
-    REMOVE_ZIP_OUTPUT = True
-    COMPRESSION_FORMAT = "zip"
+    _COMPRESSION_FORMAT = "zip"
 
     def run(
         self,
@@ -31,7 +29,7 @@ class ElectionRecordStep(E2eStepBase):
             guardian.publish() for guardian in election_inputs.guardians
         ]
         constants = get_constants()
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with TemporaryDirectory() as temp_dir:
             export_record(
                 election_inputs.manifest,
                 build_election_results.context,
@@ -46,7 +44,7 @@ class ElectionRecordStep(E2eStepBase):
                 election_record_directory=temp_dir,
             )
             file_name = splitext(election_inputs.output_file)[0]
-            make_archive(file_name, self.COMPRESSION_FORMAT, temp_dir)
-            click.echo(
+            make_archive(file_name, self._COMPRESSION_FORMAT, temp_dir)
+            echo(
                 f"Successfully exported election record to '{election_inputs.output_file}'"
             )
