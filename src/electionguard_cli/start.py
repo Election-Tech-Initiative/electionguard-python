@@ -1,5 +1,5 @@
 import click
-from electionguard_cli.commands import e2e, hello
+from electionguard_cli.commands import e2e, hello, import_ballots
 
 
 @click.group()
@@ -9,3 +9,4 @@ def cli() -> None:
 
 cli.add_command(hello)
 cli.add_command(e2e)
+cli.add_command(import_ballots)
