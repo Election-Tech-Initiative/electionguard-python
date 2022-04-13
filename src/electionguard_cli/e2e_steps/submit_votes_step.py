@@ -28,12 +28,11 @@ class SubmitVotesStep(E2eStepBase):
         ballots = e2e_inputs.ballots
         internal_manifest = build_election_results.internal_manifest
         context = build_election_results.context
-        ballot_store: DataStore = DataStore()
         (ciphertext_ballots, device) = self._encrypt_votes(
             ballots, internal_manifest, context
         )
-        SubmitVotesStep._cast_and_spoil(
-            ballot_store, internal_manifest, context, ciphertext_ballots, e2e_inputs
+        ballot_store = SubmitVotesStep._cast_and_spoil(
+            internal_manifest, context, ciphertext_ballots, e2e_inputs
         )
         return E2eSubmitResults(ballot_store, device, ciphertext_ballots)
 
@@ -73,12 +72,12 @@ class SubmitVotesStep(E2eStepBase):
 
     @staticmethod
     def _cast_and_spoil(
-        ballot_store: DataStore,
         internal_manifest: InternalManifest,
         context: CiphertextElectionContext,
         ciphertext_ballots: List[CiphertextBallot],
         e2e_inputs: E2eInputs,
-    ) -> None:
+    ) -> DataStore:
+        ballot_store: DataStore = DataStore()
         ballot_box = BallotBox(internal_manifest, context, ballot_store)
 
         for ballot in ciphertext_ballots:
@@ -91,3 +90,4 @@ class SubmitVotesStep(E2eStepBase):
             click.echo(
                 f"Submitted Ballot Id: {ballot.object_id} state: {get_optional(submitted_ballot).state}"
             )
+        return ballot_store
