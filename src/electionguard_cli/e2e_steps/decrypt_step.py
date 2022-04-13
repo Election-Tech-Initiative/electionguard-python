@@ -18,14 +18,15 @@ from .e2e_step_base import E2eStepBase
 class DecryptStep(E2eStepBase):
     """Responsible for decrypting a tally and/or cast ballots"""
 
-    def _print_lagrange_coefficients(
+    def _get_lagrange_coefficients(
         self, decryption_mediator: DecryptionMediator
-    ) -> None:
+    ) -> LagrangeCoefficientsRecord:
         lagrange_coefficients = LagrangeCoefficientsRecord(
             decryption_mediator.get_lagrange_coefficients()
         )
         coefficient_count = len(lagrange_coefficients.coefficients)
         self.print_value("Lagrange coefficients retrieved", coefficient_count)
+        return lagrange_coefficients
 
     def decrypt_tally(
         self,
@@ -35,33 +36,40 @@ class DecryptStep(E2eStepBase):
     ) -> E2eDecryptResults:
         self.print_header("Decrypting tally")
 
-        tally = _get_tally(ballot_store, build_election_results)
+        ciphertext_tally = _get_tally(ballot_store, build_election_results)
         spoiled_ballots = _get_spoiled_ballots(ballot_store)
         decryption_mediator = _get_decryption_mediator(build_election_results)
         context = build_election_results.context
 
-        self.print_value("Cast ballots", tally.cast())
-        self.print_value("Spoiled ballots", tally.spoiled())
-        self.print_value("Total ballots", len(tally))
+        self.print_value("Cast ballots", ciphertext_tally.cast())
+        self.print_value("Spoiled ballots", ciphertext_tally.spoiled())
+        self.print_value("Total ballots", len(ciphertext_tally))
 
         count = 0
         for guardian in guardians:
             guardian_key = guardian.share_key()
-            tally_share = _compute_tally_share(guardian, tally, context)
+            tally_share = _compute_tally_share(guardian, ciphertext_tally, context)
             ballot_shares = guardian.compute_ballot_shares(spoiled_ballots, context)
             decryption_mediator.announce(guardian_key, tally_share, ballot_shares)
             count += 1
             click.echo(f"Guardian Present: {guardian.id}")
 
-        self._print_lagrange_coefficients(decryption_mediator)
+        lagrange_coefficients = self._get_lagrange_coefficients(decryption_mediator)
 
-        plaintext_tally = get_optional(decryption_mediator.get_plaintext_tally(tally))
+        plaintext_tally = get_optional(
+            decryption_mediator.get_plaintext_tally(ciphertext_tally)
+        )
 
         plaintext_spoiled_ballots = get_optional(
             decryption_mediator.get_plaintext_ballots(spoiled_ballots)
         )
 
-        return E2eDecryptResults(plaintext_tally, plaintext_spoiled_ballots)
+        return E2eDecryptResults(
+            plaintext_tally,
+            plaintext_spoiled_ballots,
+            ciphertext_tally,
+            lagrange_coefficients,
+        )
 
 
 def _compute_tally_share(
