@@ -20,7 +20,9 @@ from electionguard_cli.e2e_steps.election_record_step import (
     ElectionRecordStep,
 )
 from electionguard_cli.e2e_steps.input_retrieval_step import (
-    InputRetrievalStep,
+    E2eInputRetrievalStep,
+    ImportBallotsInputRetrievalStep,
+    InputRetrievalStepBase,
 )
 from electionguard_cli.e2e_steps.key_ceremony_step import (
     KeyCeremonyStep,
@@ -34,10 +36,12 @@ from electionguard_cli.e2e_steps.submit_votes_step import (
 
 __all__ = [
     "DecryptStep",
+    "E2eInputRetrievalStep",
     "E2eStepBase",
     "ElectionBuilderStep",
     "ElectionRecordStep",
-    "InputRetrievalStep",
+    "ImportBallotsInputRetrievalStep",
+    "InputRetrievalStepBase",
     "KeyCeremonyStep",
     "PrintResultsStep",
     "SubmitVotesStep",

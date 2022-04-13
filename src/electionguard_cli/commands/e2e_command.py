@@ -6,7 +6,7 @@ from ..e2e_steps import (
     SubmitVotesStep,
     DecryptStep,
     PrintResultsStep,
-    InputRetrievalStep,
+    E2eInputRetrievalStep,
     ElectionRecordStep,
 )
 
@@ -62,7 +62,7 @@ def e2e(
     """Runs through an end-to-end election."""
 
     # get user inputs
-    election_inputs = InputRetrievalStep().get_inputs(
+    election_inputs = E2eInputRetrievalStep().get_inputs(
         guardian_count, quorum, manifest, ballots, spoil_id, output_file
     )
 

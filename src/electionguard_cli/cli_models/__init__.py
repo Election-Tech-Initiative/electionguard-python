@@ -11,6 +11,7 @@ from electionguard_cli.cli_models.e2e_decrypt_results import (
 )
 from electionguard_cli.cli_models.e2e_inputs import (
     E2eInputs,
+    ImportBallotInputs,
 )
 from electionguard_cli.cli_models.e2e_submit_results import (
     E2eSubmitResults,
@@ -21,6 +22,7 @@ __all__ = [
     "E2eDecryptResults",
     "E2eInputs",
     "E2eSubmitResults",
+    "ImportBallotInputs",
     "e2e_build_election_results",
     "e2e_decrypt_results",
     "e2e_inputs",

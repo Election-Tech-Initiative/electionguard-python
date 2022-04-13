@@ -16,7 +16,7 @@ __all__ = [
     "e2e",
     "e2e_command",
     "hello",
-    "import_ballots",
     "hello_command",
+    "import_ballots",
     "import_ballots_command",
 ]

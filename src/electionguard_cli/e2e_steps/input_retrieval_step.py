@@ -6,40 +6,22 @@ from electionguard.guardian import Guardian
 from electionguard.manifest import InternationalizedText, Manifest
 from electionguard.serialize import from_file_wrapper, from_list_in_file_wrapper
 
-from ..cli_models.e2e_inputs import E2eInputs
+from ..cli_models.e2e_inputs import E2eInputs, ImportBallotInputs
 from .e2e_step_base import E2eStepBase
 
 
-class InputRetrievalStep(E2eStepBase):
-    """Responsible for retrieving and displaying user provided inputs."""
+class InputRetrievalStepBase(E2eStepBase):
+    """A common base class for all CLI commands that accept user input"""
 
-    def get_inputs(
-        self,
-        guardian_count: int,
-        quorum: int,
-        manifest_file: TextIOWrapper,
-        ballots_file: TextIOWrapper,
-        spoil_id: str,
-        output_file: str,
-    ) -> E2eInputs:
-        self.print_header("Retrieving Inputs")
-        guardians = InputRetrievalStep._get_guardians(guardian_count, quorum)
-        manifest: Manifest = self._get_manifest(manifest_file)
-        ballots = InputRetrievalStep._get_ballots(ballots_file)
-        self.print_value("Guardians", guardian_count)
-        self.print_value("Quorum", quorum)
-        return E2eInputs(
-            guardian_count, quorum, guardians, manifest, ballots, spoil_id, output_file
-        )
+    def _get_manifest(self, manifest_file: TextIOWrapper) -> Manifest:
+        self.print_header("Retrieving manifest")
+        manifest: Manifest = from_file_wrapper(Manifest, manifest_file)
+        if not manifest.is_valid():
+            raise ValueError("manifest file is invalid")
+        self.__print_manifest(manifest)
+        return manifest
 
-    @staticmethod
-    def _get_ballots(ballots_file: TextIOWrapper) -> List[PlaintextBallot]:
-        ballots: List[PlaintextBallot] = from_list_in_file_wrapper(
-            PlaintextBallot, ballots_file
-        )
-        return ballots
-
-    def print_manifest(self, manifest: Manifest) -> None:
+    def __print_manifest(self, manifest: Manifest) -> None:
         def get_first_value(text: Optional[InternationalizedText]) -> str:
             return "" if text is None else text.text[0].value
 
@@ -51,14 +33,6 @@ class InputRetrievalStep(E2eStepBase):
         self.print_value("Candidates", len(manifest.candidates))
         self.print_value("Contests", len(manifest.contests))
         self.print_value("Ballot Styles", len(manifest.ballot_styles))
-
-    def _get_manifest(self, manifest_file: TextIOWrapper) -> Manifest:
-        self.print_header("Retrieving manifest")
-        manifest: Manifest = from_file_wrapper(Manifest, manifest_file)
-        if not manifest.is_valid():
-            raise ValueError("manifest file is invalid")
-        self.print_manifest(manifest)
-        return manifest
 
     @staticmethod
     def _get_guardians(number_of_guardians: int, quorum: int) -> List[Guardian]:
@@ -73,3 +47,55 @@ class InputRetrievalStep(E2eStepBase):
                 )
             )
         return guardians
+
+
+class ImportBallotsInputRetrievalStep(InputRetrievalStepBase):
+    """Responsible for retrieving and parsing user provided inputs for the CLI's import ballots command."""
+
+    def get_inputs(
+        self,
+        guardian_count: int,
+        quorum: int,
+        manifest_file: TextIOWrapper,
+        ballots_dir: str,
+    ) -> ImportBallotInputs:
+        self.print_header("Retrieving Inputs")
+        guardians = InputRetrievalStepBase._get_guardians(guardian_count, quorum)
+        manifest: Manifest = self._get_manifest(manifest_file)
+        self.print_value("Guardians", guardian_count)
+        self.print_value("Quorum", quorum)
+
+        # todo: instead of printing import ballots from ballots dir
+        self.print_value("Ballots Dir", ballots_dir)
+
+        return ImportBallotInputs(guardian_count, quorum, guardians, manifest)
+
+
+class E2eInputRetrievalStep(InputRetrievalStepBase):
+    """Responsible for retrieving and parsing user provided inputs for the CLI's e2e command."""
+
+    def get_inputs(
+        self,
+        guardian_count: int,
+        quorum: int,
+        manifest_file: TextIOWrapper,
+        ballots_file: TextIOWrapper,
+        spoil_id: str,
+        output_file: str,
+    ) -> E2eInputs:
+        self.print_header("Retrieving Inputs")
+        guardians = InputRetrievalStepBase._get_guardians(guardian_count, quorum)
+        manifest: Manifest = self._get_manifest(manifest_file)
+        ballots = E2eInputRetrievalStep._get_ballots(ballots_file)
+        self.print_value("Guardians", guardian_count)
+        self.print_value("Quorum", quorum)
+        return E2eInputs(
+            guardian_count, quorum, guardians, manifest, ballots, spoil_id, output_file
+        )
+
+    @staticmethod
+    def _get_ballots(ballots_file: TextIOWrapper) -> List[PlaintextBallot]:
+        ballots: List[PlaintextBallot] = from_list_in_file_wrapper(
+            PlaintextBallot, ballots_file
+        )
+        return ballots

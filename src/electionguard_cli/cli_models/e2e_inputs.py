@@ -4,8 +4,29 @@ from electionguard.guardian import Guardian
 from electionguard.manifest import Manifest
 
 
+class ImportBallotInputs:
+    """Responsible for holding the inputs for the CLI's import ballots command"""
+
+    def __init__(
+        self,
+        guardian_count: int,
+        quorum: int,
+        guardians: List[Guardian],
+        manifest: Manifest,
+    ):
+        self.guardian_count = guardian_count
+        self.quorum = quorum
+        self.guardians = guardians
+        self.manifest = manifest
+
+    guardian_count: int
+    quorum: int
+    guardians: List[Guardian]
+    manifest: Manifest
+
+
 class E2eInputs:
-    """Responsible for holding the inputs to an end-to-end election."""
+    """Responsible for holding the inputs for the CLI's e2e command."""
 
     def __init__(
         self,
