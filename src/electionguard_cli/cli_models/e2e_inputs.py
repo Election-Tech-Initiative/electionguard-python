@@ -1,10 +1,20 @@
+from abc import ABC
 from typing import List
-from electionguard.ballot import PlaintextBallot
+from electionguard.ballot import PlaintextBallot, SubmittedBallot
 from electionguard.guardian import Guardian
 from electionguard.manifest import Manifest
 
 
-class ImportBallotInputs:
+class CliElectionInputsBase(ABC):
+    """Responsible for holding inputs common to all CLI election commands"""
+
+    guardian_count: int
+    quorum: int
+    manifest: Manifest
+    guardians: List[Guardian]
+
+
+class ImportBallotInputs(CliElectionInputsBase):
     """Responsible for holding the inputs for the CLI's import ballots command"""
 
     def __init__(
@@ -13,19 +23,18 @@ class ImportBallotInputs:
         quorum: int,
         guardians: List[Guardian],
         manifest: Manifest,
+        submitted_ballots: List[SubmittedBallot],
     ):
         self.guardian_count = guardian_count
         self.quorum = quorum
         self.guardians = guardians
         self.manifest = manifest
+        self.submitted_ballots = submitted_ballots
 
-    guardian_count: int
-    quorum: int
-    guardians: List[Guardian]
-    manifest: Manifest
+    submitted_ballots: List[SubmittedBallot]
 
 
-class E2eInputs:
+class E2eInputs(CliElectionInputsBase):
     """Responsible for holding the inputs for the CLI's e2e command."""
 
     def __init__(
@@ -46,10 +55,6 @@ class E2eInputs:
         self.spoil_id = spoil_id
         self.output_file = output_file
 
-    guardian_count: int
-    quorum: int
-    guardians: List[Guardian]
-    manifest: Manifest
     ballots: List[PlaintextBallot]
     spoil_id: str
     output_file: str

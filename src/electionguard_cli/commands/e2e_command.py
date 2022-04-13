@@ -67,7 +67,7 @@ def e2e(
     )
 
     # perform election
-    joint_key = KeyCeremonyStep().run_key_ceremony(election_inputs)
+    joint_key = KeyCeremonyStep().run_key_ceremony(election_inputs.guardians)
     build_election_results = ElectionBuilderStep().build_election(
         election_inputs, joint_key
     )

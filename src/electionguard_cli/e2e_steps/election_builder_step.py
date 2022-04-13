@@ -1,8 +1,9 @@
 from electionguard.key_ceremony import ElectionJointKey
 from electionguard.election_builder import ElectionBuilder
 from electionguard.utils import get_optional
+from electionguard_cli.cli_models.e2e_inputs import CliElectionInputsBase
 
-from ..cli_models import E2eInputs, BuildElectionResults
+from ..cli_models import BuildElectionResults
 from .e2e_step_base import E2eStepBase
 
 
@@ -11,7 +12,7 @@ class ElectionBuilderStep(E2eStepBase):
 
     def build_election(
         self,
-        election_inputs: E2eInputs,
+        election_inputs: CliElectionInputsBase,
         joint_key: ElectionJointKey,
     ) -> BuildElectionResults:
         self.print_header("Building election")

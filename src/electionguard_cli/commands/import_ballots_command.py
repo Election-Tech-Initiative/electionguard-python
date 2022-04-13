@@ -1,17 +1,20 @@
 from io import TextIOWrapper
-from typing import List
 import click
-from electionguard.data_store import DataStore
-from electionguard.guardian import Guardian
-from electionguard.manifest import InternalManifest, Manifest
-from electionguard_cli.cli_models import BuildElectionResults
-from electionguard_cli.e2e_steps.election_builder_step import ElectionBuilderStep
-from electionguard_cli.e2e_steps.input_retrieval_step import (
-    ImportBallotsInputRetrievalStep,
-)
+from electionguard.ballot import BallotBoxState
+from electionguard.ballot_box import BallotBox
 
+from electionguard.data_store import DataStore
+from electionguard_cli.cli_models.e2e_build_election_results import BuildElectionResults
+from electionguard_cli.cli_models.e2e_inputs import ImportBallotInputs
+from ..e2e_steps import (
+    ElectionBuilderStep,
+    KeyCeremonyStep,
+)
 from ..e2e_steps import (
     DecryptStep,
+)
+from electionguard_cli.e2e_steps.input_retrieval_step import (
+    ImportBallotsInputRetrievalStep,
 )
 
 
@@ -52,16 +55,33 @@ def import_ballots(
         guardian_count, quorum, manifest, ballots_dir
     )
 
-    # data_store: DataStore = DataStore()
-    # # todo: read all files in ballots and add them to data_store
-
-    # guardians: List[Guardian] = []
-    # # todo: add guardians
-
-    # ElectionBuilderStep().build_election()
-
-    # build_election_results = BuildElectionResults(internal_manifest, context)
-    # decrypt_results = DecryptStep().decrypt_tally(
-    #     data_store, guardians, build_election_results
-    # )
+    # perform election
+    joint_key = KeyCeremonyStep().run_key_ceremony(election_inputs.guardians)
+    build_election_results = ElectionBuilderStep().build_election(
+        election_inputs, joint_key
+    )
+    ballot_store = _read_ballots(election_inputs, build_election_results)
+    decrypt_results = DecryptStep().decrypt_tally(
+        ballot_store, election_inputs.guardians, build_election_results
+    )
     # click.echo(decrypt_results.plaintext_tally)
+
+
+def _read_ballots(
+    election_inputs: ImportBallotInputs, build_election_results: BuildElectionResults
+) -> DataStore:
+    ballot_store: DataStore = DataStore()
+    ballot_box = BallotBox(
+        build_election_results.internal_manifest,
+        build_election_results.context,
+        ballot_store,
+    )
+    for ballot in election_inputs.submitted_ballots:
+        spoil = ballot.state == BallotBoxState.SPOILED
+        if spoil:
+            ballot_box.spoil(ballot)
+        else:
+            ballot_box.cast(ballot)
+
+        click.echo(f"Submitted Ballot Id: {ballot.object_id} state: {ballot.state}")
+    return ballot_store
