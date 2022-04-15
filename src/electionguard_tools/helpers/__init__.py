@@ -3,6 +3,12 @@ from electionguard_tools.helpers import key_ceremony_orchestrator
 from electionguard_tools.helpers import tally_accumulate
 from electionguard_tools.helpers import tally_ceremony_orchestrator
 
+"""
+    `ElectionBuilder` is a stateful builder object that constructs `CiphertextElectionContext` objects
+    following the initialization process that ElectionGuard Expects.
+    SUGGESTION Perhaps move to test package.
+    """
+
 from electionguard_tools.helpers.export import (
     CIPHERTEXT_BALLOT_PREFIX,
     COEFFICIENTS_FILE_NAME,

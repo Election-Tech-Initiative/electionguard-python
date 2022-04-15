@@ -13,12 +13,7 @@ from .utils import get_optional
 
 @dataclass
 class ElectionBuilder:
-    """
-    `ElectionBuilder` is a stateful builder object that constructs `CiphertextElectionContext` objects
-    following the initialization process that ElectionGuard Expects.
-    SUGGESTION Perhaps move to test package.
-    """
-
+    
     number_of_guardians: int
     """
     The number of guardians necessary to generate the public key
