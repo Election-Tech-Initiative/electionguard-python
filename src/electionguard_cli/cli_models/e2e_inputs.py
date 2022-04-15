@@ -1,6 +1,7 @@
 from abc import ABC
 from typing import List
 from electionguard.ballot import PlaintextBallot, SubmittedBallot
+from electionguard.election import CiphertextElectionContext
 from electionguard.guardian import Guardian
 from electionguard.manifest import Manifest
 
@@ -24,14 +25,17 @@ class ImportBallotInputs(CliElectionInputsBase):
         guardians: List[Guardian],
         manifest: Manifest,
         submitted_ballots: List[SubmittedBallot],
+        context: CiphertextElectionContext,
     ):
         self.guardian_count = guardian_count
         self.quorum = quorum
         self.guardians = guardians
         self.manifest = manifest
         self.submitted_ballots = submitted_ballots
+        self.context = context
 
     submitted_ballots: List[SubmittedBallot]
+    context: CiphertextElectionContext
 
 
 class E2eInputs(CliElectionInputsBase):

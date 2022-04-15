@@ -3,6 +3,7 @@ from os import listdir
 from os.path import join
 from typing import List, Optional
 from click import echo
+from electionguard import CiphertextElectionContext
 
 from electionguard.ballot import PlaintextBallot, SubmittedBallot
 from electionguard.guardian import Guardian
@@ -72,13 +73,19 @@ class ImportBallotsInputRetrievalStep(InputRetrievalStepBase):
         self.print_value("Guardians", guardian_count)
         self.print_value("Quorum", quorum)
         submitted_ballots = ImportBallotsInputRetrievalStep._get_ballots(ballots_dir)
+        context = self._get_context()
 
         # todo: instead of printing import ballots from ballots dir
         self.print_value("Ballots Dir", ballots_dir)
 
         return ImportBallotInputs(
-            guardian_count, quorum, guardians, manifest, submitted_ballots
+            guardian_count, quorum, guardians, manifest, submitted_ballots, context
         )
+
+    @staticmethod
+    def _get_context() -> CiphertextElectionContext:
+        # todo: parameterize
+        return from_file(CiphertextElectionContext, "data/simple/context.json")
 
     @staticmethod
     def _get_ballots(ballots_dir: str) -> List[SubmittedBallot]:

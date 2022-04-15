@@ -257,4 +257,4 @@ eg-e2e-simple-election:
 	poetry run eg e2e --guardian-count=2 --quorum=2 --manifest=data/election_manifest_simple.json --ballots=data/plaintext_ballots_simple.json --spoil-id=25a7111b-4334-425a-87c1-f7a49f42b3a2 --output-file="./election_record.zip"
 
 eg-import-simple-election:
-	poetry run eg import-ballots --guardian-count=2 --quorum=2 --manifest=data/election_manifest_simple.json --ballots-dir=data/simple
+	poetry run eg import-ballots --guardian-count=2 --quorum=2 --manifest=data/simple/manifest.json --ballots-dir=data/simple/ballots
