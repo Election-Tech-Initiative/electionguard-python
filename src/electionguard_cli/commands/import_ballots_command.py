@@ -1,21 +1,19 @@
 from io import TextIOWrapper
+from typing import List, Tuple
 import click
-from electionguard.ballot import BallotBoxState
-from electionguard.ballot_box import BallotBox
+from electionguard.ballot import BallotBoxState, SubmittedBallot
 
-from electionguard.data_store import DataStore
 from electionguard.election import CiphertextElectionContext, Configuration
 from electionguard.election_builder import ElectionBuilder
 from electionguard.elgamal import ElGamalPublicKey
-from electionguard.group import ElementModP, ElementModQ, hex_to_p, hex_to_q
-from electionguard.key_ceremony import ElectionJointKey
+from electionguard.group import ElementModQ
+from electionguard.scheduler import Scheduler
+from electionguard.tally import CiphertextTally
 from electionguard.utils import get_optional
 from ..cli_models import BuildElectionResults, ImportBallotInputs
 from ..e2e_steps import (
     DecryptStep,
-    ElectionBuilderStep,
     ImportBallotsInputRetrievalStep,
-    KeyCeremonyStep,
 )
 
 
@@ -58,13 +56,19 @@ def import_ballots(
 
     # perform election
     build_election_results = _make_election_results(election_inputs)
-    ballot_store = _read_ballots(election_inputs, build_election_results)
+    (ciphertext_tally, spoiled_ballots) = _create_tally(
+        election_inputs, build_election_results
+    )
     decrypt_results = DecryptStep().decrypt_tally(
-        ballot_store, election_inputs.guardians, build_election_results
+        ciphertext_tally,
+        spoiled_ballots,
+        election_inputs.guardians,
+        build_election_results,
     )
     click.echo(decrypt_results.plaintext_tally)
 
 
+# todo: convert into a step
 def _make_election_results(election_inputs: ImportBallotInputs) -> BuildElectionResults:
     election_builder = ElectionBuilder(
         election_inputs.guardian_count,
@@ -109,21 +113,23 @@ def _get_context() -> CiphertextElectionContext:
     )
 
 
-def _read_ballots(
+# todo: make this into a step
+def _create_tally(
     election_inputs: ImportBallotInputs, build_election_results: BuildElectionResults
-) -> DataStore:
-    ballot_store: DataStore = DataStore()
-    ballot_box = BallotBox(
+) -> Tuple[CiphertextTally, List[SubmittedBallot]]:
+    tally = CiphertextTally(
+        "object_id",
         build_election_results.internal_manifest,
         build_election_results.context,
-        ballot_store,
     )
-    for ballot in election_inputs.submitted_ballots:
-        spoil = ballot.state == BallotBoxState.SPOILED
-        if spoil:
-            ballot_box.spoil(ballot)
-        else:
-            ballot_box.cast(ballot)
+    ballots = [(None, b) for b in election_inputs.submitted_ballots]
+    with Scheduler() as scheduler:
+        tally.batch_append(ballots, scheduler)
 
-        click.echo(f"Submitted Ballot Id: {ballot.object_id} state: {ballot.state}")
-    return ballot_store
+    spoiled_ballots = [
+        b
+        for b in election_inputs.submitted_ballots
+        if b.state == BallotBoxState.SPOILED
+    ]
+
+    return (tally, spoiled_ballots)

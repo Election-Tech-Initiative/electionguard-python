@@ -74,7 +74,7 @@ def e2e(
     submit_results = SubmitVotesStep().submit_votes(
         election_inputs, build_election_results
     )
-    decrypt_results = DecryptStep().decrypt_tally(
+    decrypt_results = DecryptStep().decrypt_ballot_store(
         submit_results.data_store, election_inputs.guardians, build_election_results
     )
 
