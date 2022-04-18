@@ -1,5 +1,5 @@
-from pydantic.dataclasses import dataclass
 from typing import Any, Iterable, Optional, Union
+from pydantic.dataclasses import dataclass
 
 
 from .discrete_log import DiscreteLog
