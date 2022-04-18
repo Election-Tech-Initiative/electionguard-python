@@ -1,12 +1,15 @@
 from io import TextIOWrapper
 import click
+
+from electionguard_cli.e2e_steps.e2e.e2e_input_retrieval_step import (
+    E2eInputRetrievalStep,
+)
 from ..e2e_steps import (
     ElectionBuilderStep,
     KeyCeremonyStep,
     SubmitVotesStep,
     DecryptStep,
     PrintResultsStep,
-    E2eInputRetrievalStep,
     ElectionRecordStep,
 )
 
