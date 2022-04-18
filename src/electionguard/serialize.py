@@ -4,21 +4,8 @@ import os
 from pathlib import Path
 from typing import Any, List, Type, TypeVar, Union
 
-from pydantic import BaseModel, PrivateAttr
 from pydantic.json import pydantic_encoder
 from pydantic.tools import parse_raw_as, parse_obj_as, schema_json_of
-
-Private = PrivateAttr
-
-
-class Serializable(BaseModel):
-    """Serializable data object intended for exporting and importing"""
-
-    class Config:
-        """Model config to handle private properties"""
-
-        underscore_attrs_are_private = True
-
 
 _T = TypeVar("_T")
 

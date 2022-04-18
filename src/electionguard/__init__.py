@@ -338,8 +338,6 @@ from electionguard.schnorr import (
     make_schnorr_proof,
 )
 from electionguard.serialize import (
-    Private,
-    Serializable,
     construct_path,
     from_file,
     from_file_wrapper,
@@ -486,7 +484,6 @@ __all__ = [
     "PlaintextTallyContest",
     "PlaintextTallySelection",
     "PrimeOption",
-    "Private",
     "PrivateGuardianRecord",
     "Proof",
     "ProofOrRecovery",
@@ -504,7 +501,6 @@ __all__ = [
     "SecretCoefficient",
     "SelectionDescription",
     "SelectionId",
-    "Serializable",
     "Singleton",
     "SubmittedBallot",
     "VerifierId",
