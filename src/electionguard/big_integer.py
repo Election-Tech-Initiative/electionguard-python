@@ -12,10 +12,13 @@ def _hex_to_int(input: str) -> int:
 
 def _int_to_hex(input: int) -> str:
     """Given an int, returns a hex string representing bytes."""
+
+    def pad_hex(hex: str) -> str:
+        """Pad hex to ensure 2 digit hexadecimal format maintained."""
+        return "0" + hex if len(hex) % 2 else hex
+
     hex = format(input, "02X")
-    if len(hex) % 2:
-        hex = "0" + hex
-    return hex
+    return pad_hex(hex)
 
 
 _zero = mpz(0)
