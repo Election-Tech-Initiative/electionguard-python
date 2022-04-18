@@ -39,6 +39,7 @@ gmpy2 = "^2.0.8"
 psutil = ">=5.7.2"
 pydantic = "1.9.0"
 click = "^8.1.0"
+dacite = "^1.6.0"
 
 [tool.poetry.dev-dependencies]
 atomicwrites = "*"
