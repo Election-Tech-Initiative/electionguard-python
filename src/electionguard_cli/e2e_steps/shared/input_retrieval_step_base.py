@@ -1,5 +1,6 @@
 from io import TextIOWrapper
 from typing import List, Optional
+from electionguard.group import ElementModQ
 
 from electionguard.guardian import Guardian
 from electionguard.manifest import InternationalizedText, Manifest
@@ -38,11 +39,6 @@ class InputRetrievalStepBase(E2eStepBase):
         guardians: List[Guardian] = []
         for i in range(number_of_guardians):
             guardians.append(
-                Guardian.from_nonce(
-                    str(i + 1),
-                    i + 1,
-                    number_of_guardians,
-                    quorum,
-                )
+                Guardian.from_nonce(str(i + 1), i + 1, number_of_guardians, quorum)
             )
         return guardians
