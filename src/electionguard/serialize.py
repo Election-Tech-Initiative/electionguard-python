@@ -1,30 +1,38 @@
+from datetime import datetime
 from io import TextIOWrapper
 import json
 import os
 from pathlib import Path
 from typing import Any, List, Type, TypeVar, Union
 
-from pydantic import BaseModel, PrivateAttr
+from dacite import Config, from_dict
 from pydantic.json import pydantic_encoder
-from pydantic.tools import parse_raw_as, parse_obj_as, schema_json_of
+from pydantic.tools import parse_raw_as, schema_json_of
 
-Private = PrivateAttr
-
-
-class Serializable(BaseModel):
-    """Serializable data object intended for exporting and importing"""
-
-    class Config:
-        """Model config to handle private properties"""
-
-        underscore_attrs_are_private = True
-
+from .ballot_box import BallotBoxState
+from .manifest import ElectionType, ReportingUnitType, VoteVariationType
+from .group import ElementModP, ElementModQ
+from .proof import ProofUsage
 
 _T = TypeVar("_T")
 
 _indent = 2
 _encoding = "utf-8"
 _file_extension = "json"
+
+_config = Config(
+    cast=[
+        datetime,
+        ElementModP,
+        ElementModQ,
+        BallotBoxState,
+        ElectionType,
+        ReportingUnitType,
+        VoteVariationType,
+        ProofUsage,
+    ],
+    type_hooks={datetime: datetime.fromisoformat},
+)
 
 
 def construct_path(
@@ -54,7 +62,7 @@ def from_file_wrapper(type_: Type[_T], file: TextIOWrapper) -> _T:
     """Deserialize json file as type."""
 
     data = json.load(file)
-    return parse_obj_as(type_, data)
+    return from_dict(type_, data, _config)
 
 
 def from_file(type_: Type[_T], path: Union[str, Path]) -> _T:
@@ -62,7 +70,7 @@ def from_file(type_: Type[_T], path: Union[str, Path]) -> _T:
 
     with open(path, "r", encoding=_encoding) as json_file:
         data = json.load(json_file)
-    return parse_obj_as(type_, data)
+    return from_dict(type_, data, _config)
 
 
 def from_list_in_file(type_: Type[_T], path: Union[str, Path]) -> List[_T]:
@@ -72,7 +80,7 @@ def from_list_in_file(type_: Type[_T], path: Union[str, Path]) -> List[_T]:
         data = json.load(json_file)
         ls: List[_T] = []
         for item in data:
-            ls.append(parse_obj_as(type_, item))
+            ls.append(from_dict(type_, item, _config))
     return ls
 
 
@@ -82,7 +90,7 @@ def from_list_in_file_wrapper(type_: Type[_T], file: TextIOWrapper) -> List[_T]:
     data = json.load(file)
     ls: List[_T] = []
     for item in data:
-        ls.append(parse_obj_as(type_, item))
+        ls.append(from_dict(type_, item, _config))
     return ls
 
 

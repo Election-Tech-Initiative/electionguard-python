@@ -6,6 +6,7 @@ from electionguard import ballot_box
 from electionguard import ballot_code
 from electionguard import ballot_compact
 from electionguard import ballot_validator
+from electionguard import big_integer
 from electionguard import chaum_pedersen
 from electionguard import constants
 from electionguard import data_store
@@ -82,6 +83,9 @@ from electionguard.ballot_validator import (
     ballot_is_valid_for_style,
     contest_is_valid_for_style,
     selection_is_valid_for_style,
+)
+from electionguard.big_integer import (
+    BigInteger,
 )
 from electionguard.chaum_pedersen import (
     ChaumPedersenProof,
@@ -231,10 +235,8 @@ from electionguard.group import (
     div_p,
     div_q,
     g_pow_p,
-    hex_to_int,
     hex_to_p,
     hex_to_q,
-    int_to_hex,
     int_to_p,
     int_to_q,
     mult_inv_p,
@@ -336,8 +338,6 @@ from electionguard.schnorr import (
     make_schnorr_proof,
 )
 from electionguard.serialize import (
-    Private,
-    Serializable,
     construct_path,
     from_file,
     from_file_wrapper,
@@ -390,6 +390,7 @@ __all__ = [
     "BallotId",
     "BallotStyle",
     "BaseElement",
+    "BigInteger",
     "Candidate",
     "CandidateContestDescription",
     "CeremonyDetails",
@@ -483,7 +484,6 @@ __all__ = [
     "PlaintextTallyContest",
     "PlaintextTallySelection",
     "PrimeOption",
-    "Private",
     "PrivateGuardianRecord",
     "Proof",
     "ProofOrRecovery",
@@ -501,7 +501,6 @@ __all__ = [
     "SecretCoefficient",
     "SelectionDescription",
     "SelectionId",
-    "Serializable",
     "Singleton",
     "SubmittedBallot",
     "VerifierId",
@@ -518,6 +517,7 @@ __all__ = [
     "ballot_is_valid_for_election",
     "ballot_is_valid_for_style",
     "ballot_validator",
+    "big_integer",
     "chaum_pedersen",
     "combine_election_public_keys",
     "compensate_decrypt",
@@ -620,11 +620,9 @@ __all__ = [
     "hash",
     "hash_elems",
     "hashed_elgamal_encrypt",
-    "hex_to_int",
     "hex_to_p",
     "hex_to_q",
     "hmac",
-    "int_to_hex",
     "int_to_p",
     "int_to_q",
     "key_ceremony",
