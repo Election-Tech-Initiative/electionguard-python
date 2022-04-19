@@ -9,6 +9,7 @@ from dacite import Config, from_dict
 from pydantic.json import pydantic_encoder
 from pydantic.tools import parse_raw_as, schema_json_of
 
+from .big_integer import BigInteger
 from .ballot_box import BallotBoxState
 from .manifest import ElectionType, ReportingUnitType, VoteVariationType
 from .group import ElementModP, ElementModQ
@@ -23,6 +24,7 @@ _file_extension = "json"
 _config = Config(
     cast=[
         datetime,
+        BigInteger,
         ElementModP,
         ElementModQ,
         BallotBoxState,
