@@ -1,5 +1,6 @@
+from dataclasses import dataclass as basedataclass
 from typing import Any, Iterable, Optional, Union
-from pydantic.dataclasses import dataclass
+from pydantic.dataclasses import dataclass as pydanticdataclass
 
 
 from .discrete_log import DiscreteLog
@@ -27,19 +28,17 @@ _MAC_KEY_SIZE = 256
 _BLOCK_SIZE = 32
 
 
-@dataclass
+@pydanticdataclass
+@basedataclass
 class ElGamalKeyPair:
     """A tuple of an ElGamal secret key and public key."""
-
-    def __init__(self, secret_key: ElGamalSecretKey, public_key: ElGamalPublicKey):
-        self.secret_key = secret_key
-        self.public_key = public_key
 
     secret_key: ElGamalSecretKey
     public_key: ElGamalPublicKey
 
 
-@dataclass
+@pydanticdataclass
+@basedataclass
 class ElGamalCiphertext:
     """
     An "exponential ElGamal ciphertext" (i.e., with the plaintext in the exponent to allow for
@@ -52,10 +51,6 @@ class ElGamalCiphertext:
 
     data: ElementModP
     """encrypted data or beta"""
-
-    def __init__(self, pad: ElementModP, data: ElementModP):
-        self.pad = pad
-        self.data = data
 
     def __eq__(self, other: Any) -> bool:
         if isinstance(other, ElGamalCiphertext):
@@ -110,7 +105,8 @@ class ElGamalCiphertext:
         return hash_elems(self.pad, self.data)
 
 
-@dataclass
+@pydanticdataclass
+@basedataclass
 class HashedElGamalCiphertext:
     """
     A hashed version of ElGamal Ciphertext with less size restrictions.
@@ -126,11 +122,6 @@ class HashedElGamalCiphertext:
 
     mac: ElementModQ
     """message authentication code for hmac"""
-
-    def __init__(self, pad: ElementModP, data: bytes, mac: ElementModQ):
-        self.pad = pad
-        self.data = data
-        self.mac = mac
 
     def decrypt(
         self, secret_key: ElGamalSecretKey, encryption_seed: ElementModQ
@@ -296,8 +287,8 @@ def elgamal_add(*ciphertexts: ElGamalCiphertext) -> ElGamalCiphertext:
 
     result = ciphertexts[0]
     for c in ciphertexts[1:]:
-        result = ElGamalCiphertext(
-            mult_p(result.pad, c.pad), mult_p(result.data, c.data)
-        )
+        pad: ElementModP = mult_p(result.pad, c.pad)
+        data: ElementModP = mult_p(result.data, c.data)
+        result = ElGamalCiphertext(pad, data)
 
     return result
