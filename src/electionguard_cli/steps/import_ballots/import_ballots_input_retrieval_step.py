@@ -10,7 +10,9 @@ from electionguard.manifest import Manifest
 from electionguard.serialize import (
     from_file,
 )
-from electionguard_cli.cli_models.e2e_inputs import ImportBallotInputs
+from electionguard_cli.cli_models.import_ballots.import_ballot_inputs import (
+    ImportBallotInputs,
+)
 from electionguard_cli.steps.shared.input_retrieval_step_base import (
     InputRetrievalStepBase,
 )

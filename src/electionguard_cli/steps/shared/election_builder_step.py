@@ -1,7 +1,7 @@
 from electionguard.key_ceremony import ElectionJointKey
 from electionguard.election_builder import ElectionBuilder
 from electionguard.utils import get_optional
-from electionguard_cli.cli_models.e2e_inputs import CliElectionInputsBase
+from electionguard_cli.cli_models.e2e.e2e_inputs import CliElectionInputsBase
 
 from electionguard_cli.cli_models import BuildElectionResults
 from .cli_step_base import CliStepBase

@@ -6,7 +6,7 @@ from electionguard.manifest import Manifest
 from electionguard.serialize import (
     from_list_in_file_wrapper,
 )
-from electionguard_cli.cli_models.e2e_inputs import E2eInputs
+from electionguard_cli.cli_models.e2e.e2e_inputs import E2eInputs
 from electionguard_cli.steps.shared.input_retrieval_step_base import (
     InputRetrievalStepBase,
 )

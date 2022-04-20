@@ -8,11 +8,14 @@ from electionguard.scheduler import Scheduler
 from electionguard.manifest import InternalManifest
 from electionguard.tally import CiphertextTally
 
+from electionguard_cli.cli_models.import_ballots.import_ballot_inputs import (
+    ImportBallotInputs,
+)
+from ..cli_models import BuildElectionResults
+from ..steps.shared import DecryptStep, PrintResultsStep
 from ..steps.import_ballots import (
     ImportBallotsInputRetrievalStep,
 )
-from ..cli_models import BuildElectionResults, ImportBallotInputs
-from ..steps.shared import DecryptStep, PrintResultsStep
 
 
 @click.command()
