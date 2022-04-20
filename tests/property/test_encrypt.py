@@ -79,7 +79,7 @@ class TestEncrypt(BaseTestCase):
 
         # Act
         result = encrypt_selection(
-            subject, metadata, keypair.public_key, ONE_MOD_Q, nonce
+            subject, metadata, keypair.public_key, ONE_MOD_Q, nonce, should_verify_proofs=True
         )
 
         # Assert
@@ -153,7 +153,7 @@ class TestEncrypt(BaseTestCase):
 
         # Act
         result = encrypt_selection(
-            subject, description, keypair.public_key, ONE_MOD_Q, seed
+            subject, description, keypair.public_key, ONE_MOD_Q, seed, should_verify_proofs=True
         )
 
         # Assert
@@ -280,7 +280,7 @@ class TestEncrypt(BaseTestCase):
 
         # Act
         result = encrypt_contest(
-            subject, metadata, keypair.public_key, ONE_MOD_Q, nonce
+            subject, metadata, keypair.public_key, ONE_MOD_Q, nonce, should_verify_proofs=True
         )
 
         # Assert
@@ -315,7 +315,7 @@ class TestEncrypt(BaseTestCase):
 
         # Act
         result = encrypt_contest(
-            subject, description, keypair.public_key, ONE_MOD_Q, nonce_seed
+            subject, description, keypair.public_key, ONE_MOD_Q, nonce_seed, should_verify_proofs=True
         )
 
         # Assert
@@ -547,7 +547,7 @@ class TestEncrypt(BaseTestCase):
         # Act
         result = encrypt_ballot(subject, internal_manifest, context, SEED)
         result_from_seed = encrypt_ballot(
-            subject, internal_manifest, context, SEED, nonce_seed
+            subject, internal_manifest, context, SEED, nonce_seed, should_verify_proofs=True
         )
 
         # Assert
@@ -639,7 +639,7 @@ class TestEncrypt(BaseTestCase):
         # Act
 
         ciphertext = encrypt_ballot(
-            ballot, internal_manifest, context, device.get_hash(), TWO_MOD_Q
+            ballot, internal_manifest, context, device.get_hash(), TWO_MOD_Q, should_verify_proofs=True
         )
 
         # Assert
