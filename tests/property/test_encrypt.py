@@ -335,7 +335,7 @@ class TestEncrypt(BaseTestCase):
             keypair.public_key,
             ONE_MOD_Q,
             nonce_seed,
-            should_verify_proofs=True
+            should_verify_proofs=True,
         )
 
         # Assert
