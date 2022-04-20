@@ -71,7 +71,6 @@ class DecryptStep(E2eStepBase):
         click.echo("Retrieving lagrange_coefficients")
         lagrange_coefficients = self._get_lagrange_coefficients(decryption_mediator)
 
-        click.echo("get_plaintext_tally")
         plaintext_tally = get_optional(
             decryption_mediator.get_plaintext_tally(ciphertext_tally)
         )

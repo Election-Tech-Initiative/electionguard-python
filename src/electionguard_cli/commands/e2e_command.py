@@ -82,7 +82,7 @@ def e2e(
     )
 
     # print results
-    PrintResultsStep().print_election_results(election_inputs, decrypt_results)
+    PrintResultsStep().print_election_results(decrypt_results)
 
     # publish election record
     ElectionRecordStep().run(

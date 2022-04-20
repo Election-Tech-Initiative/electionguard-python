@@ -4,14 +4,14 @@ import click
 from electionguard.ballot import BallotBoxState, SubmittedBallot
 
 from electionguard.election_builder import ElectionBuilder
-from electionguard.manifest import InternalManifest
 from electionguard.scheduler import Scheduler
+from electionguard.manifest import InternalManifest
 from electionguard.tally import CiphertextTally
 from ..e2e_steps.import_ballots.import_ballots_input_retrieval_step import (
     ImportBallotsInputRetrievalStep,
 )
 from ..cli_models import BuildElectionResults, ImportBallotInputs
-from ..e2e_steps import DecryptStep
+from ..e2e_steps import DecryptStep, PrintResultsStep
 
 
 @click.command()
@@ -62,7 +62,9 @@ def import_ballots(
         election_inputs.guardians,
         build_election_results,
     )
-    click.echo(decrypt_results.plaintext_tally)
+
+    # print results
+    PrintResultsStep().print_election_results(decrypt_results)
 
 
 # todo: convert into a step
