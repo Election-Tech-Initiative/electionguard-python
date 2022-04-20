@@ -15,8 +15,8 @@ from electionguard_tools.factories.election_factory import (
     ElectionFactory,
 )
 
+from electionguard_cli.cli_models.e2e.e2e_inputs import E2eInputs
 from electionguard_cli.cli_models import (
-    E2eInputs,
     BuildElectionResults,
     E2eSubmitResults,
 )

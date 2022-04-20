@@ -22,7 +22,7 @@ class E2eInputRetrievalStep(InputRetrievalStepBase):
         manifest_file: TextIOWrapper,
         ballots_file: TextIOWrapper,
         spoil_id: str,
-        output_file: str,
+        output_record: str,
         output_keys: str,
     ) -> E2eInputs:
         self.print_header("Retrieving Inputs")
@@ -38,7 +38,7 @@ class E2eInputRetrievalStep(InputRetrievalStepBase):
             manifest,
             ballots,
             spoil_id,
-            output_file,
+            output_record,
             output_keys,
         )
 

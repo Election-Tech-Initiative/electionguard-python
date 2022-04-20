@@ -58,7 +58,7 @@ from ..steps.shared import (
     "--output-keys",
     help="A file name for saving the private and public guardian keys (e.g. './guardian-keys.json')."
     + " If no value provided then no keys will be output.",
-    type=click.Path(exists=False),
+    type=click.Path(exists=False, resolve_path=True),
     default=None,
 )
 def e2e(
@@ -93,6 +93,6 @@ def e2e(
     PrintResultsStep().print_election_results(decrypt_results)
 
     # publish election record
-    ElectionRecordStep().run(
+    ElectionRecordStep().export(
         election_inputs, build_election_results, submit_results, decrypt_results
     )

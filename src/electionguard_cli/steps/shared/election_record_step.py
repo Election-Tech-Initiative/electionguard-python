@@ -1,7 +1,8 @@
 from shutil import make_archive
-from os.path import splitext
+from os.path import splitext, dirname
 from tempfile import TemporaryDirectory
 from click import echo
+from electionguard import to_file
 from electionguard_cli.cli_models import BuildElectionResults, E2eSubmitResults
 from electionguard_cli.cli_models.e2e_decrypt_results import E2eDecryptResults
 from electionguard_cli.cli_models.e2e.e2e_inputs import E2eInputs
@@ -17,7 +18,7 @@ class ElectionRecordStep(CliStepBase):
 
     _COMPRESSION_FORMAT = "zip"
 
-    def run(
+    def export(
         self,
         election_inputs: E2eInputs,
         build_election_results: BuildElectionResults,
@@ -26,6 +27,19 @@ class ElectionRecordStep(CliStepBase):
     ) -> None:
 
         self.print_header("Election Record")
+
+        self._export_election_record(
+            election_inputs, build_election_results, submit_results, decrypt_results
+        )
+        ElectionRecordStep._export_private_keys(election_inputs)
+
+    def _export_election_record(
+        self,
+        election_inputs: E2eInputs,
+        build_election_results: BuildElectionResults,
+        submit_results: E2eSubmitResults,
+        decrypt_results: E2eDecryptResults,
+    ) -> None:
         guardian_records = [
             guardian.publish() for guardian in election_inputs.guardians
         ]
@@ -46,6 +60,19 @@ class ElectionRecordStep(CliStepBase):
             )
             file_name = splitext(election_inputs.output_record)[0]
             make_archive(file_name, self._COMPRESSION_FORMAT, temp_dir)
-            echo(
-                f"Successfully exported election record to '{election_inputs.output_record}'"
-            )
+            echo(f"Exported election record to '{election_inputs.output_record}'")
+
+    @staticmethod
+    def _export_private_keys(election_inputs: E2eInputs) -> None:
+        if election_inputs.output_keys is None:
+            return
+
+        echo("getting private records")
+
+        private_guardian_records = [
+            guardian.export_private_data() for guardian in election_inputs.guardians
+        ]
+        file_name = splitext(election_inputs.output_keys)[0]
+        file_path = dirname(election_inputs.output_keys)
+        to_file(private_guardian_records, file_name, file_path)
+        echo(f"Exported private guardian keys to '{election_inputs.output_keys}'")
