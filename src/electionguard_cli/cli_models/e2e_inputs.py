@@ -49,7 +49,8 @@ class E2eInputs(CliElectionInputsBase):
         manifest: Manifest,
         ballots: List[PlaintextBallot],
         spoil_id: str,
-        output_file: str,
+        output_record: str,
+        output_keys: str
     ):
         self.guardian_count = guardian_count
         self.quorum = quorum
@@ -57,8 +58,10 @@ class E2eInputs(CliElectionInputsBase):
         self.manifest = manifest
         self.ballots = ballots
         self.spoil_id = spoil_id
-        self.output_file = output_file
+        self.output_record = output_record
+        self.output_keys = output_keys
 
     ballots: List[PlaintextBallot]
     spoil_id: str
-    output_file: str
+    output_record: str
+    output_keys: str

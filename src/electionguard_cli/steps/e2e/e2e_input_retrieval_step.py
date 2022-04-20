@@ -23,6 +23,7 @@ class E2eInputRetrievalStep(InputRetrievalStepBase):
         ballots_file: TextIOWrapper,
         spoil_id: str,
         output_file: str,
+        output_keys: str,
     ) -> E2eInputs:
         self.print_header("Retrieving Inputs")
         guardians = InputRetrievalStepBase._get_guardians(guardian_count, quorum)
@@ -31,7 +32,14 @@ class E2eInputRetrievalStep(InputRetrievalStepBase):
         self.print_value("Guardians", guardian_count)
         self.print_value("Quorum", quorum)
         return E2eInputs(
-            guardian_count, quorum, guardians, manifest, ballots, spoil_id, output_file
+            guardian_count,
+            quorum,
+            guardians,
+            manifest,
+            ballots,
+            spoil_id,
+            output_file,
+            output_keys,
         )
 
     @staticmethod

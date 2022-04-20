@@ -48,9 +48,16 @@ from ..steps.shared import (
     prompt_required=False,
 )
 @click.option(
-    "--output-file",
+    "--output-record",
     help="A file name for saving an output election record (e.g. './election.zip')."
     + " If no value provided then an election record will not be generated.",
+    type=click.Path(exists=False),
+    default=None,
+)
+@click.option(
+    "--output-keys",
+    help="A file name for saving the private and public guardian keys (e.g. './guardian-keys.json')."
+    + " If no value provided then no keys will be output.",
     type=click.Path(exists=False),
     default=None,
 )
@@ -60,13 +67,14 @@ def e2e(
     manifest: TextIOWrapper,
     ballots: TextIOWrapper,
     spoil_id: str,
-    output_file: str,
+    output_record: str,
+    output_keys: str,
 ) -> None:
     """Runs through an end-to-end election."""
 
     # get user inputs
     election_inputs = E2eInputRetrievalStep().get_inputs(
-        guardian_count, quorum, manifest, ballots, spoil_id, output_file
+        guardian_count, quorum, manifest, ballots, spoil_id, output_record, output_keys
     )
 
     # perform election

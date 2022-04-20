@@ -44,8 +44,8 @@ class ElectionRecordStep(CliStepBase):
                 decrypt_results.lagrange_coefficients,
                 election_record_directory=temp_dir,
             )
-            file_name = splitext(election_inputs.output_file)[0]
+            file_name = splitext(election_inputs.output_record)[0]
             make_archive(file_name, self._COMPRESSION_FORMAT, temp_dir)
             echo(
-                f"Successfully exported election record to '{election_inputs.output_file}'"
+                f"Successfully exported election record to '{election_inputs.output_record}'"
             )
