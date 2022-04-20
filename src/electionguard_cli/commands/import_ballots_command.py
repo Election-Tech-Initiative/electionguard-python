@@ -20,18 +20,6 @@ from ..steps.import_ballots import (
 
 @click.command()
 @click.option(
-    "--guardian-count",
-    prompt="Number of guardians",
-    help="The number of guardians that will participate in the key ceremony and tally.",
-    type=click.INT,
-)
-@click.option(
-    "--quorum",
-    prompt="Quorum",
-    help="The minimum number of guardians required to show up to the tally.",
-    type=click.INT,
-)
-@click.option(
     "--manifest",
     prompt="Manifest file",
     help="The location of an election manifest.",
@@ -43,16 +31,14 @@ from ..steps.import_ballots import (
     help="The location of a file that contains plaintext ballots.",
     type=click.Path(exists=True, dir_okay=True, file_okay=False, resolve_path=True),
 )
-def import_ballots(
-    guardian_count: int, quorum: int, manifest: TextIOWrapper, ballots_dir: str
-) -> None:
+def import_ballots(manifest: TextIOWrapper, ballots_dir: str) -> None:
     """
     Imports ballots
     """
 
     # get user inputs
     election_inputs = ImportBallotsInputRetrievalStep().get_inputs(
-        guardian_count, quorum, manifest, ballots_dir
+        manifest, ballots_dir
     )
 
     # perform election

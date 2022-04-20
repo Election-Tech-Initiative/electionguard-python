@@ -23,25 +23,21 @@ class ImportBallotsInputRetrievalStep(InputRetrievalStepBase):
 
     def get_inputs(
         self,
-        guardian_count: int,
-        quorum: int,
         manifest_file: TextIOWrapper,
         ballots_dir: str,
     ) -> ImportBallotInputs:
         self.print_header("Retrieving Inputs")
-        guardians = InputRetrievalStepBase._get_guardians(guardian_count, quorum)
         manifest: Manifest = self._get_manifest(manifest_file)
-        self.print_value("Guardians", guardian_count)
-        self.print_value("Quorum", quorum)
-        submitted_ballots = ImportBallotsInputRetrievalStep._get_ballots(ballots_dir)
         context = self._get_context()
+        guardians = InputRetrievalStepBase._get_guardians(
+            context.number_of_guardians, context.quorum
+        )
+        submitted_ballots = ImportBallotsInputRetrievalStep._get_ballots(ballots_dir)
 
         # todo: instead of printing import ballots from ballots dir
         self.print_value("Ballots Dir", ballots_dir)
 
-        return ImportBallotInputs(
-            guardian_count, quorum, guardians, manifest, submitted_ballots, context
-        )
+        return ImportBallotInputs(guardians, manifest, submitted_ballots, context)
 
     @staticmethod
     def _get_context() -> CiphertextElectionContext:

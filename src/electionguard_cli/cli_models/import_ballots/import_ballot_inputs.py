@@ -11,15 +11,13 @@ class ImportBallotInputs(CliElectionInputsBase):
 
     def __init__(
         self,
-        guardian_count: int,
-        quorum: int,
         guardians: List[Guardian],
         manifest: Manifest,
         submitted_ballots: List[SubmittedBallot],
         context: CiphertextElectionContext,
     ):
-        self.guardian_count = guardian_count
-        self.quorum = quorum
+        self.guardian_count = context.number_of_guardians
+        self.quorum = context.quorum
         self.guardians = guardians
         self.manifest = manifest
         self.submitted_ballots = submitted_ballots
