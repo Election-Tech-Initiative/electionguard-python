@@ -7,10 +7,11 @@ from electionguard.manifest import InternationalizedText, Manifest
 from electionguard.serialize import (
     from_file_wrapper,
 )
-from electionguard_cli.e2e_steps.e2e_step_base import E2eStepBase
+
+from .cli_step_base import CliStepBase
 
 
-class InputRetrievalStepBase(E2eStepBase):
+class InputRetrievalStepBase(CliStepBase):
     """A common base class for all CLI commands that accept user input"""
 
     def _get_manifest(self, manifest_file: TextIOWrapper) -> Manifest:

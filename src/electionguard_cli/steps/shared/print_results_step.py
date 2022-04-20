@@ -1,19 +1,15 @@
 from typing import Dict
 import click
-from electionguard_cli.cli_models import E2eDecryptResults
 from electionguard.type import BallotId
 from electionguard.tally import (
     PlaintextTally,
 )
-from electionguard_cli.e2e_steps.shared.input_retrieval_step_base import (
-    InputRetrievalStepBase,
-)
 
-from ..cli_models import E2eDecryptResults, E2eInputs
-from .e2e_step_base import E2eStepBase
+from electionguard_cli.cli_models import E2eDecryptResults
+from .cli_step_base import CliStepBase
 
 
-class PrintResultsStep(E2eStepBase):
+class PrintResultsStep(CliStepBase):
     """Responsible for printing the results of an end-to-end election."""
 
     def _print_tally(self, plaintext_tally: PlaintextTally) -> None:

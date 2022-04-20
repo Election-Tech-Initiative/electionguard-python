@@ -15,11 +15,15 @@ from electionguard_tools.factories.election_factory import (
     ElectionFactory,
 )
 
-from ..cli_models import E2eInputs, BuildElectionResults, E2eSubmitResults
-from .e2e_step_base import E2eStepBase
+from electionguard_cli.cli_models import (
+    E2eInputs,
+    BuildElectionResults,
+    E2eSubmitResults,
+)
+from ..shared import CliStepBase
 
 
-class SubmitVotesStep(E2eStepBase):
+class SubmitVotesStep(CliStepBase):
     """Responsible for encrypting votes and storing them in a ballot store."""
 
     def submit_votes(

@@ -5,13 +5,14 @@ from click import echo
 from electionguard_cli.cli_models import BuildElectionResults, E2eSubmitResults
 from electionguard_cli.cli_models.e2e_decrypt_results import E2eDecryptResults
 from electionguard_cli.cli_models.e2e_inputs import E2eInputs
-from electionguard_cli.e2e_steps.e2e_step_base import E2eStepBase
 from electionguard.constants import get_constants
 
 from electionguard_tools.helpers.export import export_record
 
+from .cli_step_base import CliStepBase
 
-class ElectionRecordStep(E2eStepBase):
+
+class ElectionRecordStep(CliStepBase):
     """Responsible for publishing an election record after an election has completed."""
 
     _COMPRESSION_FORMAT = "zip"

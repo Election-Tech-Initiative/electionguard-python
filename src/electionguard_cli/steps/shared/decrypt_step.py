@@ -11,10 +11,10 @@ from electionguard.ballot import BallotBoxState, SubmittedBallot
 from electionguard.tally import CiphertextTally, tally_ballots
 from electionguard.decryption_mediator import DecryptionMediator
 from electionguard.election_polynomial import LagrangeCoefficientsRecord
-from .e2e_step_base import E2eStepBase
+from .cli_step_base import CliStepBase
 
 
-class DecryptStep(E2eStepBase):
+class DecryptStep(CliStepBase):
     """Responsible for decrypting a tally and/or cast ballots"""
 
     def _get_lagrange_coefficients(

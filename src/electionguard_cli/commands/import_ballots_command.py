@@ -7,11 +7,12 @@ from electionguard.election_builder import ElectionBuilder
 from electionguard.scheduler import Scheduler
 from electionguard.manifest import InternalManifest
 from electionguard.tally import CiphertextTally
-from ..e2e_steps.import_ballots.import_ballots_input_retrieval_step import (
+
+from ..steps.import_ballots import (
     ImportBallotsInputRetrievalStep,
 )
 from ..cli_models import BuildElectionResults, ImportBallotInputs
-from ..e2e_steps import DecryptStep, PrintResultsStep
+from ..steps.shared import DecryptStep, PrintResultsStep
 
 
 @click.command()

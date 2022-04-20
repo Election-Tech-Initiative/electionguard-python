@@ -3,11 +3,11 @@ from electionguard.election_builder import ElectionBuilder
 from electionguard.utils import get_optional
 from electionguard_cli.cli_models.e2e_inputs import CliElectionInputsBase
 
-from ..cli_models import BuildElectionResults
-from .e2e_step_base import E2eStepBase
+from electionguard_cli.cli_models import BuildElectionResults
+from .cli_step_base import CliStepBase
 
 
-class ElectionBuilderStep(E2eStepBase):
+class ElectionBuilderStep(CliStepBase):
     """Responsible for creating a manifest and context for use in an election."""
 
     def build_election(

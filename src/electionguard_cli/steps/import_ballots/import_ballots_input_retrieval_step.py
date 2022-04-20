@@ -11,7 +11,7 @@ from electionguard.serialize import (
     from_file,
 )
 from electionguard_cli.cli_models.e2e_inputs import ImportBallotInputs
-from electionguard_cli.e2e_steps.shared.input_retrieval_step_base import (
+from electionguard_cli.steps.shared.input_retrieval_step_base import (
     InputRetrievalStepBase,
 )
 

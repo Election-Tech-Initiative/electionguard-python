@@ -9,10 +9,10 @@ from electionguard_tools.helpers.key_ceremony_orchestrator import (
     KeyCeremonyOrchestrator,
 )
 
-from .e2e_step_base import E2eStepBase
+from ..shared.cli_step_base import CliStepBase
 
 
-class KeyCeremonyStep(E2eStepBase):
+class KeyCeremonyStep(CliStepBase):
     """Responsible for running a key ceremony and producing an elgamal public key given a list of guardians."""
 
     def run_key_ceremony(self, guardians: List[Guardian]) -> ElectionJointKey:

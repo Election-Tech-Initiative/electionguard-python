@@ -2,7 +2,7 @@ from typing import Any
 import click
 
 
-class E2eStepBase:
+class CliStepBase:
     """
     Responsible for providing common functionality to the individual steps within an end-to-end election command
     from the CLI.
