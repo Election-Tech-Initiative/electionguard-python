@@ -17,8 +17,6 @@ from electionguard_cli.cli_models import (
 from electionguard_cli.commands import (
     e2e,
     e2e_command,
-    hello,
-    hello_command,
     import_ballots,
     import_ballots_command,
 )
@@ -42,8 +40,6 @@ __all__ = [
     "e2e_decrypt_results",
     "e2e_inputs",
     "e2e_submit_results",
-    "hello",
-    "hello_command",
     "import_ballots",
     "import_ballots_command",
     "start",
