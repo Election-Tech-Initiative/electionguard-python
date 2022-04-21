@@ -10,6 +10,7 @@ class CliStepBase:
 
     header_color = "green"
     value_color = "yellow"
+    warning_color = "bright_red"
 
     def print_header(self, s: str) -> None:
         click.secho(f"{'-'*40}", fg=self.header_color)
@@ -18,3 +19,6 @@ class CliStepBase:
 
     def print_value(self, name: str, value: Any) -> None:
         click.echo(click.style(name + ": ") + click.style(value, fg=self.value_color))
+
+    def print_warning(self, s: str) -> None:
+        click.secho(f"WARNING: {s}", fg=self.warning_color)

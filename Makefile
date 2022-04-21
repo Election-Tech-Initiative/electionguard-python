@@ -254,7 +254,8 @@ release-notes:
 	curl "${GITHUB_API_URL}/${GITHUB_REPOSITORY}/issues?milestone=${MILESTONE_NUM}&state=all" | jq '.[].title' | while read i; do echo "[$i]($MILESTONE_URL)" >> release_notes.md; done
 
 eg-e2e-simple-election:
-	poetry run eg e2e --guardian-count=2 --quorum=2 --manifest=data/election_manifest_simple.json --ballots=data/plaintext_ballots_simple.json --spoil-id=25a7111b-4334-425a-87c1-f7a49f42b3a2 --output-record="./election_record.zip" --output-keys="./guardian_private_data.json"
+	# to save keys to import append --output-keys="./guardian_private_data.json"
+	poetry run eg e2e --guardian-count=2 --quorum=2 --manifest=data/election_manifest_simple.json --ballots=data/plaintext_ballots_simple.json --spoil-id=25a7111b-4334-425a-87c1-f7a49f42b3a2 --output-record="./election_record.zip"
 
 eg-import-simple-election:
 	poetry run eg import-ballots --manifest=data/simple/manifest.json --context=data/simple/context.json --ballots-dir=data/simple/ballots --guardian-keys=./guardian_private_data.json

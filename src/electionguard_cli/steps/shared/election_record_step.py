@@ -1,5 +1,5 @@
 from shutil import make_archive
-from os.path import splitext, dirname
+from os.path import splitext, dirname, basename
 from tempfile import TemporaryDirectory
 from click import echo
 from electionguard import to_file
@@ -32,7 +32,7 @@ class ElectionRecordStep(CliStepBase):
         self._export_election_record(
             election_inputs, build_election_results, submit_results, decrypt_results
         )
-        ElectionRecordStep._export_private_keys(election_inputs)
+        self._export_private_keys(election_inputs)
 
     def _export_election_record(
         self,
@@ -63,8 +63,7 @@ class ElectionRecordStep(CliStepBase):
             make_archive(file_name, self._COMPRESSION_FORMAT, temp_dir)
             echo(f"Exported election record to '{election_inputs.output_record}'")
 
-    @staticmethod
-    def _export_private_keys(election_inputs: E2eInputs) -> None:
+    def _export_private_keys(self, election_inputs: E2eInputs) -> None:
         if election_inputs.output_keys is None:
             return
 
@@ -77,3 +76,7 @@ class ElectionRecordStep(CliStepBase):
         file_path = dirname(election_inputs.output_keys)
         to_file(private_guardian_records, file_name, file_path)
         echo(f"Exported private guardian keys to '{election_inputs.output_keys}'")
+        file_basename = basename(election_inputs.output_keys)
+        self.print_warning(
+            f"{file_basename} can decrypt an entire election. Protect it. Encrypt it. Do not share it."
+        )
