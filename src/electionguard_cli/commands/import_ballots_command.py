@@ -1,16 +1,7 @@
 from io import TextIOWrapper
-from typing import List, Tuple
 import click
-from electionguard.ballot import BallotBoxState, SubmittedBallot
 
-from electionguard.scheduler import Scheduler
-from electionguard.tally import CiphertextTally
-
-from electionguard_cli.cli_models.import_ballots.import_ballot_inputs import (
-    ImportBallotInputs,
-)
-from ..cli_models import BuildElectionResults
-from ..steps.shared import DecryptStep, PrintResultsStep, ElectionBuilderStep
+from ..steps.shared import DecryptStep, PrintResultsStep, ElectionBuilderStep, TallyStep
 from ..steps.import_ballots import (
     ImportBallotsInputRetrievalStep,
 )
@@ -61,7 +52,7 @@ def import_ballots(
     build_election_results = ElectionBuilderStep().build_election_with_context(
         election_inputs
     )
-    (ciphertext_tally, spoiled_ballots) = _create_tally(
+    (ciphertext_tally, spoiled_ballots) = TallyStep().create_tally(
         election_inputs, build_election_results
     )
     decrypt_results = DecryptStep().decrypt(
@@ -73,25 +64,3 @@ def import_ballots(
 
     # print results
     PrintResultsStep().print_election_results(decrypt_results)
-
-
-# todo: make this into a step
-def _create_tally(
-    election_inputs: ImportBallotInputs, build_election_results: BuildElectionResults
-) -> Tuple[CiphertextTally, List[SubmittedBallot]]:
-    tally = CiphertextTally(
-        "object_id",
-        build_election_results.internal_manifest,
-        build_election_results.context,
-    )
-    ballots = [(None, b) for b in election_inputs.submitted_ballots]
-    with Scheduler() as scheduler:
-        tally.batch_append(ballots, scheduler)
-
-    spoiled_ballots = [
-        b
-        for b in election_inputs.submitted_ballots
-        if b.state == BallotBoxState.SPOILED
-    ]
-
-    return (tally, spoiled_ballots)

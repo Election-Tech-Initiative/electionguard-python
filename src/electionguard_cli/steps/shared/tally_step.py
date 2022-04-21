@@ -1,16 +1,41 @@
 from typing import List, Tuple
+from electionguard.scheduler import Scheduler
 from electionguard.utils import get_optional
 from electionguard.data_store import DataStore
 from electionguard.tally import CiphertextTally, tally_ballots
 from electionguard.ballot_box import get_ballots
 from electionguard.ballot import BallotBoxState, SubmittedBallot
 
-from electionguard_cli.cli_models.e2e_build_election_results import BuildElectionResults
-from electionguard_cli.steps.shared.cli_step_base import CliStepBase
+from electionguard_cli.cli_models import BuildElectionResults
+from electionguard_cli.steps.import_ballots import ImportBallotsInputRetrievalStep
+from electionguard_cli.steps.shared import CliStepBase
 
 
 class TallyStep(CliStepBase):
     """Responsible for creating a tally and retrieving spoiled ballots."""
+
+    def create_tally(
+        self,
+        election_inputs: ImportBallotsInputRetrievalStep,
+        build_election_results: BuildElectionResults,
+    ) -> Tuple[CiphertextTally, List[SubmittedBallot]]:
+        self.print_header("Creating Tally")
+        tally = CiphertextTally(
+            "ciphertext_tally",
+            build_election_results.internal_manifest,
+            build_election_results.context,
+        )
+        ballots = [(None, b) for b in election_inputs.submitted_ballots]
+        with Scheduler() as scheduler:
+            tally.batch_append(ballots, scheduler)
+
+        spoiled_ballots = [
+            b
+            for b in election_inputs.submitted_ballots
+            if b.state == BallotBoxState.SPOILED
+        ]
+
+        return (tally, spoiled_ballots)
 
     def get_from_ballot_store(
         self, ballot_store: DataStore, build_election_results: BuildElectionResults

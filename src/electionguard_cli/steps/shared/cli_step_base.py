@@ -13,6 +13,7 @@ class CliStepBase:
     warning_color = "bright_red"
 
     def print_header(self, s: str) -> None:
+        click.echo("")
         click.secho(f"{'-'*40}", fg=self.header_color)
         click.secho(s, fg=self.header_color)
         click.secho(f"{'-'*40}", fg=self.header_color)
