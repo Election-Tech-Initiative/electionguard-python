@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from typing import List
 from electionguard.ballot import PlaintextBallot
 from electionguard.guardian import Guardian

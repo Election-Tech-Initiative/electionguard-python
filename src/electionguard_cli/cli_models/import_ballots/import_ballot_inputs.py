@@ -3,7 +3,9 @@ from electionguard.ballot import SubmittedBallot
 from electionguard.election import CiphertextElectionContext
 from electionguard.guardian import Guardian
 from electionguard.manifest import Manifest
-from ..shared.cli_election_inputs_base import CliElectionInputsBase
+from electionguard_cli.cli_models.shared.cli_election_inputs_base import (
+    CliElectionInputsBase,
+)
 
 
 class ImportBallotInputs(CliElectionInputsBase):

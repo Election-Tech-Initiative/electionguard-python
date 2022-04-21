@@ -1,5 +1,6 @@
 from io import TextIOWrapper
 from typing import List, Tuple
+from attr import resolve_types
 import click
 from electionguard.ballot import BallotBoxState, SubmittedBallot
 
@@ -31,14 +32,23 @@ from ..steps.import_ballots import (
     help="The location of a file that contains plaintext ballots.",
     type=click.Path(exists=True, dir_okay=True, file_okay=False, resolve_path=True),
 )
-def import_ballots(manifest: TextIOWrapper, ballots_dir: str) -> None:
+@click.option(
+    "--guardian-keys",
+    prompt="Guardian keys file",
+    help="The location of a json file with all guardians's private key data. "
+    + "This corresponds to the output-keys parameter of the e2e command.",
+    type=click.Path(exists=True, dir_okay=False, file_okay=True, resolve_path=True),
+)
+def import_ballots(
+    manifest: TextIOWrapper, ballots_dir: str, guardian_keys: str
+) -> None:
     """
     Imports ballots
     """
 
     # get user inputs
     election_inputs = ImportBallotsInputRetrievalStep().get_inputs(
-        manifest, ballots_dir
+        manifest, ballots_dir, guardian_keys
     )
 
     # perform election
