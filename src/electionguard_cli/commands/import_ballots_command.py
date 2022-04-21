@@ -1,6 +1,5 @@
 from io import TextIOWrapper
 from typing import List, Tuple
-from attr import resolve_types
 import click
 from electionguard.ballot import BallotBoxState, SubmittedBallot
 
@@ -27,6 +26,12 @@ from ..steps.import_ballots import (
     type=click.File(),
 )
 @click.option(
+    "--context",
+    prompt="Context file",
+    help="The location of an election context.",
+    type=click.File(),
+)
+@click.option(
     "--ballots-dir",
     prompt="Ballots file",
     help="The location of a file that contains plaintext ballots.",
@@ -40,7 +45,10 @@ from ..steps.import_ballots import (
     type=click.Path(exists=True, dir_okay=False, file_okay=True, resolve_path=True),
 )
 def import_ballots(
-    manifest: TextIOWrapper, ballots_dir: str, guardian_keys: str
+    manifest: TextIOWrapper,
+    context: TextIOWrapper,
+    ballots_dir: str,
+    guardian_keys: str,
 ) -> None:
     """
     Imports ballots
@@ -48,7 +56,7 @@ def import_ballots(
 
     # get user inputs
     election_inputs = ImportBallotsInputRetrievalStep().get_inputs(
-        manifest, ballots_dir, guardian_keys
+        manifest, context, ballots_dir, guardian_keys
     )
 
     # perform election

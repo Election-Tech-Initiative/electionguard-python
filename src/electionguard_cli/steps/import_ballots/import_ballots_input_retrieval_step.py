@@ -9,7 +9,7 @@ from electionguard import CiphertextElectionContext
 from electionguard.ballot import SubmittedBallot
 from electionguard.guardian import Guardian, PrivateGuardianRecord
 from electionguard.manifest import Manifest
-from electionguard.serialize import from_file, from_list_in_file
+from electionguard.serialize import from_file, from_file_wrapper, from_list_in_file
 from electionguard_cli.cli_models.import_ballots.import_ballot_inputs import (
     ImportBallotInputs,
 )
@@ -22,12 +22,16 @@ class ImportBallotsInputRetrievalStep(InputRetrievalStepBase):
     """Responsible for retrieving and parsing user provided inputs for the CLI's import ballots command."""
 
     def get_inputs(
-        self, manifest_file: TextIOWrapper, ballots_dir: str, guardian_keys: str
+        self,
+        manifest_file: TextIOWrapper,
+        context_file: TextIOWrapper,
+        ballots_dir: str,
+        guardian_keys: str,
     ) -> ImportBallotInputs:
 
         self.print_header("Retrieving Inputs")
         manifest: Manifest = self._get_manifest(manifest_file)
-        context = self._get_context()
+        context = self._get_context(context_file)
         guardians = ImportBallotsInputRetrievalStep._get_guardians(
             guardian_keys, context
         )
@@ -50,9 +54,8 @@ class ImportBallotsInputRetrievalStep(InputRetrievalStepBase):
         ]
 
     @staticmethod
-    def _get_context() -> CiphertextElectionContext:
-        # todo: parameterize
-        return from_file(CiphertextElectionContext, "data/simple/context.json")
+    def _get_context(context_file: TextIOWrapper) -> CiphertextElectionContext:
+        return from_file_wrapper(CiphertextElectionContext, context_file)
 
     @staticmethod
     def _get_ballots(ballots_dir: str) -> List[SubmittedBallot]:
