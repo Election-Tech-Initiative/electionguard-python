@@ -54,7 +54,6 @@ class DecryptStep(CliStepBase):
             count += 1
             click.echo(f"Guardian Present: {guardian.id}")
 
-        click.echo("Retrieving lagrange_coefficients")
         lagrange_coefficients = self._get_lagrange_coefficients(decryption_mediator)
 
         plaintext_tally = get_optional(

@@ -259,4 +259,3 @@ eg-e2e-simple-election:
 
 eg-import-simple-election:
 	poetry run eg import-ballots --manifest=data/simple/manifest.json --context=data/simple/context.json --ballots-dir=data/simple/ballots --guardian-keys=./guardian_private_data.json
-

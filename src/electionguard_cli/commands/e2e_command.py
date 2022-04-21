@@ -88,7 +88,7 @@ def e2e(
         election_inputs, build_election_results
     )
     (ciphertext_tally, spoiled_ballots) = TallyStep().get_from_ballot_store(
-        submit_results.data_store, build_election_results
+        build_election_results, submit_results.data_store
     )
     decrypt_results = DecryptStep().decrypt(
         ciphertext_tally,

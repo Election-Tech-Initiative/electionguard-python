@@ -52,8 +52,8 @@ def import_ballots(
     build_election_results = ElectionBuilderStep().build_election_with_context(
         election_inputs
     )
-    (ciphertext_tally, spoiled_ballots) = TallyStep().create_tally(
-        election_inputs, build_election_results
+    (ciphertext_tally, spoiled_ballots) = TallyStep().get_from_ballots(
+        build_election_results, election_inputs.submitted_ballots
     )
     decrypt_results = DecryptStep().decrypt(
         ciphertext_tally,
