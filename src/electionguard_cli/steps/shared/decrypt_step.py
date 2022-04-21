@@ -3,12 +3,10 @@ import click
 from electionguard_cli.cli_models import BuildElectionResults, E2eDecryptResults
 from electionguard.decryption_share import DecryptionShare
 from electionguard.election import CiphertextElectionContext
-from electionguard.data_store import DataStore
-from electionguard.ballot_box import get_ballots
 from electionguard.guardian import Guardian
 from electionguard.utils import get_optional
-from electionguard.ballot import BallotBoxState, SubmittedBallot
-from electionguard.tally import CiphertextTally, tally_ballots
+from electionguard.ballot import SubmittedBallot
+from electionguard.tally import CiphertextTally
 from electionguard.decryption_mediator import DecryptionMediator
 from electionguard.election_polynomial import LagrangeCoefficientsRecord
 from .cli_step_base import CliStepBase
@@ -27,19 +25,7 @@ class DecryptStep(CliStepBase):
         self.print_value("Lagrange coefficients retrieved", coefficient_count)
         return lagrange_coefficients
 
-    def decrypt_ballot_store(
-        self,
-        ballot_store: DataStore,
-        guardians: List[Guardian],
-        build_election_results: BuildElectionResults,
-    ) -> E2eDecryptResults:
-        ciphertext_tally = DecryptStep._get_tally(ballot_store, build_election_results)
-        spoiled_ballots = DecryptStep._get_spoiled_ballots(ballot_store)
-        return self.decrypt_tally(
-            ciphertext_tally, spoiled_ballots, guardians, build_election_results
-        )
-
-    def decrypt_tally(
+    def decrypt(
         self,
         ciphertext_tally: CiphertextTally,
         spoiled_ballots: List[SubmittedBallot],
@@ -94,24 +80,6 @@ class DecryptStep(CliStepBase):
     ) -> DecryptionShare:
         shares = guardian.compute_tally_share(tally, context)
         return get_optional(shares)
-
-    @staticmethod
-    def _get_spoiled_ballots(ballot_store: DataStore) -> List[SubmittedBallot]:
-        submitted_ballots = get_ballots(ballot_store, BallotBoxState.SPOILED)
-        spoiled_ballots_list = list(submitted_ballots.values())
-        return spoiled_ballots_list
-
-    @staticmethod
-    def _get_tally(
-        ballot_store: DataStore, build_election_results: BuildElectionResults
-    ) -> CiphertextTally:
-        # instead create a CiphertextTally and add all the ballots and remove the ballot_store and ballot_box
-        tally = tally_ballots(
-            ballot_store,
-            build_election_results.internal_manifest,
-            build_election_results.context,
-        )
-        return get_optional(tally)
 
     @staticmethod
     def _get_decryption_mediator(

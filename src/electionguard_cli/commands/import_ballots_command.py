@@ -64,7 +64,7 @@ def import_ballots(
     (ciphertext_tally, spoiled_ballots) = _create_tally(
         election_inputs, build_election_results
     )
-    decrypt_results = DecryptStep().decrypt_tally(
+    decrypt_results = DecryptStep().decrypt(
         ciphertext_tally,
         spoiled_ballots,
         election_inputs.guardians,

@@ -7,6 +7,7 @@ from electionguard_cli.cli_models.shared.cli_election_inputs_base import (
 )
 
 
+# pylint: disable=too-many-instance-attributes
 class E2eInputs(CliElectionInputsBase):
     """Responsible for holding the inputs for the CLI's e2e command."""
 

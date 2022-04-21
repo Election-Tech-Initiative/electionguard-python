@@ -1,6 +1,8 @@
 from io import TextIOWrapper
 import click
 
+from electionguard_cli.steps.shared.tally_step import TallyStep
+
 from ..steps.e2e import (
     E2eInputRetrievalStep,
     KeyCeremonyStep,
@@ -85,8 +87,14 @@ def e2e(
     submit_results = SubmitVotesStep().submit_votes(
         election_inputs, build_election_results
     )
-    decrypt_results = DecryptStep().decrypt_ballot_store(
-        submit_results.data_store, election_inputs.guardians, build_election_results
+    (ciphertext_tally, spoiled_ballots) = TallyStep().get_from_ballot_store(
+        submit_results.data_store, build_election_results
+    )
+    decrypt_results = DecryptStep().decrypt(
+        ciphertext_tally,
+        spoiled_ballots,
+        election_inputs.guardians,
+        build_election_results,
     )
 
     # print results

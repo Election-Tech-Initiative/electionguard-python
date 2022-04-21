@@ -1,4 +1,3 @@
-from contextvars import Context
 from io import TextIOWrapper
 from os import listdir
 from os.path import join
