@@ -3,16 +3,14 @@ from typing import List, Tuple
 import click
 from electionguard.ballot import BallotBoxState, SubmittedBallot
 
-from electionguard.election_builder import ElectionBuilder
 from electionguard.scheduler import Scheduler
-from electionguard.manifest import InternalManifest
 from electionguard.tally import CiphertextTally
 
 from electionguard_cli.cli_models.import_ballots.import_ballot_inputs import (
     ImportBallotInputs,
 )
 from ..cli_models import BuildElectionResults
-from ..steps.shared import DecryptStep, PrintResultsStep
+from ..steps.shared import DecryptStep, PrintResultsStep, ElectionBuilderStep
 from ..steps.import_ballots import (
     ImportBallotsInputRetrievalStep,
 )
@@ -60,7 +58,9 @@ def import_ballots(
     )
 
     # perform election
-    build_election_results = _make_election_results(election_inputs)
+    build_election_results = ElectionBuilderStep().build_election_with_context(
+        election_inputs
+    )
     (ciphertext_tally, spoiled_ballots) = _create_tally(
         election_inputs, build_election_results
     )
@@ -73,19 +73,6 @@ def import_ballots(
 
     # print results
     PrintResultsStep().print_election_results(decrypt_results)
-
-
-# todo: convert into a step
-def _make_election_results(election_inputs: ImportBallotInputs) -> BuildElectionResults:
-    election_builder = ElectionBuilder(
-        election_inputs.guardian_count,
-        election_inputs.quorum,
-        election_inputs.manifest,
-    )
-    election_builder.set_public_key(election_inputs.context.elgamal_public_key)
-    election_builder.set_commitment_hash(election_inputs.context.commitment_hash)
-    internal_manifest = InternalManifest(election_inputs.manifest)
-    return BuildElectionResults(internal_manifest, election_inputs.context)
 
 
 # todo: make this into a step
