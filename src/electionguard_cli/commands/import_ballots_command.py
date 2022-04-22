@@ -1,7 +1,12 @@
 from io import TextIOWrapper
 import click
 
-from ..steps.shared import DecryptStep, PrintResultsStep, ElectionBuilderStep, TallyStep
+from ..steps.shared import (
+    DecryptStep,
+    PrintResultsStep,
+    ElectionBuilderStep,
+    TallyStep,
+)
 from ..steps.import_ballots import (
     ImportBallotsInputRetrievalStep,
 )

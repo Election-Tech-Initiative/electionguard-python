@@ -1,8 +1,6 @@
 from io import TextIOWrapper
 import click
 
-from electionguard_cli.steps.shared.tally_step import TallyStep
-
 from ..steps.e2e import (
     E2eInputRetrievalStep,
     KeyCeremonyStep,
@@ -13,6 +11,7 @@ from ..steps.shared import (
     DecryptStep,
     PrintResultsStep,
     ElectionRecordStep,
+    TallyStep,
 )
 
 

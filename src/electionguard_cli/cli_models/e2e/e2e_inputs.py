@@ -2,7 +2,7 @@ from typing import List
 from electionguard.ballot import PlaintextBallot
 from electionguard.guardian import Guardian
 from electionguard.manifest import Manifest
-from electionguard_cli.cli_models.shared.cli_election_inputs_base import (
+from electionguard_cli.cli_models.shared import (
     CliElectionInputsBase,
 )
 
