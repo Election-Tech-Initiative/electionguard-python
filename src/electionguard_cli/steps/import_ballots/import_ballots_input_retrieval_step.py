@@ -65,7 +65,7 @@ class ImportBallotsInputRetrievalStep(InputRetrievalStepBase):
         ]
 
     @staticmethod
-    def _get_ballot(ballots_dir, filename):
+    def _get_ballot(ballots_dir, filename) -> SubmittedBallot:
         full_file = join(ballots_dir, filename)
         echo(f"importing {filename}")
         return from_file(SubmittedBallot, full_file)

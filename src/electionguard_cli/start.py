@@ -1,6 +1,6 @@
 import click
-from .commands.e2e_command import e2e
-from .commands.import_ballots_command import import_ballots
+from electionguard_cli.commands.e2e_command import e2e
+from electionguard_cli.commands.import_ballots_command import import_ballots
 
 
 @click.group()
