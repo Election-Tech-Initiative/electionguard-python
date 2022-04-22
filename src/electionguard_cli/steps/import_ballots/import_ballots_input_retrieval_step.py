@@ -63,7 +63,7 @@ class ImportBallotsInputRetrievalStep(InputRetrievalStepBase):
         submitted_ballots: List[SubmittedBallot] = []
         for filename in files:
             full_file = join(ballots_dir, filename)
-            echo(f"importing {full_file}")
+            echo(f"importing {filename}")
             submitted_ballot = from_file(SubmittedBallot, full_file)
             submitted_ballots.append(submitted_ballot)
         return submitted_ballots
