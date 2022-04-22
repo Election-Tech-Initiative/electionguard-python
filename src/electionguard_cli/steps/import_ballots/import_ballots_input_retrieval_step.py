@@ -60,10 +60,12 @@ class ImportBallotsInputRetrievalStep(InputRetrievalStepBase):
     def _get_ballots(ballots_dir: str) -> List[SubmittedBallot]:
         files = listdir(ballots_dir)
 
-        submitted_ballots: List[SubmittedBallot] = []
-        for filename in files:
-            full_file = join(ballots_dir, filename)
-            echo(f"importing {filename}")
-            submitted_ballot = from_file(SubmittedBallot, full_file)
-            submitted_ballots.append(submitted_ballot)
-        return submitted_ballots
+        return [
+            ImportBallotsInputRetrievalStep._get_ballot(ballots_dir, f) for f in files
+        ]
+
+    @staticmethod
+    def _get_ballot(ballots_dir, filename):
+        full_file = join(ballots_dir, filename)
+        echo(f"importing {filename}")
+        return from_file(SubmittedBallot, full_file)
