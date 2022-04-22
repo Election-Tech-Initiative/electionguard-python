@@ -67,16 +67,16 @@ class ElectionRecordStep(CliStepBase):
         if election_inputs.output_keys is None:
             return
 
-        echo("getting private records")
-
         private_guardian_records = [
             guardian.export_private_data() for guardian in election_inputs.guardians
         ]
-        file_name = splitext(election_inputs.output_keys)[0]
-        file_path = dirname(election_inputs.output_keys)
-        to_file(private_guardian_records, file_name, file_path)
-        echo(f"Exported private guardian keys to '{election_inputs.output_keys}'")
-        file_basename = basename(election_inputs.output_keys)
+        file_path = election_inputs.output_keys
+        for private_guardian_record in private_guardian_records:
+            file_name = private_guardian_record.guardian_id
+            to_file(private_guardian_record, file_name, file_path)
+        echo(
+            f"Exported {len(private_guardian_records)} private guardian keys to '{election_inputs.output_keys}'"
+        )
         self.print_warning(
-            f"{file_basename} can decrypt an entire election. Protect it. Encrypt it. Do not share it."
+            f"The files in {file_path} can decrypt an entire election. Protect the folder securely and do not share it."
         )

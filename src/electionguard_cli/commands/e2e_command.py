@@ -52,14 +52,18 @@ from ..steps.shared import (
     "--output-record",
     help="A file name for saving an output election record (e.g. './election.zip')."
     + " If no value provided then an election record will not be generated.",
-    type=click.Path(exists=False),
+    type=click.Path(
+        exists=False,
+        dir_okay=False,
+        file_okay=True,
+    ),
     default=None,
 )
 @click.option(
     "--output-keys",
-    help="A file name for saving the private and public guardian keys (e.g. './guardian-keys.json')."
+    help="A directory for saving the private and public guardian keys (e.g. './guardian-keys')."
     + " If no value provided then no keys will be output.",
-    type=click.Path(exists=False, resolve_path=True),
+    type=click.Path(exists=False, dir_okay=True, file_okay=False, resolve_path=True),
     default=None,
 )
 def e2e(

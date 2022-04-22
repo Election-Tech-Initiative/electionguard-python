@@ -1,4 +1,5 @@
 from io import TextIOWrapper
+from click import echo
 from typing import Optional
 
 from electionguard.manifest import InternationalizedText, Manifest
@@ -13,7 +14,6 @@ class InputRetrievalStepBase(CliStepBase):
     """A common base class for all CLI commands that accept user input"""
 
     def _get_manifest(self, manifest_file: TextIOWrapper) -> Manifest:
-        self.print_header("Retrieving manifest")
         manifest: Manifest = from_file_wrapper(Manifest, manifest_file)
         if not manifest.is_valid():
             raise ValueError("manifest file is invalid")
