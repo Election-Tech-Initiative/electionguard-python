@@ -1,5 +1,6 @@
 import click
-from .commands import e2e, import_ballots
+from .commands.e2e_command import e2e
+from .commands.import_ballots_command import import_ballots
 
 
 @click.group()
