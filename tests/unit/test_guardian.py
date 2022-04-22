@@ -36,6 +36,7 @@ class TestGuardian(BaseTestCase):
         )
 
         # Assert
+        # pylint: disable=protected-access
         self.assertEqual(
             guardian_actual._election_keys, guardian_expected._election_keys
         )

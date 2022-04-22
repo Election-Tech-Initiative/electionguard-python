@@ -168,12 +168,14 @@ class Guardian:
         self.id = id
         self.sequence_order = sequence_order
         self.set_ceremony_details(number_of_guardians, quorum)
+        self._backups_to_share = {}
         self._guardian_election_public_keys = (
             {} if election_public_keys is None else election_public_keys
         )
         self._guardian_election_partial_key_backups = (
             {} if partial_key_backups is None else partial_key_backups
         )
+        self._guardian_election_partial_key_verifications = {}
 
         if election_keys is None:
             self.generate_election_key_pair(
