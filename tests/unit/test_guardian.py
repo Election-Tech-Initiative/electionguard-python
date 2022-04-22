@@ -23,21 +23,30 @@ ELECTION_PUBLIC_KEY = ""
 class TestGuardian(BaseTestCase):
     """Guardian tests"""
 
-    def test_reset(self) -> None:
-        guardian = Guardian(
+    def test_import_from_guardian_private_record(self) -> None:
+        # Arrange
+        guardian_expected = Guardian(
             SENDER_GUARDIAN_ID, SENDER_SEQUENCE_ORDER, NUMBER_OF_GUARDIANS, QUORUM
         )
-        expected_number_of_guardians = 10
-        expected_quorum = 4
+        private_guardian_record = guardian_expected.export_private_data()
 
         # Act
-        guardian.reset(expected_number_of_guardians, expected_quorum)
+        guardian_actual = Guardian.from_private_record(
+            private_guardian_record, NUMBER_OF_GUARDIANS, QUORUM
+        )
 
         # Assert
         self.assertEqual(
-            expected_number_of_guardians, guardian.ceremony_details.number_of_guardians
+            guardian_actual._election_keys, guardian_expected._election_keys
         )
-        self.assertEqual(expected_quorum, guardian.ceremony_details.quorum)
+        self.assertEqual(
+            guardian_actual._guardian_election_public_keys,
+            guardian_expected._guardian_election_public_keys,
+        )
+        self.assertEqual(
+            guardian_actual._guardian_election_partial_key_backups,
+            guardian_expected._guardian_election_partial_key_backups,
+        )
 
     def test_set_ceremony_details(self) -> None:
         # Arrange
