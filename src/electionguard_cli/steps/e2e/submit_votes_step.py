@@ -11,11 +11,11 @@ from electionguard.ballot import (
     CiphertextBallot,
     PlaintextBallot,
 )
-from electionguard_tools.factories.election_factory import (
+from electionguard_tools.factories import (
     ElectionFactory,
 )
 
-from electionguard_cli.cli_models.e2e.e2e_inputs import E2eInputs
+from electionguard_cli.cli_models.e2e import E2eInputs
 from electionguard_cli.cli_models import (
     BuildElectionResults,
     E2eSubmitResults,

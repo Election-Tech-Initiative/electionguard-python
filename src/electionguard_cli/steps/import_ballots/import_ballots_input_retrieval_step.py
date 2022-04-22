@@ -9,10 +9,10 @@ from electionguard.ballot import SubmittedBallot
 from electionguard.guardian import Guardian, PrivateGuardianRecord
 from electionguard.manifest import Manifest
 from electionguard.serialize import from_file, from_file_wrapper, from_list_in_file
-from electionguard_cli.cli_models.import_ballots.import_ballot_inputs import (
+from electionguard_cli.cli_models.import_ballots import (
     ImportBallotInputs,
 )
-from electionguard_cli.steps.shared.input_retrieval_step_base import (
+from ..shared import (
     InputRetrievalStepBase,
 )
 

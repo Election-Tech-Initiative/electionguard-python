@@ -1,14 +1,12 @@
 from typing import List
 import click
-from electionguard_cli.cli_models import BuildElectionResults, E2eDecryptResults
-from electionguard.decryption_share import DecryptionShare
-from electionguard.election import CiphertextElectionContext
 from electionguard.guardian import Guardian
 from electionguard.utils import get_optional
 from electionguard.ballot import SubmittedBallot
 from electionguard.tally import CiphertextTally
 from electionguard.decryption_mediator import DecryptionMediator
 from electionguard.election_polynomial import LagrangeCoefficientsRecord
+from electionguard_cli.cli_models import BuildElectionResults, E2eDecryptResults
 from .cli_step_base import CliStepBase
 
 
@@ -34,8 +32,9 @@ class DecryptStep(CliStepBase):
     ) -> E2eDecryptResults:
         self.print_header("Decrypting tally")
 
-        decryption_mediator = DecryptStep._get_decryption_mediator(
-            build_election_results
+        decryption_mediator = DecryptionMediator(
+            "decryption-mediator",
+            build_election_results.context,
         )
         context = build_election_results.context
 
@@ -46,8 +45,8 @@ class DecryptStep(CliStepBase):
         count = 0
         for guardian in guardians:
             guardian_key = guardian.share_key()
-            tally_share = DecryptStep._compute_tally_share(
-                guardian, ciphertext_tally, context
+            tally_share = get_optional(
+                guardian.compute_tally_share(ciphertext_tally, context)
             )
             ballot_shares = guardian.compute_ballot_shares(spoiled_ballots, context)
             decryption_mediator.announce(guardian_key, tally_share, ballot_shares)
@@ -70,22 +69,3 @@ class DecryptStep(CliStepBase):
             ciphertext_tally,
             lagrange_coefficients,
         )
-
-    @staticmethod
-    def _compute_tally_share(
-        guardian: Guardian,
-        tally: CiphertextTally,
-        context: CiphertextElectionContext,
-    ) -> DecryptionShare:
-        shares = guardian.compute_tally_share(tally, context)
-        return get_optional(shares)
-
-    @staticmethod
-    def _get_decryption_mediator(
-        build_election_results: BuildElectionResults,
-    ) -> DecryptionMediator:
-        decryption_mediator = DecryptionMediator(
-            "decryption-mediator",
-            build_election_results.context,
-        )
-        return decryption_mediator
