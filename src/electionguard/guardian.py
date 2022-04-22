@@ -154,6 +154,13 @@ class Guardian:
         sequence_order: int,
         number_of_guardians: int,
         quorum: int,
+        election_keys: ElectionKeyPair = None,
+        backups_to_share: Dict[GuardianId, ElectionPartialKeyBackup] = None,
+        election_public_keys: Dict[GuardianId, ElectionPublicKey] = None,
+        partial_key_backups: Dict[GuardianId, ElectionPartialKeyBackup] = None,
+        election_partial_key_verifications: Dict[
+            GuardianId, ElectionPartialKeyVerification
+        ] = None,
         nonce_seed: Optional[ElementModQ] = None,
     ) -> None:
         """
@@ -169,12 +176,25 @@ class Guardian:
         self.id = id
         self.sequence_order = sequence_order
         self.set_ceremony_details(number_of_guardians, quorum)
-        self._backups_to_share = {}
-        self._guardian_election_public_keys = {}
-        self._guardian_election_partial_key_backups = {}
-        self._guardian_election_partial_key_verifications = {}
+        self._backups_to_share = {} if backups_to_share is None else backups_to_share
+        self._guardian_election_public_keys = (
+            {} if election_public_keys is None else election_public_keys
+        )
+        self._guardian_election_partial_key_backups = (
+            {} if partial_key_backups is None else partial_key_backups
+        )
+        self._guardian_election_partial_key_verifications = (
+            {}
+            if election_partial_key_verifications is None
+            else election_partial_key_verifications
+        )
 
-        self.generate_election_key_pair(nonce_seed if nonce_seed is not None else None)
+        if election_keys is None:
+            self.generate_election_key_pair(
+                nonce_seed if nonce_seed is not None else None
+            )
+        else:
+            self._election_keys = election_keys
 
     def reset(self, number_of_guardians: int, quorum: int) -> None:
         """
@@ -204,6 +224,26 @@ class Guardian:
             self._guardian_election_partial_key_backups,
             self._guardian_election_partial_key_verifications,
         )
+
+    @staticmethod
+    def from_private_record(
+        private_guardian_record: PrivateGuardianRecord,
+        number_of_guardians: int,
+        quorum: int,
+    ) -> "Guardian":
+        guardian = Guardian(
+            private_guardian_record.guardian_id,
+            private_guardian_record.election_keys.sequence_order,
+            number_of_guardians,
+            quorum,
+            private_guardian_record.election_keys,
+            private_guardian_record.backups_to_share,
+            private_guardian_record.guardian_election_public_keys,
+            private_guardian_record.guardian_election_partial_key_backups,
+            private_guardian_record.guardian_election_partial_key_verifications,
+        )
+
+        return guardian
 
     def set_ceremony_details(self, number_of_guardians: int, quorum: int) -> None:
         """
