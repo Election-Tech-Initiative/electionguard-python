@@ -95,11 +95,19 @@ class PrivateGuardianRecord:
     election_keys: ElectionKeyPair
     """Private election Key pair of this guardian"""
 
+    backups_to_share: Dict[GuardianId, ElectionPartialKeyBackup]
+    """This guardian's partial key backups that will be shared to other guardians"""
+
     guardian_election_public_keys: Dict[GuardianId, ElectionPublicKey]
     """Received election public keys that are shared with this guardian"""
 
     guardian_election_partial_key_backups: Dict[GuardianId, ElectionPartialKeyBackup]
     """Received partial key backups that are shared with this guardian"""
+
+    guardian_election_partial_key_verifications: Dict[
+        GuardianId, ElectionPartialKeyVerification
+    ]
+    """Verifications of other guardian's backups"""
 
 
 # pylint: disable=too-many-instance-attributes
@@ -149,6 +157,10 @@ class Guardian:
         election_keys: ElectionKeyPair = None,
         election_public_keys: Dict[GuardianId, ElectionPublicKey] = None,
         partial_key_backups: Dict[GuardianId, ElectionPartialKeyBackup] = None,
+        backups_to_share: Dict[GuardianId, ElectionPartialKeyBackup] = None,
+        guardian_election_partial_key_verifications: Dict[
+            GuardianId, ElectionPartialKeyVerification
+        ] = None,
     ) -> None:
         """
         Initialize a guardian with the specified arguments.
@@ -164,14 +176,18 @@ class Guardian:
         self.id = id
         self.sequence_order = sequence_order
         self.set_ceremony_details(number_of_guardians, quorum)
-        self._backups_to_share = {}
+        self._backups_to_share = {} if backups_to_share is None else backups_to_share
         self._guardian_election_public_keys = (
             {} if election_public_keys is None else election_public_keys
         )
         self._guardian_election_partial_key_backups = (
             {} if partial_key_backups is None else partial_key_backups
         )
-        self._guardian_election_partial_key_verifications = {}
+        self._guardian_election_partial_key_verifications = (
+            {}
+            if guardian_election_partial_key_verifications is None
+            else guardian_election_partial_key_verifications
+        )
 
         if not election_keys is None:
             self._election_keys = election_keys
@@ -224,6 +240,8 @@ class Guardian:
             private_guardian_record.election_keys,
             private_guardian_record.guardian_election_public_keys,
             private_guardian_record.guardian_election_partial_key_backups,
+            private_guardian_record.backups_to_share,
+            private_guardian_record.guardian_election_partial_key_verifications,
         )
 
         return guardian
@@ -251,8 +269,10 @@ class Guardian:
         return PrivateGuardianRecord(
             self.id,
             self._election_keys,
+            self._backups_to_share,
             self._guardian_election_public_keys,
             self._guardian_election_partial_key_backups,
+            self._guardian_election_partial_key_verifications,
         )
 
     def set_ceremony_details(self, number_of_guardians: int, quorum: int) -> None:
