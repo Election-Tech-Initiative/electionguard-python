@@ -3,6 +3,8 @@
 from dataclasses import dataclass
 from typing import Dict, List, Optional, TypeVar
 
+from electionguard.utils import get_optional
+
 from .ballot import SubmittedBallot
 from .decryption import (
     compute_compensated_decryption_share,
@@ -149,7 +151,7 @@ class Guardian:
         election_keys: ElectionKeyPair = None,
         election_public_keys: Dict[GuardianId, ElectionPublicKey] = None,
         partial_key_backups: Dict[GuardianId, ElectionPartialKeyBackup] = None,
-        nonce_seed: Optional[ElementModQ] = None,
+        generate_key_pair: bool = True,
     ) -> None:
         """
         Initialize a guardian with the specified arguments.
@@ -161,9 +163,6 @@ class Guardian:
         :param election_keys the private keys the guardian generated during a key ceremony
         :param election_public_keys the public keys the guardian generated during a key ceremony
         :param partial_key_backups the partial key backups the guardian generated during a key ceremony
-        :param nonce_seed: an optional `ElementModQ` value that can be used to generate the `ElectionKeyPair`.
-            This parameter is mutually exclusive with election_keys, election_public_keys, and
-            partial_key_backups. It is recommended to only use this field for testing.
         """
         self.id = id
         self.sequence_order = sequence_order
@@ -177,12 +176,10 @@ class Guardian:
         )
         self._guardian_election_partial_key_verifications = {}
 
-        if election_keys is None:
-            self.generate_election_key_pair(
-                nonce_seed if nonce_seed is not None else None
-            )
+        if election_keys is None and generate_key_pair:
+            self.generate_election_key_pair(None)
         else:
-            self._election_keys = election_keys
+            self._election_keys = get_optional(election_keys)
 
     def reset(self, number_of_guardians: int, quorum: int) -> None:
         """
@@ -210,6 +207,27 @@ class Guardian:
             self._guardian_election_public_keys,
             self._guardian_election_partial_key_backups,
         )
+
+    @staticmethod
+    def from_nonce(
+        id: str,
+        sequence_order: int,
+        number_of_guardians: int,
+        quorum: int,
+        nonce_seed: Optional[ElementModQ] = None,
+    ) -> "Guardian":
+        """Creates a guardian with an `ElementModQ` value that will be used to generate
+        the `ElectionKeyPair`. This method should generally only be used for testing."""
+
+        guardian = Guardian(
+            id,
+            sequence_order,
+            number_of_guardians,
+            quorum,
+            generate_key_pair=False,
+        )
+        guardian.generate_election_key_pair(nonce_seed)
+        return guardian
 
     @staticmethod
     def from_private_record(
