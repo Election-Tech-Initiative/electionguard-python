@@ -21,6 +21,7 @@ from electionguard import election_builder
 from electionguard import election_object_base
 from electionguard import election_polynomial
 from electionguard import elgamal
+from electionguard import encode
 from electionguard import encrypt
 from electionguard import group
 from electionguard import guardian
@@ -210,6 +211,15 @@ from electionguard.elgamal import (
     elgamal_keypair_random,
     hashed_elgamal_encrypt,
 )
+from electionguard.encode import (
+    BYTE_ENCODING,
+    BYTE_ORDER,
+    PAD_INDICATOR_SIZE,
+    PaddedDataSize,
+    TruncationError,
+    add_padding,
+    remove_padding,
+)
 from electionguard.encrypt import (
     EncryptionDevice,
     EncryptionMediator,
@@ -384,6 +394,8 @@ from electionguard.utils import (
 
 __all__ = [
     "AnnotatedString",
+    "BYTE_ENCODING",
+    "BYTE_ORDER",
     "BackupVerificationState",
     "BallotBox",
     "BallotBoxState",
@@ -476,6 +488,8 @@ __all__ = [
     "NO_VOTE",
     "Nonces",
     "OrderedObjectBase",
+    "PAD_INDICATOR_SIZE",
+    "PaddedDataSize",
     "Party",
     "PlaintextBallot",
     "PlaintextBallotContest",
@@ -503,12 +517,14 @@ __all__ = [
     "SelectionId",
     "Singleton",
     "SubmittedBallot",
+    "TruncationError",
     "VerifierId",
     "VoteVariationType",
     "YES_VOTE",
     "a_minus_b_q",
     "a_plus_bc_q",
     "accept_ballot",
+    "add_padding",
     "add_q",
     "ballot",
     "ballot_box",
@@ -576,6 +592,7 @@ __all__ = [
     "elgamal_encrypt",
     "elgamal_keypair_from_secret",
     "elgamal_keypair_random",
+    "encode",
     "encrypt",
     "encrypt_ballot",
     "encrypt_ballot_contests",
@@ -665,6 +682,7 @@ __all__ = [
     "reconstruct_decryption_contest",
     "reconstruct_decryption_share",
     "reconstruct_decryption_share_for_ballot",
+    "remove_padding",
     "scheduler",
     "schnorr",
     "selection_from",

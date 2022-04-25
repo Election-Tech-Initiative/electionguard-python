@@ -12,6 +12,7 @@ from typing import (
 )
 
 from .constants import get_small_prime
+from .encode import BYTE_ENCODING, BYTE_ORDER
 from .group import (
     ElementModPOrQ,
     ElementModQ,
@@ -68,7 +69,7 @@ def hash_elems(*a: CryptoHashableAll) -> ElementModQ:
     :return: A cryptographic hash of these elements, concatenated.
     """
     h = sha256()
-    h.update("|".encode("utf-8"))
+    h.update("|".encode(BYTE_ENCODING))
     for x in a:
         # We could just use str(x) for everything, but then we'd have a resulting string
         # that's a bit Python-specific, and we'd rather make it easier for other languages
@@ -95,6 +96,8 @@ def hash_elems(*a: CryptoHashableAll) -> ElementModQ:
         else:
             hash_me = str(x)
 
-        h.update((hash_me + "|").encode("utf-8"))
+        h.update((hash_me + "|").encode(BYTE_ENCODING))
 
-    return ElementModQ(int.from_bytes(h.digest(), byteorder="big") % get_small_prime())
+    return ElementModQ(
+        int.from_bytes(h.digest(), byteorder=BYTE_ORDER) % get_small_prime()
+    )

@@ -11,6 +11,7 @@ from pydantic.tools import parse_raw_as, schema_json_of
 
 from .big_integer import BigInteger
 from .ballot_box import BallotBoxState
+from .encode import BYTE_ENCODING
 from .manifest import ElectionType, ReportingUnitType, VoteVariationType
 from .group import ElementModP, ElementModQ
 from .proof import ProofUsage
@@ -18,7 +19,6 @@ from .proof import ProofUsage
 _T = TypeVar("_T")
 
 _indent = 2
-_encoding = "utf-8"
 _file_extension = "json"
 
 _config = Config(
@@ -70,7 +70,7 @@ def from_file_wrapper(type_: Type[_T], file: TextIOWrapper) -> _T:
 def from_file(type_: Type[_T], path: Union[str, Path]) -> _T:
     """Deserialize json file as type."""
 
-    with open(path, "r", encoding=_encoding) as json_file:
+    with open(path, "r", encoding=BYTE_ENCODING) as json_file:
         data = json.load(json_file)
     return from_dict(type_, data, _config)
 
@@ -78,7 +78,7 @@ def from_file(type_: Type[_T], path: Union[str, Path]) -> _T:
 def from_list_in_file(type_: Type[_T], path: Union[str, Path]) -> List[_T]:
     """Deserialize json file that has an array of certain type."""
 
-    with open(path, "r", encoding=_encoding) as json_file:
+    with open(path, "r", encoding=BYTE_ENCODING) as json_file:
         data = json.load(json_file)
         ls: List[_T] = []
         for item in data:
@@ -109,7 +109,7 @@ def to_file(
     with open(
         construct_path(target_file_name, target_path),
         "w",
-        encoding=_encoding,
+        encoding=BYTE_ENCODING,
     ) as outfile:
         json.dump(data, outfile, indent=_indent, default=pydantic_encoder)
 

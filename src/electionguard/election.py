@@ -5,6 +5,7 @@ from typing import Dict, Optional
 
 from .constants import get_small_prime, get_large_prime, get_generator
 from .elgamal import ElGamalPublicKey
+from .encode import PaddedDataSize
 from .group import (
     ElementModQ,
     ElementModP,
@@ -25,6 +26,18 @@ class Configuration:
     """
     Maximum votes, the maximum votes allowed on a selection for an aggregate ballot or tally.
     This can also be seen as the maximum ballots where a selection on a ballot can only have one vote.
+    """
+
+    write_in_size: PaddedDataSize = field(default=PaddedDataSize.Bytes_64)
+    """
+    The size of a write-in that can be stored in a selection.
+    This is a padded data size so the value represents the space available for storage.
+    """
+
+    contest_error_size: PaddedDataSize = field(default=PaddedDataSize.Bytes_32)
+    """
+    The size of a error that can be stored in the contest.
+    This is a padded data size so the value represents the space available for storage.
     """
 
 
