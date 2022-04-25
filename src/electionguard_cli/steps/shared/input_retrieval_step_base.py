@@ -1,6 +1,5 @@
-from io import TextIOWrapper
-from click import echo
 from typing import Optional
+from io import TextIOWrapper
 
 from electionguard.manifest import InternationalizedText, Manifest
 from electionguard.serialize import (

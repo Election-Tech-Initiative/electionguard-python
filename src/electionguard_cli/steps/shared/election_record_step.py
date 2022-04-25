@@ -1,5 +1,5 @@
 from shutil import make_archive
-from os.path import splitext, dirname, basename
+from os.path import splitext
 from tempfile import TemporaryDirectory
 from click import echo
 from electionguard import to_file
