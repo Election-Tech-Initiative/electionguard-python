@@ -3,8 +3,6 @@
 from dataclasses import dataclass
 from typing import Dict, List, Optional, TypeVar
 
-from electionguard.utils import get_optional
-
 from .ballot import SubmittedBallot
 from .decryption import (
     compute_compensated_decryption_share,
@@ -151,7 +149,6 @@ class Guardian:
         election_keys: ElectionKeyPair = None,
         election_public_keys: Dict[GuardianId, ElectionPublicKey] = None,
         partial_key_backups: Dict[GuardianId, ElectionPartialKeyBackup] = None,
-        generate_key_pair: bool = True,
     ) -> None:
         """
         Initialize a guardian with the specified arguments.
@@ -176,10 +173,20 @@ class Guardian:
         )
         self._guardian_election_partial_key_verifications = {}
 
-        if election_keys is None and generate_key_pair:
-            self.generate_election_key_pair(None)
-        else:
-            self._election_keys = get_optional(election_keys)
+        if not election_keys is None:
+            self._election_keys = election_keys
+
+    @classmethod
+    def from_context_info(
+        cls,
+        id: str,
+        sequence_order: int,
+        number_of_guardians: int,
+        quorum: int,
+    ) -> "Guardian":
+        guardian = cls(id, sequence_order, number_of_guardians, quorum)
+        guardian.generate_election_key_pair(None)
+        return guardian
 
     @classmethod
     def from_nonce(
@@ -198,7 +205,6 @@ class Guardian:
             sequence_order,
             number_of_guardians,
             quorum,
-            generate_key_pair=False,
         )
         guardian.generate_election_key_pair(nonce_seed)
         return guardian

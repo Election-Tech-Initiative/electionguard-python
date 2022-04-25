@@ -11,7 +11,7 @@ class KeyCeremonyOrchestrator:
     @staticmethod
     def create_guardians(ceremony_details: CeremonyDetails) -> List[Guardian]:
         return [
-            Guardian(
+            Guardian.from_context_info(
                 str(i + 1),
                 i + 1,
                 ceremony_details.number_of_guardians,
