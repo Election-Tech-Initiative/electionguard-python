@@ -181,33 +181,6 @@ class Guardian:
         else:
             self._election_keys = get_optional(election_keys)
 
-    def reset(self, number_of_guardians: int, quorum: int) -> None:
-        """
-        Reset guardian to initial state.
-
-        :param number_of_guardians: Number of guardians in election
-        :param quorum: Quorum of guardians required to decrypt
-        """
-        self._backups_to_share.clear()
-        self._guardian_election_public_keys.clear()
-        self._guardian_election_partial_key_backups.clear()
-        self._guardian_election_partial_key_verifications.clear()
-        self.set_ceremony_details(number_of_guardians, quorum)
-        self.generate_election_key_pair()
-
-    def publish(self) -> GuardianRecord:
-        """Publish record of guardian with all required information."""
-        return publish_guardian_record(self._election_keys.share())
-
-    def export_private_data(self) -> PrivateGuardianRecord:
-        """Export private data of guardian. Warning cannot be published."""
-        return PrivateGuardianRecord(
-            self.id,
-            self._election_keys,
-            self._guardian_election_public_keys,
-            self._guardian_election_partial_key_backups,
-        )
-
     @classmethod
     def from_nonce(
         cls,
@@ -248,6 +221,33 @@ class Guardian:
         )
 
         return guardian
+
+    def reset(self, number_of_guardians: int, quorum: int) -> None:
+        """
+        Reset guardian to initial state.
+
+        :param number_of_guardians: Number of guardians in election
+        :param quorum: Quorum of guardians required to decrypt
+        """
+        self._backups_to_share.clear()
+        self._guardian_election_public_keys.clear()
+        self._guardian_election_partial_key_backups.clear()
+        self._guardian_election_partial_key_verifications.clear()
+        self.set_ceremony_details(number_of_guardians, quorum)
+        self.generate_election_key_pair()
+
+    def publish(self) -> GuardianRecord:
+        """Publish record of guardian with all required information."""
+        return publish_guardian_record(self._election_keys.share())
+
+    def export_private_data(self) -> PrivateGuardianRecord:
+        """Export private data of guardian. Warning cannot be published."""
+        return PrivateGuardianRecord(
+            self.id,
+            self._election_keys,
+            self._guardian_election_public_keys,
+            self._guardian_election_partial_key_backups,
+        )
 
     def set_ceremony_details(self, number_of_guardians: int, quorum: int) -> None:
         """
