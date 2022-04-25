@@ -208,8 +208,9 @@ class Guardian:
             self._guardian_election_partial_key_backups,
         )
 
-    @staticmethod
+    @classmethod
     def from_nonce(
+        cls,
         id: str,
         sequence_order: int,
         number_of_guardians: int,
@@ -219,7 +220,7 @@ class Guardian:
         """Creates a guardian with an `ElementModQ` value that will be used to generate
         the `ElectionKeyPair`. This method should generally only be used for testing."""
 
-        guardian = Guardian(
+        guardian = cls(
             id,
             sequence_order,
             number_of_guardians,
@@ -229,13 +230,14 @@ class Guardian:
         guardian.generate_election_key_pair(nonce_seed)
         return guardian
 
-    @staticmethod
+    @classmethod
     def from_private_record(
+        cls,
         private_guardian_record: PrivateGuardianRecord,
         number_of_guardians: int,
         quorum: int,
     ) -> "Guardian":
-        guardian = Guardian(
+        guardian = cls(
             private_guardian_record.guardian_id,
             private_guardian_record.election_keys.sequence_order,
             number_of_guardians,
