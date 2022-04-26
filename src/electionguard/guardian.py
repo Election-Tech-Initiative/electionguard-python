@@ -110,7 +110,6 @@ class PrivateGuardianRecord:
     """Verifications of other guardian's backups"""
 
 
-# pylint: disable=too-many-instance-attributes
 class Guardian:
     """
     Guardian of election responsible for safeguarding information and decrypting results.
@@ -119,11 +118,8 @@ class Guardian:
     The second half relates to the decryption process.
     """
 
-    id: str
-    sequence_order: int  # Cannot be zero
-    ceremony_details: CeremonyDetails
-
     _election_keys: ElectionKeyPair
+    ceremony_details: CeremonyDetails
 
     _backups_to_share: Dict[GuardianId, ElectionPartialKeyBackup]
     """
@@ -150,11 +146,8 @@ class Guardian:
 
     def __init__(
         self,
-        id: str,
-        sequence_order: int,
-        number_of_guardians: int,
-        quorum: int,
-        election_keys: ElectionKeyPair = None,
+        key_pair: ElectionKeyPair,
+        ceremony_details: CeremonyDetails,
         election_public_keys: Dict[GuardianId, ElectionPublicKey] = None,
         partial_key_backups: Dict[GuardianId, ElectionPartialKeyBackup] = None,
         backups_to_share: Dict[GuardianId, ElectionPartialKeyBackup] = None,
@@ -165,17 +158,16 @@ class Guardian:
         """
         Initialize a guardian with the specified arguments.
 
-        :param id: the unique identifier for the guardian
-        :param sequence_order: a unique number in [1, 256) that identifies this guardian
-        :param number_of_guardians: the total number of guardians that will participate in the election
-        :param quorum: the count of guardians necessary to decrypt
-        :param election_keys the private keys the guardian generated during a key ceremony
+        :param key_pair The key pair the guardian generated during a key ceremony
+        :param ceremony_details The details of the key ceremony
         :param election_public_keys the public keys the guardian generated during a key ceremony
         :param partial_key_backups the partial key backups the guardian generated during a key ceremony
         """
-        self.id = id
-        self.sequence_order = sequence_order
-        self.set_ceremony_details(number_of_guardians, quorum)
+
+        self._election_keys = key_pair
+        self.ceremony_details = ceremony_details
+
+        # Reduce this ⬇️
         self._backups_to_share = {} if backups_to_share is None else backups_to_share
         self._guardian_election_public_keys = (
             {} if election_public_keys is None else election_public_keys
@@ -189,20 +181,15 @@ class Guardian:
             else guardian_election_partial_key_verifications
         )
 
-        if not election_keys is None:
-            self._election_keys = election_keys
+        self.save_guardian_key(key_pair.share())
 
-    @classmethod
-    def from_context_info(
-        cls,
-        id: str,
-        sequence_order: int,
-        number_of_guardians: int,
-        quorum: int,
-    ) -> "Guardian":
-        guardian = cls(id, sequence_order, number_of_guardians, quorum)
-        guardian.generate_election_key_pair(None)
-        return guardian
+    @property
+    def id(self) -> GuardianId:
+        return self._election_keys.owner_id
+
+    @property
+    def sequence_order(self) -> int:
+        return self._election_keys.sequence_order
 
     @classmethod
     def from_nonce(
@@ -211,19 +198,14 @@ class Guardian:
         sequence_order: int,
         number_of_guardians: int,
         quorum: int,
-        nonce_seed: Optional[ElementModQ] = None,
+        nonce: ElementModQ = None,
     ) -> "Guardian":
         """Creates a guardian with an `ElementModQ` value that will be used to generate
-        the `ElectionKeyPair`. This method should generally only be used for testing."""
-
-        guardian = cls(
-            id,
-            sequence_order,
-            number_of_guardians,
-            quorum,
-        )
-        guardian.generate_election_key_pair(nonce_seed)
-        return guardian
+        the `ElectionKeyPair`. If no nonce provided, this will be generated automatically.
+        This method should generally only be used for testing."""
+        key_pair = generate_election_key_pair(id, sequence_order, quorum, nonce)
+        ceremony_details = CeremonyDetails(number_of_guardians, quorum)
+        return cls(key_pair, ceremony_details)
 
     @classmethod
     def from_private_record(
@@ -233,11 +215,8 @@ class Guardian:
         quorum: int,
     ) -> "Guardian":
         guardian = cls(
-            private_guardian_record.guardian_id,
-            private_guardian_record.election_keys.sequence_order,
-            number_of_guardians,
-            quorum,
             private_guardian_record.election_keys,
+            CeremonyDetails(number_of_guardians, quorum),
             private_guardian_record.guardian_election_public_keys,
             private_guardian_record.guardian_election_partial_key_backups,
             private_guardian_record.backups_to_share,
@@ -245,20 +224,6 @@ class Guardian:
         )
 
         return guardian
-
-    def reset(self, number_of_guardians: int, quorum: int) -> None:
-        """
-        Reset guardian to initial state.
-
-        :param number_of_guardians: Number of guardians in election
-        :param quorum: Quorum of guardians required to decrypt
-        """
-        self._backups_to_share.clear()
-        self._guardian_election_public_keys.clear()
-        self._guardian_election_partial_key_backups.clear()
-        self._guardian_election_partial_key_verifications.clear()
-        self.set_ceremony_details(number_of_guardians, quorum)
-        self.generate_election_key_pair()
 
     def publish(self) -> GuardianRecord:
         """Publish record of guardian with all required information."""
@@ -285,13 +250,6 @@ class Guardian:
         self.ceremony_details = CeremonyDetails(number_of_guardians, quorum)
 
     # Public Keys
-    def generate_election_key_pair(self, nonce: ElementModQ = None) -> None:
-        """Generate election key pair for encrypting/decrypting election."""
-        self._election_keys = generate_election_key_pair(
-            self.id, self.sequence_order, self.ceremony_details.quorum, nonce
-        )
-        self.save_guardian_key(self.share_key())
-
     def share_key(self) -> ElectionPublicKey:
         """
         Share election public key with another guardian.

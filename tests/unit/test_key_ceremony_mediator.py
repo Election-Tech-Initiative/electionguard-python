@@ -27,10 +27,10 @@ class TestKeyCeremonyMediator(BaseTestCase):
 
     def setUp(self) -> None:
         super().setUp()
-        self.GUARDIAN_1 = Guardian.from_context_info(
+        self.GUARDIAN_1 = Guardian.from_nonce(
             GUARDIAN_1_ID, 1, NUMBER_OF_GUARDIANS, QUORUM
         )
-        self.GUARDIAN_2 = Guardian.from_context_info(
+        self.GUARDIAN_2 = Guardian.from_nonce(
             GUARDIAN_2_ID, 2, NUMBER_OF_GUARDIANS, QUORUM
         )
         self.GUARDIANS = [self.GUARDIAN_1, self.GUARDIAN_2]

@@ -25,7 +25,7 @@ class TestGuardian(BaseTestCase):
 
     def test_import_from_guardian_private_record(self) -> None:
         # Arrange
-        guardian_expected = Guardian.from_context_info(
+        guardian_expected = Guardian.from_nonce(
             SENDER_GUARDIAN_ID, SENDER_SEQUENCE_ORDER, NUMBER_OF_GUARDIANS, QUORUM
         )
         private_guardian_record = guardian_expected.export_private_data()
@@ -51,7 +51,7 @@ class TestGuardian(BaseTestCase):
 
     def test_set_ceremony_details(self) -> None:
         # Arrange
-        guardian = Guardian.from_context_info(
+        guardian = Guardian.from_nonce(
             SENDER_GUARDIAN_ID, SENDER_SEQUENCE_ORDER, NUMBER_OF_GUARDIANS, QUORUM
         )
         expected_number_of_guardians = 10
@@ -68,7 +68,7 @@ class TestGuardian(BaseTestCase):
 
     def test_share_key(self) -> None:
         # Arrange
-        guardian = Guardian.from_context_info(
+        guardian = Guardian.from_nonce(
             SENDER_GUARDIAN_ID, SENDER_SEQUENCE_ORDER, NUMBER_OF_GUARDIANS, QUORUM
         )
 
@@ -84,10 +84,10 @@ class TestGuardian(BaseTestCase):
 
     def test_save_guardian_key(self) -> None:
         # Arrange
-        guardian = Guardian.from_context_info(
+        guardian = Guardian.from_nonce(
             SENDER_GUARDIAN_ID, SENDER_SEQUENCE_ORDER, NUMBER_OF_GUARDIANS, QUORUM
         )
-        other_guardian = Guardian.from_context_info(
+        other_guardian = Guardian.from_nonce(
             RECIPIENT_GUARDIAN_ID, RECIPIENT_SEQUENCE_ORDER, NUMBER_OF_GUARDIANS, QUORUM
         )
         key = other_guardian.share_key()
@@ -100,10 +100,10 @@ class TestGuardian(BaseTestCase):
 
     def test_all_guardian_keys_received(self) -> None:
         # Arrange
-        guardian = Guardian.from_context_info(
+        guardian = Guardian.from_nonce(
             SENDER_GUARDIAN_ID, SENDER_SEQUENCE_ORDER, NUMBER_OF_GUARDIANS, QUORUM
         )
-        other_guardian = Guardian.from_context_info(
+        other_guardian = Guardian.from_nonce(
             RECIPIENT_GUARDIAN_ID, RECIPIENT_SEQUENCE_ORDER, NUMBER_OF_GUARDIANS, QUORUM
         )
         key = other_guardian.share_key()
@@ -115,28 +115,12 @@ class TestGuardian(BaseTestCase):
         # Assert
         self.assertTrue(guardian.all_guardian_keys_received())
 
-    def test_generate_election_key_pair(self) -> None:
-        # Arrange
-        guardian = Guardian.from_context_info(
-            SENDER_GUARDIAN_ID, SENDER_SEQUENCE_ORDER, NUMBER_OF_GUARDIANS, QUORUM
-        )
-        first_public_key = guardian.share_key()
-
-        # Act
-        guardian.generate_election_key_pair()
-        second_public_key = guardian.share_key()
-
-        # Assert
-        self.assertIsNotNone(second_public_key)
-        self.assertIsNotNone(second_public_key.key)
-        self.assertNotEqual(first_public_key.key, second_public_key.key)
-
     def test_share_backups(self) -> None:
         # Arrange
-        guardian = Guardian.from_context_info(
+        guardian = Guardian.from_nonce(
             SENDER_GUARDIAN_ID, SENDER_SEQUENCE_ORDER, NUMBER_OF_GUARDIANS, QUORUM
         )
-        other_guardian = Guardian.from_context_info(
+        other_guardian = Guardian.from_nonce(
             RECIPIENT_GUARDIAN_ID, RECIPIENT_SEQUENCE_ORDER, NUMBER_OF_GUARDIANS, QUORUM
         )
         guardian.save_guardian_key(other_guardian.share_key())
@@ -159,10 +143,10 @@ class TestGuardian(BaseTestCase):
 
     def test_save_election_partial_key_backup(self) -> None:
         # Arrange
-        guardian = Guardian.from_context_info(
+        guardian = Guardian.from_nonce(
             SENDER_GUARDIAN_ID, SENDER_SEQUENCE_ORDER, NUMBER_OF_GUARDIANS, QUORUM
         )
-        other_guardian = Guardian.from_context_info(
+        other_guardian = Guardian.from_nonce(
             RECIPIENT_GUARDIAN_ID, RECIPIENT_SEQUENCE_ORDER, NUMBER_OF_GUARDIANS, QUORUM
         )
         guardian.save_guardian_key(other_guardian.share_key())
@@ -178,10 +162,10 @@ class TestGuardian(BaseTestCase):
     def test_all_election_partial_key_backups_received(self) -> None:
         # Arrange
         # Round 1
-        guardian = Guardian.from_context_info(
+        guardian = Guardian.from_nonce(
             SENDER_GUARDIAN_ID, SENDER_SEQUENCE_ORDER, NUMBER_OF_GUARDIANS, QUORUM
         )
-        other_guardian = Guardian.from_context_info(
+        other_guardian = Guardian.from_nonce(
             RECIPIENT_GUARDIAN_ID, RECIPIENT_SEQUENCE_ORDER, NUMBER_OF_GUARDIANS, QUORUM
         )
         guardian.save_guardian_key(other_guardian.share_key())
@@ -199,10 +183,10 @@ class TestGuardian(BaseTestCase):
     def test_verify_election_partial_key_backup(self) -> None:
         # Arrange
         # Round 1
-        guardian = Guardian.from_context_info(
+        guardian = Guardian.from_nonce(
             SENDER_GUARDIAN_ID, SENDER_SEQUENCE_ORDER, NUMBER_OF_GUARDIANS, QUORUM
         )
-        other_guardian = Guardian.from_context_info(
+        other_guardian = Guardian.from_nonce(
             RECIPIENT_GUARDIAN_ID, RECIPIENT_SEQUENCE_ORDER, NUMBER_OF_GUARDIANS, QUORUM
         )
         guardian.save_guardian_key(other_guardian.share_key())
@@ -227,13 +211,13 @@ class TestGuardian(BaseTestCase):
 
     def test_verify_election_partial_key_challenge(self) -> None:
         # Arrange
-        guardian = Guardian.from_context_info(
+        guardian = Guardian.from_nonce(
             SENDER_GUARDIAN_ID, SENDER_SEQUENCE_ORDER, NUMBER_OF_GUARDIANS, QUORUM
         )
-        other_guardian = Guardian.from_context_info(
+        other_guardian = Guardian.from_nonce(
             RECIPIENT_GUARDIAN_ID, RECIPIENT_SEQUENCE_ORDER, NUMBER_OF_GUARDIANS, QUORUM
         )
-        alternate_verifier = Guardian.from_context_info(
+        alternate_verifier = Guardian.from_nonce(
             ALTERNATE_VERIFIER_ID,
             ALTERNATE_VERIFIER_SEQUENCE_ORDER,
             NUMBER_OF_GUARDIANS,
@@ -257,10 +241,10 @@ class TestGuardian(BaseTestCase):
 
     def test_publish_election_backup_challenge(self) -> None:
         # Arrange
-        guardian = Guardian.from_context_info(
+        guardian = Guardian.from_nonce(
             SENDER_GUARDIAN_ID, SENDER_SEQUENCE_ORDER, NUMBER_OF_GUARDIANS, QUORUM
         )
-        other_guardian = Guardian.from_context_info(
+        other_guardian = Guardian.from_nonce(
             RECIPIENT_GUARDIAN_ID, RECIPIENT_SEQUENCE_ORDER, NUMBER_OF_GUARDIANS, QUORUM
         )
         guardian.save_guardian_key(other_guardian.share_key())
@@ -282,10 +266,10 @@ class TestGuardian(BaseTestCase):
     def test_save_election_partial_key_verification(self) -> None:
         # Arrange
         # Round 1
-        guardian = Guardian.from_context_info(
+        guardian = Guardian.from_nonce(
             SENDER_GUARDIAN_ID, SENDER_SEQUENCE_ORDER, NUMBER_OF_GUARDIANS, QUORUM
         )
-        other_guardian = Guardian.from_context_info(
+        other_guardian = Guardian.from_nonce(
             RECIPIENT_GUARDIAN_ID, RECIPIENT_SEQUENCE_ORDER, NUMBER_OF_GUARDIANS, QUORUM
         )
         guardian.save_guardian_key(other_guardian.share_key())
@@ -308,10 +292,10 @@ class TestGuardian(BaseTestCase):
     def test_all_election_partial_key_backups_verified(self) -> None:
         # Arrange
         # Round 1
-        guardian = Guardian.from_context_info(
+        guardian = Guardian.from_nonce(
             SENDER_GUARDIAN_ID, SENDER_SEQUENCE_ORDER, NUMBER_OF_GUARDIANS, QUORUM
         )
-        other_guardian = Guardian.from_context_info(
+        other_guardian = Guardian.from_nonce(
             RECIPIENT_GUARDIAN_ID, RECIPIENT_SEQUENCE_ORDER, NUMBER_OF_GUARDIANS, QUORUM
         )
         guardian.save_guardian_key(other_guardian.share_key())
@@ -335,10 +319,10 @@ class TestGuardian(BaseTestCase):
     def test_publish_joint_key(self) -> None:
         # Arrange
         # Round 1
-        guardian = Guardian.from_context_info(
+        guardian = Guardian.from_nonce(
             SENDER_GUARDIAN_ID, SENDER_SEQUENCE_ORDER, NUMBER_OF_GUARDIANS, QUORUM
         )
-        other_guardian = Guardian.from_context_info(
+        other_guardian = Guardian.from_nonce(
             RECIPIENT_GUARDIAN_ID, RECIPIENT_SEQUENCE_ORDER, NUMBER_OF_GUARDIANS, QUORUM
         )
         guardian.save_guardian_key(other_guardian.share_key())
