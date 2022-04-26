@@ -8,7 +8,7 @@ from .import_ballots_input_retrieval_step import ImportBallotsInputRetrievalStep
 from .import_ballots_election_builder_step import ImportBallotsElectionBuilderStep
 
 
-@click.command()
+@click.command("import-ballots")
 @click.option(
     "--manifest",
     prompt="Manifest file",
@@ -34,7 +34,7 @@ from .import_ballots_election_builder_step import ImportBallotsElectionBuilderSt
     + "This corresponds to the output-keys parameter of the e2e command.",
     type=click.Path(exists=True, dir_okay=False, file_okay=True, resolve_path=True),
 )
-def import_ballots(
+def ImportBallotsCommand(
     manifest: TextIOWrapper,
     context: TextIOWrapper,
     ballots_dir: str,

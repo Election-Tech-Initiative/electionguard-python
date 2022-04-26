@@ -29,12 +29,12 @@ from electionguard_cli.cli_steps import (
     tally_step,
 )
 from electionguard_cli.e2e import (
+    E2eCommand,
     E2eInputRetrievalStep,
     E2eInputs,
     ElectionRecordStep,
     KeyCeremonyStep,
     SubmitVotesStep,
-    e2e,
     e2e_command,
     e2e_input_retrieval_step,
     e2e_inputs,
@@ -44,10 +44,10 @@ from electionguard_cli.e2e import (
 )
 from electionguard_cli.import_ballots import (
     ImportBallotInputs,
+    ImportBallotsCommand,
     ImportBallotsElectionBuilderStep,
     ImportBallotsInputRetrievalStep,
     import_ballot_inputs,
-    import_ballots,
     import_ballots_command,
     import_ballots_election_builder_step,
     import_ballots_input_retrieval_step,
@@ -61,6 +61,7 @@ __all__ = [
     "CliElectionInputsBase",
     "CliStepBase",
     "DecryptStep",
+    "E2eCommand",
     "E2eDecryptResults",
     "E2eInputRetrievalStep",
     "E2eInputs",
@@ -68,6 +69,7 @@ __all__ = [
     "ElectionBuilderStep",
     "ElectionRecordStep",
     "ImportBallotInputs",
+    "ImportBallotsCommand",
     "ImportBallotsElectionBuilderStep",
     "ImportBallotsInputRetrievalStep",
     "InputRetrievalStepBase",

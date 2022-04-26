@@ -7,7 +7,7 @@ from electionguard_cli.import_ballots.import_ballot_inputs import (
     ImportBallotInputs,
 )
 from electionguard_cli.import_ballots.import_ballots_command import (
-    import_ballots,
+    ImportBallotsCommand,
 )
 from electionguard_cli.import_ballots.import_ballots_election_builder_step import (
     ImportBallotsElectionBuilderStep,
@@ -18,10 +18,10 @@ from electionguard_cli.import_ballots.import_ballots_input_retrieval_step import
 
 __all__ = [
     "ImportBallotInputs",
+    "ImportBallotsCommand",
     "ImportBallotsElectionBuilderStep",
     "ImportBallotsInputRetrievalStep",
     "import_ballot_inputs",
-    "import_ballots",
     "import_ballots_command",
     "import_ballots_election_builder_step",
     "import_ballots_input_retrieval_step",

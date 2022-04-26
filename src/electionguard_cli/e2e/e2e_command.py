@@ -13,7 +13,7 @@ from .submit_votes_step import SubmitVotesStep
 from .election_record_step import ElectionRecordStep
 
 
-@click.command()
+@click.command("e2e")
 @click.option(
     "--guardian-count",
     prompt="Number of guardians",
@@ -64,7 +64,7 @@ from .election_record_step import ElectionRecordStep
     type=click.Path(exists=False, dir_okay=True, file_okay=False, resolve_path=True),
     default=None,
 )
-def e2e(
+def E2eCommand(
     guardian_count: int,
     quorum: int,
     manifest: TextIOWrapper,
