@@ -55,8 +55,6 @@ class E2eInputRetrievalStep(InputRetrievalStepBase):
         guardians: List[Guardian] = []
         for i in range(number_of_guardians):
             guardians.append(
-                Guardian.from_context_info(
-                    str(i + 1), i + 1, number_of_guardians, quorum
-                )
+                Guardian.from_nonce(str(i + 1), i + 1, number_of_guardians, quorum)
             )
         return guardians
