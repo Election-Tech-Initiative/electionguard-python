@@ -1,5 +1,5 @@
 # pylint: disable=too-many-public-methods
-# pylint: disable=too-many-instance-attributes
+
 from dataclasses import dataclass
 from typing import Dict, List, Optional, TypeVar
 
