@@ -78,5 +78,5 @@ class ElectionRecordStep(CliStepBase):
             f"Exported {len(private_guardian_records)} private guardian keys to '{election_inputs.output_keys}'"
         )
         self.print_warning(
-            f"The files in {file_path} can decrypt an entire election. Protect the folder securely and do not share it."
+            f"The files in {file_path} are secret and should be protected securely and not shared publicly."
         )
