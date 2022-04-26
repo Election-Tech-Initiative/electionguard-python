@@ -1,13 +1,17 @@
 from io import TextIOWrapper
 import click
-from ..e2e_steps import (
-    ElectionBuilderStep,
+
+from ..steps.e2e import (
+    E2eInputRetrievalStep,
     KeyCeremonyStep,
     SubmitVotesStep,
+)
+from ..steps.shared import (
+    ElectionBuilderStep,
     DecryptStep,
     PrintResultsStep,
-    InputRetrievalStep,
     ElectionRecordStep,
+    TallyStep,
 )
 
 
@@ -45,10 +49,21 @@ from ..e2e_steps import (
     prompt_required=False,
 )
 @click.option(
-    "--output-file",
+    "--output-record",
     help="A file name for saving an output election record (e.g. './election.zip')."
     + " If no value provided then an election record will not be generated.",
-    type=click.Path(exists=False),
+    type=click.Path(
+        exists=False,
+        dir_okay=False,
+        file_okay=True,
+    ),
+    default=None,
+)
+@click.option(
+    "--output-keys",
+    help="A directory for saving the private and public guardian keys (e.g. './guardian-keys')."
+    + " If no value provided then no keys will be output.",
+    type=click.Path(exists=False, dir_okay=True, file_okay=False, resolve_path=True),
     default=None,
 )
 def e2e(
@@ -57,31 +72,38 @@ def e2e(
     manifest: TextIOWrapper,
     ballots: TextIOWrapper,
     spoil_id: str,
-    output_file: str,
+    output_record: str,
+    output_keys: str,
 ) -> None:
     """Runs through an end-to-end election."""
 
     # get user inputs
-    election_inputs = InputRetrievalStep().get_inputs(
-        guardian_count, quorum, manifest, ballots, spoil_id, output_file
+    election_inputs = E2eInputRetrievalStep().get_inputs(
+        guardian_count, quorum, manifest, ballots, spoil_id, output_record, output_keys
     )
 
     # perform election
-    joint_key = KeyCeremonyStep().run_key_ceremony(election_inputs)
-    build_election_results = ElectionBuilderStep().build_election(
+    joint_key = KeyCeremonyStep().run_key_ceremony(election_inputs.guardians)
+    build_election_results = ElectionBuilderStep().build_election_with_key(
         election_inputs, joint_key
     )
     submit_results = SubmitVotesStep().submit_votes(
         election_inputs, build_election_results
     )
-    decrypt_results = DecryptStep().decrypt_tally(
-        submit_results.data_store, election_inputs.guardians, build_election_results
+    (ciphertext_tally, spoiled_ballots) = TallyStep().get_from_ballot_store(
+        build_election_results, submit_results.data_store
+    )
+    decrypt_results = DecryptStep().decrypt(
+        ciphertext_tally,
+        spoiled_ballots,
+        election_inputs.guardians,
+        build_election_results,
     )
 
     # print results
-    PrintResultsStep().print_election_results(election_inputs, decrypt_results)
+    PrintResultsStep().print_election_results(decrypt_results)
 
     # publish election record
-    ElectionRecordStep().run(
+    ElectionRecordStep().export(
         election_inputs, build_election_results, submit_results, decrypt_results
     )

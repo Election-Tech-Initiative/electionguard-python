@@ -1,3 +1,5 @@
+from typing import List
+from electionguard.guardian import Guardian
 from electionguard.key_ceremony import (
     ElectionJointKey,
 )
@@ -7,17 +9,15 @@ from electionguard_tools.helpers.key_ceremony_orchestrator import (
     KeyCeremonyOrchestrator,
 )
 
-from ..cli_models.e2e_inputs import E2eInputs
-from .e2e_step_base import E2eStepBase
+from ..shared.cli_step_base import CliStepBase
 
 
-class KeyCeremonyStep(E2eStepBase):
+class KeyCeremonyStep(CliStepBase):
     """Responsible for running a key ceremony and producing an elgamal public key given a list of guardians."""
 
-    def run_key_ceremony(self, election_inputs: E2eInputs) -> ElectionJointKey:
+    def run_key_ceremony(self, guardians: List[Guardian]) -> ElectionJointKey:
         self.print_header("Performing key ceremony")
 
-        guardians = election_inputs.guardians
         mediator: KeyCeremonyMediator = KeyCeremonyMediator(
             "mediator_1", guardians[0].ceremony_details
         )
