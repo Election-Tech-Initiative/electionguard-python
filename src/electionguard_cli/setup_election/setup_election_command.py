@@ -1,6 +1,7 @@
 from io import TextIOWrapper
 import click
 
+from ..cli_steps import KeyCeremonyStep
 from .setup_input_retrieval_step import SetupInputRetrievalStep
 
 
@@ -37,3 +38,6 @@ def SetupElectionCommand(
     election_inputs = SetupInputRetrievalStep().get_inputs(
         guardian_count, quorum, manifest
     )
+
+    # perform election
+    joint_key = KeyCeremonyStep().run_key_ceremony(election_inputs.guardians)
