@@ -65,7 +65,7 @@ class InputRetrievalStep(E2eStepBase):
         guardians: List[Guardian] = []
         for i in range(number_of_guardians):
             guardians.append(
-                Guardian(
+                Guardian.from_nonce(
                     str(i + 1),
                     i + 1,
                     number_of_guardians,

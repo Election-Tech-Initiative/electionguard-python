@@ -184,7 +184,7 @@ class TestEndToEndElection(BaseTestCase):
         # Setup Guardians
         for i in range(self.NUMBER_OF_GUARDIANS):
             self.guardians.append(
-                Guardian(
+                Guardian.from_nonce(
                     str(i + 1),
                     i + 1,
                     self.NUMBER_OF_GUARDIANS,
