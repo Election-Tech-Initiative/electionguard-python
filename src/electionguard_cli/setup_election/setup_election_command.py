@@ -1,10 +1,39 @@
+from io import TextIOWrapper
 import click
+
+from .setup_input_retrieval_step import SetupInputRetrievalStep
 
 
 @click.command("setup")
-def SetupElectionCommand() -> None:
+@click.option(
+    "--guardian-count",
+    prompt="Number of guardians",
+    help="The number of guardians that will participate in the key ceremony and tally.",
+    type=click.INT,
+)
+@click.option(
+    "--quorum",
+    prompt="Quorum",
+    help="The minimum number of guardians required to show up to the tally.",
+    type=click.INT,
+)
+@click.option(
+    "--manifest",
+    prompt="Manifest file",
+    help="The location of an election manifest.",
+    type=click.File(),
+)
+def SetupElectionCommand(
+    guardian_count: int,
+    quorum: int,
+    manifest: TextIOWrapper,
+) -> None:
     """
-    This command runs an automated key ceremony and produces the files necessary to both encrypt ballots, decrypt an election, and produce an election record.
+    This command runs an automated key ceremony and produces the files
+    necessary to both encrypt ballots, decrypt an election, and produce an election record.
     """
 
-    click.echo("Hello")
+    # get user inputs
+    election_inputs = SetupInputRetrievalStep().get_inputs(
+        guardian_count, quorum, manifest
+    )
