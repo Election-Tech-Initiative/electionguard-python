@@ -1,18 +1,16 @@
 from io import TextIOWrapper
 import click
 
-from ..steps.e2e import (
-    E2eInputRetrievalStep,
-    KeyCeremonyStep,
-    SubmitVotesStep,
-)
-from ..steps.shared import (
+from ..cli_steps import (
     ElectionBuilderStep,
     DecryptStep,
     PrintResultsStep,
-    ElectionRecordStep,
     TallyStep,
 )
+from .e2e_input_retrieval_step import E2eInputRetrievalStep
+from .key_ceremony_step import KeyCeremonyStep
+from .submit_votes_step import SubmitVotesStep
+from .election_record_step import ElectionRecordStep
 
 
 @click.command()

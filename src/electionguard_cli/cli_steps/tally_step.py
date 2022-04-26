@@ -5,7 +5,7 @@ from electionguard.tally import CiphertextTally
 from electionguard.ballot_box import get_ballots
 from electionguard.ballot import BallotBoxState, SubmittedBallot
 
-from electionguard_cli.cli_models import BuildElectionResults
+from ..cli_models import BuildElectionResults
 from .cli_step_base import CliStepBase
 
 

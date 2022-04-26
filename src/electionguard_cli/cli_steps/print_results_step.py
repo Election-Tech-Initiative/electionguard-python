@@ -5,7 +5,7 @@ from electionguard.tally import (
     PlaintextTally,
 )
 
-from electionguard_cli.cli_models import E2eDecryptResults
+from ..cli_models import E2eDecryptResults
 from .cli_step_base import CliStepBase
 
 

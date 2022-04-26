@@ -1,15 +1,11 @@
 from io import TextIOWrapper
 import click
 
-from ..steps.shared import (
-    DecryptStep,
-    PrintResultsStep,
-    ElectionBuilderStep,
-    TallyStep,
-)
-from ..steps.import_ballots import (
-    ImportBallotsInputRetrievalStep,
-)
+from ..cli_steps.decrypt_step import DecryptStep
+from ..cli_steps.print_results_step import PrintResultsStep
+from ..cli_steps.tally_step import TallyStep
+from .import_ballots_input_retrieval_step import ImportBallotsInputRetrievalStep
+from .import_ballots_election_builder_step import ImportBallotsElectionBuilderStep
 
 
 @click.command()
@@ -54,8 +50,8 @@ def import_ballots(
     )
 
     # perform election
-    build_election_results = ElectionBuilderStep().build_election_with_context(
-        election_inputs
+    build_election_results = (
+        ImportBallotsElectionBuilderStep().build_election_with_context(election_inputs)
     )
     (ciphertext_tally, spoiled_ballots) = TallyStep().get_from_ballots(
         build_election_results, election_inputs.submitted_ballots

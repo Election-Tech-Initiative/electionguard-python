@@ -3,12 +3,8 @@ from electionguard.group import ElementModQ
 from electionguard.key_ceremony import ElectionJointKey
 from electionguard.election_builder import ElectionBuilder
 from electionguard.utils import get_optional
-from electionguard_cli.cli_models.e2e.e2e_inputs import CliElectionInputsBase
 
-from electionguard_cli.cli_models import BuildElectionResults
-from electionguard_cli.cli_models.import_ballots.import_ballot_inputs import (
-    ImportBallotInputs,
-)
+from ..cli_models import CliElectionInputsBase, BuildElectionResults
 from .cli_step_base import CliStepBase
 
 
@@ -22,15 +18,6 @@ class ElectionBuilderStep(CliStepBase):
     ) -> BuildElectionResults:
         return self._build_election(
             election_inputs, joint_key.joint_public_key, joint_key.commitment_hash
-        )
-
-    def build_election_with_context(
-        self, election_inputs: ImportBallotInputs
-    ) -> BuildElectionResults:
-        return self._build_election(
-            election_inputs,
-            election_inputs.context.elgamal_public_key,
-            election_inputs.context.commitment_hash,
         )
 
     def _build_election(
