@@ -11,7 +11,7 @@ from pydantic.tools import parse_raw_as, schema_json_of
 
 from .big_integer import BigInteger
 from .ballot_box import BallotBoxState
-from .encode import BYTE_ENCODING
+from .encode import BYTE_ENCODING, PaddedDataSize
 from .manifest import ElectionType, ReportingUnitType, VoteVariationType
 from .group import ElementModP, ElementModQ
 from .proof import ProofUsage
@@ -31,6 +31,7 @@ _config = Config(
         ElectionType,
         ReportingUnitType,
         VoteVariationType,
+        PaddedDataSize,
         ProofUsage,
     ],
     type_hooks={datetime: datetime.fromisoformat},
