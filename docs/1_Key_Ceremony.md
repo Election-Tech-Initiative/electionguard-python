@@ -73,7 +73,7 @@ guardians: List[Guardian]
 # Setup Guardians
 for i in range(NUMBER_OF_GUARDIANS):
   guardians.append(
-    Guardian.from_context_info(f"some_guardian_id_{str(i)}", i, NUMBER_OF_GUARDIANS, QUORUM)
+    Guardian.from_nonce(f"some_guardian_id_{str(i)}", i, NUMBER_OF_GUARDIANS, QUORUM)
   )
 
 mediator = KeyCeremonyMediator(details)
