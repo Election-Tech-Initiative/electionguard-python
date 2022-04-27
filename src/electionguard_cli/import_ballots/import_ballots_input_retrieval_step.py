@@ -27,6 +27,7 @@ class ImportBallotsInputRetrievalStep(InputRetrievalStepBase):
         context_file: TextIOWrapper,
         ballots_dir: str,
         guardian_keys: str,
+        output_record: str,
     ) -> ImportBallotInputs:
 
         self.print_header("Retrieving Inputs")
@@ -39,7 +40,9 @@ class ImportBallotsInputRetrievalStep(InputRetrievalStepBase):
 
         self.print_value("Ballots Dir", ballots_dir)
 
-        return ImportBallotInputs(guardians, manifest, submitted_ballots, context)
+        return ImportBallotInputs(
+            guardians, manifest, submitted_ballots, context, output_record
+        )
 
     @staticmethod
     def _get_guardians_from_keys(

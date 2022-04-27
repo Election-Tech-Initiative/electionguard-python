@@ -34,11 +34,23 @@ from .import_ballots_election_builder_step import ImportBallotsElectionBuilderSt
     + "This corresponds to the output-keys parameter of the e2e command.",
     type=click.Path(exists=True, dir_okay=False, file_okay=True, resolve_path=True),
 )
+@click.option(
+    "--output-record",
+    help="A file name for saving an output election record (e.g. './election.zip')."
+    + " If no value provided then an election record will not be generated.",
+    type=click.Path(
+        exists=False,
+        dir_okay=False,
+        file_okay=True,
+    ),
+    default=None,
+)
 def ImportBallotsCommand(
     manifest: TextIOWrapper,
     context: TextIOWrapper,
     ballots_dir: str,
     guardian_keys: str,
+    output_record: str,
 ) -> None:
     """
     Imports ballots
@@ -46,7 +58,7 @@ def ImportBallotsCommand(
 
     # get user inputs
     election_inputs = ImportBallotsInputRetrievalStep().get_inputs(
-        manifest, context, ballots_dir, guardian_keys
+        manifest, context, ballots_dir, guardian_keys, output_record
     )
 
     # perform election
@@ -65,3 +77,5 @@ def ImportBallotsCommand(
 
     # print results
     PrintResultsStep().print_election_results(decrypt_results)
+
+    #

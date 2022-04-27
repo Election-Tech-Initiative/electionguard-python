@@ -18,6 +18,7 @@ class ImportBallotInputs(CliElectionInputsBase):
         manifest: Manifest,
         submitted_ballots: List[SubmittedBallot],
         context: CiphertextElectionContext,
+        output_record: str,
     ):
         self.guardian_count = context.number_of_guardians
         self.quorum = context.quorum
@@ -25,6 +26,8 @@ class ImportBallotInputs(CliElectionInputsBase):
         self.manifest = manifest
         self.submitted_ballots = submitted_ballots
         self.context = context
+        self.output_record = output_record
 
     submitted_ballots: List[SubmittedBallot]
     context: CiphertextElectionContext
+    output_record: str
