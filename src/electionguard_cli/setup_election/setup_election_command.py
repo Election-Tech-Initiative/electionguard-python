@@ -37,7 +37,7 @@ def SetupElectionCommand(
 ) -> None:
     """
     This command runs an automated key ceremony and produces the files
-    necessary to both encrypt ballots, decrypt an election, and produce an election record.
+    necessary to encrypt ballots, decrypt an election, and produce an election record.
     """
 
     # get user inputs

@@ -45,7 +45,7 @@ class OutputSetupFilesStep(OutputStepBase):
                 GUARDIAN_PREFIX + guardian_record.guardian_id,
                 guardian_records_dir,
             )
-        self.print_value("Guradian records", guardian_records_dir)
+        self.print_value("Guardian records", guardian_records_dir)
 
     def _export_guardian_private_keys(self, setup_inputs: SetupInputs) -> None:
         guardian_keys_dir = join(setup_inputs.out, "guardian_private_data")

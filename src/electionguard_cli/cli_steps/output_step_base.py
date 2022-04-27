@@ -38,8 +38,8 @@ class OutputStepBase(CliStepBase):
         self,
         title: str,
         content: Any,
-        file_name: str,
         file_dir: str,
+        file_name: str,
         file_extension: str = "json",
     ) -> None:
         to_file(content, file_name, file_dir)
