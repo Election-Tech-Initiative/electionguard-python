@@ -1,6 +1,7 @@
 from io import TextIOWrapper
 import click
 
+from .output_setup_files_step import OutputSetupFilesStep
 from ..cli_steps import KeyCeremonyStep, ElectionBuilderStep
 from .setup_input_retrieval_step import SetupInputRetrievalStep
 
@@ -44,3 +45,4 @@ def SetupElectionCommand(
     build_election_results = ElectionBuilderStep().build_election_with_key(
         election_inputs, joint_key
     )
+    OutputSetupFilesStep().output(build_election_results)
