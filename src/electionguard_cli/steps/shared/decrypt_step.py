@@ -1,21 +1,16 @@
 from typing import List
 import click
-from electionguard_cli.cli_models import BuildElectionResults, E2eDecryptResults
-from electionguard.decryption_share import DecryptionShare
-from electionguard.election import CiphertextElectionContext
-from electionguard.data_store import DataStore
-from electionguard.ballot_box import get_ballots
 from electionguard.guardian import Guardian
 from electionguard.utils import get_optional
-from electionguard.ballot import BallotBoxState, SubmittedBallot
-from electionguard.tally import CiphertextTally, tally_ballots
+from electionguard.ballot import SubmittedBallot
+from electionguard.tally import CiphertextTally
 from electionguard.decryption_mediator import DecryptionMediator
 from electionguard.election_polynomial import LagrangeCoefficientsRecord
+from electionguard_cli.cli_models import BuildElectionResults, E2eDecryptResults
+from .cli_step_base import CliStepBase
 
-from .e2e_step_base import E2eStepBase
 
-
-class DecryptStep(E2eStepBase):
+class DecryptStep(CliStepBase):
     """Responsible for decrypting a tally and/or cast ballots"""
 
     def _get_lagrange_coefficients(
@@ -28,17 +23,19 @@ class DecryptStep(E2eStepBase):
         self.print_value("Lagrange coefficients retrieved", coefficient_count)
         return lagrange_coefficients
 
-    def decrypt_tally(
+    def decrypt(
         self,
-        ballot_store: DataStore,
+        ciphertext_tally: CiphertextTally,
+        spoiled_ballots: List[SubmittedBallot],
         guardians: List[Guardian],
         build_election_results: BuildElectionResults,
     ) -> E2eDecryptResults:
         self.print_header("Decrypting tally")
 
-        ciphertext_tally = _get_tally(ballot_store, build_election_results)
-        spoiled_ballots = _get_spoiled_ballots(ballot_store)
-        decryption_mediator = _get_decryption_mediator(build_election_results)
+        decryption_mediator = DecryptionMediator(
+            "decryption-mediator",
+            build_election_results.context,
+        )
         context = build_election_results.context
 
         self.print_value("Cast ballots", ciphertext_tally.cast())
@@ -48,7 +45,9 @@ class DecryptStep(E2eStepBase):
         count = 0
         for guardian in guardians:
             guardian_key = guardian.share_key()
-            tally_share = _compute_tally_share(guardian, ciphertext_tally, context)
+            tally_share = get_optional(
+                guardian.compute_tally_share(ciphertext_tally, context)
+            )
             ballot_shares = guardian.compute_ballot_shares(spoiled_ballots, context)
             decryption_mediator.announce(guardian_key, tally_share, ballot_shares)
             count += 1
@@ -70,39 +69,3 @@ class DecryptStep(E2eStepBase):
             ciphertext_tally,
             lagrange_coefficients,
         )
-
-
-def _compute_tally_share(
-    guardian: Guardian,
-    tally: CiphertextTally,
-    context: CiphertextElectionContext,
-) -> DecryptionShare:
-    shares = guardian.compute_tally_share(tally, context)
-    return get_optional(shares)
-
-
-def _get_spoiled_ballots(ballot_store: DataStore) -> List[SubmittedBallot]:
-    submitted_ballots = get_ballots(ballot_store, BallotBoxState.SPOILED)
-    spoiled_ballots_list = list(submitted_ballots.values())
-    return spoiled_ballots_list
-
-
-def _get_tally(
-    ballot_store: DataStore, build_election_results: BuildElectionResults
-) -> CiphertextTally:
-    tally = tally_ballots(
-        ballot_store,
-        build_election_results.internal_manifest,
-        build_election_results.context,
-    )
-    return get_optional(tally)
-
-
-def _get_decryption_mediator(
-    build_election_results: BuildElectionResults,
-) -> DecryptionMediator:
-    decryption_mediator = DecryptionMediator(
-        "decryption-mediator",
-        build_election_results.context,
-    )
-    return decryption_mediator

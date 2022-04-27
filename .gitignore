@@ -143,6 +143,7 @@ cov.xml
 # File output
 election_record
 election_private_data
+guardian_private_data.json
 election_record.zip
 election_private_data.zip
 schemas
