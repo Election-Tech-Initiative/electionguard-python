@@ -1,7 +1,8 @@
-from typing import List
+from typing import List, Any
+from os.path import join
 
 from electionguard import to_file
-from electionguard.guardian import Guardian
+from electionguard.guardian import Guardian, GuardianRecord
 from electionguard_tools.helpers.export import GUARDIAN_PREFIX
 
 from .cli_step_base import CliStepBase
@@ -28,5 +29,19 @@ class OutputStepBase(CliStepBase):
         )
 
     @staticmethod
-    def _get_guardian_records(election_inputs: CliElectionInputsBase):
+    def _get_guardian_records(
+        election_inputs: CliElectionInputsBase,
+    ) -> List[GuardianRecord]:
         return [guardian.publish() for guardian in election_inputs.guardians]
+
+    def _export_file(
+        self,
+        title: str,
+        content: Any,
+        file_name: str,
+        file_dir: str,
+        file_extension: str = "json",
+    ) -> None:
+        to_file(content, file_name, file_dir)
+        location = join(file_dir, f"{file_name}.{file_extension}")
+        self.print_value(title, location)

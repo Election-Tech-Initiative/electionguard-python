@@ -28,15 +28,13 @@ class OutputSetupFilesStep(OutputStepBase):
     def _export_context(
         self, setup_inputs: SetupInputs, context: CiphertextElectionContext
     ) -> None:
-        to_file(context, CONTEXT_FILE_NAME, setup_inputs.out)
-        location = join(setup_inputs.out, CONTEXT_FILE_NAME + ".json")
-        self.print_value("Context", location)
+        self._export_file("Context", context, setup_inputs.out, CONTEXT_FILE_NAME)
 
     def _export_constants(self, setup_inputs: SetupInputs) -> None:
         constants = get_constants()
-        to_file(constants, CONSTANTS_FILE_NAME, setup_inputs.out)
-        location = join(setup_inputs.out, CONSTANTS_FILE_NAME + ".json")
-        self.print_value("Election constants", location)
+        self._export_file(
+            "Election constants", constants, setup_inputs.out, CONSTANTS_FILE_NAME
+        )
 
     def _export_guardian_records(self, setup_inputs: SetupInputs) -> None:
         guardian_records_dir = join(setup_inputs.out, "guardians")
