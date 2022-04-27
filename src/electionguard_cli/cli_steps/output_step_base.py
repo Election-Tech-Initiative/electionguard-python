@@ -21,9 +21,7 @@ class OutputStepBase(CliStepBase):
         for private_guardian_record in private_guardian_records:
             file_name = private_guardian_record.guardian_id
             to_file(private_guardian_record, file_name, file_path)
-        echo(
-            f"Exported {len(private_guardian_records)} private guardian keys to '{output_keys}'"
-        )
+        self.print_value("Guardian private keys", output_keys)
         self.print_warning(
             f"The files in {file_path} are secret and should be protected securely and not shared publicly."
         )
