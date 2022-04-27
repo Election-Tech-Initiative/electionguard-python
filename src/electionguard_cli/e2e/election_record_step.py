@@ -5,13 +5,11 @@ from click import echo
 from electionguard import to_file
 from electionguard.constants import get_constants
 
-from electionguard_cli.cli_models import BuildElectionResults, E2eSubmitResults
-from electionguard_cli.cli_models.e2e_decrypt_results import E2eDecryptResults
-from electionguard_cli.cli_models.e2e.e2e_inputs import E2eInputs
-
 from electionguard_tools.helpers.export import export_record
 
-from .cli_step_base import CliStepBase
+from ..cli_models import BuildElectionResults, E2eSubmitResults, E2eDecryptResults
+from ..cli_steps.cli_step_base import CliStepBase
+from .e2e_inputs import E2eInputs
 
 
 class ElectionRecordStep(CliStepBase):
