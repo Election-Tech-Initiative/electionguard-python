@@ -34,18 +34,6 @@ def _list_eq(
     )
 
 
-@dataclass(eq=True, unsafe_hash=True)
-class ExtendedData:
-    """
-    ExtendedData represents any arbitrary data expressible as a string with a length.
-
-    This class is used primarily as a field on a selection to indicate a write-in candidate text value
-    """
-
-    value: str
-    length: int
-
-
 @dataclass(unsafe_hash=True)
 class PlaintextBallotSelection(OrderedObjectBase):
     """
@@ -59,10 +47,7 @@ class PlaintextBallotSelection(OrderedObjectBase):
     This class can also be designated as `is_placeholder_selection` which has no
     context to the data specification but is useful for running validity checks internally
 
-    an `extended_data` field exists to support any arbitrary data to be associated
-    with the selection.  In practice, this field is the cleartext representation
-    of a write-in candidate value.  In the current implementation these values are
-    discarded when encrypting.
+    Write_in field exists to support the cleartext representation of a write-in candidate value.
     """
 
     vote: int
@@ -70,9 +55,9 @@ class PlaintextBallotSelection(OrderedObjectBase):
     is_placeholder_selection: bool = field(default=False)
     """Determines if this is a placeholder selection"""
 
-    extended_data: Optional[ExtendedData] = field(default=None)
+    write_in: Optional[str] = field(default=None)
     """
-    an optional field of arbitrary data, such as the value of a write-in candidate
+    Write_in field exists to support the cleartext representation of a write-in candidate value.
     """
 
     def is_valid(self, expected_object_id: str) -> bool:
@@ -100,7 +85,7 @@ class PlaintextBallotSelection(OrderedObjectBase):
             and self.object_id == other.object_id
             and self.vote == other.vote
             and self.is_placeholder_selection == other.is_placeholder_selection
-            and self.extended_data == other.extended_data
+            and self.write_in == other.write_in
         )
 
     def __ne__(self, other: Any) -> bool:
@@ -313,11 +298,6 @@ class PlaintextBallotContest(OrderedObjectBase):
     )
     """Collection of ballot selections"""
 
-    extended_data: Optional[ExtendedData] = field(default=None)
-    """
-    an optional field of arbitrary data, such as overvote notification
-    """
-
     def is_valid(
         self,
         expected_object_id: str,
@@ -371,10 +351,8 @@ class PlaintextBallotContest(OrderedObjectBase):
         return True
 
     def __eq__(self, other: Any) -> bool:
-        return (
-            isinstance(other, PlaintextBallotContest)
-            and _list_eq(self.ballot_selections, other.ballot_selections)
-            and self.extended_data == other.extended_data
+        return isinstance(other, PlaintextBallotContest) and _list_eq(
+            self.ballot_selections, other.ballot_selections
         )
 
     def __ne__(self, other: Any) -> bool:
