@@ -1,3 +1,4 @@
+import click
 from electionguard.elgamal import ElGamalPublicKey
 from electionguard.group import ElementModQ
 from electionguard.key_ceremony import ElectionJointKey
@@ -28,6 +29,7 @@ class ElectionBuilderStep(CliStepBase):
     ) -> BuildElectionResults:
         self.print_header("Building election")
 
+        click.echo("Initializing public key and commitment hash")
         election_builder = ElectionBuilder(
             election_inputs.guardian_count,
             election_inputs.quorum,
@@ -35,6 +37,7 @@ class ElectionBuilderStep(CliStepBase):
         )
         election_builder.set_public_key(joint_public_key)
         election_builder.set_commitment_hash(committment_hash)
+        click.echo("Creating context and internal manifest")
         build_result = election_builder.build()
         internal_manifest, context = get_optional(build_result)
         return BuildElectionResults(internal_manifest, context)
