@@ -38,9 +38,7 @@ class ElectionRecordStep(OutputStepBase):
         submit_results: E2eSubmitResults,
         decrypt_results: E2eDecryptResults,
     ) -> None:
-        guardian_records = [
-            guardian.publish() for guardian in election_inputs.guardians
-        ]
+        guardian_records = OutputStepBase._get_guardian_records(election_inputs)
         constants = get_constants()
         with TemporaryDirectory() as temp_dir:
             export_record(
@@ -61,4 +59,6 @@ class ElectionRecordStep(OutputStepBase):
             echo(f"Exported election record to '{election_inputs.output_record}'")
 
     def _export_private_keys_e2e(self, election_inputs: E2eInputs) -> None:
-        self._export_private_keys(election_inputs.output_keys, election_inputs.guardians)
+        self._export_private_keys(
+            election_inputs.output_keys, election_inputs.guardians
+        )
