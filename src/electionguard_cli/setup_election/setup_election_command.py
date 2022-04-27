@@ -25,10 +25,15 @@ from .setup_input_retrieval_step import SetupInputRetrievalStep
     help="The location of an election manifest.",
     type=click.File(),
 )
+@click.option(
+    "--out",
+    prompt="Output directory",
+    help="The location of a directory into which will be placed the output files such as "
+    + "context, constants, and guardian keys. Existing files will be overwritten.",
+    type=click.Path(exists=False, dir_okay=True, file_okay=False, resolve_path=True),
+)
 def SetupElectionCommand(
-    guardian_count: int,
-    quorum: int,
-    manifest: TextIOWrapper,
+    guardian_count: int, quorum: int, manifest: TextIOWrapper, out: str
 ) -> None:
     """
     This command runs an automated key ceremony and produces the files
@@ -37,7 +42,7 @@ def SetupElectionCommand(
 
     # get user inputs
     election_inputs = SetupInputRetrievalStep().get_inputs(
-        guardian_count, quorum, manifest
+        guardian_count, quorum, manifest, out
     )
 
     # perform election
@@ -45,4 +50,4 @@ def SetupElectionCommand(
     build_election_results = ElectionBuilderStep().build_election_with_key(
         election_inputs, joint_key
     )
-    OutputSetupFilesStep().output(build_election_results)
+    OutputSetupFilesStep().output(election_inputs, build_election_results)
