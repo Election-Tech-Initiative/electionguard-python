@@ -1,6 +1,7 @@
-from typing import List
+from typing import List, Optional
 from electionguard.ballot import SubmittedBallot
 from electionguard.election import CiphertextElectionContext
+from electionguard.encrypt import EncryptionDevice
 from electionguard.guardian import Guardian
 from electionguard.manifest import Manifest
 
@@ -18,6 +19,7 @@ class ImportBallotInputs(CliElectionInputsBase):
         manifest: Manifest,
         submitted_ballots: List[SubmittedBallot],
         context: CiphertextElectionContext,
+        encryption_device: List[EncryptionDevice],
         output_record: str,
     ):
         self.guardian_count = context.number_of_guardians
@@ -26,8 +28,10 @@ class ImportBallotInputs(CliElectionInputsBase):
         self.manifest = manifest
         self.submitted_ballots = submitted_ballots
         self.context = context
+        self.encryption_devices = encryption_device
         self.output_record = output_record
 
     submitted_ballots: List[SubmittedBallot]
     context: CiphertextElectionContext
+    encryption_devices: List[EncryptionDevice]
     output_record: str

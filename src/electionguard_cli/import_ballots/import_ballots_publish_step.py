@@ -31,8 +31,7 @@ class ImportBallotsPublishStep(OutputStepBase):
         guardian_records = OutputStepBase._get_guardian_records(election_inputs)
         constants = get_constants()
 
-        # todo: retrieve encryption device
-        encryption_devices: List[EncryptionDevice] = []
+        encryption_devices: List[EncryptionDevice] = election_inputs.encryption_devices
 
         with TemporaryDirectory() as temp_dir:
             export_record(

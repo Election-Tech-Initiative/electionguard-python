@@ -36,6 +36,14 @@ from ..cli_steps.tally_step import TallyStep
     type=click.Path(exists=True, dir_okay=False, file_okay=True, resolve_path=True),
 )
 @click.option(
+    "--encryption-device",
+    prompt="Encryption device file",
+    help="An optional file containing an encryption device used for the ballots.  This data will "
+    + "be exported in the election record.",
+    type=click.Path(exists=True, dir_okay=False, file_okay=True, resolve_path=True),
+    default=None,
+)
+@click.option(
     "--output-record",
     help="A file name for saving an output election record (e.g. './election.zip')."
     + " If no value provided then an election record will not be generated.",
@@ -51,6 +59,7 @@ def ImportBallotsCommand(
     context: TextIOWrapper,
     ballots_dir: str,
     guardian_keys: str,
+    encryption_device: str,
     output_record: str,
 ) -> None:
     """
@@ -59,7 +68,7 @@ def ImportBallotsCommand(
 
     # get user inputs
     election_inputs = ImportBallotsInputRetrievalStep().get_inputs(
-        manifest, context, ballots_dir, guardian_keys, output_record
+        manifest, context, ballots_dir, guardian_keys, encryption_device, output_record
     )
 
     # perform election
