@@ -78,7 +78,7 @@ class TestDecryptWithSecrets(BaseTestCase):
 
         # Act
         subject = encrypt_selection(
-            data, description, keypair.public_key, ONE_MOD_Q, nonce_seed
+            data, description, keypair.public_key, ONE_MOD_Q, nonce_seed, should_verify_proofs=True
         )
         self.assertIsNotNone(subject)
 
@@ -208,7 +208,7 @@ class TestDecryptWithSecrets(BaseTestCase):
 
         # Act
         subject = encrypt_selection(
-            data, description, keypair.public_key, ONE_MOD_Q, nonce_seed
+            data, description, keypair.public_key, ONE_MOD_Q, nonce_seed, should_verify_proofs=True
         )
         self.assertIsNotNone(subject)
 
@@ -264,6 +264,7 @@ class TestDecryptWithSecrets(BaseTestCase):
             keypair.public_key,
             ONE_MOD_Q,
             nonce_seed,
+            should_verify_proofs=True
         )
         self.assertIsNotNone(subject)
 
