@@ -1,11 +1,12 @@
 from io import TextIOWrapper
 import click
 
+from .import_ballots_publish_step import ImportBallotsPublishStep
+from .import_ballots_input_retrieval_step import ImportBallotsInputRetrievalStep
+from .import_ballots_election_builder_step import ImportBallotsElectionBuilderStep
 from ..cli_steps.decrypt_step import DecryptStep
 from ..cli_steps.print_results_step import PrintResultsStep
 from ..cli_steps.tally_step import TallyStep
-from .import_ballots_input_retrieval_step import ImportBallotsInputRetrievalStep
-from .import_ballots_election_builder_step import ImportBallotsElectionBuilderStep
 
 
 @click.command("import-ballots")
@@ -78,4 +79,7 @@ def ImportBallotsCommand(
     # print results
     PrintResultsStep().print_election_results(decrypt_results)
 
-    #
+    # publish election record
+    ImportBallotsPublishStep().publish(
+        election_inputs, build_election_results, decrypt_results
+    )

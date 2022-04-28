@@ -5,7 +5,7 @@ from electionguard.tally import (
     PlaintextTally,
 )
 
-from ..cli_models import E2eDecryptResults
+from ..cli_models import CliDecryptResults
 from .cli_step_base import CliStepBase
 
 
@@ -34,7 +34,7 @@ class PrintResultsStep(CliStepBase):
 
     def print_election_results(
         self,
-        decrypt_results: E2eDecryptResults,
+        decrypt_results: CliDecryptResults,
     ) -> None:
         self._print_tally(decrypt_results.plaintext_tally)
         self._print_spoiled_ballots(decrypt_results.plaintext_spoiled_ballots)

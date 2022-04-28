@@ -7,7 +7,7 @@ from electionguard.constants import get_constants
 from electionguard_tools.helpers.export import export_record
 
 from .e2e_inputs import E2eInputs
-from ..cli_models import BuildElectionResults, E2eSubmitResults, E2eDecryptResults
+from ..cli_models import BuildElectionResults, E2eSubmitResults, CliDecryptResults
 from ..cli_steps import OutputStepBase
 
 
@@ -21,7 +21,7 @@ class E2eElectionRecordStep(OutputStepBase):
         election_inputs: E2eInputs,
         build_election_results: BuildElectionResults,
         submit_results: E2eSubmitResults,
-        decrypt_results: E2eDecryptResults,
+        decrypt_results: CliDecryptResults,
     ) -> None:
 
         self.print_header("Election Record")
@@ -36,7 +36,7 @@ class E2eElectionRecordStep(OutputStepBase):
         election_inputs: E2eInputs,
         build_election_results: BuildElectionResults,
         submit_results: E2eSubmitResults,
-        decrypt_results: E2eDecryptResults,
+        decrypt_results: CliDecryptResults,
     ) -> None:
         guardian_records = OutputStepBase._get_guardian_records(election_inputs)
         constants = get_constants()
