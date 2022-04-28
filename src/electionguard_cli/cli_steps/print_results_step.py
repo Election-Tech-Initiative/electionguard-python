@@ -15,9 +15,9 @@ class PrintResultsStep(CliStepBase):
     def _print_tally(self, plaintext_tally: PlaintextTally) -> None:
         self.print_header("Decrypted tally")
         for contest in plaintext_tally.contests.values():
-            click.echo(f"Contest: {contest.object_id}")
+            self.print_value("Contest", contest.object_id)
             for selection in contest.selections.values():
-                self.print_value(f"  {selection.object_id}", f"{selection.tally} votes")
+                self.print_value(f"  {selection.object_id}", selection.tally)
 
     def _print_spoiled_ballots(
         self,
@@ -30,9 +30,7 @@ class PrintResultsStep(CliStepBase):
             for contest in spoiled_ballot.contests.values():
                 click.echo(f"Contest: {contest.object_id}")
                 for selection in contest.selections.values():
-                    self.print_value(
-                        f"  {selection.object_id}", f"{selection.tally} votes"
-                    )
+                    self.print_value(f"  {selection.object_id}", selection.tally)
 
     def print_election_results(
         self,
