@@ -57,7 +57,7 @@ class TestTally(BaseTestCase):
         encryption_seed = ElectionFactory.get_encryption_device().get_hash()
         for ballot in ballots:
             encrypted_ballot = encrypt_ballot(
-                ballot, internal_manifest, context, encryption_seed
+                ballot, internal_manifest, context, encryption_seed, should_verify_proofs=True
             )
             encryption_seed = encrypted_ballot.code
             self.assertIsNotNone(encrypted_ballot)
@@ -102,7 +102,7 @@ class TestTally(BaseTestCase):
         encryption_seed = ElectionFactory.get_encryption_device().get_hash()
         for ballot in ballots:
             encrypted_ballot = encrypt_ballot(
-                ballot, internal_manifest, context, encryption_seed
+                ballot, internal_manifest, context, encryption_seed, should_verify_proofs=True
             )
             encryption_seed = encrypted_ballot.code
             self.assertIsNotNone(encrypted_ballot)
