@@ -38,7 +38,7 @@ class TestBallotBox(BaseTestCase):
         self.assertTrue(source.is_valid(internal_manifest.ballot_styles[0].object_id))
 
         # Act
-        data = encrypt_ballot(source, internal_manifest, context, SEED)
+        data = encrypt_ballot(source, internal_manifest, context, SEED, should_verify_proofs=True)
         self.assertTrue(ballot_is_valid_for_election(data, internal_manifest, context))
         subject = BallotBox(internal_manifest, context, store)
         result = subject.cast(data)
@@ -65,7 +65,7 @@ class TestBallotBox(BaseTestCase):
         self.assertTrue(source.is_valid(internal_manifest.ballot_styles[0].object_id))
 
         # Act
-        data = encrypt_ballot(source, internal_manifest, context, SEED)
+        data = encrypt_ballot(source, internal_manifest, context, SEED, should_verify_proofs=True)
         subject = BallotBox(internal_manifest, context, store)
         result = subject.spoil(data)
 
@@ -91,7 +91,7 @@ class TestBallotBox(BaseTestCase):
         self.assertTrue(source.is_valid(internal_manifest.ballot_styles[0].object_id))
 
         # Act
-        data = encrypt_ballot(source, internal_manifest, context, SEED)
+        data = encrypt_ballot(source, internal_manifest, context, SEED, should_verify_proofs=True)
         result = accept_ballot(
             data, BallotBoxState.CAST, internal_manifest, context, store
         )
@@ -124,7 +124,7 @@ class TestBallotBox(BaseTestCase):
         self.assertTrue(source.is_valid(internal_manifest.ballot_styles[0].object_id))
 
         # Act
-        data = encrypt_ballot(source, internal_manifest, context, SEED)
+        data = encrypt_ballot(source, internal_manifest, context, SEED, should_verify_proofs=True)
         result = accept_ballot(
             data, BallotBoxState.SPOILED, internal_manifest, context, store
         )
