@@ -35,14 +35,14 @@ from electionguard_cli.cli_steps import (
 )
 from electionguard_cli.e2e import (
     E2eCommand,
-    E2eElectionRecordStep,
     E2eInputRetrievalStep,
     E2eInputs,
+    E2ePublishStep,
     SubmitVotesStep,
     e2e_command,
-    e2e_election_record_step,
     e2e_input_retrieval_step,
     e2e_inputs,
+    e2e_publish_step,
     submit_votes_step,
 )
 from electionguard_cli.import_ballots import (
@@ -78,9 +78,9 @@ __all__ = [
     "CliStepBase",
     "DecryptStep",
     "E2eCommand",
-    "E2eElectionRecordStep",
     "E2eInputRetrievalStep",
     "E2eInputs",
+    "E2ePublishStep",
     "E2eSubmitResults",
     "ElectionBuilderStep",
     "ImportBallotInputs",
@@ -108,9 +108,9 @@ __all__ = [
     "e2e",
     "e2e_build_election_results",
     "e2e_command",
-    "e2e_election_record_step",
     "e2e_input_retrieval_step",
     "e2e_inputs",
+    "e2e_publish_step",
     "e2e_submit_results",
     "election_builder_step",
     "import_ballot_inputs",

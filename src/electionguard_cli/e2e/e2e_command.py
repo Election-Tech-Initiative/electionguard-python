@@ -10,7 +10,7 @@ from ..cli_steps import (
 )
 from .e2e_input_retrieval_step import E2eInputRetrievalStep
 from .submit_votes_step import SubmitVotesStep
-from .e2e_election_record_step import E2eElectionRecordStep
+from .e2e_publish_step import E2ePublishStep
 
 
 @click.command("e2e")
@@ -102,6 +102,6 @@ def E2eCommand(
     PrintResultsStep().print_election_results(decrypt_results)
 
     # publish election record
-    E2eElectionRecordStep().export(
+    E2ePublishStep().export(
         election_inputs, build_election_results, submit_results, decrypt_results
     )

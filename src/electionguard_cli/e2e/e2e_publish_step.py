@@ -11,7 +11,7 @@ from ..cli_models import BuildElectionResults, E2eSubmitResults, CliDecryptResul
 from ..cli_steps import OutputStepBase
 
 
-class E2eElectionRecordStep(OutputStepBase):
+class E2ePublishStep(OutputStepBase):
     """Responsible for publishing an election record after an election has completed."""
 
     _COMPRESSION_FORMAT = "zip"
