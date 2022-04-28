@@ -9,7 +9,7 @@ from electionguard_tools.helpers.key_ceremony_orchestrator import (
     KeyCeremonyOrchestrator,
 )
 
-from ..shared.cli_step_base import CliStepBase
+from ..cli_steps import CliStepBase
 
 
 class KeyCeremonyStep(CliStepBase):

@@ -6,7 +6,8 @@ from electionguard.ballot import SubmittedBallot
 from electionguard.tally import CiphertextTally
 from electionguard.decryption_mediator import DecryptionMediator
 from electionguard.election_polynomial import LagrangeCoefficientsRecord
-from electionguard_cli.cli_models import BuildElectionResults, E2eDecryptResults
+
+from ..cli_models import BuildElectionResults, E2eDecryptResults
 from .cli_step_base import CliStepBase
 
 

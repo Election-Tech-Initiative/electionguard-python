@@ -15,12 +15,12 @@ from electionguard_tools.factories import (
     ElectionFactory,
 )
 
-from electionguard_cli.cli_models.e2e import E2eInputs
-from electionguard_cli.cli_models import (
+from ..cli_models import (
     BuildElectionResults,
     E2eSubmitResults,
 )
-from ..shared import CliStepBase
+from ..cli_steps import CliStepBase
+from .e2e_inputs import E2eInputs
 
 
 class SubmitVotesStep(CliStepBase):
