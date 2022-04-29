@@ -1,6 +1,5 @@
-from typing import List, Optional
+from typing import Optional
 from io import TextIOWrapper
-from electionguard.guardian import Guardian
 
 from electionguard.manifest import InternationalizedText, Manifest
 from electionguard.serialize import (
