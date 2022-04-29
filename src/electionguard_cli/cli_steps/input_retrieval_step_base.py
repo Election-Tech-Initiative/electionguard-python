@@ -32,12 +32,3 @@ class InputRetrievalStepBase(CliStepBase):
         self.print_value("Candidates", len(manifest.candidates))
         self.print_value("Contests", len(manifest.contests))
         self.print_value("Ballot Styles", len(manifest.ballot_styles))
-
-    @staticmethod
-    def _get_guardians(number_of_guardians: int, quorum: int) -> List[Guardian]:
-        guardians: List[Guardian] = []
-        for i in range(number_of_guardians):
-            guardians.append(
-                Guardian.from_nonce(str(i + 1), i + 1, number_of_guardians, quorum)
-            )
-        return guardians
