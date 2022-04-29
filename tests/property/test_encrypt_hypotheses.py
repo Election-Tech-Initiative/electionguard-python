@@ -91,7 +91,12 @@ class TestElections(BaseTestCase):
         # encrypt each ballot
         for i in range(num_ballots):
             encrypted_ballot = encrypt_ballot(
-                ballots[i], internal_manifest, context, SEED, nonces[i]
+                ballots[i],
+                internal_manifest,
+                context,
+                SEED,
+                nonces[i],
+                should_verify_proofs=True,
             )
             encrypted_ballots.append(encrypted_ballot)
 
