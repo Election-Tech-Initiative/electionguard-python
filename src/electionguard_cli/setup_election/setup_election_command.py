@@ -40,12 +40,9 @@ def SetupElectionCommand(
     necessary to encrypt ballots, decrypt an election, and produce an election record.
     """
 
-    # get user inputs
     election_inputs = SetupInputRetrievalStep().get_inputs(
         guardian_count, quorum, manifest, out
     )
-
-    # perform election
     joint_key = KeyCeremonyStep().run_key_ceremony(election_inputs.guardians)
     build_election_results = ElectionBuilderStep().build_election_with_key(
         election_inputs, joint_key
