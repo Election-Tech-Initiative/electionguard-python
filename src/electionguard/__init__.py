@@ -371,6 +371,9 @@ from electionguard.type import (
     VerifierId,
 )
 from electionguard.utils import (
+    BYTE_ENCODING,
+    BYTE_ORDER,
+    ContestErrorType,
     flatmap_optional,
     get_optional,
     get_or_else_optional,
@@ -384,6 +387,8 @@ from electionguard.utils import (
 
 __all__ = [
     "AnnotatedString",
+    "BYTE_ENCODING",
+    "BYTE_ORDER",
     "BackupVerificationState",
     "BallotBox",
     "BallotBoxState",
@@ -417,6 +422,7 @@ __all__ = [
     "ContactInformation",
     "ContestDescription",
     "ContestDescriptionWithPlaceholders",
+    "ContestErrorType",
     "ContestId",
     "CryptoHashCheckable",
     "CryptoHashable",
