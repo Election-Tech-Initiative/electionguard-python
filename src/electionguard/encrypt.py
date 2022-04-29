@@ -1,7 +1,8 @@
 from datetime import datetime
-from dataclasses import dataclass
-from typing import List, Optional
+from dataclasses import dataclass, field
+from typing import Dict, List, Optional, Type, TypeVar
 from uuid import getnode
+
 
 from .ballot import (
     CiphertextBallot,
@@ -18,6 +19,7 @@ from .ballot import (
 from .ballot_code import get_hash_for_device
 from .election import CiphertextElectionContext
 from .elgamal import ElGamalPublicKey, elgamal_encrypt
+from .serialize import PaddedDataSize, padded_decode, padded_encode
 from .group import ElementModQ, rand_q
 from .logs import log_info, log_warning
 from .manifest import (
@@ -27,7 +29,28 @@ from .manifest import (
     SelectionDescription,
 )
 from .nonces import Nonces
-from .utils import get_optional, get_or_else_optional_func
+from .type import SelectionId
+from .utils import get_optional, get_or_else_optional_func, ContestErrorType
+
+
+_T = TypeVar("_T", bound="ContestData")
+CONTEST_DATA_SIZE: PaddedDataSize = PaddedDataSize.Bytes_512
+
+
+@dataclass
+class ContestData:
+    """Contests errors and extended data from the selections on the contest."""
+
+    error: Optional[ContestErrorType] = field(default=None)
+    error_data: Optional[List[SelectionId]] = field(default=None)
+    write_ins: Optional[Dict[SelectionId, str]] = field(default=None)
+
+    @classmethod
+    def from_bytes(cls: Type[_T], data: bytes) -> _T:
+        return padded_decode(cls, data, CONTEST_DATA_SIZE)
+
+    def to_bytes(self) -> bytes:
+        return padded_encode(self, CONTEST_DATA_SIZE)
 
 
 @dataclass
