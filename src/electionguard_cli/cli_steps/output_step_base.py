@@ -1,5 +1,4 @@
 from typing import List, Any
-from os.path import join
 
 from electionguard import to_file
 from electionguard.guardian import Guardian, GuardianRecord
@@ -40,8 +39,6 @@ class OutputStepBase(CliStepBase):
         content: Any,
         file_dir: str,
         file_name: str,
-        file_extension: str = "json",
     ) -> None:
-        to_file(content, file_name, file_dir)
-        location = join(file_dir, f"{file_name}.{file_extension}")
+        location = to_file(content, file_name, file_dir)
         self.print_value(title, location)
