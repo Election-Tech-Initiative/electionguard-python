@@ -6,9 +6,9 @@ from ..cli_steps import (
     DecryptStep,
     PrintResultsStep,
     TallyStep,
+    KeyCeremonyStep,
 )
 from .e2e_input_retrieval_step import E2eInputRetrievalStep
-from .key_ceremony_step import KeyCeremonyStep
 from .submit_votes_step import SubmitVotesStep
 from .election_record_step import ElectionRecordStep
 

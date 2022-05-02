@@ -24,7 +24,7 @@ from .import_ballots_election_builder_step import ImportBallotsElectionBuilderSt
 @click.option(
     "--ballots-dir",
     prompt="Ballots file",
-    help="The location of a file that contains plaintext ballots.",
+    help="The location of a file that contains submitted ballots.",
     type=click.Path(exists=True, dir_okay=True, file_okay=False, resolve_path=True),
 )
 @click.option(

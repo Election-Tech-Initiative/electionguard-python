@@ -32,7 +32,7 @@ class ImportBallotsInputRetrievalStep(InputRetrievalStepBase):
         self.print_header("Retrieving Inputs")
         manifest: Manifest = self._get_manifest(manifest_file)
         context = self._get_context(context_file)
-        guardians = ImportBallotsInputRetrievalStep._get_guardians(
+        guardians = ImportBallotsInputRetrievalStep._get_guardians_from_keys(
             guardian_keys, context
         )
         submitted_ballots = ImportBallotsInputRetrievalStep._get_ballots(ballots_dir)
@@ -42,7 +42,7 @@ class ImportBallotsInputRetrievalStep(InputRetrievalStepBase):
         return ImportBallotInputs(guardians, manifest, submitted_ballots, context)
 
     @staticmethod
-    def _get_guardians(
+    def _get_guardians_from_keys(
         guardian_keys: str, context: CiphertextElectionContext
     ) -> List[Guardian]:
         guardian_private_records = from_list_in_file(

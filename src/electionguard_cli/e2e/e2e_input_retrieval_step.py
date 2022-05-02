@@ -2,10 +2,13 @@ from io import TextIOWrapper
 from typing import List
 
 from electionguard.ballot import PlaintextBallot
-from electionguard.guardian import Guardian
+from electionguard.key_ceremony import CeremonyDetails
 from electionguard.manifest import Manifest
 from electionguard.serialize import (
     from_list_in_file_wrapper,
+)
+from electionguard_tools.helpers.key_ceremony_orchestrator import (
+    KeyCeremonyOrchestrator,
 )
 
 from ..cli_steps import (
@@ -28,7 +31,9 @@ class E2eInputRetrievalStep(InputRetrievalStepBase):
         output_keys: str,
     ) -> E2eInputs:
         self.print_header("Retrieving Inputs")
-        guardians = E2eInputRetrievalStep._get_guardians(guardian_count, quorum)
+        guardians = KeyCeremonyOrchestrator.create_guardians(
+            CeremonyDetails(guardian_count, quorum)
+        )
         manifest: Manifest = self._get_manifest(manifest_file)
         ballots = E2eInputRetrievalStep._get_ballots(ballots_file)
         self.print_value("Guardians", guardian_count)
@@ -50,12 +55,3 @@ class E2eInputRetrievalStep(InputRetrievalStepBase):
             PlaintextBallot, ballots_file
         )
         return ballots
-
-    @staticmethod
-    def _get_guardians(number_of_guardians: int, quorum: int) -> List[Guardian]:
-        guardians: List[Guardian] = []
-        for i in range(number_of_guardians):
-            guardians.append(
-                Guardian.from_nonce(str(i + 1), i + 1, number_of_guardians, quorum)
-            )
-        return guardians

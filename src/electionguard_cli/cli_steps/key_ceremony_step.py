@@ -9,7 +9,7 @@ from electionguard_tools.helpers.key_ceremony_orchestrator import (
     KeyCeremonyOrchestrator,
 )
 
-from ..cli_steps import CliStepBase
+from .cli_step_base import CliStepBase
 
 
 class KeyCeremonyStep(CliStepBase):
@@ -22,11 +22,6 @@ class KeyCeremonyStep(CliStepBase):
             "mediator_1", guardians[0].ceremony_details
         )
         KeyCeremonyOrchestrator.perform_full_ceremony(guardians, mediator)
-        KeyCeremonyOrchestrator.perform_round_1(guardians, mediator)
-        if not mediator.all_guardians_announced():
-            raise ValueError("All guardians failed to announce successfully")
-        KeyCeremonyOrchestrator.perform_round_2(guardians, mediator)
-        KeyCeremonyOrchestrator.perform_round_3(guardians, mediator)
         joint_key = mediator.publish_joint_key()
 
         self.print_value("Joint Key", get_optional(joint_key).joint_public_key)
