@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List
 from electionguard.ballot import SubmittedBallot
 from electionguard.election import CiphertextElectionContext
 from electionguard.encrypt import EncryptionDevice
@@ -10,6 +10,7 @@ from ..cli_models import (
 )
 
 
+# pylint: disable=too-many-instance-attributes
 class ImportBallotInputs(CliElectionInputsBase):
     """Responsible for holding the inputs for the CLI's import ballots command"""
 
