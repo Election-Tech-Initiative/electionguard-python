@@ -1,10 +1,11 @@
+from typing import List
 from io import TextIOWrapper
 from os import listdir
 from os.path import join
-from typing import List
 from click import echo
-from electionguard import CiphertextElectionContext
 
+from electionguard import CiphertextElectionContext
+from electionguard.encrypt import EncryptionDevice
 from electionguard.ballot import SubmittedBallot
 from electionguard.guardian import Guardian, PrivateGuardianRecord
 from electionguard.manifest import Manifest
@@ -27,6 +28,8 @@ class ImportBallotsInputRetrievalStep(InputRetrievalStepBase):
         context_file: TextIOWrapper,
         ballots_dir: str,
         guardian_keys: str,
+        encryption_device_file: str,
+        output_record: str,
     ) -> ImportBallotInputs:
 
         self.print_header("Retrieving Inputs")
@@ -35,11 +38,29 @@ class ImportBallotsInputRetrievalStep(InputRetrievalStepBase):
         guardians = ImportBallotsInputRetrievalStep._get_guardians_from_keys(
             guardian_keys, context
         )
+        encryption_devices = self._get_encryption_devices(encryption_device_file)
         submitted_ballots = ImportBallotsInputRetrievalStep._get_ballots(ballots_dir)
 
         self.print_value("Ballots Dir", ballots_dir)
 
-        return ImportBallotInputs(guardians, manifest, submitted_ballots, context)
+        return ImportBallotInputs(
+            guardians,
+            manifest,
+            submitted_ballots,
+            context,
+            encryption_devices,
+            output_record,
+        )
+
+    def _get_encryption_devices(
+        self, encryption_device_file: str
+    ) -> List[EncryptionDevice]:
+        if encryption_device_file is None:
+            return []
+        encryption_device = from_file(EncryptionDevice, encryption_device_file)
+        self.print_value("Encryption device id", encryption_device.device_id)
+        self.print_value("Encryption device location", encryption_device.location)
+        return [encryption_device]
 
     @staticmethod
     def _get_guardians_from_keys(

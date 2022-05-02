@@ -7,7 +7,7 @@ from electionguard.tally import CiphertextTally
 from electionguard.decryption_mediator import DecryptionMediator
 from electionguard.election_polynomial import LagrangeCoefficientsRecord
 
-from ..cli_models import BuildElectionResults, E2eDecryptResults
+from ..cli_models import BuildElectionResults, CliDecryptResults
 from .cli_step_base import CliStepBase
 
 
@@ -30,7 +30,7 @@ class DecryptStep(CliStepBase):
         spoiled_ballots: List[SubmittedBallot],
         guardians: List[Guardian],
         build_election_results: BuildElectionResults,
-    ) -> E2eDecryptResults:
+    ) -> CliDecryptResults:
         self.print_header("Decrypting tally")
 
         decryption_mediator = DecryptionMediator(
@@ -64,7 +64,7 @@ class DecryptStep(CliStepBase):
             decryption_mediator.get_plaintext_ballots(spoiled_ballots)
         )
 
-        return E2eDecryptResults(
+        return CliDecryptResults(
             plaintext_tally,
             plaintext_spoiled_ballots,
             ciphertext_tally,

@@ -4,7 +4,7 @@ from electionguard.type import BallotId
 from electionguard.election_polynomial import LagrangeCoefficientsRecord
 
 
-class E2eDecryptResults:
+class CliDecryptResults:
     """Responsible for holding the results of decrypting an election."""
 
     def __init__(

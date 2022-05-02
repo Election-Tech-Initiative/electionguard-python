@@ -11,6 +11,8 @@ from ..cli_models import CliElectionInputsBase
 class OutputStepBase(CliStepBase):
     """Responsible for common functionality across all CLI commands related to outputting results."""
 
+    _COMPRESSION_FORMAT = "zip"
+
     def _export_private_keys(self, output_keys: str, guardians: List[Guardian]) -> None:
         if output_keys is None:
             return
