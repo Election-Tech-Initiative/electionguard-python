@@ -211,6 +211,7 @@ from electionguard.elgamal import (
     hashed_elgamal_encrypt,
 )
 from electionguard.encrypt import (
+    ContestData,
     EncryptionDevice,
     EncryptionMediator,
     contest_from,
@@ -338,6 +339,9 @@ from electionguard.schnorr import (
     make_schnorr_proof,
 )
 from electionguard.serialize import (
+    PAD_INDICATOR_SIZE,
+    PaddedDataSize,
+    TruncationError,
     construct_path,
     from_file,
     from_file_wrapper,
@@ -345,6 +349,8 @@ from electionguard.serialize import (
     from_list_in_file_wrapper,
     from_raw,
     get_schema,
+    padded_decode,
+    padded_encode,
     to_file,
     to_raw,
 )
@@ -371,6 +377,9 @@ from electionguard.type import (
     VerifierId,
 )
 from electionguard.utils import (
+    BYTE_ENCODING,
+    BYTE_ORDER,
+    ContestErrorType,
     flatmap_optional,
     get_optional,
     get_or_else_optional,
@@ -384,6 +393,8 @@ from electionguard.utils import (
 
 __all__ = [
     "AnnotatedString",
+    "BYTE_ENCODING",
+    "BYTE_ORDER",
     "BackupVerificationState",
     "BallotBox",
     "BallotBoxState",
@@ -415,8 +426,10 @@ __all__ = [
     "Configuration",
     "ConstantChaumPedersenProof",
     "ContactInformation",
+    "ContestData",
     "ContestDescription",
     "ContestDescriptionWithPlaceholders",
+    "ContestErrorType",
     "ContestId",
     "CryptoHashCheckable",
     "CryptoHashable",
@@ -476,6 +489,8 @@ __all__ = [
     "NO_VOTE",
     "Nonces",
     "OrderedObjectBase",
+    "PAD_INDICATOR_SIZE",
+    "PaddedDataSize",
     "Party",
     "PlaintextBallot",
     "PlaintextBallotContest",
@@ -503,6 +518,7 @@ __all__ = [
     "SelectionId",
     "Singleton",
     "SubmittedBallot",
+    "TruncationError",
     "VerifierId",
     "VoteVariationType",
     "YES_VOTE",
@@ -654,6 +670,8 @@ __all__ = [
     "mult_q",
     "negate_q",
     "nonces",
+    "padded_decode",
+    "padded_encode",
     "partially_decrypt",
     "pow_p",
     "pow_q",
