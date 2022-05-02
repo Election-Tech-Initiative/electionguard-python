@@ -2,17 +2,16 @@ from shutil import make_archive
 from os.path import splitext
 from tempfile import TemporaryDirectory
 from click import echo
-from electionguard import to_file
 from electionguard.constants import get_constants
 
 from electionguard_tools.helpers.export import export_record
 
-from ..cli_models import BuildElectionResults, E2eSubmitResults, E2eDecryptResults
-from ..cli_steps.cli_step_base import CliStepBase
 from .e2e_inputs import E2eInputs
+from ..cli_models import BuildElectionResults, E2eSubmitResults, E2eDecryptResults
+from ..cli_steps import OutputStepBase
 
 
-class ElectionRecordStep(CliStepBase):
+class ElectionRecordStep(OutputStepBase):
     """Responsible for publishing an election record after an election has completed."""
 
     _COMPRESSION_FORMAT = "zip"
@@ -30,7 +29,7 @@ class ElectionRecordStep(CliStepBase):
         self._export_election_record(
             election_inputs, build_election_results, submit_results, decrypt_results
         )
-        self._export_private_keys(election_inputs)
+        self._export_private_keys_e2e(election_inputs)
 
     def _export_election_record(
         self,
@@ -39,9 +38,7 @@ class ElectionRecordStep(CliStepBase):
         submit_results: E2eSubmitResults,
         decrypt_results: E2eDecryptResults,
     ) -> None:
-        guardian_records = [
-            guardian.publish() for guardian in election_inputs.guardians
-        ]
+        guardian_records = OutputStepBase._get_guardian_records(election_inputs)
         constants = get_constants()
         with TemporaryDirectory() as temp_dir:
             export_record(
@@ -61,20 +58,7 @@ class ElectionRecordStep(CliStepBase):
             make_archive(file_name, self._COMPRESSION_FORMAT, temp_dir)
             echo(f"Exported election record to '{election_inputs.output_record}'")
 
-    def _export_private_keys(self, election_inputs: E2eInputs) -> None:
-        if election_inputs.output_keys is None:
-            return
-
-        private_guardian_records = [
-            guardian.export_private_data() for guardian in election_inputs.guardians
-        ]
-        file_path = election_inputs.output_keys
-        for private_guardian_record in private_guardian_records:
-            file_name = private_guardian_record.guardian_id
-            to_file(private_guardian_record, file_name, file_path)
-        echo(
-            f"Exported {len(private_guardian_records)} private guardian keys to '{election_inputs.output_keys}'"
-        )
-        self.print_warning(
-            f"The files in {file_path} are secret and should be protected securely and not shared publicly."
+    def _export_private_keys_e2e(self, election_inputs: E2eInputs) -> None:
+        self._export_private_keys(
+            election_inputs.output_keys, election_inputs.guardians
         )

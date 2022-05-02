@@ -153,18 +153,20 @@ def to_file(
     data: Any,
     target_file_name: str,
     target_path: str = "",
-) -> None:
+) -> str:
     """Serialize object to JSON"""
 
     if not os.path.exists(target_path):
         os.makedirs(target_path)
 
+    path = construct_path(target_file_name, target_path)
     with open(
-        construct_path(target_file_name, target_path),
+        path,
         "w",
         encoding=BYTE_ENCODING,
     ) as outfile:
         json.dump(data, outfile, indent=_indent, default=pydantic_encoder)
+        return path
 
 
 def get_schema(_type: Any) -> str:
