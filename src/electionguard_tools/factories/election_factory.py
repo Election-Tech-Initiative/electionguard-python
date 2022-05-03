@@ -277,11 +277,11 @@ class ElectionFactory:
 @composite
 def get_selection_description_well_formed(
     draw: _DrawType,
-    ints:SearchStrategy[int]=integers(1, 20),
-    email_addresses:SearchStrategy[str]=emails(),
+    ints: SearchStrategy[int] = integers(1, 20),
+    email_addresses: SearchStrategy[str] = emails(),
     candidate_id: Optional[str] = None,
     sequence_order: Optional[int] = None,
-    ids:SearchStrategy[UUID]=uuids(),
+    ids: SearchStrategy[UUID] = uuids(),
 ) -> Tuple[str, SelectionDescription]:
     """Get mock well formed selection description."""
     if candidate_id is None:
@@ -298,10 +298,12 @@ def get_selection_description_well_formed(
 @composite
 def get_contest_description_well_formed(
     draw: _DrawType,
-    ints:SearchStrategy[int]=integers(1, 20),
-    txt:SearchStrategy[str]=text(),
-    email_addresses:SearchStrategy[str]=emails(),
-    selections:SearchStrategy[Tuple[str, SelectionDescription]]=get_selection_description_well_formed(),
+    ints: SearchStrategy[int] = integers(1, 20),
+    txt: SearchStrategy[str] = text(),
+    email_addresses: SearchStrategy[str] = emails(),
+    selections: SearchStrategy[
+        Tuple[str, SelectionDescription]
+    ] = get_selection_description_well_formed(),
     sequence_order: Optional[int] = None,
     electoral_district_id: Optional[str] = None,
 ) -> Tuple[str, ContestDescription]:

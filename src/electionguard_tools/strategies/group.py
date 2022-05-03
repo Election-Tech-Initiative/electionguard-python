@@ -16,7 +16,7 @@ _DrawType = Callable[[SearchStrategy[_T]], _T]
 
 
 @composite
-def elements_mod_q(draw: _DrawType)->Any:
+def elements_mod_q(draw: _DrawType) -> Any:
     """
     Generates an arbitrary element from [0,Q).
 
@@ -26,7 +26,7 @@ def elements_mod_q(draw: _DrawType)->Any:
 
 
 @composite
-def elements_mod_q_no_zero(draw: _DrawType)->Any:
+def elements_mod_q_no_zero(draw: _DrawType) -> Any:
     """
     Generates an arbitrary element from [1,Q).
 
@@ -36,7 +36,7 @@ def elements_mod_q_no_zero(draw: _DrawType)->Any:
 
 
 @composite
-def elements_mod_p(draw: _DrawType)->Any:
+def elements_mod_p(draw: _DrawType) -> Any:
     """
     Generates an arbitrary element from [0,P).
 
@@ -46,7 +46,7 @@ def elements_mod_p(draw: _DrawType)->Any:
 
 
 @composite
-def elements_mod_p_no_zero(draw: _DrawType)->Any:
+def elements_mod_p_no_zero(draw: _DrawType) -> Any:
     """
     Generates an arbitrary element from [1,P).
 

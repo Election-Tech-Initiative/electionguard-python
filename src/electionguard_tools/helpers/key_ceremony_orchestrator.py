@@ -21,7 +21,9 @@ class KeyCeremonyOrchestrator:
         ]
 
     @staticmethod
-    def perform_full_ceremony(guardians: List[Guardian], mediator: KeyCeremonyMediator)->None:
+    def perform_full_ceremony(
+        guardians: List[Guardian], mediator: KeyCeremonyMediator
+    ) -> None:
         """Perform full key ceremony so joint election key is ready for publish"""
 
         KeyCeremonyOrchestrator.perform_round_1(guardians, mediator)
@@ -58,7 +60,9 @@ class KeyCeremonyOrchestrator:
                 guardian.save_election_partial_key_backup(backup)
 
     @staticmethod
-    def perform_round_3(guardians: List[Guardian], mediator: KeyCeremonyMediator)->None:
+    def perform_round_3(
+        guardians: List[Guardian], mediator: KeyCeremonyMediator
+    ) -> None:
         """Perform Round 3 including verifying backups"""
 
         for guardian in guardians:

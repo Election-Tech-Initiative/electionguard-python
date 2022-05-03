@@ -53,8 +53,8 @@ class BallotFactory:
         self,
         description: ContestDescription,
         random: Random,
-        suppress_validity_check:bool=False,
-        with_trues:bool=False,
+        suppress_validity_check: bool = False,
+        with_trues: bool = False,
     ) -> PlaintextBallotContest:
         """
         Get a randomly filled contest for the given description that
@@ -93,7 +93,7 @@ class BallotFactory:
         self,
         internal_manifest: InternalManifest,
         ballot_id: str = None,
-        with_trues:bool=True,
+        with_trues: bool = True,
     ) -> PlaintextBallot:
         """
         Get a single Fake Ballot object that is manually constructed with default vaules
@@ -153,7 +153,11 @@ class BallotFactory:
 
 @composite
 def get_selection_well_formed(
-    draw: _DrawType, ids:SearchStrategy[uuid.UUID]=uuids(), bools:SearchStrategy[bool]=booleans(), txt:SearchStrategy[str]=text(), vote:SearchStrategy[int]=integers(0, 1)
+    draw: _DrawType,
+    ids: SearchStrategy[uuid.UUID] = uuids(),
+    bools: SearchStrategy[bool] = booleans(),
+    txt: SearchStrategy[str] = text(),
+    vote: SearchStrategy[int] = integers(0, 1),
 ) -> Tuple[str, PlaintextBallotSelection]:
     use_none = draw(bools)
     if use_none:
@@ -169,7 +173,11 @@ def get_selection_well_formed(
 
 @composite
 def get_selection_poorly_formed(
-    draw: _DrawType, ids:SearchStrategy[uuid.UUID]=uuids(), bools:SearchStrategy[bool]=booleans(), txt:SearchStrategy[str]=text(), vote:SearchStrategy[int]=integers(0, 1)
+    draw: _DrawType,
+    ids: SearchStrategy[uuid.UUID] = uuids(),
+    bools: SearchStrategy[bool] = booleans(),
+    txt: SearchStrategy[str] = text(),
+    vote: SearchStrategy[int] = integers(0, 1),
 ) -> Tuple[str, PlaintextBallotSelection]:
     use_none = draw(bools)
     if use_none:
