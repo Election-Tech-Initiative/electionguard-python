@@ -6,6 +6,7 @@ from electionguard import ballot_box
 from electionguard import ballot_code
 from electionguard import ballot_compact
 from electionguard import ballot_validator
+from electionguard import big_integer
 from electionguard import chaum_pedersen
 from electionguard import constants
 from electionguard import data_store
@@ -82,6 +83,9 @@ from electionguard.ballot_validator import (
     ballot_is_valid_for_style,
     contest_is_valid_for_style,
     selection_is_valid_for_style,
+)
+from electionguard.big_integer import (
+    BigInteger,
 )
 from electionguard.chaum_pedersen import (
     ChaumPedersenProof,
@@ -207,6 +211,7 @@ from electionguard.elgamal import (
     hashed_elgamal_encrypt,
 )
 from electionguard.encrypt import (
+    ContestData,
     EncryptionDevice,
     EncryptionMediator,
     contest_from,
@@ -231,10 +236,8 @@ from electionguard.group import (
     div_p,
     div_q,
     g_pow_p,
-    hex_to_int,
     hex_to_p,
     hex_to_q,
-    int_to_hex,
     int_to_p,
     int_to_q,
     mult_inv_p,
@@ -336,8 +339,9 @@ from electionguard.schnorr import (
     make_schnorr_proof,
 )
 from electionguard.serialize import (
-    Private,
-    Serializable,
+    PAD_INDICATOR_SIZE,
+    PaddedDataSize,
+    TruncationError,
     construct_path,
     from_file,
     from_file_wrapper,
@@ -345,6 +349,8 @@ from electionguard.serialize import (
     from_list_in_file_wrapper,
     from_raw,
     get_schema,
+    padded_decode,
+    padded_encode,
     to_file,
     to_raw,
 )
@@ -371,6 +377,9 @@ from electionguard.type import (
     VerifierId,
 )
 from electionguard.utils import (
+    BYTE_ENCODING,
+    BYTE_ORDER,
+    ContestErrorType,
     flatmap_optional,
     get_optional,
     get_or_else_optional,
@@ -384,12 +393,15 @@ from electionguard.utils import (
 
 __all__ = [
     "AnnotatedString",
+    "BYTE_ENCODING",
+    "BYTE_ORDER",
     "BackupVerificationState",
     "BallotBox",
     "BallotBoxState",
     "BallotId",
     "BallotStyle",
     "BaseElement",
+    "BigInteger",
     "Candidate",
     "CandidateContestDescription",
     "CeremonyDetails",
@@ -414,8 +426,10 @@ __all__ = [
     "Configuration",
     "ConstantChaumPedersenProof",
     "ContactInformation",
+    "ContestData",
     "ContestDescription",
     "ContestDescriptionWithPlaceholders",
+    "ContestErrorType",
     "ContestId",
     "CryptoHashCheckable",
     "CryptoHashable",
@@ -475,6 +489,8 @@ __all__ = [
     "NO_VOTE",
     "Nonces",
     "OrderedObjectBase",
+    "PAD_INDICATOR_SIZE",
+    "PaddedDataSize",
     "Party",
     "PlaintextBallot",
     "PlaintextBallotContest",
@@ -483,7 +499,6 @@ __all__ = [
     "PlaintextTallyContest",
     "PlaintextTallySelection",
     "PrimeOption",
-    "Private",
     "PrivateGuardianRecord",
     "Proof",
     "ProofOrRecovery",
@@ -501,9 +516,9 @@ __all__ = [
     "SecretCoefficient",
     "SelectionDescription",
     "SelectionId",
-    "Serializable",
     "Singleton",
     "SubmittedBallot",
+    "TruncationError",
     "VerifierId",
     "VoteVariationType",
     "YES_VOTE",
@@ -518,6 +533,7 @@ __all__ = [
     "ballot_is_valid_for_election",
     "ballot_is_valid_for_style",
     "ballot_validator",
+    "big_integer",
     "chaum_pedersen",
     "combine_election_public_keys",
     "compensate_decrypt",
@@ -620,11 +636,9 @@ __all__ = [
     "hash",
     "hash_elems",
     "hashed_elgamal_encrypt",
-    "hex_to_int",
     "hex_to_p",
     "hex_to_q",
     "hmac",
-    "int_to_hex",
     "int_to_p",
     "int_to_q",
     "key_ceremony",
@@ -656,6 +670,8 @@ __all__ = [
     "mult_q",
     "negate_q",
     "nonces",
+    "padded_decode",
+    "padded_encode",
     "partially_decrypt",
     "pow_p",
     "pow_q",

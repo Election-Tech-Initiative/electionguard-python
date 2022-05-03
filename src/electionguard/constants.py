@@ -4,21 +4,23 @@ from os import getenv
 from dataclasses import dataclass
 from enum import Enum
 
+from .big_integer import BigInteger
+
 
 @dataclass
 class ElectionConstants:
     """The constants for mathematical functions during the election."""
 
-    large_prime: int
+    large_prime: BigInteger
     """large prime or p"""
 
-    small_prime: int
+    small_prime: BigInteger
     """small prime or q"""
 
-    cofactor: int  # (p - 1) / q
+    cofactor: BigInteger  # (p - 1) / q
     """cofactor or r"""
 
-    generator: int
+    generator: BigInteger
     """generator or g"""  # 2^r mod p
 
 
@@ -27,10 +29,10 @@ def create_constants(
 ) -> ElectionConstants:
     """Create constants for election."""
     return ElectionConstants(
-        large_prime,
-        small_prime,
-        cofactor,
-        generator,
+        BigInteger(large_prime),
+        BigInteger(small_prime),
+        BigInteger(cofactor),
+        BigInteger(generator),
     )
 
 
@@ -75,7 +77,7 @@ def get_constants() -> ElectionConstants:
     return option_map.get(option) or STANDARD_CONSTANTS
 
 
-get_large_prime = lambda: get_constants().large_prime
-get_small_prime = lambda: get_constants().small_prime
-get_cofactor = lambda: get_constants().cofactor
-get_generator = lambda: get_constants().generator
+get_large_prime = lambda: int(get_constants().large_prime.value)
+get_small_prime = lambda: int(get_constants().small_prime.value)
+get_cofactor = lambda: int(get_constants().cofactor.value)
+get_generator = lambda: int(get_constants().generator.value)
