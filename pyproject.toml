@@ -23,6 +23,7 @@ classifiers = [
 packages = [
   { include = "electionguard", from = "src" }, 
   { include = "electionguard_cli", from = "src" },
+  { include = "electionguard_tools", from = "src" },
 ]
 
 

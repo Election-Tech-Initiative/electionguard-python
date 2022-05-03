@@ -2,6 +2,7 @@ from typing import TypeVar, Callable, List, Tuple
 import os
 from random import Random, randint
 import uuid
+from xmlrpc.client import Boolean
 
 from hypothesis.strategies import (
     composite,
@@ -42,7 +43,7 @@ class BallotFactory:
     def get_random_selection_from(
         description: SelectionDescription,
         random_source: Random,
-        is_placeholder=False,
+        is_placeholder: bool = False,
     ) -> PlaintextBallotSelection:
 
         selected = bool(random_source.randint(0, 1))
@@ -52,8 +53,8 @@ class BallotFactory:
         self,
         description: ContestDescription,
         random: Random,
-        suppress_validity_check=False,
-        with_trues=False,
+        suppress_validity_check:bool=False,
+        with_trues:bool=False,
     ) -> PlaintextBallotContest:
         """
         Get a randomly filled contest for the given description that
@@ -92,7 +93,7 @@ class BallotFactory:
         self,
         internal_manifest: InternalManifest,
         ballot_id: str = None,
-        with_trues=True,
+        with_trues:bool=True,
     ) -> PlaintextBallot:
         """
         Get a single Fake Ballot object that is manually constructed with default vaules
@@ -152,7 +153,7 @@ class BallotFactory:
 
 @composite
 def get_selection_well_formed(
-    draw: _DrawType, ids=uuids(), bools=booleans(), txt=text(), vote=integers(0, 1)
+    draw: _DrawType, ids:SearchStrategy[uuid.UUID]=uuids(), bools:SearchStrategy[bool]=booleans(), txt:SearchStrategy[str]=text(), vote:SearchStrategy[int]=integers(0, 1)
 ) -> Tuple[str, PlaintextBallotSelection]:
     use_none = draw(bools)
     if use_none:
@@ -168,7 +169,7 @@ def get_selection_well_formed(
 
 @composite
 def get_selection_poorly_formed(
-    draw: _DrawType, ids=uuids(), bools=booleans(), txt=text(), vote=integers(0, 1)
+    draw: _DrawType, ids:SearchStrategy[uuid.UUID]=uuids(), bools:SearchStrategy[bool]=booleans(), txt:SearchStrategy[str]=text(), vote:SearchStrategy[int]=integers(0, 1)
 ) -> Tuple[str, PlaintextBallotSelection]:
     use_none = draw(bools)
     if use_none:

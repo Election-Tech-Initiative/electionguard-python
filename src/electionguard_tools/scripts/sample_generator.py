@@ -66,7 +66,7 @@ class ElectionSampleDataGenerator:
         use_private_data: bool = DEFAULT_USE_PRIVATE_DATA,
         spec_version: str = DEFAULT_SPEC_VERSION,
         sample_manifest: str = DEFAULT_SAMPLE_MANIFEST,
-    ):
+    )->None:
         """
         Generate the sample data set
         """
@@ -99,7 +99,7 @@ class ElectionSampleDataGenerator:
                 get_optional(self.encrypter.encrypt(plaintext_ballot))
             )
 
-        ballot_store = DataStore()
+        ballot_store:DataStore = DataStore()
         ballot_box = BallotBox(
             manifest.internal_manifest, manifest.context, ballot_store
         )

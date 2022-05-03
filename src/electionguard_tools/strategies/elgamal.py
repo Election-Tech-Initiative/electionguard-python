@@ -1,4 +1,4 @@
-from typing import TypeVar, Callable
+from typing import Any, TypeVar, Callable
 
 from hypothesis.strategies import composite, SearchStrategy
 
@@ -11,7 +11,7 @@ _DrawType = Callable[[SearchStrategy[_T]], _T]
 
 
 @composite
-def elgamal_keypairs(draw: _DrawType):
+def elgamal_keypairs(draw: _DrawType)->Any:
     """
     Generates an arbitrary ElGamal secret/public keypair.
 
