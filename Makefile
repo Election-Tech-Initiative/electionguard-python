@@ -82,11 +82,11 @@ endif
 lint:
 	@echo 💚 LINT
 	@echo 1.Pylint
-	poetry run pylint ./src ./tests
+	make pylint
 	@echo 2.Black Formatting
-	poetry run black --check .
+	make blackcheck
 	@echo 3.Mypy Static Typing
-	poetry run mypy src/electionguard src/electionguard_cli src/electionguard_tools stubs
+	make mypy
 	@echo 4.Package Metadata
 	poetry build
 	poetry run twine check dist/*
@@ -101,9 +101,21 @@ auto-lint:
 	poetry run mkinit src/electionguard_verify --write --black
 	poetry run mkinit src/electionguard_cli --write --recursive --black
 	@echo Reformatting using Black
-	poetry run black .
+	make blackformat
 	make lint
 	
+pylint:
+	poetry run pylint ./src ./tests
+
+blackformat:
+	poetry run black .
+
+blackcheck:
+	poetry run black --check .
+
+mypy:
+	poetry run mypy src/electionguard src/electionguard_cli stubs
+
 validate: 
 	@echo ✅ VALIDATE
 	@poetry run python3 -c 'import electionguard; print(electionguard.__package__ + " successfully imported")'
@@ -240,3 +252,9 @@ release-notes:
 	echo -en "\n" >> release_notes.md
 	echo "## Issues" >> release_notes.md
 	curl "${GITHUB_API_URL}/${GITHUB_REPOSITORY}/issues?milestone=${MILESTONE_NUM}&state=all" | jq '.[].title' | while read i; do echo "[$i]($MILESTONE_URL)" >> release_notes.md; done
+
+eg-e2e-simple-election:
+	poetry run eg e2e --guardian-count=2 --quorum=2 --manifest=data/election_manifest_simple.json --ballots=data/plaintext_ballots_simple.json --spoil-id=25a7111b-4334-425a-87c1-f7a49f42b3a2 --output-record="./election_record.zip"
+
+eg-setup-simple-election:
+	poetry run eg setup --guardian-count=2 --quorum=2 --manifest=data/election_manifest_simple.json  --out=../data/out

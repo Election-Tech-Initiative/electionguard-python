@@ -1,10 +1,22 @@
 from datetime import datetime, timezone
+from enum import Enum
 from re import sub
 from typing import Callable, Optional, TypeVar
 from base64 import b16decode
 
 _T = TypeVar("_T")
 _U = TypeVar("_U")
+
+BYTE_ORDER = "big"
+BYTE_ENCODING = "utf-8"
+
+
+class ContestErrorType(Enum):
+    """Various errors that can occur on ballots contest after voting."""
+
+    NullVote = "nullvote"
+    UnderVote = "undervote"
+    OverVote = "overvote"
 
 
 def get_optional(optional: Optional[_T]) -> _T:

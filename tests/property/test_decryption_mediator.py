@@ -352,7 +352,7 @@ class TestDecryptionMediator(BaseTestCase):
         store = DataStore()
         for ballot in ballots:
             encrypted_ballot = encrypt_ballot(
-                ballot, internal_manifest, context, ONE_MOD_Q
+                ballot, internal_manifest, context, ONE_MOD_Q, should_verify_proofs=True
             )
             self.assertIsNotNone(encrypted_ballot)
             # add to the ballot store

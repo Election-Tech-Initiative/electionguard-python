@@ -1,7 +1,8 @@
 from datetime import datetime
-from dataclasses import dataclass
-from typing import List, Optional
+from dataclasses import dataclass, field
+from typing import Dict, List, Optional, Type, TypeVar
 from uuid import getnode
+
 
 from .ballot import (
     CiphertextBallot,
@@ -18,6 +19,7 @@ from .ballot import (
 from .ballot_code import get_hash_for_device
 from .election import CiphertextElectionContext
 from .elgamal import ElGamalPublicKey, elgamal_encrypt
+from .serialize import PaddedDataSize, padded_decode, padded_encode
 from .group import ElementModQ, rand_q
 from .logs import log_info, log_warning
 from .manifest import (
@@ -27,7 +29,28 @@ from .manifest import (
     SelectionDescription,
 )
 from .nonces import Nonces
-from .utils import get_optional, get_or_else_optional_func
+from .type import SelectionId
+from .utils import get_optional, get_or_else_optional_func, ContestErrorType
+
+
+_T = TypeVar("_T", bound="ContestData")
+CONTEST_DATA_SIZE: PaddedDataSize = PaddedDataSize.Bytes_512
+
+
+@dataclass
+class ContestData:
+    """Contests errors and extended data from the selections on the contest."""
+
+    error: Optional[ContestErrorType] = field(default=None)
+    error_data: Optional[List[SelectionId]] = field(default=None)
+    write_ins: Optional[Dict[SelectionId, str]] = field(default=None)
+
+    @classmethod
+    def from_bytes(cls: Type[_T], data: bytes) -> _T:
+        return padded_decode(cls, data, CONTEST_DATA_SIZE)
+
+    def to_bytes(self) -> bytes:
+        return padded_encode(self, CONTEST_DATA_SIZE)
 
 
 @dataclass
@@ -46,7 +69,7 @@ class EncryptionDevice:
     """Election initialization value"""
 
     location: str
-    """Arbitary string to designate the location of device"""
+    """Arbitrary string to designate the location of device"""
 
     def get_hash(self) -> ElementModQ:
         """
@@ -158,7 +181,7 @@ def encrypt_selection(
     crypto_extended_base_hash: ElementModQ,
     nonce_seed: ElementModQ,
     is_placeholder: bool = False,
-    should_verify_proofs: bool = True,
+    should_verify_proofs: bool = False,
 ) -> Optional[CiphertextBallotSelection]:
     """
     Encrypt a specific `BallotSelection` in the context of a specific `BallotContest`
@@ -171,7 +194,7 @@ def encrypt_selection(
     :param nonce_seed: an `ElementModQ` used as a header to seed the `Nonce` generated for this selection.
                  this value can be (or derived from) the BallotContest nonce, but no relationship is required
     :param is_placeholder: specifies if this is a placeholder selection
-    :param should_verify_proofs: specify if the proofs should be verified prior to returning (default True)
+    :param should_verify_proofs: specify if the proofs should be verified prior to returning (default False)
     """
 
     # Validate Input
@@ -240,7 +263,7 @@ def encrypt_contest(
     elgamal_public_key: ElGamalPublicKey,
     crypto_extended_base_hash: ElementModQ,
     nonce_seed: ElementModQ,
-    should_verify_proofs: bool = True,
+    should_verify_proofs: bool = False,
 ) -> Optional[CiphertextBallotContest]:
     """
     Encrypt a specific `BallotContest` in the context of a specific `Ballot`.
@@ -257,7 +280,7 @@ def encrypt_contest(
     :param crypto_extended_base_hash: the extended base hash of the election
     :param nonce_seed: an `ElementModQ` used as a header to seed the `Nonce` generated for this contest.
                  this value can be (or derived from) the Ballot nonce, but no relationship is required
-    :param should_verify_proofs: specify if the proofs should be verified prior to returning (default True)
+    :param should_verify_proofs: specify if the proofs should be verified prior to returning (default False)
     """
 
     # Validate Input
@@ -409,7 +432,7 @@ def encrypt_ballot(
     context: CiphertextElectionContext,
     encryption_seed: ElementModQ,
     nonce: Optional[ElementModQ] = None,
-    should_verify_proofs: bool = True,
+    should_verify_proofs: bool = False,
 ) -> Optional[CiphertextBallot]:
     """
     Encrypt a specific `Ballot` in the context of a specific `CiphertextElectionContext`.
@@ -427,7 +450,7 @@ def encrypt_ballot(
     :param encryption_seed: Hash from previous ballot or starting hash from device
     :param nonce: an optional `int` used to seed the `Nonce` generated for this contest
                  if this value is not provided, the secret generating mechanism of the OS provides its own
-    :param should_verify_proofs: specify if the proofs should be verified prior to returning (default True)
+    :param should_verify_proofs: specify if the proofs should be verified prior to returning (default False)
     """
 
     # Determine the relevant range of contests for this ballot style
@@ -493,7 +516,7 @@ def encrypt_ballot_contests(
     description: InternalManifest,
     context: CiphertextElectionContext,
     nonce_seed: ElementModQ,
-    should_verify_proofs: bool = True,
+    should_verify_proofs: bool = False,
 ) -> Optional[List[CiphertextBallotContest]]:
     """Encrypt contests from a plaintext ballot with a specific style"""
     encrypted_contests: List[CiphertextBallotContest] = []
