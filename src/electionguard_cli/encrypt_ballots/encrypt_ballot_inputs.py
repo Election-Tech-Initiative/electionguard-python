@@ -18,11 +18,13 @@ class EncryptBallotInputs(CliElectionInputsBase):
         context: CiphertextElectionContext,
         plaintext_ballots: List[PlaintextBallot],
     ):
+        self.guardian_count = context.number_of_guardians
+        self.quorum = context.quorum
         self.manifest = manifest
         self.plaintext_ballots = plaintext_ballots
         self.context = context
 
-    plaintext_ballots: List[SubmittedBallot]
+    plaintext_ballots: List[PlaintextBallot]
     context: CiphertextElectionContext
     encryption_devices: List[EncryptionDevice]
     output_record: str

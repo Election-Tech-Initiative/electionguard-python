@@ -1,6 +1,7 @@
 from electionguard_cli import cli_models
 from electionguard_cli import cli_steps
 from electionguard_cli import e2e
+from electionguard_cli import encrypt_ballots
 from electionguard_cli import import_ballots
 from electionguard_cli import setup_election
 from electionguard_cli import start
@@ -45,6 +46,16 @@ from electionguard_cli.e2e import (
     e2e_publish_step,
     submit_votes_step,
 )
+from electionguard_cli.encrypt_ballots import (
+    EncryptBallotInputs,
+    EncryptBallotsCommand,
+    EncryptBallotsElectionBuilderStep,
+    EncryptBallotsInputRetrievalStep,
+    encrypt_ballot_inputs,
+    encrypt_ballots_election_builder_step,
+    encrypt_ballots_input_retrieval_step,
+    encrypt_command,
+)
 from electionguard_cli.import_ballots import (
     ImportBallotInputs,
     ImportBallotsCommand,
@@ -83,6 +94,10 @@ __all__ = [
     "E2ePublishStep",
     "E2eSubmitResults",
     "ElectionBuilderStep",
+    "EncryptBallotInputs",
+    "EncryptBallotsCommand",
+    "EncryptBallotsElectionBuilderStep",
+    "EncryptBallotsInputRetrievalStep",
     "ImportBallotInputs",
     "ImportBallotsCommand",
     "ImportBallotsElectionBuilderStep",
@@ -113,6 +128,11 @@ __all__ = [
     "e2e_publish_step",
     "e2e_submit_results",
     "election_builder_step",
+    "encrypt_ballot_inputs",
+    "encrypt_ballots",
+    "encrypt_ballots_election_builder_step",
+    "encrypt_ballots_input_retrieval_step",
+    "encrypt_command",
     "import_ballot_inputs",
     "import_ballots",
     "import_ballots_command",

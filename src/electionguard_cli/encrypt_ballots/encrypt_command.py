@@ -1,6 +1,7 @@
 from io import TextIOWrapper
 import click
 
+from .encrypt_ballots_election_builder_step import EncryptBallotsElectionBuilderStep
 from .encrypt_ballots_input_retrieval_step import EncryptBallotsInputRetrievalStep
 
 
@@ -32,4 +33,9 @@ def EncryptBallotsCommand(
     Encrypt ballots, but does not submit them
     """
 
-    EncryptBallotsInputRetrievalStep().get_inputs(manifest, context, ballots_dir)
+    election_inputs = EncryptBallotsInputRetrievalStep().get_inputs(
+        manifest, context, ballots_dir
+    )
+    build_election_results = (
+        EncryptBallotsElectionBuilderStep().build_election_with_context(election_inputs)
+    )
