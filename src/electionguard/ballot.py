@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field, replace
 from datetime import datetime
 from enum import Enum
-from functools import reduce
+from functools import cached_property, reduce
 from typing import (
     Any,
     Dict,
@@ -306,7 +306,7 @@ class PlaintextBallotContest(OrderedObjectBase):
     )
     """Collection of ballot selections"""
 
-    @property
+    @cached_property
     def selected_ids(self) -> List[SelectionId]:
         return [
             selection.object_id
@@ -314,7 +314,7 @@ class PlaintextBallotContest(OrderedObjectBase):
             if selection.vote > 0
         ]
 
-    @property
+    @cached_property
     def total_selected(self) -> int:
         """Returns the total number of selected selections."""
         return reduce(
@@ -323,12 +323,12 @@ class PlaintextBallotContest(OrderedObjectBase):
             0,
         )
 
-    @property
+    @cached_property
     def total_votes(self) -> int:
         """Returns the total number of votes on selections."""
         return reduce(lambda prev, next: prev + next.vote, self.ballot_selections, 0)
 
-    @property
+    @cached_property
     def write_ins(self) -> Optional[Dict[SelectionId, str]]:
         write_ins = {
             selection.object_id: selection.write_in
