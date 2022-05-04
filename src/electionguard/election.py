@@ -16,7 +16,7 @@ from .hash import hash_elems
 class Configuration:
     """Configuration of election to allow edge cases."""
 
-    allow_overvotes: bool = field(default=False)
+    allow_overvotes: bool = field(default=True)
     """
     Allow overvotes, votes exceeding selection limit, for the election.
     """
