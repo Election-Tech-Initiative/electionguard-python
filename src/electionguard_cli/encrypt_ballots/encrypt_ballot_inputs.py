@@ -1,5 +1,5 @@
 from typing import List
-from electionguard.ballot import PlaintextBallot, SubmittedBallot
+from electionguard.ballot import PlaintextBallot
 from electionguard.election import CiphertextElectionContext
 from electionguard.encrypt import EncryptionDevice
 from electionguard.manifest import Manifest
