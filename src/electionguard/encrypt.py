@@ -3,7 +3,6 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Type, TypeVar
 from uuid import getnode
 
-
 from .ballot import (
     CiphertextBallot,
     CiphertextBallotContest,
@@ -18,7 +17,7 @@ from .ballot import (
 
 from .ballot_code import get_hash_for_device
 from .election import CiphertextElectionContext
-from .elgamal import ElGamalPublicKey, elgamal_encrypt
+from .elgamal import ElGamalPublicKey, elgamal_encrypt, hashed_elgamal_encrypt
 from .serialize import PaddedDataSize, padded_decode, padded_encode
 from .group import ElementModQ, rand_q
 from .logs import log_info, log_warning
@@ -30,7 +29,15 @@ from .manifest import (
 )
 from .nonces import Nonces
 from .type import SelectionId
-from .utils import get_optional, get_or_else_optional_func, ContestErrorType
+from .utils import (
+    ContestException,
+    NullVoteException,
+    OverVoteException,
+    UnderVoteException,
+    get_optional,
+    get_or_else_optional_func,
+    ContestErrorType,
+)
 
 
 _T = TypeVar("_T", bound="ContestData")
@@ -69,7 +76,7 @@ class EncryptionDevice:
     """Election initialization value"""
 
     location: str
-    """Arbitrary string to designate the location of device"""
+    """Arbitary string to designate the location of device"""
 
     def get_hash(self) -> ElementModQ:
         """
@@ -256,7 +263,6 @@ def encrypt_selection(
     return None
 
 
-# pylint: disable=too-many-return-statements
 def encrypt_contest(
     contest: PlaintextBallotContest,
     contest_description: ContestDescriptionWithPlaceholders,
@@ -282,19 +288,19 @@ def encrypt_contest(
                  this value can be (or derived from) the Ballot nonce, but no relationship is required
     :param should_verify_proofs: specify if the proofs should be verified prior to returning (default False)
     """
+    error: Optional[ContestErrorType] = None
+    error_data: Optional[List[SelectionId]] = None
 
     # Validate Input
-    if not contest.is_valid(
-        contest_description.object_id,
-        len(contest_description.ballot_selections),
-        contest_description.number_elected,
-        contest_description.votes_allowed,
-    ):
-        log_warning(f"malformed input contest: {contest}")
-        return None
-
-    if not contest_description.is_valid():
-        log_warning(f"malformed contest description: {contest_description}")
+    try:
+        contest.valid(contest_description)
+    except OverVoteException as ove:
+        error = ove.type
+        error_data = ove.overvoted_ids
+    except (NullVoteException, UnderVoteException) as nve:
+        error = nve.type
+    except ContestException as ce:
+        log_warning(str(ce))
         return None
 
     # account for sequence id
@@ -321,7 +327,11 @@ def encrypt_contest(
         # false is entered instead and the selection_count is not incremented
         # this allows consumers to only pass in the relevant selections made by a voter
         for selection in contest.ballot_selections:
-            if selection.object_id == description.object_id:
+            # If overvote, no votes should be counted and instead placeholders should be used.
+            if (
+                selection.object_id == description.object_id
+                and error is not ContestErrorType.OverVote
+            ):
                 # track the selection count so we can append the
                 # appropriate number of true placeholder votes
                 has_selection = True
@@ -383,15 +393,12 @@ def encrypt_contest(
             return None  # log will have happened earlier
         encrypted_selections.append(get_optional(encrypted_selection))
 
-    # TODO: ISSUE #33: support other cases such as cumulative voting
-    # (individual selections being an encryption of > 1)
-    if (
-        contest_description.votes_allowed is not None
-        and selection_count < contest_description.votes_allowed
-    ):
-        log_warning(
-            "mismatching selection count: only n-of-m style elections are currently supported"
-        )
+    encrypted_contest_data = hashed_elgamal_encrypt(
+        ContestData(error, error_data, contest.write_ins).to_bytes(),
+        Nonces(contest_nonce, "constant-extended-data")[0],
+        elgamal_public_key,
+        crypto_extended_base_hash,
+    )
 
     # Create the return object
     encrypted_contest = make_ciphertext_ballot_contest(
@@ -404,21 +411,20 @@ def encrypt_contest(
         chaum_pedersen_nonce,
         contest_description.number_elected,
         nonce=contest_nonce,
+        extended_data=encrypted_contest_data,
     )
 
-    if encrypted_contest is None or encrypted_contest.proof is None:
-        return None  # log will have happened earlier
+    if should_verify_proofs or not encrypted_contest.proof:
+        if encrypted_contest.is_valid_encryption(
+            contest_description_hash, elgamal_public_key, crypto_extended_base_hash
+        ):
+            return encrypted_contest
+        log_warning(
+            f"mismatching contest proof for contest {encrypted_contest.object_id}"
+        )
+        return None
 
-    if not should_verify_proofs:
-        return encrypted_contest
-
-    # Verify the proof
-    if encrypted_contest.is_valid_encryption(
-        contest_description_hash, elgamal_public_key, crypto_extended_base_hash
-    ):
-        return encrypted_contest
-    log_warning(f"mismatching contest proof for contest {encrypted_contest.object_id}")
-    return None
+    return encrypted_contest
 
 
 # TODO: ISSUE #57: add the device hash to the function interface so it can be propagated with the ballot.
