@@ -1,8 +1,14 @@
-from typing import Optional
+from click import echo
+from typing import Optional, List
+from os.path import isfile, isdir, join
+from os import listdir
+from click import echo
 from io import TextIOWrapper
 from electionguard.election import CiphertextElectionContext
 
+from electionguard.ballot import PlaintextBallot
 from electionguard.manifest import InternationalizedText, Manifest
+from electionguard.serialize import from_list_in_file, from_file
 from electionguard.serialize import (
     from_file_wrapper,
 )
@@ -36,3 +42,20 @@ class InputRetrievalStepBase(CliStepBase):
     @staticmethod
     def _get_context(context_file: TextIOWrapper) -> CiphertextElectionContext:
         return from_file_wrapper(CiphertextElectionContext, context_file)
+
+    @staticmethod
+    def _get_ballots(ballots_path: str) -> List[PlaintextBallot]:
+        if isfile(ballots_path):
+            return from_list_in_file(PlaintextBallot, ballots_path)
+        if isdir(ballots_path):
+            files = listdir(ballots_path)
+            return [InputRetrievalStepBase._get_ballot(ballots_path, f) for f in files]
+        raise ValueError(
+            f"{ballots_path} is neither a valid file nor a valid directory"
+        )
+
+    @staticmethod
+    def _get_ballot(ballots_dir: str, filename: str) -> PlaintextBallot:
+        full_file = join(ballots_dir, filename)
+        echo(f"importing {filename}")
+        return from_file(PlaintextBallot, full_file)
