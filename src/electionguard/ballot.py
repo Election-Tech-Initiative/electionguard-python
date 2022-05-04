@@ -14,6 +14,7 @@ from .election_object_base import (
     ElectionObjectBase,
     OrderedObjectBase,
     sequence_order_sort,
+    list_eq,
 )
 from .elgamal import ElGamalCiphertext, ElGamalPublicKey, elgamal_add
 from .group import add_q, ElementModQ, ZERO_MOD_Q
@@ -351,7 +352,7 @@ class PlaintextBallotContest(OrderedObjectBase):
         return True
 
     def __eq__(self, other: Any) -> bool:
-        return isinstance(other, PlaintextBallotContest) and _list_eq(
+        return isinstance(other, PlaintextBallotContest) and list_eq(
             self.ballot_selections, other.ballot_selections
         )
 
@@ -417,7 +418,7 @@ class CiphertextBallotContest(OrderedObjectBase, CryptoHashCheckable):
         return (
             isinstance(other, CiphertextBallotContest)
             and self.object_id == other.object_id
-            and _list_eq(self.ballot_selections, other.ballot_selections)
+            and list_eq(self.ballot_selections, other.ballot_selections)
             and self.description_hash == other.description_hash
             and self.crypto_hash == other.crypto_hash
             and self.nonce == other.nonce
@@ -640,7 +641,7 @@ class PlaintextBallot(ElectionObjectBase):
         return (
             isinstance(other, PlaintextBallot)
             and self.style_id == other.style_id
-            and _list_eq(self.contests, other.contests)
+            and list_eq(self.contests, other.contests)
         )
 
     def __ne__(self, other: Any) -> bool:
@@ -692,7 +693,7 @@ class CiphertextBallot(ElectionObjectBase, CryptoHashCheckable):
             and self.style_id == other.style_id
             and self.manifest_hash == other.manifest_hash
             and self.code_seed == other.code_seed
-            and _list_eq(self.contests, other.contests)
+            and list_eq(self.contests, other.contests)
             and self.code == other.code
             and self.timestamp == other.timestamp
             and self.crypto_hash == other.crypto_hash

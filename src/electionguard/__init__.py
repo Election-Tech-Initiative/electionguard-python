@@ -183,6 +183,7 @@ from electionguard.election_builder import (
 from electionguard.election_object_base import (
     ElectionObjectBase,
     OrderedObjectBase,
+    list_eq,
     sequence_order_sort,
 )
 from electionguard.election_polynomial import (
@@ -643,6 +644,7 @@ __all__ = [
     "int_to_q",
     "key_ceremony",
     "key_ceremony_mediator",
+    "list_eq",
     "log_add_handler",
     "log_critical",
     "log_debug",
