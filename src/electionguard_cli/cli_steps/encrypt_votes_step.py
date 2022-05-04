@@ -1,8 +1,6 @@
 from typing import List, Tuple
 import click
 
-from electionguard.data_store import DataStore
-from electionguard.ballot_box import BallotBox
 from electionguard.encrypt import EncryptionDevice, EncryptionMediator
 from electionguard.election import CiphertextElectionContext
 from electionguard.manifest import InternalManifest
@@ -15,27 +13,25 @@ from electionguard_tools.factories import (
     ElectionFactory,
 )
 
-from ..cli_models import (
-    BuildElectionResults,
-)
-from ..cli_steps import CliStepBase
-from .e2e_inputs import E2eInputs
-from .e2e_encrypt_results import E2eEncryptResults
+from .cli_step_base import CliStepBase
+from ..cli_models import BuildElectionResults, EncryptResults
 
 
 class EncryptVotesStep(CliStepBase):
     """Responsible for encrypting votes and storing them in a ballot store."""
 
     def encrypt(
-        self, e2e_inputs: E2eInputs, build_election_results: BuildElectionResults
-    ) -> E2eEncryptResults:
+        self,
+        ballots: List[PlaintextBallot],
+        build_election_results: BuildElectionResults,
+    ) -> EncryptResults:
         self.print_header("Encrypting Ballots")
         internal_manifest = build_election_results.internal_manifest
         context = build_election_results.context
         (ciphertext_ballots, device) = self._encrypt_votes(
-            e2e_inputs.ballots, internal_manifest, context
+            ballots, internal_manifest, context
         )
-        return E2eEncryptResults(device, ciphertext_ballots)
+        return EncryptResults(device, ciphertext_ballots)
 
     def _get_encrypter(
         self,

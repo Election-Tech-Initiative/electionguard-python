@@ -1,10 +1,9 @@
 from typing import List
 from electionguard.ballot import CiphertextBallot
-from electionguard.data_store import DataStore
 from electionguard.encrypt import EncryptionDevice
 
 
-class E2eEncryptResults:
+class EncryptResults:
     """Responsible for holding the results of encrypting votes in an election."""
 
     def __init__(

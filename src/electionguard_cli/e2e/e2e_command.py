@@ -8,8 +8,8 @@ from ..cli_steps import (
     PrintResultsStep,
     TallyStep,
     KeyCeremonyStep,
+    EncryptVotesStep,
 )
-from .encrypt_votes_step import EncryptVotesStep
 from .e2e_input_retrieval_step import E2eInputRetrievalStep
 from .submit_votes_step import SubmitVotesStep
 from .e2e_publish_step import E2ePublishStep
@@ -88,7 +88,7 @@ def E2eCommand(
         election_inputs, joint_key
     )
     encrypt_results = EncryptVotesStep().encrypt(
-        election_inputs, build_election_results
+        election_inputs.ballots, build_election_results
     )
     data_store = SubmitVotesStep().submit(
         election_inputs, build_election_results, encrypt_results

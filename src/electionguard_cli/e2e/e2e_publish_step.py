@@ -7,9 +7,8 @@ from electionguard.data_store import DataStore
 
 from electionguard_tools.helpers.export import export_record
 
-from .e2e_encrypt_results import E2eEncryptResults
 from .e2e_inputs import E2eInputs
-from ..cli_models import BuildElectionResults, CliDecryptResults
+from ..cli_models import BuildElectionResults, CliDecryptResults, EncryptResults
 from ..cli_steps import OutputStepBase
 
 
@@ -20,7 +19,7 @@ class E2ePublishStep(OutputStepBase):
         self,
         election_inputs: E2eInputs,
         build_election_results: BuildElectionResults,
-        submit_results: E2eEncryptResults,
+        submit_results: EncryptResults,
         decrypt_results: CliDecryptResults,
         data_store: DataStore,
     ) -> None:
@@ -40,7 +39,7 @@ class E2ePublishStep(OutputStepBase):
         self,
         election_inputs: E2eInputs,
         build_election_results: BuildElectionResults,
-        encrypt_results: E2eEncryptResults,
+        encrypt_results: EncryptResults,
         decrypt_results: CliDecryptResults,
         data_store: DataStore,
     ) -> None:

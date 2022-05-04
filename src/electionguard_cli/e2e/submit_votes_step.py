@@ -9,11 +9,8 @@ from electionguard.utils import get_optional
 from electionguard.ballot import (
     CiphertextBallot,
 )
-from electionguard_cli.e2e.e2e_encrypt_results import E2eEncryptResults
 
-from ..cli_models import (
-    BuildElectionResults,
-)
+from ..cli_models import BuildElectionResults, EncryptResults
 from ..cli_steps import CliStepBase
 from .e2e_inputs import E2eInputs
 
@@ -25,7 +22,7 @@ class SubmitVotesStep(CliStepBase):
         self,
         e2e_inputs: E2eInputs,
         build_election_results: BuildElectionResults,
-        e2e_encrypt_results: E2eEncryptResults,
+        e2e_encrypt_results: EncryptResults,
     ) -> DataStore:
         self.print_header("Submitting Ballots")
         internal_manifest = build_election_results.internal_manifest
