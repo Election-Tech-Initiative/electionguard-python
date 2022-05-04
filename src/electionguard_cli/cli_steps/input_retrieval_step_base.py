@@ -1,5 +1,6 @@
 from typing import Optional
 from io import TextIOWrapper
+from electionguard.election import CiphertextElectionContext
 
 from electionguard.manifest import InternationalizedText, Manifest
 from electionguard.serialize import (
@@ -31,3 +32,7 @@ class InputRetrievalStepBase(CliStepBase):
         self.print_value("Candidates", len(manifest.candidates))
         self.print_value("Contests", len(manifest.contests))
         self.print_value("Ballot Styles", len(manifest.ballot_styles))
+
+    @staticmethod
+    def _get_context(context_file: TextIOWrapper) -> CiphertextElectionContext:
+        return from_file_wrapper(CiphertextElectionContext, context_file)

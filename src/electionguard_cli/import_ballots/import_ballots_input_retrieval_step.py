@@ -9,7 +9,7 @@ from electionguard.encrypt import EncryptionDevice
 from electionguard.ballot import SubmittedBallot
 from electionguard.guardian import Guardian, PrivateGuardianRecord
 from electionguard.manifest import Manifest
-from electionguard.serialize import from_file, from_file_wrapper, from_list_in_file
+from electionguard.serialize import from_file, from_list_in_file
 
 from .import_ballot_inputs import (
     ImportBallotInputs,
@@ -34,7 +34,7 @@ class ImportBallotsInputRetrievalStep(InputRetrievalStepBase):
 
         self.print_header("Retrieving Inputs")
         manifest: Manifest = self._get_manifest(manifest_file)
-        context = self._get_context(context_file)
+        context = InputRetrievalStepBase._get_context(context_file)
         guardians = ImportBallotsInputRetrievalStep._get_guardians_from_keys(
             guardian_keys, context
         )
@@ -73,10 +73,6 @@ class ImportBallotsInputRetrievalStep(InputRetrievalStepBase):
             Guardian.from_private_record(g, context.number_of_guardians, context.quorum)
             for g in guardian_private_records
         ]
-
-    @staticmethod
-    def _get_context(context_file: TextIOWrapper) -> CiphertextElectionContext:
-        return from_file_wrapper(CiphertextElectionContext, context_file)
 
     @staticmethod
     def _get_ballots(ballots_dir: str) -> List[SubmittedBallot]:
