@@ -604,7 +604,7 @@ class Manifest(CryptoHashable):
     def __init__(
         self,
         election_scope_id: str,
-        spec_version: str,
+        spec_version: SpecVersion,
         type: ElectionType,
         start_date: datetime,
         end_date: datetime,
