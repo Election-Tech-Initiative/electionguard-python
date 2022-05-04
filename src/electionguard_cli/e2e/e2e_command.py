@@ -34,9 +34,9 @@ from .e2e_publish_step import E2ePublishStep
 )
 @click.option(
     "--ballots",
-    prompt="Ballots file",
-    help="The location of a file that contains plaintext ballots.",
-    type=click.File(),
+    prompt="Ballots file or directory",
+    help="The location of a file or directory that contains plaintext ballots.",
+    type=click.Path(exists=True, dir_okay=True, file_okay=True),
 )
 @click.option(
     "--spoil-id",
@@ -68,7 +68,7 @@ def E2eCommand(
     guardian_count: int,
     quorum: int,
     manifest: TextIOWrapper,
-    ballots: TextIOWrapper,
+    ballots: str,
     spoil_id: str,
     output_record: str,
     output_keys: str,

@@ -16,7 +16,7 @@ from pydantic.tools import schema_json_of
 from .big_integer import BigInteger
 from .ballot_box import BallotBoxState
 from .group import ElementModP, ElementModQ
-from .manifest import ElectionType, ReportingUnitType, VoteVariationType
+from .manifest import ElectionType, ReportingUnitType, VoteVariationType, SpecVersion
 from .proof import ProofUsage
 from .utils import BYTE_ENCODING, BYTE_ORDER, ContestErrorType
 
@@ -40,6 +40,7 @@ _config = Config(
         BallotBoxState,
         ElectionType,
         ReportingUnitType,
+        SpecVersion,
         VoteVariationType,
         ProofUsage,
     ],
