@@ -563,6 +563,13 @@ class ContestDescriptionWithPlaceholders(ContestDescription):
         return None
 
 
+class SpecVersion(Enum):
+    """Specify ElectionGuard Versions"""
+
+    EG0_95 = "v0.95"
+    EG1_0 = "1.0"
+
+
 # pylint: disable=too-many-instance-attributes,super-init-not-called
 @dataclass(unsafe_hash=True)
 class Manifest(CryptoHashable):
@@ -580,7 +587,7 @@ class Manifest(CryptoHashable):
     """
 
     election_scope_id: str
-    spec_version: str
+    spec_version: SpecVersion
     type: ElectionType
     start_date: datetime
     end_date: datetime
@@ -597,7 +604,7 @@ class Manifest(CryptoHashable):
     def __init__(
         self,
         election_scope_id: str,
-        spec_version: str,
+        spec_version: SpecVersion,
         type: ElectionType,
         start_date: datetime,
         end_date: datetime,
