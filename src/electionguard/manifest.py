@@ -566,6 +566,7 @@ class ContestDescriptionWithPlaceholders(ContestDescription):
 class SpecVersion(Enum):
     """Specify ElectionGuard Versions"""
 
+    EG0_95 = "v0.95"
     EG1_0 = "1.0"
 
 
