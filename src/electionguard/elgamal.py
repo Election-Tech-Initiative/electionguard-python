@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Any, Iterable, Optional, Union
 
 
+from .big_integer import bytes_to_hex
 from .discrete_log import DiscreteLog
 from .group import (
     ElementModQ,
@@ -13,7 +14,6 @@ from .group import (
     ZERO_MOD_Q,
     TWO_MOD_Q,
     rand_range_q,
-    hex_to_q,
 )
 from .hash import hash_elems
 from .hmac import get_hmac
@@ -113,10 +113,10 @@ class HashedElGamalCiphertext:
     pad: ElementModP
     """pad or alpha"""
 
-    data: bytes
+    data: str
     """encrypted data or beta"""
 
-    mac: ElementModQ
+    mac: str
     """message authentication code for hmac"""
 
     def decrypt(
@@ -136,13 +136,13 @@ class HashedElGamalCiphertext:
             encryption_seed.to_hex_bytes(),
             _MAC_KEY_SIZE,
         )
-        to_mac = self.pad.to_hex_bytes() + self.data
-        mac = get_hmac(mac_key, to_mac).hex()
+        to_mac = self.pad.to_hex_bytes() + bytes.fromhex(self.data)
+        mac = bytes_to_hex(get_hmac(mac_key, to_mac))
 
-        if mac != self.mac.to_hex():
+        if mac != self.mac:
             log_error("MAC verification failed in decryption.")
             return None
-        (ciphertext_chunks, bit_length) = _get_chunks(self.data)
+        (ciphertext_chunks, bit_length) = _get_chunks(bytes.fromhex(self.data))
         data = b""
         for i, block in enumerate(ciphertext_chunks):
             data_key = get_hmac(
@@ -254,10 +254,10 @@ def hashed_elgamal_encrypt(
     log_info(f": publicKey: {public_key.to_hex()}")
     log_info(f": pad: {pad.to_hex()}")
     log_info(f": data: {data!r}")
-    log_info(f": mac: {mac.hex()}")
+    log_info(f": mac: {bytes_to_hex(mac)}")
     log_info(f"to_mac {to_mac!r}")
 
-    return HashedElGamalCiphertext(pad, data, ElementModQ(mac.hex()))
+    return HashedElGamalCiphertext(pad, bytes_to_hex(data), bytes_to_hex(mac))
 
 
 def _get_chunks(message: bytes) -> tuple[list[bytes], int]:

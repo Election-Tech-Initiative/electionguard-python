@@ -85,6 +85,7 @@ from electionguard.ballot_validator import (
 )
 from electionguard.big_integer import (
     BigInteger,
+    bytes_to_hex,
 )
 from electionguard.chaum_pedersen import (
     ChaumPedersenProof,
@@ -543,6 +544,7 @@ __all__ = [
     "ballot_is_valid_for_style",
     "ballot_validator",
     "big_integer",
+    "bytes_to_hex",
     "chaum_pedersen",
     "combine_election_public_keys",
     "compensate_decrypt",

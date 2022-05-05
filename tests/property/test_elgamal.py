@@ -1,6 +1,4 @@
-import os
 from timeit import default_timer as timer
-from unittest.mock import patch
 
 from hypothesis import given
 from hypothesis.strategies import integers
@@ -8,7 +6,6 @@ from hypothesis.strategies import integers
 from tests.base_test_case import BaseTestCase
 
 from electionguard.constants import (
-    PrimeOption,
     get_generator,
     get_small_prime,
     get_large_prime,
@@ -188,8 +185,6 @@ class TestElGamal(BaseTestCase):
         scheduler.close()
         log_info(f"Parallelism speedup: {(end2 - end1) / (end1 - start):.3f}")
 
-    # Changed to use the standard primes here for the emgamal test
-    @patch.dict(os.environ, {"PRIME_OPTION": PrimeOption.Standard.value})
     def test_hashed_elgamal_encryption(self) -> None:
         """
         Ensure Hashed ElGamal encrypts and decrypts as expected.
@@ -210,5 +205,5 @@ class TestElGamal(BaseTestCase):
         # Assert
         self.assertIsNotNone(encrypted_message)
         self.assertIsNotNone(decrypted_message)
-        self.assertEqual(message.decode(), decrypted_message.decode().rstrip("\x00"))
-        # decrypted message is coming back with padded 0 at the end of the string.  Removing them for the check
+        if decrypted_message is not None:
+            self.assertEqual(message, decrypted_message)
