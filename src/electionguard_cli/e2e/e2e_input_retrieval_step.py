@@ -1,4 +1,5 @@
 from io import TextIOWrapper
+from electionguard.ballot import PlaintextBallot
 
 from electionguard.key_ceremony import CeremonyDetails
 from electionguard.manifest import Manifest
@@ -30,7 +31,7 @@ class E2eInputRetrievalStep(InputRetrievalStepBase):
             CeremonyDetails(guardian_count, quorum)
         )
         manifest: Manifest = self._get_manifest(manifest_file)
-        ballots = E2eInputRetrievalStep._get_ballots(ballots_path)
+        ballots = E2eInputRetrievalStep._get_ballots(ballots_path, PlaintextBallot)
         self.print_value("Guardians", guardian_count)
         self.print_value("Quorum", quorum)
         return E2eInputs(
