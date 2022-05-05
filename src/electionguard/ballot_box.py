@@ -5,7 +5,7 @@ from .ballot import (
     BallotBoxState,
     CiphertextBallot,
     SubmittedBallot,
-    from_ciphertext_ballot,
+    make_ciphertext_submitted_ballot
 )
 from .ballot_validator import ballot_is_valid_for_election
 from .data_store import DataStore
@@ -71,7 +71,7 @@ def accept_ballot(
     # TODO: ISSUE #56: check if the ballot includes the nonce, and regenerate the proofs
     # TODO: ISSUE #56: check if the ballot includes the proofs, if it does not include the nonce
 
-    ballot_box_ballot = from_ciphertext_ballot(ballot, state)
+    ballot_box_ballot = submit_ballot(ballot, state)
 
     store.set(ballot_box_ballot.object_id, ballot_box_ballot)
     return store.get(ballot_box_ballot.object_id)
@@ -86,3 +86,53 @@ def get_ballots(
         for (ballot_id, ballot) in store.items()
         if state is None or ballot.state == state
     }
+
+def submit_ballot(
+    ballot: CiphertextBallot, state: BallotBoxState) -> SubmittedBallot:
+    """
+    Convert a `CiphertextBallot` into a `SubmittedBallot`, with all nonces removed.
+    """
+    return make_ciphertext_submitted_ballot(
+        ballot.object_id,
+        ballot.style_id,
+        ballot.manifest_hash,
+        ballot.code_seed,
+        ballot.contests,
+        ballot.code,
+        ballot.timestamp,
+        state,
+    )
+
+def cast_ballot(ballot: CiphertextBallot) -> SubmittedBallot:
+    """
+    Convert a `CiphertextBallot` into a `SubmittedBallot`, with all nonces removed.
+    Declare a ballot as CAST.
+    """
+    return make_ciphertext_submitted_ballot(
+        ballot.object_id,
+        ballot.style_id,
+        ballot.manifest_hash,
+        ballot.code_seed,
+        ballot.contests,
+        ballot.code,
+        ballot.timestamp,
+        BallotBoxState.CAST,
+    )
+    
+
+def spoil_ballot(ballot: CiphertextBallot) -> SubmittedBallot:
+    """
+    Convert a `CiphertextBallot` into a `SubmittedBallot`, with all nonces removed.
+    Declare a ballot as CAST.
+    """
+    return make_ciphertext_submitted_ballot(
+        ballot.object_id,
+        ballot.style_id,
+        ballot.manifest_hash,
+        ballot.code_seed,
+        ballot.contests,
+        ballot.code,
+        ballot.timestamp,
+        BallotBoxState.SPOILED,
+    )
+    
