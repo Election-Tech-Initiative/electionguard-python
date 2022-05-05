@@ -1,5 +1,4 @@
 from click import echo
-from os.path import join
 
 from electionguard import to_file
 
