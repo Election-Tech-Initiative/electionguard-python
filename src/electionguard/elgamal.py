@@ -257,7 +257,7 @@ def hashed_elgamal_encrypt(
     log_info(f": mac: {mac.hex()}")
     log_info(f"to_mac {to_mac!r}")
 
-    return HashedElGamalCiphertext(pad, data, get_optional(hex_to_q(mac.hex())))
+    return HashedElGamalCiphertext(pad, data, ElementModQ(mac.hex()))
 
 
 def _get_chunks(message: bytes) -> tuple[list[bytes], int]:
