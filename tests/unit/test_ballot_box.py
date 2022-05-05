@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+from sys import intern
 from tests.base_test_case import BaseTestCase
 
 from electionguard.ballot import BallotBoxState
@@ -6,6 +8,9 @@ from electionguard.data_store import DataStore
 from electionguard.ballot_box import (
     BallotBox,
     accept_ballot,
+    cast_ballot,
+    spoil_ballot,
+    submit_ballot,
 )
 from electionguard.ballot_validator import ballot_is_valid_for_election
 from electionguard.constants import get_small_prime
@@ -81,7 +86,7 @@ class TestBallotBox(BaseTestCase):
 
         # Test failure modes
         self.assertIsNone(subject.spoil(data))  # cannot spoil again
-        self.assertIsNone(subject.cast(data))  # cannot cast a ballot alraedy spoiled
+        self.assertIsNone(subject.cast(data))  # cannot cast a ballot already spoiled
 
     def test_cast_ballot(self):
         # Arrange
@@ -116,7 +121,7 @@ class TestBallotBox(BaseTestCase):
             accept_ballot(
                 data, BallotBoxState.SPOILED, internal_manifest, context, store
             )
-        )  # cannot cspoil a ballot already cast
+        )  # cannot spoil a ballot already cast
 
     def test_spoil_ballot(self):
         # Arrange
@@ -152,3 +157,78 @@ class TestBallotBox(BaseTestCase):
         self.assertIsNone(
             accept_ballot(data, BallotBoxState.CAST, internal_manifest, context, store)
         )  # cannot cast a ballot already spoiled
+
+    def test_ballot_box_submit_ballot(self):
+        # Arrange
+        keypair = elgamal_keypair_from_secret(int_to_q(2))
+        manifest = election_factory.get_fake_manifest()
+        internal_manifest, context = election_factory.get_fake_ciphertext_election(
+            manifest, keypair.public_key
+        )
+        store = DataStore()
+        source = election_factory.get_fake_ballot(internal_manifest)
+        self.assertTrue(source.is_valid(internal_manifest.ballot_styles[0].object_id))
+
+        # Act
+        data = submit_ballot(internal_manifest, BallotBoxState.SPOILED)
+
+        # Assert
+        expected = store.get(source.object_id)
+        self.assertEqual(expected.state, BallotBoxState.SPOILED)
+        self.assertEqual(data.state, BallotBoxState.SPOILED)
+        self.assertEqual(expected.object_id, data.object_id)
+
+        # Test failure modes
+        self.assertIsNone(
+            spoil_ballot(internal_manifest)
+        )  # cannot spoil again
+
+    def test_ballot_box_spoil_ballot(self):
+        # Arrange
+        keypair = elgamal_keypair_from_secret(int_to_q(2))
+        manifest = election_factory.get_fake_manifest()
+        internal_manifest, context = election_factory.get_fake_ciphertext_election(
+            manifest, keypair.public_key
+        )
+        store = DataStore()
+        source = election_factory.get_fake_ballot(internal_manifest)
+        self.assertTrue(source.is_valid(internal_manifest.ballot_styles[0].object_id))
+
+        # Act
+        data = spoil_ballot(internal_manifest)
+
+        # Assert
+        expected = store.get(source.object_id)
+        self.assertEqual(expected.state, BallotBoxState.SPOILED)
+        self.assertEqual(data.state, BallotBoxState.SPOILED)
+        self.assertEqual(expected.object_id, data.object_id)
+
+        # Test failure modes
+        self.assertIsNone(
+            spoil_ballot(internal_manifest)
+        )  # cannot spoil again
+
+    def test_cast_ballot(self):
+        # Arrange
+        keypair = elgamal_keypair_from_secret(int_to_q(2))
+        manifest = election_factory.get_fake_manifest()
+        internal_manifest, context = election_factory.get_fake_ciphertext_election(
+            manifest, keypair.public_key
+        )
+        store = DataStore()
+        source = election_factory.get_fake_ballot(internal_manifest)
+        self.assertTrue(source.is_valid(internal_manifest.ballot_styles[0].object_id))
+
+        # Act
+        data = cast_ballot(internal_manifest)
+
+        # Assert
+        expected = store.get(source.object_id)
+        self.assertEqual(expected.state, BallotBoxState.CAST)
+        self.assertEqual(data.state, BallotBoxState.CAST)
+        self.assertEqual(expected.object_id, data.object_id)
+
+        # Test failure modes
+        self.assertIsNone(
+            cast_ballot(internal_manifest)
+        )  # cannot cast again
