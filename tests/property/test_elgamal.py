@@ -1,7 +1,7 @@
 from timeit import default_timer as timer
-
 from hypothesis import given
 from hypothesis.strategies import integers
+
 
 from tests.base_test_case import BaseTestCase
 
@@ -19,6 +19,7 @@ from electionguard.elgamal import (
     elgamal_combine_public_keys,
     hashed_elgamal_encrypt,
 )
+from electionguard.encrypt import ContestData
 from electionguard.group import (
     ElementModQ,
     g_pow_p,
@@ -29,8 +30,9 @@ from electionguard.group import (
 )
 from electionguard.logs import log_info
 from electionguard.nonces import Nonces
+from electionguard.serialize import PaddedDataSize, padded_encode, padded_decode
 from electionguard.scheduler import Scheduler
-from electionguard.utils import get_optional
+from electionguard.utils import ContestErrorType, get_optional
 from electionguard_tools.strategies.elgamal import elgamal_keypairs
 from electionguard_tools.strategies.group import elements_mod_q_no_zero
 
@@ -191,19 +193,25 @@ class TestElGamal(BaseTestCase):
         """
 
         # Arrange
-        message = b"mock_message"
+        message = ContestData(ContestErrorType.Default)
         keypair = elgamal_keypair_random()
         nonce = ONE_MOD_Q
         seed = ONE_MOD_Q
 
         # Act
+        padded_message = padded_encode(message, PaddedDataSize.Bytes_512)
         encrypted_message = hashed_elgamal_encrypt(
-            message, nonce, keypair.public_key, seed
+            padded_message, nonce, keypair.public_key, seed
         )
         decrypted_message = encrypted_message.decrypt(keypair.secret_key, seed)
+        if decrypted_message is not None:
+            unpadded_message = padded_decode(
+                ContestData, decrypted_message, PaddedDataSize.Bytes_512
+            )
 
         # Assert
         self.assertIsNotNone(encrypted_message)
         self.assertIsNotNone(decrypted_message)
         if decrypted_message is not None:
-            self.assertEqual(message, decrypted_message)
+            self.assertEqual(padded_message, decrypted_message)
+            self.assertEqual(message, unpadded_message)
