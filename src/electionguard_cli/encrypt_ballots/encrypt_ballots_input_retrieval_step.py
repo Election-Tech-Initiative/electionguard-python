@@ -1,4 +1,5 @@
 from io import TextIOWrapper
+from electionguard.ballot import PlaintextBallot
 
 from electionguard.manifest import Manifest
 
@@ -21,7 +22,9 @@ class EncryptBallotsInputRetrievalStep(InputRetrievalStepBase):
         self.print_header("Retrieving Inputs")
         manifest: Manifest = self._get_manifest(manifest_file)
         context = InputRetrievalStepBase._get_context(context_file)
-        plaintext_ballots = InputRetrievalStepBase._get_ballots(ballots_dir)
+        plaintext_ballots = InputRetrievalStepBase._get_ballots(
+            ballots_dir, PlaintextBallot
+        )
 
         return EncryptBallotInputs(
             manifest,

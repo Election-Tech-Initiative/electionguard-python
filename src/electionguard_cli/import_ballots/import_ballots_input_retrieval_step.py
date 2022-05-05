@@ -2,6 +2,7 @@ from typing import List
 from io import TextIOWrapper
 
 from electionguard import CiphertextElectionContext
+from electionguard.ballot import SubmittedBallot
 from electionguard.encrypt import EncryptionDevice
 from electionguard.guardian import Guardian, PrivateGuardianRecord
 from electionguard.manifest import Manifest
@@ -35,7 +36,9 @@ class ImportBallotsInputRetrievalStep(InputRetrievalStepBase):
             guardian_keys, context
         )
         encryption_devices = self._get_encryption_devices(encryption_device_file)
-        submitted_ballots = ImportBallotsInputRetrievalStep._get_ballots(ballots_dir)
+        submitted_ballots = ImportBallotsInputRetrievalStep._get_ballots(
+            ballots_dir, SubmittedBallot
+        )
 
         self.print_value("Ballots Dir", ballots_dir)
 
