@@ -1,6 +1,7 @@
 from io import TextIOWrapper
 import click
 
+from ..cli_steps import EncryptVotesStep
 from .encrypt_ballots_election_builder_step import EncryptBallotsElectionBuilderStep
 from .encrypt_ballots_input_retrieval_step import EncryptBallotsInputRetrievalStep
 
@@ -38,4 +39,7 @@ def EncryptBallotsCommand(
     )
     build_election_results = (
         EncryptBallotsElectionBuilderStep().build_election_with_context(election_inputs)
+    )
+    encrypt_results = EncryptVotesStep().encrypt(
+        election_inputs.plaintext_ballots, build_election_results
     )
