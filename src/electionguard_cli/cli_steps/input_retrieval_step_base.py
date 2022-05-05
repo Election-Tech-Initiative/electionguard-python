@@ -57,5 +57,5 @@ class InputRetrievalStepBase(CliStepBase):
     @staticmethod
     def _get_ballot(ballots_dir: str, filename: str) -> PlaintextBallot:
         full_file = join(ballots_dir, filename)
-        echo(f"importing {filename}")
+        echo(f"Importing {filename}")
         return from_file(PlaintextBallot, full_file)

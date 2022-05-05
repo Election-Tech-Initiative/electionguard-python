@@ -53,9 +53,11 @@ from electionguard_cli.encrypt_ballots import (
     EncryptBallotsCommand,
     EncryptBallotsElectionBuilderStep,
     EncryptBallotsInputRetrievalStep,
+    EncryptBallotsPublishStep,
     encrypt_ballot_inputs,
     encrypt_ballots_election_builder_step,
     encrypt_ballots_input_retrieval_step,
+    encrypt_ballots_publish_step,
     encrypt_command,
 )
 from electionguard_cli.import_ballots import (
@@ -99,6 +101,7 @@ __all__ = [
     "EncryptBallotsCommand",
     "EncryptBallotsElectionBuilderStep",
     "EncryptBallotsInputRetrievalStep",
+    "EncryptBallotsPublishStep",
     "EncryptResults",
     "EncryptVotesStep",
     "ImportBallotInputs",
@@ -134,6 +137,7 @@ __all__ = [
     "encrypt_ballots",
     "encrypt_ballots_election_builder_step",
     "encrypt_ballots_input_retrieval_step",
+    "encrypt_ballots_publish_step",
     "encrypt_command",
     "encrypt_results",
     "encrypt_votes_step",
