@@ -3,11 +3,12 @@ from os.path import splitext
 from tempfile import TemporaryDirectory
 from click import echo
 from electionguard.constants import get_constants
+from electionguard.data_store import DataStore
 
 from electionguard_tools.helpers.export import export_record
 
 from .e2e_inputs import E2eInputs
-from ..cli_models import BuildElectionResults, E2eSubmitResults, CliDecryptResults
+from ..cli_models import BuildElectionResults, CliDecryptResults, EncryptResults
 from ..cli_steps import OutputStepBase
 
 
@@ -18,14 +19,19 @@ class E2ePublishStep(OutputStepBase):
         self,
         election_inputs: E2eInputs,
         build_election_results: BuildElectionResults,
-        submit_results: E2eSubmitResults,
+        submit_results: EncryptResults,
         decrypt_results: CliDecryptResults,
+        data_store: DataStore,
     ) -> None:
 
         self.print_header("Election Record")
 
         self._export_election_record(
-            election_inputs, build_election_results, submit_results, decrypt_results
+            election_inputs,
+            build_election_results,
+            submit_results,
+            decrypt_results,
+            data_store,
         )
         self._export_private_keys_e2e(election_inputs)
 
@@ -33,8 +39,9 @@ class E2ePublishStep(OutputStepBase):
         self,
         election_inputs: E2eInputs,
         build_election_results: BuildElectionResults,
-        submit_results: E2eSubmitResults,
+        encrypt_results: EncryptResults,
         decrypt_results: CliDecryptResults,
+        data_store: DataStore,
     ) -> None:
         guardian_records = OutputStepBase._get_guardian_records(election_inputs)
         constants = get_constants()
@@ -43,8 +50,8 @@ class E2ePublishStep(OutputStepBase):
                 election_inputs.manifest,
                 build_election_results.context,
                 constants,
-                [submit_results.device],
-                submit_results.data_store.all(),
+                [encrypt_results.device],
+                data_store.all(),
                 decrypt_results.plaintext_spoiled_ballots.values(),
                 decrypt_results.ciphertext_tally.publish(),
                 decrypt_results.plaintext_tally,

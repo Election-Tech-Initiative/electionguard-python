@@ -6,14 +6,17 @@ import os
 from pathlib import Path
 from typing import Any, List, Type, TypeVar, Union
 
+
 from dacite import Config, from_dict
+from dateutil import parser
 from pydantic.json import pydantic_encoder
-from pydantic.tools import schema_json_of, parse_raw_as
+from pydantic.tools import schema_json_of
+
 
 from .big_integer import BigInteger
 from .ballot_box import BallotBoxState
 from .group import ElementModP, ElementModQ
-from .manifest import ElectionType, ReportingUnitType, VoteVariationType
+from .manifest import ElectionType, ReportingUnitType, VoteVariationType, SpecVersion
 from .proof import ProofUsage
 from .utils import BYTE_ENCODING, BYTE_ORDER, ContestErrorType
 
@@ -37,10 +40,11 @@ _config = Config(
         BallotBoxState,
         ElectionType,
         ReportingUnitType,
+        SpecVersion,
         VoteVariationType,
         ProofUsage,
     ],
-    type_hooks={datetime: datetime.fromisoformat},
+    type_hooks={datetime: parser.parse},
 )
 
 
@@ -102,8 +106,6 @@ def construct_path(
 def from_raw(type_: Type[_T], raw: Union[str, bytes]) -> _T:
     """Deserialize raw json string as type."""
 
-    if type_ is datetime:
-        return parse_raw_as(type_, raw)
     return from_dict(type_, json.loads(raw), _config)
 
 
