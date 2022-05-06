@@ -1,12 +1,14 @@
 from io import TextIOWrapper
 import click
 
+
 from ..cli_steps import (
     ElectionBuilderStep,
     DecryptStep,
     PrintResultsStep,
     TallyStep,
     KeyCeremonyStep,
+    EncryptVotesStep,
 )
 from .e2e_input_retrieval_step import E2eInputRetrievalStep
 from .submit_votes_step import SubmitVotesStep
@@ -85,11 +87,14 @@ def E2eCommand(
     build_election_results = ElectionBuilderStep().build_election_with_key(
         election_inputs, joint_key
     )
-    submit_results = SubmitVotesStep().submit_votes(
-        election_inputs, build_election_results
+    encrypt_results = EncryptVotesStep().encrypt(
+        election_inputs.ballots, build_election_results
+    )
+    data_store = SubmitVotesStep().submit(
+        election_inputs, build_election_results, encrypt_results
     )
     (ciphertext_tally, spoiled_ballots) = TallyStep().get_from_ballot_store(
-        build_election_results, submit_results.data_store
+        build_election_results, data_store
     )
     decrypt_results = DecryptStep().decrypt(
         ciphertext_tally,
@@ -103,5 +108,9 @@ def E2eCommand(
 
     # publish election record
     E2ePublishStep().export(
-        election_inputs, build_election_results, submit_results, decrypt_results
+        election_inputs,
+        build_election_results,
+        encrypt_results,
+        decrypt_results,
+        data_store,
     )

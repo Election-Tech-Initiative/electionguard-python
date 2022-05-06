@@ -1,15 +1,12 @@
 from typing import List
 from io import TextIOWrapper
-from os import listdir
-from os.path import join
-from click import echo
 
 from electionguard import CiphertextElectionContext
-from electionguard.encrypt import EncryptionDevice
 from electionguard.ballot import SubmittedBallot
+from electionguard.encrypt import EncryptionDevice
 from electionguard.guardian import Guardian, PrivateGuardianRecord
 from electionguard.manifest import Manifest
-from electionguard.serialize import from_file, from_file_wrapper, from_list_in_file
+from electionguard.serialize import from_file, from_list_in_file
 
 from .import_ballot_inputs import (
     ImportBallotInputs,
@@ -34,12 +31,14 @@ class ImportBallotsInputRetrievalStep(InputRetrievalStepBase):
 
         self.print_header("Retrieving Inputs")
         manifest: Manifest = self._get_manifest(manifest_file)
-        context = self._get_context(context_file)
+        context = InputRetrievalStepBase._get_context(context_file)
         guardians = ImportBallotsInputRetrievalStep._get_guardians_from_keys(
             guardian_keys, context
         )
         encryption_devices = self._get_encryption_devices(encryption_device_file)
-        submitted_ballots = ImportBallotsInputRetrievalStep._get_ballots(ballots_dir)
+        submitted_ballots = ImportBallotsInputRetrievalStep._get_ballots(
+            ballots_dir, SubmittedBallot
+        )
 
         self.print_value("Ballots Dir", ballots_dir)
 
@@ -73,21 +72,3 @@ class ImportBallotsInputRetrievalStep(InputRetrievalStepBase):
             Guardian.from_private_record(g, context.number_of_guardians, context.quorum)
             for g in guardian_private_records
         ]
-
-    @staticmethod
-    def _get_context(context_file: TextIOWrapper) -> CiphertextElectionContext:
-        return from_file_wrapper(CiphertextElectionContext, context_file)
-
-    @staticmethod
-    def _get_ballots(ballots_dir: str) -> List[SubmittedBallot]:
-        files = listdir(ballots_dir)
-
-        return [
-            ImportBallotsInputRetrievalStep._get_ballot(ballots_dir, f) for f in files
-        ]
-
-    @staticmethod
-    def _get_ballot(ballots_dir: str, filename: str) -> SubmittedBallot:
-        full_file = join(ballots_dir, filename)
-        echo(f"importing {filename}")
-        return from_file(SubmittedBallot, full_file)
