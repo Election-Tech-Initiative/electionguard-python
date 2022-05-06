@@ -76,7 +76,7 @@ class EncryptionDevice:
     """Election initialization value"""
 
     location: str
-    """Arbitary string to designate the location of device"""
+    """Arbitrary string to designate the location of device"""
 
     def get_hash(self) -> ElementModQ:
         """
