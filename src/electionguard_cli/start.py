@@ -1,9 +1,9 @@
 import click
 
-from .setup_election.setup_election_command import SetupElectionCommand
-from .e2e.e2e_command import E2eCommand
-from .import_ballots.import_ballots_command import ImportBallotsCommand
-from .encrypt_ballots.encrypt_command import EncryptBallotsCommand
+from .cli_setup_election.setup_election_command import SetupElectionCommand
+from .cli_e2e.e2e_command import E2eCommand
+from .cli_import_ballots.import_ballots_command import ImportBallotsCommand
+from .cli_encrypt_ballots.encrypt_command import EncryptBallotsCommand
 
 
 @click.group()
