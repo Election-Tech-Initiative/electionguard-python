@@ -3,8 +3,7 @@ from datetime import datetime
 from enum import Enum, unique
 from typing import cast, List, Optional, Set, Any
 
-from .ballot import _list_eq
-from .election_object_base import ElectionObjectBase, OrderedObjectBase
+from .election_object_base import ElectionObjectBase, OrderedObjectBase, list_eq
 from .group import ElementModQ
 from .hash import CryptoHashable, hash_elems
 from .logs import log_warning, log_debug
@@ -394,7 +393,7 @@ class ContestDescription(OrderedObjectBase, CryptoHashable):
             and self.number_elected == other.number_elected
             and self.votes_allowed == other.votes_allowed
             and self.name == other.name
-            and _list_eq(self.ballot_selections, other.ballot_selections)
+            and list_eq(self.ballot_selections, other.ballot_selections)
             and self.ballot_title == other.ballot_title
             and self.ballot_subtitle == other.ballot_subtitle
         )
@@ -636,11 +635,11 @@ class Manifest(CryptoHashable):
             and self.type == other.type
             and self.start_date == other.start_date
             and self.end_date == other.end_date
-            and _list_eq(self.geopolitical_units, other.geopolitical_units)
-            and _list_eq(self.parties, other.parties)
-            and _list_eq(self.candidates, other.candidates)
-            and _list_eq(self.contests, other.contests)
-            and _list_eq(self.ballot_styles, other.ballot_styles)
+            and list_eq(self.geopolitical_units, other.geopolitical_units)
+            and list_eq(self.parties, other.parties)
+            and list_eq(self.candidates, other.candidates)
+            and list_eq(self.contests, other.contests)
+            and list_eq(self.ballot_styles, other.ballot_styles)
             and self.name == other.name
             and self.contact_information == other.contact_information
         )

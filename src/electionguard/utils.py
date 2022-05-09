@@ -1,8 +1,10 @@
 from datetime import datetime, timezone
 from enum import Enum
 from re import sub
-from typing import Callable, Optional, TypeVar
+from typing import Callable, List, Optional, TypeVar
 from base64 import b16decode
+
+from .type import ContestId, SelectionId
 
 _T = TypeVar("_T")
 _U = TypeVar("_U")
@@ -14,9 +16,51 @@ BYTE_ENCODING = "utf-8"
 class ContestErrorType(Enum):
     """Various errors that can occur on ballots contest after voting."""
 
+    Default = "default"
     NullVote = "nullvote"
     UnderVote = "undervote"
     OverVote = "overvote"
+
+
+class ContestException(Exception):
+    """Generic contest error"""
+
+    type: ContestErrorType
+
+    def __init__(
+        self,
+        contest_id: ContestId,
+        type: ContestErrorType = ContestErrorType.Default,
+        override_message: Optional[str] = None,
+    ):
+        self.type = type
+        super().__init__(
+            override_message or f"{type} error has occurred on contest {contest_id}."
+        )
+
+
+class OverVoteException(ContestException):
+    """Over vote on contest error."""
+
+    overvoted_ids: List[SelectionId]
+
+    def __init__(self, contest_id: ContestId, overvoted_ids: List[SelectionId]):
+        self.overvoted_ids = overvoted_ids
+        super().__init__(contest_id, ContestErrorType.OverVote)
+
+
+class UnderVoteException(ContestException):
+    """Under vote on contest error."""
+
+    def __init__(self, contest_id: ContestId):
+        super().__init__(contest_id, ContestErrorType.UnderVote)
+
+
+class NullVoteException(ContestException):
+    """Null vote on contest error."""
+
+    def __init__(self, contest_id: ContestId):
+        super().__init__(contest_id, ContestErrorType.NullVote)
 
 
 def get_optional(optional: Optional[_T]) -> _T:

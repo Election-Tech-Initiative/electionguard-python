@@ -5,7 +5,6 @@ from typing import Dict, List
 from .ballot import (
     CiphertextBallot,
     SubmittedBallot,
-    ExtendedData,
     PlaintextBallot,
     PlaintextBallotContest,
     PlaintextBallotSelection,
@@ -33,7 +32,7 @@ class CompactPlaintextBallot:
     object_id: str
     style_id: str
     selections: List[bool]
-    extended_data: Dict[int, ExtendedData]
+    write_ins: Dict[int, str]
 
 
 @dataclass
@@ -51,7 +50,7 @@ class CompactSubmittedBallot:
 def compress_plaintext_ballot(ballot: PlaintextBallot) -> CompactPlaintextBallot:
     """Compress a plaintext ballot into a compact plaintext ballot"""
     selections = _get_compact_selections(ballot)
-    extended_data = _get_compact_extended_data(ballot)
+    extended_data = _get_compact_write_ins(ballot)
 
     return CompactPlaintextBallot(
         ballot.object_id, ballot.style_id, selections, extended_data
@@ -129,15 +128,15 @@ def _get_compact_selections(ballot: PlaintextBallot) -> List[bool]:
     return selections
 
 
-def _get_compact_extended_data(ballot: PlaintextBallot) -> Dict[int, ExtendedData]:
-    extended_data = {}
+def _get_compact_write_ins(ballot: PlaintextBallot) -> Dict[int, str]:
+    write_ins = {}
     index = 0
     for contest in ballot.contests:
         for selection in contest.ballot_selections:
             index += 1
-            if selection.extended_data:
-                extended_data[index] = selection.extended_data
-    return extended_data
+            if selection.write_in:
+                write_ins[index] = selection.write_in
+    return write_ins
 
 
 def _get_plaintext_contests(
@@ -164,7 +163,7 @@ def _get_plaintext_contests(
                     selection.sequence_order,
                     YES_VOTE if compact_ballot.selections[index] else NO_VOTE,
                     not contest_in_style,
-                    compact_ballot.extended_data.get(index),
+                    compact_ballot.write_ins.get(index),
                 )
             )
             index += 1
