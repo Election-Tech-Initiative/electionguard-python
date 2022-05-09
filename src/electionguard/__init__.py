@@ -47,7 +47,6 @@ from electionguard.ballot import (
     CiphertextBallotSelection,
     CiphertextContest,
     CiphertextSelection,
-    ExtendedData,
     PlaintextBallot,
     PlaintextBallotContest,
     PlaintextBallotSelection,
@@ -86,6 +85,7 @@ from electionguard.ballot_validator import (
 )
 from electionguard.big_integer import (
     BigInteger,
+    bytes_to_hex,
 )
 from electionguard.chaum_pedersen import (
     ChaumPedersenProof,
@@ -184,6 +184,7 @@ from electionguard.election_builder import (
 from electionguard.election_object_base import (
     ElectionObjectBase,
     OrderedObjectBase,
+    list_eq,
     sequence_order_sort,
 )
 from electionguard.election_polynomial import (
@@ -381,6 +382,10 @@ from electionguard.utils import (
     BYTE_ENCODING,
     BYTE_ORDER,
     ContestErrorType,
+    ContestException,
+    NullVoteException,
+    OverVoteException,
+    UnderVoteException,
     flatmap_optional,
     get_optional,
     get_or_else_optional,
@@ -431,6 +436,7 @@ __all__ = [
     "ContestDescription",
     "ContestDescriptionWithPlaceholders",
     "ContestErrorType",
+    "ContestException",
     "ContestId",
     "CryptoHashCheckable",
     "CryptoHashable",
@@ -469,7 +475,6 @@ __all__ = [
     "ElementModQorInt",
     "EncryptionDevice",
     "EncryptionMediator",
-    "ExtendedData",
     "FORMAT",
     "GeopoliticalUnit",
     "Guardian",
@@ -489,7 +494,9 @@ __all__ = [
     "MediatorId",
     "NO_VOTE",
     "Nonces",
+    "NullVoteException",
     "OrderedObjectBase",
+    "OverVoteException",
     "PAD_INDICATOR_SIZE",
     "PaddedDataSize",
     "Party",
@@ -521,6 +528,7 @@ __all__ = [
     "SpecVersion",
     "SubmittedBallot",
     "TruncationError",
+    "UnderVoteException",
     "VerifierId",
     "VoteVariationType",
     "YES_VOTE",
@@ -536,6 +544,7 @@ __all__ = [
     "ballot_is_valid_for_style",
     "ballot_validator",
     "big_integer",
+    "bytes_to_hex",
     "chaum_pedersen",
     "combine_election_public_keys",
     "compensate_decrypt",
@@ -645,6 +654,7 @@ __all__ = [
     "int_to_q",
     "key_ceremony",
     "key_ceremony_mediator",
+    "list_eq",
     "log_add_handler",
     "log_critical",
     "log_debug",

@@ -1,7 +1,7 @@
 """Base objects to derive other election objects."""
 
 from dataclasses import dataclass
-from typing import List, TypeVar
+from typing import List, Sequence, TypeVar
 
 
 @dataclass
@@ -30,3 +30,15 @@ _Orderable_T = TypeVar("_Orderable_T", bound="OrderedObjectBase")
 def sequence_order_sort(unsorted: List[_Orderable_T]) -> List[_Orderable_T]:
     """Sort by sequence order."""
     return sorted(unsorted, key=lambda item: item.sequence_order)
+
+
+def list_eq(
+    list1: Sequence[ElectionObjectBase], list2: Sequence[ElectionObjectBase]
+) -> bool:
+    """
+    We want to compare lists of election objects as if they're sets. We fake this by first
+    sorting them on their object ids, then using regular list comparison.
+    """
+    return sorted(list1, key=lambda x: x.object_id) == sorted(
+        list2, key=lambda x: x.object_id
+    )
