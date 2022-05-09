@@ -4,6 +4,8 @@ from base64 import b16decode
 # pylint: disable=no-name-in-module
 from gmpy2 import mpz
 
+from .utils import BYTE_ORDER
+
 
 def _hex_to_int(input: str) -> int:
     """Given a hex string representing bytes, returns an int."""
@@ -19,6 +21,10 @@ def _int_to_hex(input: int) -> str:
 
     hex = format(input, "02X")
     return pad_hex(hex)
+
+
+def bytes_to_hex(input: bytes) -> str:
+    return _int_to_hex(int.from_bytes(input, BYTE_ORDER))
 
 
 _zero = mpz(0)
