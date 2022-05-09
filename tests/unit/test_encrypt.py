@@ -176,10 +176,11 @@ class TestEncrypt(TestCase):
         contest_description = get_sample_contest_description()
         contest = contest_from(contest_description)
         contest_hash = contest_description.crypto_hash()
+        write_in_value = "write_in"
 
         # Add Write-ins
         for selection in contest.ballot_selections:
-            selection.write_in = "write_in"
+            selection.write_in = write_in_value
 
         # Act
         encrypted_contest = encrypt_contest(
@@ -211,3 +212,5 @@ class TestEncrypt(TestCase):
         self.assertIsNotNone(contest_data.write_ins)
         if contest_data is not None and contest_data.write_ins is not None:
             self.assertGreater(len(contest_data.write_ins), 0)
+            for write_in in contest_data.write_ins.values():
+                self.assertEqual(write_in, write_in_value)
