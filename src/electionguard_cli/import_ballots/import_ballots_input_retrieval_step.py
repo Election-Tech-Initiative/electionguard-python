@@ -1,5 +1,7 @@
 from typing import List
 from io import TextIOWrapper
+from os import listdir
+from os.path import isfile, isdir, join
 
 from electionguard import CiphertextElectionContext
 from electionguard.ballot import SubmittedBallot
@@ -63,12 +65,21 @@ class ImportBallotsInputRetrievalStep(InputRetrievalStepBase):
 
     @staticmethod
     def _get_guardians_from_keys(
-        guardian_keys: str, context: CiphertextElectionContext
+        guardian_keys_dir: str, context: CiphertextElectionContext
     ) -> List[Guardian]:
-        guardian_private_records = from_list_in_file(
-            PrivateGuardianRecord, guardian_keys
-        )
+
+        files = listdir(guardian_keys_dir)
         return [
-            Guardian.from_private_record(g, context.number_of_guardians, context.quorum)
-            for g in guardian_private_records
+            ImportBallotsInputRetrievalStep._get_guardian(guardian_keys_dir, f, context)
+            for f in files
         ]
+
+    @staticmethod
+    def _get_guardian(
+        guardian_dir: str, filename: str, context: CiphertextElectionContext
+    ) -> Guardian:
+        full_file = join(guardian_dir, filename)
+        private_record = from_file(PrivateGuardianRecord, full_file)
+        return Guardian.from_private_record(
+            private_record, context.number_of_guardians, context.quorum
+        )
