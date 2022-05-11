@@ -23,7 +23,7 @@ from .utils import get_optional
 ElGamalSecretKey = ElementModQ
 ElGamalPublicKey = ElementModP
 
-_MAC_KEY_SIZE = 256
+_MAC_KEY_SIZE = 4096
 _BLOCK_SIZE = 32
 
 
