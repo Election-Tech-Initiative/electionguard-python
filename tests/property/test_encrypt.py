@@ -10,10 +10,14 @@ from hypothesis import HealthCheck
 from hypothesis import given, settings
 from hypothesis.strategies import integers
 
+
 from tests.base_test_case import BaseTestCase
 
 import electionguard_tools.factories.ballot_factory as BallotFactory
 import electionguard_tools.factories.election_factory as ElectionFactory
+from electionguard_tools.strategies.elgamal import elgamal_keypairs
+from electionguard_tools.strategies.group import elements_mod_q_no_zero
+
 from electionguard.constants import get_small_prime
 from electionguard.chaum_pedersen import (
     ConstantChaumPedersenProof,
@@ -28,7 +32,6 @@ from electionguard.elgamal import (
 )
 from electionguard.encrypt import (
     EncryptionDevice,
-    contest_from,
     encrypt_ballot,
     encrypt_contest,
     encrypt_selection,
@@ -46,15 +49,12 @@ from electionguard.group import (
 )
 from electionguard.manifest import (
     ContestDescription,
-    ContestDescriptionWithPlaceholders,
     contest_description_with_placeholders_from,
     generate_placeholder_selections_from,
     SelectionDescription,
     VoteVariationType,
 )
 
-from electionguard_tools.strategies.elgamal import elgamal_keypairs
-from electionguard_tools.strategies.group import elements_mod_q_no_zero
 
 election_factory = ElectionFactory.ElectionFactory()
 ballot_factory = BallotFactory.BallotFactory()
@@ -244,64 +244,6 @@ class TestEncrypt(BaseTestCase):
             malformed_proof.is_valid_encryption(
                 description.crypto_hash(), keypair.public_key, ONE_MOD_Q
             )
-        )
-
-    def test_encrypt_simple_contest_referendum_succeeds(self):
-        # Arrange
-        keypair = elgamal_keypair_from_secret(int_to_q(2))
-        nonce = randbelow(get_small_prime())
-        ballot_selections = [
-            SelectionDescription(
-                "some-object-id-affirmative", 0, "some-candidate-id-affirmative"
-            ),
-            SelectionDescription(
-                "some-object-id-negative", 1, "some-candidate-id-negative"
-            ),
-        ]
-        placeholder_selections = [
-            SelectionDescription(
-                "some-object-id-placeholder", 2, "some-candidate-id-placeholder"
-            )
-        ]
-        metadata = ContestDescriptionWithPlaceholders(
-            "some-contest-object-id",
-            0,
-            "some-electoral-district-id",
-            VoteVariationType.one_of_m,
-            1,
-            1,
-            "some-referendum-contest-name",
-            ballot_selections,
-            None,
-            None,
-            placeholder_selections,
-        )
-        hash_context = metadata.crypto_hash()
-
-        subject = contest_from(metadata)
-        self.assertTrue(
-            subject.is_valid(
-                metadata.object_id,
-                len(metadata.ballot_selections),
-                metadata.number_elected,
-                metadata.votes_allowed,
-            )
-        )
-
-        # Act
-        result = encrypt_contest(
-            subject,
-            metadata,
-            keypair.public_key,
-            ONE_MOD_Q,
-            nonce,
-            should_verify_proofs=True,
-        )
-
-        # Assert
-        self.assertIsNotNone(result)
-        self.assertTrue(
-            result.is_valid_encryption(hash_context, keypair.public_key, ONE_MOD_Q)
         )
 
     @settings(

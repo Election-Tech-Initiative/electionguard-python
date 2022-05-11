@@ -1,7 +1,17 @@
 from dataclasses import dataclass, field, replace
 from datetime import datetime
 from enum import Enum
-from typing import Any, List, Iterable, Optional, Protocol, runtime_checkable, Sequence
+from functools import cached_property, reduce
+from typing import (
+    Any,
+    Dict,
+    List,
+    Iterable,
+    Optional,
+    Protocol,
+    runtime_checkable,
+)
+
 
 from .ballot_code import get_ballot_code
 from .chaum_pedersen import (
@@ -14,36 +24,27 @@ from .election_object_base import (
     ElectionObjectBase,
     OrderedObjectBase,
     sequence_order_sort,
+    list_eq,
 )
-from .elgamal import ElGamalCiphertext, ElGamalPublicKey, elgamal_add
+from .elgamal import (
+    ElGamalCiphertext,
+    ElGamalPublicKey,
+    HashedElGamalCiphertext,
+    elgamal_add,
+)
 from .group import add_q, ElementModQ, ZERO_MOD_Q
 from .hash import CryptoHashCheckable, hash_elems
 from .logs import log_warning
-from .utils import to_ticks, flatmap_optional
-
-
-def _list_eq(
-    list1: Sequence[ElectionObjectBase], list2: Sequence[ElectionObjectBase]
-) -> bool:
-    """
-    We want to compare lists of election objects as if they're sets. We fake this by first
-    sorting them on their object ids, then using regular list comparison.
-    """
-    return sorted(list1, key=lambda x: x.object_id) == sorted(
-        list2, key=lambda x: x.object_id
-    )
-
-
-@dataclass(eq=True, unsafe_hash=True)
-class ExtendedData:
-    """
-    ExtendedData represents any arbitrary data expressible as a string with a length.
-
-    This class is used primarily as a field on a selection to indicate a write-in candidate text value
-    """
-
-    value: str
-    length: int
+from .manifest import ContestDescription
+from .type import SelectionId
+from .utils import (
+    ContestException,
+    NullVoteException,
+    OverVoteException,
+    UnderVoteException,
+    flatmap_optional,
+    to_ticks,
+)
 
 
 @dataclass(unsafe_hash=True)
@@ -59,10 +60,7 @@ class PlaintextBallotSelection(OrderedObjectBase):
     This class can also be designated as `is_placeholder_selection` which has no
     context to the data specification but is useful for running validity checks internally
 
-    an `extended_data` field exists to support any arbitrary data to be associated
-    with the selection.  In practice, this field is the cleartext representation
-    of a write-in candidate value.  In the current implementation these values are
-    discarded when encrypting.
+    Write_in field exists to support the cleartext representation of a write-in candidate value.
     """
 
     vote: int
@@ -70,9 +68,9 @@ class PlaintextBallotSelection(OrderedObjectBase):
     is_placeholder_selection: bool = field(default=False)
     """Determines if this is a placeholder selection"""
 
-    extended_data: Optional[ExtendedData] = field(default=None)
+    write_in: Optional[str] = field(default=None)
     """
-    an optional field of arbitrary data, such as the value of a write-in candidate
+    Write_in field exists to support the cleartext representation of a write-in candidate value.
     """
 
     def is_valid(self, expected_object_id: str) -> bool:
@@ -100,7 +98,7 @@ class PlaintextBallotSelection(OrderedObjectBase):
             and self.object_id == other.object_id
             and self.vote == other.vote
             and self.is_placeholder_selection == other.is_placeholder_selection
-            and self.extended_data == other.extended_data
+            and self.write_in == other.write_in
         )
 
     def __ne__(self, other: Any) -> bool:
@@ -171,9 +169,6 @@ class CiphertextBallotSelection(
     proof: Optional[DisjunctiveChaumPedersenProof] = field(default=None)
     """The proof that demonstrates the selection is an encryption of 0 or 1, and was encrypted using the `nonce`"""
 
-    extended_data: Optional[ElGamalCiphertext] = field(default=None)
-    """encrypted representation of the extended_data field"""
-
     def is_valid_encryption(
         self,
         encryption_seed: ElementModQ,
@@ -188,7 +183,7 @@ class CiphertextBallotSelection(
         the ElementModQ `description_hash` and the ElementModQ `crypto_hash` are also checked.
 
         :param encryption_seed: the hash of the SelectionDescription, or
-                          whatever `ElementModQ` was used to populate the `description_hash` field.
+                                whatever `ElementModQ` was used to populate the `description_hash` field.
         :param elgamal_public_key: The election public key
         """
 
@@ -254,7 +249,6 @@ def make_ciphertext_ballot_selection(
     nonce: Optional[ElementModQ] = None,
     crypto_hash: Optional[ElementModQ] = None,
     proof: Optional[DisjunctiveChaumPedersenProof] = None,
-    extended_data: Optional[ElGamalCiphertext] = None,
 ) -> CiphertextBallotSelection:
     """
     Constructs a `CipherTextBallotSelection` object. Most of the parameters here match up to fields
@@ -289,7 +283,6 @@ def make_ciphertext_ballot_selection(
         is_placeholder_selection,
         nonce,
         proof,
-        extended_data,
     )
 
 
@@ -313,10 +306,83 @@ class PlaintextBallotContest(OrderedObjectBase):
     )
     """Collection of ballot selections"""
 
-    extended_data: Optional[ExtendedData] = field(default=None)
-    """
-    an optional field of arbitrary data, such as overvote notification
-    """
+    @cached_property
+    def selected_ids(self) -> List[SelectionId]:
+        return [
+            selection.object_id
+            for selection in self.ballot_selections
+            if selection.vote > 0
+        ]
+
+    @cached_property
+    def total_selected(self) -> int:
+        """Returns the total number of selected selections."""
+        return reduce(
+            lambda prev, next: prev + (1 if next.vote > 0 else 0),
+            self.ballot_selections,
+            0,
+        )
+
+    @cached_property
+    def total_votes(self) -> int:
+        """Returns the total number of votes on selections."""
+        return reduce(lambda prev, next: prev + next.vote, self.ballot_selections, 0)
+
+    @cached_property
+    def write_ins(self) -> Optional[Dict[SelectionId, str]]:
+        write_ins = {
+            selection.object_id: selection.write_in
+            for selection in self.ballot_selections
+            if selection.write_in is not None  # Required due to empty strings
+        }
+        return write_ins if len(write_ins) else None
+
+    def valid(self, description: ContestDescription) -> None:
+        """Determine if a contest is valid."""
+
+        # Contest id matches description and ballot selections don't exceed description
+        if (
+            self.object_id != description.object_id
+            or len(self.ballot_selections) > len(description.ballot_selections)
+            or not description.is_valid()
+        ):
+            raise ContestException(
+                self.object_id,
+                override_message=f"invalid format of contest or description for contest {self.object_id}",
+            )
+
+        # Selections ids match description
+        selection_ids = {
+            selection.object_id for selection in description.ballot_selections
+        }
+        for selection in self.ballot_selections:
+            if selection.object_id not in selection_ids:
+                raise ContestException(
+                    self.object_id,
+                    override_message=f"invalid selection id ${selection.object_id} on contest {self.object_id}",
+                )
+
+        # Specialty cases
+        if self.total_selected < 1:
+            raise NullVoteException(self.object_id)
+
+        if self.total_selected < description.number_elected:
+            raise UnderVoteException(self.object_id)
+
+        if self.total_selected > description.number_elected:
+            raise OverVoteException(self.object_id, self.selected_ids)
+
+        if description.votes_allowed is not None:
+            if self.total_votes > description.votes_allowed:
+                raise OverVoteException(self.object_id, self.selected_ids)
+
+            # Support for other cases such as cumulative voting not currently supported.
+            # (individual selections being an encryption of > 1)
+            if self.total_selected < description.votes_allowed:
+                raise ContestException(
+                    self.object_id,
+                    override_message=f"`on contest {self.object_id}: only n-of-m style elections are supported",
+                )
 
     def is_valid(
         self,
@@ -371,10 +437,8 @@ class PlaintextBallotContest(OrderedObjectBase):
         return True
 
     def __eq__(self, other: Any) -> bool:
-        return (
-            isinstance(other, PlaintextBallotContest)
-            and _list_eq(self.ballot_selections, other.ballot_selections)
-            and self.extended_data == other.extended_data
+        return isinstance(other, PlaintextBallotContest) and list_eq(
+            self.ballot_selections, other.ballot_selections
         )
 
     def __ne__(self, other: Any) -> bool:
@@ -432,14 +496,14 @@ class CiphertextBallotContest(OrderedObjectBase, CryptoHashCheckable):
     available selections for the contest, and that the proof was generated with the nonce
     """
 
-    extended_data: Optional[ElGamalCiphertext] = field(default=None)
+    extended_data: Optional[HashedElGamalCiphertext] = field(default=None)
     """encrypted representation of the extended_data field"""
 
     def __eq__(self, other: Any) -> bool:
         return (
             isinstance(other, CiphertextBallotContest)
             and self.object_id == other.object_id
-            and _list_eq(self.ballot_selections, other.ballot_selections)
+            and list_eq(self.ballot_selections, other.ballot_selections)
             and self.description_hash == other.description_hash
             and self.crypto_hash == other.crypto_hash
             and self.nonce == other.nonce
@@ -588,7 +652,7 @@ def make_ciphertext_ballot_contest(
     crypto_hash: Optional[ElementModQ] = None,
     proof: Optional[ConstantChaumPedersenProof] = None,
     nonce: Optional[ElementModQ] = None,
-    extended_data: Optional[ElGamalCiphertext] = None,
+    extended_data: Optional[HashedElGamalCiphertext] = None,
 ) -> CiphertextBallotContest:
     """
     Constructs a `CipherTextBallotContest` object. Most of the parameters here match up to fields
@@ -662,7 +726,7 @@ class PlaintextBallot(ElectionObjectBase):
         return (
             isinstance(other, PlaintextBallot)
             and self.style_id == other.style_id
-            and _list_eq(self.contests, other.contests)
+            and list_eq(self.contests, other.contests)
         )
 
     def __ne__(self, other: Any) -> bool:
@@ -714,7 +778,7 @@ class CiphertextBallot(ElectionObjectBase, CryptoHashCheckable):
             and self.style_id == other.style_id
             and self.manifest_hash == other.manifest_hash
             and self.code_seed == other.code_seed
-            and _list_eq(self.contests, other.contests)
+            and list_eq(self.contests, other.contests)
             and self.code == other.code
             and self.timestamp == other.timestamp
             and self.crypto_hash == other.crypto_hash

@@ -1,6 +1,7 @@
 from electionguard_cli.cli_steps import cli_step_base
 from electionguard_cli.cli_steps import decrypt_step
 from electionguard_cli.cli_steps import election_builder_step
+from electionguard_cli.cli_steps import encrypt_votes_step
 from electionguard_cli.cli_steps import input_retrieval_step_base
 from electionguard_cli.cli_steps import key_ceremony_step
 from electionguard_cli.cli_steps import output_step_base
@@ -15,6 +16,9 @@ from electionguard_cli.cli_steps.decrypt_step import (
 )
 from electionguard_cli.cli_steps.election_builder_step import (
     ElectionBuilderStep,
+)
+from electionguard_cli.cli_steps.encrypt_votes_step import (
+    EncryptVotesStep,
 )
 from electionguard_cli.cli_steps.input_retrieval_step_base import (
     InputRetrievalStepBase,
@@ -36,6 +40,7 @@ __all__ = [
     "CliStepBase",
     "DecryptStep",
     "ElectionBuilderStep",
+    "EncryptVotesStep",
     "InputRetrievalStepBase",
     "KeyCeremonyStep",
     "OutputStepBase",
@@ -44,6 +49,7 @@ __all__ = [
     "cli_step_base",
     "decrypt_step",
     "election_builder_step",
+    "encrypt_votes_step",
     "input_retrieval_step_base",
     "key_ceremony_step",
     "output_step_base",

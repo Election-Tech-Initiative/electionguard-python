@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from datetime import datetime
 
 from tests.base_test_case import BaseTestCase
@@ -55,16 +56,31 @@ class TestManifest(BaseTestCase):
     def test_manifest_hash_is_consistent_regardless_of_format(self) -> None:
 
         # Act
+        @dataclass
+        class DateType:
+            """Temp date class for testing"""
+
+            date: datetime
+
         subject1 = election_factory.get_simple_manifest_from_file()
-        subject1.start_date = from_raw(datetime, '"2020-03-01T08:00:00-05:00"')
+        subject1.start_date = from_raw(
+            DateType, '{"date":"2020-03-01T08:00:00-05:00"}'
+        ).date
 
         subject2 = election_factory.get_simple_manifest_from_file()
-        subject2.start_date = from_raw(datetime, '"2020-03-01T13:00:00-00:00"')
+        subject2.start_date = from_raw(
+            DateType, '{"date":"2020-03-01T13:00:00-00:00"}'
+        ).date
 
         subject3 = election_factory.get_simple_manifest_from_file()
-        subject3.start_date = from_raw(datetime, '"2020-03-01T13:00:00.000-00:00"')
+        subject3.start_date = from_raw(
+            DateType, '{"date":"2020-03-01T13:00:00.000-00:00"}'
+        ).date
 
-        subjects = [subject1, subject2, subject3]
+        subject4 = election_factory.get_simple_manifest_from_file()
+        subject4.start_date = from_raw(DateType, '{"date":"2020-03-01T13:00:00Z"}').date
+
+        subjects = [subject1, subject2, subject3, subject4]
 
         # Assert
         hashes = [subject.crypto_hash() for subject in subjects]
