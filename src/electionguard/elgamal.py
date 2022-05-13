@@ -23,7 +23,6 @@ from .utils import get_optional
 ElGamalSecretKey = ElementModQ
 ElGamalPublicKey = ElementModP
 
-_MAC_KEY_SIZE = 4096
 _BLOCK_SIZE = 32
 
 
@@ -131,10 +130,11 @@ class HashedElGamalCiphertext:
         """
 
         session_key = hash_elems(self.pad, pow_p(self.pad, secret_key))
+        (ciphertext_chunks, bit_length) = _get_chunks(bytes.fromhex(self.data))
         mac_key = get_hmac(
             session_key.to_hex_bytes(),
             encryption_seed.to_hex_bytes(),
-            _MAC_KEY_SIZE,
+            bit_length,
         )
         to_mac = self.pad.to_hex_bytes() + bytes.fromhex(self.data)
         mac = bytes_to_hex(get_hmac(mac_key, to_mac))
@@ -142,7 +142,7 @@ class HashedElGamalCiphertext:
         if mac != self.mac:
             log_error("MAC verification failed in decryption.")
             return None
-        (ciphertext_chunks, bit_length) = _get_chunks(bytes.fromhex(self.data))
+
         data = b""
         for i, block in enumerate(ciphertext_chunks):
             data_key = get_hmac(
@@ -246,7 +246,7 @@ def hashed_elgamal_encrypt(
         data += bytes([a ^ b for (a, b) in zip(block, data_key)])
 
     mac_key = get_hmac(
-        session_key.to_hex_bytes(), encryption_seed.to_hex_bytes(), _MAC_KEY_SIZE
+        session_key.to_hex_bytes(), encryption_seed.to_hex_bytes(), bit_length
     )
     to_mac = pad.to_hex_bytes() + data
     mac = get_hmac(mac_key, to_mac)
