@@ -156,7 +156,6 @@ def selection_from(
 
     return PlaintextBallotSelection(
         description.object_id,
-        description.sequence_order,
         1 if is_affirmative else 0,
         is_placeholder,
     )
@@ -232,7 +231,7 @@ def encrypt_selection(
     # Create the return object
     encrypted_selection = make_ciphertext_ballot_selection(
         selection.object_id,
-        selection.sequence_order,
+        selection_description.sequence_order,
         selection_description_hash,
         get_optional(elgamal_encryption),
         elgamal_public_key,

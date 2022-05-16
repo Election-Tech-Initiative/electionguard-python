@@ -54,7 +54,6 @@ def decrypt_selection_with_secret(
 
     return PlaintextBallotSelection(
         selection.object_id,
-        selection.sequence_order,
         plaintext_vote,
         selection.is_placeholder_selection,
     )
@@ -110,7 +109,6 @@ def decrypt_selection_with_nonce(
 
     return PlaintextBallotSelection(
         selection.object_id,
-        selection.sequence_order,
         plaintext_vote,
         selection.is_placeholder_selection,
     )

@@ -48,7 +48,7 @@ from .utils import (
 
 
 @dataclass(unsafe_hash=True)
-class PlaintextBallotSelection(OrderedObjectBase):
+class PlaintextBallotSelection(ElectionObjectBase):
     """
     A BallotSelection represents an individual selection on a ballot.
 
