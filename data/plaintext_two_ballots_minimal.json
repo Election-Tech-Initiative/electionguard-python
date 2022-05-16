@@ -5,11 +5,9 @@
     "contests": [
       {
         "object_id": "referendum-pineapple",
-        "sequence_order": 0,
         "ballot_selections": [
           {
             "object_id": "referendum-pineapple-affirmative-selection",
-            "sequence_order": 0,
             "vote": 1
           }
         ]
@@ -22,11 +20,9 @@
     "contests": [
       {
         "object_id": "referendum-pineapple",
-        "sequence_order": 1,
         "ballot_selections": [
           {
             "object_id": "referendum-pineapple-negative-selection",
-            "sequence_order": 1,
             "vote": 1
           }
         ]
