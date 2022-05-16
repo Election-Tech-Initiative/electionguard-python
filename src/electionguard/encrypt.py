@@ -176,9 +176,7 @@ def contest_from(description: ContestDescription) -> PlaintextBallotContest:
     for selection_description in description.ballot_selections:
         selections.append(selection_from(selection_description))
 
-    return PlaintextBallotContest(
-        description.object_id, description.sequence_order, selections
-    )
+    return PlaintextBallotContest(description.object_id, selections)
 
 
 def encrypt_selection(
@@ -403,7 +401,7 @@ def encrypt_contest(
     # Create the return object
     encrypted_contest = make_ciphertext_ballot_contest(
         contest.object_id,
-        contest.sequence_order,
+        contest_description.sequence_order,
         contest_description_hash,
         encrypted_selections,
         elgamal_public_key,

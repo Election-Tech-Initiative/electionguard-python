@@ -168,11 +168,7 @@ def _get_plaintext_contests(
             )
             index += 1
 
-        contests.append(
-            PlaintextBallotContest(
-                manifest_contest.object_id, manifest_contest.sequence_order, selections
-            )
-        )
+        contests.append(PlaintextBallotContest(manifest_contest.object_id, selections))
     return contests
 
 

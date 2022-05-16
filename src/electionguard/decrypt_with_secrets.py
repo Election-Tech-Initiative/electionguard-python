@@ -166,9 +166,7 @@ def decrypt_contest_with_secret(
             )
             return None
 
-    return PlaintextBallotContest(
-        contest.object_id, contest.sequence_order, plaintext_selections
-    )
+    return PlaintextBallotContest(contest.object_id, plaintext_selections)
 
 
 def decrypt_contest_with_nonce(
@@ -239,9 +237,7 @@ def decrypt_contest_with_nonce(
             )
             return None
 
-    return PlaintextBallotContest(
-        contest.object_id, contest.sequence_order, plaintext_selections
-    )
+    return PlaintextBallotContest(contest.object_id, plaintext_selections)
 
 
 def decrypt_ballot_with_secret(
