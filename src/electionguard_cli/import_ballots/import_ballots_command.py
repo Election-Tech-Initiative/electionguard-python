@@ -1,6 +1,5 @@
 from io import TextIOWrapper
 import click
-from ordered_set import T
 
 from .import_ballots_publish_step import ImportBallotsPublishStep
 from .import_ballots_input_retrieval_step import ImportBallotsInputRetrievalStep

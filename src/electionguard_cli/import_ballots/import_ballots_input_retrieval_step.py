@@ -1,14 +1,14 @@
 from typing import List
 from io import TextIOWrapper
 from os import listdir
-from os.path import isfile, isdir, join
+from os.path import join
 
 from electionguard import CiphertextElectionContext
 from electionguard.ballot import SubmittedBallot
 from electionguard.encrypt import EncryptionDevice
 from electionguard.guardian import Guardian, PrivateGuardianRecord
 from electionguard.manifest import Manifest
-from electionguard.serialize import from_file, from_list_in_file
+from electionguard.serialize import from_file
 
 from .import_ballot_inputs import (
     ImportBallotInputs,
@@ -69,17 +69,28 @@ class ImportBallotsInputRetrievalStep(InputRetrievalStepBase):
     ) -> List[Guardian]:
 
         files = listdir(guardian_keys_dir)
-        return [
-            ImportBallotsInputRetrievalStep._get_guardian(guardian_keys_dir, f, context)
+        private_records = [
+            ImportBallotsInputRetrievalStep._load_private_record(guardian_keys_dir, f)
             for f in files
         ]
+        return list(
+            map(
+                lambda record: ImportBallotsInputRetrievalStep._get_guardian(
+                    record, context
+                ),
+                private_records,
+            )
+        )
+
+    @staticmethod
+    def _load_private_record(guardian_dir: str, filename: str) -> PrivateGuardianRecord:
+        full_file = join(guardian_dir, filename)
+        return from_file(PrivateGuardianRecord, full_file)
 
     @staticmethod
     def _get_guardian(
-        guardian_dir: str, filename: str, context: CiphertextElectionContext
+        private_record: PrivateGuardianRecord, context: CiphertextElectionContext
     ) -> Guardian:
-        full_file = join(guardian_dir, filename)
-        private_record = from_file(PrivateGuardianRecord, full_file)
         return Guardian.from_private_record(
             private_record, context.number_of_guardians, context.quorum
         )
