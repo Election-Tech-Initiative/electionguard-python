@@ -3,6 +3,7 @@ import click
 from electionguard.guardian import Guardian
 from electionguard.utils import get_optional
 from electionguard.ballot import SubmittedBallot
+from electionguard.manifest import Manifest
 from electionguard.tally import CiphertextTally
 from electionguard.decryption_mediator import DecryptionMediator
 from electionguard.election_polynomial import LagrangeCoefficientsRecord
@@ -30,6 +31,7 @@ class DecryptStep(CliStepBase):
         spoiled_ballots: List[SubmittedBallot],
         guardians: List[Guardian],
         build_election_results: BuildElectionResults,
+        manifest: Manifest,
     ) -> CliDecryptResults:
         self.print_header("Decrypting tally")
 
@@ -57,11 +59,11 @@ class DecryptStep(CliStepBase):
         lagrange_coefficients = self._get_lagrange_coefficients(decryption_mediator)
 
         plaintext_tally = get_optional(
-            decryption_mediator.get_plaintext_tally(ciphertext_tally)
+            decryption_mediator.get_plaintext_tally(ciphertext_tally, manifest)
         )
 
         plaintext_spoiled_ballots = get_optional(
-            decryption_mediator.get_plaintext_ballots(spoiled_ballots)
+            decryption_mediator.get_plaintext_ballots(spoiled_ballots, manifest)
         )
 
         return CliDecryptResults(

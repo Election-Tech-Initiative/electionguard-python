@@ -63,8 +63,8 @@ class TestDecryptWithShares(BaseTestCase):
         self.joint_public_key = self.key_ceremony_mediator.publish_joint_key()
 
         # Setup the election
-        manifest = election_factory.get_fake_manifest()
-        builder = ElectionBuilder(self.NUMBER_OF_GUARDIANS, self.QUORUM, manifest)
+        self.manifest = election_factory.get_fake_manifest()
+        builder = ElectionBuilder(self.NUMBER_OF_GUARDIANS, self.QUORUM, self.manifest)
         builder.set_public_key(self.joint_public_key.joint_public_key)
         builder.set_commitment_hash(self.joint_public_key.commitment_hash)
         self.internal_manifest, self.context = get_optional(builder.build())
@@ -226,6 +226,7 @@ class TestDecryptWithShares(BaseTestCase):
             encrypted_ballot,
             shares,
             self.context.crypto_extended_base_hash,
+            self.manifest,
         )
 
         # assert
@@ -291,6 +292,7 @@ class TestDecryptWithShares(BaseTestCase):
             encrypted_ballot,
             all_shares,
             self.context.crypto_extended_base_hash,
+            self.manifest,
         )
 
         # assert
