@@ -37,7 +37,7 @@ class OutputSetupFilesStep(OutputStepBase):
         constants = get_constants()
         self._export_file("Constants", constants, setup_inputs.out, CONSTANTS_FILE_NAME)
 
-    def _export_manifest(self, setup_inputs: Manifest) -> None:
+    def _export_manifest(self, setup_inputs: SetupInputs) -> None:
         self._export_file(
             "Manifest",
             setup_inputs.manifest,
