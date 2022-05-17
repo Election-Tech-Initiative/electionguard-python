@@ -632,9 +632,7 @@ def plaintext_voted_ballot(draw: _DrawType, internal_manifest: InternalManifest)
         ]
 
         voted_contests.append(
-            PlaintextBallotContest(
-                contest.object_id, voted_selections
-            )
+            PlaintextBallotContest(contest.object_id, voted_selections)
         )
 
     return PlaintextBallot(str(draw(uuids())), ballot_style.object_id, voted_contests)
