@@ -48,7 +48,7 @@ from .utils import (
 
 
 @dataclass(unsafe_hash=True)
-class PlaintextBallotSelection(OrderedObjectBase):
+class PlaintextBallotSelection(ElectionObjectBase):
     """
     A BallotSelection represents an individual selection on a ballot.
 
@@ -287,7 +287,7 @@ def make_ciphertext_ballot_selection(
 
 
 @dataclass(unsafe_hash=True)
-class PlaintextBallotContest(OrderedObjectBase):
+class PlaintextBallotContest(ElectionObjectBase):
     """
     A PlaintextBallotContest represents the selections made by a voter for a specific ContestDescription
 

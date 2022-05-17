@@ -85,9 +85,7 @@ class BallotFactory:
             elif bool(random.randint(0, 1)) == 1:
                 selections.append(selection_from(selection_description))
 
-        return PlaintextBallotContest(
-            description.object_id, description.sequence_order, selections
-        )
+        return PlaintextBallotContest(description.object_id, selections)
 
     def get_fake_ballot(
         self,

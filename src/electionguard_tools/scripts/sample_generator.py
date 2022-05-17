@@ -78,18 +78,18 @@ class ElectionSampleDataGenerator:
         # Configure the election
         # TODO: pass the spec version and the manifest name in
         (
-            manifest,
+            public_data,
             private_data,
         ) = self.election_factory.get_sample_manifest_with_encryption_context(
             spec_version, sample_manifest
         )
         plaintext_ballots = (
             self.ballot_factory.generate_fake_plaintext_ballots_for_election(
-                manifest.internal_manifest, number_of_ballots
+                public_data.internal_manifest, number_of_ballots
             )
         )
         self.encrypter = EncryptionMediator(
-            manifest.internal_manifest, manifest.context, self.encryption_device
+            public_data.internal_manifest, public_data.context, self.encryption_device
         )
 
         # Encrypt some ballots
@@ -101,7 +101,7 @@ class ElectionSampleDataGenerator:
 
         ballot_store: DataStore = DataStore()
         ballot_box = BallotBox(
-            manifest.internal_manifest, manifest.context, ballot_store
+            public_data.internal_manifest, public_data.context, ballot_store
         )
 
         # Randomly cast/spoil the ballots
@@ -115,11 +115,13 @@ class ElectionSampleDataGenerator:
         # Tally
         spoiled_ciphertext_ballots = get_ballots(ballot_store, BallotBoxState.SPOILED)
         ciphertext_tally = get_optional(
-            tally_ballots(ballot_store, manifest.internal_manifest, manifest.context)
+            tally_ballots(
+                ballot_store, public_data.internal_manifest, public_data.context
+            )
         )
 
         # Decrypt
-        mediator = DecryptionMediator("sample-manifest-decrypter", manifest.context)
+        mediator = DecryptionMediator("sample-manifest-decrypter", public_data.context)
         available_guardians = (
             private_data.guardians
             if use_all_guardians
@@ -136,7 +138,7 @@ class ElectionSampleDataGenerator:
                 available_guardians,
                 all_guardian_keys,
                 mediator,
-                manifest.context,
+                public_data.context,
                 ciphertext_tally,
                 spoiled_ciphertext_ballots.values(),
             )
@@ -144,27 +146,27 @@ class ElectionSampleDataGenerator:
             TallyCeremonyOrchestrator.perform_decryption_setup(
                 available_guardians,
                 mediator,
-                manifest.context,
+                public_data.context,
                 ciphertext_tally,
                 spoiled_ciphertext_ballots.values(),
             )
 
-        plaintext_tally = mediator.get_plaintext_tally(ciphertext_tally)
+        plaintext_tally = mediator.get_plaintext_tally(ciphertext_tally, public_data)
         plaintext_spoiled_ballots = mediator.get_plaintext_ballots(
-            spoiled_ciphertext_ballots.values()
+            spoiled_ciphertext_ballots.values(), public_data
         )
 
         if plaintext_tally:
             export_record(
-                manifest.manifest,
-                manifest.context,
-                manifest.constants,
+                public_data.manifest,
+                public_data.context,
+                public_data.constants,
                 [self.encryption_device],
                 submitted_ballots,
                 plaintext_spoiled_ballots.values(),
                 ciphertext_tally.publish(),
                 plaintext_tally,
-                manifest.guardians,
+                public_data.guardians,
                 LagrangeCoefficientsRecord(mediator.get_lagrange_coefficients()),
             )
 

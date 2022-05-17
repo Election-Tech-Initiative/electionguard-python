@@ -160,7 +160,6 @@ def _get_plaintext_contests(
             selections.append(
                 PlaintextBallotSelection(
                     selection.object_id,
-                    selection.sequence_order,
                     YES_VOTE if compact_ballot.selections[index] else NO_VOTE,
                     not contest_in_style,
                     compact_ballot.write_ins.get(index),
@@ -168,11 +167,7 @@ def _get_plaintext_contests(
             )
             index += 1
 
-        contests.append(
-            PlaintextBallotContest(
-                manifest_contest.object_id, manifest_contest.sequence_order, selections
-            )
-        )
+        contests.append(PlaintextBallotContest(manifest_contest.object_id, selections))
     return contests
 
 

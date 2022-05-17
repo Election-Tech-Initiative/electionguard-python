@@ -634,9 +634,7 @@ def plaintext_voted_ballot(
         ]
 
         voted_contests.append(
-            PlaintextBallotContest(
-                contest.object_id, contest.sequence_order, voted_selections
-            )
+            PlaintextBallotContest(contest.object_id, voted_selections)
         )
 
     return PlaintextBallot(str(draw(uuids())), ballot_style.object_id, voted_contests)

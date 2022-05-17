@@ -77,8 +77,8 @@ class TestDecryptionMediator(BaseTestCase):
         self.assertIsNotNone(self.joint_public_key)
 
         # Setup the election
-        manifest = election_factory.get_fake_manifest()
-        builder = ElectionBuilder(self.NUMBER_OF_GUARDIANS, self.QUORUM, manifest)
+        self.manifest = election_factory.get_fake_manifest()
+        builder = ElectionBuilder(self.NUMBER_OF_GUARDIANS, self.QUORUM, self.manifest)
 
         self.assertIsNone(builder.build())  # Can't build without the public key
 
@@ -217,8 +217,12 @@ class TestDecryptionMediator(BaseTestCase):
         # Can only announce once
         self.assertEqual(len(mediator.get_available_guardians()), 1)
         # Cannot get plaintext tally or spoiled ballots without a quorum
-        self.assertIsNone(mediator.get_plaintext_tally(self.ciphertext_tally))
-        self.assertIsNone(mediator.get_plaintext_ballots(self.ciphertext_ballots))
+        self.assertIsNone(
+            mediator.get_plaintext_tally(self.ciphertext_tally, self.manifest)
+        )
+        self.assertIsNone(
+            mediator.get_plaintext_ballots(self.ciphertext_ballots, self.manifest)
+        )
 
     def test_get_plaintext_with_all_guardians_present(self):
         # Arrange
@@ -238,14 +242,20 @@ class TestDecryptionMediator(BaseTestCase):
         )
 
         # Act
-        plaintext_tally = mediator.get_plaintext_tally(self.ciphertext_tally)
-        plaintext_ballots = mediator.get_plaintext_ballots(self.ciphertext_ballots)
+        plaintext_tally = mediator.get_plaintext_tally(
+            self.ciphertext_tally, self.manifest
+        )
+        plaintext_ballots = mediator.get_plaintext_ballots(
+            self.ciphertext_ballots, self.manifest
+        )
 
         # Convert to selections to check for the same tally
         selections = _convert_to_selections(plaintext_tally)
 
         # Verify we get the same tally back if we call again
-        another_plaintext_tally = mediator.get_plaintext_tally(self.ciphertext_tally)
+        another_plaintext_tally = mediator.get_plaintext_tally(
+            self.ciphertext_tally, self.manifest
+        )
 
         # Assert
         self.assertIsNotNone(plaintext_tally)
@@ -278,14 +288,20 @@ class TestDecryptionMediator(BaseTestCase):
         )
 
         # Act
-        plaintext_tally = mediator.get_plaintext_tally(self.ciphertext_tally)
-        plaintext_ballots = mediator.get_plaintext_ballots(self.ciphertext_ballots)
+        plaintext_tally = mediator.get_plaintext_tally(
+            self.ciphertext_tally, self.manifest
+        )
+        plaintext_ballots = mediator.get_plaintext_ballots(
+            self.ciphertext_ballots, self.manifest
+        )
 
         # Convert to selections to check for the same tally
         selections = _convert_to_selections(plaintext_tally)
 
         # Verify we get the same tally back if we call again
-        another_plaintext_tally = mediator.get_plaintext_tally(self.ciphertext_tally)
+        another_plaintext_tally = mediator.get_plaintext_tally(
+            self.ciphertext_tally, self.manifest
+        )
 
         # Assert
         self.assertIsNotNone(plaintext_tally)
@@ -309,8 +325,8 @@ class TestDecryptionMediator(BaseTestCase):
         self, values, parties: int, contests: int
     ):
         # Arrange
-        description = values.draw(election_descriptions(parties, contests))
-        builder = ElectionBuilder(self.NUMBER_OF_GUARDIANS, self.QUORUM, description)
+        manifest = values.draw(election_descriptions(parties, contests))
+        builder = ElectionBuilder(self.NUMBER_OF_GUARDIANS, self.QUORUM, manifest)
         internal_manifest, context = (
             builder.set_public_key(self.joint_public_key.joint_public_key)
             .set_commitment_hash(self.joint_public_key.commitment_hash)
@@ -333,7 +349,7 @@ class TestDecryptionMediator(BaseTestCase):
         )
 
         # Act
-        plaintext_tally = mediator.get_plaintext_tally(encrypted_tally)
+        plaintext_tally = mediator.get_plaintext_tally(encrypted_tally, manifest)
         selections = _convert_to_selections(plaintext_tally)
 
         # Assert
