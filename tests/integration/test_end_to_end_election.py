@@ -408,7 +408,9 @@ class TestEndToEndElection(BaseTestCase):
 
         # Get the plaintext Tally
         self.plaintext_tally = get_optional(
-            self.decryption_mediator.get_plaintext_tally(self.ciphertext_tally)
+            self.decryption_mediator.get_plaintext_tally(
+                self.ciphertext_tally, self.manifest
+            )
         )
         self._assert_message(
             DecryptionMediator.get_plaintext_tally.__qualname__,
@@ -418,7 +420,9 @@ class TestEndToEndElection(BaseTestCase):
 
         # Get the plaintext Spoiled Ballots
         self.plaintext_spoiled_ballots = get_optional(
-            self.decryption_mediator.get_plaintext_ballots(submitted_ballots_list)
+            self.decryption_mediator.get_plaintext_ballots(
+                submitted_ballots_list, self.manifest
+            )
         )
         self._assert_message(
             DecryptionMediator.get_plaintext_ballots.__qualname__,

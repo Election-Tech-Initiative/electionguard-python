@@ -109,7 +109,7 @@ class TestVerify(BaseTestCase):
         }
 
         plaintext_tally = decrypt_tally(
-            ciphertext_tally, shares, context.crypto_extended_base_hash
+            ciphertext_tally, shares, context.crypto_extended_base_hash, manifest
         )
 
         # Act
