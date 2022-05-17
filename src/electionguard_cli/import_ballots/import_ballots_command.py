@@ -33,7 +33,7 @@ from ..cli_steps.tally_step import TallyStep
     prompt="Guardian keys file",
     help="The location of a json file with all guardians's private key data. "
     + "This corresponds to the output-keys parameter of the e2e command.",
-    type=click.Path(exists=True, dir_okay=False, file_okay=True, resolve_path=True),
+    type=click.Path(exists=True, dir_okay=True, file_okay=False, resolve_path=True),
 )
 @click.option(
     "--encryption-device",
