@@ -1,12 +1,14 @@
 from typing import List
 from io import TextIOWrapper
+from os import listdir
+from os.path import join
 
 from electionguard import CiphertextElectionContext
 from electionguard.ballot import SubmittedBallot
 from electionguard.encrypt import EncryptionDevice
 from electionguard.guardian import Guardian, PrivateGuardianRecord
 from electionguard.manifest import Manifest
-from electionguard.serialize import from_file, from_list_in_file
+from electionguard.serialize import from_file
 
 from .import_ballot_inputs import (
     ImportBallotInputs,
@@ -63,12 +65,32 @@ class ImportBallotsInputRetrievalStep(InputRetrievalStepBase):
 
     @staticmethod
     def _get_guardians_from_keys(
-        guardian_keys: str, context: CiphertextElectionContext
+        guardian_keys_dir: str, context: CiphertextElectionContext
     ) -> List[Guardian]:
-        guardian_private_records = from_list_in_file(
-            PrivateGuardianRecord, guardian_keys
-        )
-        return [
-            Guardian.from_private_record(g, context.number_of_guardians, context.quorum)
-            for g in guardian_private_records
+
+        files = listdir(guardian_keys_dir)
+        private_records = [
+            ImportBallotsInputRetrievalStep._load_private_record(guardian_keys_dir, f)
+            for f in files
         ]
+        return list(
+            map(
+                lambda record: ImportBallotsInputRetrievalStep._get_guardian(
+                    record, context
+                ),
+                private_records,
+            )
+        )
+
+    @staticmethod
+    def _load_private_record(guardian_dir: str, filename: str) -> PrivateGuardianRecord:
+        full_file = join(guardian_dir, filename)
+        return from_file(PrivateGuardianRecord, full_file)
+
+    @staticmethod
+    def _get_guardian(
+        private_record: PrivateGuardianRecord, context: CiphertextElectionContext
+    ) -> Guardian:
+        return Guardian.from_private_record(
+            private_record, context.number_of_guardians, context.quorum
+        )

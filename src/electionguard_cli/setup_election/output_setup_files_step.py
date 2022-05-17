@@ -6,6 +6,7 @@ from electionguard_tools.helpers.export import (
     CONSTANTS_FILE_NAME,
     CONTEXT_FILE_NAME,
     GUARDIAN_PREFIX,
+    MANIFEST_FILE_NAME,
 )
 
 from .setup_inputs import SetupInputs
@@ -22,6 +23,7 @@ class OutputSetupFilesStep(OutputStepBase):
         self.print_header("Generating Output")
         self._export_context(setup_inputs, build_election_results.context)
         self._export_constants(setup_inputs)
+        self._export_manifest(setup_inputs)
         self._export_guardian_records(setup_inputs)
         self._export_guardian_private_keys(setup_inputs)
 
@@ -32,8 +34,14 @@ class OutputSetupFilesStep(OutputStepBase):
 
     def _export_constants(self, setup_inputs: SetupInputs) -> None:
         constants = get_constants()
+        self._export_file("Constants", constants, setup_inputs.out, CONSTANTS_FILE_NAME)
+
+    def _export_manifest(self, setup_inputs: SetupInputs) -> None:
         self._export_file(
-            "Election constants", constants, setup_inputs.out, CONSTANTS_FILE_NAME
+            "Manifest",
+            setup_inputs.manifest,
+            setup_inputs.out,
+            MANIFEST_FILE_NAME,
         )
 
     def _export_guardian_records(self, setup_inputs: SetupInputs) -> None:
