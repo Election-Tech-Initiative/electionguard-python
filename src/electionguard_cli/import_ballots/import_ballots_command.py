@@ -83,6 +83,7 @@ def ImportBallotsCommand(
         spoiled_ballots,
         election_inputs.guardians,
         build_election_results,
+        election_inputs.manifest,
     )
 
     # print results
