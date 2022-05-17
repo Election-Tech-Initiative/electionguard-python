@@ -5,7 +5,6 @@ OS ?= $(shell python3 -c 'import platform; print(platform.system())')
 ifeq ($(OS), Linux)
 PKG_MGR ?= $(shell python3 -c 'import subprocess as sub; print(next(filter(None, (sub.getstatusoutput(f"command -v {pm}")[0] == 0 and pm for pm in ["apt-get", "pacman"])), "undefined"))')
 endif
-IS_64_BIT ?= $(shell python3 -c 'from sys import maxsize; print(maxsize > 2**32)')
 SAMPLE_BALLOT_COUNT ?= 5
 SAMPLE_BALLOT_SPOIL_RATE ?= 50
 
@@ -72,12 +71,6 @@ install-gmp-windows:
 	@echo 🏁 WINDOWS INSTALL
 	@echo 🚨 Ensure pyproject.toml has been modified to include appropriate local gmpy2 package 🚨 
 # install module with local gmpy2 package
-ifeq ($(IS_64_BIT), True)
-	@echo 64 bit system detected
-endif
-ifeq ($(IS_64_BIT), False)
-	@echo 32 bit system detected
-endif
 
 lint:
 	@echo 💚 LINT
