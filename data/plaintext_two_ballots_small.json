@@ -5,38 +5,31 @@
     "contests": [
       {
         "object_id": "referendum-pineapple",
-        "sequence_order": 1,
         "ballot_selections": [
           {
             "object_id": "referendum-pineapple-affirmative-selection",
-            "sequence_order": 0,
             "vote": 1
           }
         ]
       },
       {
         "object_id": "congressional-race-01",
-        "sequence_order": 0,
         "ballot_selections": [
           {
             "object_id": "john-hancock-selection",
-            "sequence_order": 0,
             "vote": 1
           }
         ]
       },
       {
         "object_id": "ozark-school-board-race",
-        "sequence_order": 2,
         "ballot_selections": [
           {
             "object_id": "samuel-adams-selection",
-            "sequence_order": 1,
             "vote": 1
           },
           {
             "object_id": "thomas-jefferson-selection",
-            "sequence_order": 2,
             "vote": 1
           }
         ]
@@ -49,22 +42,18 @@
     "contests": [
       {
         "object_id": "referendum-pineapple",
-        "sequence_order": 1,
         "ballot_selections": [
           {
             "object_id": "referendum-pineapple-affirmative-selection",
-            "sequence_order": 0,
             "vote": 1
           }
         ]
       },
       {
         "object_id": "congressional-race-01",
-        "sequence_order": 0,
         "ballot_selections": [
           {
             "object_id": "benjamin-franklin-selection",
-            "sequence_order": 1,
             "vote": 1
           }
         ]
