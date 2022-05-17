@@ -149,9 +149,9 @@ class ElectionSampleDataGenerator:
                 spoiled_ciphertext_ballots.values(),
             )
 
-        plaintext_tally = mediator.get_plaintext_tally(ciphertext_tally)
+        plaintext_tally = mediator.get_plaintext_tally(ciphertext_tally, manifest)
         plaintext_spoiled_ballots = mediator.get_plaintext_ballots(
-            spoiled_ciphertext_ballots.values()
+            spoiled_ciphertext_ballots.values(), manifest
         )
 
         if plaintext_tally:
