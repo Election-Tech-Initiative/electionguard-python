@@ -1,6 +1,5 @@
 from typing import Dict, List, Optional
 
-from electionguard.group import ElementModQ
 
 from .ballot import SubmittedBallot
 from .decryption import (
@@ -11,9 +10,11 @@ from .decryption import (
 from .decryption_share import DecryptionShare, CompensatedDecryptionShare
 from .decrypt_with_shares import decrypt_ballot, decrypt_tally
 from .election import CiphertextElectionContext
+from .group import ElementModQ
 from .key_ceremony import ElectionPublicKey
 from .key_ceremony_mediator import GuardianPair
 from .logs import log_info, log_warning
+from .manifest import Manifest
 from .tally import (
     CiphertextTally,
     PlaintextTally,
@@ -255,7 +256,7 @@ class DecryptionMediator:
             self._ballot_shares[ballot_id] = ballot_shares
 
     def get_plaintext_tally(
-        self, ciphertext_tally: CiphertextTally
+        self, ciphertext_tally: CiphertextTally, manifest: Manifest
     ) -> Optional[PlaintextTally]:
         """
         Get the plaintext tally for the election by composing each Guardian's
@@ -273,10 +274,11 @@ class DecryptionMediator:
             ciphertext_tally,
             self._tally_shares,
             self._context.crypto_extended_base_hash,
+            manifest,
         )
 
     def get_plaintext_ballots(
-        self, ciphertext_ballots: List[SubmittedBallot]
+        self, ciphertext_ballots: List[SubmittedBallot], manifest: Manifest
     ) -> Optional[Dict[BallotId, PlaintextTally]]:
         """
         Get the plaintext ballots for the election by composing each Guardian's
@@ -300,6 +302,7 @@ class DecryptionMediator:
                 ciphertext_ballot,
                 ballot_shares,
                 self._context.crypto_extended_base_hash,
+                manifest,
             )
 
             if ballot:

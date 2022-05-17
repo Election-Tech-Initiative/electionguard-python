@@ -1,5 +1,6 @@
 from typing import Dict, Optional, Tuple
 
+
 from .ballot import SubmittedBallot, CiphertextContest, CiphertextSelection
 from .decryption_share import (
     CiphertextDecryptionSelection,
@@ -8,13 +9,17 @@ from .decryption_share import (
 )
 from .discrete_log import DiscreteLog
 from .group import ElementModP, ElementModQ, mult_p, div_p
+from .logs import log_warning
+from .manifest import (
+    ContestDescription,
+    Manifest,
+)
 from .tally import (
     CiphertextTally,
     PlaintextTally,
     PlaintextTallyContest,
     PlaintextTallySelection,
 )
-from .logs import log_warning
 from .type import ContestId, GuardianId, SelectionId
 
 # The methods in this file can be used to decrypt values if private keys or nonces are not known
@@ -25,6 +30,8 @@ def decrypt_tally(
     tally: CiphertextTally,
     shares: Dict[GuardianId, DecryptionShare],
     crypto_extended_base_hash: ElementModQ,
+    manifest: Manifest,
+    remove_placeholders: bool = True,
 ) -> Optional[PlaintextTally]:
     """
     Try to decrypt the tally and the spoiled ballots using the provided decryption shares.
@@ -35,8 +42,14 @@ def decrypt_tally(
     :return: A PlaintextTally or None if there is an error
     """
     contests: Dict[ContestId, PlaintextTallyContest] = {}
+    contest_descriptions = {
+        description.object_id: description for description in manifest.contests
+    }
 
     for contest in tally.contests.values():
+        if contest.object_id not in contest_descriptions.keys():
+            continue  # Skip contests not in manifest
+
         plaintext_contest = decrypt_contest_with_decryption_shares(
             CiphertextContest(
                 contest.object_id,
@@ -46,6 +59,8 @@ def decrypt_tally(
             ),
             shares,
             crypto_extended_base_hash,
+            contest_descriptions[contest.object_id],
+            remove_placeholders,
         )
         if not plaintext_contest:
             log_warning(f"contest: {contest.object_id} failed to decrypt with shares")
@@ -59,6 +74,8 @@ def decrypt_ballot(
     ballot: SubmittedBallot,
     shares: Dict[GuardianId, DecryptionShare],
     crypto_extended_base_hash: ElementModQ,
+    manifest: Manifest,
+    remove_placeholders: bool = True,
 ) -> Optional[PlaintextTally]:
     """
     Try to decrypt a single ballot using the provided decryption shares.
@@ -69,8 +86,14 @@ def decrypt_ballot(
     :return: A PlaintextTally or None if there is an error
     """
     contests: Dict[ContestId, PlaintextTallyContest] = {}
+    contest_descriptions = {
+        description.object_id: description for description in manifest.contests
+    }
 
     for contest in ballot.contests:
+        if contest.object_id not in contest_descriptions.keys():
+            continue  # Skip contests not in manifest
+
         plaintext_contest = decrypt_contest_with_decryption_shares(
             CiphertextContest(
                 contest.object_id,
@@ -80,6 +103,8 @@ def decrypt_ballot(
             ),
             shares,
             crypto_extended_base_hash,
+            contest_descriptions[contest.object_id],
+            remove_placeholders,
         )
         if not plaintext_contest:
             log_warning(f"contest: {contest.object_id} failed to decrypt with shares")
@@ -93,6 +118,8 @@ def decrypt_contest_with_decryption_shares(
     contest: CiphertextContest,
     shares: Dict[GuardianId, DecryptionShare],
     crypto_extended_base_hash: ElementModQ,
+    contest_description: ContestDescription,
+    remove_placeholders: bool = True,
 ) -> Optional[PlaintextTallyContest]:
     """
     Decrypt the specified contest within the context of the specified Decryption Shares.
@@ -103,8 +130,14 @@ def decrypt_contest_with_decryption_shares(
     :return: a collection of `PlaintextTallyContest` or `None` if there is an error
     """
     plaintext_selections: Dict[SelectionId, PlaintextTallySelection] = {}
+    selection_description_ids = [
+        description.object_id for description in contest_description.ballot_selections
+    ]
 
     for selection in contest.selections:
+        if selection.object_id not in selection_description_ids and remove_placeholders:
+            continue  # Skip selections not in manifest (Such as placeholders)
+
         tally_shares = get_shares_for_selection(selection.object_id, shares)
         plaintext_selection = decrypt_selection_with_decryption_shares(
             selection, tally_shares, crypto_extended_base_hash
