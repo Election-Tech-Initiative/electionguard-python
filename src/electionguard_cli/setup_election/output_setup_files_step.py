@@ -1,6 +1,5 @@
 from os.path import join
 from electionguard.election import CiphertextElectionContext
-from electionguard.manifest import Manifest
 from electionguard.serialize import to_file
 from electionguard.constants import get_constants
 from electionguard_tools.helpers.export import (
