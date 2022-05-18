@@ -64,7 +64,7 @@ class TestKeyCeremony(BaseTestCase):
         self.assertIsNotNone(backup)
         self.assertEqual(backup.designated_id, RECIPIENT_GUARDIAN_ID)
         self.assertEqual(backup.designated_sequence_order, RECIPIENT_SEQUENCE_ORDER)
-        self.assertIsNotNone(backup.coordinate)
+        self.assertIsNotNone(backup.encrypted_coordinate)
 
     def test_verify_election_partial_key_backup(self) -> None:
         # Arrange

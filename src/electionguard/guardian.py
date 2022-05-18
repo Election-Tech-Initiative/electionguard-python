@@ -351,7 +351,9 @@ class Guardian:
         public_key = self._guardian_election_public_keys.get(guardian_id)
         if backup is None or public_key is None:
             return None
-        return verify_election_partial_key_backup(self.id, backup, public_key)
+        return verify_election_partial_key_backup(
+            self.id, backup, public_key, self._election_keys
+        )
 
     def publish_election_backup_challenge(
         self, guardian_id: GuardianId

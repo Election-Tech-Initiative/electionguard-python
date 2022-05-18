@@ -1,7 +1,7 @@
 from typing import Dict, List, Optional, Tuple
 from electionguard.chaum_pedersen import ChaumPedersenProof, make_chaum_pedersen
 
-from electionguard.elgamal import ElGamalCiphertext
+from electionguard.elgamal import ElGamalCiphertext, ElGamalSecretKey
 
 from .ballot import (
     SubmittedBallot,
@@ -28,7 +28,12 @@ from .group import (
     pow_q,
     rand_q,
 )
-from .key_ceremony import ElectionKeyPair, ElectionPartialKeyBackup, ElectionPublicKey
+from .key_ceremony import (
+    ElectionKeyPair,
+    ElectionPartialKeyBackup,
+    ElectionPublicKey,
+    get_hashed_elgalmal_seed,
+)
 from .logs import log_warning
 from .scheduler import Scheduler
 from .tally import CiphertextTally
@@ -373,6 +378,7 @@ def compute_compensated_decryption_share_for_selection(
         missing_guardian_backup,
         selection.ciphertext,
         context.crypto_extended_base_hash,
+        guardian_key,
     )
 
     if compensated is None:
@@ -454,6 +460,7 @@ def compensate_decrypt(
     missing_guardian_backup: ElectionPartialKeyBackup,
     ciphertext: ElGamalCiphertext,
     extended_base_hash: ElementModQ,
+    guardian_key: ElectionPublicKey,
     nonce_seed: ElementModQ = None,
 ) -> Optional[Tuple[ElementModP, ChaumPedersenProof]]:
     """
@@ -471,7 +478,14 @@ def compensate_decrypt(
     if nonce_seed is None:
         nonce_seed = rand_q()
 
-    partial_secret_key = missing_guardian_backup.coordinate
+    # todo: figure out how to get the guardian's secret_key during compensate_decrypt
+    secret_key = ElGamalSecretKey(0)
+    encryption_seed = get_hashed_elgalmal_seed(
+        guardian_key.owner_id, guardian_key.sequence_order
+    )
+    partial_secret_key = missing_guardian_backup.encrypted_coordinate.decrypt_to_q(
+        secret_key, encryption_seed
+    )
 
     # 𝑀_{𝑖,l} = 𝐴^P𝑖_{l}
     partial_decryption = ciphertext.partial_decrypt(partial_secret_key)

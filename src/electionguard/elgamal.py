@@ -118,6 +118,13 @@ class HashedElGamalCiphertext:
     mac: str
     """message authentication code for hmac"""
 
+    def decrypt_to_q(
+        self, secret_key: ElGamalSecretKey, encryption_seed: ElementModQ
+    ) -> ElementModQ:
+        value_bytes = self.decrypt(secret_key, encryption_seed)
+        value_hex = bytes_to_hex(get_optional(value_bytes))
+        return ElementModQ(value_hex)
+
     def decrypt(
         self, secret_key: ElGamalSecretKey, encryption_seed: ElementModQ
     ) -> Union[bytes, None]:

@@ -11,9 +11,11 @@ from .election_polynomial import (
 from .elgamal import (
     ElGamalKeyPair,
     ElGamalPublicKey,
+    HashedElGamalCiphertext,
     elgamal_combine_public_keys,
+    hashed_elgamal_encrypt,
 )
-from .group import ElementModQ
+from .group import ElementModQ, rand_q
 from .hash import hash_elems
 from .schnorr import SchnorrProof
 from .type import (
@@ -126,7 +128,7 @@ class ElectionPartialKeyBackup:
     The sequence order of the designated guardian
     """
 
-    coordinate: ElementModQ
+    encrypted_coordinate: HashedElGamalCiphertext
     """
     The coordinate corresponding to a secret election polynomial
     """
@@ -189,21 +191,33 @@ def generate_election_partial_key_backup(
     :param polynomial: The owner's Election polynomial
     :return: Election partial key backup
     """
-    value = compute_polynomial_coordinate(
+    coordinate = compute_polynomial_coordinate(
         designated_guardian_key.sequence_order, polynomial
+    )
+    seed = hash_elems(owner_id, designated_guardian_key.sequence_order)
+    encrypted_coordinate = hashed_elgamal_encrypt(
+        coordinate.to_hex_bytes(),
+        rand_q(),
+        designated_guardian_key.key,
+        seed,
     )
     return ElectionPartialKeyBackup(
         owner_id,
         designated_guardian_key.owner_id,
         designated_guardian_key.sequence_order,
-        value,
+        encrypted_coordinate,
     )
+
+
+def get_hashed_elgalmal_seed(owner_id: str, sequence_order: int) -> ElementModQ:
+    return hash_elems(owner_id, sequence_order)
 
 
 def verify_election_partial_key_backup(
     verifier_id: str,
     backup: ElectionPartialKeyBackup,
     election_public_key: ElectionPublicKey,
+    guardian_keys: ElectionKeyPair,
 ) -> ElectionPartialKeyVerification:
     """
     Verify election partial key backup contain point on owners polynomial
@@ -212,7 +226,11 @@ def verify_election_partial_key_backup(
     :param election_public_key: Other guardian's election public key
     """
 
-    value = backup.coordinate
+    encryption_seed = get_hashed_elgalmal_seed(
+        backup.owner_id, backup.designated_sequence_order
+    )
+    secret_key = guardian_keys.key_pair.secret_key
+    value = backup.encrypted_coordinate.decrypt_to_q(secret_key, encryption_seed)
     return ElectionPartialKeyVerification(
         backup.owner_id,
         backup.designated_id,

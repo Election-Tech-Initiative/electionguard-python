@@ -279,6 +279,7 @@ from electionguard.key_ceremony import (
     generate_election_key_pair,
     generate_election_partial_key_backup,
     generate_election_partial_key_challenge,
+    get_hashed_elgalmal_seed,
     verify_election_partial_key_backup,
     verify_election_partial_key_challenge,
 )
@@ -632,6 +633,7 @@ __all__ = [
     "get_file_handler",
     "get_generator",
     "get_hash_for_device",
+    "get_hashed_elgalmal_seed",
     "get_hmac",
     "get_large_prime",
     "get_optional",
