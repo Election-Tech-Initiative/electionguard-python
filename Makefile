@@ -69,7 +69,7 @@ endif
 
 install-gmp-windows:
 	@echo 🏁 WINDOWS INSTALL
-	@echo 🚨 Ensure pyproject.toml has been modified to include appropriate local gmpy2 package 🚨 
+	@echo 🚨 Nothing todo here. Windows should work via poetry install, without manually installing gmpy2. 🚨 
 # install module with local gmpy2 package
 
 lint:
