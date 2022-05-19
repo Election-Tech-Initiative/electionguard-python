@@ -42,12 +42,6 @@ endif
 ifeq ($(OS), Darwin)
 	make install-gmp-mac
 endif
-ifeq ($(OS), Windows)
-	make install-gmp-windows
-endif
-ifeq ($(OS), Windows_NT)
-	make install-gmp-windows
-endif
 
 install-gmp-mac:
 	@echo 🍎 MACOS INSTALL
@@ -66,11 +60,6 @@ else ifeq ($(PKG_MGR), pacman)
 else ifeq ($(PKG_MGR), undefined)
 	@echo "We could not install GMP automatically for your Linux distribution. Please, install GMP manually."
 endif
-
-install-gmp-windows:
-	@echo 🏁 WINDOWS INSTALL
-	@echo 🚨 Nothing todo here. Windows should work via poetry install, without manually installing gmpy2. 🚨 
-# install module with local gmpy2 package
 
 lint:
 	@echo 💚 LINT
