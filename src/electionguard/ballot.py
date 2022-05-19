@@ -1045,21 +1045,3 @@ def make_ciphertext_submitted_ballot(
         None,
         state,
     )
-
-
-def from_ciphertext_ballot(
-    ballot: CiphertextBallot, state: BallotBoxState = BallotBoxState.UNKNOWN
-) -> SubmittedBallot:
-    """
-    Convert a `CiphertextBallot` into a `SubmittedBallot`, with all nonces removed.
-    """
-    return make_ciphertext_submitted_ballot(
-        ballot.object_id,
-        ballot.style_id,
-        ballot.manifest_hash,
-        ballot.code_seed,
-        ballot.contests,
-        ballot.code,
-        ballot.timestamp,
-        state,
-    )

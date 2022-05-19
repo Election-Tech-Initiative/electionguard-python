@@ -88,10 +88,13 @@ def get_ballots(
     }
 
 
-def submit_ballot(ballot: CiphertextBallot, state: BallotBoxState) -> SubmittedBallot:
+def submit_ballot(
+    ballot: CiphertextBallot, state: BallotBoxState = BallotBoxState.UNKNOWN
+) -> SubmittedBallot:
     """
     Convert a `CiphertextBallot` into a `SubmittedBallot`, with all nonces removed.
     """
+
     return make_ciphertext_submitted_ballot(
         ballot.object_id,
         ballot.style_id,
@@ -109,14 +112,8 @@ def cast_ballot(ballot: CiphertextBallot) -> SubmittedBallot:
     Convert a `CiphertextBallot` into a `SubmittedBallot`, with all nonces removed.
     Declare a ballot as CAST.
     """
-    return make_ciphertext_submitted_ballot(
-        ballot.object_id,
-        ballot.style_id,
-        ballot.manifest_hash,
-        ballot.code_seed,
-        ballot.contests,
-        ballot.code,
-        ballot.timestamp,
+    return submit_ballot(
+        ballot,
         BallotBoxState.CAST,
     )
 
@@ -126,13 +123,7 @@ def spoil_ballot(ballot: CiphertextBallot) -> SubmittedBallot:
     Convert a `CiphertextBallot` into a `SubmittedBallot`, with all nonces removed.
     Declare a ballot as CAST.
     """
-    return make_ciphertext_submitted_ballot(
-        ballot.object_id,
-        ballot.style_id,
-        ballot.manifest_hash,
-        ballot.code_seed,
-        ballot.contests,
-        ballot.code,
-        ballot.timestamp,
+    return submit_ballot(
+        ballot,
         BallotBoxState.SPOILED,
     )
