@@ -9,11 +9,9 @@ from hypothesis.strategies import integers, data
 
 from tests.base_test_case import BaseTestCase
 
-from electionguard.ballot import PlaintextBallot, from_ciphertext_ballot
-from electionguard.ballot_box import get_ballots
+from electionguard.ballot import PlaintextBallot
+from electionguard.ballot_box import BallotBox, BallotBoxState, cast_ballot, get_ballots
 from electionguard.data_store import DataStore
-
-from electionguard.ballot_box import BallotBox, BallotBoxState
 from electionguard.decryption_mediator import DecryptionMediator
 from electionguard.election import CiphertextElectionContext
 from electionguard.election_builder import ElectionBuilder
@@ -374,7 +372,7 @@ class TestDecryptionMediator(BaseTestCase):
             # add to the ballot store
             store.set(
                 encrypted_ballot.object_id,
-                from_ciphertext_ballot(encrypted_ballot, BallotBoxState.CAST),
+                cast_ballot(encrypted_ballot, BallotBoxState.CAST),
             )
 
         tally = tally_ballots(store, internal_manifest, context)

@@ -4,14 +4,13 @@ from typing import Dict
 from hypothesis import given, HealthCheck, settings, Phase
 from hypothesis.strategies import integers
 
-
 from tests.base_test_case import BaseTestCase
 
 from electionguard.ballot import (
     BallotBoxState,
     SubmittedBallot,
-    from_ciphertext_ballot,
 )
+from electionguard.ballot_box import cast_ballot, spoil_ballot
 from electionguard.data_store import DataStore
 from electionguard.elgamal import ElGamalSecretKey
 from electionguard.encrypt import encrypt_ballot
@@ -68,7 +67,7 @@ class TestTally(BaseTestCase):
             # add to the ballot store
             store.set(
                 encrypted_ballot.object_id,
-                from_ciphertext_ballot(encrypted_ballot, BallotBoxState.CAST),
+                cast_ballot(encrypted_ballot),
             )
 
         # act
@@ -117,7 +116,7 @@ class TestTally(BaseTestCase):
             # add to the ballot store
             store.set(
                 encrypted_ballot.object_id,
-                from_ciphertext_ballot(encrypted_ballot, BallotBoxState.SPOILED),
+                spoil_ballot(encrypted_ballot),
             )
 
         # act
@@ -164,7 +163,7 @@ class TestTally(BaseTestCase):
             # add to the ballot store
             store.set(
                 encrypted_ballot.object_id,
-                from_ciphertext_ballot(encrypted_ballot, BallotBoxState.CAST),
+                cast_ballot(encrypted_ballot),
             )
 
         tally = CiphertextTally("my-tally", internal_manifest, context)

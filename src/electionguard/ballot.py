@@ -916,7 +916,7 @@ class SubmittedBallot(CiphertextBallot):
 
     Note, additionally, this ballot includes all proofs but no nonces.
 
-    Do not make this class directly. Use `make_ciphertext_submitted_ballot` or `from_ciphertext_ballot` instead.
+    Do not make this class directly. Use `make_ciphertext_submitted_ballot` instead.
     """
 
     state: BallotBoxState
