@@ -5,7 +5,7 @@ from .ballot import (
     BallotBoxState,
     CiphertextBallot,
     SubmittedBallot,
-    make_ciphertext_submitted_ballot
+    make_ciphertext_submitted_ballot,
 )
 from .ballot_validator import ballot_is_valid_for_election
 from .data_store import DataStore
@@ -25,7 +25,7 @@ class BallotBox:
 
     def cast(self, ballot: CiphertextBallot) -> Optional[SubmittedBallot]:
         """Cast a specific encrypted `CiphertextBallot`."""
-        return accept_ballot(
+        return submit_ballot_to_box(
             ballot,
             BallotBoxState.CAST,
             self._internal_manifest,
@@ -35,7 +35,7 @@ class BallotBox:
 
     def spoil(self, ballot: CiphertextBallot) -> Optional[SubmittedBallot]:
         """Spoil a specific encrypted `CiphertextBallot`."""
-        return accept_ballot(
+        return submit_ballot_to_box(
             ballot,
             BallotBoxState.SPOILED,
             self._internal_manifest,
@@ -44,7 +44,7 @@ class BallotBox:
         )
 
 
-def accept_ballot(
+def submit_ballot_to_box(
     ballot: CiphertextBallot,
     state: BallotBoxState,
     internal_manifest: InternalManifest,
@@ -87,8 +87,8 @@ def get_ballots(
         if state is None or ballot.state == state
     }
 
-def submit_ballot(
-    ballot: CiphertextBallot, state: BallotBoxState) -> SubmittedBallot:
+
+def submit_ballot(ballot: CiphertextBallot, state: BallotBoxState) -> SubmittedBallot:
     """
     Convert a `CiphertextBallot` into a `SubmittedBallot`, with all nonces removed.
     """
@@ -102,6 +102,7 @@ def submit_ballot(
         ballot.timestamp,
         state,
     )
+
 
 def cast_ballot(ballot: CiphertextBallot) -> SubmittedBallot:
     """
@@ -118,7 +119,7 @@ def cast_ballot(ballot: CiphertextBallot) -> SubmittedBallot:
         ballot.timestamp,
         BallotBoxState.CAST,
     )
-    
+
 
 def spoil_ballot(ballot: CiphertextBallot) -> SubmittedBallot:
     """
@@ -135,4 +136,3 @@ def spoil_ballot(ballot: CiphertextBallot) -> SubmittedBallot:
         ballot.timestamp,
         BallotBoxState.SPOILED,
     )
-    
