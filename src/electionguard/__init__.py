@@ -60,8 +60,11 @@ from electionguard.ballot import (
 )
 from electionguard.ballot_box import (
     BallotBox,
-    accept_ballot,
+    cast_ballot,
     get_ballots,
+    spoil_ballot,
+    submit_ballot,
+    submit_ballot_to_box,
 )
 from electionguard.ballot_code import (
     get_ballot_code,
@@ -534,7 +537,6 @@ __all__ = [
     "YES_VOTE",
     "a_minus_b_q",
     "a_plus_bc_q",
-    "accept_ballot",
     "add_q",
     "ballot",
     "ballot_box",
@@ -545,6 +547,7 @@ __all__ = [
     "ballot_validator",
     "big_integer",
     "bytes_to_hex",
+    "cast_ballot",
     "chaum_pedersen",
     "combine_election_public_keys",
     "compensate_decrypt",
@@ -703,6 +706,9 @@ __all__ = [
     "serialize",
     "singleton",
     "space_between_capitals",
+    "spoil_ballot",
+    "submit_ballot",
+    "submit_ballot_to_box",
     "tally",
     "tally_ballot",
     "tally_ballots",
