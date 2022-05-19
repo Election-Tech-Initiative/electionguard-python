@@ -32,7 +32,7 @@ from .key_ceremony import (
     ElectionKeyPair,
     ElectionPartialKeyBackup,
     ElectionPublicKey,
-    get_hashed_elgalmal_seed,
+    get_backup_seed,
 )
 from .logs import log_warning
 from .scheduler import Scheduler
@@ -480,7 +480,7 @@ def compensate_decrypt(
 
     # todo: figure out how to get the guardian's secret_key during compensate_decrypt
     secret_key = ElGamalSecretKey(0)
-    encryption_seed = get_hashed_elgalmal_seed(
+    encryption_seed = get_backup_seed(
         guardian_key.owner_id, guardian_key.sequence_order
     )
     partial_secret_key = missing_guardian_backup.encrypted_coordinate.decrypt_to_q(

@@ -281,16 +281,16 @@ class Guardian:
         """
         Generate all election partial key backups based on existing public keys.
         """
-        for guardian in self._guardian_election_public_keys.values():
+        for guardian_key in self._guardian_election_public_keys.values():
             backup = generate_election_partial_key_backup(
-                self.id, self._election_keys.polynomial, guardian
+                self.id, self._election_keys.polynomial, guardian_key
             )
             if backup is None:
                 log_warning(
                     f"guardian; {self.id} could not generate election partial key backups: failed to encrypt"
                 )
                 return False
-            self._backups_to_share[guardian.owner_id] = backup
+            self._backups_to_share[guardian_key.owner_id] = backup
 
         return True
 

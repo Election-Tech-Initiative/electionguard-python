@@ -194,7 +194,9 @@ def generate_election_partial_key_backup(
     coordinate = compute_polynomial_coordinate(
         designated_guardian_key.sequence_order, polynomial
     )
-    seed = hash_elems(owner_id, designated_guardian_key.sequence_order)
+    seed = get_backup_seed(
+        designated_guardian_key.owner_id, designated_guardian_key.sequence_order
+    )
     encrypted_coordinate = hashed_elgamal_encrypt(
         coordinate.to_hex_bytes(),
         rand_q(),
@@ -209,7 +211,7 @@ def generate_election_partial_key_backup(
     )
 
 
-def get_hashed_elgalmal_seed(owner_id: str, sequence_order: int) -> ElementModQ:
+def get_backup_seed(owner_id: str, sequence_order: int) -> ElementModQ:
     return hash_elems(owner_id, sequence_order)
 
 
@@ -226,20 +228,19 @@ def verify_election_partial_key_backup(
     :param election_public_key: Other guardian's election public key
     """
 
-    encryption_seed = get_hashed_elgalmal_seed(
-        backup.owner_id, backup.designated_sequence_order
-    )
+    encryption_seed = get_backup_seed(backup.owner_id, backup.designated_sequence_order)
     secret_key = guardian_keys.key_pair.secret_key
     value = backup.encrypted_coordinate.decrypt_to_q(secret_key, encryption_seed)
+    verified = verify_polynomial_coordinate(
+        value,
+        backup.designated_sequence_order,
+        election_public_key.coefficient_commitments,
+    )
     return ElectionPartialKeyVerification(
         backup.owner_id,
         backup.designated_id,
         verifier_id,
-        verify_polynomial_coordinate(
-            value,
-            backup.designated_sequence_order,
-            election_public_key.coefficient_commitments,
-        ),
+        verified,
     )
 
 
