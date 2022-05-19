@@ -1,4 +1,10 @@
+import os
+from unittest.mock import patch
 from tests.base_test_case import BaseTestCase
+
+from electionguard.constants import (
+    PrimeOption,
+)
 
 from electionguard.key_ceremony import (
     generate_election_key_pair,
@@ -63,6 +69,7 @@ class TestKeyCeremony(BaseTestCase):
         self.assertEqual(backup.designated_sequence_order, RECIPIENT_SEQUENCE_ORDER)
         self.assertIsNotNone(backup.encrypted_coordinate)
 
+    @patch.dict(os.environ, {"PRIME_OPTION": PrimeOption.Standard.value})
     def test_encrypt_then_verify_coordinate(self) -> None:
         # Arrange
         sender_key_pair = generate_election_key_pair(

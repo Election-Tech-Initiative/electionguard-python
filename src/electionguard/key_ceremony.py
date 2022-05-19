@@ -1,5 +1,7 @@
 from dataclasses import dataclass
-from typing import List
+from typing import List, Type, TypeVar
+
+from .serialize import PaddedDataSize, padded_decode, padded_encode
 
 from .election_polynomial import (
     PublicCommitment,
@@ -15,7 +17,7 @@ from .elgamal import (
     elgamal_combine_public_keys,
     hashed_elgamal_encrypt,
 )
-from .group import ElementModQ, rand_q
+from .group import ONE_MOD_Q, ElementModQ, rand_q
 from .hash import hash_elems
 from .schnorr import SchnorrProof
 from .type import (
@@ -165,6 +167,24 @@ class ElectionPartialKeyChallenge:
     coefficient_proofs: List[SchnorrProof]
 
 
+_T = TypeVar("_T", bound="CoordinateData")
+CONTEST_DATA_SIZE: PaddedDataSize = PaddedDataSize.Bytes_512
+
+
+@dataclass
+class CoordinateData:
+    """A coordinate from a PartialKeyBackup that can be serialized and deserialized for encryption/decryption"""
+
+    coordinate: ElementModQ
+
+    @classmethod
+    def from_bytes(cls: Type[_T], data: bytes) -> _T:
+        return padded_decode(cls, data, CONTEST_DATA_SIZE)
+
+    def to_bytes(self) -> bytes:
+        return padded_encode(self, CONTEST_DATA_SIZE)
+
+
 def generate_election_key_pair(
     guardian_id: str, sequence_order: int, quorum: int, nonce: ElementModQ = None
 ) -> ElectionKeyPair:
@@ -194,12 +214,14 @@ def generate_election_partial_key_backup(
     coordinate = compute_polynomial_coordinate(
         designated_guardian_key.sequence_order, polynomial
     )
+    coordinate_data = CoordinateData(coordinate)
+    nonce = rand_q()
     seed = get_backup_seed(
         designated_guardian_key.owner_id, designated_guardian_key.sequence_order
     )
     encrypted_coordinate = hashed_elgamal_encrypt(
-        coordinate.to_hex_bytes(),
-        rand_q(),
+        coordinate_data.to_bytes(),
+        nonce,
         designated_guardian_key.key,
         seed,
     )
@@ -212,7 +234,9 @@ def generate_election_partial_key_backup(
 
 
 def get_backup_seed(owner_id: str, sequence_order: int) -> ElementModQ:
-    return hash_elems(owner_id, sequence_order)
+    # todo: use a better seed
+    # return hash_elems(owner_id, sequence_order)
+    return ONE_MOD_Q
 
 
 def verify_election_partial_key_backup(
@@ -229,10 +253,14 @@ def verify_election_partial_key_backup(
     """
 
     encryption_seed = get_backup_seed(backup.owner_id, backup.designated_sequence_order)
+
     secret_key = guardian_keys.key_pair.secret_key
-    value = backup.encrypted_coordinate.decrypt_to_q(secret_key, encryption_seed)
+    bytes_optional = backup.encrypted_coordinate.decrypt(secret_key, encryption_seed)
+    coordinate_data: CoordinateData = CoordinateData.from_bytes(
+        get_optional(bytes_optional)
+    )
     verified = verify_polynomial_coordinate(
-        value,
+        coordinate_data.coordinate,
         backup.designated_sequence_order,
         election_public_key.coefficient_commitments,
     )
@@ -251,7 +279,7 @@ def generate_election_partial_key_challenge(
     """
     Generate challenge to a previous verification of a partial key backup
     :param backup: Election partial key backup in question
-    :param poynomial: Polynomial to regenerate point
+    :param polynomial: Polynomial to regenerate point
     :return: Election partial key verification
     """
     return ElectionPartialKeyChallenge(
