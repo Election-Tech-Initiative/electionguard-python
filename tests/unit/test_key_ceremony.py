@@ -31,6 +31,7 @@ RECIPIENT_KEY = RECIPIENT_KEY_PAIR.share()
 ALTERNATE_VERIFIER_GUARDIAN_ID = "Test Guardian 3"
 
 
+@patch.dict(os.environ, {"PRIME_OPTION": PrimeOption.Standard.value})
 class TestKeyCeremony(BaseTestCase):
     """Key ceremony tests"""
 
@@ -69,7 +70,6 @@ class TestKeyCeremony(BaseTestCase):
         self.assertEqual(backup.designated_sequence_order, RECIPIENT_SEQUENCE_ORDER)
         self.assertIsNotNone(backup.encrypted_coordinate)
 
-    @patch.dict(os.environ, {"PRIME_OPTION": PrimeOption.Standard.value})
     def test_encrypt_then_verify_coordinate(self) -> None:
         # Arrange
         sender_key_pair = generate_election_key_pair(
@@ -109,7 +109,7 @@ class TestKeyCeremony(BaseTestCase):
             RECIPIENT_GUARDIAN_ID,
             partial_key_backup,
             sender_election_key_pair.share(),
-            sender_election_key_pair,
+            RECIPIENT_KEY_PAIR,
         )
 
         # Assert
