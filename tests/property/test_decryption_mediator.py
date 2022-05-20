@@ -372,7 +372,7 @@ class TestDecryptionMediator(BaseTestCase):
             # add to the ballot store
             store.set(
                 encrypted_ballot.object_id,
-                cast_ballot(encrypted_ballot, BallotBoxState.CAST),
+                cast_ballot(encrypted_ballot),
             )
 
         tally = tally_ballots(store, internal_manifest, context)
