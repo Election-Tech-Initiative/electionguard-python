@@ -17,7 +17,7 @@ from .elgamal import (
     elgamal_combine_public_keys,
     hashed_elgamal_encrypt,
 )
-from .group import ONE_MOD_Q, ElementModQ, rand_q
+from .group import ElementModQ, rand_q
 from .hash import hash_elems
 from .schnorr import SchnorrProof
 from .type import (

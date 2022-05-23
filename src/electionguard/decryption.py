@@ -2,6 +2,7 @@ from typing import Dict, List, Optional, Tuple
 from electionguard.chaum_pedersen import ChaumPedersenProof, make_chaum_pedersen
 
 from electionguard.elgamal import ElGamalCiphertext, ElGamalSecretKey
+from electionguard.utils import get_optional
 
 from .ballot import (
     SubmittedBallot,
@@ -29,6 +30,7 @@ from .group import (
     rand_q,
 )
 from .key_ceremony import (
+    CoordinateData,
     ElectionKeyPair,
     ElectionPartialKeyBackup,
     ElectionPublicKey,
@@ -470,7 +472,7 @@ def compensate_decrypt(
     :param missing_guardian_backup: Missing guardians backup
     :param ciphertext: the `ElGamalCiphertext` that will be partially decrypted
     :param extended_base_hash: the extended base hash of the election that
-                                was used to generate t he ElGamal Ciphertext
+                                was used to generate the ElGamal Ciphertext
     :param nonce_seed: an optional value used to generate the `ChaumPedersenProof`
                         if no value is provided, a random number will be used.
     :return: a `Tuple[ElementModP, ChaumPedersenProof]` of the decryption and its proof
@@ -481,11 +483,17 @@ def compensate_decrypt(
     # todo: figure out how to get the guardian's secret_key during compensate_decrypt
     secret_key = ElGamalSecretKey(0)
     encryption_seed = get_backup_seed(
-        guardian_key.owner_id, guardian_key.sequence_order
+        guardian_key.owner_id,
+        missing_guardian_backup.designated_id,
+        guardian_key.sequence_order,
     )
-    partial_secret_key = missing_guardian_backup.encrypted_coordinate.decrypt_to_q(
+    bytes_optional = missing_guardian_backup.encrypted_coordinate.decrypt(
         secret_key, encryption_seed
     )
+    coordinate_data: CoordinateData = CoordinateData.from_bytes(
+        get_optional(bytes_optional)
+    )
+    partial_secret_key = coordinate_data.coordinate
 
     # 𝑀_{𝑖,l} = 𝐴^P𝑖_{l}
     partial_decryption = ciphertext.partial_decrypt(partial_secret_key)
