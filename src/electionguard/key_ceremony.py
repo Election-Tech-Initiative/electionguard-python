@@ -218,6 +218,7 @@ def generate_election_partial_key_backup(
     coordinate_data = CoordinateData(coordinate)
     nonce = rand_q()
     seed = get_backup_seed(
+        sender_guardian_id,
         receiver_guardian_public_key.owner_id,
         receiver_guardian_public_key.sequence_order,
     )
@@ -235,10 +236,10 @@ def generate_election_partial_key_backup(
     )
 
 
-def get_backup_seed(owner_id: str, sequence_order: int) -> ElementModQ:
-    # todo: use a better seed
-    # return hash_elems(owner_id, sequence_order)
-    return ONE_MOD_Q
+def get_backup_seed(
+    sender_guardian_id: str, receiver_guardian_id: str, sequence_order: int
+) -> ElementModQ:
+    return hash_elems(sender_guardian_id, receiver_guardian_id, sequence_order)
 
 
 def verify_election_partial_key_backup(
@@ -257,6 +258,7 @@ def verify_election_partial_key_backup(
 
     encryption_seed = get_backup_seed(
         sender_guardian_backup.owner_id,
+        receiver_guardian_id,
         sender_guardian_backup.designated_sequence_order,
     )
 

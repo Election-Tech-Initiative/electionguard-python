@@ -269,6 +269,7 @@ from electionguard.hmac import (
 )
 from electionguard.key_ceremony import (
     CeremonyDetails,
+    CoordinateData,
     ElectionJointKey,
     ElectionKeyPair,
     ElectionPartialKeyBackup,
@@ -439,6 +440,7 @@ __all__ = [
     "ContestErrorType",
     "ContestException",
     "ContestId",
+    "CoordinateData",
     "CryptoHashCheckable",
     "CryptoHashable",
     "CryptoHashableAll",
@@ -626,6 +628,7 @@ __all__ = [
     "generate_placeholder_selection_from",
     "generate_placeholder_selections_from",
     "generate_polynomial",
+    "get_backup_seed",
     "get_ballot_code",
     "get_ballots",
     "get_cofactor",
@@ -633,7 +636,6 @@ __all__ = [
     "get_file_handler",
     "get_generator",
     "get_hash_for_device",
-    "get_backup_seed",
     "get_hmac",
     "get_large_prime",
     "get_optional",
