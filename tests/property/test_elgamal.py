@@ -30,7 +30,7 @@ from electionguard.group import (
 )
 from electionguard.logs import log_info
 from electionguard.nonces import Nonces
-from electionguard.serialize import PaddedDataSize, padded_encode, padded_decode
+from electionguard.serialize import PaddedDataSize, padded_decode
 from electionguard.scheduler import Scheduler
 from electionguard.utils import ContestErrorType, get_optional
 from electionguard_tools.strategies.elgamal import elgamal_keypairs
@@ -199,7 +199,7 @@ class TestElGamal(BaseTestCase):
         seed = ONE_MOD_Q
 
         # Act
-        padded_message = padded_encode(message, PaddedDataSize.Bytes_512)
+        padded_message = message.to_bytes()
         encrypted_message = hashed_elgamal_encrypt(
             padded_message, nonce, keypair.public_key, seed
         )
