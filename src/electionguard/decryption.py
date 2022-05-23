@@ -1,7 +1,7 @@
 from typing import Dict, List, Optional, Tuple
 from electionguard.chaum_pedersen import ChaumPedersenProof, make_chaum_pedersen
 
-from electionguard.elgamal import ElGamalCiphertext, ElGamalSecretKey
+from electionguard.elgamal import ElGamalCiphertext
 from electionguard.utils import get_optional
 
 from .ballot import (
@@ -88,7 +88,7 @@ def compute_decryption_share(
 
 
 def compute_compensated_decryption_share(
-    guardian_key: ElectionPublicKey,
+    guardian_keys: ElectionKeyPair,
     missing_guardian_key: ElectionPublicKey,
     missing_guardian_backup: ElectionPartialKeyBackup,
     tally: CiphertextTally,
@@ -112,7 +112,7 @@ def compute_compensated_decryption_share(
 
     for contest in tally.contests.values():
         contest_share = compute_compensated_decryption_share_for_contest(
-            guardian_key,
+            guardian_keys,
             missing_guardian_key,
             missing_guardian_backup,
             CiphertextContest(
@@ -130,9 +130,9 @@ def compute_compensated_decryption_share(
 
     return CompensatedDecryptionShare(
         tally.object_id,
-        guardian_key.owner_id,
+        guardian_keys.owner_id,
         missing_guardian_key.owner_id,
-        guardian_key.key,
+        guardian_keys.key_pair.public_key,
         contests,
     )
 
@@ -179,7 +179,7 @@ def compute_decryption_share_for_ballot(
 
 
 def compute_compensated_decryption_share_for_ballot(
-    guardian_key: ElectionPublicKey,
+    guardian_keys: ElectionKeyPair,
     missing_guardian_key: ElectionPublicKey,
     missing_guardian_backup: ElectionPartialKeyBackup,
     ballot: SubmittedBallot,
@@ -202,7 +202,7 @@ def compute_compensated_decryption_share_for_ballot(
 
     for contest in ballot.contests:
         contest_share = compute_compensated_decryption_share_for_contest(
-            guardian_key,
+            guardian_keys,
             missing_guardian_key,
             missing_guardian_backup,
             CiphertextContest(
@@ -220,9 +220,9 @@ def compute_compensated_decryption_share_for_ballot(
 
     return CompensatedDecryptionShare(
         ballot.object_id,
-        guardian_key.owner_id,
+        guardian_keys.owner_id,
         missing_guardian_key.owner_id,
-        guardian_key.key,
+        guardian_keys.key_pair.public_key,
         contests,
     )
 
@@ -267,7 +267,7 @@ def compute_decryption_share_for_contest(
 
 
 def compute_compensated_decryption_share_for_contest(
-    guardian_key: ElectionPublicKey,
+    guardian_keys: ElectionKeyPair,
     missing_guardian_key: ElectionPublicKey,
     missing_guardian_backup: ElectionPartialKeyBackup,
     contest: CiphertextContest,
@@ -295,7 +295,7 @@ def compute_compensated_decryption_share_for_contest(
         compute_compensated_decryption_share_for_selection,
         [
             (
-                guardian_key,
+                guardian_keys,
                 missing_guardian_key,
                 missing_guardian_backup,
                 selection,
@@ -313,7 +313,7 @@ def compute_compensated_decryption_share_for_contest(
 
     return CiphertextCompensatedDecryptionContest(
         contest.object_id,
-        guardian_key.owner_id,
+        guardian_keys.owner_id,
         missing_guardian_key.owner_id,
         contest.description_hash,
         selections,
@@ -358,7 +358,7 @@ def compute_decryption_share_for_selection(
 
 
 def compute_compensated_decryption_share_for_selection(
-    guardian_key: ElectionPublicKey,
+    guardian_keys: ElectionKeyPair,
     missing_guardian_key: ElectionPublicKey,
     missing_guardian_backup: ElectionPartialKeyBackup,
     selection: CiphertextSelection,
@@ -380,9 +380,10 @@ def compute_compensated_decryption_share_for_selection(
         missing_guardian_backup,
         selection.ciphertext,
         context.crypto_extended_base_hash,
-        guardian_key,
+        guardian_keys,
     )
 
+    guardian_key = guardian_keys.share()
     if compensated is None:
         log_warning(
             (
@@ -462,7 +463,7 @@ def compensate_decrypt(
     missing_guardian_backup: ElectionPartialKeyBackup,
     ciphertext: ElGamalCiphertext,
     extended_base_hash: ElementModQ,
-    guardian_key: ElectionPublicKey,
+    guardian_keys: ElectionKeyPair,
     nonce_seed: ElementModQ = None,
 ) -> Optional[Tuple[ElementModP, ChaumPedersenProof]]:
     """
@@ -480,15 +481,13 @@ def compensate_decrypt(
     if nonce_seed is None:
         nonce_seed = rand_q()
 
-    # todo: figure out how to get the guardian's secret_key during compensate_decrypt
-    secret_key = ElGamalSecretKey(0)
     encryption_seed = get_backup_seed(
-        guardian_key.owner_id,
+        guardian_keys.owner_id,
         missing_guardian_backup.designated_id,
-        guardian_key.sequence_order,
+        guardian_keys.sequence_order,
     )
     bytes_optional = missing_guardian_backup.encrypted_coordinate.decrypt(
-        secret_key, encryption_seed
+        guardian_keys.key_pair.secret_key, encryption_seed
     )
     coordinate_data: CoordinateData = CoordinateData.from_bytes(
         get_optional(bytes_optional)

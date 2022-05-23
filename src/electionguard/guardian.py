@@ -492,7 +492,7 @@ class Guardian:
         if missing_guardian_key is None or missing_guardian_backup is None:
             return None
         return compute_compensated_decryption_share(
-            self.share_key(),
+            self._election_keys,
             missing_guardian_key,
             missing_guardian_backup,
             tally,
@@ -528,7 +528,7 @@ class Guardian:
 
         for ballot in ballots:
             share = compute_compensated_decryption_share_for_ballot(
-                self.share_key(),
+                self._election_keys,
                 missing_guardian_key,
                 missing_guardian_backup,
                 ballot,

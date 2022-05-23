@@ -309,7 +309,7 @@ class TestDecryption(BaseTestCase):
 
         # compute compensations shares for the missing guardian
         compensation_0 = compute_compensated_decryption_share_for_selection(
-            available_guardian_1.share_key(),
+            available_guardian_1,
             missing_guardian.share_key(),
             missing_guardian.share_election_partial_key_backup(available_guardian_1.id),
             first_selection,
@@ -317,7 +317,7 @@ class TestDecryption(BaseTestCase):
         )
 
         compensation_1 = compute_compensated_decryption_share_for_selection(
-            available_guardian_2.share_key(),
+            available_guardian_2,
             missing_guardian.share_key(),
             missing_guardian.share_election_partial_key_backup(available_guardian_2.id),
             first_selection,
@@ -428,7 +428,7 @@ class TestDecryption(BaseTestCase):
         )
 
         result = compute_compensated_decryption_share_for_selection(
-            available_guardian.share_key(),
+            available_guardian,
             missing_guardian.share_key(),
             incorrect_backup,
             first_selection,
