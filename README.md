@@ -8,19 +8,18 @@ This repository is a "reference implementation" of ElectionGuard written in Pyth
 
 ## 📁 In This Repository
 
-| File/folder                                                | Description                                   |
-| --------------------------------------------------------   | --------------------------------------------  |
-| [docs](/docs)                                              | Documentation for using the library.          |
-| [src/electionguard](/src/electionguard)                    | ElectionGuard library.                        |
-| [src/electionguard_tools](/src/electionguard_tools)        | Tools for testing and sample data.            |
-| [src/electionguard_verifier](/src/electionguard_verify)      | Verifier to validate the validity of a ballot.|
-| [stubs](/stubs)                                            | Type annotations for external libraries.      |
-| [tests](/tests)                                            | Tests to exercise this codebase.              |
-| [CONTRIBUTING.md](/CONTRIBUTING.md)                        | Guidelines for contributing.                  |
-| [README.md](/README.md)                                    | This README file.                             |
-| [LICENSE](/LICENSE)                                        | The license for ElectionGuard-Python.         |
-| [data](/data)                                              | Sample election data.                         |
-
+| File/folder                                             | Description                                    |
+| ------------------------------------------------------- | ---------------------------------------------- |
+| [docs](/docs)                                           | Documentation for using the library.           |
+| [src/electionguard](/src/electionguard)                 | ElectionGuard library.                         |
+| [src/electionguard_tools](/src/electionguard_tools)     | Tools for testing and sample data.             |
+| [src/electionguard_verifier](/src/electionguard_verify) | Verifier to validate the validity of a ballot. |
+| [stubs](/stubs)                                         | Type annotations for external libraries.       |
+| [tests](/tests)                                         | Tests to exercise this codebase.               |
+| [CONTRIBUTING.md](/CONTRIBUTING.md)                     | Guidelines for contributing.                   |
+| [README.md](/README.md)                                 | This README file.                              |
+| [LICENSE](/LICENSE)                                     | The license for ElectionGuard-Python.          |
+| [data](/data)                                           | Sample election data.                          |
 
 ## ❓ What Is ElectionGuard?
 
@@ -38,7 +37,7 @@ ElectionGuard supports a variety of use cases. The Primary use case is to genera
 - [GNU Make](https://www.gnu.org/software/make/manual/make.html) is used to simplify the commands and GitHub Actions. This approach is recommended to simplify the command line experience. This is built in for MacOS and Linux. For Windows, setup is simpler with [Chocolatey](https://chocolatey.org/install) and installing the provided [make package](https://chocolatey.org/packages/make). The other Windows option is [manually installing make](http://gnuwin32.sourceforge.net/packages/make.htm).
 - [Gmpy2](https://gmpy2.readthedocs.io/en/latest/) is used for [Arbitrary-precision arithmetic](https://en.wikipedia.org/wiki/Arbitrary-precision_arithmetic) which
   has its own [installation requirements (native C libraries)](https://gmpy2.readthedocs.io/en/latest/intro.html#installation) on Linux and MacOS. **⚠️ Note:** _This is not required for Windows since the gmpy2 precompiled libraries are provided._
-- [poetry 1.1.10](https://python-poetry.org/) is used to configure the python environment. Installation instructions can be found [here](https://python-poetry.org/docs/#installation).
+- [poetry 1.1.13](https://python-poetry.org/) is used to configure the python environment. Installation instructions can be found [here](https://python-poetry.org/docs/#installation).
 
 ## 🚀 Quick Start
 
@@ -131,9 +130,7 @@ A huge thank you to those who helped to contribute to this project so far, inclu
 [pull request workflow]: https://github.com/microsoft/electionguard-python/blob/main/.github/workflows/pull_request.yml
 [contributing]: https://github.com/microsoft/electionguard-python/blob/main/CONTRIBUTING.md
 [security]: https://github.com/microsoft/electionguard-python/blob/main/SECURITY.md
-
-[Design and Architecture]: https://github.com/microsoft/electionguard-python/blob/main/docs/Design_and_Architecture.md
-
+[design and architecture]: https://github.com/microsoft/electionguard-python/blob/main/docs/Design_and_Architecture.md
 [build and run]: https://github.com/microsoft/electionguard-python/blob/main/docs/Build_and_Run.md
 [project workflow]: https://github.com/microsoft/electionguard-python/blob/main/docs/Project_Workflow.md
 [election manifest]: https://github.com/microsoft/electionguard-python/blob/main/docs/Election_Manifest.md

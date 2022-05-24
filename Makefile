@@ -5,7 +5,6 @@ OS ?= $(shell python3 -c 'import platform; print(platform.system())')
 ifeq ($(OS), Linux)
 PKG_MGR ?= $(shell python3 -c 'import subprocess as sub; print(next(filter(None, (sub.getstatusoutput(f"command -v {pm}")[0] == 0 and pm for pm in ["apt-get", "pacman"])), "undefined"))')
 endif
-IS_64_BIT ?= $(shell python3 -c 'from sys import maxsize; print(maxsize > 2**32)')
 SAMPLE_BALLOT_COUNT ?= 5
 SAMPLE_BALLOT_SPOIL_RATE ?= 50
 
@@ -43,12 +42,6 @@ endif
 ifeq ($(OS), Darwin)
 	make install-gmp-mac
 endif
-ifeq ($(OS), Windows)
-	make install-gmp-windows
-endif
-ifeq ($(OS), Windows_NT)
-	make install-gmp-windows
-endif
 
 install-gmp-mac:
 	@echo 🍎 MACOS INSTALL
@@ -66,17 +59,6 @@ else ifeq ($(PKG_MGR), pacman)
 	sudo pacman -S gmp
 else ifeq ($(PKG_MGR), undefined)
 	@echo "We could not install GMP automatically for your Linux distribution. Please, install GMP manually."
-endif
-
-install-gmp-windows:
-	@echo 🏁 WINDOWS INSTALL
-	@echo 🚨 Ensure pyproject.toml has been modified to include appropriate local gmpy2 package 🚨 
-# install module with local gmpy2 package
-ifeq ($(IS_64_BIT), True)
-	@echo 64 bit system detected
-endif
-ifeq ($(IS_64_BIT), False)
-	@echo 32 bit system detected
 endif
 
 lint:
