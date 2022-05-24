@@ -483,7 +483,6 @@ def compensate_decrypt(
 
     encryption_seed = get_backup_seed(
         guardian_keys.owner_id,
-        missing_guardian_backup.designated_id,
         guardian_keys.sequence_order,
     )
     bytes_optional = missing_guardian_backup.encrypted_coordinate.decrypt(
