@@ -4,8 +4,8 @@
 
 from typing import Dict, List
 from tests.base_test_case import BaseTestCase
-from electionguard.ballot import SubmittedBallot
 
+from electionguard.ballot import SubmittedBallot
 from electionguard.ballot_box import BallotBox, BallotBoxState, get_ballots
 from electionguard.data_store import DataStore
 from electionguard.decrypt_with_shares import decrypt_selection_with_decryption_shares
@@ -34,7 +34,11 @@ from electionguard.group import (
 from electionguard.election_builder import ElectionBuilder
 from electionguard.encrypt import EncryptionMediator
 from electionguard.guardian import Guardian
-from electionguard.key_ceremony import CeremonyDetails, ElectionKeyPair
+from electionguard.key_ceremony import (
+    CeremonyDetails,
+    ElectionJointKey,
+    ElectionKeyPair,
+)
 from electionguard.key_ceremony_mediator import KeyCeremonyMediator
 from electionguard.tally import tally_ballots
 from electionguard.type import BallotId, GuardianId
@@ -223,13 +227,12 @@ class TestDecryption(BaseTestCase):
         guardian = self.guardians[0]
         missing_guardian = self.guardians[2]
 
-        public_key = guardian.share_key()
         missing_guardian_public_key = missing_guardian.share_key()
         missing_guardian_backup = missing_guardian._backups_to_share.get(guardian.id)
 
         # Act
         share = compute_compensated_decryption_share(
-            public_key,
+            guardian._election_keys,
             missing_guardian_public_key,
             missing_guardian_backup,
             self.ciphertext_tally,
@@ -258,7 +261,7 @@ class TestDecryption(BaseTestCase):
 
     def test_compute_compensated_selection(self):
         """
-        demonstrates the complete workflow for computing a comepnsated decryption share
+        demonstrates the complete workflow for computing a compensated decryption share
         For one selection. It is useful for verifying that the workflow is correct
         """
         # Arrange
@@ -309,7 +312,7 @@ class TestDecryption(BaseTestCase):
 
         # compute compensations shares for the missing guardian
         compensation_0 = compute_compensated_decryption_share_for_selection(
-            available_guardian_1,
+            available_guardian_1._election_keys,
             missing_guardian.share_key(),
             missing_guardian.share_election_partial_key_backup(available_guardian_1.id),
             first_selection,
@@ -317,7 +320,7 @@ class TestDecryption(BaseTestCase):
         )
 
         compensation_1 = compute_compensated_decryption_share_for_selection(
-            available_guardian_2,
+            available_guardian_2._election_keys,
             missing_guardian.share_key(),
             missing_guardian.share_election_partial_key_backup(available_guardian_2.id),
             first_selection,
@@ -428,7 +431,7 @@ class TestDecryption(BaseTestCase):
         )
 
         result = compute_compensated_decryption_share_for_selection(
-            available_guardian,
+            available_guardian._election_keys,
             missing_guardian.share_key(),
             incorrect_backup,
             first_selection,
@@ -455,7 +458,7 @@ class TestDecryption(BaseTestCase):
         # Act
         compensated_shares: Dict[GuardianId, CompensatedDecryptionShare] = {
             available_guardian.id: compute_compensated_decryption_share(
-                available_guardian.share_key(),
+                available_guardian._election_keys,
                 missing_guardian_key,
                 missing_guardian_backups[available_guardian.id],
                 tally,
@@ -495,7 +498,7 @@ class TestDecryption(BaseTestCase):
         compensated_ballot_shares: Dict[GuardianId, CompensatedDecryptionShare] = {}
         for available_guardian in available_guardians:
             compensated_share = compute_compensated_decryption_share_for_ballot(
-                available_guardian.share_key(),
+                available_guardian._election_keys,
                 missing_guardian_key,
                 missing_guardian_backups[available_guardian.id],
                 ballot,
@@ -539,7 +542,7 @@ class TestDecryption(BaseTestCase):
         compensated_shares: Dict[GuardianId, CompensatedDecryptionShare] = {
             available_guardian.id: get_optional(
                 compute_compensated_decryption_share_for_ballot(
-                    available_guardian.share_key(),
+                    available_guardian._election_keys,
                     missing_guardian_key,
                     missing_guardian_backups[available_guardian.id],
                     ballot,

@@ -239,7 +239,8 @@ def generate_election_partial_key_backup(
 def get_backup_seed(
     sender_guardian_id: str, receiver_guardian_id: str, sequence_order: int
 ) -> ElementModQ:
-    return hash_elems(sender_guardian_id, receiver_guardian_id, sequence_order)
+    # todo: add back in real seed like `return hash_elems(sender_guardian_id, receiver_guardian_id, sequence_order)`
+    return ElementModQ(1)
 
 
 def verify_election_partial_key_backup(

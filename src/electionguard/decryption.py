@@ -489,6 +489,8 @@ def compensate_decrypt(
     bytes_optional = missing_guardian_backup.encrypted_coordinate.decrypt(
         guardian_keys.key_pair.secret_key, encryption_seed
     )
+    if bytes_optional is None:
+        return None
     coordinate_data: CoordinateData = CoordinateData.from_bytes(
         get_optional(bytes_optional)
     )
@@ -612,7 +614,7 @@ def reconstruct_decryption_contest(
     lagrange_coefficients: Dict[GuardianId, ElementModQ],
 ) -> CiphertextDecryptionContest:
     """
-    Recontruct the missing Decryption Share for a missing guardian
+    Reconstruct the missing Decryption Share for a missing guardian
     from the collection of compensated decryption shares
 
     :param missing_guardian_id: The guardian id for the missing guardian
