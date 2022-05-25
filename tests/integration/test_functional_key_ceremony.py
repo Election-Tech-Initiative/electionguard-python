@@ -145,6 +145,7 @@ class TestKeyCeremony(BaseTestCase):
                 verifier_id,
                 backup,
                 owner_public_key,
+                self.election_key_pairs[verifier_id],
             )
             verifications.append(verification)
         self.sent_verifications[verifier_id] = verifications
