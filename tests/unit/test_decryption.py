@@ -36,7 +36,6 @@ from electionguard.encrypt import EncryptionMediator
 from electionguard.guardian import Guardian
 from electionguard.key_ceremony import (
     CeremonyDetails,
-    ElectionJointKey,
     ElectionKeyPair,
 )
 from electionguard.key_ceremony_mediator import KeyCeremonyMediator
