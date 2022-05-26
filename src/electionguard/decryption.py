@@ -110,11 +110,13 @@ def compute_compensated_decryption_share(
 
     contests: Dict[ContestId, CiphertextCompensatedDecryptionContest] = {}
 
+    missing_guardian_coordinate = decrypt_backup(missing_guardian_backup, key_pair)
+    present_guardian_key = key_pair.share()
     for contest in tally.contests.values():
         contest_share = compute_compensated_decryption_share_for_contest(
-            key_pair,
+            get_optional(missing_guardian_coordinate),
+            present_guardian_key,
             missing_guardian_key,
-            missing_guardian_backup,
             CiphertextContest(
                 contest.object_id,
                 contest.sequence_order,
@@ -200,11 +202,13 @@ def compute_compensated_decryption_share_for_ballot(
     """
     contests: Dict[ContestId, CiphertextCompensatedDecryptionContest] = {}
 
+    missing_guardian_coordinate = decrypt_backup(missing_guardian_backup, key_pair)
+    present_guardian_key = key_pair.share()
     for contest in ballot.contests:
         contest_share = compute_compensated_decryption_share_for_contest(
-            key_pair,
+            get_optional(missing_guardian_coordinate),
+            present_guardian_key,
             missing_guardian_key,
-            missing_guardian_backup,
             CiphertextContest(
                 contest.object_id,
                 contest.sequence_order,
@@ -267,9 +271,9 @@ def compute_decryption_share_for_contest(
 
 
 def compute_compensated_decryption_share_for_contest(
-    key_pair: ElectionKeyPair,
+    missing_guardian_coordinate: ElementModQ,
+    present_guardian_key: ElectionPublicKey,
     missing_guardian_key: ElectionPublicKey,
-    missing_guardian_backup: ElectionPartialKeyBackup,
     contest: CiphertextContest,
     context: CiphertextElectionContext,
     scheduler: Optional[Scheduler] = None,
@@ -277,9 +281,9 @@ def compute_compensated_decryption_share_for_contest(
     """
     Compute the compensated decryption share for a single contest
 
+    :param missing_guardian_coordinate: Election partial key backup of the missing guardian
     :param guardian_key: The election public key of the available guardian that will partially decrypt the selection
     :param missing_guardian_key: Election public key of the guardian that is missing
-    :param missing_guardian_backup: Election partial key backup of the missing guardian
     :param contest: The specific contest to decrypt
     :param context: The public election encryption context
     :return: a `CiphertextCompensatedDecryptionContest` or `None` if there is an error
@@ -288,10 +292,6 @@ def compute_compensated_decryption_share_for_contest(
         scheduler = Scheduler()
 
     selections: Dict[SelectionId, CiphertextCompensatedDecryptionSelection] = {}
-
-    missing_guardian_coordinate = decrypt_backup(missing_guardian_backup, key_pair)
-
-    present_guardian_key = key_pair.share()
 
     selection_decryptions: List[
         Optional[CiphertextCompensatedDecryptionSelection]
@@ -317,7 +317,7 @@ def compute_compensated_decryption_share_for_contest(
 
     return CiphertextCompensatedDecryptionContest(
         contest.object_id,
-        key_pair.owner_id,
+        present_guardian_key.owner_id,
         missing_guardian_key.owner_id,
         contest.description_hash,
         selections,
