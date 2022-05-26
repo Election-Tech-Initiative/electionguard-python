@@ -289,15 +289,19 @@ def compute_compensated_decryption_share_for_contest(
 
     selections: Dict[SelectionId, CiphertextCompensatedDecryptionSelection] = {}
 
+    missing_guardian_coordinate = decrypt_backup(missing_guardian_backup, key_pair)
+
+    present_guardian_key = key_pair.share()
+
     selection_decryptions: List[
         Optional[CiphertextCompensatedDecryptionSelection]
     ] = scheduler.schedule(
         compute_compensated_decryption_share_for_selection,
         [
             (
-                key_pair,
+                missing_guardian_coordinate,
+                present_guardian_key,
                 missing_guardian_key,
-                missing_guardian_backup,
                 selection,
                 context,
             )
@@ -358,9 +362,9 @@ def compute_decryption_share_for_selection(
 
 
 def compute_compensated_decryption_share_for_selection(
-    key_pair: ElectionKeyPair,
+    missing_guardian_backup: ElementModQ,
+    available_guardian_key: ElectionPublicKey,
     missing_guardian_key: ElectionPublicKey,
-    missing_guardian_backup: ElectionPartialKeyBackup,
     selection: CiphertextSelection,
     context: CiphertextElectionContext,
 ) -> Optional[CiphertextCompensatedDecryptionSelection]:
@@ -368,26 +372,24 @@ def compute_compensated_decryption_share_for_selection(
     Compute a compensated decryption share for a specific selection using the
     available guardian's share of the missing guardian's private key polynomial
 
-    :param guardian_key: The election public key of the available guardian that will partially decrypt the selection
+    :param missing_guardian_backup: The coordinate aka backup of a missing guardian
+    :param available_guardian_key: Election public key of the guardian that is present
     :param missing_guardian_key: Election public key of the guardian that is missing
-    :param missing_guardian_backup: Election partial key backup of the missing guardian
     :param selection: The specific selection to decrypt
     :param context: The public election encryption context
     :return: a `CiphertextCompensatedDecryptionSelection` or `None` if there is an error
     """
 
-    backup = decrypt_backup(missing_guardian_backup, key_pair)
     compensated = decrypt_with_threshold(
-        get_optional(backup),
+        missing_guardian_backup,
         selection.ciphertext,
         context.crypto_extended_base_hash,
     )
 
-    guardian_key = key_pair.share()
     if compensated is None:
         log_warning(
             (
-                f"compute compensated decryption share failed for {guardian_key.owner_id} "
+                f"compute compensated decryption share failed for {available_guardian_key.owner_id} "
                 f"missing: {missing_guardian_key.owner_id} {selection.object_id}"
             )
         )
@@ -396,7 +398,7 @@ def compute_compensated_decryption_share_for_selection(
     (decryption, proof) = compensated
 
     recovery_public_key = compute_recovery_public_key(
-        guardian_key, missing_guardian_key
+        available_guardian_key, missing_guardian_key
     )
 
     if proof.is_valid(
@@ -407,7 +409,7 @@ def compute_compensated_decryption_share_for_selection(
     ):
         share = CiphertextCompensatedDecryptionSelection(
             selection.object_id,
-            guardian_key.owner_id,
+            available_guardian_key.owner_id,
             missing_guardian_key.owner_id,
             decryption,
             recovery_public_key,
@@ -416,7 +418,7 @@ def compute_compensated_decryption_share_for_selection(
         return share
     log_warning(
         (
-            f"compute compensated decryption share proof failed for {guardian_key.owner_id} "
+            f"compute compensated decryption share proof failed for {available_guardian_key.owner_id} "
             f"missing: {missing_guardian_key.owner_id} {selection.object_id}"
         )
     )
@@ -464,10 +466,10 @@ def decrypt_backup(
     key_pair: ElectionKeyPair,
 ) -> Optional[ElementModQ]:
     """
-    Decrypt and then compute a compensated partial decryption of an elgamal encryption
-    on behalf of the missing guardian
+    Decrypts a compensated partial decryption of an elgamal encryption
+    on behalf of a missing guardian
 
-    :param guardian_backup: Missing guardians backup
+    :param guardian_backup: Missing guardian's backup
     :param key_pair: The present guardian's key pair that will be used to decrypt the backup
     :return: a `Tuple[ElementModP, ChaumPedersenProof]` of the decryption and its proof
     """

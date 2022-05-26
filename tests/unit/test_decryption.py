@@ -310,18 +310,30 @@ class TestDecryption(BaseTestCase):
         self.assertIsNotNone(share_1)
 
         # compute compensations shares for the missing guardian
+        g3s_encrypted_backup_for_g1 = (
+            missing_guardian.share_election_partial_key_backup(available_guardian_1.id)
+        )
+        g1s_copy_of_g3s_coordinate = available_guardian_1.decrypt_backup(
+            g3s_encrypted_backup_for_g1
+        )
         compensation_0 = compute_compensated_decryption_share_for_selection(
-            available_guardian_1._election_keys,
+            g1s_copy_of_g3s_coordinate,
+            available_guardian_1.share_key(),
             missing_guardian.share_key(),
-            missing_guardian.share_election_partial_key_backup(available_guardian_1.id),
             first_selection,
             self.context,
         )
 
+        g3s_encrypted_backup_for_g2 = (
+            missing_guardian.share_election_partial_key_backup(available_guardian_2.id)
+        )
+        g2s_copy_of_g3s_coordinate = available_guardian_2.decrypt_backup(
+            g3s_encrypted_backup_for_g2
+        )
         compensation_1 = compute_compensated_decryption_share_for_selection(
-            available_guardian_2._election_keys,
+            g2s_copy_of_g3s_coordinate,
+            available_guardian_2.share_key(),
             missing_guardian.share_key(),
-            missing_guardian.share_election_partial_key_backup(available_guardian_2.id),
             first_selection,
             self.context,
         )
@@ -425,14 +437,16 @@ class TestDecryption(BaseTestCase):
 
         # Act
         # Get backup for missing guardian instead of one sent by guardian
-        incorrect_backup = available_guardian.share_election_partial_key_backup(
-            missing_guardian.id
+        incorrect_backup_encrypted = (
+            available_guardian.share_election_partial_key_backup(missing_guardian.id)
         )
-
+        incorrect_backup_decrypted = missing_guardian.decrypt_backup(
+            incorrect_backup_encrypted
+        )
         result = compute_compensated_decryption_share_for_selection(
-            available_guardian._election_keys,
+            incorrect_backup_decrypted,
+            available_guardian.share_key(),
             missing_guardian.share_key(),
-            incorrect_backup,
             first_selection,
             self.context,
         )

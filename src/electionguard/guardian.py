@@ -3,12 +3,15 @@
 from dataclasses import dataclass
 from typing import Dict, List, Optional, TypeVar
 
+from electionguard.utils import get_optional
+
 from .ballot import SubmittedBallot
 from .decryption import (
     compute_compensated_decryption_share,
     compute_compensated_decryption_share_for_ballot,
     compute_decryption_share,
     compute_decryption_share_for_ballot,
+    decrypt_backup,
 )
 from .decryption_share import CompensatedDecryptionShare, DecryptionShare
 from .election import CiphertextElectionContext
@@ -248,6 +251,17 @@ class Guardian:
         :param quorum: Quorum of guardians required to decrypt
         """
         self.ceremony_details = CeremonyDetails(number_of_guardians, quorum)
+
+    def decrypt_backup(self, backup: ElectionPartialKeyBackup) -> Optional[ElementModQ]:
+        """
+        Decrypts a compensated partial decryption of an elgamal encryption
+        on behalf of a missing guardian.
+
+        :param backup: An encrypted backup from a missing guardian.
+        :return: A decrypted backup.
+        """
+
+        return decrypt_backup(get_optional(backup), self._election_keys)
 
     # Public Keys
     def share_key(self) -> ElectionPublicKey:
