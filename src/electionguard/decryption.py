@@ -376,11 +376,11 @@ def compute_compensated_decryption_share_for_selection(
     :return: a `CiphertextCompensatedDecryptionSelection` or `None` if there is an error
     """
 
-    compensated = compensate_decrypt(
-        missing_guardian_backup,
+    backup = decrypt_backup(missing_guardian_backup, key_pair)
+    compensated = decrypt_with_threshold(
+        get_optional(backup),
         selection.ciphertext,
         context.crypto_extended_base_hash,
-        key_pair,
     )
 
     guardian_key = key_pair.share()
@@ -459,30 +459,23 @@ def partially_decrypt(
     return (partial_decryption, proof)
 
 
-def compensate_decrypt(
-    missing_guardian_backup: ElectionPartialKeyBackup,
-    ciphertext: ElGamalCiphertext,
-    extended_base_hash: ElementModQ,
+def decrypt_backup(
+    guardian_backup: ElectionPartialKeyBackup,
     key_pair: ElectionKeyPair,
-    nonce_seed: ElementModQ = None,
-) -> Optional[Tuple[ElementModP, ChaumPedersenProof]]:
+) -> Optional[ElementModQ]:
     """
     Decrypt and then compute a compensated partial decryption of an elgamal encryption
     on behalf of the missing guardian
 
-    :param missing_guardian_backup: Missing guardians backup
-    :param ciphertext: the `ElGamalCiphertext` that will be partially decrypted
-    :param extended_base_hash: the extended base hash of the election that
-                                was used to generate the ElGamal Ciphertext
-    :param nonce_seed: an optional value used to generate the `ChaumPedersenProof`
-                        if no value is provided, a random number will be used.
+    :param guardian_backup: Missing guardians backup
+    :param key_pair: The present guardian's key pair that will be used to decrypt the backup
     :return: a `Tuple[ElementModP, ChaumPedersenProof]` of the decryption and its proof
     """
     encryption_seed = get_backup_seed(
         key_pair.owner_id,
         key_pair.sequence_order,
     )
-    bytes_optional = missing_guardian_backup.encrypted_coordinate.decrypt(
+    bytes_optional = guardian_backup.encrypted_coordinate.decrypt(
         key_pair.key_pair.secret_key, encryption_seed
     )
     if bytes_optional is None:
@@ -490,9 +483,7 @@ def compensate_decrypt(
     coordinate_data: CoordinateData = CoordinateData.from_bytes(
         get_optional(bytes_optional)
     )
-    return decrypt_with_threshold(
-        coordinate_data.coordinate, ciphertext, extended_base_hash, nonce_seed
-    )
+    return coordinate_data.coordinate
 
 
 def decrypt_with_threshold(
