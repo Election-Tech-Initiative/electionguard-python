@@ -467,7 +467,7 @@ def compensate_decrypt(
     nonce_seed: ElementModQ = None,
 ) -> Optional[Tuple[ElementModP, ChaumPedersenProof]]:
     """
-    Compute a compensated partial decryption of an elgamal encryption
+    Decrypt and then compute a compensated partial decryption of an elgamal encryption
     on behalf of the missing guardian
 
     :param missing_guardian_backup: Missing guardians backup
@@ -478,9 +478,6 @@ def compensate_decrypt(
                         if no value is provided, a random number will be used.
     :return: a `Tuple[ElementModP, ChaumPedersenProof]` of the decryption and its proof
     """
-    if nonce_seed is None:
-        nonce_seed = rand_q()
-
     encryption_seed = get_backup_seed(
         key_pair.owner_id,
         key_pair.sequence_order,
@@ -493,15 +490,40 @@ def compensate_decrypt(
     coordinate_data: CoordinateData = CoordinateData.from_bytes(
         get_optional(bytes_optional)
     )
-    partial_secret_key = coordinate_data.coordinate
+    return decrypt_with_threshold(
+        coordinate_data.coordinate, ciphertext, extended_base_hash, nonce_seed
+    )
+
+
+def decrypt_with_threshold(
+    coordinate: ElementModQ,
+    ciphertext: ElGamalCiphertext,
+    extended_base_hash: ElementModQ,
+    nonce_seed: ElementModQ = None,
+) -> Optional[Tuple[ElementModP, ChaumPedersenProof]]:
+    """
+    Compute a compensated partial decryption of an elgamal encryption
+    given a coordinate from a missing guardian.
+
+    :param coordinate: The coordinate aka backup provided to a present guardian from
+                        a missing guardian
+    :param ciphertext: the `ElGamalCiphertext` that will be partially decrypted
+    :param extended_base_hash: the extended base hash of the election that
+                                was used to generate the ElGamal Ciphertext
+    :param nonce_seed: an optional value used to generate the `ChaumPedersenProof`
+                        if no value is provided, a random number will be used.
+    :return: a `Tuple[ElementModP, ChaumPedersenProof]` of the decryption and its proof
+    """
+    if nonce_seed is None:
+        nonce_seed = rand_q()
 
     # 𝑀_{𝑖,l} = 𝐴^P𝑖_{l}
-    partial_decryption = ciphertext.partial_decrypt(partial_secret_key)
+    partial_decryption = ciphertext.partial_decrypt(coordinate)
 
     # 𝑀_{𝑖,l} = 𝐴^𝑠𝑖 mod 𝑝 and 𝐾𝑖 = 𝑔^𝑠𝑖 mod 𝑝
     proof = make_chaum_pedersen(
         ciphertext,
-        partial_secret_key,
+        coordinate,
         partial_decryption,
         nonce_seed,
         extended_base_hash,
