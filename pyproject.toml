@@ -43,6 +43,7 @@ click = "^8.1.0"
 dacite = "^1.6.0"
 python-dateutil = "^2.8.2"
 types-python-dateutil = "^2.8.14"
+Eel = {extras = ["jinja2"], version = "^0.14.0"}
 
 [tool.poetry.dev-dependencies]
 atomicwrites = "*"
@@ -67,6 +68,7 @@ typish = '*'
 
 [tool.poetry.scripts]
 eg = 'electionguard_cli.start:cli'
+egui = 'electionguard_gui.start:run'
 
 [tool.black]
 target-version = ['py39']
