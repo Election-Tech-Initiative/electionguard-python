@@ -540,11 +540,12 @@ class Guardian:
         if missing_guardian_key is None or missing_guardian_backup is None:
             return shares
 
+        missing_guardian_coordinate = self.decrypt_backup(missing_guardian_backup)
         for ballot in ballots:
             share = compute_compensated_decryption_share_for_ballot(
-                self._election_keys,
+                get_optional(missing_guardian_coordinate),
                 missing_guardian_key,
-                missing_guardian_backup,
+                self.share_key(),
                 ballot,
                 context,
             )
