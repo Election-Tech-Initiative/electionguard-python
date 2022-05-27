@@ -1,20 +1,64 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
   <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script type="text/javascript" src="/eel.js"></script>
     <script type="text/javascript">
-      // eel.expose(say_hello_js);               // Expose this function to Python
-      // function say_hello_js(x) {
-      //     console.log("Hello from " + x);
-      // }
-
-      // say_hello_js("Javascript World!");
-      eel.say_hello_py("Javascript World!"); // Call a Python function
+      function say_hello_js(x) {
+        const name = document.getElementById("name").value;
+        eel.say_hello_py(name);
+      }
     </script>
+    <link href="css/bootstrap.min.css" rel="stylesheet" />
+    <link href="css/bootstrap-overrides.css" rel="stylesheet" />
   </head>
   <body>
-    <h1>What's Your Name?</h1>
-    <input type="file" value="Bob" />
-    <button>Submit</button>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="#">
+          <img
+            src="images/electionguard-icon.svg"
+            height="30"
+            class="d-inline-block align-text-top"
+          />
+          ElectionGuard
+        </a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarSupportedContent"
+          aria-controls="navbarSupportedContent"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <div class="navbar-nav">
+            <a class="nav-link active" aria-current="page" href="#">Home</a>
+            <a class="nav-link" href="page2.html">Page 2</a>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container">
+      <div class="row g-3 align-items-center">
+        <div class="col-12">
+          <h1>What's Your Name?</h1>
+        </div>
+        <div class="col-auto">
+          <input type="text" value="Bob" id="name" class="form-control" />
+        </div>
+        <div class="col-auto">
+          <button onclick="say_hello_js()" class="btn btn-primary">
+            Submit
+          </button>
+        </div>
+      </div>
+    </div>
+    <script src="js/bootstrap.bundle.min.js"></script>
   </body>
 </html>
