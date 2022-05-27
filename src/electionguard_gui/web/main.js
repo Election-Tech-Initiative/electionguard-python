@@ -11,7 +11,13 @@ function setupElection(event) {
     const guardianCount = document.getElementById("guardianCount").value;
     const quorum = document.getElementById("quorum").value;
     const manifest = document.getElementById("manifest").files[0];
-    eel.setup_election(guardianCount, quorum, manifest);
+    var reader = new FileReader();
+    reader.onloadend = (e) => {
+      const manifestContent = e.target.result;
+      console.log(manifestContent);
+      eel.setup_election(guardianCount, quorum, manifestContent);
+    };
+    reader.readAsText(manifest);
   }
   form.classList.add("was-validated");
 }
