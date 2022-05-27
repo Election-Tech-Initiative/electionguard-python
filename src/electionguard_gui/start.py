@@ -2,11 +2,12 @@ import eel
 
 
 @eel.expose
-def say_hello_py(x: str) -> None:
-    print(f"Hello from {x}")
+def setup_election(guardianCount: int, quorum: int, manifest: str) -> None:
+    print(
+        f"Setting up election with guardianCount: {guardianCount}, quorum: {quorum}, manifest: {manifest}"
+    )
 
 
 def run() -> None:
-    say_hello_py("Python World!")
     eel.init("src/electionguard_gui/web")
     eel.start("main.html")

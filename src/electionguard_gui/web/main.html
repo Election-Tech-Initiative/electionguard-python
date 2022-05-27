@@ -4,12 +4,6 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script type="text/javascript" src="/eel.js"></script>
-    <script type="text/javascript">
-      function say_hello_js(x) {
-        const name = document.getElementById("name").value;
-        eel.say_hello_py(name);
-      }
-    </script>
     <link href="css/bootstrap.min.css" rel="stylesheet" />
     <link href="css/bootstrap-overrides.css" rel="stylesheet" />
   </head>
@@ -44,21 +38,43 @@
       </div>
     </nav>
 
-    <div class="container">
-      <div class="row g-3 align-items-center">
-        <div class="col-12">
-          <h1>What's Your Name?</h1>
+    <div class="container mt-3">
+      <form id="mainForm" class="needs-validation" novalidate>
+        <div class="row g-3 align-items-center">
+          <div class="col-12">
+            <h1>Setup Election</h1>
+          </div>
+          <div class="col-sm-6">
+            <label for="guardianCount" class="form-label"
+              >Number of Guardians</label
+            >
+            <input
+              type="number"
+              class="form-control"
+              id="guardianCount"
+              required
+            />
+            <div class="invalid-feedback">
+              Please provide a valid number of guardians.
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <label for="quorum" class="form-label">Quorum</label>
+            <input type="number" class="form-control" id="quorum" required />
+            <div class="invalid-feedback">Please provide a valid quorum.</div>
+          </div>
+          <div class="col-12">
+            <label for="manifest" class="form-label">Manifest</label>
+            <input type="file" id="manifest" class="form-control" required />
+            <div class="invalid-feedback">Please provide a valid manifest.</div>
+          </div>
+          <div class="col-auto">
+            <button type="submit" class="btn btn-primary">Submit</button>
+          </div>
         </div>
-        <div class="col-auto">
-          <input type="text" value="Bob" id="name" class="form-control" />
-        </div>
-        <div class="col-auto">
-          <button onclick="say_hello_js()" class="btn btn-primary">
-            Submit
-          </button>
-        </div>
-      </div>
+      </form>
     </div>
     <script src="js/bootstrap.bundle.min.js"></script>
+    <script src="main.js"></script>
   </body>
 </html>
