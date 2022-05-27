@@ -230,10 +230,11 @@ class TestDecryption(BaseTestCase):
         missing_guardian_backup = missing_guardian._backups_to_share.get(guardian.id)
 
         # Act
+        missing_guardian_coordinate = guardian.decrypt_backup(missing_guardian_backup)
         share = compute_compensated_decryption_share(
-            guardian._election_keys,
+            missing_guardian_coordinate,
+            guardian.share_key(),
             missing_guardian_public_key,
-            missing_guardian_backup,
             self.ciphertext_tally,
             self.context,
         )
@@ -471,9 +472,11 @@ class TestDecryption(BaseTestCase):
         # Act
         compensated_shares: Dict[GuardianId, CompensatedDecryptionShare] = {
             available_guardian.id: compute_compensated_decryption_share(
-                available_guardian._election_keys,
+                available_guardian.decrypt_backup(
+                    missing_guardian_backups[available_guardian.id]
+                ),
+                available_guardian.share_key(),
                 missing_guardian_key,
-                missing_guardian_backups[available_guardian.id],
                 tally,
                 self.context,
             )

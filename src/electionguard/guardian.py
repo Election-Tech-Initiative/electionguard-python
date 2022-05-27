@@ -505,10 +505,11 @@ class Guardian:
         )
         if missing_guardian_key is None or missing_guardian_backup is None:
             return None
+        missing_guardian_coordinate = self.decrypt_backup(missing_guardian_backup)
         return compute_compensated_decryption_share(
-            self._election_keys,
+            get_optional(missing_guardian_coordinate),
+            self.share_key(),
             missing_guardian_key,
-            missing_guardian_backup,
             tally,
             context,
         )

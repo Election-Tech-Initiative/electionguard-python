@@ -88,9 +88,9 @@ def compute_decryption_share(
 
 
 def compute_compensated_decryption_share(
-    key_pair: ElectionKeyPair,
+    missing_guardian_coordinate: ElementModQ,
+    present_guardian_key: ElectionPublicKey,
     missing_guardian_key: ElectionPublicKey,
-    missing_guardian_backup: ElectionPartialKeyBackup,
     tally: CiphertextTally,
     context: CiphertextElectionContext,
     scheduler: Optional[Scheduler] = None,
@@ -110,11 +110,9 @@ def compute_compensated_decryption_share(
 
     contests: Dict[ContestId, CiphertextCompensatedDecryptionContest] = {}
 
-    missing_guardian_coordinate = decrypt_backup(missing_guardian_backup, key_pair)
-    present_guardian_key = key_pair.share()
     for contest in tally.contests.values():
         contest_share = compute_compensated_decryption_share_for_contest(
-            get_optional(missing_guardian_coordinate),
+            missing_guardian_coordinate,
             present_guardian_key,
             missing_guardian_key,
             CiphertextContest(
@@ -132,9 +130,9 @@ def compute_compensated_decryption_share(
 
     return CompensatedDecryptionShare(
         tally.object_id,
-        key_pair.owner_id,
+        present_guardian_key.owner_id,
         missing_guardian_key.owner_id,
-        key_pair.key_pair.public_key,
+        present_guardian_key.key,
         contests,
     )
 
