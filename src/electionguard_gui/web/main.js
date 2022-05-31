@@ -19,8 +19,21 @@ function setupElection(event) {
     var reader = new FileReader();
     reader.onloadend = (e) => {
       const manifestContent = e.target.result;
-      console.log(manifestContent);
-      eel.setup_election(guardianCount, quorum, manifestContent);
+      const onSuccess = eel.setup_election(
+        guardianCount,
+        quorum,
+        manifestContent
+      );
+      console.log("setting up election");
+      onSuccess((manifest_raw) => {
+        var a = document.createElement("a");
+        a.href = window.URL.createObjectURL(
+          new Blob([manifest_raw], { type: "text/plain" })
+        );
+        a.download = "context.json";
+        a.click();
+        console.log("done!", r);
+      });
     };
     reader.readAsText(manifest);
   }
