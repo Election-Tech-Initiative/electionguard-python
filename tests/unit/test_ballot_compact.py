@@ -1,11 +1,10 @@
 from tests.base_test_case import BaseTestCase
 
 from electionguard.ballot import (
-    BallotBoxState,
     PlaintextBallot,
     SubmittedBallot,
-    from_ciphertext_ballot,
 )
+from electionguard.ballot_box import cast_ballot
 from electionguard.ballot_compact import (
     compress_plaintext_ballot,
     compress_submitted_ballot,
@@ -15,7 +14,7 @@ from electionguard.ballot_compact import (
 from electionguard.election import CiphertextElectionContext
 from electionguard.elgamal import elgamal_keypair_from_secret
 from electionguard.encrypt import encrypt_ballot
-from electionguard.group import ElementModQ, int_to_q
+from electionguard.group import TWO_MOD_Q, ElementModQ
 from electionguard.manifest import InternalManifest
 
 from electionguard_tools.factories.election_factory import ElectionFactory
@@ -33,7 +32,7 @@ class TestCompactBallot(BaseTestCase):
     def setUp(self) -> None:
         # Election setup
         election_factory = ElectionFactory()
-        keypair = elgamal_keypair_from_secret(int_to_q(2))
+        keypair = elgamal_keypair_from_secret(TWO_MOD_Q)
         manifest = election_factory.get_fake_manifest()
         (
             self.internal_manifest,
@@ -47,9 +46,7 @@ class TestCompactBallot(BaseTestCase):
             self.plaintext_ballot, self.internal_manifest, self.context, device_hash
         )
         self.ballot_nonce = ciphertext_ballot.nonce
-        self.submitted_ballot = from_ciphertext_ballot(
-            ciphertext_ballot, BallotBoxState.CAST
-        )
+        self.submitted_ballot = cast_ballot(ciphertext_ballot)
 
     def test_compact_plaintext_ballot(self) -> None:
         # Act

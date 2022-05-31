@@ -1,154 +1,209 @@
 from tests.base_test_case import BaseTestCase
 
 from electionguard.ballot import BallotBoxState
-from electionguard.data_store import DataStore
-
 from electionguard.ballot_box import (
     BallotBox,
-    accept_ballot,
+    submit_ballot_to_box,
+    cast_ballot,
+    spoil_ballot,
+    submit_ballot,
 )
-from electionguard.ballot_validator import ballot_is_valid_for_election
-from electionguard.constants import get_small_prime
+from electionguard.data_store import DataStore
 from electionguard.elgamal import elgamal_keypair_from_secret
 from electionguard.encrypt import encrypt_ballot
-from electionguard.group import int_to_q
+from electionguard.group import TWO_MOD_Q
+from electionguard.utils import get_optional
 
-import electionguard_tools.factories.ballot_factory as BallotFactory
 import electionguard_tools.factories.election_factory as ElectionFactory
-
-election_factory = ElectionFactory.ElectionFactory()
-ballot_factory = BallotFactory.BallotFactory()
-
-SEED = election_factory.get_encryption_device().get_hash()
 
 
 class TestBallotBox(BaseTestCase):
     """Ballot box tests"""
 
-    def test_ballot_box_cast_ballot(self):
-        print(get_small_prime())
-        # Arrange
-        keypair = elgamal_keypair_from_secret(int_to_q(2))
+    def setUp(self) -> None:
+        """Setup ballot box tests by creating a mock ballot, manifest, and encryption context."""
+
+        election_factory = ElectionFactory.ElectionFactory()
+        self.seed = election_factory.get_encryption_device().get_hash()
+        keypair = get_optional(elgamal_keypair_from_secret(TWO_MOD_Q))
         manifest = election_factory.get_fake_manifest()
-        internal_manifest, context = election_factory.get_fake_ciphertext_election(
-            manifest, keypair.public_key
+        (
+            self.internal_manifest,
+            self.context,
+        ) = election_factory.get_fake_ciphertext_election(manifest, keypair.public_key)
+        self.ballot = election_factory.get_fake_ballot(manifest)
+
+    def test_ballot_box_cast_ballot(self) -> None:
+        # Arrange
+        encrypted_ballot = get_optional(
+            encrypt_ballot(
+                self.ballot,
+                self.internal_manifest,
+                self.context,
+                self.seed,
+            )
         )
-        store = DataStore()
-        source = election_factory.get_fake_ballot(internal_manifest)
-        self.assertTrue(source.is_valid(internal_manifest.ballot_styles[0].object_id))
+        store: DataStore = DataStore()
 
         # Act
-        data = encrypt_ballot(
-            source, internal_manifest, context, SEED, should_verify_proofs=True
-        )
-        self.assertTrue(ballot_is_valid_for_election(data, internal_manifest, context))
-        subject = BallotBox(internal_manifest, context, store)
-        result = subject.cast(data)
+        ballot_box = BallotBox(self.internal_manifest, self.context, store)
+        submitted_ballot = ballot_box.cast(encrypted_ballot)
 
         # Assert
-        expected = store.get(source.object_id)
-        self.assertEqual(expected.state, BallotBoxState.CAST)
-        self.assertEqual(result.state, BallotBoxState.CAST)
-        self.assertEqual(expected.object_id, result.object_id)
+        # Test returned ballot
+        self.assertIsNotNone(submitted_ballot)
+        self.assertEqual(submitted_ballot.state, BallotBoxState.CAST)
+
+        # Test ballot in box
+        ballot_in_box = store.get(encrypted_ballot.object_id)
+        self.assertIsNotNone(ballot_in_box)
+        self.assertEqual(ballot_in_box.state, BallotBoxState.CAST)
+        self.assertEqual(ballot_in_box.object_id, submitted_ballot.object_id)
 
         # Test failure modes
-        self.assertIsNone(subject.cast(data))  # cannot cast again
-        self.assertIsNone(subject.spoil(data))  # cannot spoil a ballot already cast
+        self.assertIsNone(ballot_box.cast(encrypted_ballot))  # cannot cast again
+        self.assertIsNone(
+            ballot_box.spoil(encrypted_ballot)
+        )  # cannot spoil a ballot already cast
 
-    def test_ballot_box_spoil_ballot(self):
+    def test_ballot_box_spoil_ballot(self) -> None:
         # Arrange
-        keypair = elgamal_keypair_from_secret(int_to_q(2))
-        manifest = election_factory.get_fake_manifest()
-        internal_manifest, context = election_factory.get_fake_ciphertext_election(
-            manifest, keypair.public_key
+        encrypted_ballot = get_optional(
+            encrypt_ballot(
+                self.ballot,
+                self.internal_manifest,
+                self.context,
+                self.seed,
+            )
         )
-        store = DataStore()
-        source = election_factory.get_fake_ballot(internal_manifest)
-        self.assertTrue(source.is_valid(internal_manifest.ballot_styles[0].object_id))
+        store: DataStore = DataStore()
 
         # Act
-        data = encrypt_ballot(
-            source, internal_manifest, context, SEED, should_verify_proofs=True
-        )
-        subject = BallotBox(internal_manifest, context, store)
-        result = subject.spoil(data)
+        ballot_box = BallotBox(self.internal_manifest, self.context, store)
+        submitted_ballot = ballot_box.spoil(encrypted_ballot)
 
         # Assert
-        expected = store.get(source.object_id)
-        self.assertEqual(expected.state, BallotBoxState.SPOILED)
-        self.assertEqual(result.state, BallotBoxState.SPOILED)
-        self.assertEqual(expected.object_id, result.object_id)
+        # Test returned ballot
+        self.assertIsNotNone(submitted_ballot)
+        self.assertEqual(submitted_ballot.state, BallotBoxState.SPOILED)
+
+        # Test ballot in box
+        ballot_in_box = store.get(encrypted_ballot.object_id)
+        self.assertIsNotNone(ballot_in_box)
+        self.assertEqual(ballot_in_box.state, BallotBoxState.SPOILED)
+        self.assertEqual(ballot_in_box.object_id, submitted_ballot.object_id)
 
         # Test failure modes
-        self.assertIsNone(subject.spoil(data))  # cannot spoil again
-        self.assertIsNone(subject.cast(data))  # cannot cast a ballot alraedy spoiled
+        self.assertIsNone(ballot_box.cast(encrypted_ballot))  # cannot cast again
+        self.assertIsNone(
+            ballot_box.spoil(encrypted_ballot)
+        )  # cannot spoil a ballot already cast
 
-    def test_cast_ballot(self):
+    def test_submit_ballot_to_box(self) -> None:
         # Arrange
-        keypair = elgamal_keypair_from_secret(int_to_q(2))
-        manifest = election_factory.get_fake_manifest()
-        internal_manifest, context = election_factory.get_fake_ciphertext_election(
-            manifest, keypair.public_key
+        encrypted_ballot = get_optional(
+            encrypt_ballot(
+                self.ballot,
+                self.internal_manifest,
+                self.context,
+                self.seed,
+            )
         )
-        store = DataStore()
-        source = election_factory.get_fake_ballot(internal_manifest)
-        self.assertTrue(source.is_valid(internal_manifest.ballot_styles[0].object_id))
+        store: DataStore = DataStore()
 
         # Act
-        data = encrypt_ballot(
-            source, internal_manifest, context, SEED, should_verify_proofs=True
-        )
-        result = accept_ballot(
-            data, BallotBoxState.CAST, internal_manifest, context, store
+        submitted_ballot = submit_ballot_to_box(
+            encrypted_ballot,
+            BallotBoxState.CAST,
+            self.internal_manifest,
+            self.context,
+            store,
         )
 
         # Assert
-        expected = store.get(source.object_id)
-        self.assertEqual(expected.state, BallotBoxState.CAST)
-        self.assertEqual(result.state, BallotBoxState.CAST)
-        self.assertEqual(expected.object_id, result.object_id)
+        # Test returned ballot
+        self.assertIsNotNone(submitted_ballot)
+        self.assertEqual(submitted_ballot.state, BallotBoxState.CAST)
+
+        # Test ballot in box
+        ballot_in_box = store.get(encrypted_ballot.object_id)
+        self.assertIsNotNone(ballot_in_box)
+        self.assertEqual(ballot_in_box.state, BallotBoxState.CAST)
+        self.assertEqual(ballot_in_box.object_id, submitted_ballot.object_id)
 
         # Test failure modes
         self.assertIsNone(
-            accept_ballot(data, BallotBoxState.CAST, internal_manifest, context, store)
+            submit_ballot_to_box(
+                encrypted_ballot,
+                BallotBoxState.CAST,
+                self.internal_manifest,
+                self.context,
+                store,
+            )
         )  # cannot cast again
         self.assertIsNone(
-            accept_ballot(
-                data, BallotBoxState.SPOILED, internal_manifest, context, store
+            submit_ballot_to_box(
+                encrypted_ballot,
+                BallotBoxState.SPOILED,
+                self.internal_manifest,
+                self.context,
+                store,
             )
-        )  # cannot cspoil a ballot already cast
+        )  # cannot spoil a ballot already cast
 
-    def test_spoil_ballot(self):
+    def test_cast_ballot(self) -> None:
         # Arrange
-        keypair = elgamal_keypair_from_secret(int_to_q(2))
-        manifest = election_factory.get_fake_manifest()
-        internal_manifest, context = election_factory.get_fake_ciphertext_election(
-            manifest, keypair.public_key
+        encrypted_ballot = get_optional(
+            encrypt_ballot(
+                self.ballot,
+                self.internal_manifest,
+                self.context,
+                self.seed,
+            )
         )
-        store = DataStore()
-        source = election_factory.get_fake_ballot(internal_manifest)
-        self.assertTrue(source.is_valid(internal_manifest.ballot_styles[0].object_id))
 
         # Act
-        data = encrypt_ballot(
-            source, internal_manifest, context, SEED, should_verify_proofs=True
-        )
-        result = accept_ballot(
-            data, BallotBoxState.SPOILED, internal_manifest, context, store
-        )
+        submitted_ballot = cast_ballot(encrypted_ballot)
 
         # Assert
-        expected = store.get(source.object_id)
-        self.assertEqual(expected.state, BallotBoxState.SPOILED)
-        self.assertEqual(result.state, BallotBoxState.SPOILED)
-        self.assertEqual(expected.object_id, result.object_id)
+        self.assertIsNotNone(submitted_ballot)
+        self.assertEqual(submitted_ballot.state, BallotBoxState.CAST)
+        self.assertEqual(encrypted_ballot.object_id, submitted_ballot.object_id)
 
-        # Test failure modes
-        self.assertIsNone(
-            accept_ballot(
-                data, BallotBoxState.SPOILED, internal_manifest, context, store
+    def test_spoil_ballot(self) -> None:
+        # Arrange
+        encrypted_ballot = get_optional(
+            encrypt_ballot(
+                self.ballot,
+                self.internal_manifest,
+                self.context,
+                self.seed,
             )
-        )  # cannot spoil again
-        self.assertIsNone(
-            accept_ballot(data, BallotBoxState.CAST, internal_manifest, context, store)
-        )  # cannot cast a ballot already spoiled
+        )
+
+        # Act
+        submitted_ballot = spoil_ballot(encrypted_ballot)
+
+        # Assert
+        self.assertIsNotNone(submitted_ballot)
+        self.assertEqual(submitted_ballot.state, BallotBoxState.SPOILED)
+        self.assertEqual(encrypted_ballot.object_id, submitted_ballot.object_id)
+
+    def test_submit_ballot(self) -> None:
+        # Arrange
+        encrypted_ballot = get_optional(
+            encrypt_ballot(
+                self.ballot,
+                self.internal_manifest,
+                self.context,
+                self.seed,
+            )
+        )
+
+        # Act
+        submitted_ballot = submit_ballot(encrypted_ballot, BallotBoxState.CAST)
+
+        # Assert
+        self.assertIsNotNone(submitted_ballot)
+        self.assertEqual(submitted_ballot.state, BallotBoxState.CAST)
+        self.assertEqual(encrypted_ballot.object_id, submitted_ballot.object_id)

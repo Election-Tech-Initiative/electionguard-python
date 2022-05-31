@@ -6,7 +6,7 @@ from hypothesis.strategies import integers
 
 from tests.base_test_case import BaseTestCase
 
-from electionguard.ballot import BallotBoxState, from_ciphertext_ballot
+from electionguard.ballot_box import spoil_ballot
 from electionguard.data_store import DataStore
 from electionguard.decryption import compute_decryption_share
 from electionguard.decryption_share import DecryptionShare
@@ -153,7 +153,7 @@ class TestVerify(BaseTestCase):
             # add to the ballot store
             store.set(
                 encrypted_ballot.object_id,
-                from_ciphertext_ballot(encrypted_ballot, BallotBoxState.SPOILED),
+                spoil_ballot(encrypted_ballot),
             )
 
         # Generate Tally
