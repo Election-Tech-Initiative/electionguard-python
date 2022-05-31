@@ -261,13 +261,13 @@ class TestDecryptWithShares(BaseTestCase):
 
         compensated_shares = {
             available_guardian.id: compute_compensated_decryption_share_for_ballot(
-                available_guardian.share_key(),
-                missing_guardian.share_key(),
-                get_optional(
+                available_guardian.decrypt_backup(
                     available_guardian._guardian_election_partial_key_backups.get(
                         missing_guardian.id
                     )
                 ),
+                missing_guardian.share_key(),
+                available_guardian.share_key(),
                 encrypted_ballot,
                 self.context,
             )

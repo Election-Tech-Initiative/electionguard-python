@@ -3,12 +3,15 @@
 from dataclasses import dataclass
 from typing import Dict, List, Optional, TypeVar
 
+from electionguard.utils import get_optional
+
 from .ballot import SubmittedBallot
 from .decryption import (
     compute_compensated_decryption_share,
     compute_compensated_decryption_share_for_ballot,
     compute_decryption_share,
     compute_decryption_share_for_ballot,
+    decrypt_backup,
 )
 from .decryption_share import CompensatedDecryptionShare, DecryptionShare
 from .election import CiphertextElectionContext
@@ -249,6 +252,17 @@ class Guardian:
         """
         self.ceremony_details = CeremonyDetails(number_of_guardians, quorum)
 
+    def decrypt_backup(self, backup: ElectionPartialKeyBackup) -> Optional[ElementModQ]:
+        """
+        Decrypts a compensated partial decryption of an elgamal encryption
+        on behalf of a missing guardian.
+
+        :param backup: An encrypted backup from a missing guardian.
+        :return: A decrypted backup.
+        """
+
+        return decrypt_backup(get_optional(backup), self._election_keys)
+
     # Public Keys
     def share_key(self) -> ElectionPublicKey:
         """
@@ -281,16 +295,16 @@ class Guardian:
         """
         Generate all election partial key backups based on existing public keys.
         """
-        for guardian in self._guardian_election_public_keys.values():
+        for guardian_key in self._guardian_election_public_keys.values():
             backup = generate_election_partial_key_backup(
-                self.id, self._election_keys.polynomial, guardian
+                self.id, self._election_keys.polynomial, guardian_key
             )
             if backup is None:
                 log_warning(
                     f"guardian; {self.id} could not generate election partial key backups: failed to encrypt"
                 )
                 return False
-            self._backups_to_share[guardian.owner_id] = backup
+            self._backups_to_share[guardian_key.owner_id] = backup
 
         return True
 
@@ -351,7 +365,9 @@ class Guardian:
         public_key = self._guardian_election_public_keys.get(guardian_id)
         if backup is None or public_key is None:
             return None
-        return verify_election_partial_key_backup(self.id, backup, public_key)
+        return verify_election_partial_key_backup(
+            self.id, backup, public_key, self._election_keys
+        )
 
     def publish_election_backup_challenge(
         self, guardian_id: GuardianId
@@ -489,10 +505,11 @@ class Guardian:
         )
         if missing_guardian_key is None or missing_guardian_backup is None:
             return None
+        missing_guardian_coordinate = self.decrypt_backup(missing_guardian_backup)
         return compute_compensated_decryption_share(
+            get_optional(missing_guardian_coordinate),
             self.share_key(),
             missing_guardian_key,
-            missing_guardian_backup,
             tally,
             context,
         )
@@ -524,11 +541,12 @@ class Guardian:
         if missing_guardian_key is None or missing_guardian_backup is None:
             return shares
 
+        missing_guardian_coordinate = self.decrypt_backup(missing_guardian_backup)
         for ballot in ballots:
             share = compute_compensated_decryption_share_for_ballot(
-                self.share_key(),
+                get_optional(missing_guardian_coordinate),
                 missing_guardian_key,
-                missing_guardian_backup,
+                self.share_key(),
                 ballot,
                 context,
             )

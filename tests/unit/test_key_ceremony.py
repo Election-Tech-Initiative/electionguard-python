@@ -1,4 +1,10 @@
+import os
+from unittest.mock import patch
 from tests.base_test_case import BaseTestCase
+
+from electionguard.constants import (
+    PrimeOption,
+)
 
 from electionguard.key_ceremony import (
     generate_election_key_pair,
@@ -17,13 +23,15 @@ SENDER_SEQUENCE_ORDER = 1
 
 RECIPIENT_GUARDIAN_ID = "Test Guardian 2"
 RECIPIENT_SEQUENCE_ORDER = 2
-RECIPIENT_KEY = generate_election_key_pair(
+RECIPIENT_KEY_PAIR = generate_election_key_pair(
     RECIPIENT_GUARDIAN_ID, RECIPIENT_SEQUENCE_ORDER, QUORUM
-).share()
+)
+RECIPIENT_KEY = RECIPIENT_KEY_PAIR.share()
 
 ALTERNATE_VERIFIER_GUARDIAN_ID = "Test Guardian 3"
 
 
+@patch.dict(os.environ, {"PRIME_OPTION": PrimeOption.Standard.value})
 class TestKeyCeremony(BaseTestCase):
     """Key ceremony tests"""
 
@@ -49,10 +57,6 @@ class TestKeyCeremony(BaseTestCase):
             SENDER_GUARDIAN_ID, SENDER_SEQUENCE_ORDER, QUORUM
         )
 
-        election_key_pair = generate_election_key_pair(
-            SENDER_GUARDIAN_ID, SENDER_SEQUENCE_ORDER, QUORUM
-        )
-
         # Act
         backup = generate_election_partial_key_backup(
             SENDER_GUARDIAN_ID,
@@ -64,7 +68,29 @@ class TestKeyCeremony(BaseTestCase):
         self.assertIsNotNone(backup)
         self.assertEqual(backup.designated_id, RECIPIENT_GUARDIAN_ID)
         self.assertEqual(backup.designated_sequence_order, RECIPIENT_SEQUENCE_ORDER)
-        self.assertIsNotNone(backup.coordinate)
+        self.assertIsNotNone(backup.encrypted_coordinate)
+
+    def test_encrypt_then_verify_coordinate(self) -> None:
+        # Arrange
+        sender_key_pair = generate_election_key_pair(
+            SENDER_GUARDIAN_ID, SENDER_SEQUENCE_ORDER, QUORUM
+        )
+
+        # Act
+        partial_key_backup = generate_election_partial_key_backup(
+            SENDER_GUARDIAN_ID,
+            sender_key_pair.polynomial,
+            RECIPIENT_KEY,
+        )
+        verification = verify_election_partial_key_backup(
+            RECIPIENT_GUARDIAN_ID,
+            partial_key_backup,
+            sender_key_pair.share(),
+            RECIPIENT_KEY_PAIR,
+        )
+
+        # Assert
+        self.assertTrue(verification.verified)
 
     def test_verify_election_partial_key_backup(self) -> None:
         # Arrange
@@ -83,6 +109,7 @@ class TestKeyCeremony(BaseTestCase):
             RECIPIENT_GUARDIAN_ID,
             partial_key_backup,
             sender_election_key_pair.share(),
+            RECIPIENT_KEY_PAIR,
         )
 
         # Assert
