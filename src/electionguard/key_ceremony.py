@@ -1,5 +1,7 @@
 from dataclasses import dataclass
-from typing import List
+from typing import List, Type, TypeVar
+
+from .serialize import PaddedDataSize, padded_decode, padded_encode
 
 from .election_polynomial import (
     PublicCommitment,
@@ -11,9 +13,11 @@ from .election_polynomial import (
 from .elgamal import (
     ElGamalKeyPair,
     ElGamalPublicKey,
+    HashedElGamalCiphertext,
     elgamal_combine_public_keys,
+    hashed_elgamal_encrypt,
 )
-from .group import ElementModQ
+from .group import ElementModQ, rand_q
 from .hash import hash_elems
 from .schnorr import SchnorrProof
 from .type import (
@@ -126,7 +130,7 @@ class ElectionPartialKeyBackup:
     The sequence order of the designated guardian
     """
 
-    coordinate: ElementModQ
+    encrypted_coordinate: HashedElGamalCiphertext
     """
     The coordinate corresponding to a secret election polynomial
     """
@@ -163,6 +167,24 @@ class ElectionPartialKeyChallenge:
     coefficient_proofs: List[SchnorrProof]
 
 
+_T = TypeVar("_T", bound="CoordinateData")
+CONTEST_DATA_SIZE: PaddedDataSize = PaddedDataSize.Bytes_512
+
+
+@dataclass
+class CoordinateData:
+    """A coordinate from a PartialKeyBackup that can be serialized and deserialized for encryption/decryption"""
+
+    coordinate: ElementModQ
+
+    @classmethod
+    def from_bytes(cls: Type[_T], data: bytes) -> _T:
+        return padded_decode(cls, data, CONTEST_DATA_SIZE)
+
+    def to_bytes(self) -> bytes:
+        return padded_encode(self, CONTEST_DATA_SIZE)
+
+
 def generate_election_key_pair(
     guardian_id: str, sequence_order: int, quorum: int, nonce: ElementModQ = None
 ) -> ElectionKeyPair:
@@ -179,49 +201,80 @@ def generate_election_key_pair(
 
 
 def generate_election_partial_key_backup(
-    owner_id: GuardianId,
-    polynomial: ElectionPolynomial,
-    designated_guardian_key: ElectionPublicKey,
+    sender_guardian_id: GuardianId,
+    sender_guardian_polynomial: ElectionPolynomial,
+    receiver_guardian_public_key: ElectionPublicKey,
 ) -> ElectionPartialKeyBackup:
     """
     Generate election partial key backup for sharing
-    :param owner_id: Owner of election key
-    :param polynomial: The owner's Election polynomial
+    :param sender_guardian_id: Owner of election key
+    :param sender_guardian_polynomial: The owner's Election polynomial
+    :param receiver_guardian_public_key: The receiving guardian's public key
     :return: Election partial key backup
     """
-    value = compute_polynomial_coordinate(
-        designated_guardian_key.sequence_order, polynomial
+    coordinate = compute_polynomial_coordinate(
+        receiver_guardian_public_key.sequence_order, sender_guardian_polynomial
+    )
+    coordinate_data = CoordinateData(coordinate)
+    nonce = rand_q()
+    seed = get_backup_seed(
+        receiver_guardian_public_key.owner_id,
+        receiver_guardian_public_key.sequence_order,
+    )
+    encrypted_coordinate = hashed_elgamal_encrypt(
+        coordinate_data.to_bytes(),
+        nonce,
+        receiver_guardian_public_key.key,
+        seed,
     )
     return ElectionPartialKeyBackup(
-        owner_id,
-        designated_guardian_key.owner_id,
-        designated_guardian_key.sequence_order,
-        value,
+        sender_guardian_id,
+        receiver_guardian_public_key.owner_id,
+        receiver_guardian_public_key.sequence_order,
+        encrypted_coordinate,
     )
+
+
+def get_backup_seed(receiver_guardian_id: str, sequence_order: int) -> ElementModQ:
+    return hash_elems(receiver_guardian_id, sequence_order)
 
 
 def verify_election_partial_key_backup(
-    verifier_id: str,
-    backup: ElectionPartialKeyBackup,
-    election_public_key: ElectionPublicKey,
+    receiver_guardian_id: str,
+    sender_guardian_backup: ElectionPartialKeyBackup,
+    sender_guardian_public_key: ElectionPublicKey,
+    receiver_guardian_keys: ElectionKeyPair,
 ) -> ElectionPartialKeyVerification:
     """
     Verify election partial key backup contain point on owners polynomial
-    :param verifier_id: Verifier of the partial key backup
-    :param backup: Other guardian's election partial key backup
-    :param election_public_key: Other guardian's election public key
+    :param receiver_guardian_id: Receiving guardian's identifier
+    :param sender_guardian_backup: Sender guardian's election partial key backup
+    :param sender_guardian_public_key: Sender guardian's election public key
+    :param receiver_guardian_keys: Receiving guardian's key pair
     """
 
-    value = backup.coordinate
+    encryption_seed = get_backup_seed(
+        receiver_guardian_id,
+        sender_guardian_backup.designated_sequence_order,
+    )
+
+    secret_key = receiver_guardian_keys.key_pair.secret_key
+    bytes_optional = sender_guardian_backup.encrypted_coordinate.decrypt(
+        secret_key, encryption_seed
+    )
+    coordinate_data: CoordinateData = CoordinateData.from_bytes(
+        get_optional(bytes_optional)
+    )
+    verified = verify_polynomial_coordinate(
+        coordinate_data.coordinate,
+        sender_guardian_backup.designated_sequence_order,
+        sender_guardian_public_key.coefficient_commitments,
+    )
     return ElectionPartialKeyVerification(
-        backup.owner_id,
-        backup.designated_id,
-        verifier_id,
-        verify_polynomial_coordinate(
-            value,
-            backup.designated_sequence_order,
-            election_public_key.coefficient_commitments,
-        ),
+        sender_guardian_backup.owner_id,
+        sender_guardian_backup.designated_id,
+        receiver_guardian_id,
+        verified,
     )
 
 
@@ -232,7 +285,7 @@ def generate_election_partial_key_challenge(
     """
     Generate challenge to a previous verification of a partial key backup
     :param backup: Election partial key backup in question
-    :param poynomial: Polynomial to regenerate point
+    :param polynomial: Polynomial to regenerate point
     :return: Election partial key verification
     """
     return ElectionPartialKeyChallenge(

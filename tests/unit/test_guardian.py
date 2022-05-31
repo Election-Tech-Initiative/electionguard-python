@@ -137,7 +137,7 @@ class TestGuardian(BaseTestCase):
 
         # Assert
         self.assertIsNotNone(key_backup)
-        self.assertIsNotNone(key_backup.coordinate)
+        self.assertIsNotNone(key_backup.encrypted_coordinate)
         self.assertEqual(key_backup.owner_id, guardian.id)
         self.assertEqual(key_backup.designated_id, other_guardian.id)
 

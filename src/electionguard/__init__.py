@@ -132,7 +132,6 @@ from electionguard.decrypt_with_shares import (
 )
 from electionguard.decryption import (
     RecoveryPublicKey,
-    compensate_decrypt,
     compute_compensated_decryption_share,
     compute_compensated_decryption_share_for_ballot,
     compute_compensated_decryption_share_for_contest,
@@ -144,6 +143,8 @@ from electionguard.decryption import (
     compute_lagrange_coefficients_for_guardian,
     compute_lagrange_coefficients_for_guardians,
     compute_recovery_public_key,
+    decrypt_backup,
+    decrypt_with_threshold,
     partially_decrypt,
     reconstruct_decryption_contest,
     reconstruct_decryption_share,
@@ -269,6 +270,7 @@ from electionguard.hmac import (
 )
 from electionguard.key_ceremony import (
     CeremonyDetails,
+    CoordinateData,
     ElectionJointKey,
     ElectionKeyPair,
     ElectionPartialKeyBackup,
@@ -279,6 +281,7 @@ from electionguard.key_ceremony import (
     generate_election_key_pair,
     generate_election_partial_key_backup,
     generate_election_partial_key_challenge,
+    get_backup_seed,
     verify_election_partial_key_backup,
     verify_election_partial_key_challenge,
 )
@@ -438,6 +441,7 @@ __all__ = [
     "ContestErrorType",
     "ContestException",
     "ContestId",
+    "CoordinateData",
     "CryptoHashCheckable",
     "CryptoHashable",
     "CryptoHashableAll",
@@ -547,7 +551,6 @@ __all__ = [
     "bytes_to_hex",
     "chaum_pedersen",
     "combine_election_public_keys",
-    "compensate_decrypt",
     "compress_plaintext_ballot",
     "compress_submitted_ballot",
     "compute_compensated_decryption_share",
@@ -575,6 +578,7 @@ __all__ = [
     "create_ciphertext_decryption_selection",
     "create_constants",
     "data_store",
+    "decrypt_backup",
     "decrypt_ballot",
     "decrypt_ballot_with_nonce",
     "decrypt_ballot_with_secret",
@@ -587,6 +591,7 @@ __all__ = [
     "decrypt_tally",
     "decrypt_with_secrets",
     "decrypt_with_shares",
+    "decrypt_with_threshold",
     "decryption",
     "decryption_mediator",
     "decryption_share",
@@ -625,6 +630,7 @@ __all__ = [
     "generate_placeholder_selection_from",
     "generate_placeholder_selections_from",
     "generate_polynomial",
+    "get_backup_seed",
     "get_ballot_code",
     "get_ballots",
     "get_cofactor",
