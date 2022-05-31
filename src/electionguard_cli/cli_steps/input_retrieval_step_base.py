@@ -6,7 +6,7 @@ from click import echo
 
 from electionguard.election import CiphertextElectionContext
 from electionguard.manifest import InternationalizedText, Manifest
-from electionguard.serialize import from_list_in_file, from_file
+from electionguard.serialize import from_list_in_file, from_file, from_raw
 from electionguard.serialize import (
     from_file_wrapper,
 )
@@ -21,6 +21,13 @@ class InputRetrievalStepBase(CliStepBase):
 
     def _get_manifest(self, manifest_file: TextIOWrapper) -> Manifest:
         manifest: Manifest = from_file_wrapper(Manifest, manifest_file)
+        if not manifest.is_valid():
+            raise ValueError("manifest file is invalid")
+        self.__print_manifest(manifest)
+        return manifest
+
+    def _get_manifest_raw(self, manifest_raw: str) -> Manifest:
+        manifest: Manifest = from_raw(Manifest, manifest_raw)
         if not manifest.is_valid():
             raise ValueError("manifest file is invalid")
         self.__print_manifest(manifest)

@@ -3,13 +3,18 @@
   mainForm.addEventListener("submit", setupElection, true);
 })();
 
+function getIntById(str) {
+  const valueStr = document.getElementById(str).value;
+  return Number.parseInt(valueStr);
+}
+
 function setupElection(event) {
   event.preventDefault();
   event.stopPropagation();
   const form = document.getElementById("mainForm");
   if (form.checkValidity()) {
-    const guardianCount = document.getElementById("guardianCount").value;
-    const quorum = document.getElementById("quorum").value;
+    const guardianCount = getIntById("guardianCount");
+    const quorum = getIntById("quorum");
     const manifest = document.getElementById("manifest").files[0];
     var reader = new FileReader();
     reader.onloadend = (e) => {
