@@ -82,7 +82,7 @@ def compute_decryption_share(
     return DecryptionShare(
         tally.object_id,
         key_pair.owner_id,
-        key_pair.share().key,
+        key_pair.key_pair.public_key,
         contests,
     )
 
