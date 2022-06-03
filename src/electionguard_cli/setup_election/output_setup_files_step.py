@@ -43,20 +43,20 @@ class OutputSetupFilesStep(OutputStepBase):
     def _export_context(
         self, setup_inputs: SetupInputs, context: CiphertextElectionContext
     ) -> None:
-        outDir = path.join(setup_inputs.out, ENCRYPTION_PACKAGE_DIR)
-        self._export_file("Context", context, outDir, CONTEXT_FILE_NAME)
+        out_dir = path.join(setup_inputs.out, ENCRYPTION_PACKAGE_DIR)
+        self._export_file("Context", context, out_dir, CONTEXT_FILE_NAME)
 
     def _export_constants(self, setup_inputs: SetupInputs) -> None:
         constants = get_constants()
-        outDir = path.join(setup_inputs.out, ENCRYPTION_PACKAGE_DIR)
-        self._export_file("Constants", constants, outDir, CONSTANTS_FILE_NAME)
+        out_dir = path.join(setup_inputs.out, ENCRYPTION_PACKAGE_DIR)
+        self._export_file("Constants", constants, out_dir, CONSTANTS_FILE_NAME)
 
     def _export_manifest(self, setup_inputs: SetupInputs) -> None:
-        outDir = path.join(setup_inputs.out, ENCRYPTION_PACKAGE_DIR)
+        out_dir = path.join(setup_inputs.out, ENCRYPTION_PACKAGE_DIR)
         self._export_file(
             "Manifest",
             setup_inputs.manifest,
-            outDir,
+            out_dir,
             MANIFEST_FILE_NAME,
         )
 
