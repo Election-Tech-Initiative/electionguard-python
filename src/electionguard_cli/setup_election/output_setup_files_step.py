@@ -1,5 +1,6 @@
 from os import path
 from os.path import join
+from shutil import make_archive
 from electionguard.election import CiphertextElectionContext
 from electionguard.serialize import to_file
 from electionguard.constants import get_constants
@@ -29,6 +30,13 @@ class OutputSetupFilesStep(OutputStepBase):
         self._export_manifest(setup_inputs)
         self._export_guardian_records(setup_inputs)
         self._export_guardian_private_keys(setup_inputs)
+        if setup_inputs.zip:
+            self._zip(setup_inputs)
+
+    def _zip(self, setup_inputs: SetupInputs) -> None:
+        dir_to_zip = path.join(setup_inputs.out, ENCRYPTION_PACKAGE_DIR)
+        file_name = path.join(setup_inputs.out, ENCRYPTION_PACKAGE_DIR)
+        make_archive(file_name, self._COMPRESSION_FORMAT, dir_to_zip)
 
     def _export_context(
         self, setup_inputs: SetupInputs, context: CiphertextElectionContext

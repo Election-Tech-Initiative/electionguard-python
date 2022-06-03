@@ -16,11 +16,13 @@ class SetupInputs(CliElectionInputsBase):
         guardians: List[Guardian],
         manifest: Manifest,
         out: str,
+        zip: bool,
     ):
         self.guardian_count = guardian_count
         self.quorum = quorum
         self.guardians = guardians
         self.manifest = manifest
         self.out = out
+        self.zip = zip
 
     out: str
