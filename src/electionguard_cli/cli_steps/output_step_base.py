@@ -26,7 +26,7 @@ class OutputStepBase(CliStepBase):
             to_file(private_guardian_record, file_name, file_path)
         self.print_value("Guardian private keys", output_keys)
         self.print_warning(
-            f"The files in {file_path} are secret and should be protected securely and not shared publicly."
+            f"The files in {file_path} are secret and should be protected securely and not shared."
         )
 
     @staticmethod
