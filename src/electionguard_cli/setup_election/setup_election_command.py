@@ -32,19 +32,20 @@ from .setup_input_retrieval_step import SetupInputRetrievalStep
     + "context, constants, and guardian keys. Existing files will be overwritten.",
     type=click.Path(exists=False, dir_okay=True, file_okay=False, resolve_path=True),
 )
+@click.option("--zip/--no-zip", default=False)
 def SetupElectionCommand(
-    guardian_count: int, quorum: int, manifest: TextIOWrapper, out: str
+    guardian_count: int, quorum: int, manifest: TextIOWrapper, out: str, zip: bool
 ) -> None:
     """
     This command runs an automated key ceremony and produces the files
     necessary to encrypt ballots, decrypt an election, and produce an election record.
     """
 
-    election_inputs = SetupInputRetrievalStep().get_inputs(
-        guardian_count, quorum, manifest, out
+    setup_inputs = SetupInputRetrievalStep().get_inputs(
+        guardian_count, quorum, manifest, out, zip
     )
-    joint_key = KeyCeremonyStep().run_key_ceremony(election_inputs.guardians)
+    joint_key = KeyCeremonyStep().run_key_ceremony(setup_inputs.guardians)
     build_election_results = ElectionBuilderStep().build_election_with_key(
-        election_inputs, joint_key
+        setup_inputs, joint_key
     )
-    OutputSetupFilesStep().output(election_inputs, build_election_results)
+    OutputSetupFilesStep().output(setup_inputs, build_election_results)
