@@ -9,7 +9,9 @@ from .utils import BYTE_ORDER
 
 def _hex_to_int(input: str) -> int:
     """Given a hex string representing bytes, returns an int."""
-    return int(input, 16)
+    valid_bytes = input[1:] if (len(input) % 2 != 0 and input[0] == "0") else input
+    hex_bytes = bytes.fromhex(valid_bytes)
+    return int.from_bytes(hex_bytes, BYTE_ORDER)
 
 
 def _int_to_hex(input: int) -> str:
@@ -33,8 +35,8 @@ _zero = mpz(0)
 def _convert_to_element(data: Union[int, str]) -> Tuple[str, int]:
     """Convert element to consistent types"""
     if isinstance(data, str):
-        hex = data
         integer = _hex_to_int(data)
+        hex = _int_to_hex(integer)
     else:
         hex = _int_to_hex(data)
         integer = data
