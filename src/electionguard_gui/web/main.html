@@ -8,86 +8,31 @@
     <link href="css/bootstrap-overrides.css" rel="stylesheet" />
   </head>
   <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-      <div class="container-fluid">
-        <a class="navbar-brand" href="#">
-          <img
-            src="images/electionguard-icon.svg"
-            height="30"
-            class="d-inline-block align-text-top"
-          />
-          ElectionGuard
-        </a>
-        <button
-          class="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarSupportedContent"
-          aria-controls="navbarSupportedContent"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
-        >
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          <div class="navbar-nav">
-            <a class="nav-link active" aria-current="page" href="#">Home</a>
-            <a class="nav-link" href="page2.html">Page 2</a>
-          </div>
-        </div>
-      </div>
-    </nav>
+    <script type="importmap">
+      {
+        "imports": {
+          "vue": "./js/vue.esm-browser.prod.js"
+        }
+      }
+    </script>
 
-    <div class="container mt-3">
-      <form id="mainForm" class="needs-validation" novalidate>
-        <div class="row g-3 align-items-center">
-          <div class="col-12">
-            <h1>Setup Election</h1>
-          </div>
-          <div class="col-sm-6">
-            <label for="guardianCount" class="form-label"
-              >Number of Guardians</label
-            >
-            <input
-              type="number"
-              class="form-control"
-              id="guardianCount"
-              value="2"
-              required
-            />
-            <div class="invalid-feedback">
-              Please provide a valid number of guardians.
-            </div>
-          </div>
-          <div class="col-sm-6">
-            <label for="quorum" class="form-label">Quorum</label>
-            <input
-              type="number"
-              class="form-control"
-              id="quorum"
-              value="2"
-              required
-            />
-            <div class="invalid-feedback">Please provide a valid quorum.</div>
-          </div>
-          <div class="col-12">
-            <label for="manifest" class="form-label">Manifest</label>
-            <input
-              type="file"
-              id="manifest"
-              class="form-control"
-              value="2"
-              required
-            />
-            <div class="invalid-feedback">Please provide a valid manifest.</div>
-          </div>
-          <div class="col-12 mt-4">
-            <button type="submit" class="btn btn-primary">Submit</button>
-          </div>
-        </div>
-      </form>
+    <div id="app">
+      <navbar></navbar>
+      <div class="container mt-3">
+        <setup-election></setup-election>
+      </div>
     </div>
+
+    <script type="module">
+      import { createApp } from "vue";
+      import Navbar from "./components/navbar-component.js";
+      import SetupElection from "./components/setup-election-component.js";
+
+      createApp({
+        components: { SetupElection, Navbar },
+      }).mount("#app");
+    </script>
+
     <script src="js/bootstrap.bundle.min.js"></script>
-    <script src="main.js"></script>
   </body>
 </html>
