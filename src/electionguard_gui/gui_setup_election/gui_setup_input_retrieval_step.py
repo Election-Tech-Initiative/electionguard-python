@@ -20,4 +20,4 @@ class GuiSetupInputRetrievalStep(SetupInputRetrievalStep):
         )
         manifest: Manifest = self._get_manifest_raw(manifest_raw)
 
-        return SetupInputs(guardian_count, quorum, guardians, manifest, out)
+        return SetupInputs(guardian_count, quorum, guardians, manifest, out, False)
