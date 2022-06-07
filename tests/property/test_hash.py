@@ -1,12 +1,13 @@
 from typing import List, Optional
 
 from hypothesis import given
+from hypothesis.strategies import integers
 
 
 from tests.base_test_case import BaseTestCase
 
 from electionguard.big_integer import BigInteger
-from electionguard.group import ElementModQ
+from electionguard.group import ElementModP, ElementModQ
 from electionguard.hash import hash_elems
 from electionguard_tools.strategies.group import elements_mod_p, elements_mod_q
 
@@ -30,26 +31,42 @@ class TestHash(BaseTestCase):
         if ha != hb:
             self.assertNotEqual(a, b)
 
-    @given(elements_mod_p())
-    def test_hash_of_big_integer(self, input: ElementModQ) -> None:
-        """Test hashing of larger integers such as element mod p"""
+    @given(elements_mod_p(), integers(min_value=0, max_value=10))
+    def test_hash_of_big_integer_with_leading_zero_bytes(
+        self, input: ElementModP, multiplier: int
+    ) -> None:
+        """Test hashing of larger integers with leading zero bytes"""
 
         # Arrange.
+        zero_byte = "00"
         input_hash = hash_elems(input)
-        invalid_hex = "0" + input.to_hex()
-        leading_zeroes = "00" + input.to_hex()
+        leading_zeroes = zero_byte * multiplier + input.to_hex()
 
         # Act.
-        invalid_hex_as_q = BigInteger(invalid_hex)
-        leading_zeroes_as_q = BigInteger(leading_zeroes)
-        invalid_hex_hash = hash_elems(invalid_hex_as_q)
-        leading_zeroes_hash = hash_elems(leading_zeroes_as_q)
+        leading_zeroes_big_int = BigInteger(leading_zeroes)
+        leading_zeroes_hash = hash_elems(leading_zeroes_big_int)
 
         # Assert.
-        self.assertEqual(input, invalid_hex_as_q)
-        self.assertEqual(input, leading_zeroes_as_q)
-        self.assertEqual(input_hash, invalid_hex_hash)
+        self.assertEqual(input, leading_zeroes_big_int)
         self.assertEqual(input_hash, leading_zeroes_hash)
+
+    @given(elements_mod_p())
+    def test_hash_of_big_integer_with_single_leading_zero(
+        self, input: ElementModP
+    ) -> None:
+        """Test hashing of big integer with a single leading zero creating an invalid hex byte reprsentation."""
+
+        # Arrange.
+        invalid_hex = "0" + input.to_hex()
+        input_hash = hash_elems(input)
+
+        # Act.
+        invalid_hex_big_int = BigInteger(invalid_hex)
+        invalid_hex_hash = hash_elems(invalid_hex_big_int)
+
+        # Assert.
+        self.assertEqual(input, invalid_hex_big_int)
+        self.assertEqual(input_hash, invalid_hex_hash)
 
     def test_hash_for_zero_number_is_zero_string(self):
         self.assertEqual(hash_elems(0), hash_elems("0"))
