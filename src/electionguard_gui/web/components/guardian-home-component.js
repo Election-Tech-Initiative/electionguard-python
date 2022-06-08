@@ -1,3 +1,5 @@
 export default {
-  template: `<h1>Hello Guardian</h1>`,
+  template: `
+  <h1>Hello Guardian</h1>
+  `,
 };

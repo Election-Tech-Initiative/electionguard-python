@@ -17,31 +17,48 @@
     </script>
 
     <div id="app">
-      <navbar @setup-election="onSetupElection"></navbar>
+      <navbar @navigate="(p) => onNavigate(p)"></navbar>
       <div class="container mt-3">
-        <guardian-home v-if="page === 'guardianHome'"></guardian-home>
-        <setup-election v-if="page === 'setupElection'"></guardian-home>
+        <select-mode
+          v-if="page === 'select-mode'"
+          @navigate="(p) => onNavigate(p)"
+        ></select-mode>
+        <guardian-home v-if="page === 'guardian-home'"></guardian-home>
+        <admin-home
+          v-if="page === 'admin-home'"
+          @navigate="(p) => onNavigate(p)"
+        ></admin-home>
+        <setup-election v-if="page === 'setup-election'"></setup-election>
       </div>
     </div>
 
     <script type="module">
       import { createApp } from "vue";
       import Navbar from "./components/navbar-component.js";
-      import SetupElection from "./components/setup-election-component.js";
+      import SelectMode from "./components/select-mode-component.js";
       import GuardianHome from "./components/guardian-home-component.js";
+      import AdminHome from "./components/admin-home-component.js";
+      import SetupElection from "./components/setup-election-component.js";
 
       createApp({
         data() {
           return {
-            page: "guardianHome",
+            page: "select-mode",
           };
         },
         methods: {
-          onSetupElection() {
-            this.page = 'setupElection';
+          onNavigate(page) {
+            console.log("navigating", page);
+            this.page = page;
           },
         },
-        components: { SetupElection, Navbar, GuardianHome },
+        components: {
+          Navbar,
+          SelectMode,
+          GuardianHome,
+          AdminHome,
+          SetupElection,
+        },
       }).mount("#app");
     </script>
 

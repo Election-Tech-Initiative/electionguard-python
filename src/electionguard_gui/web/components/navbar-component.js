@@ -1,5 +1,5 @@
 export default {
-  emits: ["setupElection"],
+  emits: ["navigate"],
   template: `<nav class="navbar navbar-expand-md navbar-dark bg-primary">
   <div class="container-fluid">
     <a class="navbar-brand" href="#">
@@ -23,8 +23,8 @@ export default {
     </button>
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <div class="navbar-nav">
-        <a class="nav-link active" aria-current="page" href="#">Home</a>
-        <a class="nav-link" href="" @click.prevent="$emit('setupElection')">Setup Election</a>
+        <a class="nav-link active" aria-current="page" href="#" @click.prevent="$emit('navigate', 'select-mode')">Home</a>
+        <a class="nav-link" href="#" @click.prevent="$emit('navigate', 'setup-election')">Setup Election</a>
       </div>
     </div>
   </div>
