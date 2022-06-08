@@ -17,9 +17,10 @@
     </script>
 
     <div id="app">
-      <navbar></navbar>
+      <navbar @setup-election="onSetupElection"></navbar>
       <div class="container mt-3">
-        <setup-election></setup-election>
+        <guardian-home v-if="page === 'guardianHome'"></guardian-home>
+        <setup-election v-if="page === 'setupElection'"></guardian-home>
       </div>
     </div>
 
@@ -27,9 +28,20 @@
       import { createApp } from "vue";
       import Navbar from "./components/navbar-component.js";
       import SetupElection from "./components/setup-election-component.js";
+      import GuardianHome from "./components/guardian-home-component.js";
 
       createApp({
-        components: { SetupElection, Navbar },
+        data() {
+          return {
+            page: "guardianHome",
+          };
+        },
+        methods: {
+          onSetupElection() {
+            this.page = 'setupElection';
+          },
+        },
+        components: { SetupElection, Navbar, GuardianHome },
       }).mount("#app");
     </script>
 

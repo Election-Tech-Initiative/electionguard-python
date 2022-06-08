@@ -1,5 +1,6 @@
 export default {
-  template: `<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+  emits: ["setupElection"],
+  template: `<nav class="navbar navbar-expand-md navbar-dark bg-primary">
   <div class="container-fluid">
     <a class="navbar-brand" href="#">
       <img
@@ -23,7 +24,7 @@ export default {
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <div class="navbar-nav">
         <a class="nav-link active" aria-current="page" href="#">Home</a>
-        <a class="nav-link" href="page2.html">Page 2</a>
+        <a class="nav-link" href="" @click.prevent="$emit('setupElection')">Setup Election</a>
       </div>
     </div>
   </div>
