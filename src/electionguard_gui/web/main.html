@@ -17,18 +17,9 @@
     </script>
 
     <div id="app">
-      <navbar @navigate="(p) => onNavigate(p)"></navbar>
+      <navbar></navbar>
       <div class="container mt-3">
-        <select-mode
-          v-if="page === 'select-mode'"
-          @navigate="(p) => onNavigate(p)"
-        ></select-mode>
-        <guardian-home v-if="page === 'guardian-home'"></guardian-home>
-        <admin-home
-          v-if="page === 'admin-home'"
-          @navigate="(p) => onNavigate(p)"
-        ></admin-home>
-        <setup-election v-if="page === 'setup-election'"></setup-election>
+        <component :is="currentView" />
       </div>
     </div>
 
@@ -39,25 +30,34 @@
       import GuardianHome from "./components/guardian-home-component.js";
       import AdminHome from "./components/admin-home-component.js";
       import SetupElection from "./components/setup-election-component.js";
+      import NotFound from "./components/not-found-component.js";
+
+      const routes = {
+        "/": SelectMode,
+        "/guardian-home": GuardianHome,
+        "/admin-home": AdminHome,
+        "/setup-election": SetupElection,
+        "/not-found": NotFound,
+      };
 
       createApp({
         data() {
           return {
-            page: "select-mode",
+            currentPath: window.location.hash,
           };
         },
-        methods: {
-          onNavigate(page) {
-            console.log("navigating", page);
-            this.page = page;
+        computed: {
+          currentView() {
+            return routes[this.currentPath.slice(1) || "/"] || NotFound;
           },
+        },
+        mounted() {
+          window.addEventListener("hashchange", () => {
+            this.currentPath = window.location.hash;
+          });
         },
         components: {
           Navbar,
-          SelectMode,
-          GuardianHome,
-          AdminHome,
-          SetupElection,
         },
       }).mount("#app");
     </script>

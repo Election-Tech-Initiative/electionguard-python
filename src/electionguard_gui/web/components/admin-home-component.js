@@ -1,5 +1,4 @@
 export default {
-  emits: ["navigate"],
   template: `
   <div class="container col-6">
     <div class="text-center mb-4">
@@ -7,10 +6,10 @@ export default {
     </div>
     <div class="row justify-content-md-center">
       <div class="col-12 d-grid mb-3">
-        <button type="button" class="btn btn-primary" @click="$emit('navigate', 'create-key')">Create Key</button>
+        <a href="#/create-key" class="btn btn-primary">Create Key</a>
       </div>
       <div class="col-12 d-grid">
-        <button type="button" class="btn btn-primary" @click="$emit('navigate', 'setup-election')">Setup Election</button>
+        <a href="#/setup-election" class="btn btn-primary">Setup Election</a>
       </div>
     </div>
   </div>
