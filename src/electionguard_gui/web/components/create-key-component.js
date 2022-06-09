@@ -12,13 +12,19 @@ export default {
       const form = document.getElementById("mainForm");
       if (form.checkValidity()) {
         this.loading = true;
-        const onSuccess = eel.start_ceremony(
+        const onDone = eel.start_ceremony(
           this.keyName,
           this.guardianCount,
           this.quorum
         );
-        onSuccess(() => {
+        onDone((result) => {
+          console.log("key ceremony completed", result);
           this.loading = false;
+          if (result.success) {
+            alert("success");
+          } else {
+            alert(result.message);
+          }
         });
       }
       form.classList.add("was-validated");

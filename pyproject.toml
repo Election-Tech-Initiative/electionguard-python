@@ -44,6 +44,7 @@ dacite = "^1.6.0"
 python-dateutil = "^2.8.2"
 types-python-dateutil = "^2.8.14"
 Eel = {extras = ["jinja2"], version = "^0.14.0"}
+pymongo = "^4.1.1"
 
 [tool.poetry.dev-dependencies]
 atomicwrites = "*"
