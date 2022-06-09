@@ -1,5 +1,5 @@
 export default {
-  template: `
+  template: /*html*/ `
   <div class="text-center mb-4">
     <h1>Mode Selection</h1>
   </div>
@@ -10,6 +10,5 @@ export default {
     <div class="col-3 d-grid gap-2">
       <a href="#/guardian-home" class="btn btn-primary">Guardian</a>
     </div>
-  </div>
-  `,
+  </div>`,
 };

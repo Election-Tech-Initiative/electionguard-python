@@ -1,3 +1,3 @@
 export default {
-  template: `<h1>Page Not Found</h1>`,
+  template: /*html*/ `<h1>Page Not Found</h1>`,
 };

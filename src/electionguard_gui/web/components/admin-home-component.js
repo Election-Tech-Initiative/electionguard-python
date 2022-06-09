@@ -1,5 +1,5 @@
 export default {
-  template: `
+  template: /*html*/ `
   <div class="container col-6">
     <div class="text-center mb-4">
       <h1>Admin Menu</h1>
@@ -12,6 +12,5 @@ export default {
         <a href="#/setup-election" class="btn btn-primary">Setup Election</a>
       </div>
     </div>
-  </div>
-  `,
+  </div>`,
 };

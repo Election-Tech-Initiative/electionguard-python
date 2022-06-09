@@ -1,5 +1,5 @@
 export default {
-  template: `
+  template: /*html*/ `
   <h1>Hello Guardian</h1>
   `,
 };
