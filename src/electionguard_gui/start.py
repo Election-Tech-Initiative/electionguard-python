@@ -1,3 +1,4 @@
+from time import sleep
 import eel
 
 from electionguard_cli.cli_steps import KeyCeremonyStep
@@ -7,10 +8,17 @@ from electionguard_cli.setup_election.output_setup_files_step import (
 from electionguard_cli.setup_election.setup_election_builder_step import (
     SetupElectionBuilderStep,
 )
-
 from electionguard_gui.gui_setup_election.gui_setup_input_retrieval_step import (
     GuiSetupInputRetrievalStep,
 )
+
+
+@eel.expose
+def start_ceremony(key_name: str, guardian_count: int, quorum: int) -> None:
+    print(
+        f"Starting ceremony: key_name: {key_name}, guardian_count: {guardian_count}, quorum: {quorum}"
+    )
+    sleep(5)
 
 
 @eel.expose
@@ -27,7 +35,7 @@ def setup_election(guardian_count: int, quorum: int, manifest: str) -> str:
     constants_file = files[1]
     print(f"Setup complete, context: {context_file}, constants: {constants_file}")
     with open(context_file, "r", encoding="utf-8") as context_file:
-        context_raw = context_file.read()
+        context_raw: str = context_file.read()
         return context_raw
 
 

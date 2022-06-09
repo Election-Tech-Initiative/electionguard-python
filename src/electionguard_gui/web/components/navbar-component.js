@@ -24,6 +24,7 @@ export default {
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <div class="navbar-nav">
           <a href="#/select-mode" class="nav-link active" aria-current="page">Home</a>
+          <a href="#/create-key" class="nav-link">Create Key</a>
           <a href="#/setup-election" class="nav-link">Setup Election</a>
         </div>
       </div>
