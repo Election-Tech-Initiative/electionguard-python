@@ -105,7 +105,7 @@ class TestManifest(BaseTestCase):
 
         # assert
         self.assertEqual(1, len(selection_names.keys()))
-        self.assertEqual("write-in", selection_names["selection1"])
+        self.assertEqual("Write-In", selection_names["selection1"])
 
     def test_simple_manifest_is_valid(self) -> None:
 

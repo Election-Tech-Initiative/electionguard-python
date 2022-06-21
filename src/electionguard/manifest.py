@@ -807,7 +807,7 @@ class Manifest(CryptoHashable):
 
     def _get_candidate_name(self, candidate: Candidate, lang: str) -> str:
         if candidate.is_write_in:
-            return "write-in"
+            return "Write-In"
         query = (t.value for t in candidate.name.text if t.language == lang)
         name = next(query, None)
         name = candidate.object_id if name is None else name
@@ -843,6 +843,14 @@ class Manifest(CryptoHashable):
         selections = self._get_selections_with_candidate_id()
         self._replace_candidate_ids_with_names(selections, candidates)
         return selections
+
+    def get_contest_names(self) -> Dict[str, str]:
+        """
+        Retrieves a dictionary whose keys are all contest id's and whose values are
+        those contest's names
+        """
+
+        return {contest.object_id: contest.name for contest in self.contests}
 
 
 @dataclass(eq=True, unsafe_hash=True)

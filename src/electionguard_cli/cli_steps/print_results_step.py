@@ -15,29 +15,21 @@ class PrintResultsStep(CliStepBase):
     def _print_tally(
         self,
         plaintext_tally: PlaintextTally,
-        manifest: Manifest,
+        contest_names: Dict[str, str],
         selection_names: Dict[str, str],
     ) -> None:
         self.print_header("Decrypted tally")
         for tally_contest in plaintext_tally.contests.values():
-            contest_name = PrintResultsStep._get_contest_name(
-                manifest, tally_contest.object_id
-            )
+            contest_name = contest_names.get(tally_contest.object_id)
             self.print_value("Contest", contest_name)
             for selection in tally_contest.selections.values():
                 name = selection_names[selection.object_id]
                 self.print_value(f"  {name}", selection.tally)
 
-    @staticmethod
-    def _get_contest_name(manifest: Manifest, contest_id: str) -> str:
-        matching_contests = (c for c in manifest.contests if c.object_id == contest_id)
-        contest = next(matching_contests, None)
-        return contest_id if contest is None else contest.name
-
     def _print_spoiled_ballots(
         self,
         plaintext_spoiled_ballots: Dict[BallotId, PlaintextTally],
-        manifest: Manifest,
+        contest_names: Dict[str, str],
         selection_names: Dict[str, str],
     ) -> None:
         ballot_ids = plaintext_spoiled_ballots.keys()
@@ -45,7 +37,7 @@ class PrintResultsStep(CliStepBase):
             self.print_header(f"Spoiled ballot '{ballot_id}'")
             spoiled_ballot = plaintext_spoiled_ballots[ballot_id]
             for contest in spoiled_ballot.contests.values():
-                contest_name = self._get_contest_name(manifest, contest.object_id)
+                contest_name = contest_names.get(contest.object_id)
                 self.print_value("Contest", contest_name)
                 for selection in contest.selections.values():
                     name = selection_names[selection.object_id]
@@ -55,7 +47,10 @@ class PrintResultsStep(CliStepBase):
         self, decrypt_results: CliDecryptResults, manifest: Manifest
     ) -> None:
         selection_names = manifest.get_selection_names("en")
-        self._print_tally(decrypt_results.plaintext_tally, manifest, selection_names)
+        contest_names = manifest.get_contest_names()
+        self._print_tally(
+            decrypt_results.plaintext_tally, contest_names, selection_names
+        )
         self._print_spoiled_ballots(
-            decrypt_results.plaintext_spoiled_ballots, manifest, selection_names
+            decrypt_results.plaintext_spoiled_ballots, contest_names, selection_names
         )
