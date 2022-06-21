@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field, InitVar
 from datetime import datetime
 from enum import Enum, unique
-from typing import cast, List, Optional, Set, Any
+from typing import Dict, cast, List, Optional, Set, Any
 
 from .election_object_base import ElectionObjectBase, OrderedObjectBase, list_eq
 from .group import ElementModQ
@@ -813,28 +813,28 @@ class Manifest(CryptoHashable):
         name = candidate.object_id if name is None else name
         return name
 
-    def _get_candidate_names(self, lang: str) -> dict[str, str]:
+    def _get_candidate_names(self, lang: str) -> Dict[str, str]:
         return {
             candidate.object_id: self._get_candidate_name(candidate, lang)
             for candidate in self.candidates
         }
 
-    def _get_selections_with_candidate_id(self) -> dict[str, str]:
-        selections: dict[str, str] = {}
+    def _get_selections_with_candidate_id(self) -> Dict[str, str]:
+        selections: Dict[str, str] = {}
         for contest in self.contests:
             for selection in contest.ballot_selections:
                 selections.update({selection.object_id: selection.candidate_id})
         return selections
 
     def _replace_candidate_ids_with_names(
-        self, selections: dict[str, str], candidates: dict[str, str]
+        self, selections: Dict[str, str], candidates: Dict[str, str]
     ) -> None:
         for (selection_id, candidate_id) in selections.items():
             candidate_name = candidates.get(candidate_id)
             if candidate_name is not None:
                 selections.update({selection_id: candidate_name})
 
-    def get_selection_names(self, lang: str) -> dict[str, str]:
+    def get_selection_names(self, lang: str) -> Dict[str, str]:
         """
         Retrieves a dictionary whose keys are all selection id's and whose values are
         those selection's candidate names in the supplied language if available

@@ -1,7 +1,5 @@
 from typing import Dict
-import click
-from electionguard import ContestData
-from electionguard.manifest import ContestDescription, Manifest
+from electionguard.manifest import Manifest
 from electionguard.type import BallotId
 from electionguard.tally import (
     PlaintextTally,
@@ -18,17 +16,20 @@ class PrintResultsStep(CliStepBase):
         self,
         plaintext_tally: PlaintextTally,
         manifest: Manifest,
-        selection_names: dict[str:str],
+        selection_names: Dict[str, str],
     ) -> None:
         self.print_header("Decrypted tally")
         for tally_contest in plaintext_tally.contests.values():
-            contest_name = self._get_contest_name(manifest, tally_contest.object_id)
+            contest_name = PrintResultsStep._get_contest_name(
+                manifest, tally_contest.object_id
+            )
             self.print_value("Contest", contest_name)
             for selection in tally_contest.selections.values():
                 name = selection_names[selection.object_id]
                 self.print_value(f"  {name}", selection.tally)
 
-    def _get_contest_name(self, manifest: Manifest, contest_id: str) -> str:
+    @staticmethod
+    def _get_contest_name(manifest: Manifest, contest_id: str) -> str:
         matching_contests = (c for c in manifest.contests if c.object_id == contest_id)
         contest = next(matching_contests, None)
         return contest_id if contest is None else contest.name
@@ -37,7 +38,7 @@ class PrintResultsStep(CliStepBase):
         self,
         plaintext_spoiled_ballots: Dict[BallotId, PlaintextTally],
         manifest: Manifest,
-        selection_names: dict[str:str],
+        selection_names: Dict[str, str],
     ) -> None:
         ballot_ids = plaintext_spoiled_ballots.keys()
         for ballot_id in ballot_ids:

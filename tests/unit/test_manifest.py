@@ -26,8 +26,9 @@ ballot_factory = BallotFactory.BallotFactory()
 class TestManifest(BaseTestCase):
     """Manifest tests"""
 
+    @staticmethod
     def _set_selection(
-        self, manifest: Manifest, selection_id: str, candidate_id: str
+        manifest: Manifest, selection_id: str, candidate_id: str
     ) -> None:
         selection = SelectionDescription(selection_id, 1, candidate_id)
         contest = ContestDescription(
@@ -42,8 +43,8 @@ class TestManifest(BaseTestCase):
         )
         manifest.contests = [contest]
 
+    @staticmethod
     def _set_candidate(
-        self,
         manifest: Manifest,
         candidate_id: str,
         name: str,
@@ -57,8 +58,8 @@ class TestManifest(BaseTestCase):
     def test_get_selection_names_with_valid_selection(self) -> None:
         # arrange
         manifest = election_factory.get_simple_manifest_from_file()
-        self._set_selection(manifest, "selection1", "candidate1")
-        self._set_candidate(manifest, "candidate1", "My Candidate", "en")
+        TestManifest._set_selection(manifest, "selection1", "candidate1")
+        TestManifest._set_candidate(manifest, "candidate1", "My Candidate", "en")
 
         # act
         selection_names = manifest.get_selection_names("en")
@@ -70,8 +71,8 @@ class TestManifest(BaseTestCase):
     def test_get_selection_names_with_missing_language(self) -> None:
         # arrange
         manifest = election_factory.get_simple_manifest_from_file()
-        self._set_selection(manifest, "selection1", "candidate1")
-        self._set_candidate(manifest, "candidate1", "My Candidate", "en")
+        TestManifest._set_selection(manifest, "selection1", "candidate1")
+        TestManifest._set_candidate(manifest, "candidate1", "My Candidate", "en")
 
         # act
         selection_names = manifest.get_selection_names("es")
@@ -83,7 +84,7 @@ class TestManifest(BaseTestCase):
     def test_get_selection_names_with_missing_candidate(self) -> None:
         # arrange
         manifest = election_factory.get_simple_manifest_from_file()
-        self._set_selection(manifest, "selection1", "candidate1")
+        TestManifest._set_selection(manifest, "selection1", "candidate1")
         manifest.candidates = []
 
         # act
@@ -96,8 +97,8 @@ class TestManifest(BaseTestCase):
     def test_get_selection_names_with_write_in(self) -> None:
         # arrange
         manifest = election_factory.get_simple_manifest_from_file()
-        self._set_selection(manifest, "selection1", "candidate1")
-        self._set_candidate(manifest, "candidate1", "", "en", write_in=True)
+        TestManifest._set_selection(manifest, "selection1", "candidate1")
+        TestManifest._set_candidate(manifest, "candidate1", "", "en", write_in=True)
 
         # act
         selection_names = manifest.get_selection_names("es")
