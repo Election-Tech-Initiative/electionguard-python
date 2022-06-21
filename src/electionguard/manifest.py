@@ -805,25 +805,43 @@ class Manifest(CryptoHashable):
             )
         return success
 
+    def _get_candidate_name(self, candidate: Candidate, lang: str) -> str:
+        if candidate.is_write_in:
+            return "write-in"
+        query = (t.value for t in candidate.name.text if t.language == lang)
+        name = next(query, None)
+        name = candidate.object_id if name is None else name
+        return name
+
+    def _get_candidate_names(self, lang: str) -> dict[str, str]:
+        return {
+            candidate.object_id: self._get_candidate_name(candidate, lang)
+            for candidate in self.candidates
+        }
+
+    def _get_selections_with_candidate_id(self) -> dict[str, str]:
+        selections: dict[str, str] = {}
+        for contest in self.contests:
+            for selection in contest.ballot_selections:
+                selections.update({selection.object_id: selection.candidate_id})
+        return selections
+
+    def _replace_candidate_ids_with_names(
+        self, selections: dict[str, str], candidates: dict[str, str]
+    ) -> None:
+        for (selection_id, candidate_id) in selections.items():
+            candidate_name = candidates.get(candidate_id)
+            if candidate_name is not None:
+                selections.update({selection_id: candidate_name})
+
     def get_selection_names(self, lang: str) -> dict[str, str]:
         """
         Retrieves a dictionary whose keys are all selection id's and whose values are
         those selection's candidate names in the supplied language if available
         """
-        selections: dict[str, str] = {}
-        for contest in self.contests:
-            for selection in contest.ballot_selections:
-                selections.update({selection.object_id: selection.candidate_id})
-        candidates: dict[str, str] = {}
-        for candidate in self.candidates:
-            query = (t.value for t in candidate.name.text if t.language == lang)
-            name = next(query, None)
-            name = candidate.object_id if name is None else name
-            candidates.update({candidate.object_id: name})
-        for (selection_id, candidate_id) in selections.items():
-            candidate_name = candidates.get(candidate_id)
-            if candidate_name is not None:
-                selections.update({selection_id: candidate_name})
+        candidates = self._get_candidate_names(lang)
+        selections = self._get_selections_with_candidate_id()
+        self._replace_candidate_ids_with_names(selections, candidates)
         return selections
 
 

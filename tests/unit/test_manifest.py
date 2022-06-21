@@ -43,10 +43,15 @@ class TestManifest(BaseTestCase):
         manifest.contests = [contest]
 
     def _set_candidate(
-        self, manifest: Manifest, candidate_id: str, name: str, lang: str
+        self,
+        manifest: Manifest,
+        candidate_id: str,
+        name: str,
+        lang: str,
+        write_in: bool = False,
     ) -> None:
         text_name = InternationalizedText([Language(name, lang)])
-        candidate = Candidate(candidate_id, text_name)
+        candidate = Candidate(candidate_id, text_name, is_write_in=write_in)
         manifest.candidates = [candidate]
 
     def test_get_selection_names_with_valid_selection(self) -> None:
@@ -87,6 +92,19 @@ class TestManifest(BaseTestCase):
         # assert
         self.assertEqual(1, len(selection_names.keys()))
         self.assertEqual("candidate1", selection_names["selection1"])
+
+    def test_get_selection_names_with_write_in(self) -> None:
+        # arrange
+        manifest = election_factory.get_simple_manifest_from_file()
+        self._set_selection(manifest, "selection1", "candidate1")
+        self._set_candidate(manifest, "candidate1", "", "en", write_in=True)
+
+        # act
+        selection_names = manifest.get_selection_names("es")
+
+        # assert
+        self.assertEqual(1, len(selection_names.keys()))
+        self.assertEqual("write-in", selection_names["selection1"])
 
     def test_simple_manifest_is_valid(self) -> None:
 
