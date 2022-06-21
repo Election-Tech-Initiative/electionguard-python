@@ -14,13 +14,19 @@ from .cli_step_base import CliStepBase
 class PrintResultsStep(CliStepBase):
     """Responsible for printing the results of an end-to-end election."""
 
-    def _print_tally(self, plaintext_tally: PlaintextTally, manifest: Manifest) -> None:
+    def _print_tally(
+        self,
+        plaintext_tally: PlaintextTally,
+        manifest: Manifest,
+        selection_names: dict[str:str],
+    ) -> None:
         self.print_header("Decrypted tally")
         for tally_contest in plaintext_tally.contests.values():
             contest_name = self._get_contest_name(manifest, tally_contest.object_id)
             self.print_value("Contest", contest_name)
             for selection in tally_contest.selections.values():
-                self.print_value(f"  {selection.object_id}", selection.tally)
+                name = selection_names[selection.object_id]
+                self.print_value(f"  {name}", selection.tally)
 
     def _get_contest_name(self, manifest: Manifest, contest_id: str) -> str:
         matching_contests = (c for c in manifest.contests if c.object_id == contest_id)
@@ -31,6 +37,7 @@ class PrintResultsStep(CliStepBase):
         self,
         plaintext_spoiled_ballots: Dict[BallotId, PlaintextTally],
         manifest: Manifest,
+        selection_names: dict[str:str],
     ) -> None:
         ballot_ids = plaintext_spoiled_ballots.keys()
         for ballot_id in ballot_ids:
@@ -40,10 +47,14 @@ class PrintResultsStep(CliStepBase):
                 contest_name = self._get_contest_name(manifest, contest.object_id)
                 self.print_value("Contest", contest_name)
                 for selection in contest.selections.values():
-                    self.print_value(f"  {selection.object_id}", selection.tally)
+                    name = selection_names[selection.object_id]
+                    self.print_value(f"  {name}", selection.tally)
 
     def print_election_results(
         self, decrypt_results: CliDecryptResults, manifest: Manifest
     ) -> None:
-        self._print_tally(decrypt_results.plaintext_tally, manifest)
-        self._print_spoiled_ballots(decrypt_results.plaintext_spoiled_ballots, manifest)
+        selection_names = manifest.get_selection_names("en")
+        self._print_tally(decrypt_results.plaintext_tally, manifest, selection_names)
+        self._print_spoiled_ballots(
+            decrypt_results.plaintext_spoiled_ballots, manifest, selection_names
+        )

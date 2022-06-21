@@ -805,6 +805,27 @@ class Manifest(CryptoHashable):
             )
         return success
 
+    def get_selection_names(self, lang: str) -> dict[str, str]:
+        """
+        Retrieves a dictionary whose keys are all selection id's and whose values are
+        those selection's candidate names in the supplied language if available
+        """
+        selections: dict[str, str] = {}
+        for contest in self.contests:
+            for selection in contest.ballot_selections:
+                selections.update({selection.object_id: selection.candidate_id})
+        candidates: dict[str, str] = {}
+        for candidate in self.candidates:
+            query = (t.value for t in candidate.name.text if t.language == lang)
+            name = next(query, None)
+            name = candidate.object_id if name is None else name
+            candidates.update({candidate.object_id: name})
+        for (selection_id, candidate_id) in selections.items():
+            candidate_name = candidates.get(candidate_id)
+            if candidate_name is not None:
+                selections.update({selection_id: candidate_name})
+        return selections
+
 
 @dataclass(eq=True, unsafe_hash=True)
 class InternalManifest:
