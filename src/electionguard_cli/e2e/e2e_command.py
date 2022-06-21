@@ -105,7 +105,7 @@ def E2eCommand(
     )
 
     # print results
-    PrintResultsStep().print_election_results(decrypt_results)
+    PrintResultsStep().print_election_results(decrypt_results, election_inputs.manifest)
 
     # publish election record
     E2ePublishStep().export(
