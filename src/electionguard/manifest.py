@@ -72,7 +72,6 @@ class VoteVariationType(Enum):
     see: https://developers.google.com/elections-data/reference/vote-variation
     """
 
-    unknown = "unknown"
     one_of_m = "one_of_m"
     approval = "approval"
     borda = "borda"
@@ -86,6 +85,14 @@ class VoteVariationType(Enum):
     super_majority = "super_majority"
     other = "other"
 
+SUPPORTED_VOTE_VARIATIONS = [
+    VoteVariationType.one_of_m,
+    VoteVariationType.approval,
+    VoteVariationType.majority,
+    VoteVariationType.n_of_m,
+    VoteVariationType.plurality,
+    VoteVariationType.super_majority
+]
 
 # pylint: disable=super-init-not-called
 @dataclass(eq=True, unsafe_hash=True)
@@ -461,12 +468,17 @@ class ContestDescription(OrderedObjectBase, CryptoHashable):
             len(sequence_ids) == expected_selection_count
         )
 
+        contest_has_supported_vote_variation = (
+            self.vote_variation in SUPPORTED_VOTE_VARIATIONS
+        )
+
         success = (
             contest_has_valid_number_elected
             and contest_has_valid_votes_allowed
             and selections_have_valid_candidate_ids
             and selections_have_valid_selection_ids
             and selections_have_valid_sequence_ids
+            and contest_has_supported_vote_variation
         )
 
         if not success:
@@ -480,6 +492,7 @@ class ContestDescription(OrderedObjectBase, CryptoHashable):
                         "selections_have_valid_candidate_ids": selections_have_valid_candidate_ids,
                         "selections_have_valid_selection_ids": selections_have_valid_selection_ids,
                         "selections_have_valid_sequence_ids": selections_have_valid_sequence_ids,
+                        "contest_has_supported_vote_variation": contest_has_supported_vote_variation,
                     }
                 ),
             )
