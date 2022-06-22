@@ -85,13 +85,14 @@ class VoteVariationType(Enum):
     super_majority = "super_majority"
     other = "other"
 
+
 SUPPORTED_VOTE_VARIATIONS = [
     VoteVariationType.one_of_m,
     VoteVariationType.approval,
     VoteVariationType.majority,
     VoteVariationType.n_of_m,
     VoteVariationType.plurality,
-    VoteVariationType.super_majority
+    VoteVariationType.super_majority,
 ]
 
 # pylint: disable=super-init-not-called
