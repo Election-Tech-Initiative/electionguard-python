@@ -142,7 +142,7 @@ class DecryptionMediator:
         """
         # If a quorum not announced, not ready
         if len(self._available_guardians) < self._context.quorum:
-            log_warning("cannot decrypt with less than quorum available guardians")
+            log_warning("cannot decrypt with fewer than quorum available guardians")
             return False
 
         # If guardians missing or available not accounted for, not ready

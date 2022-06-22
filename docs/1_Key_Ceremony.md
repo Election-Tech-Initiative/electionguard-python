@@ -28,7 +28,7 @@ The final step is to publish the joint election key after all keys and backups h
 - **Election Partial Key Backup:** A point on a secret polynomial and commitments to verify this point for a designated guardian.
 - **Election Polynomial:** The election polynomial is the mathematical expression that each Guardian defines to solve for his or her private key. A different point associated with the polynomial is shared with each of the other guardians so that the guardians can come together to derive the polynomial function and solve for the private key.
 - **Joint Key:** Combined public key from election public keys of each guardian
-- **Quorum:** Quantity of guardians (k) that is required to decrypt the election and is less than the total number of guardians available (n)
+- **Quorum:** Quantity of guardians (k) that is required to decrypt the election and is fewer than the total number of guardians available (n)
 
 ## Process
 
