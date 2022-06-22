@@ -4,7 +4,11 @@ from datetime import datetime
 from tests.base_test_case import BaseTestCase
 
 from electionguard.manifest import (
+    Candidate,
+    ContestDescription,
     ContestDescriptionWithPlaceholders,
+    InternationalizedText,
+    Language,
     Manifest,
     InternalManifest,
     SelectionDescription,
@@ -21,6 +25,87 @@ ballot_factory = BallotFactory.BallotFactory()
 
 class TestManifest(BaseTestCase):
     """Manifest tests"""
+
+    @staticmethod
+    def _set_selection(
+        manifest: Manifest, selection_id: str, candidate_id: str
+    ) -> None:
+        selection = SelectionDescription(selection_id, 1, candidate_id)
+        contest = ContestDescription(
+            "contest1",
+            1,
+            "e1",
+            VoteVariationType.approval,
+            1,
+            1,
+            "contest",
+            [selection],
+        )
+        manifest.contests = [contest]
+
+    @staticmethod
+    def _set_candidate(
+        manifest: Manifest,
+        candidate_id: str,
+        name: str,
+        lang: str,
+        write_in: bool = False,
+    ) -> None:
+        text_name = InternationalizedText([Language(name, lang)])
+        candidate = Candidate(candidate_id, text_name, is_write_in=write_in)
+        manifest.candidates = [candidate]
+
+    def test_get_selection_names_with_valid_selection(self) -> None:
+        # arrange
+        manifest = election_factory.get_simple_manifest_from_file()
+        TestManifest._set_selection(manifest, "selection1", "candidate1")
+        TestManifest._set_candidate(manifest, "candidate1", "My Candidate", "en")
+
+        # act
+        selection_names = manifest.get_selection_names("en")
+
+        # assert
+        self.assertEqual(1, len(selection_names.keys()))
+        self.assertEqual("My Candidate", selection_names["selection1"])
+
+    def test_get_selection_names_with_missing_language(self) -> None:
+        # arrange
+        manifest = election_factory.get_simple_manifest_from_file()
+        TestManifest._set_selection(manifest, "selection1", "candidate1")
+        TestManifest._set_candidate(manifest, "candidate1", "My Candidate", "en")
+
+        # act
+        selection_names = manifest.get_selection_names("es")
+
+        # assert
+        self.assertEqual(1, len(selection_names.keys()))
+        self.assertEqual("candidate1", selection_names["selection1"])
+
+    def test_get_selection_names_with_missing_candidate(self) -> None:
+        # arrange
+        manifest = election_factory.get_simple_manifest_from_file()
+        TestManifest._set_selection(manifest, "selection1", "candidate1")
+        manifest.candidates = []
+
+        # act
+        selection_names = manifest.get_selection_names("es")
+
+        # assert
+        self.assertEqual(1, len(selection_names.keys()))
+        self.assertEqual("candidate1", selection_names["selection1"])
+
+    def test_get_selection_names_with_write_in(self) -> None:
+        # arrange
+        manifest = election_factory.get_simple_manifest_from_file()
+        TestManifest._set_selection(manifest, "selection1", "candidate1")
+        TestManifest._set_candidate(manifest, "candidate1", "", "en", write_in=True)
+
+        # act
+        selection_names = manifest.get_selection_names("es")
+
+        # assert
+        self.assertEqual(1, len(selection_names.keys()))
+        self.assertEqual("Write-In", selection_names["selection1"])
 
     def test_simple_manifest_is_valid(self) -> None:
 
