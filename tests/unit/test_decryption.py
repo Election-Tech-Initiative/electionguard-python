@@ -70,7 +70,7 @@ class TestDecryption(BaseTestCase):
         self.guardians: List[Guardian] = KeyCeremonyOrchestrator.create_guardians(
             self.CEREMONY_DETAILS
         )
-        KeyCeremonyOrchestrator.perform_ceremony(
+        KeyCeremonyOrchestrator.perform_ceremony_for_thresholding(
             self.guardians, self.key_ceremony_mediator
         )
         self.joint_public_key = self.key_ceremony_mediator.publish_joint_key()
