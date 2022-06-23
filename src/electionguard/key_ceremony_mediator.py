@@ -171,7 +171,7 @@ class KeyCeremonyMediator:
         Publish joint election key from the public keys of all guardians
         :return: Joint key for election
         """
-        if not self.all_backups_verified():
+        if not self.all_guardians_announced():
             return None
 
         return combine_election_public_keys(list(self._election_public_keys.values()))
