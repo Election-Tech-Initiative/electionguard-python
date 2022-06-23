@@ -83,7 +83,7 @@ class TestVerify(BaseTestCase):
             "key_ceremony_mediator_mediator", CEREMONY_DETAILS
         )
         guardians = KeyCeremonyOrchestrator.create_guardians(CEREMONY_DETAILS)
-        KeyCeremonyOrchestrator.perform_full_ceremony(guardians, key_ceremony_mediator)
+        KeyCeremonyOrchestrator.perform_ceremony(guardians, key_ceremony_mediator)
         joint_public_key = key_ceremony_mediator.publish_joint_key()
         election_public_keys = key_ceremony_mediator._election_public_keys
 

@@ -21,8 +21,19 @@ class KeyCeremonyOrchestrator:
         ]
 
     @staticmethod
-    def perform_full_ceremony(guardians: List[Guardian], mediator: KeyCeremonyMediator):
-        """Perform full key ceremony so joint election key is ready for publish"""
+    def perform_ceremony(guardians: List[Guardian], mediator: KeyCeremonyMediator):
+        """Perform key ceremony so joint election key is ready for publish"""
+
+        KeyCeremonyOrchestrator.perform_round_1(guardians, mediator)
+
+    @staticmethod
+    def perform_ceremony_for_thresholding(
+        guardians: List[Guardian], mediator: KeyCeremonyMediator
+    ):
+        """
+        Perform full key ceremony with extra rounds to allow for thresholding so
+        joint election key is ready for publish
+        """
 
         KeyCeremonyOrchestrator.perform_round_1(guardians, mediator)
         KeyCeremonyOrchestrator.perform_round_2(guardians, mediator)

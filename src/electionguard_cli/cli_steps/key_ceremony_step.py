@@ -21,7 +21,7 @@ class KeyCeremonyStep(CliStepBase):
         mediator: KeyCeremonyMediator = KeyCeremonyMediator(
             "mediator_1", guardians[0].ceremony_details
         )
-        KeyCeremonyOrchestrator.perform_full_ceremony(guardians, mediator)
+        KeyCeremonyOrchestrator.perform_ceremony(guardians, mediator)
         joint_key = mediator.publish_joint_key()
 
         self.print_value("Joint Key", get_optional(joint_key).joint_public_key)

@@ -68,9 +68,7 @@ class TestDecryptionMediator(BaseTestCase):
         self.guardians: List[Guardian] = KeyCeremonyOrchestrator.create_guardians(
             self.CEREMONY_DETAILS
         )
-        KeyCeremonyOrchestrator.perform_full_ceremony(
-            self.guardians, key_ceremony_mediator
-        )
+        KeyCeremonyOrchestrator.perform_ceremony(self.guardians, key_ceremony_mediator)
         self.joint_public_key = key_ceremony_mediator.publish_joint_key()
         self.assertIsNotNone(self.joint_public_key)
 

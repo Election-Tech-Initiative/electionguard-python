@@ -125,7 +125,7 @@ class ElectionFactory:
         ceremony_details = CeremonyDetails(NUMBER_OF_GUARDIANS, QUORUM)
         guardians = KeyCeremonyOrchestrator.create_guardians(ceremony_details)
         mediator = KeyCeremonyMediator("key-ceremony-mediator", ceremony_details)
-        KeyCeremonyOrchestrator.perform_full_ceremony(guardians, mediator)
+        KeyCeremonyOrchestrator.perform_ceremony(guardians, mediator)
 
         # Final: Joint Key
         joint_key = mediator.publish_joint_key()
