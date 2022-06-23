@@ -12,7 +12,7 @@ class BaseTestCase(TestCase):
     def setUpClass(cls):
         """Set up class."""
         cls.env_patcher = patch.dict(
-            os.environ, {"PRIME_OPTION": PrimeOption.TestOnly.value}
+            os.environ, {"PRIME_OPTION": PrimeOption.Standard.value}
         )
         cls.env_patcher.start()
 
