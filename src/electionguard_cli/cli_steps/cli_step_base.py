@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Optional
 import click
 
 
@@ -19,7 +19,7 @@ class CliStepBase:
         click.secho(s, fg=self.header_color)
         click.secho(f"{'-'*40}", fg=self.header_color)
 
-    def print_section(self, s: str) -> None:
+    def print_section(self, s: Optional[str]) -> None:
         click.echo("")
         click.secho(s, fg=self.section_color, bold=True)
 
