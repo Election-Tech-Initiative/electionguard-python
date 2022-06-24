@@ -25,7 +25,7 @@ class ElectionBuilder:
     """
     quorum: int
     """
-    The quorum of guardians necessary to decrypt an election.  Must be less than `number_of_guardians`
+    The quorum of guardians necessary to decrypt an election.  Must be fewer than `number_of_guardians`
     """
 
     manifest: Manifest
