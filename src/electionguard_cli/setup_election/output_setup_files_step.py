@@ -1,6 +1,7 @@
 from os import path
 from os.path import join
-from shutil import make_archive, rmtree
+
+import click
 from electionguard.election import CiphertextElectionContext
 from electionguard.serialize import to_file
 from electionguard.constants import get_constants
@@ -15,44 +16,36 @@ from .setup_inputs import SetupInputs
 from ..cli_models.e2e_build_election_results import BuildElectionResults
 from ..cli_steps import OutputStepBase
 
-ENCRYPTION_PACKAGE_DIR = "public_encryption_package"
-
 
 class OutputSetupFilesStep(OutputStepBase):
     """Responsible for outputting the files necessary to setup an election"""
 
     def output(
-        self, setup_inputs: SetupInputs, build_election_results: BuildElectionResults
+        self,
+        setup_inputs: SetupInputs,
+        build_election_results: BuildElectionResults,
+        package_dir: str,
+        keys_dir: str,
     ) -> None:
         self.print_header("Generating Output")
-        self._export_context(setup_inputs, build_election_results.context)
-        self._export_constants(setup_inputs)
-        self._export_manifest(setup_inputs)
-        self._export_guardian_records(setup_inputs)
-        if setup_inputs.zip:
-            self._zip(setup_inputs)
-        self._export_guardian_private_keys(setup_inputs)
-
-    def _zip(self, setup_inputs: SetupInputs) -> None:
-        dir_to_zip = path.join(setup_inputs.out, ENCRYPTION_PACKAGE_DIR)
-        file_name = path.join(setup_inputs.out, ENCRYPTION_PACKAGE_DIR)
-        make_archive(file_name, self._COMPRESSION_FORMAT, dir_to_zip)
-        rmtree(dir_to_zip)
-        self.print_value("Election record", f"{file_name}.{self._COMPRESSION_FORMAT}")
+        self._export_context(build_election_results.context, package_dir)
+        self._export_constants(package_dir)
+        self._export_manifest(setup_inputs, package_dir)
+        self._export_guardian_records(setup_inputs, package_dir)
+        self._export_guardian_private_keys(setup_inputs, keys_dir)
 
     def _export_context(
-        self, setup_inputs: SetupInputs, context: CiphertextElectionContext
+        self,
+        context: CiphertextElectionContext,
+        out_dir: str,
     ) -> None:
-        out_dir = path.join(setup_inputs.out, ENCRYPTION_PACKAGE_DIR)
         self._export_file("Context", context, out_dir, CONTEXT_FILE_NAME)
 
-    def _export_constants(self, setup_inputs: SetupInputs) -> None:
+    def _export_constants(self, out_dir: str) -> None:
         constants = get_constants()
-        out_dir = path.join(setup_inputs.out, ENCRYPTION_PACKAGE_DIR)
         self._export_file("Constants", constants, out_dir, CONSTANTS_FILE_NAME)
 
-    def _export_manifest(self, setup_inputs: SetupInputs) -> None:
-        out_dir = path.join(setup_inputs.out, ENCRYPTION_PACKAGE_DIR)
+    def _export_manifest(self, setup_inputs: SetupInputs, out_dir: str) -> None:
         self._export_file(
             "Manifest",
             setup_inputs.manifest,
@@ -60,10 +53,8 @@ class OutputSetupFilesStep(OutputStepBase):
             MANIFEST_FILE_NAME,
         )
 
-    def _export_guardian_records(self, setup_inputs: SetupInputs) -> None:
-        guardian_records_dir = join(
-            setup_inputs.out, ENCRYPTION_PACKAGE_DIR, "guardians"
-        )
+    def _export_guardian_records(self, setup_inputs: SetupInputs, out_dir: str) -> None:
+        guardian_records_dir = join(out_dir, "guardians")
         guardian_records = OutputStepBase._get_guardian_records(setup_inputs)
         for guardian_record in guardian_records:
             to_file(
@@ -73,6 +64,12 @@ class OutputSetupFilesStep(OutputStepBase):
             )
         self.print_value("Guardian records", guardian_records_dir)
 
-    def _export_guardian_private_keys(self, setup_inputs: SetupInputs) -> None:
-        guardian_keys_dir = join(setup_inputs.out, "private_guardian_data")
-        self._export_private_keys(guardian_keys_dir, setup_inputs.guardians)
+    def _export_guardian_private_keys(self, inputs: SetupInputs, keys_dir: str) -> None:
+        if path.exists(keys_dir):
+            confirm = click.confirm(
+                "Existing guardian keys found, are you sure you want to overwrite them?",
+                default=True,
+            )
+            if not confirm:
+                return
+        self._export_private_keys(keys_dir, inputs.guardians)
