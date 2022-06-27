@@ -26,15 +26,25 @@ from .setup_input_retrieval_step import SetupInputRetrievalStep
     type=click.File(),
 )
 @click.option(
-    "--out",
-    prompt="Output directory",
+    "--package-dir",
+    prompt="Election Package Output Directory",
     help="The location of a directory into which will be placed the output files such as "
     + "context, constants, and guardian keys. Existing files will be overwritten.",
     type=click.Path(exists=False, dir_okay=True, file_okay=False, resolve_path=True),
 )
-@click.option("--zip/--no-zip", default=False)
+@click.option(
+    "--keys-dir",
+    prompt="Private guardian keys directory",
+    help="The location of a directory into which will be placed the guardian's private keys "
+    + "This folder should be protected. Existing files will be overwritten.",
+    type=click.Path(exists=False, dir_okay=True, file_okay=False, resolve_path=True),
+)
 def SetupElectionCommand(
-    guardian_count: int, quorum: int, manifest: TextIOWrapper, out: str, zip: bool
+    guardian_count: int,
+    quorum: int,
+    manifest: TextIOWrapper,
+    package_dir: str,
+    keys_dir: str,
 ) -> None:
     """
     This command runs an automated key ceremony and produces the files
@@ -42,10 +52,14 @@ def SetupElectionCommand(
     """
 
     setup_inputs = SetupInputRetrievalStep().get_inputs(
-        guardian_count, quorum, manifest, out, zip
+        guardian_count,
+        quorum,
+        manifest,
     )
     joint_key = KeyCeremonyStep().run_key_ceremony(setup_inputs.guardians)
     build_election_results = ElectionBuilderStep().build_election_with_key(
         setup_inputs, joint_key
     )
-    OutputSetupFilesStep().output(setup_inputs, build_election_results)
+    OutputSetupFilesStep().output(
+        setup_inputs, build_election_results, package_dir, keys_dir
+    )

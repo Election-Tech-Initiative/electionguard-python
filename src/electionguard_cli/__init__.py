@@ -73,7 +73,6 @@ from electionguard_cli.import_ballots import (
     import_ballots_publish_step,
 )
 from electionguard_cli.setup_election import (
-    ENCRYPTION_PACKAGE_DIR,
     OutputSetupFilesStep,
     SetupElectionCommand,
     SetupInputRetrievalStep,
@@ -97,7 +96,6 @@ __all__ = [
     "E2eInputRetrievalStep",
     "E2eInputs",
     "E2ePublishStep",
-    "ENCRYPTION_PACKAGE_DIR",
     "ElectionBuilderStep",
     "EncryptBallotInputs",
     "EncryptBallotsCommand",

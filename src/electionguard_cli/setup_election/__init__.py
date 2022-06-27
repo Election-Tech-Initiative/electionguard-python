@@ -4,7 +4,6 @@ from electionguard_cli.setup_election import setup_input_retrieval_step
 from electionguard_cli.setup_election import setup_inputs
 
 from electionguard_cli.setup_election.output_setup_files_step import (
-    ENCRYPTION_PACKAGE_DIR,
     OutputSetupFilesStep,
 )
 from electionguard_cli.setup_election.setup_election_command import (
@@ -18,7 +17,6 @@ from electionguard_cli.setup_election.setup_inputs import (
 )
 
 __all__ = [
-    "ENCRYPTION_PACKAGE_DIR",
     "OutputSetupFilesStep",
     "SetupElectionCommand",
     "SetupInputRetrievalStep",

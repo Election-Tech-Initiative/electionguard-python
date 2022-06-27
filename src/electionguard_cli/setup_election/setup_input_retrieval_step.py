@@ -17,8 +17,6 @@ class SetupInputRetrievalStep(InputRetrievalStepBase):
         guardian_count: int,
         quorum: int,
         manifest_file: TextIOWrapper,
-        out: str,
-        zip: bool,
     ) -> SetupInputs:
 
         self.print_header("Retrieving Inputs")
@@ -27,4 +25,4 @@ class SetupInputRetrievalStep(InputRetrievalStepBase):
         )
         manifest: Manifest = self._get_manifest(manifest_file)
 
-        return SetupInputs(guardian_count, quorum, guardians, manifest, out, zip)
+        return SetupInputs(guardian_count, quorum, guardians, manifest)
