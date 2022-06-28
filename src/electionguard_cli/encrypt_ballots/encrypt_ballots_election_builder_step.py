@@ -11,7 +11,7 @@ class EncryptBallotsElectionBuilderStep(ElectionBuilderStep):
         self, election_inputs: EncryptBallotInputs
     ) -> BuildElectionResults:
         verification_url = election_inputs.context.get_extended_data_field(
-            self.verification_url_name
+            self.VERIFICATION_URL_NAME
         )
         return self._build_election(
             election_inputs,

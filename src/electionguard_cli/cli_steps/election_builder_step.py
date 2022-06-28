@@ -42,7 +42,7 @@ class ElectionBuilderStep(CliStepBase):
         election_builder.set_commitment_hash(committment_hash)
         if verification_url is not None:
             election_builder.add_extended_data_field(
-                self.verification_url_name, verification_url
+                self.VERIFICATION_URL_NAME, verification_url
             )
         click.echo("Creating context and internal manifest")
         build_result = election_builder.build()

@@ -12,7 +12,7 @@ class CliStepBase:
     value_color = "yellow"
     warning_color = "bright_red"
     section_color = "bright_white"
-    verification_url_name = "verification_url"
+    VERIFICATION_URL_NAME = "verification_url"
 
     def print_header(self, s: str) -> None:
         click.echo("")
