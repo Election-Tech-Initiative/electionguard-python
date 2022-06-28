@@ -1,4 +1,4 @@
-from typing import TypeVar, Callable, List, Tuple
+from typing import Any, TypeVar, Callable, List, Tuple
 import os
 from random import Random, randint
 import uuid
@@ -42,7 +42,7 @@ class BallotFactory:
     def get_random_selection_from(
         description: SelectionDescription,
         random_source: Random,
-        is_placeholder=False,
+        is_placeholder: bool = False,
     ) -> PlaintextBallotSelection:
 
         selected = bool(random_source.randint(0, 1))
@@ -52,8 +52,8 @@ class BallotFactory:
         self,
         description: ContestDescription,
         random: Random,
-        suppress_validity_check=False,
-        with_trues=False,
+        suppress_validity_check: bool = False,
+        with_trues: bool = False,
     ) -> PlaintextBallotContest:
         """
         Get a randomly filled contest for the given description that
@@ -90,7 +90,7 @@ class BallotFactory:
         self,
         internal_manifest: InternalManifest,
         ballot_id: str = None,
-        with_trues=True,
+        with_trues: bool = True,
     ) -> PlaintextBallot:
         """
         Get a single Fake Ballot object that is manually constructed with default vaules
@@ -148,9 +148,14 @@ class BallotFactory:
         return from_list_in_file(PlaintextBallot, os.path.join(_data, filename))
 
 
+# TODO Migrate to strategies
 @composite
 def get_selection_well_formed(
-    draw: _DrawType, ids=uuids(), bools=booleans(), txt=text(), vote=integers(0, 1)
+    draw: _DrawType,
+    ids: Any = uuids(),
+    bools: Any = booleans(),
+    txt: Any = text(),
+    vote: Any = integers(0, 1),
 ) -> Tuple[str, PlaintextBallotSelection]:
     use_none = draw(bools)
     if use_none:
@@ -164,9 +169,14 @@ def get_selection_well_formed(
     )
 
 
+# TODO Migrate to strategies
 @composite
 def get_selection_poorly_formed(
-    draw: _DrawType, ids=uuids(), bools=booleans(), txt=text(), vote=integers(0, 1)
+    draw: _DrawType,
+    ids: Any = uuids(),
+    bools: Any = booleans(),
+    txt: Any = text(),
+    vote: Any = integers(0, 1),
 ) -> Tuple[str, PlaintextBallotSelection]:
     use_none = draw(bools)
     if use_none:

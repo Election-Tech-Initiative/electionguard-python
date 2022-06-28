@@ -1,7 +1,7 @@
 from copy import deepcopy
 from functools import reduce
 from random import Random
-from typing import TypeVar, Callable, List, Optional, Tuple
+from typing import Any, TypeVar, Callable, List, Optional, Tuple, Union
 
 from hypothesis.provisional import urls
 from hypothesis.strategies import (
@@ -23,12 +23,14 @@ from electionguard.election import (
     CiphertextElectionContext,
     make_ciphertext_election_context,
 )
+from electionguard.elgamal import ElGamalKeyPair
 from electionguard.encrypt import selection_from
 from electionguard.group import ElementModQ
 from electionguard.manifest import (
     Candidate,
     ElectionType,
     ReportingUnitType,
+    SpecVersion,
     VoteVariationType,
     ContactInformation,
     GeopoliticalUnit,
@@ -145,7 +147,7 @@ _last_names = [
 
 
 @composite
-def human_names(draw: _DrawType):
+def human_names(draw: _DrawType) -> str:
     """
     Generates a string with a human first and last name.
     :param draw: Hidden argument, used by Hypothesis.
@@ -157,7 +159,7 @@ def human_names(draw: _DrawType):
 
 
 @composite
-def election_types(draw: _DrawType):
+def election_types(draw: _DrawType) -> ElectionType:
     """
     Generates an `ElectionType`.
     :param draw: Hidden argument, used by Hypothesis.
@@ -167,7 +169,7 @@ def election_types(draw: _DrawType):
 
 
 @composite
-def reporting_unit_types(draw: _DrawType):
+def reporting_unit_types(draw: _DrawType) -> ReportingUnitType:
     """
     Generates a `ReportingUnitType` object.
     :param draw: Hidden argument, used by Hypothesis.
@@ -177,7 +179,7 @@ def reporting_unit_types(draw: _DrawType):
 
 
 @composite
-def contact_infos(draw: _DrawType):
+def contact_infos(draw: _DrawType) -> ContactInformation:
     """
     Generates a `ContactInformation` object.
     :param draw: Hidden argument, used by Hypothesis.
@@ -191,7 +193,7 @@ def contact_infos(draw: _DrawType):
 
 
 @composite
-def two_letter_codes(draw: _DrawType, min_size=2, max_size=2):
+def two_letter_codes(draw: _DrawType, min_size: int = 2, max_size: int = 2) -> Any:
     """
     Generates a string with only a few characters, by default 2 letters
     from `a` to `z`, but configurable with the `min_size` and `max_size`
@@ -209,7 +211,7 @@ def two_letter_codes(draw: _DrawType, min_size=2, max_size=2):
 
 
 @composite
-def languages(draw: _DrawType):
+def languages(draw: _DrawType) -> Language:
     """
     Generates a `Language` object with an arbitrary two-letter string as the code and
     something messier for the text ostensibly written in that language.
@@ -219,7 +221,7 @@ def languages(draw: _DrawType):
 
 
 @composite
-def language_human_names(draw: _DrawType):
+def language_human_names(draw: _DrawType) -> Language:
     """
     Generates a `Language` object with an arbitrary two-letter string as the code and
     a human name for the text ostensibly written in that language.
@@ -229,7 +231,7 @@ def language_human_names(draw: _DrawType):
 
 
 @composite
-def internationalized_texts(draw: _DrawType):
+def internationalized_texts(draw: _DrawType) -> InternationalizedText:
     """
     Generates an `InternationalizedText` object with a list of `Language` objects
     within (representing a multilingual string).
@@ -239,7 +241,7 @@ def internationalized_texts(draw: _DrawType):
 
 
 @composite
-def internationalized_human_names(draw: _DrawType):
+def internationalized_human_names(draw: _DrawType) -> InternationalizedText:
     """
     Generates an `InternationalizedText` object with a list of `Language` objects
     within (representing a multilingual human name).
@@ -251,7 +253,7 @@ def internationalized_human_names(draw: _DrawType):
 
 
 @composite
-def annotated_strings(draw: _DrawType):
+def annotated_strings(draw: _DrawType) -> AnnotatedString:
     """
     Generates an `AnnotatedString` object with one `Language` and an associated
     `value` string.
@@ -263,7 +265,7 @@ def annotated_strings(draw: _DrawType):
 
 
 @composite
-def annotated_emails(draw: _DrawType):
+def annotated_emails(draw: _DrawType) -> AnnotatedString:
     """
     Generates a `Email` object with an arbitrary two-letter string as annotation and an
     email format string as value.
@@ -274,8 +276,8 @@ def annotated_emails(draw: _DrawType):
 
 @composite
 def ballot_styles(
-    draw: _DrawType, party_ids: List[Party], geo_units: List[GeopoliticalUnit]
-):
+    draw: _DrawType, parties: List[Party], geo_units: List[GeopoliticalUnit]
+) -> BallotStyle:
     """
     Generates a `BallotStyle` object, which rolls up a list of parties and
     geopolitical units (passed as arguments), with some additional information
@@ -284,23 +286,23 @@ def ballot_styles(
     :param party_ids: a list of `Party` objects to be used in this ballot style
     :param geo_units: a list of `GeopoliticalUnit` objects to be used in this ballot style
     """
-    assert len(party_ids) > 0
+    assert len(parties) > 0
     assert len(geo_units) > 0
 
     gp_unit_ids = [x.object_id for x in geo_units]
     if len(gp_unit_ids) == 0:
-        gp_unit_ids = None
+        gp_unit_ids = []
 
-    party_ids = [x.get_party_id() for x in party_ids]
+    party_ids = [party.get_party_id() for party in parties]
     if len(party_ids) == 0:
-        party_ids = None
+        party_ids = []
 
     image_uri = draw(urls())
     return BallotStyle(str(draw(uuids())), gp_unit_ids, party_ids, image_uri)
 
 
 @composite
-def party_lists(draw: _DrawType, num_parties: int):
+def party_lists(draw: _DrawType, num_parties: int) -> List[Party]:
     """
     Generates a `List[Party]` of the requested length.
     :param draw: Hidden argument, used by Hypothesis.
@@ -324,7 +326,7 @@ def party_lists(draw: _DrawType, num_parties: int):
 
 
 @composite
-def geopolitical_units(draw: _DrawType):
+def geopolitical_units(draw: _DrawType) -> GeopoliticalUnit:
     """
     Generates a `GeopoliticalUnit` object.
     :param draw: Hidden argument, used by Hypothesis.
@@ -338,7 +340,7 @@ def geopolitical_units(draw: _DrawType):
 
 
 @composite
-def candidates(draw: _DrawType, party_list: Optional[List[Party]]):
+def candidates(draw: _DrawType, party_list: Optional[List[Party]]) -> Candidate:
     """
     Generates a `Candidate` object, assigning it one of the parties from `party_list` at random,
     with a chance that there will be no party assigned at all.
@@ -382,7 +384,7 @@ def candidate_contest_descriptions(
     geo_units: List[GeopoliticalUnit],
     n: Optional[int] = None,
     m: Optional[int] = None,
-):
+) -> Tuple[List[Candidate], CandidateContestDescription]:
     """
     Generates a tuple: a `List[Candidate]` and a corresponding `CandidateContestDescription` for
     an n-of-m contest.
@@ -437,7 +439,7 @@ def contest_descriptions_room_for_overvoting(
     sequence_order: int,
     party_list: List[Party],
     geo_units: List[GeopoliticalUnit],
-):
+) -> Any:
     """
     Similar to `contest_descriptions`, but guarantees that for the n-of-m contest that n < m,
     therefore it's possible to construct an "overvoted" plaintext, which should then fail subsequent tests.
@@ -463,7 +465,7 @@ def contest_descriptions_room_for_overvoting(
 @composite
 def referendum_contest_descriptions(
     draw: _DrawType, sequence_order: int, geo_units: List[GeopoliticalUnit]
-):
+) -> Tuple[List[Candidate], ReferendumContestDescription]:
     """
     Generates a tuple: a list of party-less candidates and a corresponding `ReferendumContestDescription`.
     :param draw: Hidden argument, used by Hypothesis.
@@ -503,7 +505,7 @@ def contest_descriptions(
     sequence_order: int,
     party_list: List[Party],
     geo_units: List[GeopoliticalUnit],
-):
+) -> Any:
     """
     Generates either the result of `referendum_contest_descriptions` or `candidate_contest_descriptions`.
     :param draw: Hidden argument, used by Hypothesis.
@@ -524,7 +526,7 @@ def contest_descriptions(
 @composite
 def election_descriptions(
     draw: _DrawType, max_num_parties: int = 3, max_num_contests: int = 3
-):
+) -> Manifest:
     """
     Generates a `Manifest` -- the top-level object describing an election.
     :param draw: Hidden argument, used by Hypothesis.
@@ -561,7 +563,7 @@ def election_descriptions(
 
     return Manifest(
         election_scope_id=draw(emails()),
-        spec_version="v0.95",
+        spec_version=SpecVersion.EG0_95,
         type=ElectionType.general,  # good enough for now
         start_date=start_date,
         end_date=end_date,
@@ -578,7 +580,7 @@ def election_descriptions(
 @composite
 def plaintext_voted_ballots(
     draw: _DrawType, internal_manifest: InternalManifest, count: int = 1
-):
+) -> Union[Any, List[PlaintextBallot]]:
     """
     Given
     """
@@ -591,7 +593,9 @@ def plaintext_voted_ballots(
 
 
 @composite
-def plaintext_voted_ballot(draw: _DrawType, internal_manifest: InternalManifest):
+def plaintext_voted_ballot(
+    draw: _DrawType, internal_manifest: InternalManifest
+) -> PlaintextBallot:
     """
     Given an `InternalManifest` object, generates an arbitrary `PlaintextBallot` with the
     choices made randomly.
@@ -642,7 +646,9 @@ CiphertextElectionsTupleType = Tuple[ElementModQ, CiphertextElectionContext]
 
 
 @composite
-def ciphertext_elections(draw: _DrawType, manifest: Manifest):
+def ciphertext_elections(
+    draw: _DrawType, manifest: Manifest
+) -> CiphertextElectionsTupleType:
     """
     Generates a `CiphertextElectionContext` with a single public-private key pair as the encryption context.
 
@@ -653,7 +659,7 @@ def ciphertext_elections(draw: _DrawType, manifest: Manifest):
     which the `CiphertextElectionContext` will be associated
     :return: a tuple of a `CiphertextElectionContext` and the secret key associated with it
     """
-    keypair = draw(elgamal_keypairs())
+    keypair: ElGamalKeyPair = draw(elgamal_keypairs())
     secret_key = keypair.secret_key
     public_key = keypair.public_key
     commitment_hash = draw(elements_mod_q_no_zero())
@@ -680,7 +686,9 @@ ElectionsAndBallotsTupleType = Tuple[
 
 
 @composite
-def elections_and_ballots(draw: _DrawType, num_ballots: int = 3):
+def elections_and_ballots(
+    draw: _DrawType, num_ballots: int = 3
+) -> ElectionsAndBallotsTupleType:
     """
     A convenience generator to generate all of the necessary components for simulating an election.
     Every ballot will match the same ballot style. Hypothesis doesn't

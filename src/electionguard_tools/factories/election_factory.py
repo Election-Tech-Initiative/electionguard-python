@@ -3,7 +3,7 @@
 from datetime import datetime
 import os
 from dataclasses import dataclass
-from typing import TypeVar, Callable, Optional, Tuple, List
+from typing import Any, TypeVar, Callable, Optional, Tuple, List
 
 from hypothesis.strategies import (
     composite,
@@ -29,6 +29,7 @@ from electionguard.manifest import (
     Manifest,
     ElectionType,
     InternalManifest,
+    SpecVersion,
     generate_placeholder_selections_from,
     GeopoliticalUnit,
     Candidate,
@@ -204,7 +205,7 @@ class ElectionFactory:
         )
 
         fake_manifest = Manifest(
-            spec_version="v0.95",
+            spec_version=SpecVersion.EG0_95,
             election_scope_id="some-scope-id",
             type=ElectionType.unknown,
             start_date=datetime.now(),
@@ -276,11 +277,11 @@ class ElectionFactory:
 @composite
 def get_selection_description_well_formed(
     draw: _DrawType,
-    ints=integers(1, 20),
-    email_addresses=emails(),
+    ints: Any = integers(1, 20),
+    email_addresses: Any = emails(),
     candidate_id: Optional[str] = None,
     sequence_order: Optional[int] = None,
-    ids=uuids(),
+    ids: Any = uuids(),
 ) -> Tuple[str, SelectionDescription]:
     """Get mock well formed selection description."""
     if candidate_id is None:
@@ -297,10 +298,10 @@ def get_selection_description_well_formed(
 @composite
 def get_contest_description_well_formed(
     draw: _DrawType,
-    ints=integers(1, 20),
-    txt=text(),
-    email_addresses=emails(),
-    selections=get_selection_description_well_formed(),
+    ints: Any = integers(1, 20),
+    txt: Any = text(),
+    email_addresses: Any = emails(),
+    selections: Any = get_selection_description_well_formed(),
     sequence_order: Optional[int] = None,
     electoral_district_id: Optional[str] = None,
 ) -> Tuple[str, ContestDescription]:
