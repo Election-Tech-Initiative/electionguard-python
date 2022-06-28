@@ -17,7 +17,6 @@ from electionguard import decryption_mediator
 from electionguard import decryption_share
 from electionguard import discrete_log
 from electionguard import election
-from electionguard import election_builder
 from electionguard import election_object_base
 from electionguard import election_polynomial
 from electionguard import elgamal
@@ -180,9 +179,6 @@ from electionguard.election import (
     CiphertextElectionContext,
     Configuration,
     make_ciphertext_election_context,
-)
-from electionguard.election_builder import (
-    ElectionBuilder,
 )
 from electionguard.election_object_base import (
     ElectionObjectBase,
@@ -462,7 +458,6 @@ __all__ = [
     "ElGamalKeyPair",
     "ElGamalPublicKey",
     "ElGamalSecretKey",
-    "ElectionBuilder",
     "ElectionConstants",
     "ElectionGuardLog",
     "ElectionJointKey",
@@ -603,7 +598,6 @@ __all__ = [
     "div_p",
     "div_q",
     "election",
-    "election_builder",
     "election_object_base",
     "election_polynomial",
     "elgamal",

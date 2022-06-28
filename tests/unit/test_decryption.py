@@ -31,7 +31,6 @@ from electionguard.group import (
     mult_p,
     pow_p,
 )
-from electionguard.election_builder import ElectionBuilder
 from electionguard.encrypt import EncryptionMediator
 from electionguard.guardian import Guardian
 from electionguard.key_ceremony import (
@@ -49,6 +48,8 @@ from electionguard_tools.helpers.key_ceremony_orchestrator import (
     KeyCeremonyOrchestrator,
 )
 from electionguard_tools.helpers.tally_accumulate import accumulate_plaintext_ballots
+from electionguard_tools.helpers.election_builder import ElectionBuilder
+
 
 election_factory = ElectionFactory.ElectionFactory()
 ballot_factory = BallotFactory.BallotFactory()
