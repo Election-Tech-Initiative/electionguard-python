@@ -73,7 +73,11 @@ jobs:
       - name: Build
         run: make build validate
       - name: Full Test Suite & Coverage
-        run: make coverage
+        uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 3
+          max_attempts: 20
+          command: make coverage
 
   mac_check:
     name: MacOS Check
@@ -96,4 +100,8 @@ jobs:
       - name: Build
         run: make build validate
       - name: Integration Tests
-        run: make test-integration
+        uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 2
+          max_attempts: 20
+          command: make test-integration
