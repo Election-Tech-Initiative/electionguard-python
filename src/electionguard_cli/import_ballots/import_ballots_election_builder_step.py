@@ -14,4 +14,5 @@ class ImportBallotsElectionBuilderStep(ElectionBuilderStep):
             election_inputs,
             election_inputs.context.elgamal_public_key,
             election_inputs.context.commitment_hash,
+            None,
         )

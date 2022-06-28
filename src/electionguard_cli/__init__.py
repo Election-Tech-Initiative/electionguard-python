@@ -74,10 +74,12 @@ from electionguard_cli.import_ballots import (
 )
 from electionguard_cli.setup_election import (
     OutputSetupFilesStep,
+    SetupElectionBuilderStep,
     SetupElectionCommand,
     SetupInputRetrievalStep,
     SetupInputs,
     output_setup_files_step,
+    setup_election_builder_step,
     setup_election_command,
     setup_input_retrieval_step,
     setup_inputs,
@@ -114,6 +116,7 @@ __all__ = [
     "OutputSetupFilesStep",
     "OutputStepBase",
     "PrintResultsStep",
+    "SetupElectionBuilderStep",
     "SetupElectionCommand",
     "SetupInputRetrievalStep",
     "SetupInputs",
@@ -153,6 +156,7 @@ __all__ = [
     "output_step_base",
     "print_results_step",
     "setup_election",
+    "setup_election_builder_step",
     "setup_election_command",
     "setup_input_retrieval_step",
     "setup_inputs",
