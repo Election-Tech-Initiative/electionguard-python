@@ -75,9 +75,8 @@ jobs:
       - name: Full Test Suite & Coverage
         uses: nick-fields/retry@v2
         with:
-          timeout_minutes: 10
+          timeout_minutes: 3
           max_attempts: 20
-          retry_on: error
           command: make coverage
 
   mac_check:
@@ -103,7 +102,6 @@ jobs:
       - name: Integration Tests
         uses: nick-fields/retry@v2
         with:
-          timeout_minutes: 10
+          timeout_minutes: 2
           max_attempts: 20
-          retry_on: error
           command: make test-integration
