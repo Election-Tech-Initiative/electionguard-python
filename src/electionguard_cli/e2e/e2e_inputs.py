@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from electionguard.ballot import PlaintextBallot
 from electionguard.guardian import Guardian
 from electionguard.manifest import Manifest
@@ -21,6 +21,7 @@ class E2eInputs(CliElectionInputsBase):
         spoil_id: str,
         output_record: str,
         output_keys: str,
+        verification_url: Optional[str],
     ):
         self.guardian_count = guardian_count
         self.quorum = quorum
@@ -30,8 +31,10 @@ class E2eInputs(CliElectionInputsBase):
         self.spoil_id = spoil_id
         self.output_record = output_record
         self.output_keys = output_keys
+        self.verification_url = verification_url
 
     ballots: List[PlaintextBallot]
     spoil_id: str
     output_record: str
     output_keys: str
+    verification_url: Optional[str]

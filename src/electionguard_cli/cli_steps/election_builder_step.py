@@ -2,7 +2,6 @@ from typing import Optional
 import click
 from electionguard.elgamal import ElGamalPublicKey
 from electionguard.group import ElementModQ
-from electionguard.key_ceremony import ElectionJointKey
 from electionguard.election_builder import ElectionBuilder
 from electionguard.utils import get_optional
 
@@ -12,16 +11,6 @@ from .cli_step_base import CliStepBase
 
 class ElectionBuilderStep(CliStepBase):
     """Responsible for creating a manifest and context for use in an election."""
-
-    def build_election_with_key(
-        self, election_inputs: CliElectionInputsBase, joint_key: ElectionJointKey
-    ) -> BuildElectionResults:
-        return self._build_election(
-            election_inputs,
-            joint_key.joint_public_key,
-            joint_key.commitment_hash,
-            None,
-        )
 
     def _build_election(
         self,
