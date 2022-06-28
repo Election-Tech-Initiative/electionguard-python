@@ -1,11 +1,12 @@
 from typing import List
-from electionguard.ballot import CiphertextBallot
-from electionguard.election import CiphertextElectionContext
 
+from electionguard.ballot import SubmittedBallot
+from electionguard.election import CiphertextElectionContext
 from electionguard.guardian import Guardian, get_valid_ballot_shares
 from electionguard.decryption_mediator import DecryptionMediator
 from electionguard.key_ceremony import ElectionPublicKey
 from electionguard.tally import CiphertextTally
+from electionguard.utils import get_optional
 
 
 class TallyCeremonyOrchestrator:
@@ -17,7 +18,7 @@ class TallyCeremonyOrchestrator:
         mediator: DecryptionMediator,
         context: CiphertextElectionContext,
         ciphertext_tally: CiphertextTally,
-        ciphertext_ballots: List[CiphertextBallot] = None,
+        submitted_ballots: List[SubmittedBallot] = None,
     ) -> None:
         """
         Perform the necessary setup to ensure that a mediator can decrypt with all guardians available
@@ -28,7 +29,7 @@ class TallyCeremonyOrchestrator:
             mediator,
             context,
             ciphertext_tally,
-            ciphertext_ballots,
+            submitted_ballots,
         )
 
     @staticmethod
@@ -38,7 +39,7 @@ class TallyCeremonyOrchestrator:
         mediator: DecryptionMediator,
         context: CiphertextElectionContext,
         ciphertext_tally: CiphertextTally,
-        ciphertext_ballots: List[CiphertextBallot] = None,
+        submitted_ballots: List[SubmittedBallot] = None,
     ) -> None:
         """
         Perform the necessary setup to ensure that a mediator can decrypt when there are guardians missing
@@ -49,10 +50,10 @@ class TallyCeremonyOrchestrator:
             mediator,
             context,
             ciphertext_tally,
-            ciphertext_ballots,
+            submitted_ballots,
         )
         TallyCeremonyOrchestrator.exchange_compensated_decryption_shares(
-            available_guardians, mediator, context, ciphertext_tally, ciphertext_ballots
+            available_guardians, mediator, context, ciphertext_tally, submitted_ballots
         )
 
     @staticmethod
@@ -62,25 +63,25 @@ class TallyCeremonyOrchestrator:
         mediator: DecryptionMediator,
         context: CiphertextElectionContext,
         ciphertext_tally: CiphertextTally,
-        ciphertext_ballots: List[CiphertextBallot] = None,
+        submitted_ballots: List[SubmittedBallot] = None,
     ) -> None:
         """
         Each available guardian announces their presence. The missing guardians are also announced
         """
-        if ciphertext_ballots is None:
-            ciphertext_ballots = []
+        if submitted_ballots is None:
+            submitted_ballots = []
 
         # Announce available guardians
         for available_guardian in available_guardians:
             guardian_key = available_guardian.share_key()
-            tally_share = available_guardian.compute_tally_share(
-                ciphertext_tally, context
+            tally_share = get_optional(
+                available_guardian.compute_tally_share(ciphertext_tally, context)
             )
             ballot_shares = get_valid_ballot_shares(
-                available_guardian.compute_ballot_shares(ciphertext_ballots, context)
+                available_guardian.compute_ballot_shares(submitted_ballots, context)
             )
 
-            mediator.announce(guardian_key, tally_share, ballot_shares)
+            mediator.announce(guardian_key, tally_share, ballot_shares)  # type: ignore
 
         # Announce missing guardians
         # Get all guardian keys and filter to determine the missing guardians
@@ -100,14 +101,14 @@ class TallyCeremonyOrchestrator:
         mediator: DecryptionMediator,
         context: CiphertextElectionContext,
         ciphertext_tally: CiphertextTally,
-        ciphertext_ballots: List[CiphertextBallot] = None,
+        submitted_ballots: List[SubmittedBallot] = None,
     ) -> None:
         """
         Available guardians generate the compensated decryption shares for the missing guardians
         and send to the mediator.
         """
-        if ciphertext_ballots is None:
-            ciphertext_ballots = []
+        if submitted_ballots is None:
+            submitted_ballots = []
 
         # Exchange compensated shares
         missing_guardians = mediator.get_missing_guardians()
@@ -124,7 +125,7 @@ class TallyCeremonyOrchestrator:
                 ballot_shares = get_valid_ballot_shares(
                     available_guardian.compute_compensated_ballot_shares(
                         missing_guardian.owner_id,
-                        ciphertext_ballots,
+                        submitted_ballots,
                         context,
                     )
                 )
@@ -132,4 +133,4 @@ class TallyCeremonyOrchestrator:
 
         # Combine compensated shares into decryption share for missing guardians
         mediator.reconstruct_shares_for_tally(ciphertext_tally)
-        mediator.reconstruct_shares_for_ballots(ciphertext_ballots)
+        mediator.reconstruct_shares_for_ballots(submitted_ballots)

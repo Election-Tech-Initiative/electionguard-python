@@ -3,6 +3,7 @@ from typing import List
 from electionguard.guardian import Guardian
 from electionguard.key_ceremony import CeremonyDetails, ElectionPartialKeyVerification
 from electionguard.key_ceremony_mediator import GuardianPair, KeyCeremonyMediator
+from electionguard.utils import get_optional
 
 
 class KeyCeremonyOrchestrator:
@@ -21,7 +22,9 @@ class KeyCeremonyOrchestrator:
         ]
 
     @staticmethod
-    def perform_full_ceremony(guardians: List[Guardian], mediator: KeyCeremonyMediator):
+    def perform_full_ceremony(
+        guardians: List[Guardian], mediator: KeyCeremonyMediator
+    ) -> None:
         """Perform full key ceremony so joint election key is ready for publish"""
 
         KeyCeremonyOrchestrator.perform_round_1(guardians, mediator)
@@ -38,7 +41,7 @@ class KeyCeremonyOrchestrator:
             mediator.announce(guardian.share_key())
 
         for guardian in guardians:
-            other_guardian_keys = mediator.share_announced(guardian.id)
+            other_guardian_keys = get_optional(mediator.share_announced(guardian.id))
             for guardian_key in other_guardian_keys:
                 guardian.save_guardian_key(guardian_key)
 
@@ -53,12 +56,14 @@ class KeyCeremonyOrchestrator:
             mediator.receive_backups(guardian.share_election_partial_key_backups())
 
         for guardian in guardians:
-            backups = mediator.share_backups(guardian.id)
+            backups = get_optional(mediator.share_backups(guardian.id))
             for backup in backups:
                 guardian.save_election_partial_key_backup(backup)
 
     @staticmethod
-    def perform_round_3(guardians: List[Guardian], mediator: KeyCeremonyMediator):
+    def perform_round_3(
+        guardians: List[Guardian], mediator: KeyCeremonyMediator
+    ) -> None:
         """Perform Round 3 including verifying backups"""
 
         for guardian in guardians:
@@ -66,8 +71,10 @@ class KeyCeremonyOrchestrator:
                 verifications = []
                 if guardian.id is not other_guardian.id:
                     verifications.append(
-                        guardian.verify_election_partial_key_backup(
-                            other_guardian.id,
+                        get_optional(
+                            guardian.verify_election_partial_key_backup(
+                                other_guardian.id,
+                            )
                         )
                     )
                 mediator.receive_backup_verifications(verifications)
@@ -84,8 +91,8 @@ class KeyCeremonyOrchestrator:
             for other_guardian in guardians:
                 verifications = []
                 if guardian.id is not other_guardian.id:
-                    verification = guardian.verify_election_partial_key_backup(
-                        other_guardian.id
+                    verification = get_optional(
+                        guardian.verify_election_partial_key_backup(other_guardian.id)
                     )
                     if (
                         verification.owner_id is failing_guardian_pair.owner_id
