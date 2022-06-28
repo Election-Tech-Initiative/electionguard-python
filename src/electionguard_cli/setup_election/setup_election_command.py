@@ -1,8 +1,9 @@
 from io import TextIOWrapper
 import click
 
+from .setup_election_builder_step import SetupElectionBuilderStep
 from .output_setup_files_step import OutputSetupFilesStep
-from ..cli_steps import KeyCeremonyStep, ElectionBuilderStep
+from ..cli_steps import KeyCeremonyStep
 from .setup_input_retrieval_step import SetupInputRetrievalStep
 
 
@@ -26,6 +27,14 @@ from .setup_input_retrieval_step import SetupInputRetrievalStep
     type=click.File(),
 )
 @click.option(
+    "--url",
+    help="An optional verification url for the election.",
+    required=False,
+    type=click.STRING,
+    default=None,
+    prompt=False,
+)
+@click.option(
     "--package-dir",
     prompt="Election Package Output Directory",
     help="The location of a directory into which will be placed the output files such as "
@@ -43,6 +52,7 @@ def SetupElectionCommand(
     guardian_count: int,
     quorum: int,
     manifest: TextIOWrapper,
+    url: str,
     package_dir: str,
     keys_dir: str,
 ) -> None:
@@ -52,12 +62,10 @@ def SetupElectionCommand(
     """
 
     setup_inputs = SetupInputRetrievalStep().get_inputs(
-        guardian_count,
-        quorum,
-        manifest,
+        guardian_count, quorum, manifest, url
     )
     joint_key = KeyCeremonyStep().run_key_ceremony(setup_inputs.guardians)
-    build_election_results = ElectionBuilderStep().build_election_with_key(
+    build_election_results = SetupElectionBuilderStep().build_election_for_setup(
         setup_inputs, joint_key
     )
     OutputSetupFilesStep().output(

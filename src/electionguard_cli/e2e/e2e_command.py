@@ -3,7 +3,6 @@ import click
 
 
 from ..cli_steps import (
-    ElectionBuilderStep,
     DecryptStep,
     PrintResultsStep,
     TallyStep,
@@ -13,6 +12,7 @@ from ..cli_steps import (
 from .e2e_input_retrieval_step import E2eInputRetrievalStep
 from .submit_votes_step import SubmitVotesStep
 from .e2e_publish_step import E2ePublishStep
+from .e2e_election_builder_step import E2eElectionBuilderStep
 
 
 @click.command("e2e")
@@ -49,6 +49,14 @@ from .e2e_publish_step import E2ePublishStep
     prompt_required=False,
 )
 @click.option(
+    "--url",
+    help="An optional verification url for the election.",
+    required=False,
+    type=click.STRING,
+    default=None,
+    prompt=False,
+)
+@click.option(
     "--output-record",
     help="A file name for saving an output election record (e.g. './election.zip')."
     + " If no value provided then an election record will not be generated.",
@@ -72,6 +80,7 @@ def E2eCommand(
     manifest: TextIOWrapper,
     ballots: str,
     spoil_id: str,
+    url: str,
     output_record: str,
     output_keys: str,
 ) -> None:
@@ -79,12 +88,19 @@ def E2eCommand(
 
     # get user inputs
     election_inputs = E2eInputRetrievalStep().get_inputs(
-        guardian_count, quorum, manifest, ballots, spoil_id, output_record, output_keys
+        guardian_count,
+        quorum,
+        manifest,
+        ballots,
+        spoil_id,
+        output_record,
+        output_keys,
+        url,
     )
 
     # perform election
     joint_key = KeyCeremonyStep().run_key_ceremony(election_inputs.guardians)
-    build_election_results = ElectionBuilderStep().build_election_with_key(
+    build_election_results = E2eElectionBuilderStep().build_election_with_key(
         election_inputs, joint_key
     )
     encrypt_results = EncryptVotesStep().encrypt(
