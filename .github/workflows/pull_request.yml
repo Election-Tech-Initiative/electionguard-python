@@ -101,4 +101,9 @@ jobs:
       - name: Build
         run: make build validate
       - name: Integration Tests
-        run: make test-integration
+        uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 20
+          retry_on: error
+          command: make test-integration
