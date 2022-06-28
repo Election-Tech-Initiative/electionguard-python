@@ -22,6 +22,7 @@ classifiers = [
     "Topic :: Utilities"]
 packages = [
   { include = "electionguard", from = "src" }, 
+  { include = "electionguard_tools", from = "src" }, 
   { include = "electionguard_cli", from = "src" },
 ]
 
