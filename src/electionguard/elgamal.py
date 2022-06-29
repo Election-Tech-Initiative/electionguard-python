@@ -24,6 +24,7 @@ ElGamalSecretKey = ElementModQ
 ElGamalPublicKey = ElementModP
 
 _BLOCK_SIZE = 32
+_ELGAMAL_DATA_SIZE = 512
 
 
 @dataclass
@@ -118,6 +119,15 @@ class HashedElGamalCiphertext:
     mac: str
     """message authentication code for hmac"""
 
+    def _data_as_bytes(self) -> bytes:
+        """Returns the data field as bytes, padded to 512 bytes"""
+
+        data_bytes = bytes.fromhex(self.data)
+        if len(data_bytes) >= _ELGAMAL_DATA_SIZE:
+            return data_bytes
+        padding_length = _ELGAMAL_DATA_SIZE - len(data_bytes)
+        return bytes(padding_length) + data_bytes
+
     def decrypt(
         self, secret_key: ElGamalSecretKey, encryption_seed: ElementModQ
     ) -> Union[bytes, None]:
@@ -130,13 +140,15 @@ class HashedElGamalCiphertext:
         """
 
         session_key = hash_elems(self.pad, pow_p(self.pad, secret_key))
-        (ciphertext_chunks, bit_length) = _get_chunks(bytes.fromhex(self.data))
+        data_bytes = self._data_as_bytes()
+
+        (ciphertext_chunks, bit_length) = _get_chunks(data_bytes)
         mac_key = get_hmac(
             session_key.to_hex_bytes(),
             encryption_seed.to_hex_bytes(),
             bit_length,
         )
-        to_mac = self.pad.to_hex_bytes() + bytes.fromhex(self.data)
+        to_mac = self.pad.to_hex_bytes() + data_bytes
         mac = bytes_to_hex(get_hmac(mac_key, to_mac))
 
         if mac != self.mac:
