@@ -5,7 +5,7 @@ from electionguard.elgamal import (
     hashed_elgamal_encrypt,
 )
 from electionguard.group import ElementModQ
-from electionguard.serialize import PaddedDataSize, _add_padding, _remove_padding
+from electionguard.byte_padding import add_padding, remove_padding
 from electionguard.utils import get_optional
 from tests.base_test_case import BaseTestCase
 
@@ -50,14 +50,12 @@ class TestElgamal(BaseTestCase):
         hmac_nonce: ElementModQ,
         hmac_seed: ElementModQ,
     ) -> None:
-        padded_plaintext = _add_padding(plaintext, PaddedDataSize.Bytes_512)
+        padded_plaintext = add_padding(plaintext)
         hmac = hashed_elgamal_encrypt(
             padded_plaintext, hmac_nonce, kp.public_key, hmac_seed
         )
         decryption_bytes_padded = hmac.decrypt(kp.secret_key, hmac_seed)
         self.assertIsNotNone(decryption_bytes_padded)
 
-        decryption_bytes = _remove_padding(
-            get_optional(decryption_bytes_padded), PaddedDataSize.Bytes_512
-        )
+        decryption_bytes = remove_padding(get_optional(decryption_bytes_padded))
         self.assertEqual(plaintext, decryption_bytes)

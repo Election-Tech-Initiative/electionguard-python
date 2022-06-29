@@ -11,7 +11,6 @@ _U = TypeVar("_U")
 
 BYTE_ORDER = "big"
 BYTE_ENCODING = "utf-8"
-DATA_MESSAGE_SIZE = 512
 
 
 class ContestErrorType(Enum):

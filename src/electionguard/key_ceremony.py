@@ -1,8 +1,7 @@
 from dataclasses import dataclass
 from typing import List, Type, TypeVar
 
-from .serialize import PaddedDataSize, padded_decode, padded_encode
-
+from .serialize import padded_decode, padded_encode
 from .election_polynomial import (
     PublicCommitment,
     compute_polynomial_coordinate,
@@ -168,7 +167,6 @@ class ElectionPartialKeyChallenge:
 
 
 _T = TypeVar("_T", bound="CoordinateData")
-CONTEST_DATA_SIZE: PaddedDataSize = PaddedDataSize.Bytes_512
 
 
 @dataclass
@@ -179,10 +177,10 @@ class CoordinateData:
 
     @classmethod
     def from_bytes(cls: Type[_T], data: bytes) -> _T:
-        return padded_decode(cls, data, CONTEST_DATA_SIZE)
+        return padded_decode(cls, data)
 
     def to_bytes(self) -> bytes:
-        return padded_encode(self, CONTEST_DATA_SIZE)
+        return padded_encode(self)
 
 
 def generate_election_key_pair(

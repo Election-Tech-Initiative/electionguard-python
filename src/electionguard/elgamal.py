@@ -3,6 +3,7 @@ from typing import Any, Iterable, Optional, Union
 
 
 from .big_integer import bytes_to_hex
+from .byte_padding import to_padded_bytes
 from .discrete_log import DiscreteLog
 from .group import (
     ElementModQ,
@@ -18,7 +19,7 @@ from .group import (
 from .hash import hash_elems
 from .hmac import get_hmac
 from .logs import log_info, log_error
-from .utils import DATA_MESSAGE_SIZE, get_optional
+from .utils import get_optional
 
 ElGamalSecretKey = ElementModQ
 ElGamalPublicKey = ElementModP
@@ -118,15 +119,6 @@ class HashedElGamalCiphertext:
     mac: str
     """message authentication code for hmac"""
 
-    def _data_as_bytes(self) -> bytes:
-        """Returns the data field as bytes, padded to DATA_MESSAGE_SIZE bytes"""
-
-        data_bytes = bytes.fromhex(self.data)
-        if len(data_bytes) >= DATA_MESSAGE_SIZE:
-            return data_bytes
-        padding_length = DATA_MESSAGE_SIZE - len(data_bytes)
-        return bytes(padding_length) + data_bytes
-
     def decrypt(
         self, secret_key: ElGamalSecretKey, encryption_seed: ElementModQ
     ) -> Union[bytes, None]:
@@ -139,7 +131,7 @@ class HashedElGamalCiphertext:
         """
 
         session_key = hash_elems(self.pad, pow_p(self.pad, secret_key))
-        data_bytes = self._data_as_bytes()
+        data_bytes = to_padded_bytes(self.data)
 
         (ciphertext_chunks, bit_length) = _get_chunks(data_bytes)
         mac_key = get_hmac(
