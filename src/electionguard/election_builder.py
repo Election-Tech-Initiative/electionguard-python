@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Optional, Tuple
+from typing import Dict, Optional, Tuple
 
 from electionguard.elgamal import ElGamalPublicKey
 
@@ -36,6 +36,8 @@ class ElectionBuilder:
 
     commitment_hash: Optional[ElementModQ] = field(default=None)
 
+    extended_data: Optional[Dict[str, str]] = field(default=None)
+
     def __post_init__(self) -> None:
         self.internal_manifest = InternalManifest(self.manifest)
 
@@ -59,6 +61,17 @@ class ElectionBuilder:
         self.commitment_hash = commitment_hash
         return self
 
+    def add_extended_data_field(self, name: str, value: str) -> ElectionBuilder:
+        """
+        Set extended data field
+        :param name: name of the extended data entry to add
+        :param value: value of the extended data entry
+        """
+        if self.extended_data is None:
+            self.extended_data = {}
+        self.extended_data[name] = value
+        return self
+
     def build(
         self,
     ) -> Optional[Tuple[InternalManifest, CiphertextElectionContext]]:
@@ -80,5 +93,6 @@ class ElectionBuilder:
                 get_optional(self.election_key),
                 get_optional(self.commitment_hash),
                 self.manifest.crypto_hash(),
+                extended_data=self.extended_data,
             ),
         )

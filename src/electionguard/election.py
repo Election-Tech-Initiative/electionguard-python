@@ -76,6 +76,13 @@ class CiphertextElectionContext:
     configuration: Configuration = field(default_factory=Configuration)
     """Configuration for the election edge cases."""
 
+    def get_extended_data_field(self, field_name: str) -> Optional[str]:
+        """Returns the value for a field in the extended data or None if it isn't initialized."""
+
+        if self.extended_data is None:
+            return None
+        return self.extended_data.get(field_name)
+
 
 def make_ciphertext_election_context(
     number_of_guardians: int,
