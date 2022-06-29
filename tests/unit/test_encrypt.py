@@ -3,6 +3,7 @@ from unittest.mock import patch
 from unittest import TestCase
 from electionguard import PrimeOption
 
+from electionguard.byte_padding import TruncationError
 from electionguard.elgamal import (
     HashedElGamalCiphertext,
     elgamal_keypair_from_secret,
@@ -19,7 +20,7 @@ from electionguard.manifest import (
     VoteVariationType,
     ContestDescriptionWithPlaceholders,
 )
-from electionguard.serialize import TruncationError, to_raw
+from electionguard.serialize import to_raw
 from electionguard.utils import get_optional
 
 
