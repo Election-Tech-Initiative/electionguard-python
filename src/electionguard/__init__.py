@@ -31,7 +31,6 @@ from electionguard import key_ceremony_mediator
 from electionguard import logs
 from electionguard import manifest
 from electionguard import nonces
-from electionguard import padded_data_size
 from electionguard import proof
 from electionguard import scheduler
 from electionguard import schnorr
@@ -336,10 +335,6 @@ from electionguard.manifest import (
 from electionguard.nonces import (
     Nonces,
 )
-from electionguard.padded_data_size import (
-    PAD_INDICATOR_SIZE,
-    PaddedDataSize,
-)
 from electionguard.proof import (
     Proof,
     ProofUsage,
@@ -352,6 +347,8 @@ from electionguard.schnorr import (
     make_schnorr_proof,
 )
 from electionguard.serialize import (
+    PAD_INDICATOR_SIZE,
+    PaddedDataSize,
     TruncationError,
     construct_path,
     from_file,
@@ -392,6 +389,7 @@ from electionguard.utils import (
     BYTE_ORDER,
     ContestErrorType,
     ContestException,
+    DATA_MESSAGE_SIZE,
     NullVoteException,
     OverVoteException,
     UnderVoteException,
@@ -452,6 +450,7 @@ __all__ = [
     "CryptoHashable",
     "CryptoHashableAll",
     "CryptoHashableT",
+    "DATA_MESSAGE_SIZE",
     "DataStore",
     "DecryptionMediator",
     "DecryptionShare",
@@ -694,7 +693,6 @@ __all__ = [
     "mult_q",
     "negate_q",
     "nonces",
-    "padded_data_size",
     "padded_decode",
     "padded_encode",
     "partially_decrypt",

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Any, Iterable, Optional, Union
 
-from .padded_data_size import PaddedDataSize
+
 from .big_integer import bytes_to_hex
 from .discrete_log import DiscreteLog
 from .group import (
@@ -18,7 +18,7 @@ from .group import (
 from .hash import hash_elems
 from .hmac import get_hmac
 from .logs import log_info, log_error
-from .utils import get_optional
+from .utils import DATA_MESSAGE_SIZE, get_optional
 
 ElGamalSecretKey = ElementModQ
 ElGamalPublicKey = ElementModP
@@ -119,12 +119,12 @@ class HashedElGamalCiphertext:
     """message authentication code for hmac"""
 
     def _data_as_bytes(self) -> bytes:
-        """Returns the data field as bytes, padded to 512 bytes"""
+        """Returns the data field as bytes, padded to DATA_MESSAGE_SIZE bytes"""
 
         data_bytes = bytes.fromhex(self.data)
-        if len(data_bytes) >= PaddedDataSize.Bytes_512:
+        if len(data_bytes) >= DATA_MESSAGE_SIZE:
             return data_bytes
-        padding_length = PaddedDataSize.DataSize - len(data_bytes)
+        padding_length = DATA_MESSAGE_SIZE - len(data_bytes)
         return bytes(padding_length) + data_bytes
 
     def decrypt(
