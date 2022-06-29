@@ -30,7 +30,7 @@ from electionguard.group import (
 )
 from electionguard.logs import log_info
 from electionguard.nonces import Nonces
-from electionguard.serialize import PaddedDataSize, padded_decode
+from electionguard.serialize import padded_decode
 from electionguard.scheduler import Scheduler
 from electionguard.utils import ContestErrorType, get_optional
 from electionguard_tools.strategies.elgamal import elgamal_keypairs
@@ -205,9 +205,7 @@ class TestElGamal(BaseTestCase):
         )
         decrypted_message = encrypted_message.decrypt(keypair.secret_key, seed)
         if decrypted_message is not None:
-            unpadded_message = padded_decode(
-                ContestData, decrypted_message, PaddedDataSize.Bytes_512
-            )
+            unpadded_message = padded_decode(ContestData, decrypted_message)
 
         # Assert
         self.assertIsNotNone(encrypted_message)
