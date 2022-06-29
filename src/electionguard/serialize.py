@@ -1,5 +1,4 @@
 from datetime import datetime
-from enum import IntEnum
 from io import TextIOWrapper
 import json
 import os
@@ -12,6 +11,8 @@ from dateutil import parser
 from pydantic.json import pydantic_encoder
 from pydantic.tools import schema_json_of
 
+from .padded_data_size import PaddedDataSize, PAD_INDICATOR_SIZE
+
 
 from .big_integer import BigInteger
 from .ballot_box import BallotBoxState
@@ -22,7 +23,6 @@ from .utils import BYTE_ENCODING, BYTE_ORDER, ContestErrorType
 
 
 _PAD_BYTE = b"\x00"
-PAD_INDICATOR_SIZE = 2
 
 _T = TypeVar("_T")
 
@@ -46,12 +46,6 @@ _config = Config(
     ],
     type_hooks={datetime: parser.parse},
 )
-
-
-class PaddedDataSize(IntEnum):
-    """Define the sizes for padded data."""
-
-    Bytes_512 = 512 - PAD_INDICATOR_SIZE
 
 
 class TruncationError(ValueError):

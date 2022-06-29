@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Any, Iterable, Optional, Union
 
-
+from .padded_data_size import PaddedDataSize
 from .big_integer import bytes_to_hex
 from .discrete_log import DiscreteLog
 from .group import (
@@ -24,7 +24,6 @@ ElGamalSecretKey = ElementModQ
 ElGamalPublicKey = ElementModP
 
 _BLOCK_SIZE = 32
-_ELGAMAL_DATA_SIZE = 512
 
 
 @dataclass
@@ -123,9 +122,9 @@ class HashedElGamalCiphertext:
         """Returns the data field as bytes, padded to 512 bytes"""
 
         data_bytes = bytes.fromhex(self.data)
-        if len(data_bytes) >= _ELGAMAL_DATA_SIZE:
+        if len(data_bytes) >= PaddedDataSize.Bytes_512:
             return data_bytes
-        padding_length = _ELGAMAL_DATA_SIZE - len(data_bytes)
+        padding_length = PaddedDataSize.DataSize - len(data_bytes)
         return bytes(padding_length) + data_bytes
 
     def decrypt(
