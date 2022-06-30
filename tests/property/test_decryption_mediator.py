@@ -14,7 +14,6 @@ from electionguard.ballot_box import BallotBox, BallotBoxState, cast_ballot, get
 from electionguard.data_store import DataStore
 from electionguard.decryption_mediator import DecryptionMediator
 from electionguard.election import CiphertextElectionContext
-from electionguard.election_builder import ElectionBuilder
 from electionguard.encrypt import (
     EncryptionMediator,
     encrypt_ballot,
@@ -44,6 +43,8 @@ from electionguard_tools.helpers.key_ceremony_orchestrator import (
     KeyCeremonyOrchestrator,
 )
 from electionguard_tools.helpers.tally_accumulate import accumulate_plaintext_ballots
+from electionguard_tools.helpers.election_builder import ElectionBuilder
+
 
 election_factory = ElectionFactory.ElectionFactory()
 ballot_factory = BallotFactory.BallotFactory()

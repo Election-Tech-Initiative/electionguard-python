@@ -5,10 +5,13 @@ from typing import Dict, Optional, Tuple
 
 from electionguard.elgamal import ElGamalPublicKey
 
-from .election import CiphertextElectionContext, make_ciphertext_election_context
-from .group import ElementModQ
-from .manifest import Manifest, InternalManifest
-from .utils import get_optional
+from electionguard.election import (
+    CiphertextElectionContext,
+    make_ciphertext_election_context,
+)
+from electionguard.group import ElementModQ
+from electionguard.manifest import Manifest, InternalManifest
+from electionguard.utils import get_optional
 
 
 @dataclass
@@ -16,7 +19,6 @@ class ElectionBuilder:
     """
     `ElectionBuilder` is a stateful builder object that constructs `CiphertextElectionContext` objects
     following the initialization process that ElectionGuard Expects.
-    SUGGESTION Perhaps move to test package.
     """
 
     number_of_guardians: int

@@ -1,8 +1,12 @@
+from electionguard_tools.helpers import election_builder
 from electionguard_tools.helpers import export
 from electionguard_tools.helpers import key_ceremony_orchestrator
 from electionguard_tools.helpers import tally_accumulate
 from electionguard_tools.helpers import tally_ceremony_orchestrator
 
+from electionguard_tools.helpers.election_builder import (
+    ElectionBuilder,
+)
 from electionguard_tools.helpers.export import (
     CIPHERTEXT_BALLOT_PREFIX,
     COEFFICIENTS_FILE_NAME,
@@ -45,6 +49,7 @@ __all__ = [
     "DEVICE_PREFIX",
     "ELECTION_RECORD_DIR",
     "ENCRYPTED_TALLY_FILE_NAME",
+    "ElectionBuilder",
     "GUARDIANS_DIR",
     "GUARDIAN_PREFIX",
     "KeyCeremonyOrchestrator",
@@ -59,6 +64,7 @@ __all__ = [
     "TALLY_FILE_NAME",
     "TallyCeremonyOrchestrator",
     "accumulate_plaintext_ballots",
+    "election_builder",
     "export",
     "export_private_data",
     "export_record",

@@ -14,7 +14,6 @@ from electionguard.utils import get_optional
 # Step 0 - Configure Election
 from electionguard.constants import ElectionConstants, get_constants
 from electionguard.election import CiphertextElectionContext
-from electionguard.election_builder import ElectionBuilder
 from electionguard.manifest import Manifest, InternalManifest
 
 # Step 1 - Key Ceremony
@@ -73,6 +72,8 @@ from electionguard_tools.factories.election_factory import (
     ElectionFactory,
     NUMBER_OF_GUARDIANS,
 )
+from electionguard_tools.helpers.election_builder import ElectionBuilder
+
 
 devices_directory = path.join(ELECTION_RECORD_DIR, DEVICES_DIR)
 guardians_directory = path.join(ELECTION_RECORD_DIR, GUARDIANS_DIR)
