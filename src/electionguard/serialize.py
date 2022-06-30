@@ -23,7 +23,6 @@ from .utils import BYTE_ENCODING, ContestErrorType
 
 _T = TypeVar("_T")
 
-_indent = 2
 _file_extension = "json"
 
 _config = Config(
@@ -75,7 +74,7 @@ def from_raw(type_: Type[_T], raw: Union[str, bytes]) -> _T:
 def to_raw(data: Any) -> str:
     """Serialize data to raw json format."""
 
-    return json.dumps(data, indent=_indent, default=pydantic_encoder)
+    return json.dumps(data, default=pydantic_encoder)
 
 
 def from_file_wrapper(type_: Type[_T], file: TextIOWrapper) -> _T:
@@ -130,7 +129,7 @@ def to_file(
         "w",
         encoding=BYTE_ENCODING,
     ) as outfile:
-        json.dump(data, outfile, indent=_indent, default=pydantic_encoder)
+        json.dump(data, outfile, default=pydantic_encoder)
         return path
 
 
