@@ -7,6 +7,7 @@ from electionguard import ballot_code
 from electionguard import ballot_compact
 from electionguard import ballot_validator
 from electionguard import big_integer
+from electionguard import byte_padding
 from electionguard import chaum_pedersen
 from electionguard import constants
 from electionguard import data_store
@@ -87,6 +88,13 @@ from electionguard.ballot_validator import (
 from electionguard.big_integer import (
     BigInteger,
     bytes_to_hex,
+)
+from electionguard.byte_padding import (
+    DataSize,
+    TruncationError,
+    add_padding,
+    remove_padding,
+    to_padded_bytes,
 )
 from electionguard.chaum_pedersen import (
     ChaumPedersenProof,
@@ -343,9 +351,6 @@ from electionguard.schnorr import (
     make_schnorr_proof,
 )
 from electionguard.serialize import (
-    PAD_INDICATOR_SIZE,
-    PaddedDataSize,
-    TruncationError,
     construct_path,
     from_file,
     from_file_wrapper,
@@ -445,6 +450,7 @@ __all__ = [
     "CryptoHashable",
     "CryptoHashableAll",
     "CryptoHashableT",
+    "DataSize",
     "DataStore",
     "DecryptionMediator",
     "DecryptionShare",
@@ -499,8 +505,6 @@ __all__ = [
     "NullVoteException",
     "OrderedObjectBase",
     "OverVoteException",
-    "PAD_INDICATOR_SIZE",
-    "PaddedDataSize",
     "Party",
     "PlaintextBallot",
     "PlaintextBallotContest",
@@ -537,6 +541,7 @@ __all__ = [
     "YES_VOTE",
     "a_minus_b_q",
     "a_plus_bc_q",
+    "add_padding",
     "add_q",
     "ballot",
     "ballot_box",
@@ -546,6 +551,7 @@ __all__ = [
     "ballot_is_valid_for_style",
     "ballot_validator",
     "big_integer",
+    "byte_padding",
     "bytes_to_hex",
     "cast_ballot",
     "chaum_pedersen",
@@ -698,6 +704,7 @@ __all__ = [
     "reconstruct_decryption_contest",
     "reconstruct_decryption_share",
     "reconstruct_decryption_share_for_ballot",
+    "remove_padding",
     "scheduler",
     "schnorr",
     "selection_from",
@@ -715,6 +722,7 @@ __all__ = [
     "to_file",
     "to_hex_bytes",
     "to_iso_date_string",
+    "to_padded_bytes",
     "to_raw",
     "to_ticks",
     "type",
