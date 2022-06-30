@@ -1,7 +1,13 @@
+import Spinner from "./spinner-component.js";
+
 export default {
+  components: {
+    Spinner,
+  },
   data() {
     return {
       loading: false,
+      alert: null,
       keyName: "my-key",
       guardianCount: 2,
       quorum: 2,
@@ -10,6 +16,7 @@ export default {
   methods: {
     startCeremony() {
       const form = document.getElementById("mainForm");
+      this.alert = null;
       if (form.checkValidity()) {
         this.loading = true;
         const onDone = eel.start_ceremony(
@@ -23,7 +30,7 @@ export default {
           if (result.success) {
             alert("success");
           } else {
-            alert(result.message);
+            this.alert = result.message;
           }
         });
       }
@@ -31,8 +38,10 @@ export default {
     },
   },
   template: /*html*/ `
-    <div v-if="loading">Loading...</div>
-    <form id="mainForm" class="needs-validation" novalidate @submit.prevent="startCeremony" v-if="!loading">
+    <form id="mainForm" class="needs-validation" novalidate @submit.prevent="startCeremony">
+      <div v-if="alert" class="alert alert-danger" role="alert">
+        {{ alert }}
+      </div>
       <div class="row g-3 align-items-center">
         <div class="col-12">
           <h1>Create Key</h1>
@@ -75,7 +84,8 @@ export default {
           <div class="invalid-feedback">Please provide a valid quorum.</div>
         </div>
         <div class="col-12 mt-4">
-          <button type="submit" class="btn btn-primary">Start Ceremony</button>
+          <button type="submit" class="btn btn-primary" :disabled="loading">Start Ceremony</button>
+          <Spinner :visible="loading"></Spinner>
         </div>
       </div>
     </form>`,
