@@ -90,14 +90,23 @@ def watch_keys() -> None:
         if current_count != last_count:
             print(f"found new keys. Count was {last_count}, and is now {current_count}")
             keys = db.keys.find()
-            js_keys = []
-            for key in keys:
-                js_keys.append(key)
+            js_keys = [
+                {
+                    "key_name": key["key_name"],
+                    "id": key["_id"].__str__(),
+                }
+                for key in keys
+            ]
             eel.keys_found(js_keys)
             print("called keys_found successfully")
         last_count = current_count
         eel.sleep(1.0)
     print("exited watch keys loop")
+
+
+@eel.expose
+def join_key(key_id: str) -> None:
+    print(f"joining key {key_id}")
 
 
 @eel.expose

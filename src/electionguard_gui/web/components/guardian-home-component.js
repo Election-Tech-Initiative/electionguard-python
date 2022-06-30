@@ -9,6 +9,9 @@ export default {
       console.log("found keys", keys);
       this.keys = keys;
     },
+    join: function (keyId) {
+      eel.join_key(keyId);
+    },
   },
   mounted() {
     console.log("begin watching for keys");
@@ -18,7 +21,6 @@ export default {
   unmounted() {
     console.log("stop watching keys");
     eel.stop_watching();
-    // todo: un-expose "keys_found" ?
   },
   template: /*html*/ `
   <h1>Guardian Home</h1>
@@ -27,7 +29,7 @@ export default {
   <p v-if="keys">
     <ul class="list-unstyled">
     <li v-for="key in keys">
-      <a href="#" class="btn btn-primary mt-2">{{ key.key_name }}</a>
+      <button type="button" @click="join(key.id)" class="btn btn-primary mt-2">{{ key.key_name }}</a>
     </li>
     </ul>
   </p>
