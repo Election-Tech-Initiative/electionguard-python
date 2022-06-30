@@ -1,5 +1,4 @@
 from datetime import datetime
-from enum import IntEnum
 from io import TextIOWrapper
 import json
 import os
@@ -15,14 +14,12 @@ from pydantic.tools import schema_json_of
 
 from .big_integer import BigInteger
 from .ballot_box import BallotBoxState
+from .byte_padding import add_padding, remove_padding, DataSize
 from .group import ElementModP, ElementModQ
 from .manifest import ElectionType, ReportingUnitType, VoteVariationType, SpecVersion
 from .proof import ProofUsage
-from .utils import BYTE_ENCODING, BYTE_ORDER, ContestErrorType
+from .utils import BYTE_ENCODING, ContestErrorType
 
-
-_PAD_BYTE = b"\x00"
-PAD_INDICATOR_SIZE = 2
 
 _T = TypeVar("_T")
 
@@ -48,48 +45,14 @@ _config = Config(
 )
 
 
-class PaddedDataSize(IntEnum):
-    """Define the sizes for padded data."""
-
-    Bytes_512 = 512 - PAD_INDICATOR_SIZE
+def padded_encode(data: Any, size: DataSize = DataSize.Bytes_512) -> bytes:
+    return add_padding(to_raw(data).encode(BYTE_ENCODING), size)
 
 
-class TruncationError(ValueError):
-    """A specific truncation error to indicate when padded data is truncated."""
-
-
-def padded_encode(data: Any, size: PaddedDataSize) -> bytes:
-    return _add_padding(to_raw(data).encode(BYTE_ENCODING), size)
-
-
-def padded_decode(type_: Type[_T], padded_data: bytes, size: PaddedDataSize) -> _T:
-    return from_raw(type_, _remove_padding(padded_data, size))
-
-
-def _add_padding(
-    message: bytes, size: PaddedDataSize, allow_truncation: bool = False
-) -> bytes:
-    """Add padding to message in bytes."""
-    message_length = len(message)
-    if message_length > size:
-        if allow_truncation:
-            message_length = size
-        else:
-            raise TruncationError(
-                "Padded data exceeds allowed padded data size of {size}."
-            )
-    padding_length = size - message_length
-    leading_byte = padding_length.to_bytes(PAD_INDICATOR_SIZE, byteorder=BYTE_ORDER)
-    padded = leading_byte + message[:message_length] + _PAD_BYTE * padding_length
-    return padded
-
-
-def _remove_padding(padded: bytes, size: PaddedDataSize) -> bytes:
-    """Remove padding from padded message in bytes."""
-
-    padding_length = int.from_bytes(padded[:PAD_INDICATOR_SIZE], byteorder=BYTE_ORDER)
-    message_end = size + PAD_INDICATOR_SIZE - padding_length
-    return padded[PAD_INDICATOR_SIZE:message_end]
+def padded_decode(
+    type_: Type[_T], padded_data: bytes, size: DataSize = DataSize.Bytes_512
+) -> _T:
+    return from_raw(type_, remove_padding(padded_data, size))
 
 
 def construct_path(

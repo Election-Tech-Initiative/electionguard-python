@@ -18,7 +18,7 @@ from .ballot import (
 from .ballot_code import get_hash_for_device
 from .election import CiphertextElectionContext
 from .elgamal import ElGamalPublicKey, elgamal_encrypt, hashed_elgamal_encrypt
-from .serialize import PaddedDataSize, padded_decode, padded_encode
+from .serialize import padded_decode, padded_encode
 from .group import ElementModQ, rand_q
 from .logs import log_info, log_warning
 from .manifest import (
@@ -41,7 +41,6 @@ from .utils import (
 
 
 _T = TypeVar("_T", bound="ContestData")
-CONTEST_DATA_SIZE: PaddedDataSize = PaddedDataSize.Bytes_512
 
 
 @dataclass
@@ -54,10 +53,10 @@ class ContestData:
 
     @classmethod
     def from_bytes(cls: Type[_T], data: bytes) -> _T:
-        return padded_decode(cls, data, CONTEST_DATA_SIZE)
+        return padded_decode(cls, data)
 
     def to_bytes(self) -> bytes:
-        return padded_encode(self, CONTEST_DATA_SIZE)
+        return padded_encode(self)
 
 
 @dataclass

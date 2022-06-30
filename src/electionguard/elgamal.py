@@ -3,6 +3,7 @@ from typing import Any, Iterable, Optional, Union
 
 
 from .big_integer import bytes_to_hex
+from .byte_padding import to_padded_bytes
 from .discrete_log import DiscreteLog
 from .group import (
     ElementModQ,
@@ -130,13 +131,15 @@ class HashedElGamalCiphertext:
         """
 
         session_key = hash_elems(self.pad, pow_p(self.pad, secret_key))
-        (ciphertext_chunks, bit_length) = _get_chunks(bytes.fromhex(self.data))
+        data_bytes = to_padded_bytes(self.data)
+
+        (ciphertext_chunks, bit_length) = _get_chunks(data_bytes)
         mac_key = get_hmac(
             session_key.to_hex_bytes(),
             encryption_seed.to_hex_bytes(),
             bit_length,
         )
-        to_mac = self.pad.to_hex_bytes() + bytes.fromhex(self.data)
+        to_mac = self.pad.to_hex_bytes() + data_bytes
         mac = bytes_to_hex(get_hmac(mac_key, to_mac))
 
         if mac != self.mac:
