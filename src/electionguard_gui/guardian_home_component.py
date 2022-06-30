@@ -1,4 +1,5 @@
 from threading import Event
+from bson import ObjectId
 import eel
 
 from electionguard_gui.component_base import ComponentBase
@@ -44,4 +45,8 @@ class GuardianHomeComponent(ComponentBase):
         self.watching_keys.clear()
 
     def join_key(self, key_id: str) -> None:
-        print(f"joining key {key_id}")
+        db = self.get_db()
+        keys_collection = db.keys
+        key = keys_collection.find_one({"_id": ObjectId(key_id)})
+        key_name = key["key_name"]
+        print(f"gonna join key {key_name}")
