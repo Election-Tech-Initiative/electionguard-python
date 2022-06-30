@@ -17,7 +17,6 @@ from hypothesis.strategies import (
 from electionguard.ballot import PlaintextBallot
 from electionguard.constants import ElectionConstants, get_constants
 from electionguard.election import CiphertextElectionContext
-from electionguard.election_builder import ElectionBuilder
 from electionguard.elgamal import ElGamalPublicKey
 from electionguard.encrypt import EncryptionDevice, contest_from, generate_device_uuid
 from electionguard.group import TWO_MOD_Q
@@ -48,6 +47,7 @@ from electionguard.utils import get_optional
 from electionguard_tools.helpers.key_ceremony_orchestrator import (
     KeyCeremonyOrchestrator,
 )
+from electionguard_tools.helpers.election_builder import ElectionBuilder
 
 
 _T = TypeVar("_T")

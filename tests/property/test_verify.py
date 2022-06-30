@@ -11,7 +11,6 @@ from electionguard.data_store import DataStore
 from electionguard.decryption import compute_decryption_share
 from electionguard.decryption_share import DecryptionShare
 from electionguard.decrypt_with_shares import decrypt_tally
-from electionguard.election_builder import ElectionBuilder
 from electionguard.elgamal import ElGamalKeyPair
 from electionguard.encrypt import EncryptionMediator, encrypt_ballot
 from electionguard.key_ceremony import CeremonyDetails
@@ -36,6 +35,8 @@ from electionguard_tools.strategies.elgamal import elgamal_keypairs
 from electionguard_tools.helpers.key_ceremony_orchestrator import (
     KeyCeremonyOrchestrator,
 )
+from electionguard_tools.helpers.election_builder import ElectionBuilder
+
 
 election_factory = ElectionFactory.ElectionFactory()
 ballot_factory = BallotFactory.BallotFactory()

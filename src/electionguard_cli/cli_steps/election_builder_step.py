@@ -2,8 +2,8 @@ from typing import Optional
 import click
 from electionguard.elgamal import ElGamalPublicKey
 from electionguard.group import ElementModQ
-from electionguard.election_builder import ElectionBuilder
 from electionguard.utils import get_optional
+from electionguard_tools.helpers.election_builder import ElectionBuilder
 
 from ..cli_models import CliElectionInputsBase, BuildElectionResults
 from .cli_step_base import CliStepBase
