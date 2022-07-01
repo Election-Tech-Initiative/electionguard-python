@@ -707,7 +707,7 @@ class TestEncrypt(BaseTestCase):
                 # one could also decrypt with the secret key:
                 # representation = selection.message.decrypt(keypair.secret_key)
 
-                regenerated_disjuctive = make_disjunctive_chaum_pedersen(
+                regenerated_disjunctive = make_disjunctive_chaum_pedersen(
                     selection.ciphertext,
                     selection.nonce,
                     keypair.public_key,
@@ -717,7 +717,7 @@ class TestEncrypt(BaseTestCase):
                 )
 
                 self.assertTrue(
-                    regenerated_disjuctive.is_valid(
+                    regenerated_disjunctive.is_valid(
                         selection.ciphertext,
                         keypair.public_key,
                         context.crypto_extended_base_hash,

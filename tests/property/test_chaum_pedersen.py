@@ -161,7 +161,7 @@ class TestRangeChaumPedersen(BaseTestCase):
 
 
 class TestDisjunctiveChaumPedersen(BaseTestCase):
-    """Disjunctive Chaum Pedersen tests"""
+    """Disjunctive Chaum-Pedersen tests"""
 
     def test_djcp_proofs_simple(self):
         # doesn't get any simpler than this
@@ -266,7 +266,7 @@ class TestDisjunctiveChaumPedersen(BaseTestCase):
 
 
 class TestChaumPedersen(BaseTestCase):
-    """Chaum Pedersen tests"""
+    """Chaum-Pedersen tests"""
 
     def test_cp_proofs_simple(self):
         keypair = elgamal_keypair_from_secret(TWO_MOD_Q)
@@ -328,7 +328,7 @@ class TestChaumPedersen(BaseTestCase):
 
 
 class TestConstantChaumPedersen(BaseTestCase):
-    """Constant Chaum Pedersen tests"""
+    """Constant Chaum-Pedersen tests"""
 
     def test_ccp_proofs_simple_encryption_of_zero(self):
         keypair = elgamal_keypair_from_secret(TWO_MOD_Q)
