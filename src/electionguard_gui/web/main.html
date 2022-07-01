@@ -17,7 +17,7 @@
     </script>
 
     <div id="app">
-      <navbar></navbar>
+      <navbar :user-id="userId"></navbar>
       <div class="container mt-3">
         <Login @login="login" v-if="showLogin"></Login>
         <component :is="currentView" />

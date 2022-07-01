@@ -1,4 +1,7 @@
 export default {
+  props: {
+    userId: String,
+  },
   template: /*html*/ `
   <nav class="navbar navbar-expand-md navbar-dark bg-primary">
     <div class="container-fluid">
@@ -26,6 +29,9 @@ export default {
           <a href="#/admin/create-key" class="nav-link">Create Key</a>
           <a href="#/admin/setup-election" class="nav-link">Setup Election</a>
         </div>
+      </div>
+      <div class="navbar-text">
+        <span class="nav-link">{{userId}}</span>
       </div>
     </div>
   </nav>`,

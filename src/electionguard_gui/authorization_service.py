@@ -7,6 +7,7 @@ from electionguard_gui.component_base import ComponentBase
 class AuthoriationService(ComponentBase):
     """Responsible for functionality related to authorization and user identify"""
 
+    # todo: replace state based storage with configparser https://docs.python.org/3/library/configparser.html
     user_id: Optional[str] = None
 
     def expose(self) -> None:
