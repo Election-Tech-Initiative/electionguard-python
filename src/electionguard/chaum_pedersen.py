@@ -1,5 +1,6 @@
 # pylint: disable=too-many-instance-attributes
 from dataclasses import dataclass
+from typing import List, Tuple
 
 from .elgamal import ElGamalCiphertext
 from .group import (
@@ -12,6 +13,7 @@ from .group import (
     a_plus_bc_q,
     add_q,
     negate_q,
+    mult_q,
     int_to_q,
     ZERO_MOD_Q,
 )
@@ -20,11 +22,125 @@ from .logs import log_warning
 from .nonces import Nonces
 from .proof import Proof, ProofUsage
 
+@dataclass
+class RangeChaumPedersenProof(Proof):
+    """
+    Representation of range Chaum-Pedersen proof
+    """
+
+    proof_commitments: List[Tuple[ElementModP, ElementModP]]
+    """[(a0,b0), (a1,b1), ..., (aL,bL)]"""
+
+    proof_challenges: List[ElementModQ]
+    """[c0, c1, ..., cL, c]"""
+
+    proof_responses: List[ElementModQ]
+    """[v0, v1, ..., vL]"""
+
+    usage: ProofUsage = ProofUsage.SelectionValue
+
+    def __post_init__(self) -> None:
+        super().__init__()
+
+    def is_valid(
+        self, message: ElGamalCiphertext, k: ElementModP, q: ElementModQ
+    ) -> bool:
+        """
+        Validates a range Chaum-Pedersen proof.
+        
+        :param message: The ciphertext message
+        :param k: The public encryption key
+        :param q: The extended base hash of the election
+        :return: Whether the proof is valid
+        """
+        alpha = message.pad
+        beta = message.data
+        commitments = self.proof_commitments
+        challenges = self.proof_challenges
+        responses = self.proof_responses
+
+        limit = len(responses)
+        assert (
+            len(commitments) == limit and len(challenges) == limit+1
+        ), ("RangeChaumPedersenProof.is_valid only supports proofs with a commitment, challenge," +
+            " and response for each possible integer value, plus one additional challenge.")
+
+        # (4.A)
+        valid_residue_alpha = alpha.is_valid_residue()
+        valid_residue_beta = beta.is_valid_residue()
+        valid_residue_pads = [aj.is_valid_residue() for aj,_ in commitments]
+        valid_residue_data = [bj.is_valid_residue() for _,bj in commitments]
+
+        # (4.B)
+        c = challenges[-1]
+        consistent_c_hash = (c
+            == hash_elems(q, alpha, beta, *[elt for tup in commitments for elt in tup]))
+
+        # (4.C)
+        in_bounds_challenges = [cj.is_in_bounds() for cj in challenges[:-1]]
+        in_bounds_responses = [vj.is_in_bounds() for vj in responses]
+
+        # (4.D)
+        consistent_c_sum = (c == add_q(*challenges[:-1]))
+
+        # (4.E'): check pad equations
+        consistent_pads = [
+            g_pow_p(responses[j]) == mult_p(commitments[j][0], pow_p(alpha, cj))
+            for j,cj in enumerate(challenges[:-1])
+        ]
+
+        # (4.F'): check data equations
+        # TODO: Is saving the single unnecessary g_pow_p(0) worth adding limit+1 many conditionals?
+        consistent_data = [
+            (mult_p(g_pow_p(mult_q(j,cj)), pow_p(k, responses[j]))
+                == mult_p(commitments[j][1], pow_p(beta, cj)))
+            for j,cj in enumerate(challenges[:-1])
+        ]
+        #consistent_data = [
+        #    (mult_p(g_pow_p(mult_q(j,cj)), pow_p(k, responses[j]))
+        #        == mult_p(commitments[j][1], pow_p(beta, cj))) if j != 0
+        #    else pow_p(k, responses[j])
+        #        == mult_p(commitments[j][1], pow_p(beta, cj))
+        #    for j,cj in enumerate(challenges[:-1])
+        #]
+
+        success = (
+            valid_residue_alpha
+            and valid_residue_beta
+            and all(valid_residue_pads)
+            and all(valid_residue_data)
+            and consistent_c_hash
+            and all(in_bounds_challenges)
+            and all(in_bounds_responses)
+            and consistent_c_sum
+            and all(consistent_pads)
+            and all(consistent_data)
+        )
+        if not success:
+            log_warning(
+                "found an invalid range Chaum-Pedersen proof: "
+                + str({
+                    "valid_residue_alpha": valid_residue_alpha,
+                    "valid_residue_beta": valid_residue_beta,
+                    "valid_residue_pads": valid_residue_pads,
+                    "valid_residue_data": valid_residue_data,
+                    "consistent_c_hash": consistent_c_hash,
+                    "in_bounds_challenges": in_bounds_challenges,
+                    "in_bounds_responses": in_bounds_responses,
+                    "consistent_c_sum": consistent_c_sum,
+                    "consistent_pads": consistent_pads,
+                    "consistent_data": consistent_data,
+                    "k": k,
+                    "limit": limit,
+                    "proof": self,
+                })
+            )
+        return success
 
 @dataclass
 class DisjunctiveChaumPedersenProof(Proof):
     """
-    Representation of disjunctive Chaum Pederson proof
+    Representation of disjunctive Chaum-Pedersen proof
     """
 
     proof_zero_pad: ElementModP
@@ -258,17 +374,17 @@ class ChaumPedersenProof(Proof):
 @dataclass
 class ConstantChaumPedersenProof(Proof):
     """
-    Representation of constant Chaum Pederson proof
+    Representation of constant Chaum-Pedersen proof
     """
 
     pad: ElementModP
     """a in the spec"""
     data: ElementModP
-    "b in the spec"
+    """b in the spec"""
     challenge: ElementModQ
-    "c in the spec"
+    """c in the spec"""
     response: ElementModQ
-    "v in the spec"
+    """v in the spec"""
     constant: int
     """constant value"""
     usage: ProofUsage = ProofUsage.SelectionLimit
@@ -282,7 +398,7 @@ class ConstantChaumPedersenProof(Proof):
     ) -> bool:
         """
         Validates a "constant" Chaum-Pedersen proof.
-        e.g. that the equations 𝑔𝑉 = 𝑎𝐴𝐶 mod 𝑝 and 𝑔𝐿𝐾𝑣 = 𝑏𝐵𝐶 mod 𝑝 are satisfied.
+        E.g., checks that g^V mod p = a*α^C mod p and g^(L*C)*K^V mod p = b*β^C mod p.
 
         :param message: The ciphertext message
         :param k: The public key of the election
@@ -320,11 +436,11 @@ class ConstantChaumPedersenProof(Proof):
             and in_bounds_a
             and in_bounds_alpha
             and in_bounds_c
-            # The equation 𝑔^𝑉 = 𝑎𝐴^𝐶 mod 𝑝
+            # The equation g^V mod p = a*α^C mod p
             and g_pow_p(v) == mult_p(a, pow_p(alpha, c))
         )
 
-        # The equation 𝑔^𝐿𝐾^𝑣 = 𝑏𝐵^𝐶 mod 𝑝
+        # The equation g^(L*C)*K^V mod p = b*β^C mod p
         consistent_kv = in_bounds_constant and mult_p(
             g_pow_p(mult_p(c, constant_q)), pow_p(k, v)
         ) == mult_p(b, pow_p(beta, c))
@@ -366,6 +482,73 @@ class ConstantChaumPedersenProof(Proof):
             )
         return success
 
+def make_range_chaum_pedersen(
+    message: ElGamalCiphertext,
+    r: ElementModQ,
+    k: ElementModP,
+    q: ElementModQ,
+    seed: ElementModQ,
+    plaintext: int,
+    limit: int,
+) -> RangeChaumPedersenProof:
+    """
+    Produce a proof that the message is an encryption of some integer between 0 and the limit, inclusive.
+    Critically, the proof does not reveal which particular integer is encrypted.
+
+    :param message: An ElGamal ciphertext
+    :param r: The encryption nonce
+    :param k: The public encryption key
+    :param q: A value for generating the challenge hash, usually the extended base hash
+    :param seed: A value for generating nonces
+    :param plaintext: The integer encrypted by the ElGamal ciphertext
+    :param limit: The upper limit for the range proof
+    """
+    assert (
+        0 <= plaintext <= limit
+    ), "make_range_chaum_pedersen only supports plaintexts between 0 and the limit."
+    alpha = message.pad
+    beta = message.data
+
+    # Aggregate nonces
+    nonces = Nonces(seed, "range-chaum-pedersen-proof")[:2*limit+1]
+
+    # Generate anticipated challenge values (for non-plaintext values)
+    challenges = [
+        nonces[j] if j < plaintext else
+        nonces[j-1] if j not in {plaintext, limit+1} else
+        0 for j in range(limit+2)
+    ]
+    # Alternatively, use slicing
+    #challenges = nonces[:plaintext] + [0] + nonces[plaintext:limit] + [0]
+
+    # Make commitments (for every value)
+    commitments = [()] * (limit+1)
+    for j in range(len(commitments)):
+        uj = nonces[j+limit]
+        cj = challenges[j]
+        aj = g_pow_p(uj)
+        bj = mult_p(g_pow_p(mult_q(a_minus_b_q(j, plaintext), cj)), pow_p(k, uj))
+        # TODO: Which is costlier: running g_pow_p(0) once or limit+1 many checks j != limit?
+        """
+        bj = pow_p(k, uj)
+        if j != limit:
+            bj = mult_p(g_pow_p(mult_q(a_minus_b_q(j, plaintext), cj)), bj)
+        """
+        commitments[j] = (aj, bj)
+
+    # Compute the remaining challenge values
+    c = hash_elems(q, alpha, beta, *[elt for tup in commitments for elt in tup])
+    challenges[plaintext] = a_minus_b_q(c, add_q(*challenges))
+    challenges[-1] = c
+
+    # Calculate the response (for every value)
+    responses = [
+        add_q(nonces[j+limit], mult_q(challenges[j], r))
+        for j in range(limit+1)
+    ]
+
+    # Present proof
+    return RangeChaumPedersenProof(commitments, challenges, responses)
 
 def make_disjunctive_chaum_pedersen(
     message: ElGamalCiphertext,

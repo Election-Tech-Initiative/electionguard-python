@@ -12,6 +12,7 @@ from electionguard.chaum_pedersen import (
     make_chaum_pedersen,
     make_constant_chaum_pedersen,
     make_disjunctive_chaum_pedersen,
+    make_range_chaum_pedersen,
 )
 from electionguard.elgamal import (
     ElGamalKeyPair,
@@ -23,6 +24,52 @@ from electionguard.utils import get_optional
 from electionguard_tools.strategies.elgamal import elgamal_keypairs
 from electionguard_tools.strategies.group import elements_mod_q_no_zero, elements_mod_q
 
+class TestRangeChaumPedersen(BaseTestCase):
+    """Range Chaum-Pedersen tests"""
+
+    def test_rcp_proofs_simple(self):
+        keypair = elgamal_keypair_from_secret(TWO_MOD_Q)
+        nonce = ONE_MOD_Q
+        seed = TWO_MOD_Q
+        message0 = get_optional(elgamal_encrypt(0, nonce, keypair.public_key))
+        proof00 = make_range_chaum_pedersen(
+            message0, nonce, keypair.public_key, ONE_MOD_Q, seed, 0, 0
+        )
+        self.assertTrue(proof00.is_valid(message0, keypair.public_key, ONE_MOD_Q))
+        proof01 = make_range_chaum_pedersen(
+            message0, nonce, keypair.public_key, ONE_MOD_Q, seed, 0, 1
+        )
+        self.assertTrue(proof01.is_valid(message0, keypair.public_key, ONE_MOD_Q))
+        proof02 = make_range_chaum_pedersen(
+            message0, nonce, keypair.public_key, ONE_MOD_Q, seed, 0, 2
+        )
+        self.assertTrue(proof02.is_valid(message0, keypair.public_key, ONE_MOD_Q))
+
+        message1 = get_optional(elgamal_encrypt(1, nonce, keypair.public_key))
+        self.assertRaises(AssertionError, make_range_chaum_pedersen,
+            message1, nonce, keypair.public_key, ONE_MOD_Q, seed, 1, 0
+        )
+        proof11 = make_range_chaum_pedersen(
+            message1, nonce, keypair.public_key, ONE_MOD_Q, seed, 1, 1
+        )
+        self.assertTrue(proof11.is_valid(message1, keypair.public_key, ONE_MOD_Q))
+        proof12 = make_range_chaum_pedersen(
+            message1, nonce, keypair.public_key, ONE_MOD_Q, seed, 1, 2
+        )
+        self.assertTrue(proof12.is_valid(message1, keypair.public_key, ONE_MOD_Q))
+
+        message2 = get_optional(elgamal_encrypt(2, nonce, keypair.public_key))
+        self.assertRaises(AssertionError, make_range_chaum_pedersen,
+            message2, nonce, keypair.public_key, ONE_MOD_Q, seed, 2, 1
+        )
+        proof22 = make_range_chaum_pedersen(
+            message2, nonce, keypair.public_key, ONE_MOD_Q, seed, 2, 2
+        )
+        self.assertTrue(proof22.is_valid(message2, keypair.public_key, ONE_MOD_Q))
+        proof23 = make_range_chaum_pedersen(
+            message2, nonce, keypair.public_key, ONE_MOD_Q, seed, 2, 3
+        )
+        self.assertTrue(proof23.is_valid(message2, keypair.public_key, ONE_MOD_Q))
 
 class TestDisjunctiveChaumPedersen(BaseTestCase):
     """Disjunctive Chaum Pedersen tests"""
