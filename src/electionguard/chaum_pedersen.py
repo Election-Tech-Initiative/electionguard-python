@@ -489,7 +489,7 @@ def make_range_chaum_pedersen(
     q: ElementModQ,
     seed: ElementModQ,
     plaintext: int,
-    limit: int,
+    limit: int = 1,
 ) -> RangeChaumPedersenProof:
     """
     Produce a proof that the message is an encryption of some integer between 0 and the limit, inclusive.
@@ -501,7 +501,7 @@ def make_range_chaum_pedersen(
     :param q: A value for generating the challenge hash, usually the extended base hash
     :param seed: A value for generating nonces
     :param plaintext: The integer encrypted by the ElGamal ciphertext
-    :param limit: The upper limit for the range proof
+    :param limit: The upper limit for the range proof; default value is 1 for usual 0 or 1 encryption
     """
     assert (
         0 <= plaintext <= limit
