@@ -23,8 +23,8 @@ export default {
       </button>
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <div class="navbar-nav">
-          <a href="#/create-key" class="nav-link">Create Key</a>
-          <a href="#/setup-election" class="nav-link">Setup Election</a>
+          <a href="#/admin/create-key" class="nav-link">Create Key</a>
+          <a href="#/admin/setup-election" class="nav-link">Setup Election</a>
         </div>
       </div>
     </div>

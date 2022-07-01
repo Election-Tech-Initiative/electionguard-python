@@ -25,21 +25,36 @@
 
     <script type="module">
       import { createApp } from "vue";
+
+      // shared components
       import Navbar from "./components/shared/navbar-component.js";
       import SelectMode from "./components/shared/select-mode-component.js";
-      import GuardianHome from "./components/guardian/guardian-home-component.js";
+      import NotFound from "./components/shared/not-found-component.js";
+
+      // admin components
+      import SetupAdmin from "./components/admin/setup-admin-component.js";
       import AdminHome from "./components/admin/admin-home-component.js";
       import SetupElection from "./components/admin/setup-election-component.js";
       import CreateKey from "./components/admin/create-key-component.js";
-      import NotFound from "./components/shared/not-found-component.js";
+
+      // guardian components
+      import SetupGuardian from "./components/guardian/setup-guardian-component.js";
+      import GuardianHome from "./components/guardian/guardian-home-component.js";
 
       const routes = {
+        // shared pages
         "/": SelectMode,
-        "/guardian-home": GuardianHome,
-        "/admin-home": AdminHome,
-        "/setup-election": SetupElection,
-        "/create-key": CreateKey,
         "/not-found": NotFound,
+
+        // admin pages
+        "/admin/setup": SetupAdmin,
+        "/admin/home": AdminHome,
+        "/admin/setup-election": SetupElection,
+        "/admin/create-key": CreateKey,
+
+        // guardian pages
+        "/guardian/setup": SetupGuardian,
+        "/guardian/home": GuardianHome,
       };
 
       createApp({
