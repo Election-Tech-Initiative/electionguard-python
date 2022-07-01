@@ -1,4 +1,4 @@
-import Spinner from "./spinner-component.js";
+import Spinner from "../shared/spinner-component.js";
 
 export default {
   components: {

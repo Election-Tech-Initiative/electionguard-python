@@ -25,13 +25,13 @@
 
     <script type="module">
       import { createApp } from "vue";
-      import Navbar from "./components/navbar-component.js";
-      import SelectMode from "./components/select-mode-component.js";
-      import GuardianHome from "./components/guardian-home-component.js";
-      import AdminHome from "./components/admin-home-component.js";
-      import SetupElection from "./components/setup-election-component.js";
-      import CreateKey from "./components/create-key-component.js";
-      import NotFound from "./components/not-found-component.js";
+      import Navbar from "./components/shared/navbar-component.js";
+      import SelectMode from "./components/shared/select-mode-component.js";
+      import GuardianHome from "./components/guardian/guardian-home-component.js";
+      import AdminHome from "./components/admin/admin-home-component.js";
+      import SetupElection from "./components/admin/setup-election-component.js";
+      import CreateKey from "./components/admin/create-key-component.js";
+      import NotFound from "./components/shared/not-found-component.js";
 
       const routes = {
         "/": SelectMode,
