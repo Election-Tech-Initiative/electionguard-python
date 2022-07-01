@@ -1,5 +1,6 @@
 from typing import List
 import eel
+from electionguard_gui.authorization_service import AuthoriationService
 
 from electionguard_gui.component_base import ComponentBase
 from electionguard_gui.create_key_component import CreateKeyComponent
@@ -14,6 +15,7 @@ class MainApp:
         GuardianHomeComponent(),
         CreateKeyComponent(),
         SetupElectionComponent(),
+        AuthoriationService(),
     ]
 
     def start(self) -> None:
