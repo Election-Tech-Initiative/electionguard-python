@@ -18,8 +18,7 @@ class CreateKeyComponent(ComponentBase):
             f"Starting ceremony: key_name: {key_name}, guardian_count: {guardian_count}, quorum: {quorum}"
         )
         db = self.get_db()
-        keys_collection = db.keys
-        existing_keys = keys_collection.find_one({"key_name": key_name})
+        existing_keys = db.keys.find_one({"key_name": key_name})
         if existing_keys:
             print(f"record '{key_name}' already exists")
             result: dict[str, Any] = self.eel_fail("Key name already exists")
@@ -31,7 +30,7 @@ class CreateKeyComponent(ComponentBase):
             "guardians_joined": 0,
         }
         print(f"creating '{key_name}' record")
-        keys_collection.insert_one(key)
+        db.keys.insert_one(key)
         # todo: poll until guardians accept key
         sleep(1)
         return self.eel_success()

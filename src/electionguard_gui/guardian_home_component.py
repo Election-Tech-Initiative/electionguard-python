@@ -46,7 +46,9 @@ class GuardianHomeComponent(ComponentBase):
 
     def join_key(self, key_id: str) -> None:
         db = self.get_db()
-        keys_collection = db.keys
-        key = keys_collection.find_one({"_id": ObjectId(key_id)})
+        key = db.keys.find_one({"_id": ObjectId(key_id)})
+        key["guardians_joined"] += 1
         key_name = key["key_name"]
-        print(f"gonna join key {key_name}")
+        guardians_joined = key["guardians_joined"]
+        db.keys.replace_one({"_id": ObjectId(key_id)}, key)
+        print(f"new guardian joined {key_name}, total joined is now {guardians_joined}")
