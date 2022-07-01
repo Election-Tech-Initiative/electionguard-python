@@ -125,7 +125,7 @@ class TestRangeChaumPedersen(BaseTestCase):
         max_examples=10,
     )
     @given(elgamal_keypairs(), elements_mod_q_no_zero(), elements_mod_q())
-    def test_range_proof_one(
+    def test_rcp_proof_one(
         self, keypair: ElGamalKeyPair, nonce: ElementModQ, seed: ElementModQ
     ):
         message = get_optional(elgamal_encrypt(1, nonce, keypair.public_key))
