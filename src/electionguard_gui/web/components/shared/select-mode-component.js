@@ -5,10 +5,10 @@ export default {
   </div>
   <div class="row justify-content-md-center">
     <div class="col-3 d-grid gap-2">
-      <a href="#/admin/setup" class="btn btn-primary">Administrator</a>
+      <a href="#/admin/home" class="btn btn-primary">Administrator</a>
     </div>
     <div class="col-3 d-grid gap-2">
-      <a href="#/guardian/setup" class="btn btn-primary">Guardian</a>
+      <a href="#/guardian/home" class="btn btn-primary">Guardian</a>
     </div>
   </div>`,
 };

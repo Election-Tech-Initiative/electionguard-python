@@ -1,3 +1,5 @@
+import AuthorizationService from "../../services/authorization-service.js";
+
 export default {
   data() {
     return {
@@ -13,7 +15,8 @@ export default {
       eel.join_key(keyId);
     },
   },
-  mounted() {
+  async mounted() {
+    await AuthorizationService.ensureAuthenticated();
     console.log("begin watching for keys");
     eel.expose(this.keys_found, "keys_found");
     eel.watch_keys();

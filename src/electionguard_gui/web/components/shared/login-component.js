@@ -10,7 +10,7 @@ export default {
   },
   data() {
     return {
-      userId: "loading...",
+      userId: null,
     };
   },
   methods: {
@@ -23,9 +23,9 @@ export default {
     },
   },
   template: /*html*/ `
-  <h1>Guardian Setup</h1>
+  <h1>User Setup</h1>
   <form id="mainForm" class="needs-validation" novalidate @submit.prevent="createUser">
-    <input type="textbox" class="form-control" v-model="userId" required />
+    <input type="textbox" class="form-control" v-model="userId" required pattern="[a-zA-Z0-9]+" />
     <input type="submit" class="btn btn-primary" text="Continue" />
   </form>
   `,
