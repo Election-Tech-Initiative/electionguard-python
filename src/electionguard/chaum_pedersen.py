@@ -16,11 +16,13 @@ from .group import (
     mult_q,
     int_to_q,
     ZERO_MOD_Q,
+    ZERO_MOD_P,
 )
 from .hash import hash_elems
 from .logs import log_warning
 from .nonces import Nonces
 from .proof import Proof, ProofUsage
+
 
 @dataclass
 class RangeChaumPedersenProof(Proof):
@@ -47,7 +49,7 @@ class RangeChaumPedersenProof(Proof):
     ) -> bool:
         """
         Validates a range Chaum-Pedersen proof.
-        
+
         :param message: The ciphertext message
         :param k: The public encryption key
         :param q: The extended base hash of the election
@@ -60,49 +62,52 @@ class RangeChaumPedersenProof(Proof):
         responses = self.proof_responses
 
         limit = len(responses)
-        assert (
-            len(commitments) == limit and len(challenges) == limit+1
-        ), ("RangeChaumPedersenProof.is_valid only supports proofs with a commitment, challenge," +
-            " and response for each possible integer value, plus one additional challenge.")
+        assert len(commitments) == limit and len(challenges) == limit + 1, (
+            "RangeChaumPedersenProof.is_valid only supports proofs with a commitment, challenge,"
+            + " and response for each possible integer value, plus one additional challenge."
+        )
 
         # (4.A)
         valid_residue_alpha = alpha.is_valid_residue()
         valid_residue_beta = beta.is_valid_residue()
-        valid_residue_pads = [aj.is_valid_residue() for aj,_ in commitments]
-        valid_residue_data = [bj.is_valid_residue() for _,bj in commitments]
+        valid_residue_pads = [aj.is_valid_residue() for aj, _ in commitments]
+        valid_residue_data = [bj.is_valid_residue() for _, bj in commitments]
 
         # (4.B)
         c = challenges[-1]
-        consistent_c_hash = (c
-            == hash_elems(q, alpha, beta, *[elt for tup in commitments for elt in tup]))
+        consistent_c_hash = c == hash_elems(
+            q, alpha, beta, *[elt for tup in commitments for elt in tup]
+        )
 
         # (4.C)
         in_bounds_challenges = [cj.is_in_bounds() for cj in challenges[:-1]]
         in_bounds_responses = [vj.is_in_bounds() for vj in responses]
 
         # (4.D)
-        consistent_c_sum = (c == add_q(*challenges[:-1]))
+        consistent_c_sum = c == add_q(*challenges[:-1])
 
         # (4.E'): check pad equations
         consistent_pads = [
             g_pow_p(responses[j]) == mult_p(commitments[j][0], pow_p(alpha, cj))
-            for j,cj in enumerate(challenges[:-1])
+            for j, cj in enumerate(challenges[:-1])
         ]
 
         # (4.F'): check data equations
-        # TODO: Is saving the single unnecessary g_pow_p(0) worth adding limit+1 many conditionals?
+        # TODO: Is saving the single unnecessary g_pow_p(0) worth adding limit + 1 many conditionals?
         consistent_data = [
-            (mult_p(g_pow_p(mult_q(j,cj)), pow_p(k, responses[j]))
-                == mult_p(commitments[j][1], pow_p(beta, cj)))
-            for j,cj in enumerate(challenges[:-1])
+            (
+                mult_p(g_pow_p(mult_q(j, cj)), pow_p(k, responses[j]))
+                == mult_p(commitments[j][1], pow_p(beta, cj))
+            )
+            for j, cj in enumerate(challenges[:-1])
         ]
-        #consistent_data = [
+        # consistent_data = [
         #    (mult_p(g_pow_p(mult_q(j,cj)), pow_p(k, responses[j]))
         #        == mult_p(commitments[j][1], pow_p(beta, cj))) if j != 0
         #    else pow_p(k, responses[j])
         #        == mult_p(commitments[j][1], pow_p(beta, cj))
         #    for j,cj in enumerate(challenges[:-1])
-        #]
+        # ]
 
         success = (
             valid_residue_alpha
@@ -119,23 +124,26 @@ class RangeChaumPedersenProof(Proof):
         if not success:
             log_warning(
                 "found an invalid range Chaum-Pedersen proof: "
-                + str({
-                    "valid_residue_alpha": valid_residue_alpha,
-                    "valid_residue_beta": valid_residue_beta,
-                    "valid_residue_pads": valid_residue_pads,
-                    "valid_residue_data": valid_residue_data,
-                    "consistent_c_hash": consistent_c_hash,
-                    "in_bounds_challenges": in_bounds_challenges,
-                    "in_bounds_responses": in_bounds_responses,
-                    "consistent_c_sum": consistent_c_sum,
-                    "consistent_pads": consistent_pads,
-                    "consistent_data": consistent_data,
-                    "k": k,
-                    "limit": limit,
-                    "proof": self,
-                })
+                + str(
+                    {
+                        "valid_residue_alpha": valid_residue_alpha,
+                        "valid_residue_beta": valid_residue_beta,
+                        "valid_residue_pads": valid_residue_pads,
+                        "valid_residue_data": valid_residue_data,
+                        "consistent_c_hash": consistent_c_hash,
+                        "in_bounds_challenges": in_bounds_challenges,
+                        "in_bounds_responses": in_bounds_responses,
+                        "consistent_c_sum": consistent_c_sum,
+                        "consistent_pads": consistent_pads,
+                        "consistent_data": consistent_data,
+                        "k": k,
+                        "limit": limit,
+                        "proof": self,
+                    }
+                )
             )
         return success
+
 
 @dataclass
 class DisjunctiveChaumPedersenProof(Proof):
@@ -482,6 +490,7 @@ class ConstantChaumPedersenProof(Proof):
             )
         return success
 
+
 def make_range_chaum_pedersen(
     message: ElGamalCiphertext,
     r: ElementModQ,
@@ -510,30 +519,31 @@ def make_range_chaum_pedersen(
     beta = message.data
 
     # Aggregate nonces
-    nonces = Nonces(seed, "range-chaum-pedersen-proof")[:2*limit+1]
+    nonces = Nonces(seed, "range-chaum-pedersen-proof")[: 2 * limit + 1]
 
     # Generate anticipated challenge values (for non-plaintext values)
     challenges = [
-        nonces[j] if j < plaintext else
-        nonces[j-1] if j not in {plaintext, limit+1} else
-        0 for j in range(limit+2)
+        nonces[j]
+        if j < plaintext
+        else nonces[j - 1]
+        if j not in {plaintext, limit + 1}
+        else ZERO_MOD_Q
+        for j in range(limit + 2)
     ]
     # Alternatively, use slicing
-    #challenges = nonces[:plaintext] + [0] + nonces[plaintext:limit] + [0]
+    # challenges = nonces[:plaintext] + [0] + nonces[plaintext:limit] + [0]
 
     # Make commitments (for every value)
-    commitments = [()] * (limit+1)
-    for j in range(len(commitments)):
-        uj = nonces[j+limit]
+    commitments = [(ZERO_MOD_P, ZERO_MOD_P)] * (limit + 1)
+    for j in range(limit + 1):
+        uj = nonces[j + limit]
         cj = challenges[j]
         aj = g_pow_p(uj)
         bj = mult_p(g_pow_p(mult_q(a_minus_b_q(j, plaintext), cj)), pow_p(k, uj))
-        # TODO: Which is costlier: running g_pow_p(0) once or limit+1 many checks j != limit?
-        """
-        bj = pow_p(k, uj)
-        if j != limit:
-            bj = mult_p(g_pow_p(mult_q(a_minus_b_q(j, plaintext), cj)), bj)
-        """
+        # TODO: Which is costlier: running g_pow_p(0) once or limit + 1 many checks j != limit?
+        # bj = pow_p(k, uj)
+        # if j != limit:
+        #     bj = mult_p(g_pow_p(mult_q(a_minus_b_q(j, plaintext), cj)), bj)
         commitments[j] = (aj, bj)
 
     # Compute the remaining challenge values
@@ -543,12 +553,12 @@ def make_range_chaum_pedersen(
 
     # Calculate the response (for every value)
     responses = [
-        add_q(nonces[j+limit], mult_q(challenges[j], r))
-        for j in range(limit+1)
+        add_q(nonces[j + limit], mult_q(challenges[j], r)) for j in range(limit + 1)
     ]
 
     # Present proof
     return RangeChaumPedersenProof(commitments, challenges, responses)
+
 
 def make_disjunctive_chaum_pedersen(
     message: ElGamalCiphertext,

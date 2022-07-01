@@ -24,6 +24,7 @@ from electionguard.utils import get_optional
 from electionguard_tools.strategies.elgamal import elgamal_keypairs
 from electionguard_tools.strategies.group import elements_mod_q_no_zero, elements_mod_q
 
+
 class TestRangeChaumPedersen(BaseTestCase):
     """Range Chaum-Pedersen tests"""
 
@@ -69,7 +70,6 @@ class TestRangeChaumPedersen(BaseTestCase):
         )
         self.assertTrue(proof23.is_valid(message2, keypair.public_key, ONE_MOD_Q))
 
-
     def test_rcp_proofs_invalid_input(self):
         keypair = elgamal_keypair_from_secret(TWO_MOD_Q)
         nonce = ONE_MOD_Q
@@ -77,10 +77,18 @@ class TestRangeChaumPedersen(BaseTestCase):
 
         # Encode 2; cannot construct range proof for range not including plaintext
         message2 = get_optional(elgamal_encrypt(2, nonce, keypair.public_key))
-        self.assertRaises(AssertionError, make_range_chaum_pedersen,
-            message2, nonce, keypair.public_key, ONE_MOD_Q, seed, 2, 1
+        self.assertRaises(
+            AssertionError,
+            make_range_chaum_pedersen,
+            message2,
+            nonce,
+            keypair.public_key,
+            ONE_MOD_Q,
+            seed,
+            2,
+            1,
         )
-        # Encode 0; proof with incorrect plaintext runs but is invalid, even for valid range/encryption 
+        # Encode 0; proof with incorrect plaintext runs but is invalid, even for valid range/encryption
         message0 = get_optional(elgamal_encrypt(0, nonce, keypair.public_key))
         proof03bad = make_range_chaum_pedersen(
             message0, nonce, keypair.public_key, ONE_MOD_Q, seed, 3, 10
@@ -110,7 +118,7 @@ class TestRangeChaumPedersen(BaseTestCase):
         )
         self.assertTrue(proof.is_valid(message, keypair.public_key, ONE_MOD_Q))
         self.assertFalse(proof_bad.is_valid(message, keypair.public_key, ONE_MOD_Q))
-    
+
     @settings(
         deadline=timedelta(milliseconds=2000),
         suppress_health_check=[HealthCheck.too_slow],
@@ -129,7 +137,7 @@ class TestRangeChaumPedersen(BaseTestCase):
         )
         self.assertTrue(proof.is_valid(message, keypair.public_key, ONE_MOD_Q))
         self.assertFalse(proof_bad.is_valid(message, keypair.public_key, ONE_MOD_Q))
-    
+
     @settings(
         deadline=timedelta(milliseconds=2000),
         suppress_health_check=[HealthCheck.too_slow],
