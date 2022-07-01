@@ -19,6 +19,7 @@
     <div id="app">
       <navbar></navbar>
       <div class="container mt-3">
+        <Login @login="login" v-if="showLogin"></Login>
         <component :is="currentView" />
       </div>
     </div>
@@ -40,39 +41,63 @@
       // guardian components
       import GuardianHome from "./components/guardian/guardian-home-component.js";
 
+      // services
+      import AuthorizationService from "./services/authorization-service.js";
+
       const routes = {
         // shared pages
-        "/": SelectMode,
-        "/not-found": NotFound,
-        "/login": Login,
+        "/": { secured: false, component: SelectMode },
+        "/not-found": { secured: false, component: NotFound },
+        "/login": { secured: false, component: Login },
 
         // admin pages
-        "/admin/home": AdminHome,
-        "/admin/setup-election": SetupElection,
-        "/admin/create-key": CreateKey,
+        "/admin/home": { secured: true, component: AdminHome },
+        "/admin/setup-election": {
+          secured: true,
+          component: SetupElection,
+        },
+        "/admin/create-key": { secured: true, component: CreateKey },
 
         // guardian pages
-        "/guardian/home": GuardianHome,
+        "/guardian/home": { secured: true, component: GuardianHome },
       };
 
       createApp({
         data() {
           return {
             currentPath: window.location.hash,
+            showLogin: false,
+            userId: null,
           };
         },
         computed: {
           currentView() {
-            return routes[this.currentPath.slice(1) || "/"] || NotFound;
+            if (this.showLogin) return null;
+            const route = this.getRoute();
+            return route.component;
           },
         },
-        mounted() {
+        methods: {
+          getRoute() {
+            return routes[this.currentPath.slice(1) || "/"] || NotFound;
+          },
+          login(username) {
+            console.log("login", username);
+            this.showLogin = false;
+            this.userId = username;
+          },
+        },
+        async mounted() {
           window.addEventListener("hashchange", () => {
             this.currentPath = window.location.hash;
+            const route = this.getRoute();
+            this.showLogin = route.secured && !this.userId;
           });
+          this.userId = await AuthorizationService.getUserId();
         },
         components: {
           Navbar,
+          Login,
         },
       }).mount("#app");
     </script>

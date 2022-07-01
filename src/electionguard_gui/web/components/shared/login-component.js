@@ -3,9 +3,6 @@ import AuthorizationService from "../../services/authorization-service.js";
 export default {
   mounted: async function () {
     const userId = await AuthorizationService.getUserId();
-    if (userId) {
-      this.goHome();
-    }
     this.userId = userId;
   },
   data() {
@@ -18,12 +15,9 @@ export default {
       const form = document.getElementById("mainForm");
       if (form.checkValidity()) {
         await AuthorizationService.setUserId(this.userId);
-        this.goHome();
+        this.$emit("login", this.userId);
       }
       form.classList.add("was-validated");
-    },
-    goHome() {
-      window.location.href = "#/guardian/home";
     },
   },
   template: /*html*/ `

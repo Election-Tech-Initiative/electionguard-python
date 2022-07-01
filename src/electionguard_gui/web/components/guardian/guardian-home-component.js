@@ -16,7 +16,6 @@ export default {
     },
   },
   async mounted() {
-    await AuthorizationService.ensureAuthenticated();
     console.log("begin watching for keys");
     eel.expose(this.keys_found, "keys_found");
     eel.watch_keys();
