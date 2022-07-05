@@ -16,9 +16,9 @@ from typing import (
 from .ballot_code import get_ballot_code
 from .chaum_pedersen import (
     ConstantChaumPedersenProof,
-    DisjunctiveChaumPedersenProof,
+    RangeChaumPedersenProof,
     make_constant_chaum_pedersen,
-    make_disjunctive_chaum_pedersen,
+    make_range_chaum_pedersen,
 )
 from .election_object_base import (
     ElectionObjectBase,
@@ -52,13 +52,12 @@ class PlaintextBallotSelection(ElectionObjectBase):
     """
     A BallotSelection represents an individual selection on a ballot.
 
-    This class accepts a `vote` integer field which has no constraints
-    in the ElectionGuard Data Specification, but is constrained logically
-    in the application to resolve to `False` or `True` aka only 0 and 1 is
-    supported for now.
+    This class accepts a `vote` integer field which has no constraints.
+    The range Chaum-Pedersen proofs now support encodings of any nonnegative integer,
+    not just the binary 0 or 1 as previously supported.
 
     This class can also be designated as `is_placeholder_selection` which has no
-    context to the data specification but is useful for running validity checks internally
+    context to the data specification but is useful for running validity checks internally.
 
     Write_in field exists to support the cleartext representation of a write-in candidate value.
     """
@@ -86,8 +85,8 @@ class PlaintextBallotSelection(ElectionObjectBase):
             return False
 
         vote = self.vote
-        if vote < 0 or vote > 1:
-            log_warning(f"Currently only supporting choices of 0 or 1: {str(self)}")
+        if vote < 0:
+            log_warning(f"Currently only supporting nonnegative choices: {str(self)}")
             return False
 
         return True
@@ -114,7 +113,7 @@ class CiphertextSelection(Protocol):
     object_id: str
 
     sequence_order: int
-    """Order the selection."""
+    """Order the selection"""
 
     description_hash: ElementModQ
     """The SelectionDescription hash"""
@@ -134,21 +133,21 @@ class CiphertextBallotSelection(
     in its constructor.
 
     When a selection is encrypted, the `description_hash` and `ciphertext` required fields must
-    be populated at construction however the `nonce` is also usually provided by convention.
+    be populated at construction; however, the `nonce` is also usually provided by convention.
 
-    After construction, the `crypto_hash` field is populated automatically in the `__post_init__` cycle
+    After construction, the `crypto_hash` field is populated automatically in the `__post_init__` cycle.
 
     A consumer of this object has the option to discard the `nonce` and/or discard the `proof`,
     or keep both values.
 
     By discarding the `nonce`, the encrypted representation and `proof`
     can only be regenerated if the nonce was derived from the ballot's master nonce.  If the nonce
-    used for this selection is truly random, and it is discarded, then the proofs cannot be regenerated.
+    used for this selection is truly random and is discarded, then the proofs cannot be regenerated.
 
-    By keeping the `nonce`, or deriving the selection nonce from the ballot nonce, an external system can
-    regenerate the proofs on demand.  This is useful for storage or memory constrained systems.
+    By keeping the `nonce` or deriving the selection nonce from the ballot nonce, an external system can
+    regenerate the proofs on demand.  This is useful for storage- or memory-constrained systems.
 
-    By keeping the `proof` the nonce is not required fotor verify the encrypted selection.
+    By keeping the `proof`, the nonce is not required to verify the encrypted selection.
     """
 
     description_hash: ElementModQ
@@ -166,8 +165,8 @@ class CiphertextBallotSelection(
     nonce: Optional[ElementModQ] = field(default=None)
     """The nonce used to generate the encryption. Sensitive & should be treated as a secret"""
 
-    proof: Optional[DisjunctiveChaumPedersenProof] = field(default=None)
-    """The proof that demonstrates the selection is an encryption of 0 or 1, and was encrypted using the `nonce`"""
+    proof: Optional[RangeChaumPedersenProof] = field(default=None)
+    """The proof demonstrating that the selection used the `nonce` to encrypt a nonnegative integer"""
 
     def is_valid_encryption(
         self,
@@ -176,11 +175,11 @@ class CiphertextBallotSelection(
         crypto_extended_base_hash: ElementModQ,
     ) -> bool:
         """
-        Given an encrypted BallotSelection, validates the encryption state against a specific seed and public key.
-        Calling this function expects that the object is in a well-formed encrypted state
-        with the elgamal encrypted `message` field populated along with
-        the DisjunctiveChaumPedersenProof`proof` populated.
-        the ElementModQ `description_hash` and the ElementModQ `crypto_hash` are also checked.
+        Given an encrypted BallotSelection, validates the encryption state against a specific
+        seed and public key. Calling this function expects that the object is in a well-formed
+        encrypted state with the ElGamal encrypted `message` field populated along with the
+        RangeChaumPedersenProof `proof` populated.
+        The ElementModQ `description_hash` and the ElementModQ `crypto_hash` are also checked.
 
         :param encryption_seed: the hash of the SelectionDescription, or
                                 whatever `ElementModQ` was used to populate the `description_hash` field.
@@ -220,7 +219,7 @@ class CiphertextBallotSelection(
         into a hash for an entire ballot / ballot code. Of note, this particular hash examines
         the `encryption_seed` and `message`, but not the proof.
         This is deliberate, allowing for the possibility of ElectionGuard variants running on
-        much more limited hardware, wherein the Disjunctive Chaum-Pedersen proofs might be computed
+        much more limited hardware, wherein the range Chaum-Pedersen proofs might be computed
         later on.
 
         In most cases the encryption_seed should match the `description_hash`
@@ -248,7 +247,7 @@ def make_ciphertext_ballot_selection(
     is_placeholder_selection: bool = False,
     nonce: Optional[ElementModQ] = None,
     crypto_hash: Optional[ElementModQ] = None,
-    proof: Optional[DisjunctiveChaumPedersenProof] = None,
+    proof: Optional[RangeChaumPedersenProof] = None,
 ) -> CiphertextBallotSelection:
     """
     Constructs a `CipherTextBallotSelection` object. Most of the parameters here match up to fields
@@ -264,7 +263,7 @@ def make_ciphertext_ballot_selection(
     if proof is None:
         proof = flatmap_optional(
             nonce,
-            lambda n: make_disjunctive_chaum_pedersen(
+            lambda n: make_range_chaum_pedersen(
                 ciphertext,
                 n,
                 elgamal_public_key,
@@ -291,10 +290,10 @@ class PlaintextBallotContest(ElectionObjectBase):
     """
     A PlaintextBallotContest represents the selections made by a voter for a specific ContestDescription
 
-    this class can be either a partial or a complete representation of a contest dataset.  Specifically,
+    This class can be either a partial or a complete representation of a contest dataset.  Specifically,
     a partial representation must include at a minimum the "affirmative" selections of a contest.
     A complete representation of a ballot must include both affirmative and negative selections of
-    the contest, AND the placeholder selections necessary to satisfy the ConstantChaumPedersen proof
+    the contest AND the placeholder selections necessary to satisfy the ConstantChaumPedersen proof
     in the CiphertextBallotContest.
 
     Typically partial contests are passed into Electionguard for memory constrained systems,
@@ -527,7 +526,7 @@ class CiphertextBallotContest(OrderedObjectBase, CryptoHashCheckable):
         into a hash for an entire ballot / ballot code. Of note, this particular hash examines
         the `encryption_seed` and `ballot_selections`, but not the proof.
         This is deliberate, allowing for the possibility of ElectionGuard variants running on
-        much more limited hardware, wherein the Disjunctive Chaum-Pedersen proofs might be computed
+        much more limited hardware, wherein the Chaum-Pedersen proofs might be computed
         later on.
 
         In most cases, the encryption_seed is the description_hash
@@ -818,7 +817,7 @@ class CiphertextBallot(ElectionObjectBase, CryptoHashCheckable):
         into a hash for an entire ballot / ballot code. Of note, this particular hash examines
         the `manifest_hash` and `ballot_selections`, but not the proof.
         This is deliberate, allowing for the possibility of ElectionGuard variants running on
-        much more limited hardware, wherein the Disjunctive Chaum-Pedersen proofs might be computed
+        much more limited hardware, wherein the Chaum-Pedersen proofs might be computed
         later on.
         """
         if len(self.contests) == 0:

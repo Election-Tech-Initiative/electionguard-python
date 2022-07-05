@@ -142,14 +142,14 @@ class TestDecryptWithSecrets(BaseTestCase):
 
         # tamper with the proof
         malformed_proof = deepcopy(subject)
-        malformed_commitments = malformed_proof.proof.proof_commitments
-        malformed_commitments[0]["pad"] = mult_p(
-            malformed_proof.proof.proof_commitments[0]["pad"], TWO_MOD_P
+        malformed_commitments = malformed_proof.proof.commitments
+        malformed_commitments[0] = mult_p(
+            malformed_proof.proof.commitments[0], TWO_MOD_P
         )
         malformed_range = RangeChaumPedersenProof(
             malformed_commitments,
-            malformed_proof.proof.proof_challenges,
-            malformed_proof.proof.proof_responses,
+            malformed_proof.proof.challenges,
+            malformed_proof.proof.responses,
         )
         malformed_proof.proof = malformed_range
 

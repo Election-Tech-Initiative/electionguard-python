@@ -1,6 +1,6 @@
 # pylint: disable=too-many-instance-attributes
 from dataclasses import dataclass
-from typing import List, OrderedDict
+from typing import List
 
 from .elgamal import ElGamalCiphertext
 from .group import (
@@ -30,13 +30,13 @@ class RangeChaumPedersenProof(Proof):
     Representation of range Chaum-Pedersen proof
     """
 
-    proof_commitments: List[OrderedDict[str, ElementModP]]
-    """[{"pad": a0, "data": b0}, {"pad": a1, "data": b1}, ..., {"pad": aL, "data": bL}]"""
+    commitments: List[ElementModP]
+    """[a0, b0, a1, b1, ..., aL, bL]"""
 
-    proof_challenges: List[ElementModQ]
+    challenges: List[ElementModQ]
     """[c0, c1, ..., cL, c]"""
 
-    proof_responses: List[ElementModQ]
+    responses: List[ElementModQ]
     """[v0, v1, ..., vL]"""
 
     usage: ProofUsage = ProofUsage.SelectionValue
@@ -57,12 +57,12 @@ class RangeChaumPedersenProof(Proof):
         """
         alpha = message.pad
         beta = message.data
-        commitments = self.proof_commitments
-        challenges = self.proof_challenges
-        responses = self.proof_responses
+        commitments = self.commitments
+        challenges = self.challenges
+        responses = self.responses
 
         limit = len(responses) - 1
-        assert len(commitments) == limit + 1 and len(challenges) == limit + 2, (
+        assert len(commitments) == 2 * (limit + 1) and len(challenges) == limit + 2, (
             "RangeChaumPedersenProof.is_valid only supports proofs with a commitment, challenge,"
             + " and response for each possible integer value, plus one additional challenge."
         )
@@ -71,17 +71,15 @@ class RangeChaumPedersenProof(Proof):
         valid_residue_alpha = alpha.is_valid_residue()
         valid_residue_beta = beta.is_valid_residue()
         valid_residue_pads = [
-            commitment["pad"].is_valid_residue() for commitment in commitments
+            commitments[2 * j].is_valid_residue() for j in range(limit + 1)
         ]
         valid_residue_data = [
-            commitment["data"].is_valid_residue() for commitment in commitments
+            commitments[2 * j + 1].is_valid_residue() for j in range(limit + 1)
         ]
 
         # (4.B)
         c = challenges[-1]
-        consistent_c_hash = c == hash_elems(
-            q, alpha, beta, *[elt for commitment in commitments for elt in commitment]
-        )
+        consistent_c_hash = c == hash_elems(q, alpha, beta, *commitments)
 
         # (4.C)
         in_bounds_challenges = [cj.is_in_bounds() for cj in challenges[:-1]]
@@ -92,7 +90,7 @@ class RangeChaumPedersenProof(Proof):
 
         # (4.E'): check pad equations
         consistent_pads = [
-            g_pow_p(vj) == mult_p(commitments[j]["pad"], pow_p(alpha, challenges[j]))
+            g_pow_p(vj) == mult_p(commitments[2 * j], pow_p(alpha, challenges[j]))
             for j, vj in enumerate(responses)
         ]
 
@@ -100,16 +98,16 @@ class RangeChaumPedersenProof(Proof):
         consistent_data = [
             (
                 mult_p(g_pow_p(mult_q(j, challenges[j])), pow_p(k, vj))
-                == mult_p(commitments[j]["data"], pow_p(beta, challenges[j]))
+                == mult_p(commitments[2 * j + 1], pow_p(beta, challenges[j]))
             )
             for j, vj in enumerate(responses)
         ]
         # TODO: Is saving the single unnecessary g_pow_p(0) worth adding limit + 1 many conditionals?
         # consistent_data = [
         #    (mult_p(g_pow_p(mult_q(j,cj)), pow_p(k, responses[j]))
-        #        == mult_p(commitments[j]["data"], pow_p(beta, cj))) if j != 0
+        #        == mult_p(commitments[2*j+1], pow_p(beta, cj))) if j != 0
         #    else pow_p(k, responses[j])
-        #        == mult_p(commitments[j]["data"], pow_p(beta, cj))
+        #        == mult_p(commitments[2*j+1], pow_p(beta, cj))
         #    for j,cj in enumerate(challenges[:-1])
         # ]
 
@@ -538,25 +536,21 @@ def make_range_chaum_pedersen(
     # challenges = nonces[:plaintext] + [0] + nonces[plaintext:limit] + [0]
 
     # Make commitments (for every value)
-    commitments = [
-        OrderedDict([("pad", ZERO_MOD_P), ("data", ZERO_MOD_P)]) for j in range(limit + 1)
-    ]
-    for j, commitment in enumerate(commitments):
+    commitments = [ZERO_MOD_P] * (2 * (limit + 1))
+    for j in range(limit + 1):
         uj = nonces[j + limit]
         cj = challenges[j]
-        commitment["pad"] = g_pow_p(uj)
-        commitment["data"] = mult_p(
+        commitments[2 * j] = g_pow_p(uj)
+        commitments[2 * j + 1] = mult_p(
             g_pow_p(mult_q(a_minus_b_q(j, plaintext), cj)), pow_p(k, uj)
         )
         # TODO: Which is costlier: running g_pow_p(0) once or limit + 1 many checks j != limit?
-        # commitment["data"] = pow_p(k, uj)
+        # commitments[2*j+1] = pow_p(k, uj)
         # if j != limit:
-        #     commitment["data"] = mult_p(g_pow_p(mult_q(a_minus_b_q(j, plaintext), cj)), commitment["data"])
+        #     commitments[2*j+1] = mult_p(g_pow_p(mult_q(a_minus_b_q(j, plaintext), cj)), commitment["data"])
 
     # Compute the remaining challenge values
-    c = hash_elems(
-        q, alpha, beta, *[elt for commitment in commitments for elt in commitment]
-    )
+    c = hash_elems(q, alpha, beta, *commitments)
     challenges[plaintext] = a_minus_b_q(c, add_q(*challenges))
     challenges[-1] = c
 
