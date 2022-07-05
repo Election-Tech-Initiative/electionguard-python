@@ -21,9 +21,9 @@ from electionguard_tools.strategies.group import elements_mod_q_no_zero
 from electionguard.constants import get_small_prime
 from electionguard.chaum_pedersen import (
     ConstantChaumPedersenProof,
-    DisjunctiveChaumPedersenProof,
+    RangeChaumPedersenProof,
     make_constant_chaum_pedersen,
-    make_disjunctive_chaum_pedersen,
+    make_range_chaum_pedersen,
 )
 from electionguard.elgamal import (
     ElGamalKeyPair,
@@ -220,19 +220,16 @@ class TestEncrypt(BaseTestCase):
 
         # tamper with the proof
         malformed_proof = deepcopy(result)
-        altered_a0 = mult_p(result.proof.proof_zero_pad, TWO_MOD_P)
-        malformed_disjunctive = DisjunctiveChaumPedersenProof(
-            altered_a0,
-            malformed_proof.proof.proof_zero_data,
-            malformed_proof.proof.proof_one_pad,
-            malformed_proof.proof.proof_one_data,
-            malformed_proof.proof.proof_zero_challenge,
-            malformed_proof.proof.proof_one_challenge,
-            malformed_proof.proof.challenge,
-            malformed_proof.proof.proof_zero_response,
-            malformed_proof.proof.proof_one_response,
+        malformed_commitments = malformed_proof.proof.proof_commitments
+        malformed_commitments[0]["pad"] = mult_p(
+            malformed_proof.proof.proof_commitments[0]["pad"], TWO_MOD_P
         )
-        malformed_proof.proof = malformed_disjunctive
+        malformed_range = RangeChaumPedersenProof(
+            malformed_commitments,
+            malformed_proof.proof.proof_challenges,
+            malformed_proof.proof.proof_responses,
+        )
+        malformed_proof.proof = malformed_range
 
         # Assert
         self.assertFalse(
@@ -332,14 +329,14 @@ class TestEncrypt(BaseTestCase):
         # tamper with the proof
         malformed_proof = deepcopy(result)
         altered_a = mult_p(result.proof.pad, TWO_MOD_P)
-        malformed_disjunctive = ConstantChaumPedersenProof(
+        malformed_constant = ConstantChaumPedersenProof(
             altered_a,
             malformed_proof.proof.data,
             malformed_proof.proof.challenge,
             malformed_proof.proof.response,
             malformed_proof.proof.constant,
         )
-        malformed_proof.proof = malformed_disjunctive
+        malformed_proof.proof = malformed_constant
 
         # remove the proof
         missing_proof = deepcopy(result)
@@ -707,7 +704,7 @@ class TestEncrypt(BaseTestCase):
                 # one could also decrypt with the secret key:
                 # representation = selection.message.decrypt(keypair.secret_key)
 
-                regenerated_disjunctive = make_disjunctive_chaum_pedersen(
+                regenerated_range = make_range_chaum_pedersen(
                     selection.ciphertext,
                     selection.nonce,
                     keypair.public_key,
@@ -717,7 +714,7 @@ class TestEncrypt(BaseTestCase):
                 )
 
                 self.assertTrue(
-                    regenerated_disjunctive.is_valid(
+                    regenerated_range.is_valid(
                         selection.ciphertext,
                         keypair.public_key,
                         context.crypto_extended_base_hash,

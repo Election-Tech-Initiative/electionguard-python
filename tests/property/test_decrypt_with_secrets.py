@@ -9,7 +9,7 @@ from hypothesis.strategies import integers
 
 from tests.base_test_case import BaseTestCase
 
-from electionguard.chaum_pedersen import DisjunctiveChaumPedersenProof
+from electionguard.chaum_pedersen import RangeChaumPedersenProof
 from electionguard.decrypt_with_secrets import (
     decrypt_selection_with_secret,
     decrypt_selection_with_nonce,
@@ -142,19 +142,16 @@ class TestDecryptWithSecrets(BaseTestCase):
 
         # tamper with the proof
         malformed_proof = deepcopy(subject)
-        altered_a0 = mult_p(subject.proof.proof_zero_pad, TWO_MOD_P)
-        malformed_disjunctive = DisjunctiveChaumPedersenProof(
-            altered_a0,
-            malformed_proof.proof.proof_zero_data,
-            malformed_proof.proof.proof_one_pad,
-            malformed_proof.proof.proof_one_data,
-            malformed_proof.proof.proof_zero_challenge,
-            malformed_proof.proof.proof_one_challenge,
-            malformed_proof.proof.challenge,
-            malformed_proof.proof.proof_zero_response,
-            malformed_proof.proof.proof_one_response,
+        malformed_commitments = malformed_proof.proof.proof_commitments
+        malformed_commitments[0]["pad"] = mult_p(
+            malformed_proof.proof.proof_commitments[0]["pad"], TWO_MOD_P
         )
-        malformed_proof.proof = malformed_disjunctive
+        malformed_range = RangeChaumPedersenProof(
+            malformed_commitments,
+            malformed_proof.proof.proof_challenges,
+            malformed_proof.proof.proof_responses,
+        )
+        malformed_proof.proof = malformed_range
 
         result_from_key_malformed_encryption = decrypt_selection_with_secret(
             malformed_encryption,
