@@ -39,7 +39,8 @@ class RangeChaumPedersenProof(Proof):
     responses: List[ElementModQ]
     """[v0, v1, ..., vL]"""
 
-    usage: ProofUsage = ProofUsage.SelectionValue
+    usage: ProofUsage = ProofUsage.RangeValue
+    """A description of how to use this proof"""
 
     def __post_init__(self) -> None:
         super().__init__()
@@ -171,7 +172,7 @@ class DisjunctiveChaumPedersenProof(Proof):
     """proof_zero_response in the spec"""
     proof_one_response: ElementModQ
     """proof_one_response in the spec"""
-    usage: ProofUsage = ProofUsage.SelectionValue
+    usage: ProofUsage = ProofUsage.BinaryValue
     """a description of how to use this proof"""
 
     def __post_init__(self) -> None:
@@ -397,7 +398,7 @@ class ConstantChaumPedersenProof(Proof):
     """v in the spec"""
     constant: int
     """constant value"""
-    usage: ProofUsage = ProofUsage.SelectionLimit
+    usage: ProofUsage = ProofUsage.ConstantValue
     """a description of how to use this proof"""
 
     def __post_init__(self) -> None:
