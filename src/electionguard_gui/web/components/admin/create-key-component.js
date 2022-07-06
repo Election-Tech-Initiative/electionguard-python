@@ -25,10 +25,10 @@ export default {
           this.quorum
         );
         onDone((result) => {
-          console.log("key ceremony completed", result);
           this.loading = false;
+          console.debug("key creation finished", result);
           if (result.success) {
-            alert("success");
+            window.location.href = "#/admin/view-key?keyId=" + result.result;
           } else {
             this.alert = result.message;
           }

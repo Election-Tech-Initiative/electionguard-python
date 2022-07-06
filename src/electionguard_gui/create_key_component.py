@@ -1,6 +1,6 @@
 from typing import Any
-from time import sleep
 import eel
+from pymongo.results import InsertOneResult
 
 from electionguard_gui.component_base import ComponentBase
 
@@ -29,8 +29,6 @@ class CreateKeyComponent(ComponentBase):
             "quorum": quorum,
             "guardians_joined": 0,
         }
-        print(f"creating '{key_name}' record")
-        db.keys.insert_one(key)
-        # todo: poll until guardians accept key
-        sleep(1)
-        return self.eel_success()
+        inserted_id = db.keys.insert_one(key).inserted_id
+        print(f"created '{key_name}' record, id: {inserted_id}")
+        return self.eel_success(inserted_id)

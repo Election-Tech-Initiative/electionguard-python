@@ -19,7 +19,7 @@ class ComponentBase(ABC):
         return {"success": False, "message": message}
 
     def eel_success(self, result: Any = None) -> dict[str, Any]:
-        return {"success": True, "result": result}
+        return {"success": True, "result": str(result)}
 
     def expose(self) -> None:
         pass

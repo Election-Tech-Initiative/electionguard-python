@@ -3,7 +3,7 @@ let isMounted = false; /* Prevent duplicated styles in head tag */
 export default {
   props: ["visible"],
   mounted: function () {
-    console.log("activated");
+    console.debug("spinner activated");
     if (!isMounted) {
       let styleElem = document.createElement("link");
       styleElem.id = "spinner-style";
@@ -14,7 +14,7 @@ export default {
     }
   },
   unmounted: function () {
-    console.log("deactivated");
+    console.debug("spinner deactivated");
     if (isMounted) {
       document.head.removeChild(document.getElementById("spinner-style"));
       isMounted = false;
