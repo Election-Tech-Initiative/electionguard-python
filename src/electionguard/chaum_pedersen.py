@@ -104,14 +104,14 @@ class RangeChaumPedersenProof(Proof):
         ]
 
         # (4.F'): check data equations
-        # TODO: Is saving the single unnecessary g_pow_p(0) worth adding limit + 1 many conditionals?
-        consistent_data = [
-            (
-                mult_p(g_pow_p(mult_q(j, challenges[j])), pow_p(k, vj))
-                == mult_p(commitments[2 * j + 1], pow_p(beta, challenges[j]))
-            )
-            for j, vj in enumerate(responses)
-        ]
+        consistent_data = [False] * (limit + 1)
+        consistent_data[0] = pow_p(k, responses[0]) == mult_p(
+            commitments[1], pow_p(beta, challenges[0])
+        )
+        for j in range(1, limit + 1):
+            consistent_data[j] = mult_p(
+                g_pow_p(mult_q(j, challenges[j])), pow_p(k, responses[j])
+            ) == mult_p(commitments[2 * j + 1], pow_p(beta, challenges[j]))
 
         success = (
             valid_residue_alpha
@@ -511,27 +511,34 @@ def make_range_chaum_pedersen(
     nonces = Nonces(seed, "range-chaum-pedersen-proof")[: 2 * limit + 1]
 
     # Generate anticipated challenge values (for non-plaintext values)
-    challenges = [
-        nonces[j]
-        if j < plaintext
-        else nonces[j - 1]
-        if j not in {plaintext, limit + 1}
-        else ZERO_MOD_Q
-        for j in range(limit + 2)
-    ]
-    # Alternatively, use slicing
-    # challenges = nonces[:plaintext] + [0] + nonces[plaintext:limit] + [0]
+    challenges = [ZERO_MOD_Q] * (limit + 2)
+    for j in range(plaintext):
+        challenges[j] = nonces[j]
+    for j in range(plaintext + 1, limit + 1):
+        challenges[j] = nonces[j - 1]
+    # Notice challenges[plaintext] and challenges[-1] remain 0
 
     # Make commitments (for every value)
     commitments = [ZERO_MOD_P] * (2 * (limit + 1))
-    # TODO: Which is costlier: running g_pow_p(0) once or limit+1 many checks for j != limit?
-    for j in range(limit + 1):
+
+    def construct_commitment_nonzero_power(j: int) -> None:
+        """
+        Auxiliary function to avoid unnecessary g_pow_p(0) calls
+        """
         uj = nonces[j + limit]
         cj = challenges[j]
-        commitments[2 * j] = g_pow_p(uj)
-        commitments[2 * j + 1] = mult_p(
-            g_pow_p(mult_q(a_minus_b_q(j, plaintext), cj)), pow_p(k, uj)
-        )
+        aj = g_pow_p(uj)
+        bj = mult_p(g_pow_p(mult_q(a_minus_b_q(j, plaintext), cj)), pow_p(k, uj))
+        commitments[2 * j : 2 * j + 2] = aj, bj
+
+    for j in range(plaintext):
+        construct_commitment_nonzero_power(j)
+    up = nonces[plaintext + limit]
+    ap = g_pow_p(up)
+    bp = pow_p(k, up)
+    commitments[2 * plaintext : 2 * plaintext + 2] = ap, bp
+    for j in range(plaintext + 1, limit + 1):
+        construct_commitment_nonzero_power(j)
 
     # Compute the remaining challenge values
     c = hash_elems(q, alpha, beta, *commitments)
