@@ -42,11 +42,9 @@ class BallotFactory:
     def get_random_selection_from(
         description: SelectionDescription,
         random_source: Random,
-        is_placeholder: bool = False,
     ) -> PlaintextBallotSelection:
-
         selected = bool(random_source.randint(0, 1))
-        return selection_from(description, is_placeholder, selected)
+        return selection_from(description, selected)
 
     def get_random_contest_from(
         self,
@@ -165,7 +163,7 @@ def get_selection_well_formed(
     object_id = f"selection-{draw(ids)}"
     return (
         object_id,
-        PlaintextBallotSelection(object_id, draw(vote), draw(bools), extended_data),
+        PlaintextBallotSelection(object_id, draw(vote), extended_data),
     )
 
 
@@ -186,5 +184,5 @@ def get_selection_poorly_formed(
     object_id = f"selection-{draw(ids)}"
     return (
         object_id,
-        PlaintextBallotSelection(object_id, draw(vote), draw(bools), extended_data),
+        PlaintextBallotSelection(object_id, draw(vote), extended_data),
     )

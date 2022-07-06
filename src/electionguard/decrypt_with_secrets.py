@@ -13,7 +13,7 @@ from .group import ElementModQ
 from .logs import log_warning
 from .manifest import (
     InternalManifest,
-    ContestDescriptionWithPlaceholders,
+    ContestDescription,
     SelectionDescription,
 )
 from .nonces import Nonces
@@ -55,7 +55,6 @@ def decrypt_selection_with_secret(
     return PlaintextBallotSelection(
         selection.object_id,
         plaintext_vote,
-        selection.is_placeholder_selection,
     )
 
 
@@ -71,7 +70,7 @@ def decrypt_selection_with_nonce(
     Decrypt the specified `CiphertextBallotSelection` within the context of the specified selection.
 
     :param selection: the contest selection to decrypt
-    :param description: the qualified selection metadata that may be a placeholder selection
+    :param description: qualified selection metadata
     :param public_key: the public key for the election (K)
     :param crypto_extended_base_hash: the extended base hash code (𝑄') for the election
     :param nonce_seed: the optional nonce that was seeded to the encryption function.
@@ -110,29 +109,26 @@ def decrypt_selection_with_nonce(
     return PlaintextBallotSelection(
         selection.object_id,
         plaintext_vote,
-        selection.is_placeholder_selection,
     )
 
 
 def decrypt_contest_with_secret(
     contest: CiphertextBallotContest,
-    description: ContestDescriptionWithPlaceholders,
+    description: ContestDescription,
     public_key: ElGamalPublicKey,
     secret_key: ElGamalSecretKey,
     crypto_extended_base_hash: ElementModQ,
     suppress_validity_check: bool = False,
-    remove_placeholders: bool = True,
 ) -> Optional[PlaintextBallotContest]:
     """
     Decrypt the specified `CiphertextBallotContest` within the context of the specified contest.
 
     :param contest: the contest to decrypt
-    :param description: the qualified contest metadata that includes placeholder selections
+    :param description: qualified contest metadata
     :param public_key: the public key for the election (K)
     :param secret_key: the known secret key used to generate the public key for this election
-    :param crypto_extended_base_hash: the extended base hash code (𝑄') for the election
+    :param crypto_extended_base_hash: the extended base hash code (Q') for the election
     :param suppress_validity_check: do not validate the encryption prior to decrypting (useful for tests)
-    :param remove_placeholders: filter out placeholder ciphertext selections after decryption
     """
 
     if not suppress_validity_check and not contest.is_valid_encryption(
@@ -153,11 +149,7 @@ def decrypt_contest_with_secret(
             suppress_validity_check,
         )
         if plaintext_selection is not None:
-            if (
-                not remove_placeholders
-                or not plaintext_selection.is_placeholder_selection
-            ):
-                plaintext_selections.append(plaintext_selection)
+            plaintext_selections.append(plaintext_selection)
         else:
             log_warning(
                 f"decryption with secret failed for contest: {contest.object_id} selection: {selection.object_id}"
@@ -169,24 +161,22 @@ def decrypt_contest_with_secret(
 
 def decrypt_contest_with_nonce(
     contest: CiphertextBallotContest,
-    description: ContestDescriptionWithPlaceholders,
+    description: ContestDescription,
     public_key: ElGamalPublicKey,
     crypto_extended_base_hash: ElementModQ,
     nonce_seed: Optional[ElementModQ] = None,
     suppress_validity_check: bool = False,
-    remove_placeholders: bool = True,
 ) -> Optional[PlaintextBallotContest]:
     """
     Decrypt the specified `CiphertextBallotContest` within the context of the specified contest.
 
     :param contest: the contest to decrypt
-    :param description: the qualified contest metadata that includes placeholder selections
+    :param description: qualified contest metadata
     :param public_key: the public key for the election (K)
-    :param crypto_extended_base_hash: the extended base hash code (𝑄') for the election
+    :param crypto_extended_base_hash: the extended base hash code (Q') for the election
     :param nonce_seed: the optional nonce that was seeded to the encryption function
                         if no value is provided, the nonce field from the contest is used
     :param suppress_validity_check: do not validate the encryption prior to decrypting (useful for tests)
-    :param remove_placeholders: filter out placeholder ciphertext selections after decryption
     """
     if not suppress_validity_check and not contest.is_valid_encryption(
         description.crypto_hash(), public_key, crypto_extended_base_hash
@@ -224,11 +214,7 @@ def decrypt_contest_with_nonce(
             suppress_validity_check,
         )
         if plaintext_selection is not None:
-            if (
-                not remove_placeholders
-                or not plaintext_selection.is_placeholder_selection
-            ):
-                plaintext_selections.append(plaintext_selection)
+            plaintext_selections.append(plaintext_selection)
         else:
             log_warning(
                 f"decryption with nonce failed for contest: {contest.object_id} selection: {selection.object_id}"
@@ -245,18 +231,16 @@ def decrypt_ballot_with_secret(
     public_key: ElGamalPublicKey,
     secret_key: ElGamalSecretKey,
     suppress_validity_check: bool = False,
-    remove_placeholders: bool = True,
 ) -> Optional[PlaintextBallot]:
     """
     Decrypt the specified `CiphertextBallot` within the context of the specified election.
 
     :param ballot: the ballot to decrypt
-    :param internal_manifest: the qualified election metadata that includes placeholder selections
-    :param crypto_extended_base_hash: the extended base hash code (𝑄') for the election
+    :param internal_manifest: qualified election metadata
+    :param crypto_extended_base_hash: the extended base hash code (Q') for the election
     :param public_key: the public key for the election (K)
     :param secret_key: the known secret key used to generate the public key for this election
     :param suppress_validity_check: do not validate the encryption prior to decrypting (useful for tests)
-    :param remove_placeholders: filter out placeholder ciphertext selections after decryption
     """
     if not suppress_validity_check and not ballot.is_valid_encryption(
         internal_manifest.manifest_hash, public_key, crypto_extended_base_hash
@@ -275,7 +259,6 @@ def decrypt_ballot_with_secret(
             secret_key,
             crypto_extended_base_hash,
             suppress_validity_check,
-            remove_placeholders,
         )
         if plaintext_contest is not None:
             plaintext_contests.append(plaintext_contest)
@@ -295,18 +278,16 @@ def decrypt_ballot_with_nonce(
     public_key: ElGamalPublicKey,
     nonce: Optional[ElementModQ] = None,
     suppress_validity_check: bool = False,
-    remove_placeholders: bool = True,
 ) -> Optional[PlaintextBallot]:
     """
     Decrypt the specified `CiphertextBallot` within the context of the specified election.
 
     :param ballot: the ballot to decrypt
-    :param internal_manifest: the qualified election metadata that includes placeholder selections
-    :param crypto_extended_base_hash: the extended base hash code (𝑄') for the election
+    :param internal_manifest: qualified election metadata
+    :param crypto_extended_base_hash: the extended base hash code (Q') for the election
     :param public_key: the public key for the election (K)
     :param nonce: the optional master ballot nonce that was either seeded to, or gernated by the encryption function
     :param suppress_validity_check: do not validate the encryption prior to decrypting (useful for tests)
-    :param remove_placeholders: filter out placeholder ciphertext selections after decryption
     """
     if not suppress_validity_check and not ballot.is_valid_encryption(
         internal_manifest.manifest_hash, public_key, crypto_extended_base_hash
@@ -340,7 +321,6 @@ def decrypt_ballot_with_nonce(
             crypto_extended_base_hash,
             nonce_seed,
             suppress_validity_check,
-            remove_placeholders,
         )
         if plaintext_contest is not None:
             plaintext_contests.append(plaintext_contest)

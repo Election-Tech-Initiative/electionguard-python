@@ -1,7 +1,7 @@
 from tests.base_test_case import BaseTestCase
 
 from electionguard.manifest import (
-    ContestDescriptionWithPlaceholders,
+    ContestDescription,
     SelectionDescription,
     VoteVariationType,
 )
@@ -12,17 +12,13 @@ from electionguard.utils import NullVoteException, OverVoteException, UnderVoteE
 NUMBER_ELECTED = 2
 
 
-def get_sample_contest_description() -> ContestDescriptionWithPlaceholders:
+def get_sample_contest_description() -> ContestDescription:
     ballot_selections = [
         SelectionDescription("option-1-id", 1, "luke-skywalker-id"),
         SelectionDescription("option-2-id", 2, "darth-vader-id"),
         SelectionDescription("option-3-id", 3, "obi-wan-kenobi-id"),
     ]
-    placeholder_selections = [
-        SelectionDescription("placeholder-1-id", 4, "placeholder-id"),
-        SelectionDescription("placeholder-2-id", 5, "placeholder-id"),
-    ]
-    description = ContestDescriptionWithPlaceholders(
+    description = ContestDescription(
         "favorite-character-id",
         1,
         "dagobah-id",
@@ -33,7 +29,6 @@ def get_sample_contest_description() -> ContestDescriptionWithPlaceholders:
         ballot_selections,
         None,
         None,
-        placeholder_selections,
     )
     return description
 

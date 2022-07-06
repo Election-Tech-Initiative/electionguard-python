@@ -275,10 +275,10 @@ class TestChaumPedersen(BaseTestCase):
         message = get_optional(elgamal_encrypt(0, nonce, keypair.public_key))
         decryption = message.partial_decrypt(keypair.secret_key)
         proof = make_chaum_pedersen(
-            message, keypair.secret_key, decryption, seed, ONE_MOD_Q
+            message, keypair.secret_key, ONE_MOD_Q, seed, decryption
         )
         bad_proof = make_chaum_pedersen(
-            message, keypair.secret_key, TWO_MOD_P, seed, ONE_MOD_Q
+            message, keypair.secret_key, ONE_MOD_Q, seed, TWO_MOD_P
         )
         self.assertTrue(
             proof.is_valid(message, keypair.public_key, decryption, ONE_MOD_Q)
@@ -314,10 +314,10 @@ class TestChaumPedersen(BaseTestCase):
         message = get_optional(elgamal_encrypt(constant, nonce, keypair.public_key))
         decryption = message.partial_decrypt(keypair.secret_key)
         proof = make_chaum_pedersen(
-            message, keypair.secret_key, decryption, seed, ONE_MOD_Q
+            message, keypair.secret_key, ONE_MOD_Q, seed, decryption
         )
         bad_proof = make_chaum_pedersen(
-            message, keypair.secret_key, int_to_p(bad_constant), seed, ONE_MOD_Q
+            message, keypair.secret_key, ONE_MOD_Q, seed, int_to_p(bad_constant)
         )
         self.assertTrue(
             proof.is_valid(message, keypair.public_key, decryption, ONE_MOD_Q)
@@ -336,10 +336,10 @@ class TestConstantChaumPedersen(BaseTestCase):
         seed = TWO_MOD_Q
         message = get_optional(elgamal_encrypt(0, nonce, keypair.public_key))
         proof = make_constant_chaum_pedersen(
-            message, 0, nonce, keypair.public_key, seed, ONE_MOD_Q
+            message, nonce, keypair.public_key, ONE_MOD_Q, seed, 0
         )
         bad_proof = make_constant_chaum_pedersen(
-            message, 1, nonce, keypair.public_key, seed, ONE_MOD_Q
+            message, nonce, keypair.public_key, ONE_MOD_Q, seed, 1
         )
         self.assertTrue(proof.is_valid(message, keypair.public_key, ONE_MOD_Q))
         self.assertFalse(bad_proof.is_valid(message, keypair.public_key, ONE_MOD_Q))
@@ -350,10 +350,10 @@ class TestConstantChaumPedersen(BaseTestCase):
         seed = TWO_MOD_Q
         message = get_optional(elgamal_encrypt(1, nonce, keypair.public_key))
         proof = make_constant_chaum_pedersen(
-            message, 1, nonce, keypair.public_key, seed, ONE_MOD_Q
+            message, nonce, keypair.public_key, ONE_MOD_Q, seed, 1
         )
         bad_proof = make_constant_chaum_pedersen(
-            message, 0, nonce, keypair.public_key, seed, ONE_MOD_Q
+            message, nonce, keypair.public_key, ONE_MOD_Q, seed, 0
         )
         self.assertTrue(proof.is_valid(message, keypair.public_key, ONE_MOD_Q))
         self.assertFalse(bad_proof.is_valid(message, keypair.public_key, ONE_MOD_Q))
@@ -389,19 +389,19 @@ class TestConstantChaumPedersen(BaseTestCase):
         )
 
         proof = make_constant_chaum_pedersen(
-            message, constant, nonce, keypair.public_key, seed, ONE_MOD_Q
+            message, nonce, keypair.public_key, ONE_MOD_Q, seed, constant
         )
         self.assertTrue(proof.is_valid(message, keypair.public_key, ONE_MOD_Q))
 
         proof_bad1 = make_constant_chaum_pedersen(
-            message_bad, constant, nonce, keypair.public_key, seed, ONE_MOD_Q
+            message_bad, nonce, keypair.public_key, ONE_MOD_Q, seed, constant
         )
         self.assertFalse(
             proof_bad1.is_valid(message_bad, keypair.public_key, ONE_MOD_Q)
         )
 
         proof_bad2 = make_constant_chaum_pedersen(
-            message, bad_constant, nonce, keypair.public_key, seed, ONE_MOD_Q
+            message, nonce, keypair.public_key, ONE_MOD_Q, seed, bad_constant
         )
         self.assertFalse(proof_bad2.is_valid(message, keypair.public_key, ONE_MOD_Q))
 
