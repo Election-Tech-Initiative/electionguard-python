@@ -20,12 +20,8 @@ class MarkBallotsInputRetrievalStep(InputRetrievalStepBase):
         self.print_header("Retrieving Inputs")
         manifest: Manifest = self._get_manifest(manifest_file)
         context = InputRetrievalStepBase._get_context(context_file)
-        # plaintext_ballots = InputRetrievalStepBase._get_ballots(
-        #     ballots_dir, PlaintextBallot
-        # )
 
         return MarkBallotInputs(
             manifest,
             context,
-            # plaintext_ballots,
         )

@@ -1,6 +1,4 @@
-from typing import List
 from electionguard.election import CiphertextElectionContext
-from electionguard.encrypt import EncryptionDevice
 from electionguard.manifest import Manifest
 
 from ..cli_models import (
@@ -22,5 +20,3 @@ class MarkBallotInputs(CliElectionInputsBase):
         self.context = context
 
     context: CiphertextElectionContext
-    encryption_devices: List[EncryptionDevice]
-    output_record: str

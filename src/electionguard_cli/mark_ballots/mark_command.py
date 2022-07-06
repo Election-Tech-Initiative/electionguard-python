@@ -10,7 +10,7 @@ from ..cli_steps import MarkBallotsStep
 
 @click.command("mark-ballots")
 @click.argument("num_ballots", type=click.INT)
-# @click.argument("ballot_style", help="Ballot style for the marked ballots", type=click.STRING)
+@click.argument("ballot_style_id", type=click.STRING, required=False)
 @click.option(
     "--manifest",
     prompt="Manifest file",
@@ -29,7 +29,11 @@ from ..cli_steps import MarkBallotsStep
     type=click.Path(exists=False, dir_okay=True, file_okay=False, resolve_path=True),
 )
 def MarkBallotsCommand(
-    num_ballots: int, manifest: TextIOWrapper, context: TextIOWrapper, out_dir: str
+    num_ballots: int,
+    ballot_style_id: str,
+    manifest: TextIOWrapper,
+    context: TextIOWrapper,
+    out_dir: str,
 ) -> None:
     """
     Marks ballots
@@ -39,5 +43,7 @@ def MarkBallotsCommand(
     build_election_results = (
         MarkBallotsElectionBuilderStep().build_election_with_context(election_inputs)
     )
-    marked_ballots = MarkBallotsStep().mark(build_election_results, num_ballots)
+    marked_ballots = MarkBallotsStep().mark(
+        build_election_results, num_ballots, ballot_style_id
+    )
     MarkBallotsPublishStep().publish(marked_ballots, out_dir)
