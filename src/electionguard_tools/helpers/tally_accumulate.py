@@ -17,9 +17,6 @@ def accumulate_plaintext_ballots(ballots: List[PlaintextBallot]) -> Dict[str, in
     for ballot in ballots:
         for contest in ballot.contests:
             for selection in contest.ballot_selections:
-                assert (
-                    not selection.is_placeholder_selection
-                ), "Placeholder selections should not exist in the plaintext ballots"
                 desc_id = selection.object_id
                 if desc_id not in tally:
                     tally[desc_id] = 0

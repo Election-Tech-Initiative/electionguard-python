@@ -39,11 +39,16 @@ class RangeChaumPedersenProof(Proof):
     responses: List[ElementModQ]
     """[v0, v1, ..., vL]"""
 
+    limit: int = -1
+    """L"""
+
     usage: ProofUsage = ProofUsage.RangeValue
     """A description of how to use this proof"""
 
     def __post_init__(self) -> None:
         super().__init__()
+        if self.limit < 0:
+            self.limit = len(self.responses) - 1
 
     def is_valid(
         self, message: ElGamalCiphertext, k: ElementModP, q: ElementModQ
@@ -61,9 +66,12 @@ class RangeChaumPedersenProof(Proof):
         commitments = self.commitments
         challenges = self.challenges
         responses = self.responses
+        limit = self.limit
 
-        limit = len(responses) - 1
-        assert len(commitments) == 2 * (limit + 1) and len(challenges) == limit + 2, (
+        assert (
+            len(commitments) == 2 * (limit + 1)
+            and limit == len(responses) - 1 == len(challenges) - 2
+        ), (
             "RangeChaumPedersenProof.is_valid only supports proofs with a commitment, challenge,"
             + " and response for each possible integer value, plus one additional challenge."
         )
@@ -394,7 +402,7 @@ class ConstantChaumPedersenProof(Proof):
         - The commitments a and b are valid residues (i.e., in Z_p^r)
         - The challenge C is the hash value H(Q', α, β, a, b)
         - The equations g^v mod p = a*α^C mod p and g^(L*C)*K^V mod p = b*β^c mod p hold.
-        
+
         :param message: The ciphertext message
         :param k: The public encryption key (K)
         :param q: The extended base hash of the election
@@ -430,8 +438,9 @@ class ConstantChaumPedersenProof(Proof):
         # g^V mod p = a*α^C mod p
         consistent_gv = g_pow_p(v) == mult_p(a, pow_p(alpha, c))
         # g^(L*C)*K^V mod p = b*β^C mod p
-        consistent_kv = (mult_p(g_pow_p(mult_q(c, constant_q)), pow_p(k, v))
-            == mult_p(b, pow_p(beta, c)))
+        consistent_kv = mult_p(g_pow_p(mult_q(c, constant_q)), pow_p(k, v)) == mult_p(
+            b, pow_p(beta, c)
+        )
 
         success = (
             in_bounds_alpha
@@ -542,7 +551,7 @@ def make_range_chaum_pedersen(
     ]
 
     # Present proof
-    return RangeChaumPedersenProof(commitments, challenges, responses)
+    return RangeChaumPedersenProof(commitments, challenges, responses, limit)
 
 
 def make_disjunctive_chaum_pedersen(
@@ -648,9 +657,9 @@ def make_disjunctive_chaum_pedersen_one(
 def make_chaum_pedersen(
     message: ElGamalCiphertext,
     s: ElementModQ,
-    m: ElementModP,
-    seed: ElementModQ,
     q: ElementModQ,
+    seed: ElementModQ,
+    m: ElementModP,
 ) -> ChaumPedersenProof:
     """
     Produces a proof of knowledge to the secret key s such that
@@ -659,9 +668,10 @@ def make_chaum_pedersen(
 
     :param message: An ElGamal ciphertext
     :param s: The nonce or secret used to derive the value
-    :param m: The value we are trying to prove
-    :param seed: Used to generate other random values here
     :param q: A value for generating the challenge hash, usually the extended base hash (Q')
+    :param seed: Used to generate other random values here
+    :param m: The computed share (M)
+
     """
     alpha = message.pad
     beta = message.data
@@ -678,22 +688,22 @@ def make_chaum_pedersen(
 
 def make_constant_chaum_pedersen(
     message: ElGamalCiphertext,
-    constant: int,
     r: ElementModQ,
     k: ElementModP,
-    seed: ElementModQ,
     q: ElementModQ,
+    seed: ElementModQ,
+    constant: int,
 ) -> ConstantChaumPedersenProof:
     """
     Produces a proof that an encryption encodes a particular value.
     Refer to section 3.3.5 in v1.1 of the specification.
 
     :param message: An ElGamal ciphertext
-    :param constant: The plaintext constant value used to make the ElGamal ciphertext (L)
     :param r: The aggregate nonce used creating the ElGamal ciphertext
     :param k: The public encryption key (K)
-    :param seed: Used to generate other random values here
     :param q: A value for generating the challenge hash, usually the extended base hash (Q')
+    :param seed: Used to generate other random values here
+    :param constant: The plaintext constant value used to make the ElGamal ciphertext (L)
     """
     alpha = message.pad
     beta = message.data
@@ -703,6 +713,6 @@ def make_constant_chaum_pedersen(
     a = g_pow_p(u)  # g^u mod p
     b = pow_p(k, u)  # K^u mod p
     c = hash_elems(q, alpha, beta, a, b)  # sha256(Q', α', β', a, b)
-    v = a_plus_bc_q(u, c, r) # (U + C*R) mod q
+    v = a_plus_bc_q(u, c, r)  # (U + C*R) mod q
 
     return ConstantChaumPedersenProof(a, b, c, v, constant)

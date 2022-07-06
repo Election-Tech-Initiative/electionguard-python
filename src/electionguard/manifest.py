@@ -7,7 +7,7 @@ from .election_object_base import ElectionObjectBase, OrderedObjectBase, list_eq
 from .group import ElementModQ
 from .hash import CryptoHashable, hash_elems
 from .logs import log_warning, log_debug
-from .utils import get_optional, to_iso_date_string
+from .utils import to_iso_date_string
 
 
 @unique
@@ -500,6 +500,21 @@ class ContestDescription(OrderedObjectBase, CryptoHashable):
 
         return success
 
+    def selection_for(self, selection_id: str) -> Optional[SelectionDescription]:
+        """
+        Gets the description for a particular id
+        :param selection_id: Id of Selection
+        :return: description
+        """
+        matching_selections = list(
+            filter(lambda i: i.object_id == selection_id, self.ballot_selections)
+        )
+
+        if any(matching_selections):
+            return matching_selections[0]
+
+        return None
+
 
 @dataclass(eq=True, unsafe_hash=True)
 class CandidateContestDescription(ContestDescription):
@@ -521,59 +536,6 @@ class ReferendumContestDescription(ContestDescription):
     Note: The ElectionGuard Data Spec deviates from the NIST model in that
     this subclass is used purely for convenience
     """
-
-
-@dataclass(eq=True, unsafe_hash=True)
-class ContestDescriptionWithPlaceholders(ContestDescription):
-    """
-    ContestDescriptionWithPlaceholders is a `ContestDescription` with ElectionGuard `placeholder_selections`.
-    (The ElectionGuard spec requires for n-of-m elections that there be *exactly* n counters that are one
-    with the rest zero, so if a voter deliberately undervotes, one or more of the placeholder counters will
-    become one. This allows the `ConstantChaumPedersenProof` to verify correctly for undervoted contests.)
-    """
-
-    placeholder_selections: List[SelectionDescription] = field(
-        default_factory=lambda: []
-    )
-
-    def is_valid(self) -> bool:
-        """
-        Checks is contest description is valid
-        :return: true if valid
-        """
-        contest_description_validates = super().is_valid()
-        return (
-            contest_description_validates
-            and len(self.placeholder_selections) == self.number_elected
-        )
-
-    def is_placeholder(self, selection: SelectionDescription) -> bool:
-        """
-        Checks is contest description is placeholder
-        :return: true if placeholder
-        """
-        return selection in self.placeholder_selections
-
-    def selection_for(self, selection_id: str) -> Optional[SelectionDescription]:
-        """
-        Gets the description for a particular id
-        :param selection_id: Id of Selection
-        :return: description
-        """
-        matching_selections = list(
-            filter(lambda i: i.object_id == selection_id, self.ballot_selections)
-        )
-
-        if any(matching_selections):
-            return matching_selections[0]
-
-        matching_placeholders = list(
-            filter(lambda i: i.object_id == selection_id, self.placeholder_selections)
-        )
-
-        if any(matching_placeholders):
-            return matching_placeholders[0]
-        return None
 
 
 class SpecVersion(Enum):
@@ -875,14 +837,14 @@ class InternalManifest:
     """
     `InternalManifest` is a subset of the `Manifest` structure that specifies
     the components that ElectionGuard uses for conducting an election.  The key component is the
-    `contests` collection, which applies placeholder selections to the `Manifest` contests
+    `contests` collection, which captures the `Manifest` contests
     """
 
     manifest: InitVar[Manifest] = None
 
     geopolitical_units: List[GeopoliticalUnit] = field(init=False)
 
-    contests: List[ContestDescriptionWithPlaceholders] = field(init=False)
+    contests: List[ContestDescription] = field(init=False)
 
     ballot_styles: List[BallotStyle] = field(init=False)
 
@@ -892,13 +854,9 @@ class InternalManifest:
         object.__setattr__(self, "manifest_hash", manifest.crypto_hash())
         object.__setattr__(self, "geopolitical_units", manifest.geopolitical_units)
         object.__setattr__(self, "ballot_styles", manifest.ballot_styles)
-        object.__setattr__(
-            self, "contests", self._generate_contests_with_placeholders(manifest)
-        )
+        object.__setattr__(self, "contests", manifest.contests)
 
-    def contest_for(
-        self, contest_id: str
-    ) -> Optional[ContestDescriptionWithPlaceholders]:
+    def contest_for(self, contest_id: str) -> Optional[ContestDescription]:
         """
         Get contest by id
         :param contest_id: Contest id
@@ -921,9 +879,7 @@ class InternalManifest:
         )[0]
         return style
 
-    def get_contests_for(
-        self, ballot_style_id: str
-    ) -> List[ContestDescriptionWithPlaceholders]:
+    def get_contests_for(self, ballot_style_id: str) -> List[ContestDescription]:
         """
         Get contests for a ballot style
         :param ballot_style_id: ballot style id
@@ -938,101 +894,6 @@ class InternalManifest:
             filter(lambda i: i.electoral_district_id in gp_unit_ids, self.contests)
         )
         return contests
-
-    @staticmethod
-    def _generate_contests_with_placeholders(
-        manifest: Manifest,
-    ) -> List[ContestDescriptionWithPlaceholders]:
-        """
-        For each contest, append the `number_elected` number
-        of placeholder selections to the end of the contest collection
-        """
-        contests: List[ContestDescriptionWithPlaceholders] = []
-        for contest in manifest.contests:
-            placeholder_selections = generate_placeholder_selections_from(
-                contest, contest.number_elected
-            )
-            contests.append(
-                contest_description_with_placeholders_from(
-                    contest, placeholder_selections
-                )
-            )
-
-        return contests
-
-
-def contest_description_with_placeholders_from(
-    description: ContestDescription, placeholders: List[SelectionDescription]
-) -> ContestDescriptionWithPlaceholders:
-    """
-    Generates a placeholder selection description
-    :param description: contest description
-    :param placeholders: list of placeholder descriptions of selections
-    :return: a SelectionDescription or None
-    """
-    return ContestDescriptionWithPlaceholders(
-        object_id=description.object_id,
-        electoral_district_id=description.electoral_district_id,
-        sequence_order=description.sequence_order,
-        vote_variation=description.vote_variation,
-        number_elected=description.number_elected,
-        votes_allowed=description.votes_allowed,
-        name=description.name,
-        ballot_selections=description.ballot_selections,
-        ballot_title=description.ballot_title,
-        ballot_subtitle=description.ballot_subtitle,
-        placeholder_selections=placeholders,
-    )
-
-
-def generate_placeholder_selection_from(
-    contest: ContestDescription, use_sequence_id: Optional[int] = None
-) -> Optional[SelectionDescription]:
-    """
-    Generates a placeholder selection description that is unique so it can be hashed
-
-    :param use_sequence_id: an optional integer unique to the contest identifying this selection's place in the contest
-    :return: a SelectionDescription or None
-    """
-    sequence_ids = [selection.sequence_order for selection in contest.ballot_selections]
-    if use_sequence_id is None:
-        # if no sequence order is specified, take the max
-        use_sequence_id = max(*sequence_ids) + 1
-    elif use_sequence_id in sequence_ids:
-        log_warning(
-            f"mismatched placeholder selection {use_sequence_id} already exists"
-        )
-        return None
-
-    placeholder_object_id = f"{contest.object_id}-{use_sequence_id}"
-    return SelectionDescription(
-        f"{placeholder_object_id}-placeholder",
-        use_sequence_id,
-        f"{placeholder_object_id}-candidate",
-    )
-
-
-def generate_placeholder_selections_from(
-    contest: ContestDescription, count: int
-) -> List[SelectionDescription]:
-    """
-    Generates the specified number of placeholder selections in
-    ascending sequence order from the max selection sequence orderf
-
-    :param contest: ContestDescription for input
-    :param count: optionally specify a number of placeholders to generate
-    :return: a collection of `SelectionDescription` objects, which may be empty
-    """
-    max_sequence_order = max(
-        [selection.sequence_order for selection in contest.ballot_selections]
-    )
-    selections: List[SelectionDescription] = []
-    for i in range(count):
-        sequence_order = max_sequence_order + 1 + i
-        selections.append(
-            get_optional(generate_placeholder_selection_from(contest, sequence_order))
-        )
-    return selections
 
 
 def get_i8n_value(name: InternationalizedText, lang: str, default_val: str) -> str:

@@ -16,7 +16,7 @@ from .election_object_base import sequence_order_sort
 from .encrypt import encrypt_ballot_contests
 from .group import ElementModQ
 from .manifest import (
-    ContestDescriptionWithPlaceholders,
+    ContestDescription,
     InternalManifest,
 )
 from .utils import get_optional
@@ -144,24 +144,17 @@ def _get_plaintext_contests(
 ) -> List[PlaintextBallotContest]:
     """Get ballot contests from compact plaintext ballot"""
     index = 0
-    ballot_style_contests = _get_ballot_style_contests(
-        compact_ballot.style_id, internal_manifest
-    )
 
     contests: List[PlaintextBallotContest] = []
     for manifest_contest in sequence_order_sort(internal_manifest.contests):
-        contest_in_style = (
-            ballot_style_contests.get(manifest_contest.object_id) is not None
-        )
 
-        # Iterate through selections. If contest not in style, mark placeholder
+        # Iterate through selections
         selections: List[PlaintextBallotSelection] = []
         for selection in sequence_order_sort(manifest_contest.ballot_selections):
             selections.append(
                 PlaintextBallotSelection(
                     selection.object_id,
                     YES_VOTE if compact_ballot.selections[index] else NO_VOTE,
-                    not contest_in_style,
                     compact_ballot.write_ins.get(index),
                 )
             )
@@ -173,6 +166,6 @@ def _get_plaintext_contests(
 
 def _get_ballot_style_contests(
     ballot_style_id: str, internal_manifest: InternalManifest
-) -> Dict[str, ContestDescriptionWithPlaceholders]:
+) -> Dict[str, ContestDescription]:
     ballot_style_contests = internal_manifest.get_contests_for(ballot_style_id)
     return {contest.object_id: contest for contest in ballot_style_contests}

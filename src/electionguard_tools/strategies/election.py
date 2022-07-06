@@ -628,10 +628,10 @@ def plaintext_voted_ballot(
         no_votes = ballot_selections[cut_point:]
 
         voted_selections = [
-            selection_from(description, is_placeholder=False, is_affirmative=True)
+            selection_from(description, is_affirmative=True)
             for description in yes_votes
         ] + [
-            selection_from(description, is_placeholder=False, is_affirmative=False)
+            selection_from(description, is_affirmative=False)
             for description in no_votes
         ]
 

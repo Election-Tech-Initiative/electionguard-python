@@ -49,8 +49,6 @@ from electionguard.group import (
 )
 from electionguard.manifest import (
     ContestDescription,
-    contest_description_with_placeholders_from,
-    generate_placeholder_selections_from,
     SelectionDescription,
     VoteVariationType,
 )
@@ -286,10 +284,7 @@ class TestEncrypt(BaseTestCase):
         )
 
         # The encrypted contest should include an entry for each possible selection
-        # and placeholders for each seat
-        expected_entries = (
-            len(description.ballot_selections) + description.number_elected
-        )
+        expected_entries = len(description.ballot_selections)
         self.assertEqual(len(result.ballot_selections), expected_entries)
 
     @settings(
@@ -328,13 +323,13 @@ class TestEncrypt(BaseTestCase):
 
         # tamper with the proof
         malformed_proof = deepcopy(result)
-        altered_a = mult_p(result.proof.pad, TWO_MOD_P)
+        altered_a = mult_p(result.proof.commitments[0], TWO_MOD_P)
         malformed_constant = ConstantChaumPedersenProof(
             altered_a,
-            malformed_proof.proof.data,
-            malformed_proof.proof.challenge,
-            malformed_proof.proof.response,
-            malformed_proof.proof.constant,
+            malformed_proof.proof.commitments[1],
+            malformed_proof.proof.challenges[0],
+            malformed_proof.proof.responses[0],
+            malformed_proof.proof.limit,
         )
         malformed_proof.proof = malformed_constant
 
@@ -421,17 +416,10 @@ class TestEncrypt(BaseTestCase):
         ####################
         data = ballot_factory.get_random_contest_from(description, Random(0))
 
-        placeholders = generate_placeholder_selections_from(
-            description, description.number_elected
-        )
-        description_with_placeholders = contest_description_with_placeholders_from(
-            description, placeholders
-        )
-
         # Act
         subject = encrypt_contest(
             data,
-            description_with_placeholders,
+            description,
             keypair.public_key,
             ONE_MOD_Q,
             seed,
@@ -476,16 +464,9 @@ class TestEncrypt(BaseTestCase):
             description, Random(0), suppress_validity_check=True
         )
 
-        placeholders = generate_placeholder_selections_from(
-            description, description.number_elected
-        )
-        description_with_placeholders = contest_description_with_placeholders_from(
-            description, placeholders
-        )
-
         # Act
         subject = encrypt_contest(
-            data, description_with_placeholders, keypair.public_key, ONE_MOD_Q, seed
+            data, description, keypair.public_key, ONE_MOD_Q, seed
         )
         self.assertIsNone(subject)
 
@@ -680,11 +661,11 @@ class TestEncrypt(BaseTestCase):
 
             regenerated_constant = make_constant_chaum_pedersen(
                 elgamal_accumulation,
-                contest_description.number_elected,
                 aggregate_nonce,
                 keypair.public_key,
-                add_q(contest.nonce, TWO_MOD_Q),
                 context.crypto_extended_base_hash,
+                add_q(contest.nonce, TWO_MOD_Q),
+                contest_description.number_elected,
             )
 
             self.assertTrue(

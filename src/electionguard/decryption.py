@@ -449,9 +449,9 @@ def partially_decrypt(
     proof = make_chaum_pedersen(
         message=elgamal,
         s=key_pair.key_pair.secret_key,
-        m=partial_decryption,
+        q=extended_base_hash,
         seed=nonce_seed,
-        hash_header=extended_base_hash,
+        m=partial_decryption,
     )
 
     return (partial_decryption, proof)
@@ -513,9 +513,9 @@ def decrypt_with_threshold(
     proof = make_chaum_pedersen(
         ciphertext,
         coordinate,
-        partial_decryption,
-        nonce_seed,
         extended_base_hash,
+        nonce_seed,
+        partial_decryption,
     )
 
     return (partial_decryption, proof)

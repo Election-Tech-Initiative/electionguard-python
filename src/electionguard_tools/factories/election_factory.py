@@ -29,7 +29,6 @@ from electionguard.manifest import (
     ElectionType,
     InternalManifest,
     SpecVersion,
-    generate_placeholder_selections_from,
     GeopoliticalUnit,
     Candidate,
     Party,
@@ -37,7 +36,6 @@ from electionguard.manifest import (
     SelectionDescription,
     ReportingUnitType,
     VoteVariationType,
-    contest_description_with_placeholders_from,
     CandidateContestDescription,
     ReferendumContestDescription,
 )
@@ -341,13 +339,4 @@ def get_contest_description_well_formed(
         selection_descriptions,
     )
 
-    placeholder_selections = generate_placeholder_selections_from(
-        contest_description, number_elected
-    )
-
-    return (
-        object_id,
-        contest_description_with_placeholders_from(
-            contest_description, placeholder_selections
-        ),
-    )
+    return (object_id, contest_description)
