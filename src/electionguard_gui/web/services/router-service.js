@@ -13,27 +13,49 @@ import ViewKey from "../components/admin/view-key-component.js";
 import GuardianHome from "../components/guardian/guardian-home-component.js";
 
 export default {
-  getRoutes() {
-    return {
-      // shared pages
-      "/": { secured: false, component: SelectMode },
-      "/not-found": { secured: false, component: NotFound },
-      "/login": { secured: false, component: Login },
+  goTo(route, params) {
+    const urlWithParams = "#" + route.url + "?" + new URLSearchParams(params);
+    window.location.href = urlWithParams;
+  },
+  getRouteByUrl(url) {
+    debugger;
+    return Object.values(this.routes).filter((r) => r.url === url)[0];
+  },
+  getRoute(path) {
+    const cleanPath = path.split("?")[0].slice(1) || "/";
+    const foundRoute = this.getRouteByUrl(cleanPath);
+    console.log("foundRoute", foundRoute);
+    return foundRoute || this.routes.NotFound;
+  },
+  routes: {
+    // shared pages
+    root: { url: "/", secured: false, component: SelectMode },
+    notFound: { url: "/not-found", secured: false, component: NotFound },
+    login: { url: "/login", secured: false, component: Login },
 
-      // admin pages
-      "/admin/home": { secured: true, component: AdminHome },
-      "/admin/setup-election": {
-        secured: true,
-        component: SetupElection,
-      },
-      "/admin/create-key": { secured: true, component: CreateKey },
-      "/admin/view-key": {
-        secured: true,
-        component: ViewKey,
-      },
+    // admin pages
+    adminHome: { url: "/admin/home", secured: true, component: AdminHome },
+    setupElection: {
+      url: "/admin/setup-election",
+      secured: true,
+      component: SetupElection,
+    },
+    createKey: {
+      url: "/admin/create-key",
+      secured: true,
+      component: CreateKey,
+    },
+    viewKeyPage: {
+      url: "/admin/view-key",
+      secured: true,
+      component: ViewKey,
+    },
 
-      // guardian pages
-      "/guardian/home": { secured: true, component: GuardianHome },
-    };
+    // guardian pages
+    guardianHome: {
+      url: "/guardian/home",
+      secured: true,
+      component: GuardianHome,
+    },
   },
 };

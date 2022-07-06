@@ -35,8 +35,6 @@
       import AuthorizationService from "./services/authorization-service.js";
       import RouterService from "./services/router-service.js";
 
-      const routes = RouterService.getRoutes();
-
       createApp({
         data() {
           return {
@@ -62,8 +60,7 @@
         },
         methods: {
           getRoute(path) {
-            const cleanPath = path.slice(1).split("?")[0];
-            return routes[cleanPath || "/"] || NotFound;
+            return RouterService.getRoute(path);
           },
           login(username) {
             console.log("login", username);

@@ -1,4 +1,5 @@
 import Spinner from "../shared/spinner-component.js";
+import RouterService from "/services/router-service.js";
 
 export default {
   components: {
@@ -28,7 +29,9 @@ export default {
           this.loading = false;
           console.debug("key creation finished", result);
           if (result.success) {
-            window.location.href = "#/admin/view-key?keyId=" + result.result;
+            RouterService.goTo(RouterService.routes.viewKeyPage, {
+              keyId: result.result,
+            });
           } else {
             this.alert = result.message;
           }
