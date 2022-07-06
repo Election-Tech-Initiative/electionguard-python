@@ -23,7 +23,7 @@ class MainApp:
             component.expose()
 
         eel.init("src/electionguard_gui/web")
-        eel.start("main.html", size=(1024, 768))
+        eel.start("main.html", size=(1024, 768), port=0)
 
 
 def run() -> None:
