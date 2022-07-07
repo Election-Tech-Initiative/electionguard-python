@@ -1,6 +1,5 @@
 from typing import Any
 import eel
-from pymongo.results import InsertOneResult
 
 from electionguard_gui.component_base import ComponentBase
 
@@ -22,7 +21,7 @@ class CreateKeyComponent(ComponentBase):
         print(
             f"Starting ceremony: key_name: {key_name}, guardian_count: {guardian_count}, quorum: {quorum}"
         )
-        db = self.get_db()
+        db = self.db_service.get_db()
         existing_keys = db.keys.find_one({"key_name": key_name})
         if existing_keys:
             print(f"record '{key_name}' already exists")

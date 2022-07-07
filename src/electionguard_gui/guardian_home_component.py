@@ -16,7 +16,7 @@ class GuardianHomeComponent(ComponentBase):
         eel.expose(self.join_key)
 
     def watch_keys(self) -> None:
-        db = self.get_db()
+        db = self.db_service.get_db()
         last_count = 0
         self.watching_keys.set()
         while self.watching_keys.is_set():
@@ -45,7 +45,7 @@ class GuardianHomeComponent(ComponentBase):
         self.watching_keys.clear()
 
     def join_key(self, key_id: str) -> None:
-        db = self.get_db()
+        db = self.db_service.get_db()
         key = db.keys.find_one({"_id": ObjectId(key_id)})
         key["guardians_joined"] += 1
         key_name = key["key_name"]
