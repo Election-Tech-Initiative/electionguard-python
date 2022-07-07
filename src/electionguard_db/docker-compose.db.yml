@@ -8,7 +8,7 @@ services:
       - 27017:27017
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: example
+      MONGO_INITDB_ROOT_PASSWORD: ${EG_DB_PASSWORD}
       MONGO_INITDB_DATABASE: ElectionGuardDb
     volumes:
       - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
@@ -21,6 +21,6 @@ services:
     environment:
       ME_CONFIG_MONGODB_SERVER: electionguard-db
       ME_CONFIG_MONGODB_ADMINUSERNAME: root
-      ME_CONFIG_MONGODB_ADMINPASSWORD: example
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${EG_DB_PASSWORD}
     links:
       - mongo

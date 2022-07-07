@@ -231,7 +231,18 @@ release-notes:
 	echo "## Issues" >> release_notes.md
 	curl "${GITHUB_API_URL}/${GITHUB_REPOSITORY}/issues?milestone=${MILESTONE_NUM}&state=all" | jq '.[].title' | while read i; do echo "[$i]($MILESTONE_URL)" >> release_notes.md; done
 
+egui:
+ifeq "${EG_DB_PASSWORD}" ""
+	@echo "Set the EG_DB_PASSWORD environment variable"
+	exit 1
+endif
+	poetry run egui
+
 start-db:
+ifeq "${EG_DB_PASSWORD}" ""
+	@echo "Set the EG_DB_PASSWORD environment variable"
+	exit 1
+endif
 	docker compose -f src/electionguard_db/docker-compose.db.yml up -d
 
 stop-db:
