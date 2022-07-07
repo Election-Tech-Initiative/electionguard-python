@@ -34,6 +34,7 @@ class GuardianHomeComponent(ComponentBase):
                     }
                     for key_ceremony in key_ceremonies
                 ]
+                # pylint: disable=no-member
                 eel.key_ceremonies_found(js_key_ceremonies)
                 print("called key_ceremonies_found successfully")
             last_count = current_count

@@ -23,15 +23,8 @@ class MainApp:
         AuthoriationService(),
     ]
 
-    def get_param(self, param_name: str) -> str:
-        try:
-            return environ[param_name]
-        except KeyError:
-            print(f"The environment variable {param_name} is not set.")
-            exit(1)
-
     def start(self) -> None:
-        db_password = self.get_param(self.DB_PASSWORD_KEY)
+        db_password = get_param(self.DB_PASSWORD_KEY)
         db_service = DbService(db_password)
 
         for component in self.components:
@@ -43,3 +36,11 @@ class MainApp:
 
 def run() -> None:
     MainApp().start()
+
+
+def get_param(param_name: str) -> str:
+    try:
+        return environ[param_name]
+    except KeyError:
+        print(f"The environment variable {param_name} is not set.")
+        exit(1)
