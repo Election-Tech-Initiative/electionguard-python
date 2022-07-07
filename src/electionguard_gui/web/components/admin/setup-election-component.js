@@ -1,17 +1,19 @@
 export default {
+  data() {
+    return { guardianCount: 2, quorum: 2, electionUrl: "" };
+  },
   methods: {
     setupElection() {
       const form = document.getElementById("mainForm");
       if (form.checkValidity()) {
-        const guardianCount = getIntById("guardianCount");
-        const quorum = getIntById("quorum");
         const manifest = document.getElementById("manifest").files[0];
         var reader = new FileReader();
         reader.onloadend = (e) => {
           const manifestContent = e.target.result;
           const onSuccess = eel.setup_election(
-            guardianCount,
-            quorum,
+            this.guardianCount,
+            this.quorum,
+            this.electionUrl,
             manifestContent
           );
           console.log("setting up election");
@@ -22,7 +24,7 @@ export default {
             );
             a.download = "context.json";
             a.click();
-            console.log("done!", r);
+            console.log("completed setting up election", r);
           });
         };
         reader.readAsText(manifest);
@@ -41,7 +43,7 @@ export default {
           <input
             type="number"
             class="form-control"
-            id="guardianCount"
+            v-model="guardianCount"
             value="2"
             required
           />
@@ -54,11 +56,19 @@ export default {
           <input
             type="number"
             class="form-control"
-            id="quorum"
+            v-model="quorum" 
             value="2"
             required
           />
           <div class="invalid-feedback">Please provide a valid quorum.</div>
+        </div>
+        <div class="col-sm-12">
+          <label for="quorum" class="form-label">Election URL</label>
+          <input
+            type="text"
+            class="form-control"
+            v-model="electionUrl" 
+          />
         </div>
         <div class="col-12">
           <label for="manifest" class="form-label">Manifest</label>
