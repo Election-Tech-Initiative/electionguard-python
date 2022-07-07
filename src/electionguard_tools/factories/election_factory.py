@@ -163,16 +163,16 @@ class ElectionFactory:
         ]
 
         sequence_order = 0
-        number_elected = 1
         votes_allowed = 1
+        votes_allowed_per_selection = 1
         fake_referendum_contest = ReferendumContestDescription(
             "some-referendum-contest-object-id",
             sequence_order,
             "some-geopoltical-unit-id",
-            VoteVariationType.one_of_m,
-            number_elected,
-            votes_allowed,
             "some-referendum-contest-name",
+            VoteVariationType.one_of_m,
+            votes_allowed,
+            votes_allowed_per_selection,
             fake_referendum_ballot_selections,
         )
 
@@ -189,16 +189,16 @@ class ElectionFactory:
         ]
 
         sequence_order_2 = 1
-        number_elected_2 = 2
         votes_allowed_2 = 2
+        votes_allowed_per_selection_2 = 2
         fake_candidate_contest = CandidateContestDescription(
             "some-candidate-contest-object-id",
             sequence_order_2,
             "some-geopoltical-unit-id",
-            VoteVariationType.one_of_m,
-            number_elected_2,
-            votes_allowed_2,
             "some-candidate-contest-name",
+            VoteVariationType.one_of_m,
+            votes_allowed_2,
+            votes_allowed_per_selection_2,
             fake_candidate_ballot_selections,
         )
 
@@ -316,8 +316,8 @@ def get_contest_description_well_formed(
     second_int = draw(ints)
 
     # TODO ISSUE #33: support more votes than seats for other VoteVariationType options
-    number_elected = min(first_int, second_int)
-    votes_allowed = number_elected
+    votes_allowed = min(first_int, second_int)
+    votes_allowed_per_selection = votes_allowed
 
     selection_descriptions: List[SelectionDescription] = []
     for i in range(max(first_int, second_int)):
@@ -330,10 +330,10 @@ def get_contest_description_well_formed(
         object_id,
         sequence_order,
         electoral_district_id,
-        VoteVariationType.n_of_m,
-        number_elected,
-        votes_allowed,
         draw(txt),
+        VoteVariationType.n_of_m,
+        votes_allowed,
+        votes_allowed_per_selection,
         selection_descriptions,
     )
 

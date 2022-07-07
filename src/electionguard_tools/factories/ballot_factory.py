@@ -42,14 +42,16 @@ class BallotFactory:
     def get_random_selection_from(
         description: SelectionDescription,
         random_source: Random,
+        limit: int = 1,
     ) -> PlaintextBallotSelection:
-        selected = bool(random_source.randint(0, 1))
+        selected = bool(random_source.randint(0, limit))
         return selection_from(description, selected)
 
     def get_random_contest_from(
         self,
         description: ContestDescription,
         random: Random,
+        limit: int = 1,
         suppress_validity_check: bool = False,
         with_trues: bool = False,
     ) -> PlaintextBallotContest:
@@ -67,7 +69,9 @@ class BallotFactory:
         voted = 0
 
         for selection_description in description.ballot_selections:
-            selection = self.get_random_selection_from(selection_description, random)
+            selection = self.get_random_selection_from(
+                selection_description, random, limit
+            )
             # the caller may force a true value
             voted += selection.vote
             if voted <= 1 and selection.vote and with_trues:
@@ -75,11 +79,11 @@ class BallotFactory:
                 continue
 
             # Possibly append the true selection, indicating an undervote
-            if voted <= description.number_elected and bool(random.randint(0, 1)) == 1:
+            if voted <= description.votes_allowed and random.randint(0, 1):
                 selections.append(selection)
             # Possibly append the false selections as well, indicating some choices
             # may be explicitly false
-            elif bool(random.randint(0, 1)) == 1:
+            elif random.randint(0, 1):
                 selections.append(selection_from(selection_description))
 
         return PlaintextBallotContest(description.object_id, selections)

@@ -9,7 +9,7 @@ from electionguard.encrypt import contest_from
 from electionguard.utils import NullVoteException, OverVoteException, UnderVoteException
 
 
-NUMBER_ELECTED = 2
+VOTES_ALLOWED = 2
 
 
 def get_sample_contest_description() -> ContestDescription:
@@ -22,10 +22,10 @@ def get_sample_contest_description() -> ContestDescription:
         "favorite-character-id",
         1,
         "dagobah-id",
-        VoteVariationType.n_of_m,
-        NUMBER_ELECTED,
-        None,
         "favorite-star-wars-character",
+        VoteVariationType.n_of_m,
+        VOTES_ALLOWED,
+        1,
         ballot_selections,
         None,
         None,
@@ -42,11 +42,13 @@ class TestBallot(BaseTestCase):
         contest = contest_from(contest_description)
 
         # Add Votes
-        for i in range(NUMBER_ELECTED):
+        for i in range(VOTES_ALLOWED):
             contest.ballot_selections[i].vote = 1
 
         # Act & Assert.
         try:
+            print(contest_description.votes_allowed)
+            print(contest_description.votes_allowed_per_selection)
             contest.valid(contest_description)
         except (NullVoteException, OverVoteException, UnderVoteException):
             self.fail("No exceptions should be thrown.")
@@ -66,7 +68,7 @@ class TestBallot(BaseTestCase):
         under_vote = contest_from(contest_description)
 
         # Add Votes
-        for i in range(NUMBER_ELECTED - 1):
+        for i in range(VOTES_ALLOWED - 1):
             under_vote.ballot_selections[i].vote = 1
 
         # Act & Assert.
@@ -79,7 +81,7 @@ class TestBallot(BaseTestCase):
         over_vote = contest_from(contest_description)
 
         # Add Votes
-        for i in range(NUMBER_ELECTED + 1):
+        for i in range(VOTES_ALLOWED + 1):
             over_vote.ballot_selections[i].vote = 1
 
         # Act & Assert.

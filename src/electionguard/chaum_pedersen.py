@@ -51,7 +51,10 @@ class RangeChaumPedersenProof(Proof):
             self.limit = len(self.responses) - 1
 
     def is_valid(
-        self, message: ElGamalCiphertext, k: ElementModP, q: ElementModQ
+        self,
+        message: ElGamalCiphertext,
+        k: ElementModP,
+        q: ElementModQ,
     ) -> bool:
         """
         Validates a range Chaum-Pedersen proof.

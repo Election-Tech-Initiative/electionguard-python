@@ -204,7 +204,10 @@ class TestDecryptWithSecrets(BaseTestCase):
         # Arrange
         random = Random(random_seed)
         _, description = selection_description
-        data = ballot_factory.get_random_selection_from(description, random)
+        selection_limit = 2
+        data = ballot_factory.get_random_selection_from(
+            description, random, selection_limit
+        )
 
         # Act
         subject = encrypt_selection(
@@ -213,6 +216,7 @@ class TestDecryptWithSecrets(BaseTestCase):
             keypair.public_key,
             ONE_MOD_Q,
             nonce_seed,
+            selection_limit,
             should_verify_proofs=True,
         )
         self.assertIsNotNone(subject)
@@ -299,24 +303,24 @@ class TestDecryptWithSecrets(BaseTestCase):
             result_from_key.is_valid(
                 description.object_id,
                 expected_entries,
-                description.number_elected,
                 description.votes_allowed,
+                description.votes_allowed_per_selection,
             )
         )
         self.assertTrue(
             result_from_nonce.is_valid(
                 description.object_id,
                 expected_entries,
-                description.number_elected,
                 description.votes_allowed,
+                description.votes_allowed_per_selection,
             )
         )
         self.assertTrue(
             result_from_nonce_seed.is_valid(
                 description.object_id,
                 expected_entries,
-                description.number_elected,
                 description.votes_allowed,
+                description.votes_allowed_per_selection,
             )
         )
 
@@ -333,7 +337,7 @@ class TestDecryptWithSecrets(BaseTestCase):
 
         self.assertEqual(key_selected, nonce_selected)
         self.assertEqual(seed_selected, nonce_selected)
-        self.assertGreaterEqual(description.number_elected, key_selected)
+        self.assertGreaterEqual(description.votes_allowed, key_selected)
 
         # Assert each selection is valid
         for selection_description in description.ballot_selections:
@@ -522,11 +526,7 @@ class TestDecryptWithSecrets(BaseTestCase):
         self.assertEqual(data.object_id, result_from_nonce_seed.object_id)
 
         for description in internal_manifest.get_contests_for(data.style_id):
-
-            expected_entries = (
-                len(description.ballot_selections) + description.number_elected
-            )
-
+            expected_entries = len(description.ballot_selections)
             key_contest = [
                 contest
                 for contest in result_from_key.contests
@@ -558,24 +558,24 @@ class TestDecryptWithSecrets(BaseTestCase):
                 key_contest.is_valid(
                     description.object_id,
                     expected_entries,
-                    description.number_elected,
                     description.votes_allowed,
+                    description.votes_allowed_per_selection,
                 )
             )
             self.assertTrue(
                 nonce_contest.is_valid(
                     description.object_id,
                     expected_entries,
-                    description.number_elected,
                     description.votes_allowed,
+                    description.votes_allowed_per_selection,
                 )
             )
             self.assertTrue(
                 seed_contest.is_valid(
                     description.object_id,
                     expected_entries,
-                    description.number_elected,
                     description.votes_allowed,
+                    description.votes_allowed_per_selection,
                 )
             )
 
