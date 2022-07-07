@@ -49,7 +49,6 @@
       "sequence_order": 0,
       "electoral_district_id": "franklin-county",
       "vote_variation": "one_of_m",
-      "number_elected": 1,
       "votes_allowed": 1,
       "name": "Referendum for Banning Pineapple on Pizza",
       "ballot_selections": [

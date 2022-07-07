@@ -259,7 +259,6 @@
       "vote_variation": "n_of_m",
       "electoral_district_id": "jefferson-county",
       "name": "Justice of the Supreme Court",
-      "number_elected": 2,
       "votes_allowed": 2
     },
     {
@@ -304,8 +303,62 @@
       "vote_variation": "one_of_m",
       "electoral_district_id": "harrison-township",
       "name": "The Pineapple Question",
-      "number_elected": 1,
       "votes_allowed": 1
+    },
+    {
+      "object_id": "official-bagel-style",
+      "sequence_order": 3,
+      "ballot_selections": [
+        {
+          "object_id": "new-york-style-selection",
+          "sequence_order": 1,
+          "candidate_id": "new-york-style"
+        },
+        {
+          "object_id": "montreal-style-selection",
+          "sequence_order": 2,
+          "candidate_id": "montreal-style"
+        },
+        {
+          "object_id": "st-louis-style-selection",
+          "sequence_order": 3,
+          "candidate_id": "st-louis-style"
+        },
+        {
+          "object_id": "write-in-style-selection",
+          "sequence_order": 4,
+          "candidate_id": "write-in-style"
+        }
+      ],
+      "ballot_title": {
+        "text": [
+          {
+            "value": "Harrison official bagel style",
+            "language": "en"
+          },
+          {
+            "value": "Estilo bagel oficial de Harrison",
+            "language": "es"
+          }
+        ]
+      },
+      "ballot_subtitle": {
+        "text": [
+          {
+            "value": "Please allot up to three points",
+            "language": "en"
+          },
+          {
+            "value": "Por favor asigne hasta tres puntos",
+            "language": "es"
+          }
+        ]
+      },
+      "vote_variation": "cumulative",
+      "electoral_district_id": "harrison-township",
+      "name": "The Bagel Question",
+      "votes_allowed": 3,
+      "votes_allowed_per_selection": 3
     }
   ],
   "ballot_styles": [

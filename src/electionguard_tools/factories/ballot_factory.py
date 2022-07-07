@@ -101,7 +101,7 @@ class BallotFactory:
         allow_null_votes: bool = False,
     ) -> PlaintextBallot:
         """
-        Get a single Fake Ballot object that is manually constructed with default vaules
+        Get a single Fake Ballot object that is manually constructed with default values
         """
 
         if ballot_id is None:
