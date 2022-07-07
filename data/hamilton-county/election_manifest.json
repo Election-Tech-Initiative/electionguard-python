@@ -1053,7 +1053,6 @@
       "vote_variation": "one_of_m",
       "electoral_district_id": "hamilton-county",
       "name": "President and Vice President of the United States",
-      "number_elected": 1,
       "votes_allowed": 1,
       "sequence_order": 0,
       "ballot_title": {
@@ -1123,7 +1122,6 @@
       "vote_variation": "one_of_m",
       "electoral_district_id": "hamilton-county",
       "name": "Governor of the Commonwealth of Ozark",
-      "number_elected": 1,
       "votes_allowed": 1,
       "sequence_order": 1,
       "ballot_title": {
@@ -1293,7 +1291,6 @@
       "vote_variation": "one_of_m",
       "electoral_district_id": "congress-district-5",
       "name": "Congressional District 5",
-      "number_elected": 1,
       "votes_allowed": 1,
       "sequence_order": 2,
       "ballot_title": {
@@ -1358,7 +1355,6 @@
       "vote_variation": "one_of_m",
       "electoral_district_id": "congress-district-7",
       "name": "Congressional District 7",
-      "number_elected": 1,
       "votes_allowed": 1,
       "sequence_order": 3,
       "ballot_title": {
@@ -1423,7 +1419,6 @@
       "vote_variation": "n_of_m",
       "electoral_district_id": "pismo-beach-school-district-precinct-1",
       "name": "Pismo Beach School Board",
-      "number_elected": 3,
       "votes_allowed": 3,
       "sequence_order": 4,
       "ballot_title": {
@@ -1508,7 +1503,6 @@
       "vote_variation": "n_of_m",
       "electoral_district_id": "somerset-school-district-precinct-1",
       "name": "Somerset School Board",
-      "number_elected": 2,
       "votes_allowed": 2,
       "sequence_order": 5,
       "ballot_title": {
@@ -1584,7 +1578,6 @@
       "vote_variation": "one_of_m",
       "electoral_district_id": "arlington-township-precinct-1",
       "name": "Retain Robert Demergue as Chief Justice?",
-      "number_elected": 1,
       "votes_allowed": 1,
       "ballot_title": {
         "text": [
@@ -1629,7 +1622,6 @@
       "vote_variation": "one_of_m",
       "electoral_district_id": "lacroix-exeter-utility-district",
       "name": "Capital Projects Levy",
-      "number_elected": 1,
       "votes_allowed": 1,
       "ballot_selections": [
         {

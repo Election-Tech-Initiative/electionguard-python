@@ -154,6 +154,7 @@ class ElectionFactory:
         fake_ballot_style = BallotStyle("some-ballot-style-id")
         fake_ballot_style.geopolitical_unit_ids = ["some-geopoltical-unit-id"]
 
+        # Referendum contest
         fake_referendum_ballot_selections = [
             # Referendum selections are simply a special case of `candidate` in the object model
             SelectionDescription(
@@ -161,7 +162,6 @@ class ElectionFactory:
             ),
             SelectionDescription("some-object-id-negative", 1, "some-candidate-id-2"),
         ]
-
         sequence_order = 0
         votes_allowed = 1
         votes_allowed_per_selection = 1
@@ -176,6 +176,7 @@ class ElectionFactory:
             fake_referendum_ballot_selections,
         )
 
+        # 1-of-m contest
         fake_candidate_ballot_selections = [
             SelectionDescription(
                 "some-object-id-candidate-1", 0, "some-candidate-id-1"
@@ -187,7 +188,6 @@ class ElectionFactory:
                 "some-object-id-candidate-3", 2, "some-candidate-id-3"
             ),
         ]
-
         sequence_order_2 = 1
         votes_allowed_2 = 2
         votes_allowed_per_selection_2 = 2
@@ -200,6 +200,35 @@ class ElectionFactory:
             votes_allowed_2,
             votes_allowed_per_selection_2,
             fake_candidate_ballot_selections,
+        )
+
+        # Cumulative voting contest
+        fake_cumulative_ballot_selections = [
+            SelectionDescription(
+                "some-object-id-candidate-4", 0, "some-candidate-id-4"
+            ),
+            SelectionDescription(
+                "some-object-id-candidate-5", 1, "some-candidate-id-5"
+            ),
+            SelectionDescription(
+                "some-object-id-candidate-6", 2, "some-candidate-id-6"
+            ),
+            SelectionDescription(
+                "some-object-id-candidate-7", 3, "some-candidate-id-7"
+            ),
+        ]
+        sequence_order_3 = 2
+        votes_allowed_3 = 2
+        votes_allowed_per_selection_3 = 2
+        fake_cumulative_contest = CandidateContestDescription(
+            "some-cumulative-contest-object-id",
+            sequence_order_3,
+            "some-geopoltical-unit-id",
+            "some-cumulative-contest-name",
+            VoteVariationType.cumulative,
+            votes_allowed_3,
+            votes_allowed_per_selection_3,
+            fake_cumulative_ballot_selections,
         )
 
         fake_manifest = Manifest(
@@ -220,8 +249,16 @@ class ElectionFactory:
                 Candidate("some-candidate-id-1"),
                 Candidate("some-candidate-id-2"),
                 Candidate("some-candidate-id-3"),
+                Candidate("some-candidate-id-4"),
+                Candidate("some-candidate-id-5"),
+                Candidate("some-candidate-id-6"),
+                Candidate("some-candidate-id-7"),
             ],
-            contests=[fake_referendum_contest, fake_candidate_contest],
+            contests=[
+                fake_referendum_contest,
+                fake_candidate_contest,
+                fake_cumulative_contest,
+            ],
             ballot_styles=[fake_ballot_style],
         )
 
@@ -252,7 +289,7 @@ class ElectionFactory:
         fake_ballot = PlaintextBallot(
             ballot_id,
             manifest.ballot_styles[0].object_id,
-            [contest_from(manifest.contests[0]), contest_from(manifest.contests[1])],
+            [contest_from(contest) for contest in manifest.contests],
         )
 
         return fake_ballot
@@ -302,8 +339,9 @@ def get_contest_description_well_formed(
     selections: Any = get_selection_description_well_formed(),
     sequence_order: Optional[int] = None,
     electoral_district_id: Optional[str] = None,
+    variation: VoteVariationType = VoteVariationType.n_of_m,
 ) -> Tuple[str, ContestDescription]:
-    """Get mock well formed selection contest."""
+    """Get mock well-formed selection contest."""
     object_id = f"{draw(email_addresses)}-contest"
 
     if sequence_order is None:
@@ -312,15 +350,21 @@ def get_contest_description_well_formed(
     if electoral_district_id is None:
         electoral_district_id = f"{draw(email_addresses)}-gp-unit"
 
-    first_int = draw(ints)
-    second_int = draw(ints)
+    ints = sorted([draw(ints) for i in range(3)], reverse=True)
+    num_selections = ints[0]
 
-    # TODO ISSUE #33: support more votes than seats for other VoteVariationType options
-    votes_allowed = min(first_int, second_int)
-    votes_allowed_per_selection = votes_allowed
+    if variation == VoteVariationType.cumulative:
+        votes_allowed = ints[1]
+        votes_allowed_per_selection = ints[2]
+    elif variation == VoteVariationType.one_of_m:
+        votes_allowed = 1
+        votes_allowed_per_selection = 1
+    else:
+        votes_allowed = ints[1]
+        votes_allowed_per_selection = 1
 
     selection_descriptions: List[SelectionDescription] = []
-    for i in range(max(first_int, second_int)):
+    for i in range(num_selections):
         selection: Tuple[str, SelectionDescription] = draw(selections)
         _, selection_description = selection
         selection_description.sequence_order = i
@@ -331,7 +375,7 @@ def get_contest_description_well_formed(
         sequence_order,
         electoral_district_id,
         draw(txt),
-        VoteVariationType.n_of_m,
+        variation,
         votes_allowed,
         votes_allowed_per_selection,
         selection_descriptions,

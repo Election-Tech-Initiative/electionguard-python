@@ -108,6 +108,19 @@
             "vote": 1
           }
         ]
+      },
+      {
+        "object_id": "official-bagel-style",
+        "ballot_selections": [
+          {
+            "object_id": "new-york-style-selection",
+            "vote": 2
+          },
+          {
+            "object_id": "st-louis-style-selection",
+            "vote": 1
+          }
+        ]
       }
     ]
   },
@@ -138,6 +151,19 @@
           {
             "object_id": "referendum-pineapple-negative-selection",
             "vote": 1
+          }
+        ]
+      },
+      {
+        "object_id": "official-bagel-style",
+        "ballot_selections": [
+          {
+            "object_id": "new-york-style-selection",
+            "vote": 1
+          },
+          {
+            "object_id": "montreal-style-selection",
+            "vote": 0
           }
         ]
       }

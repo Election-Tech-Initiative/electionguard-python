@@ -425,6 +425,47 @@ class TestEncrypt(BaseTestCase):
         )
         self.assertIsNotNone(subject)
 
+    def test_encrypt_contest_manually_formed_cumulative_contest_description_valid_succeeds(
+        self,
+    ):
+        description = ContestDescription(
+            object_id="0@A.com-contest",
+            electoral_district_id="0@A.com-gp-unit",
+            sequence_order=1,
+            vote_variation=VoteVariationType.cumulative,
+            votes_allowed=4,
+            votes_allowed_per_selection=2,
+            name="",
+            ballot_selections=[
+                SelectionDescription(
+                    "0@A.com-selection",
+                    0,
+                    "0@A.com",
+                ),
+                SelectionDescription("0@B.com-selection", 1, "0@B.com"),
+                SelectionDescription("0@C.com-selection", 2, "0@C.com"),
+            ],
+            ballot_title=None,
+            ballot_subtitle=None,
+        )
+
+        keypair = elgamal_keypair_from_secret(TWO_MOD_Q)
+        seed = ONE_MOD_Q
+
+        ####################
+        data = ballot_factory.get_random_contest_from(description, Random(0))
+
+        # Act
+        subject = encrypt_contest(
+            data,
+            description,
+            keypair.public_key,
+            ONE_MOD_Q,
+            seed,
+            should_verify_proofs=True,
+        )
+        self.assertIsNotNone(subject)
+
     def test_encrypt_contest_duplicate_selection_object_ids_fails(self):
         """
         This is an example test of a failing test where the contest description

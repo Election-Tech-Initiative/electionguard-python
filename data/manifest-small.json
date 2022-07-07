@@ -64,7 +64,6 @@
     {
       "object_id": "congressional-race-01",
       "vote_variation": "one_of_m",
-      "number_elected": 1,
       "votes_allowed": 1,
       "electoral_district_id": "franklin-county",
       "name": "Representative to US Congress",
@@ -93,7 +92,6 @@
       "vote_variation": "one_of_m",
       "electoral_district_id": "franklin-county",
       "name": "The Pineapple Question",
-      "number_elected": 1,
       "votes_allowed": 1,
       "ballot_selections": [
         {
@@ -112,7 +110,6 @@
     {
       "object_id": "ozark-school-board-race",
       "vote_variation": "n_of_m",
-      "number_elected": 2,
       "votes_allowed": 2,
       "electoral_district_id": "ozark-school-district",
       "name": "Ozark School Board",
