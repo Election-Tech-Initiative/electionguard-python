@@ -24,7 +24,7 @@ export default {
     const cleanPath = path.split("?")[0].slice(1) || "/";
     const foundRoute = this.getRouteByUrl(cleanPath);
     console.log("foundRoute", foundRoute);
-    return foundRoute || this.routes.NotFound;
+    return foundRoute || this.routes.notFound;
   },
   routes: {
     // shared pages
