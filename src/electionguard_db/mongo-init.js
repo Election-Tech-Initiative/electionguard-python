@@ -1,2 +1,2 @@
 db.createCollection("guardians");
-db.createCollection("keys");
+db.createCollection("key_ceremonies");

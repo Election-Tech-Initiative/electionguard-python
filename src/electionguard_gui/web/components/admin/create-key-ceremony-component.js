@@ -9,7 +9,7 @@ export default {
     return {
       loading: false,
       alert: null,
-      keyName: "my-key",
+      keyCeremonyName: "",
       guardianCount: 2,
       quorum: 2,
     };
@@ -20,17 +20,17 @@ export default {
       this.alert = null;
       if (form.checkValidity()) {
         this.loading = true;
-        const onDone = eel.start_ceremony(
-          this.keyName,
+        const onDone = eel.create_key_ceremony(
+          this.keyCeremonyName,
           this.guardianCount,
           this.quorum
         );
         onDone((result) => {
           this.loading = false;
-          console.debug("key creation finished", result);
+          console.debug("key ceremony creation finished", result);
           if (result.success) {
-            RouterService.goTo(RouterService.routes.viewKeyPage, {
-              keyId: result.result,
+            RouterService.goTo(RouterService.routes.viewKeyCeremonyPage, {
+              keyCeremonyId: result.result,
             });
           } else {
             this.alert = result.message;
@@ -47,20 +47,20 @@ export default {
       </div>
       <div class="row g-3 align-items-center">
         <div class="col-12">
-          <h1>Create Key</h1>
+          <h1>Create Key Ceremony</h1>
         </div>
         <div class="col-sm-12">
-          <label for="keyName" class="form-label">Key Name</label>
+          <label for="keyCeremonyName" class="form-label">Key Ceremony Name</label>
           <input
             type="text"
             class="form-control"
-            id="keyName"
-            v-model="keyName" 
+            id="keyCeremonyName"
+            v-model="keyCeremonyName" 
             required
             min="2"
           />
           <div class="invalid-feedback">
-            Key name is required
+            Key Ceremony Name is required
           </div>
         </div>
         <div class="col-sm-6">

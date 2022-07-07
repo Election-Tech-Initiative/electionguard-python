@@ -6,8 +6,8 @@ import Login from "../components/shared/login-component.js";
 // admin components
 import AdminHome from "../components/admin/admin-home-component.js";
 import SetupElection from "../components/admin/setup-election-component.js";
-import CreateKey from "../components/admin/create-key-component.js";
-import ViewKey from "../components/admin/view-key-component.js";
+import CreateKeyCeremony from "../components/admin/create-key-ceremony-component.js";
+import ViewKeyCeremony from "../components/admin/view-key-ceremony-component.js";
 
 // guardian components
 import GuardianHome from "../components/guardian/guardian-home-component.js";
@@ -18,7 +18,6 @@ export default {
     window.location.href = urlWithParams;
   },
   getRouteByUrl(url) {
-    debugger;
     return Object.values(this.routes).filter((r) => r.url === url)[0];
   },
   getRoute(path) {
@@ -40,15 +39,15 @@ export default {
       secured: true,
       component: SetupElection,
     },
-    createKey: {
-      url: "/admin/create-key",
+    createKeyCeremony: {
+      url: "/admin/create-key-ceremony",
       secured: true,
-      component: CreateKey,
+      component: CreateKeyCeremony,
     },
-    viewKeyPage: {
-      url: "/admin/view-key",
+    viewKeyCeremonyPage: {
+      url: "/admin/view-key-ceremony",
       secured: true,
-      component: ViewKey,
+      component: ViewKeyCeremony,
     },
 
     // guardian pages
