@@ -42,14 +42,16 @@ class BallotFactory:
     def get_random_selection_from(
         description: SelectionDescription,
         random_source: Random,
+        limit: int = 1,
     ) -> PlaintextBallotSelection:
-        selected = bool(random_source.randint(0, 1))
+        selected = bool(random_source.randint(0, limit))
         return selection_from(description, selected)
 
     @staticmethod
     def get_random_contest_from(
         description: ContestDescription,
         random: Random,
+        limit: int = 1,
         suppress_validity_check: bool = False,
         allow_null_votes: bool = True,
         allow_under_votes: bool = True,
@@ -81,13 +83,13 @@ class BallotFactory:
             for selection_description in shuffled_selections[0:cut_point]
         ]
 
-        for selection_description in shuffled_selections[cut_point:]:
+            # Possibly append the true selection, indicating an undervote
+            if voted <= description.votes_allowed and random.randint(0, 1):
+                selections.append(selection)
             # Possibly append the false selections as well, indicating some choices
             # may be explicitly false
-            if bool(random.randint(0, 1)) == 1:
-                selections.append(
-                    selection_from(selection_description, is_affirmative=False)
-                )
+            elif random.randint(0, 1):
+                selections.append(selection_from(selection_description))
 
         random.shuffle(selections)
         return PlaintextBallotContest(description.object_id, selections)

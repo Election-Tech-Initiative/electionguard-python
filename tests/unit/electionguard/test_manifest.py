@@ -191,8 +191,8 @@ class TestManifest(BaseTestCase):
             electoral_district_id="0@A.com-gp-unit",
             sequence_order=1,
             vote_variation=VoteVariationType.n_of_m,
-            number_elected=1,
             votes_allowed=1,
+            votes_allowed_per_selection=1,
             name="",
             ballot_selections=[
                 SelectionDescription(
@@ -219,8 +219,8 @@ class TestManifest(BaseTestCase):
             electoral_district_id="0@A.com-gp-unit",
             sequence_order=1,
             vote_variation=VoteVariationType.n_of_m,
-            number_elected=1,
             votes_allowed=1,
+            votes_allowed_per_selection=1,
             name="",
             ballot_selections=[
                 SelectionDescription(

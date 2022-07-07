@@ -89,6 +89,7 @@ class VoteVariationType(Enum):
 SUPPORTED_VOTE_VARIATIONS = [
     VoteVariationType.one_of_m,
     VoteVariationType.approval,
+    VoteVariationType.cumulative,
     VoteVariationType.majority,
     VoteVariationType.n_of_m,
     VoteVariationType.plurality,
@@ -300,7 +301,7 @@ class Candidate(ElectionObjectBase, CryptoHashable):
     """
     Entity describing information about a candidate in a contest.
     See: https://developers.google.com/elections-data/reference/candidate
-    Note: The ElectionGuard Data Spec deviates from the NIST model in that
+    Note: The ElectionGuard specification deviates from the NIST model in that
     selections for any contest type are considered a "candidate".
     for instance, on a yes-no referendum contest, two `candidate` objects
     would be included in the model to represent the `affirmative` and `negative`
@@ -333,9 +334,8 @@ class SelectionDescription(OrderedObjectBase, CryptoHashable):
     Data entity for the ballot selections in a contest,
     for example linking candidates and parties to their vote counts.
     See: https://developers.google.com/elections-data/reference/ballot-selection
-    Note: The ElectionGuard Data Spec deviates from the NIST model in that
-    there is no difference for different types of selections.
-    The ElectionGuard Data Spec deviates from the NIST model in that
+    Note: The ElectionGuard specification deviates from the NIST model in that
+    there is no difference for different types of selections and that
     `sequence_order` is a required field since it is used for ordering selections
     in a contest to ensure various encryption primitives are deterministic.
     For a given election, the sequence of selections displayed to a user may be different
@@ -360,7 +360,7 @@ class ContestDescription(OrderedObjectBase, CryptoHashable):
     Use this data entity for describing a contest and linking the contest
     to the associated candidates and parties.
     See: https://developers.google.com/elections-data/reference/contest
-    Note: The ElectionGuard Data Spec deviates from the NIST model in that
+    Note: The ElectionGuard specification deviates from the NIST model in that
     `sequence_order` is a required field since it is used for ordering selections
     in a contest to ensure various encryption primitives are deterministic.
     For a given election, the sequence of contests displayed to a user may be different
@@ -369,19 +369,20 @@ class ContestDescription(OrderedObjectBase, CryptoHashable):
 
     electoral_district_id: str
 
-    vote_variation: VoteVariationType
-
-    # Number of candidates that are elected in the contest ("n" of n-of-m).
-    # Note: a referendum is considered a specific case of 1-of-m in ElectionGuard
-    number_elected: int
-
-    # Maximum number of votes/write-ins per voter in this contest. Used in cumulative voting
-    # to indicate how many total votes a voter can spread around. In n-of-m elections, this will
-    # be None.
-    votes_allowed: Optional[int]
-
     # Name of the contest, not necessarily as it appears on the ballot.
     name: str
+
+    vote_variation: VoteVariationType
+
+    # Maximum number of votes (or write-ins) per voter in this contest.
+    # E.g., in an n-of-m contest, this value is n.
+    # E.g., in a cumulative voting contest, this value is the total allotment.
+    votes_allowed: int = 1
+
+    # Maximum number of votes a voter may give to each selection in this contest.
+    # E.g., in an n-of-m contest, this value is 1.
+    # E.g., in a cumulative voting contest, this value is usually the total allotment.
+    votes_allowed_per_selection: int = 1
 
     # For associating a ballot selection for the contest, i.e., a candidate, a ballot measure.
     ballot_selections: List[SelectionDescription] = field(default_factory=lambda: [])
@@ -397,10 +398,10 @@ class ContestDescription(OrderedObjectBase, CryptoHashable):
             isinstance(other, ContestDescription)
             and self.electoral_district_id == other.electoral_district_id
             and self.sequence_order == other.sequence_order
-            and self.vote_variation == other.vote_variation
-            and self.number_elected == other.number_elected
-            and self.votes_allowed == other.votes_allowed
             and self.name == other.name
+            and self.vote_variation == other.vote_variation
+            and self.votes_allowed == other.votes_allowed
+            and self.votes_allowed_per_selection == other.votes_allowed_per_selection
             and list_eq(self.ballot_selections, other.ballot_selections)
             and self.ballot_title == other.ballot_title
             and self.ballot_subtitle == other.ballot_subtitle
@@ -418,12 +419,12 @@ class ContestDescription(OrderedObjectBase, CryptoHashable):
             self.object_id,
             self.sequence_order,
             self.electoral_district_id,
-            str(self.vote_variation.name),
+            self.vote_variation.name,
             self.ballot_title,
             self.ballot_subtitle,
             self.name,
-            self.number_elected,
             self.votes_allowed,
+            self.votes_allowed_per_selection,
             self.ballot_selections,
         )
         log_debug(f"{self.__class__} : crypto_hash: {hash.to_hex()}")
@@ -433,11 +434,13 @@ class ContestDescription(OrderedObjectBase, CryptoHashable):
         """
         Check the validity of the contest object by verifying its data
         """
-        contest_has_valid_number_elected = self.number_elected <= len(
-            self.ballot_selections
+
+        contest_has_supported_vote_variation = (
+            self.vote_variation in SUPPORTED_VOTE_VARIATIONS
         )
         contest_has_valid_votes_allowed = (
-            self.votes_allowed is None or self.number_elected <= self.votes_allowed
+            self.votes_allowed
+            <= len(self.ballot_selections) * self.votes_allowed_per_selection
         )
 
         # verify the candidate_ids, selection object_ids, and sequence_ids are unique
@@ -459,27 +462,22 @@ class ContestDescription(OrderedObjectBase, CryptoHashable):
             if selection.candidate_id not in candidate_ids:
                 candidate_ids.add(selection.candidate_id)
 
-        selections_have_valid_candidate_ids = (
-            len(candidate_ids) == expected_selection_count
-        )
         selections_have_valid_selection_ids = (
             len(selection_ids) == expected_selection_count
         )
         selections_have_valid_sequence_ids = (
             len(sequence_ids) == expected_selection_count
         )
-
-        contest_has_supported_vote_variation = (
-            self.vote_variation in SUPPORTED_VOTE_VARIATIONS
+        selections_have_valid_candidate_ids = (
+            len(candidate_ids) == expected_selection_count
         )
 
         success = (
-            contest_has_valid_number_elected
+            contest_has_supported_vote_variation
             and contest_has_valid_votes_allowed
-            and selections_have_valid_candidate_ids
             and selections_have_valid_selection_ids
             and selections_have_valid_sequence_ids
-            and contest_has_supported_vote_variation
+            and selections_have_valid_candidate_ids
         )
 
         if not success:
@@ -488,12 +486,11 @@ class ContestDescription(OrderedObjectBase, CryptoHashable):
                 self.object_id,
                 str(
                     {
-                        "contest_has_valid_number_elected": contest_has_valid_number_elected,
+                        "contest_has_supported_vote_variation": contest_has_supported_vote_variation,
                         "contest_has_valid_votes_allowed": contest_has_valid_votes_allowed,
-                        "selections_have_valid_candidate_ids": selections_have_valid_candidate_ids,
                         "selections_have_valid_selection_ids": selections_have_valid_selection_ids,
                         "selections_have_valid_sequence_ids": selections_have_valid_sequence_ids,
-                        "contest_has_supported_vote_variation": contest_has_supported_vote_variation,
+                        "selections_have_valid_candidate_ids": selections_have_valid_candidate_ids,
                     }
                 ),
             )
@@ -536,7 +533,7 @@ class CandidateContestDescription(ContestDescription):
     """
     Use this entity to describe a contest that involves selecting one or more candidates.
     See: https://developers.google.com/elections-data/reference/contest
-    Note: The ElectionGuard Data Spec deviates from the NIST model in that
+    Note: The ElectionGuard specification deviates from the NIST model in that
     this subclass is used purely for convenience
     """
 
@@ -548,7 +545,7 @@ class ReferendumContestDescription(ContestDescription):
     """
     Use this entity to describe a contest that involves selecting exactly one 'candidate'.
     See: https://developers.google.com/elections-data/reference/contest
-    Note: The ElectionGuard Data Spec deviates from the NIST model in that
+    Note: The ElectionGuard specification deviates from the NIST model in that
     this subclass is used purely for convenience
     """
 
@@ -566,11 +563,11 @@ class Manifest(CryptoHashable):
     """
     Use this entity for defining the structure of the election and associated
     information such as candidates, contests, and vote counts.  This class is
-    based on the NIST Election Common Standard Data Specification.  Some deviations
+    based on the NIST Election Common Standard specificationification.  Some deviations
     from the standard exist.
 
     This structure is considered an immutable input object and should not be changed
-    through the course of an election, as it's hash representation is the basis for all
+    through the course of an election, as its hash representation is the basis for all
     other hash representations within an ElectionGuard election context.
 
     See: https://developers.google.com/elections-data/reference/election
@@ -724,9 +721,7 @@ class Manifest(CryptoHashable):
 
         for contest in self.contests:
 
-            contests_validate_their_properties = (
-                contests_validate_their_properties and contest.is_valid()
-            )
+            contests_validate_their_properties &= contest.is_valid()
 
             if contest.object_id not in contest_ids:
                 contest_ids.add(contest.object_id)
@@ -824,7 +819,7 @@ class Manifest(CryptoHashable):
 
     def get_selection_names(self, lang: str) -> Dict[str, str]:
         """
-        Retrieves a dictionary whose keys are all selection id's and whose values are
+        Retrieves a dictionary whose keys are all selection ids and whose values are
         those selection's candidate names in the supplied language if available
         """
         candidates = self._get_candidate_names(lang)
@@ -834,8 +829,8 @@ class Manifest(CryptoHashable):
 
     def get_contest_names(self) -> Dict[str, str]:
         """
-        Retrieves a dictionary whose keys are all contest id's and whose values are
-        those contest's names
+        Retrieves a dictionary whose keys are all contest ids and whose values are
+        those contests' names
         """
 
         return {contest.object_id: contest.name for contest in self.contests}
@@ -875,7 +870,7 @@ class InternalManifest:
         """
         Get contest by id
         :param contest_id: Contest id
-        :return: Contest description or none
+        :return: Contest description or None
         """
         matching_contests = list(
             filter(lambda i: i.object_id == contest_id, self.contests)
