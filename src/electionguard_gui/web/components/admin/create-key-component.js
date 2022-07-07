@@ -57,6 +57,7 @@ export default {
             id="keyName"
             v-model="keyName" 
             required
+            min="2"
           />
           <div class="invalid-feedback">
             Key name is required
@@ -70,6 +71,7 @@ export default {
             id="guardianCount"
             v-model="guardianCount" 
             required
+            min="2"
           />
           <div class="invalid-feedback">
             Please provide a valid number of guardians.

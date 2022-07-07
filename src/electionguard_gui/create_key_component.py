@@ -14,6 +14,11 @@ class CreateKeyComponent(ComponentBase):
     def start_ceremony(
         self, key_name: str, guardian_count: int, quorum: int
     ) -> dict[str, Any]:
+        if guardian_count < quorum:
+            return self.eel_fail(
+                "Guardian count must be greater than or equal to quorum"
+            )
+
         print(
             f"Starting ceremony: key_name: {key_name}, guardian_count: {guardian_count}, quorum: {quorum}"
         )
