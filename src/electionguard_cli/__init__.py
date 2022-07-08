@@ -3,6 +3,7 @@ from electionguard_cli import cli_steps
 from electionguard_cli import e2e
 from electionguard_cli import encrypt_ballots
 from electionguard_cli import import_ballots
+from electionguard_cli import mark_ballots
 from electionguard_cli import setup_election
 from electionguard_cli import start
 
@@ -11,10 +12,12 @@ from electionguard_cli.cli_models import (
     CliDecryptResults,
     CliElectionInputsBase,
     EncryptResults,
+    MarkResults,
     cli_decrypt_results,
     cli_election_inputs_base,
     e2e_build_election_results,
     encrypt_results,
+    mark_results,
 )
 from electionguard_cli.cli_steps import (
     CliStepBase,
@@ -23,6 +26,7 @@ from electionguard_cli.cli_steps import (
     EncryptVotesStep,
     InputRetrievalStepBase,
     KeyCeremonyStep,
+    MarkBallotsStep,
     OutputStepBase,
     PrintResultsStep,
     TallyStep,
@@ -32,6 +36,7 @@ from electionguard_cli.cli_steps import (
     encrypt_votes_step,
     input_retrieval_step_base,
     key_ceremony_step,
+    mark_ballots_step,
     output_step_base,
     print_results_step,
     tally_step,
@@ -73,6 +78,18 @@ from electionguard_cli.import_ballots import (
     import_ballots_election_builder_step,
     import_ballots_input_retrieval_step,
     import_ballots_publish_step,
+)
+from electionguard_cli.mark_ballots import (
+    MarkBallotInputs,
+    MarkBallotsCommand,
+    MarkBallotsElectionBuilderStep,
+    MarkBallotsInputRetrievalStep,
+    MarkBallotsPublishStep,
+    mark_ballot_inputs,
+    mark_ballots_election_builder_step,
+    mark_ballots_input_retrieval_step,
+    mark_ballots_publish_step,
+    mark_command,
 )
 from electionguard_cli.setup_election import (
     OutputSetupFilesStep,
@@ -116,6 +133,13 @@ __all__ = [
     "ImportBallotsPublishStep",
     "InputRetrievalStepBase",
     "KeyCeremonyStep",
+    "MarkBallotInputs",
+    "MarkBallotsCommand",
+    "MarkBallotsElectionBuilderStep",
+    "MarkBallotsInputRetrievalStep",
+    "MarkBallotsPublishStep",
+    "MarkBallotsStep",
+    "MarkResults",
     "OutputSetupFilesStep",
     "OutputStepBase",
     "PrintResultsStep",
@@ -156,6 +180,14 @@ __all__ = [
     "import_ballots_publish_step",
     "input_retrieval_step_base",
     "key_ceremony_step",
+    "mark_ballot_inputs",
+    "mark_ballots",
+    "mark_ballots_election_builder_step",
+    "mark_ballots_input_retrieval_step",
+    "mark_ballots_publish_step",
+    "mark_ballots_step",
+    "mark_command",
+    "mark_results",
     "output_setup_files_step",
     "output_step_base",
     "print_results_step",
