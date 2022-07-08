@@ -1,6 +1,4 @@
 from typing import List
-from os import environ
-from sys import exit
 import eel
 
 from electionguard_gui.authorization_service import AuthoriationService
@@ -14,8 +12,6 @@ from electionguard_gui.setup_election_component import SetupElectionComponent
 class MainApp:
     """Responsible for functionality related to the main app"""
 
-    DB_PASSWORD_KEY = "EG_DB_PASSWORD"
-
     components: List[ComponentBase] = [
         GuardianHomeComponent(),
         CreateKeyCeremonyComponent(),
@@ -24,8 +20,7 @@ class MainApp:
     ]
 
     def start(self) -> None:
-        db_password = get_param(self.DB_PASSWORD_KEY)
-        db_service = DbService(db_password)
+        db_service = DbService()
 
         for component in self.components:
             component.init(db_service)
@@ -36,11 +31,3 @@ class MainApp:
 
 def run() -> None:
     MainApp().start()
-
-
-def get_param(param_name: str) -> str:
-    try:
-        return environ[param_name]
-    except KeyError:
-        print(f"The environment variable {param_name} is not set.")
-        exit(1)
