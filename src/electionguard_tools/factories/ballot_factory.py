@@ -1,4 +1,4 @@
-from typing import Any, TypeVar, Callable, List, Tuple
+from typing import Any, TypeVar, Callable, List, Tuple, Optional
 import os
 from random import Random, randint
 import uuid
@@ -114,13 +114,19 @@ class BallotFactory:
         return fake_ballot
 
     def generate_fake_plaintext_ballots_for_election(
-        self, internal_manifest: InternalManifest, number_of_ballots: int
+        self,
+        internal_manifest: InternalManifest,
+        number_of_ballots: int,
+        ballot_style_id: Optional[str] = None,
     ) -> List[PlaintextBallot]:
         ballots: List[PlaintextBallot] = []
         for _i in range(number_of_ballots):
+            if ballot_style_id is not None:
+                ballot_style = internal_manifest.get_ballot_style(ballot_style_id)
+            else:
+                style_index = randint(0, len(internal_manifest.ballot_styles) - 1)
+                ballot_style = internal_manifest.ballot_styles[style_index]
 
-            style_index = randint(0, len(internal_manifest.ballot_styles) - 1)
-            ballot_style = internal_manifest.ballot_styles[style_index]
             ballot_id = f"ballot-{uuid.uuid1()}"
 
             contests: List[PlaintextBallotContest] = []
