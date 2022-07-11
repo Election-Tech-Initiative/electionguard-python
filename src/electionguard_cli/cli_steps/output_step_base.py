@@ -41,6 +41,7 @@ class OutputStepBase(CliStepBase):
         content: Any,
         file_dir: str,
         file_name: str,
-    ) -> None:
+    ) -> str:
         location = to_file(content, file_name, file_dir)
         self.print_value(title, location)
+        return location
