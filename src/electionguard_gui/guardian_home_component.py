@@ -1,17 +1,18 @@
-from threading import Event
-from bson import ObjectId
-from gridfs import Database
-from pymongo import CursorType
 import eel
+from pymongo.database import Database
 
 from electionguard_gui.component_base import ComponentBase
+from electionguard_gui.services.key_ceremony_service import KeyCeremonyService
 
 
 class GuardianHomeComponent(ComponentBase):
     """Responsible for functionality related to the guardian home page"""
 
-    MS_TO_BLOCK = 1000
-    watching_key_ceremonies = Event()
+    _key_ceremony_service: KeyCeremonyService
+
+    def __init__(self) -> None:
+        super().__init__()
+        self._key_ceremony_service = KeyCeremonyService()
 
     def expose(self) -> None:
         eel.expose(self.watch_key_ceremonies)
@@ -20,35 +21,14 @@ class GuardianHomeComponent(ComponentBase):
     def watch_key_ceremonies(self) -> None:
         db = self.db_service.get_db()
         send_key_ceremonies_to_ui(db)
-
-        # retrieve a tailable cursor of the deltas in key ceremony to avoid polling
-        cursor = db.key_ceremony_deltas.find(
-            {}, cursor_type=CursorType.TAILABLE_AWAIT
-        ).max_await_time_ms(self.MS_TO_BLOCK)
-        # burn through all updates that have occurred up till now so next time we only get new ones
-        for _ in cursor:
-            pass
-
-        # set a semaphore to indicate that we are watching key ceremonies
-        self.watching_key_ceremonies.set()
-        while self.watching_key_ceremonies.is_set() and cursor.alive:
-            try:
-                # block for up to a few seconds until someone adds a new key ceremony delta
-                _ = cursor.next()
-                print("new key ceremony delta found, refreshing key ceremonies in UI")
-                send_key_ceremonies_to_ui(db)
-
-            except StopIteration:
-                # the tailable cursor times out after a few seconds and fires a StopIteration exception,
-                # so we need to catch it and restart watching. The sleep is required by eel to allow
-                # watching_key_ceremonies to get set in  order to get a clean exit.
-                eel.sleep(0.1)
+        self._key_ceremony_service.watch_key_ceremonies(
+            db, lambda _: send_key_ceremonies_to_ui(db)
+        )
 
         print("exited watch key_ceremonies loop")
 
     def stop_watching(self) -> None:
-        print("stop_watching")
-        self.watching_key_ceremonies.clear()
+        self._key_ceremony_service.stop_watching()
 
 
 def send_key_ceremonies_to_ui(db: Database) -> None:
