@@ -39,4 +39,6 @@ class CreateKeyCeremonyComponent(ComponentBase):
         }
         inserted_id = db.key_ceremonies.insert_one(key_ceremony).inserted_id
         print(f"created '{key_ceremony_name}' record, id: {inserted_id}")
+        # notify anyone watching for key ceremony changes that a new key ceremony was created
+        db.key_ceremony_deltas.insert_one({"key_ceremony_id": inserted_id})
         return eel_success(inserted_id)

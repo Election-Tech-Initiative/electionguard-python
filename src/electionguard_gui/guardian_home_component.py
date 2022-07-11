@@ -1,5 +1,6 @@
 from threading import Event
 from bson import ObjectId
+from pymongo import CursorType
 import eel
 
 from electionguard_gui.component_base import ComponentBase
@@ -8,6 +9,7 @@ from electionguard_gui.component_base import ComponentBase
 class GuardianHomeComponent(ComponentBase):
     """Responsible for functionality related to the guardian home page"""
 
+    MS_TO_BLOCK = 2000
     watching_key_ceremonies = Event()
 
     def expose(self) -> None:
@@ -17,28 +19,36 @@ class GuardianHomeComponent(ComponentBase):
 
     def watch_key_ceremonies(self) -> None:
         db = self.db_service.get_db()
-        last_count = 0
+
+        # retrieve a tailable cursor of the deltas in key ceremony to avoid polling
+        cursor = db.key_ceremony_deltas.find(
+            {}, cursor_type=CursorType.TAILABLE_AWAIT
+        ).max_await_time_ms(self.MS_TO_BLOCK)
+        # burn through all updates that have occurred up till now so next time we only get new ones
+        for _ in cursor:
+            pass
+
+        # set a semaphore to indicate that we are watching key ceremonies
         self.watching_key_ceremonies.set()
-        while self.watching_key_ceremonies.is_set():
-            current_count = db.key_ceremonies.count_documents({})
-            print(f"polling, guardian count = {current_count}")
-            if current_count != last_count:
-                print(
-                    f"found new key ceremony. Count was {last_count}, and is now {current_count}"
-                )
+        while self.watching_key_ceremonies.is_set() and cursor.alive:
+            try:
+                # block for up to a few seconds until someone adds a new key ceremony delta
+                _ = cursor.next()
+                print("new key ceremony delta found, refreshing key ceremonies in UI")
                 key_ceremonies = db.key_ceremonies.find()
                 js_key_ceremonies = [
-                    {
-                        "key_ceremony_name": key_ceremony["key_ceremony_name"],
-                        "id": key_ceremony["_id"].__str__(),
-                    }
+                    make_js_key_ceremony(key_ceremony)
                     for key_ceremony in key_ceremonies
                 ]
                 # pylint: disable=no-member
                 eel.key_ceremonies_found(js_key_ceremonies)
-                print("called key_ceremonies_found successfully")
-            last_count = current_count
-            eel.sleep(1)
+
+            except StopIteration:
+                # the tailable cursor times out after a few seconds and fires a StopIteration exception,
+                # so we need to catch it and restart watching. The sleep is required by eel to allow
+                # watching_key_ceremonies to get set in  order to get a clean exit.
+                eel.sleep(0.1)
+
         print("exited watch key_ceremonies loop")
 
     def stop_watching(self) -> None:
@@ -55,3 +65,10 @@ class GuardianHomeComponent(ComponentBase):
         print(
             f"new guardian joined {key_ceremony_name}, total joined is now {guardians_joined}"
         )
+
+
+def make_js_key_ceremony(key_ceremony: dict) -> dict:
+    return {
+        "key_ceremony_name": key_ceremony["key_ceremony_name"],
+        "id": key_ceremony["_id"].__str__(),
+    }
