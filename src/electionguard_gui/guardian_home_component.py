@@ -1,5 +1,6 @@
 from threading import Event
 from bson import ObjectId
+from gridfs import Database
 from pymongo import CursorType
 import eel
 
@@ -9,7 +10,7 @@ from electionguard_gui.component_base import ComponentBase
 class GuardianHomeComponent(ComponentBase):
     """Responsible for functionality related to the guardian home page"""
 
-    MS_TO_BLOCK = 2000
+    MS_TO_BLOCK = 1000
     watching_key_ceremonies = Event()
 
     def expose(self) -> None:
@@ -19,6 +20,7 @@ class GuardianHomeComponent(ComponentBase):
 
     def watch_key_ceremonies(self) -> None:
         db = self.db_service.get_db()
+        send_key_ceremonies_to_ui(db)
 
         # retrieve a tailable cursor of the deltas in key ceremony to avoid polling
         cursor = db.key_ceremony_deltas.find(
@@ -35,13 +37,7 @@ class GuardianHomeComponent(ComponentBase):
                 # block for up to a few seconds until someone adds a new key ceremony delta
                 _ = cursor.next()
                 print("new key ceremony delta found, refreshing key ceremonies in UI")
-                key_ceremonies = db.key_ceremonies.find()
-                js_key_ceremonies = [
-                    make_js_key_ceremony(key_ceremony)
-                    for key_ceremony in key_ceremonies
-                ]
-                # pylint: disable=no-member
-                eel.key_ceremonies_found(js_key_ceremonies)
+                send_key_ceremonies_to_ui(db)
 
             except StopIteration:
                 # the tailable cursor times out after a few seconds and fires a StopIteration exception,
@@ -65,6 +61,15 @@ class GuardianHomeComponent(ComponentBase):
         print(
             f"new guardian joined {key_ceremony_name}, total joined is now {guardians_joined}"
         )
+
+
+def send_key_ceremonies_to_ui(db: Database) -> None:
+    key_ceremonies = db.key_ceremonies.find()
+    js_key_ceremonies = [
+        make_js_key_ceremony(key_ceremony) for key_ceremony in key_ceremonies
+    ]
+    # pylint: disable=no-member
+    eel.key_ceremonies_found(js_key_ceremonies)
 
 
 def make_js_key_ceremony(key_ceremony: dict) -> dict:
