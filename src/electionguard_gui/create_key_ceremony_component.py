@@ -1,5 +1,6 @@
 from typing import Any
 import eel
+from datetime import datetime
 
 from electionguard_gui.component_base import ComponentBase
 from electionguard_gui.eel_utils import eel_fail, eel_success
@@ -37,6 +38,7 @@ class CreateKeyCeremonyComponent(ComponentBase):
             "quorum": quorum,
             "guardians_joined": 0,
             "created_by": self.auth_service.get_user_id(),
+            "created_at": datetime.utcnow(),
         }
         inserted_id = db.key_ceremonies.insert_one(key_ceremony).inserted_id
         print(f"created '{key_ceremony_name}' record, id: {inserted_id}")
