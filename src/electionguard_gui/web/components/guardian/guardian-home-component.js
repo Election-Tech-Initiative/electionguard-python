@@ -10,9 +10,6 @@ export default {
     key_ceremonies_found: function (key_ceremonies) {
       this.keyCeremonies = key_ceremonies;
     },
-    join: function (keyCeremonyId) {
-      eel.join_key_ceremony(keyCeremonyId);
-    },
     getKeyCeremonyUrl: function (keyCeremony) {
       return RouterService.getUrl(
         RouterService.routes.viewKeyCeremonyGuardianPage,
