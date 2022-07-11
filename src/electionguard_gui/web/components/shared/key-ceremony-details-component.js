@@ -14,6 +14,7 @@ export default {
     <div>
     <div v-if="keyCeremony">
       <h1>{{keyCeremony.key_ceremony_name}}</h1>
+      <p>Created By: {{keyCeremony.created_by}}</p>
       <p>Quorum: {{keyCeremony.quorum}}</p>
       <p>Guardians: {{keyCeremony.guardian_count}}</p>
     </div>

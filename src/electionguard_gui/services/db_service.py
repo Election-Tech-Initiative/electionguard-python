@@ -3,8 +3,10 @@ from sys import exit
 from pymongo import MongoClient
 from pymongo.database import Database
 
+from electionguard_gui.services.service_base import ServiceBase
 
-class DbService:
+
+class DbService(ServiceBase):
     """Responsible for instantiating a database"""
 
     DB_PASSWORD_KEY = "EG_DB_PASSWORD"

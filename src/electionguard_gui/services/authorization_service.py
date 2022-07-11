@@ -1,10 +1,10 @@
 from typing import Optional
 import eel
 
-from electionguard_gui.component_base import ComponentBase
+from electionguard_gui.services.service_base import ServiceBase
 
 
-class AuthoriationService(ComponentBase):
+class AuthoriationService(ServiceBase):
     """Responsible for functionality related to authorization and user identify"""
 
     # todo: replace state based storage with configparser https://docs.python.org/3/library/configparser.html

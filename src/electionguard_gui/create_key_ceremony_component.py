@@ -36,6 +36,7 @@ class CreateKeyCeremonyComponent(ComponentBase):
             "guardian_count": guardian_count,
             "quorum": quorum,
             "guardians_joined": 0,
+            "created_by": self.auth_service.get_user_id(),
         }
         inserted_id = db.key_ceremonies.insert_one(key_ceremony).inserted_id
         print(f"created '{key_ceremony_name}' record, id: {inserted_id}")
