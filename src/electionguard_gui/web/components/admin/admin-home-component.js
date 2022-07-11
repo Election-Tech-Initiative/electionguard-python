@@ -12,5 +12,9 @@ export default {
         <a href="#/admin/setup-election" class="btn btn-primary">Setup Election</a>
       </div>
     </div>
+    <div class="text-center mb-4">
+      <h2>Active Key Ceremonies</h2>
+      
+    </div>
   </div>`,
 };

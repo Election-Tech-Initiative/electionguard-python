@@ -29,7 +29,7 @@ export default {
           this.loading = false;
           console.debug("key ceremony creation finished", result);
           if (result.success) {
-            RouterService.goTo(RouterService.routes.viewKeyCeremonyPage, {
+            RouterService.goTo(RouterService.routes.viewKeyCeremonyAdminPage, {
               keyCeremonyId: result.result,
             });
           } else {
