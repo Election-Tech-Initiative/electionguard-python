@@ -6,4 +6,4 @@ def eel_fail(message: str) -> dict[str, Any]:
 
 
 def eel_success(result: Any = None) -> dict[str, Any]:
-    return {"success": True, "result": str(result)}
+    return {"success": True, "result": result}

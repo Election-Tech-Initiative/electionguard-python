@@ -1,6 +1,13 @@
+import KeyCeremonyDetails from "../shared/key-ceremony-details-component.js";
+
 export default {
   props: {
     keyCeremonyId: String,
   },
-  template: /*html*/ `<h1>Key Ceremony: {{keyCeremonyId}}</h1>`,
+  components: {
+    KeyCeremonyDetails,
+  },
+  template: /*html*/ `
+    <key-ceremony-details :keyCeremonyId="keyCeremonyId"></key-ceremony-details>
+    `,
 };
