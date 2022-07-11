@@ -1,5 +1,6 @@
 from os import path
 from os.path import join
+from typing import List
 
 import click
 from electionguard.election import CiphertextElectionContext
@@ -26,24 +27,25 @@ class OutputSetupFilesStep(OutputStepBase):
         build_election_results: BuildElectionResults,
         package_dir: str,
         keys_dir: str,
-    ) -> None:
+    ) -> List[str]:
         self.print_header("Generating Output")
-        self._export_context(build_election_results.context, package_dir)
-        self._export_constants(package_dir)
+        context_file = self._export_context(build_election_results.context, package_dir)
+        constants_file = self._export_constants(package_dir)
         self._export_manifest(setup_inputs, package_dir)
         self._export_guardian_records(setup_inputs, package_dir)
         self._export_guardian_private_keys(setup_inputs, keys_dir)
+        return [context_file, constants_file]
 
     def _export_context(
         self,
         context: CiphertextElectionContext,
         out_dir: str,
-    ) -> None:
-        self._export_file("Context", context, out_dir, CONTEXT_FILE_NAME)
+    ) -> str:
+        return self._export_file("Context", context, out_dir, CONTEXT_FILE_NAME)
 
-    def _export_constants(self, out_dir: str) -> None:
+    def _export_constants(self, out_dir: str) -> str:
         constants = get_constants()
-        self._export_file("Constants", constants, out_dir, CONSTANTS_FILE_NAME)
+        return self._export_file("Constants", constants, out_dir, CONSTANTS_FILE_NAME)
 
     def _export_manifest(self, setup_inputs: SetupInputs, out_dir: str) -> None:
         self._export_file(
