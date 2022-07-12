@@ -31,7 +31,9 @@ class KeyCeremonyDetailsComponent(ComponentBase):
 
     def can_join_key_ceremony(self, key_ceremony) -> bool:
         user_id = self.auth_service.get_user_id()
-        return user_id not in key_ceremony["guardians_joined"]
+        already_joined = user_id in key_ceremony["guardians_joined"]
+        is_admin = self.auth_service.is_admin()
+        return not already_joined and not is_admin
 
     def watch_key_ceremony(self, key_ceremony_id: str) -> None:
         db = self.db_service.get_db()
