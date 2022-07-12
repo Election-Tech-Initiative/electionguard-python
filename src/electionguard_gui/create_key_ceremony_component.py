@@ -4,10 +4,17 @@ from datetime import datetime
 
 from electionguard_gui.component_base import ComponentBase
 from electionguard_gui.eel_utils import eel_fail, eel_success
+from electionguard_gui.services.key_ceremony_service import KeyCeremonyService
 
 
 class CreateKeyCeremonyComponent(ComponentBase):
     """Responsible for functionality related to creating key ceremonies"""
+
+    _key_ceremony_service: KeyCeremonyService
+
+    def __init__(self):
+        super().__init__()
+        self._key_ceremony_service = KeyCeremonyService()
 
     def expose(self) -> None:
         eel.expose(self.create_key_ceremony)
@@ -42,6 +49,5 @@ class CreateKeyCeremonyComponent(ComponentBase):
         }
         inserted_id = db.key_ceremonies.insert_one(key_ceremony).inserted_id
         self.log.debug(f"created '{key_ceremony_name}' record, id: {inserted_id}")
-        # notify anyone watching for key ceremony changes that a new key ceremony was created
-        db.key_ceremony_deltas.insert_one({"key_ceremony_id": inserted_id})
+        self._key_ceremony_service.notify_changed(inserted_id)
         return eel_success(str(inserted_id))
