@@ -43,7 +43,7 @@ class CreateKeyCeremonyComponent(ComponentBase):
             "key_ceremony_name": key_ceremony_name,
             "guardian_count": guardian_count,
             "quorum": quorum,
-            "guardians_joined": 0,
+            "guardians_joined": [],
             "created_by": self.auth_service.get_user_id(),
             "created_at": datetime.utcnow(),
         }

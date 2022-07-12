@@ -90,7 +90,7 @@ export default {
         </div>
         <div class="col-12 mt-4">
           <button type="submit" class="btn btn-primary" :disabled="loading">Start Ceremony</button>
-          <Spinner :visible="loading"></Spinner>
+          <spinner :visible="loading"></spinner>
         </div>
       </div>
     </form>`,

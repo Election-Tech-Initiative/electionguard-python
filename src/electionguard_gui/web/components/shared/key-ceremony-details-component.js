@@ -1,13 +1,18 @@
+import Spinner from "../shared/spinner-component.js";
+
 export default {
   props: {
     keyCeremonyId: String,
   },
+  components: { Spinner },
   data() {
-    return { keyCeremony: null };
+    return { keyCeremony: null, loading: false };
   },
   methods: {
-    join: function () {
-      eel.join_key_ceremony(this.keyCeremonyId);
+    join: async function () {
+      this.loading = true;
+      await eel.join_key_ceremony(this.keyCeremonyId)();
+      this.loading = false;
     },
     refresh_key_ceremony: function (keyCeremony) {
       console.log("key ceremony refreshed", keyCeremony);
@@ -33,7 +38,9 @@ export default {
       <p>Guardians: {{keyCeremony.guardian_count}}</p>
       <p>Guardians Joined: {{keyCeremony.guardians_joined}}</p>
       <p>Created by: {{keyCeremony.created_by}}, {{keyCeremony.created_at_str}}</p>
+
       <button @click="join()" class="btn btn-primary">Join</button>
+      <spinner :visible="loading"></spinner>
     </div>
     </div>
   `,

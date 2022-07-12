@@ -41,15 +41,13 @@ class KeyCeremonyDetailsComponent(ComponentBase):
 
     def join_key_ceremony(self, key_id: str) -> None:
         db = self.db_service.get_db()
-        key_ceremony = db.key_ceremonies.find_one({"_id": ObjectId(key_id)})
-        key_ceremony["guardians_joined"] += 1
-        key_ceremony_name = key_ceremony["key_ceremony_name"]
-        guardians_joined = key_ceremony["guardians_joined"]
-        db.key_ceremonies.replace_one({"_id": ObjectId(key_id)}, key_ceremony)
-        self._key_ceremony_service.notify_changed(db, key_id)
-        self.log.debug(
-            f"new guardian joined {key_ceremony_name}, total joined is now {guardians_joined}"
+        # append the current user's id to the list of guardians
+        user_id = self.auth_service.get_user_id()
+        db.key_ceremonies.update_one(
+            {"_id": ObjectId(key_id)}, {"$push": {"guardians_joined": user_id}}
         )
+        self.log.debug(f"adding {user_id} to key ceremony {key_id}")
+        self._key_ceremony_service.notify_changed(db, key_id)
 
     def refresh_ceremony(self, db: Database, id: str) -> None:
         key_ceremony = self.get_ceremony(db, id)

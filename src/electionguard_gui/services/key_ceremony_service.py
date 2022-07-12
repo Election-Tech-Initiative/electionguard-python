@@ -10,7 +10,7 @@ from electionguard_gui.services.service_base import ServiceBase
 class KeyCeremonyService(ServiceBase):
     """Responsible for functionality related to key ceremonies"""
 
-    MS_TO_BLOCK = 1000
+    MS_TO_BLOCK = 500
 
     # assumptions: 1. only one thread will be watching key ceremonies at a time, and 2. a class instance will be
     # maintained for the duration of the time watching key ceremonies.  However, both will always be true given
@@ -48,8 +48,8 @@ class KeyCeremonyService(ServiceBase):
             except StopIteration:
                 # the tailable cursor times out after a few seconds and fires a StopIteration exception,
                 # so we need to catch it and restart watching. The sleep is required by eel to allow
-                # watching_key_ceremonies to get set in  order to get a clean exit.
-                eel.sleep(0.1)
+                # it to respond to events such as the very important stop_watching event.
+                eel.sleep(0.2)
 
     def stop_watching(self) -> None:
         self.watching_key_ceremonies.clear()
