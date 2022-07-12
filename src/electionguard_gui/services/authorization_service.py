@@ -14,6 +14,7 @@ class AuthoriationService(ServiceBase):
     def expose(self) -> None:
         eel.expose(self.get_user_id)
         eel.expose(self.set_user_id)
+        eel.expose(self.is_admin)
 
     def get_user_id(self) -> Optional[str]:
         return self.user_id

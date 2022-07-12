@@ -1,5 +1,5 @@
 // shared components
-import SelectMode from "../components/shared/select-mode-component.js";
+import Home from "../components/shared/home-component.js";
 import NotFound from "../components/shared/not-found-component.js";
 import Login from "../components/shared/login-component.js";
 
@@ -32,7 +32,7 @@ export default {
   },
   routes: {
     // shared pages
-    root: { url: "/", secured: false, component: SelectMode },
+    root: { url: "/", secured: true, component: Home },
     notFound: { url: "/not-found", secured: false, component: NotFound },
     login: { url: "/login", secured: false, component: Login },
 
