@@ -19,15 +19,16 @@ class GuardianHomeComponent(ComponentBase):
         eel.expose(self.stop_watching_key_ceremonies)
 
     def watch_key_ceremonies(self) -> None:
+        self.log.debug("Watching key ceremonies")
         db = self.db_service.get_db()
         send_key_ceremonies_to_ui(db)
         self._key_ceremony_service.watch_key_ceremonies(
             db, None, lambda: send_key_ceremonies_to_ui(db)
         )
-
-        self.log.debug("exited watch key_ceremonies loop")
+        self.log.debug("exited watching key_ceremonies")
 
     def stop_watching_key_ceremonies(self) -> None:
+        self.log.debug("Stopping watch key_ceremonies")
         self._key_ceremony_service.stop_watching()
 
 

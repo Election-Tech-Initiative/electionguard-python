@@ -49,5 +49,5 @@ class CreateKeyCeremonyComponent(ComponentBase):
         }
         inserted_id = db.key_ceremonies.insert_one(key_ceremony).inserted_id
         self.log.debug(f"created '{key_ceremony_name}' record, id: {inserted_id}")
-        self._key_ceremony_service.notify_changed(inserted_id)
+        self._key_ceremony_service.notify_changed(db, inserted_id)
         return eel_success(str(inserted_id))

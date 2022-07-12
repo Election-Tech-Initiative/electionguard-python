@@ -34,7 +34,7 @@ export default {
   <p v-if="!keyCeremonies">No key ceremonies found...</p>
 
   <div v-if="keyCeremonies" class="d-grid gap-2 d-md-block">
-      <a :href="getKeyCeremonyUrl(keyCeremony)" v-for="keyCeremony in keyCeremonies" class="btn btn-primary">{{ keyCeremony.key_ceremony_name }}</a>
+    <a :href="getKeyCeremonyUrl(keyCeremony)" v-for="keyCeremony in keyCeremonies" class="btn btn-primary me-2 mt-2">{{ keyCeremony.key_ceremony_name }}</a>
   </div>
   `,
 };

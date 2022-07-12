@@ -18,8 +18,8 @@ class EelLogService(ServiceBase):
     def warn(self, message: str) -> None:
         self._log("WARN ", message)
 
-    def error(self, message: str) -> None:
-        self._log("ERROR", message)
+    def error(self, e: Exception) -> None:
+        self._log("ERROR", str(e))
 
     def fatal(self, message: str) -> None:
         self._log("FATAL", message)

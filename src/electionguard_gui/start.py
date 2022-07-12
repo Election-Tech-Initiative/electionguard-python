@@ -22,19 +22,23 @@ class MainApp:
     ]
 
     def start(self) -> None:
-        db_service = DbService()
-        auth_service = AuthoriationService()
-        log_service = EelLogService()
-        services = [db_service, auth_service, log_service]
+        try:
+            db_service = DbService()
+            auth_service = AuthoriationService()
+            log_service = EelLogService()
+            services = [db_service, auth_service, log_service]
 
-        for service in services:
-            service.init()
+            for service in services:
+                service.init()
 
-        for component in self.components:
-            component.init(db_service, auth_service, log_service)
+            for component in self.components:
+                component.init(db_service, auth_service, log_service)
 
-        eel.init("src/electionguard_gui/web")
-        eel.start("main.html", size=(1024, 768), port=53623, mode=None)
+            eel.init("src/electionguard_gui/web")
+            eel.start("main.html", size=(1024, 768), port=0)
+        except Exception as e:
+            log_service.error(e)
+            raise e
 
 
 def run() -> None:

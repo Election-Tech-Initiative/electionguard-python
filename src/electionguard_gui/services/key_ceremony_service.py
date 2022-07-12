@@ -31,6 +31,9 @@ class KeyCeremonyService(ServiceBase):
         for _ in cursor:
             pass
 
+        if self.watching_key_ceremonies.is_set():
+            self.stop_watching()
+
         # set a semaphore to indicate that we are watching key ceremonies
         self.watching_key_ceremonies.set()
         while self.watching_key_ceremonies.is_set() and cursor.alive:
@@ -49,7 +52,6 @@ class KeyCeremonyService(ServiceBase):
                 eel.sleep(0.1)
 
     def stop_watching(self) -> None:
-        print("stop_watching")
         self.watching_key_ceremonies.clear()
 
     def notify_changed(self, db: Database, key_ceremony_id: str) -> None:
