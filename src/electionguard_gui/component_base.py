@@ -16,4 +16,5 @@ class ComponentBase(ABC):
         self.expose()
 
     def expose(self) -> None:
-        pass
+        """Override to expose the component's methods to JavaScript. This technique hides the
+        fact that method names exposed must be globally unique."""

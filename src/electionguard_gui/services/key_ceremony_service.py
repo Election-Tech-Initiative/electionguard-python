@@ -1,5 +1,5 @@
 from threading import Event
-from typing import Callable
+from typing import Callable, Optional
 from pymongo.database import Database
 from pymongo import CursorType
 import eel
@@ -11,10 +11,17 @@ class KeyCeremonyService(ServiceBase):
     """Responsible for functionality related to key ceremonies"""
 
     MS_TO_BLOCK = 1000
+
+    # assumptions: 1. only one thread will be watching key ceremonies at a time, and 2. a class instance will be
+    # maintained for the duration of the time watching key ceremonies.  However, both will always be true given
+    # how eel works.
     watching_key_ceremonies = Event()
 
     def watch_key_ceremonies(
-        self, db: Database, on_found: Callable[[str], None]
+        self,
+        db: Database,
+        key_ceremony_id: Optional[str],
+        on_found: Callable,
     ) -> None:
         # retrieve a tailable cursor of the deltas in key ceremony to avoid polling
         cursor = db.key_ceremony_deltas.find(
@@ -29,9 +36,11 @@ class KeyCeremonyService(ServiceBase):
         while self.watching_key_ceremonies.is_set() and cursor.alive:
             try:
                 # block for up to a few seconds until someone adds a new key ceremony delta
-                id = cursor.next()
-                print("new key ceremony delta found, refreshing key ceremonies in UI")
-                on_found(id)
+                delta = cursor.next()
+                changed_id = delta["key_ceremony_id"]
+                if key_ceremony_id is None or key_ceremony_id == changed_id:
+                    print("new key ceremony delta found")
+                    on_found()
 
             except StopIteration:
                 # the tailable cursor times out after a few seconds and fires a StopIteration exception,
@@ -42,3 +51,7 @@ class KeyCeremonyService(ServiceBase):
     def stop_watching(self) -> None:
         print("stop_watching")
         self.watching_key_ceremonies.clear()
+
+    def notify_changed(self, db: Database, key_ceremony_id: str) -> None:
+        # notify watchers that the key ceremony was modified
+        db.key_ceremony_deltas.insert_one({"key_ceremony_id": key_ceremony_id})

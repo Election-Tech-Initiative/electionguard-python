@@ -26,7 +26,7 @@ export default {
   },
   unmounted() {
     console.log("stop watching key ceremonies");
-    eel.stop_watching();
+    eel.stop_watching_key_ceremonies();
   },
   template: /*html*/ `
   <h1>Guardian Home</h1>
