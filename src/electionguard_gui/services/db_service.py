@@ -1,7 +1,9 @@
-from os import environ
-from sys import exit
 from pymongo import MongoClient
 from pymongo.database import Database
+from electionguard_gui.services.configuration_service import (
+    get_db_host,
+    get_db_password,
+)
 
 from electionguard_gui.services.service_base import ServiceBase
 
@@ -9,8 +11,6 @@ from electionguard_gui.services.service_base import ServiceBase
 class DbService(ServiceBase):
     """Responsible for instantiating a database"""
 
-    DB_PASSWORD_KEY = "EG_DB_PASSWORD"
-    DB_HOST_KEY = "EG_DB_HOST"
     DEFAULT_HOST = "localhost"
     DEFAULT_PORT = 27017
     DEFAULT_USERNAME = "root"
@@ -19,8 +19,8 @@ class DbService(ServiceBase):
     _db_host: str
 
     def __init__(self) -> None:
-        self._db_password = get_param(self.DB_PASSWORD_KEY)
-        self._db_host = get_param_or_default(self.DB_HOST_KEY, self.DEFAULT_HOST)
+        self._db_password = get_db_password()
+        self._db_host = get_db_host(self.DEFAULT_HOST)
 
     def get_db(self) -> Database:
         client: MongoClient = MongoClient(
@@ -31,18 +31,3 @@ class DbService(ServiceBase):
         )
         db: Database = client.ElectionGuardDb
         return db
-
-
-def get_param(param_name: str) -> str:
-    try:
-        return environ[param_name]
-    except KeyError:
-        print(f"The environment variable {param_name} is not set.")
-        exit(1)
-
-
-def get_param_or_default(param_name: str, default: str) -> str:
-    try:
-        return environ[param_name]
-    except KeyError:
-        return default

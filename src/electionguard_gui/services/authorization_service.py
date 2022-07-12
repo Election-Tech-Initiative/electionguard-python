@@ -1,6 +1,7 @@
 from typing import Optional
 import eel
 
+from electionguard_gui.services.configuration_service import get_is_admin
 from electionguard_gui.services.service_base import ServiceBase
 
 
@@ -19,3 +20,6 @@ class AuthoriationService(ServiceBase):
 
     def set_user_id(self, user_id: str) -> None:
         self.user_id = user_id
+
+    def is_admin(self) -> bool:
+        return get_is_admin()

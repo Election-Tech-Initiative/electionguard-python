@@ -39,7 +39,7 @@ export default {
       <p>Guardians Joined: {{keyCeremony.guardians_joined}}</p>
       <p>Created by: {{keyCeremony.created_by}}, {{keyCeremony.created_at_str}}</p>
 
-      <button @click="join()" class="btn btn-primary">Join</button>
+      <button v-if="keyCeremony.can_join" @click="join()" :disabled="loading" class="btn btn-primary">Join</button>
       <spinner :visible="loading"></spinner>
     </div>
     </div>

@@ -1,8 +1,8 @@
 from typing import Any
 import eel
 from datetime import datetime
+from electionguard_gui.components.component_base import ComponentBase
 
-from electionguard_gui.component_base import ComponentBase
 from electionguard_gui.eel_utils import eel_fail, eel_success
 from electionguard_gui.services.key_ceremony_service import KeyCeremonyService
 

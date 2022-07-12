@@ -3,8 +3,7 @@ from bson import ObjectId
 import eel
 from pymongo.database import Database
 
-
-from electionguard_gui.component_base import ComponentBase
+from electionguard_gui.components.component_base import ComponentBase
 from electionguard_gui.eel_utils import eel_success, utc_to_str
 from electionguard_gui.services.key_ceremony_service import KeyCeremonyService
 
@@ -27,7 +26,12 @@ class KeyCeremonyDetailsComponent(ComponentBase):
     def get_key_ceremony(self, id: str) -> dict[str, Any]:
         db = self.db_service.get_db()
         key_ceremony = self.get_ceremony(db, id)
+        key_ceremony["can_join"] = self.can_join_key_ceremony(key_ceremony)
         return eel_success(key_ceremony)
+
+    def can_join_key_ceremony(self, key_ceremony) -> bool:
+        user_id = self.auth_service.get_user_id()
+        return user_id not in key_ceremony["guardians_joined"]
 
     def watch_key_ceremony(self, key_ceremony_id: str) -> None:
         db = self.db_service.get_db()
