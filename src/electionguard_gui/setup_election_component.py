@@ -38,7 +38,9 @@ class SetupElectionComponent(ComponentBase):
         )
         context_file = files[0]
         constants_file = files[1]
-        print(f"Setup complete, context: {context_file}, constants: {constants_file}")
+        self.log.debug(
+            f"Setup complete, context: {context_file}, constants: {constants_file}"
+        )
         with open(context_file, "r", encoding="utf-8") as context_file:
             context_raw: str = context_file.read()
             return eel_success(context_raw)

@@ -25,7 +25,7 @@ class GuardianHomeComponent(ComponentBase):
             db, None, lambda: send_key_ceremonies_to_ui(db)
         )
 
-        print("exited watch key_ceremonies loop")
+        self.log.debug("exited watch key_ceremonies loop")
 
     def stop_watching_key_ceremonies(self) -> None:
         self._key_ceremony_service.stop_watching()
