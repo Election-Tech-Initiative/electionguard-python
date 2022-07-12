@@ -36,9 +36,14 @@ export default {
       <h1>{{keyCeremony.key_ceremony_name}}</h1>
       <p>Quorum: {{keyCeremony.quorum}}</p>
       <p>Guardians: {{keyCeremony.guardian_count}}</p>
-      <p>Guardians Joined: {{keyCeremony.guardians_joined}}</p>
       <p>Created by: {{keyCeremony.created_by}}, {{keyCeremony.created_at_str}}</p>
-
+      <h2>Joined Guardians</h2>
+      <ul v-if="keyCeremony.guardians_joined.length">
+        <li v-for="guardian in keyCeremony.guardians_joined">{{guardian}}</li>
+      </ul>
+      <div v-else>
+        <p>No guardians have joined yet</p>
+      </div>
       <button v-if="keyCeremony.can_join" @click="join()" :disabled="loading" class="btn btn-primary">Join</button>
       <spinner :visible="loading"></spinner>
     </div>
