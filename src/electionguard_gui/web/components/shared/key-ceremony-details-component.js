@@ -31,7 +31,6 @@ export default {
     eel.stop_watching_key_ceremony();
   },
   template: /*html*/ `
-    <div>
     <div v-if="keyCeremony">
       <h1>{{keyCeremony.key_ceremony_name}}</h1>
       <p>Quorum: {{keyCeremony.quorum}}</p>
@@ -47,6 +46,8 @@ export default {
       <button v-if="keyCeremony.can_join" @click="join()" :disabled="loading" class="btn btn-primary">Join</button>
       <spinner :visible="loading"></spinner>
     </div>
+    <div v-else>
+      <spinner></spinner>
     </div>
   `,
 };
