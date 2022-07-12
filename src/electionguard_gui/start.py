@@ -1,19 +1,19 @@
 from typing import List
 import eel
 
-from .components.component_base import ComponentBase
-from .components.create_key_ceremony_component import (
+from electionguard_gui.components.component_base import ComponentBase
+from electionguard_gui.components.create_key_ceremony_component import (
     CreateKeyCeremonyComponent,
 )
-from .components.guardian_home_component import GuardianHomeComponent
-from .components.key_ceremony_details_component import (
+from electionguard_gui.components.guardian_home_component import GuardianHomeComponent
+from electionguard_gui.components.key_ceremony_details_component import (
     KeyCeremonyDetailsComponent,
 )
-from .components.setup_election_component import SetupElectionComponent
+from electionguard_gui.components.setup_election_component import SetupElectionComponent
 
-from .services.authorization_service import AuthoriationService
-from .services.db_service import DbService
-from .services.eel_log_service import EelLogService
+from electionguard_gui.services.authorization_service import AuthoriationService
+from electionguard_gui.services.db_service import DbService
+from electionguard_gui.services.eel_log_service import EelLogService
 
 
 class MainApp:

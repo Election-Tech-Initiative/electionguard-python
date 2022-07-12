@@ -22,5 +22,6 @@ class AuthoriationService(ServiceBase):
     def set_user_id(self, user_id: str) -> None:
         self.user_id = user_id
 
+    # pylint: disable=no-self-use
     def is_admin(self) -> bool:
         return get_is_admin()

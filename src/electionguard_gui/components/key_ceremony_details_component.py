@@ -57,6 +57,7 @@ class KeyCeremonyDetailsComponent(ComponentBase):
 
     def refresh_ceremony(self, db: Database, id: str) -> None:
         key_ceremony = self.get_ceremony(db, id)
+        # pylint: disable=no-member
         eel.refresh_key_ceremony(key_ceremony)
 
     def get_ceremony(self, db: Database, id: str) -> dict[str, Any]:

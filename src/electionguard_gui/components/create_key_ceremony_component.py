@@ -1,6 +1,6 @@
 from typing import Any
-import eel
 from datetime import datetime
+import eel
 from electionguard_gui.components.component_base import ComponentBase
 
 from electionguard_gui.eel_utils import eel_fail, eel_success

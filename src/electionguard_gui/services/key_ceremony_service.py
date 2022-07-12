@@ -54,6 +54,7 @@ class KeyCeremonyService(ServiceBase):
     def stop_watching(self) -> None:
         self.watching_key_ceremonies.clear()
 
+    # pylint: disable=no-self-use
     def notify_changed(self, db: Database, key_ceremony_id: str) -> None:
         # notify watchers that the key ceremony was modified
         db.key_ceremony_deltas.insert_one({"key_ceremony_id": key_ceremony_id})
