@@ -69,8 +69,9 @@ class KeyCeremonyDetailsComponent(ComponentBase):
         )
         guardian = self.make_guardian(user_id, guardian_number, key_ceremony)
         self.save_guardian(guardian, key_ceremony)
-        # my_guardian.share_key() -> DB
-        # Wait until other_keys are created in DB
+        public_key = guardian.share_key()
+        self._key_ceremony_service.add_key(db, key_ceremony_id, public_key)
+        # todo #688 Wait until other_keys are created in DB
 
         self.log.debug(
             f"{user_id} joined key ceremony {key_ceremony_id} as guardian #{guardian_number}"

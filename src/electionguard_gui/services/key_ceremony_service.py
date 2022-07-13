@@ -4,6 +4,7 @@ from pymongo.database import Database
 from pymongo import CursorType
 from bson import ObjectId
 import eel
+from electionguard.key_ceremony import ElectionPublicKey
 from electionguard_gui.services.db_service import DbService
 
 from electionguard_gui.services.service_base import ServiceBase
@@ -88,4 +89,33 @@ class KeyCeremonyService(ServiceBase):
         db.key_ceremonies.update_one(
             {"_id": ObjectId(key_ceremony_id)},
             {"$push": {"guardians_joined": guardian_id}},
+        )
+
+    def add_key(
+        self, db: Database, key_ceremony_id: str, key: ElectionPublicKey
+    ) -> None:
+        db.key_ceremonies.update_one(
+            {"_id": ObjectId(key_ceremony_id)},
+            {
+                "$push": {
+                    "keys": {
+                        "owner_id": key.owner_id,
+                        "sequence_order": key.sequence_order,
+                        "key": str(key.key),
+                        "coefficient_commitments": [
+                            str(c) for c in key.coefficient_commitments
+                        ],
+                        "coefficient_proofs": [
+                            {
+                                "public_key": str(cp.public_key),
+                                "commitment": str(cp.commitment),
+                                "challenge": str(cp.challenge),
+                                "response": str(cp.response),
+                                "usage": str(cp.usage),
+                            }
+                            for cp in key.coefficient_proofs
+                        ],
+                    }
+                }
+            },
         )
