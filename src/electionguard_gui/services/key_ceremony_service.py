@@ -1,7 +1,8 @@
 from threading import Event
-from typing import Callable, Optional
+from typing import Any, Callable, Optional
 from pymongo.database import Database
 from pymongo import CursorType
+from bson import ObjectId
 import eel
 
 from electionguard_gui.services.service_base import ServiceBase
@@ -58,3 +59,21 @@ class KeyCeremonyService(ServiceBase):
     def notify_changed(self, db: Database, key_ceremony_id: str) -> None:
         # notify watchers that the key ceremony was modified
         db.key_ceremony_deltas.insert_one({"key_ceremony_id": key_ceremony_id})
+
+    def get_guardian_number(
+        self, db: Database, key_ceremony_id: str, guardian_id: str
+    ) -> int:
+        """Returns the position of a guardian within the array of guardians that have joined
+        a key ceremony. This technique is important because it avoids concurrency problems
+        that could arise if simply retrieving the number of guardians"""
+        key_ceremony = self.get(db, key_ceremony_id)
+        guardian_num = 1
+        for guardian in key_ceremony["guardians_joined"]:
+            if guardian == guardian_id:
+                return guardian_num
+            guardian_num += 1
+        raise ValueError("guardian not found")
+
+    # pylint: disable=no-self-use
+    def get(self, db: Database, id: str) -> Any:
+        return db.key_ceremonies.find_one({"_id": ObjectId(id)})
