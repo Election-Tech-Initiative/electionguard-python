@@ -27,7 +27,6 @@ class KeyCeremonyDetailsComponent(ComponentBase):
     def get_key_ceremony(self, id: str) -> dict[str, Any]:
         db = self.db_service.get_db()
         key_ceremony = self.get_ceremony(db, id)
-        key_ceremony["can_join"] = self.can_join_key_ceremony(key_ceremony)
         return eel_success(key_ceremony)
 
     def can_join_key_ceremony(self, key_ceremony) -> bool:
@@ -57,6 +56,12 @@ class KeyCeremonyDetailsComponent(ComponentBase):
         guardian_number = self._key_ceremony_service.get_guardian_number(
             db, key_ceremony_id, user_id
         )
+
+        my_guardian = Guardian.from_nonce(user_id, guardian_number)
+        # save_locally(my_guardian)
+        # my_guardian.share_key() -> DB
+        # Wait until other_keys are created in DB
+
         self.log.debug(
             f"{user_id} joined key ceremony {key_ceremony_id} as guardian #{guardian_number}"
         )
@@ -72,4 +77,5 @@ class KeyCeremonyDetailsComponent(ComponentBase):
         key_ceremony = self._key_ceremony_service.get(db, id)
         created_at_utc = key_ceremony["created_at"]
         key_ceremony["created_at_str"] = utc_to_str(created_at_utc)
+        key_ceremony["can_join"] = self.can_join_key_ceremony(key_ceremony)
         return key_ceremony
