@@ -15,11 +15,9 @@ from electionguard_gui.services.key_ceremony_service import KeyCeremonyService
 class KeyCeremonyDetailsComponent(ComponentBase):
     """Responsible for retrieving key ceremony details"""
 
-    _key_ceremony_service: KeyCeremonyService
-
-    def __init__(self) -> None:
+    def __init__(self, key_ceremony_service: KeyCeremonyService) -> None:
         super().__init__()
-        self._key_ceremony_service = KeyCeremonyService()
+        self._key_ceremony_service = key_ceremony_service
 
     def expose(self) -> None:
         eel.expose(self.get_key_ceremony)
@@ -81,7 +79,7 @@ class KeyCeremonyDetailsComponent(ComponentBase):
     def save_guardian(self, guardian: Guardian, key_ceremony: Any) -> None:
         private_guardian_record = guardian.export_private_data()
         file_name = GUARDIAN_PREFIX + private_guardian_record.guardian_id
-        file_path = path.join(getcwd(), "gui_private_keys", key_ceremony["_id"])
+        file_path = path.join(getcwd(), "gui_private_keys", str(key_ceremony["_id"]))
         file = to_file(private_guardian_record, file_name, file_path)
         self.log.warn(
             f"Guardian private data saved to {file}. This data should be carefully protected and never shared."

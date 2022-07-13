@@ -7,7 +7,6 @@ from electionguard_gui.services.configuration_service import (
 from electionguard_gui.services.eel_log_service import EelLogService
 
 from electionguard_gui.services.service_base import ServiceBase
-from dependency_injector.wiring import Provide, inject
 
 
 class DbService(ServiceBase):

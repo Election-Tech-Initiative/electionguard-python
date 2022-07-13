@@ -22,16 +22,23 @@ class MainApp:
     log_service: EelLogService
     db_service: DbService
 
-    def __init__(self, log_service: EelLogService, db_service: DbService) -> None:
+    def __init__(
+        self,
+        log_service: EelLogService,
+        db_service: DbService,
+        guardian_home_component: GuardianHomeComponent,
+        create_key_ceremony_component: CreateKeyCeremonyComponent,
+        key_ceremony_details_component: KeyCeremonyDetailsComponent,
+    ) -> None:
         super().__init__()
         self.log_service = log_service
         self.db_service = db_service
+        self.components.append(guardian_home_component)
+        self.components.append(create_key_ceremony_component)
+        self.components.append(key_ceremony_details_component)
 
     components: List[ComponentBase] = [
-        GuardianHomeComponent(),
-        CreateKeyCeremonyComponent(),
         SetupElectionComponent(),
-        KeyCeremonyDetailsComponent(),
     ]
 
     def start(self) -> None:
