@@ -14,6 +14,7 @@ from electionguard_gui.components.setup_election_component import SetupElectionC
 from electionguard_gui.services.authorization_service import AuthoriationService
 from electionguard_gui.services.db_service import DbService
 from electionguard_gui.services.eel_log_service import EelLogService
+from electionguard_gui.services.service_base import ServiceBase
 
 
 class MainApp:
@@ -21,6 +22,8 @@ class MainApp:
 
     log_service: EelLogService
     db_service: DbService
+    components: List[ComponentBase]
+    services: List[ServiceBase]
 
     def __init__(
         self,
@@ -29,34 +32,36 @@ class MainApp:
         guardian_home_component: GuardianHomeComponent,
         create_key_ceremony_component: CreateKeyCeremonyComponent,
         key_ceremony_details_component: KeyCeremonyDetailsComponent,
+        setup_election_component: SetupElectionComponent,
+        authorization_service: AuthoriationService,
     ) -> None:
         super().__init__()
+
         self.log_service = log_service
         self.db_service = db_service
-        self.components.append(guardian_home_component)
-        self.components.append(create_key_ceremony_component)
-        self.components.append(key_ceremony_details_component)
 
-    components: List[ComponentBase] = [
-        SetupElectionComponent(),
-    ]
+        self.components = [
+            guardian_home_component,
+            create_key_ceremony_component,
+            key_ceremony_details_component,
+            setup_election_component,
+        ]
+
+        self.services = [authorization_service, log_service, db_service]
 
     def start(self) -> None:
         try:
             self.log_service.debug("Starting main app")
-            auth_service = AuthoriationService()
-            log_service = EelLogService()
-            services = [self.db_service, auth_service, log_service]
 
-            for service in services:
+            for service in self.services:
                 service.init()
 
             for component in self.components:
-                component.init(self.db_service, auth_service, log_service)
+                component.init(self.db_service, self.log_service)
 
             self.db_service.verify_db_connection()
             eel.init("src/electionguard_gui/web")
             eel.start("main.html", size=(1024, 768), port=0)
         except Exception as e:
-            log_service.error(e)
+            self.log_service.error(e)
             raise e

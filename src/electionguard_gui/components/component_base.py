@@ -9,17 +9,14 @@ class ComponentBase(ABC):
     """Responsible for common functionality among ell components"""
 
     db_service: DbService
-    auth_service: AuthoriationService
     log: EelLogService
 
     def init(
         self,
         db_service: DbService,
-        auth_service: AuthoriationService,
         log_service: EelLogService,
     ) -> None:
         self.db_service = db_service
-        self.auth_service = auth_service
         self.log = log_service
         self.expose()
 

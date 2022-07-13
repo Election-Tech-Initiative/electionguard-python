@@ -5,6 +5,7 @@ import eel
 from pymongo.database import Database
 from electionguard import to_file
 from electionguard.guardian import Guardian
+from electionguard_gui.services.authorization_service import AuthoriationService
 from electionguard_tools.helpers.export import GUARDIAN_PREFIX
 
 from electionguard_gui.components.component_base import ComponentBase
@@ -15,9 +16,16 @@ from electionguard_gui.services.key_ceremony_service import KeyCeremonyService
 class KeyCeremonyDetailsComponent(ComponentBase):
     """Responsible for retrieving key ceremony details"""
 
-    def __init__(self, key_ceremony_service: KeyCeremonyService) -> None:
+    auth_service: AuthoriationService
+
+    def __init__(
+        self,
+        key_ceremony_service: KeyCeremonyService,
+        auth_service: AuthoriationService,
+    ) -> None:
         super().__init__()
         self._key_ceremony_service = key_ceremony_service
+        self.auth_service = auth_service
 
     def expose(self) -> None:
         eel.expose(self.get_key_ceremony)
@@ -55,6 +63,9 @@ class KeyCeremonyDetailsComponent(ComponentBase):
         key_ceremony = self._key_ceremony_service.get(db, key_ceremony_id)
         guardian_number = self._key_ceremony_service.get_guardian_number(
             key_ceremony, user_id
+        )
+        self.log.debug(
+            f"user {user_id} about to join key ceremony {key_ceremony_id} as guardian #{guardian_number}"
         )
         guardian = self.make_guardian(user_id, guardian_number, key_ceremony)
         self.save_guardian(guardian, key_ceremony)
