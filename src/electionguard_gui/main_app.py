@@ -47,6 +47,7 @@ class MainApp:
             for component in self.components:
                 component.init(self.db_service, auth_service, log_service)
 
+            self.db_service.verify_db_connection()
             eel.init("src/electionguard_gui/web")
             eel.start("main.html", size=(1024, 768), port=0)
         except Exception as e:

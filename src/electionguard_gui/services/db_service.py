@@ -36,3 +36,8 @@ class DbService(ServiceBase):
         )
         db: Database = client.ElectionGuardDb
         return db
+
+    def verify_db_connection(self) -> None:
+        self.log_service.debug("Verifying database connection")
+        db = self.get_db()
+        db.list_collections()
