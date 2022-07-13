@@ -1,8 +1,11 @@
+from os import getcwd, path
 from typing import Any
 from bson import ObjectId
 import eel
 from pymongo.database import Database
+from electionguard import to_file
 from electionguard.guardian import Guardian
+from electionguard_tools.helpers.export import GUARDIAN_PREFIX
 
 from electionguard_gui.components.component_base import ComponentBase
 from electionguard_gui.eel_utils import eel_success, utc_to_str
@@ -50,15 +53,13 @@ class KeyCeremonyDetailsComponent(ComponentBase):
 
         # append the current user's id to the list of guardians
         user_id = self.auth_service.get_user_id()
-        db.key_ceremonies.update_one(
-            {"_id": ObjectId(key_ceremony_id)}, {"$push": {"guardians_joined": user_id}}
-        )
+        self._key_ceremony_service.join_key_ceremony(db, key_ceremony_id, user_id)
+        key_ceremony = self._key_ceremony_service.get(db, key_ceremony_id)
         guardian_number = self._key_ceremony_service.get_guardian_number(
-            db, key_ceremony_id, user_id
+            key_ceremony, user_id
         )
-
-        my_guardian = Guardian.from_nonce(user_id, guardian_number)
-        # save_locally(my_guardian)
+        guardian = self.make_guardian(user_id, guardian_number, key_ceremony)
+        self.save_guardian(guardian, key_ceremony)
         # my_guardian.share_key() -> DB
         # Wait until other_keys are created in DB
 
@@ -66,6 +67,25 @@ class KeyCeremonyDetailsComponent(ComponentBase):
             f"{user_id} joined key ceremony {key_ceremony_id} as guardian #{guardian_number}"
         )
         self._key_ceremony_service.notify_changed(db, key_ceremony_id)
+
+    def make_guardian(
+        self, user_id: str, guardian_number: int, key_ceremony: Any
+    ) -> Guardian:
+        return Guardian.from_nonce(
+            user_id,
+            guardian_number,
+            key_ceremony["guardian_count"],
+            key_ceremony["quorum"],
+        )
+
+    def save_guardian(self, guardian: Guardian, key_ceremony: Any) -> None:
+        private_guardian_record = guardian.export_private_data()
+        file_name = GUARDIAN_PREFIX + private_guardian_record.guardian_id
+        file_path = path.join(getcwd(), "gui_private_keys", key_ceremony["_id"])
+        file = to_file(private_guardian_record, file_name, file_path)
+        self.log.warn(
+            f"Guardian private data saved to {file}. This data should be carefully protected and never shared."
+        )
 
     def refresh_ceremony(self, db: Database, id: str) -> None:
         key_ceremony = self.get_ceremony(db, id)
