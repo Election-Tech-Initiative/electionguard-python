@@ -1,13 +1,14 @@
 from os import getcwd, path
 from typing import Any
-from bson import ObjectId
 import eel
 from pymongo.database import Database
+
 from electionguard import to_file
 from electionguard.guardian import Guardian
-from electionguard_gui.services.authorization_service import AuthoriationService
 from electionguard_tools.helpers.export import GUARDIAN_PREFIX
 
+from electionguard_gui.services.authorization_service import AuthoriationService
+from electionguard_gui.services.guardian_service import make_guardian
 from electionguard_gui.components.component_base import ComponentBase
 from electionguard_gui.eel_utils import eel_success, utc_to_str
 from electionguard_gui.services.key_ceremony_service import KeyCeremonyService
@@ -67,7 +68,7 @@ class KeyCeremonyDetailsComponent(ComponentBase):
         self.log.debug(
             f"user {user_id} about to join key ceremony {key_ceremony_id} as guardian #{guardian_number}"
         )
-        guardian = self.make_guardian(user_id, guardian_number, key_ceremony)
+        guardian = make_guardian(user_id, guardian_number, key_ceremony)
         self.save_guardian(guardian, key_ceremony)
         public_key = guardian.share_key()
         self._key_ceremony_service.add_key(db, key_ceremony_id, public_key)
@@ -77,16 +78,6 @@ class KeyCeremonyDetailsComponent(ComponentBase):
             f"{user_id} joined key ceremony {key_ceremony_id} as guardian #{guardian_number}"
         )
         self._key_ceremony_service.notify_changed(db, key_ceremony_id)
-
-    def make_guardian(
-        self, user_id: str, guardian_number: int, key_ceremony: Any
-    ) -> Guardian:
-        return Guardian.from_nonce(
-            user_id,
-            guardian_number,
-            key_ceremony["guardian_count"],
-            key_ceremony["quorum"],
-        )
 
     def save_guardian(self, guardian: Guardian, key_ceremony: Any) -> None:
         private_guardian_record = guardian.export_private_data()

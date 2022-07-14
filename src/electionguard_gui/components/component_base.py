@@ -1,5 +1,4 @@
 from abc import ABC
-from electionguard_gui.services.authorization_service import AuthoriationService
 
 from electionguard_gui.services.db_service import DbService
 from electionguard_gui.services.eel_log_service import EelLogService
