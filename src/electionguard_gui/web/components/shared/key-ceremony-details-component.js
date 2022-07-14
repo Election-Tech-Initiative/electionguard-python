@@ -30,8 +30,9 @@ export default {
   template: /*html*/ `
     <div v-if="keyCeremony">
       <h1>{{keyCeremony.key_ceremony_name}}</h1>
-      <p>Quorum: {{keyCeremony.quorum}}</p>
+      <p>Status: {{keyCeremony.status}}</p>
       <p>Guardians: {{keyCeremony.guardian_count}}</p>
+      <p>Quorum: {{keyCeremony.quorum}}</p>
       <p>Created by: {{keyCeremony.created_by}}, {{keyCeremony.created_at_str}}</p>
       <h2>Joined Guardians</h2>
       <ul v-if="keyCeremony.guardians_joined.length">

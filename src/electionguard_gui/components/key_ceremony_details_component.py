@@ -74,8 +74,18 @@ class KeyCeremonyDetailsComponent(ComponentBase):
             #       produce an unnecessary UI refresh for the admin
             self._key_ceremony_service.notify_changed(db, key_ceremony_id)
             # todo #689 wait until all guardians have backups
+        key_ceremony["status"] = self.get_status(key_ceremony)
         # pylint: disable=no-member
         eel.refresh_key_ceremony(key_ceremony)
+
+    def get_status(self, key_ceremony: Any) -> str:
+        guardians_joined_count = len(key_ceremony["guardians_joined"])
+        guardian_count = key_ceremony["guardian_count"]
+        if guardians_joined_count < guardian_count:
+            return "waiting for guardians"
+        if len(key_ceremony["other_keys"]) == 0:
+            return "waiting for admin to announce guardians"
+        return "waiting for guardians to create backups"
 
     def announce(self, key_ceremony: Any) -> dict[str, Any]:
         other_keys = []
