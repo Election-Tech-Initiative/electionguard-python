@@ -29,7 +29,7 @@ export default {
           this.loading = false;
           console.debug("key ceremony creation finished", result);
           if (result.success) {
-            RouterService.goTo(RouterService.routes.viewKeyCeremonyPage, {
+            RouterService.goTo(RouterService.routes.viewKeyCeremonyAdminPage, {
               keyCeremonyId: result.result,
             });
           } else {
@@ -90,7 +90,7 @@ export default {
         </div>
         <div class="col-12 mt-4">
           <button type="submit" class="btn btn-primary" :disabled="loading">Start Ceremony</button>
-          <Spinner :visible="loading"></Spinner>
+          <spinner :visible="loading"></spinner>
         </div>
       </div>
     </form>`,
