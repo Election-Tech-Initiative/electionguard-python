@@ -185,7 +185,6 @@ ifeq ($(OS), Windows)
 endif
 	wget https://github.com/microsoft/electionguard/releases/download/v0.95.0/sample-data.zip
 	unzip -o sample-data.zip
-	unzip sample-data.zip
 
 # Publish
 publish:
