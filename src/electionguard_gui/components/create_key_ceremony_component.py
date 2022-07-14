@@ -4,6 +4,7 @@ import eel
 from electionguard_gui.components.component_base import ComponentBase
 
 from electionguard_gui.eel_utils import eel_fail, eel_success
+from electionguard_gui.services.authorization_service import AuthoriationService
 from electionguard_gui.services.key_ceremony_service import KeyCeremonyService
 
 
@@ -11,10 +12,16 @@ class CreateKeyCeremonyComponent(ComponentBase):
     """Responsible for functionality related to creating key ceremonies"""
 
     _key_ceremony_service: KeyCeremonyService
+    _auth_service: AuthoriationService
 
-    def __init__(self):
+    def __init__(
+        self,
+        key_ceremony_service: KeyCeremonyService,
+        auth_service: AuthoriationService,
+    ) -> None:
         super().__init__()
-        self._key_ceremony_service = KeyCeremonyService()
+        self._key_ceremony_service = key_ceremony_service
+        self._auth_service = auth_service
 
     def expose(self) -> None:
         eel.expose(self.create_key_ceremony)
@@ -44,7 +51,8 @@ class CreateKeyCeremonyComponent(ComponentBase):
             "guardian_count": guardian_count,
             "quorum": quorum,
             "guardians_joined": [],
-            "created_by": self.auth_service.get_user_id(),
+            "guardians_keys": [],
+            "created_by": self._auth_service.get_user_id(),
             "created_at": datetime.utcnow(),
         }
         inserted_id = db.key_ceremonies.insert_one(key_ceremony).inserted_id
