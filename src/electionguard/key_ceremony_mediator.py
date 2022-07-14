@@ -92,7 +92,7 @@ class KeyCeremonyMediator:
 
         guardian_keys: List[ElectionPublicKey] = []
         for guardian_id in self._get_announced_guardians():
-            if guardian_id is not requesting_guardian_id:
+            if guardian_id != requesting_guardian_id:
                 guardian_keys.append(self._election_public_keys[guardian_id])
         return guardian_keys
 
