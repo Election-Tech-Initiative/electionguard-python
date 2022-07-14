@@ -30,7 +30,7 @@ class KeyCeremonyService(ServiceBase):
         self,
         db: Database,
         key_ceremony_id: Optional[str],
-        on_found: Callable,
+        on_found: Callable[[str], None],
     ) -> None:
         # retrieve a tailable cursor of the deltas in key ceremony to avoid polling
         cursor = db.key_ceremony_deltas.find(
@@ -52,7 +52,7 @@ class KeyCeremonyService(ServiceBase):
                 changed_id = delta["key_ceremony_id"]
                 if key_ceremony_id is None or key_ceremony_id == changed_id:
                     print("new key ceremony delta found")
-                    on_found()
+                    on_found(changed_id)
 
             except StopIteration:
                 # the tailable cursor times out after a few seconds and fires a StopIteration exception,

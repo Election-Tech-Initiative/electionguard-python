@@ -49,8 +49,22 @@ class KeyCeremonyDetailsComponent(ComponentBase):
         db = self.db_service.get_db()
         self.log.debug(f"watching key ceremony '{key_ceremony_id}'")
         self._key_ceremony_service.watch_key_ceremonies(
-            db, key_ceremony_id, lambda: self.refresh_ceremony(db, key_ceremony_id)
+            db, key_ceremony_id, self.on_key_ceremony_changed
         )
+
+    def on_key_ceremony_changed(self, key_ceremony_id: str) -> None:
+        is_admin = self.auth_service.is_admin()
+        db = self.db_service.get_db()
+        key_ceremony = self.get_ceremony(db, key_ceremony_id)
+        guardians_joined_count = len(key_ceremony["guardians_joined"])
+        guardian_count = key_ceremony["guardian_count"]
+        self.log.info(
+            f"{guardians_joined_count}/{guardian_count} guardians joined {key_ceremony_id}"
+        )
+        if is_admin and guardians_joined_count >= guardian_count:
+            self.log.info("all guardians have joined, announcing guardians")
+        # pylint: disable=no-member
+        eel.refresh_key_ceremony(key_ceremony)
 
     def stop_watching_key_ceremony(self) -> None:
         self._key_ceremony_service.stop_watching()
@@ -87,11 +101,6 @@ class KeyCeremonyDetailsComponent(ComponentBase):
         self.log.warn(
             f"Guardian private data saved to {file}. This data should be carefully protected and never shared."
         )
-
-    def refresh_ceremony(self, db: Database, id: str) -> None:
-        key_ceremony = self.get_ceremony(db, id)
-        # pylint: disable=no-member
-        eel.refresh_key_ceremony(key_ceremony)
 
     def get_ceremony(self, db: Database, id: str) -> dict[str, Any]:
         self.log.debug(f"getting key ceremony {id}")
