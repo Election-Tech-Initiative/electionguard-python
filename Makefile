@@ -88,7 +88,7 @@ auto-lint:
 	make lint
 	
 pylint:
-	poetry run pylint ./src ./tests
+	poetry run pylint --extension-pkg-allow-list=dependency_injector ./src ./tests
 
 blackformat:
 	poetry run black .

@@ -10,9 +10,9 @@ class GuardianHomeComponent(ComponentBase):
 
     _key_ceremony_service: KeyCeremonyService
 
-    def __init__(self) -> None:
+    def __init__(self, key_ceremony_service: KeyCeremonyService) -> None:
         super().__init__()
-        self._key_ceremony_service = KeyCeremonyService()
+        self._key_ceremony_service = key_ceremony_service
 
     def expose(self) -> None:
         eel.expose(self.watch_key_ceremonies)
