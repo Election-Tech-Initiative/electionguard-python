@@ -5,7 +5,7 @@ from electionguard_gui.components.component_base import ComponentBase
 from electionguard_gui.services.key_ceremony_service import KeyCeremonyService
 
 
-class GuardianHomeComponent(ComponentBase):
+class KeyCeremonyListComponent(ComponentBase):
     """Responsible for functionality related to the guardian home page"""
 
     _key_ceremony_service: KeyCeremonyService

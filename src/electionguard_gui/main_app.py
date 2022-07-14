@@ -5,7 +5,9 @@ from electionguard_gui.components.component_base import ComponentBase
 from electionguard_gui.components.create_key_ceremony_component import (
     CreateKeyCeremonyComponent,
 )
-from electionguard_gui.components.guardian_home_component import GuardianHomeComponent
+from electionguard_gui.components.key_ceremony_list_component import (
+    KeyCeremonyListComponent,
+)
 from electionguard_gui.components.key_ceremony_details_component import (
     KeyCeremonyDetailsComponent,
 )
@@ -29,7 +31,7 @@ class MainApp:
         self,
         log_service: EelLogService,
         db_service: DbService,
-        guardian_home_component: GuardianHomeComponent,
+        guardian_home_component: KeyCeremonyListComponent,
         create_key_ceremony_component: CreateKeyCeremonyComponent,
         key_ceremony_details_component: KeyCeremonyDetailsComponent,
         setup_election_component: SetupElectionComponent,
@@ -61,6 +63,7 @@ class MainApp:
 
             self.db_service.verify_db_connection()
             eel.init("src/electionguard_gui/web")
+            self.log_service.debug("Starting eel")
             eel.start("main.html", size=(1024, 768), port=0)
         except Exception as e:
             self.log_service.error(e)
