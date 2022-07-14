@@ -15,8 +15,11 @@ from electionguard_tools.helpers.export import GUARDIAN_PREFIX
 from electionguard_gui.services.authorization_service import AuthoriationService
 from electionguard_gui.services.guardian_service import make_guardian
 from electionguard_gui.components.component_base import ComponentBase
-from electionguard_gui.eel_utils import eel_success, utc_to_str
-from electionguard_gui.services.key_ceremony_service import KeyCeremonyService
+from electionguard_gui.eel_utils import utc_to_str
+from electionguard_gui.services.key_ceremony_service import (
+    KeyCeremonyService,
+    get_key_ceremony_status,
+)
 
 
 class KeyCeremonyDetailsComponent(ComponentBase):
@@ -68,24 +71,15 @@ class KeyCeremonyDetailsComponent(ComponentBase):
         if is_admin and all_guardians_joined and not other_keys_exist:
             self.log.info("all guardians have joined, announcing guardians")
             other_keys = self.announce(key_ceremony)
-            self.log.debug(f"saving other_keys")
+            self.log.debug("saving other_keys")
             self._key_ceremony_service.save_other_keys(db, key_ceremony_id, other_keys)
             # this notify_changed occurs inside watch_key_ceremonies and thus may
             #       produce an unnecessary UI refresh for the admin
             self._key_ceremony_service.notify_changed(db, key_ceremony_id)
             # todo #689 wait until all guardians have backups
-        key_ceremony["status"] = self.get_status(key_ceremony)
+        key_ceremony["status"] = get_key_ceremony_status(key_ceremony)
         # pylint: disable=no-member
         eel.refresh_key_ceremony(key_ceremony)
-
-    def get_status(self, key_ceremony: Any) -> str:
-        guardians_joined_count = len(key_ceremony["guardians_joined"])
-        guardian_count = key_ceremony["guardian_count"]
-        if guardians_joined_count < guardian_count:
-            return "waiting for guardians"
-        if len(key_ceremony["other_keys"]) == 0:
-            return "waiting for admin to announce guardians"
-        return "waiting for guardians to create backups"
 
     def announce(self, key_ceremony: Any) -> dict[str, Any]:
         other_keys = []
@@ -97,7 +91,7 @@ class KeyCeremonyDetailsComponent(ComponentBase):
         )
         guardians = key_ceremony["guardians_joined"]
         for guardian_id in guardians:
-            key = self.find_key(key_ceremony, guardian_id)
+            key = find_key(key_ceremony, guardian_id)
             coefficient_commitments = [
                 PublicCommitment(x) for x in key["coefficient_commitments"]
             ]
@@ -133,10 +127,6 @@ class KeyCeremonyDetailsComponent(ComponentBase):
                 }
             )
         return other_keys
-
-    def find_key(self, key_ceremony: Any, guardian_id: str) -> Any:
-        keys = key_ceremony["keys"]
-        return next(key for key in keys if key["owner_id"] == guardian_id)
 
     def stop_watching_key_ceremony(self) -> None:
         self._key_ceremony_service.stop_watching()
@@ -181,3 +171,8 @@ class KeyCeremonyDetailsComponent(ComponentBase):
         key_ceremony["created_at_str"] = utc_to_str(created_at_utc)
         key_ceremony["can_join"] = self.can_join_key_ceremony(key_ceremony)
         return key_ceremony
+
+
+def find_key(key_ceremony: Any, guardian_id: str) -> Any:
+    keys = key_ceremony["keys"]
+    return next(key for key in keys if key["owner_id"] == guardian_id)
