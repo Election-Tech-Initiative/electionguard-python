@@ -19,7 +19,7 @@ export default {
     </div>
   </div>
   <div class="text-center mt-4">
-    <h2>Key Ceremonies</h2>
+    <h2>Active Key Ceremonies</h2>
     <key-ceremony-list :is-admin="true"></key-ceremony-list>
   </div>
 
