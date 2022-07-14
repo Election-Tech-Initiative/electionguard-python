@@ -91,31 +91,34 @@ class KeyCeremonyService(ServiceBase):
             {"$push": {"guardians_joined": guardian_id}},
         )
 
+    def public_key_to_dict(self, key: ElectionPublicKey) -> Any:
+        return {
+            "owner_id": key.owner_id,
+            "sequence_order": key.sequence_order,
+            "key": str(key.key),
+            "coefficient_commitments": [str(c) for c in key.coefficient_commitments],
+            "coefficient_proofs": [
+                {
+                    "public_key": str(cp.public_key),
+                    "commitment": str(cp.commitment),
+                    "challenge": str(cp.challenge),
+                    "response": str(cp.response),
+                    "usage": str(cp.usage),
+                }
+                for cp in key.coefficient_proofs
+            ],
+        }
+
     def add_key(
         self, db: Database, key_ceremony_id: str, key: ElectionPublicKey
     ) -> None:
         db.key_ceremonies.update_one(
             {"_id": ObjectId(key_ceremony_id)},
-            {
-                "$push": {
-                    "keys": {
-                        "owner_id": key.owner_id,
-                        "sequence_order": key.sequence_order,
-                        "key": str(key.key),
-                        "coefficient_commitments": [
-                            str(c) for c in key.coefficient_commitments
-                        ],
-                        "coefficient_proofs": [
-                            {
-                                "public_key": str(cp.public_key),
-                                "commitment": str(cp.commitment),
-                                "challenge": str(cp.challenge),
-                                "response": str(cp.response),
-                                "usage": str(cp.usage),
-                            }
-                            for cp in key.coefficient_proofs
-                        ],
-                    }
-                }
-            },
+            {"$push": {"keys": self.public_key_to_dict(key)}},
+        )
+
+    def save_other_keys(self, db: Database, key_ceremony_id: str, keys: Any) -> None:
+        db.key_ceremonies.update_one(
+            {"_id": ObjectId(key_ceremony_id)},
+            {"$push": {"other_keys": {"$each": keys}}},
         )

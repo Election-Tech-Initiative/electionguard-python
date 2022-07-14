@@ -20,9 +20,6 @@ export default {
     },
   },
   async mounted() {
-    const keyCeremony = await eel.get_key_ceremony(this.keyCeremonyId)();
-    console.log("found a key ceremony", keyCeremony.result);
-    this.keyCeremony = keyCeremony.result;
     eel.expose(this.refresh_key_ceremony, "refresh_key_ceremony");
     eel.watch_key_ceremony(this.keyCeremonyId);
   },

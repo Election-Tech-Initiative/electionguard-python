@@ -23,7 +23,7 @@ class KeyCeremonyListComponent(ComponentBase):
         db = self.db_service.get_db()
         send_key_ceremonies_to_ui(db)
         self._key_ceremony_service.watch_key_ceremonies(
-            db, None, lambda: send_key_ceremonies_to_ui(db)
+            db, None, lambda _: send_key_ceremonies_to_ui(db)
         )
         self.log.debug("exited watching key_ceremonies")
 

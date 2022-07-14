@@ -4,7 +4,12 @@ import eel
 from pymongo.database import Database
 
 from electionguard import to_file
+from electionguard.election_polynomial import PublicCommitment
 from electionguard.guardian import Guardian
+from electionguard.key_ceremony import CeremonyDetails, ElectionPublicKey
+from electionguard.key_ceremony_mediator import KeyCeremonyMediator
+from electionguard.schnorr import SchnorrProof
+from electionguard.utils import get_optional
 from electionguard_tools.helpers.export import GUARDIAN_PREFIX
 
 from electionguard_gui.services.authorization_service import AuthoriationService
@@ -29,15 +34,9 @@ class KeyCeremonyDetailsComponent(ComponentBase):
         self.auth_service = auth_service
 
     def expose(self) -> None:
-        eel.expose(self.get_key_ceremony)
         eel.expose(self.join_key_ceremony)
         eel.expose(self.watch_key_ceremony)
         eel.expose(self.stop_watching_key_ceremony)
-
-    def get_key_ceremony(self, id: str) -> dict[str, Any]:
-        db = self.db_service.get_db()
-        key_ceremony = self.get_ceremony(db, id)
-        return eel_success(key_ceremony)
 
     def can_join_key_ceremony(self, key_ceremony) -> bool:
         user_id = self.auth_service.get_user_id()
@@ -47,7 +46,10 @@ class KeyCeremonyDetailsComponent(ComponentBase):
 
     def watch_key_ceremony(self, key_ceremony_id: str) -> None:
         db = self.db_service.get_db()
+        # retrieve and send the key ceremony to the client
+        self.on_key_ceremony_changed(key_ceremony_id)
         self.log.debug(f"watching key ceremony '{key_ceremony_id}'")
+        # start watching for key ceremony changes from guardians
         self._key_ceremony_service.watch_key_ceremonies(
             db, key_ceremony_id, self.on_key_ceremony_changed
         )
@@ -61,10 +63,70 @@ class KeyCeremonyDetailsComponent(ComponentBase):
         self.log.info(
             f"{guardians_joined_count}/{guardian_count} guardians joined {key_ceremony_id}"
         )
-        if is_admin and guardians_joined_count >= guardian_count:
+        all_guardians_joined = guardians_joined_count >= guardian_count
+        other_keys_exist = len(key_ceremony["other_keys"]) > 0
+        if is_admin and all_guardians_joined and not other_keys_exist:
             self.log.info("all guardians have joined, announcing guardians")
+            other_keys = self.announce(key_ceremony)
+            self.log.debug(f"saving other_keys")
+            self._key_ceremony_service.save_other_keys(db, key_ceremony_id, other_keys)
+            # this notify_changed occurs inside watch_key_ceremonies and thus may
+            #       produce an unnecessary UI refresh for the admin
+            self._key_ceremony_service.notify_changed(db, key_ceremony_id)
+            # todo #689 wait until all guardians have backups
         # pylint: disable=no-member
         eel.refresh_key_ceremony(key_ceremony)
+
+    def announce(self, key_ceremony: Any) -> dict[str, Any]:
+        other_keys = []
+        quorum = key_ceremony["quorum"]
+        guardian_count = key_ceremony["guardian_count"]
+        ceremony_details = CeremonyDetails(guardian_count, quorum)
+        mediator: KeyCeremonyMediator = KeyCeremonyMediator(
+            "mediator_1", ceremony_details
+        )
+        guardians = key_ceremony["guardians_joined"]
+        for guardian_id in guardians:
+            key = self.find_key(key_ceremony, guardian_id)
+            coefficient_commitments = [
+                PublicCommitment(x) for x in key["coefficient_commitments"]
+            ]
+            coefficient_proofs = [
+                SchnorrProof(
+                    cp["public_key"],
+                    cp["commitment"],
+                    cp["challenge"],
+                    cp["response"],
+                    cp["usage"],
+                )
+                for cp in key["coefficient_proofs"]
+            ]
+            guardian_public_key = ElectionPublicKey(
+                key["owner_id"],
+                key["sequence_order"],
+                key["key"],
+                coefficient_commitments,
+                coefficient_proofs,
+            )
+            mediator.announce(guardian_public_key)
+        for guardian_id in guardians:
+            other_guardian_keys = get_optional(
+                mediator.share_announced(str(guardian_id))
+            )
+            other_keys.append(
+                {
+                    "owner_id": guardian_id,
+                    "other_keys": [
+                        self._key_ceremony_service.public_key_to_dict(key)
+                        for key in other_guardian_keys
+                    ],
+                }
+            )
+        return other_keys
+
+    def find_key(self, key_ceremony: Any, guardian_id: str) -> Any:
+        keys = key_ceremony["keys"]
+        return next(key for key in keys if key["owner_id"] == guardian_id)
 
     def stop_watching_key_ceremony(self) -> None:
         self._key_ceremony_service.stop_watching()
