@@ -4,14 +4,14 @@ import eel
 from pymongo.database import Database
 
 from electionguard import to_file
-from electionguard.election_polynomial import PublicCommitment
-from electionguard.elgamal import ElGamalPublicKey
 from electionguard.guardian import Guardian, PrivateGuardianRecord
-from electionguard.key_ceremony import CeremonyDetails, ElectionPublicKey
+from electionguard.key_ceremony import CeremonyDetails
 from electionguard.key_ceremony_mediator import KeyCeremonyMediator
-from electionguard.schnorr import SchnorrProof
 from electionguard.serialize import from_file
 from electionguard.utils import get_optional
+from electionguard_gui.services.db_serialization_service import (
+    dict_to_election_public_key,
+)
 from electionguard_tools.helpers.export import GUARDIAN_PREFIX
 
 from electionguard_gui.services.authorization_service import AuthoriationService
@@ -100,7 +100,7 @@ class KeyCeremonyDetailsComponent(ComponentBase):
                 self.log.debug(
                     f"saving other_key from {other_user} for {current_user_id}"
                 )
-                public_key = self.recreate_election_public_key(other_key)
+                public_key = dict_to_election_public_key(other_key)
                 guardian.save_guardian_key(public_key)
             guardian.generate_election_partial_key_backups()
             backups = guardian.share_election_partial_key_backups()
@@ -129,7 +129,7 @@ class KeyCeremonyDetailsComponent(ComponentBase):
         guardians = key_ceremony["guardians_joined"]
         for guardian_id in guardians:
             key = find_key(key_ceremony, guardian_id)
-            guardian_public_key = self.recreate_election_public_key(key)
+            guardian_public_key = dict_to_election_public_key(key)
             mediator.announce(guardian_public_key)
         for guardian_id in guardians:
             other_guardian_keys = get_optional(
@@ -145,29 +145,6 @@ class KeyCeremonyDetailsComponent(ComponentBase):
                 }
             )
         return other_keys
-
-    def recreate_election_public_key(self, key: Any) -> ElectionPublicKey:
-        coefficient_commitments = [
-            PublicCommitment(x) for x in key["coefficient_commitments"]
-        ]
-        coefficient_proofs = [
-            SchnorrProof(
-                cp["public_key"],
-                cp["commitment"],
-                cp["challenge"],
-                cp["response"],
-                cp["usage"],
-            )
-            for cp in key["coefficient_proofs"]
-        ]
-        guardian_public_key = ElectionPublicKey(
-            key["owner_id"],
-            key["sequence_order"],
-            ElGamalPublicKey(key["key"]),
-            coefficient_commitments,
-            coefficient_proofs,
-        )
-        return guardian_public_key
 
     def stop_watching_key_ceremony(self) -> None:
         self._key_ceremony_service.stop_watching()
