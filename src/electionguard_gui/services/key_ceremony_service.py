@@ -120,13 +120,3 @@ class KeyCeremonyService(ServiceBase):
             {"_id": ObjectId(key_ceremony_id)},
             {"$push": {"backups": {"$each": backups_dict}}},
         )
-
-
-def get_key_ceremony_status(key_ceremony: Any) -> str:
-    guardians_joined_count = len(key_ceremony["guardians_joined"])
-    guardian_count = key_ceremony["guardian_count"]
-    if guardians_joined_count < guardian_count:
-        return "waiting for guardians"
-    if len(key_ceremony["other_keys"]) == 0:
-        return "waiting for admin to announce guardians"
-    return "waiting for guardians to create backups"

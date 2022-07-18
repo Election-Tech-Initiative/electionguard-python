@@ -15,6 +15,9 @@ from electionguard_gui.services.db_service import DbService
 
 from electionguard_gui.services.eel_log_service import EelLogService
 from electionguard_gui.services.key_ceremony_service import KeyCeremonyService
+from electionguard_gui.services.key_ceremony_state_service import (
+    KeyCeremonyStateService,
+)
 
 
 class Container(containers.DeclarativeContainer):
@@ -24,6 +27,9 @@ class Container(containers.DeclarativeContainer):
     db_service = providers.Singleton(DbService, log_service=log_service)
     key_ceremony_service = providers.Factory(KeyCeremonyService, db_service=db_service)
     authorization_service = providers.Singleton(AuthorizationService)
+    key_ceremony_state_service = providers.Factory(
+        KeyCeremonyStateService, log_service=log_service
+    )
 
     # components
     guardian_home_component = providers.Factory(
@@ -38,6 +44,7 @@ class Container(containers.DeclarativeContainer):
         KeyCeremonyDetailsComponent,
         key_ceremony_service=key_ceremony_service,
         auth_service=authorization_service,
+        key_ceremony_state_service=key_ceremony_state_service,
     )
     setup_election_component = providers.Factory(SetupElectionComponent)
 
@@ -51,4 +58,5 @@ class Container(containers.DeclarativeContainer):
         key_ceremony_details_component=key_ceremony_details_component,
         setup_election_component=setup_election_component,
         authorization_service=authorization_service,
+        key_ceremony_state_service=key_ceremony_state_service,
     )

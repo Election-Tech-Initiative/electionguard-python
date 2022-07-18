@@ -16,6 +16,9 @@ from electionguard_gui.components.setup_election_component import SetupElectionC
 from electionguard_gui.services.authorization_service import AuthorizationService
 from electionguard_gui.services.db_service import DbService
 from electionguard_gui.services.eel_log_service import EelLogService
+from electionguard_gui.services.key_ceremony_state_service import (
+    KeyCeremonyStateService,
+)
 from electionguard_gui.services.service_base import ServiceBase
 
 
@@ -36,6 +39,7 @@ class MainApp:
         key_ceremony_details_component: KeyCeremonyDetailsComponent,
         setup_election_component: SetupElectionComponent,
         authorization_service: AuthorizationService,
+        key_ceremony_state_service: KeyCeremonyStateService,
     ) -> None:
         super().__init__()
 
@@ -49,7 +53,12 @@ class MainApp:
             setup_election_component,
         ]
 
-        self.services = [authorization_service, log_service, db_service]
+        self.services = [
+            authorization_service,
+            db_service,
+            log_service,
+            key_ceremony_state_service,
+        ]
 
     def start(self) -> None:
         try:

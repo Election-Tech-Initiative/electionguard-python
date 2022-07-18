@@ -11,8 +11,16 @@ from electionguard.serialize import from_file
 from electionguard.utils import get_optional
 from electionguard_tools.helpers.export import GUARDIAN_PREFIX
 
+from electionguard_gui.services.key_ceremony_state_service import (
+    KeyCeremonyStateService,
+    get_key_ceremony_status,
+)
+from electionguard_gui.models.key_ceremony_states import (
+    KeyCeremonyStates,
+)
 from electionguard_gui.services.db_serialization_service import (
     dict_to_election_public_key,
+    public_key_to_dict,
 )
 from electionguard_gui.services.authorization_service import AuthorizationService
 from electionguard_gui.services.guardian_service import make_guardian
@@ -20,33 +28,35 @@ from electionguard_gui.components.component_base import ComponentBase
 from electionguard_gui.eel_utils import utc_to_str
 from electionguard_gui.services.key_ceremony_service import (
     KeyCeremonyService,
-    get_key_ceremony_status,
 )
 
 
 class KeyCeremonyDetailsComponent(ComponentBase):
     """Responsible for retrieving key ceremony details"""
 
-    auth_service: AuthorizationService
+    _auth_service: AuthorizationService
+    _ceremony_state_service: KeyCeremonyStateService
 
     def __init__(
         self,
         key_ceremony_service: KeyCeremonyService,
         auth_service: AuthorizationService,
+        key_ceremony_state_service: KeyCeremonyStateService,
     ) -> None:
         super().__init__()
         self._key_ceremony_service = key_ceremony_service
-        self.auth_service = auth_service
+        self._ceremony_state_service = key_ceremony_state_service
+        self._auth_service = auth_service
 
     def expose(self) -> None:
         eel.expose(self.join_key_ceremony)
         eel.expose(self.watch_key_ceremony)
         eel.expose(self.stop_watching_key_ceremony)
 
-    def can_join_key_ceremony(self, key_ceremony) -> bool:
-        user_id = self.auth_service.get_user_id()
+    def can_join_key_ceremony(self, key_ceremony: Any) -> bool:
+        user_id = self._auth_service.get_user_id()
         already_joined = user_id in key_ceremony["guardians_joined"]
-        is_admin = self.auth_service.is_admin()
+        is_admin = self._auth_service.is_admin()
         return not already_joined and not is_admin
 
     def watch_key_ceremony(self, key_ceremony_id: str) -> None:
@@ -60,22 +70,17 @@ class KeyCeremonyDetailsComponent(ComponentBase):
         )
 
     def on_key_ceremony_changed(self, key_ceremony_id: str) -> None:
-        current_user_id = self.auth_service.get_user_id()
+        current_user_id = self._auth_service.get_user_id()
         self.log.debug(
             f"on_key_ceremony_changed key_ceremony_id: '{key_ceremony_id}', current_user_id: '{current_user_id}'"
         )
-        is_admin = self.auth_service.is_admin()
+        is_admin = self._auth_service.is_admin()
         is_guardian = not is_admin
         db = self.db_service.get_db()
         key_ceremony = self.get_ceremony(db, key_ceremony_id)
-        guardians_joined_count = len(key_ceremony["guardians_joined"])
-        guardian_count = key_ceremony["guardian_count"]
-        self.log.info(
-            f"{guardians_joined_count}/{guardian_count} guardians joined {key_ceremony_id}"
-        )
-        all_guardians_joined = guardians_joined_count >= guardian_count
-        other_keys_exist = len(key_ceremony["other_keys"]) > 0
-        if is_admin and all_guardians_joined and not other_keys_exist:
+        state = self._ceremony_state_service.get_key_ceremony_state(key_ceremony)
+        self.log.debug(f"{key_ceremony_id} state = '{state}'")
+        if is_admin and state == KeyCeremonyStates.PendingAdminAnnounce:
             self.log.info("all guardians have joined, announcing guardians")
             other_keys = self.announce(key_ceremony)
             self.log.debug("saving other_keys")
@@ -89,10 +94,12 @@ class KeyCeremonyDetailsComponent(ComponentBase):
             self.get_backups_for_user(key_ceremony, current_user_id)
         )
         current_user_backup_exists = current_user_backups > 0
-        if is_guardian and other_keys_exist and not current_user_backup_exists:
-            self.log.debug(
-                f"other keys found without backup for {current_user_id}, creating backup"
-            )
+        if (
+            is_guardian
+            and state == KeyCeremonyStates.PendingGuardianBackups
+            and not current_user_backup_exists
+        ):
+            self.log.debug(f"creating backups for guardian {current_user_id}")
             guardian = self.load_guardian(current_user_id, key_ceremony)
 
             current_user_other_keys = self.find_other_keys_for_user(
@@ -111,7 +118,10 @@ class KeyCeremonyDetailsComponent(ComponentBase):
             # notify the admin that a new guardian has backups
             self._key_ceremony_service.notify_changed(db, key_ceremony_id)
 
-        key_ceremony["status"] = get_key_ceremony_status(key_ceremony)
+        new_state = self._ceremony_state_service.get_key_ceremony_state(key_ceremony)
+        if state != new_state:
+            self.log.debug(f"state changed from {state} to {new_state}")
+        key_ceremony["status"] = get_key_ceremony_status(new_state)
         # pylint: disable=no-member
         eel.refresh_key_ceremony(key_ceremony)
 
@@ -151,8 +161,7 @@ class KeyCeremonyDetailsComponent(ComponentBase):
                 {
                     "owner_id": guardian_id,
                     "other_keys": [
-                        self._key_ceremony_service.public_key_to_dict(key)
-                        for key in other_guardian_keys
+                        public_key_to_dict(key) for key in other_guardian_keys
                     ],
                 }
             )
@@ -165,7 +174,7 @@ class KeyCeremonyDetailsComponent(ComponentBase):
         db = self.db_service.get_db()
 
         # append the current user's id to the list of guardians
-        user_id = self.auth_service.get_user_id()
+        user_id = self._auth_service.get_user_id()
         self._key_ceremony_service.append_guardian_joined(db, key_ceremony_id, user_id)
         key_ceremony = self._key_ceremony_service.get(db, key_ceremony_id)
         guardian_number = self._key_ceremony_service.get_guardian_number(
@@ -205,7 +214,6 @@ class KeyCeremonyDetailsComponent(ComponentBase):
         )
 
     def get_ceremony(self, db: Database, id: str) -> Any:
-        self.log.debug(f"getting key ceremony {id}")
         key_ceremony = self._key_ceremony_service.get(db, id)
         created_at_utc = key_ceremony["created_at"]
         key_ceremony["created_at_str"] = utc_to_str(created_at_utc)
