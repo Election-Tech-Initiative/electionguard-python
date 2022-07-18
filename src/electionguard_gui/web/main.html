@@ -76,6 +76,7 @@
             this.showLogin = route.secured && !this.userId;
           });
           this.userId = await AuthorizationService.getUserId();
+          this.showLogin = !this.userId;
         },
         components: {
           Navbar,

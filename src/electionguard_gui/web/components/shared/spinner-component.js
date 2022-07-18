@@ -1,7 +1,12 @@
 let isMounted = false; /* Prevent duplicated styles in head tag */
 
 export default {
-  props: ["visible"],
+  props: {
+    visible: {
+      type: Boolean,
+      default: true,
+    },
+  },
   mounted: function () {
     console.debug("spinner activated");
     if (!isMounted) {

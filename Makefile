@@ -88,7 +88,7 @@ auto-lint:
 	make lint
 	
 pylint:
-	poetry run pylint ./src ./tests
+	poetry run pylint --extension-pkg-allow-list=dependency_injector ./src ./tests
 
 blackformat:
 	poetry run black .
@@ -185,7 +185,6 @@ ifeq ($(OS), Windows)
 endif
 	wget https://github.com/microsoft/electionguard/releases/download/v0.95.0/sample-data.zip
 	unzip -o sample-data.zip
-	unzip sample-data.zip
 
 # Publish
 publish:
