@@ -9,12 +9,12 @@ from electionguard.key_ceremony import CeremonyDetails
 from electionguard.key_ceremony_mediator import KeyCeremonyMediator
 from electionguard.serialize import from_file
 from electionguard.utils import get_optional
+from electionguard_tools.helpers.export import GUARDIAN_PREFIX
+
 from electionguard_gui.services.db_serialization_service import (
     dict_to_election_public_key,
 )
-from electionguard_tools.helpers.export import GUARDIAN_PREFIX
-
-from electionguard_gui.services.authorization_service import AuthoriationService
+from electionguard_gui.services.authorization_service import AuthorizationService
 from electionguard_gui.services.guardian_service import make_guardian
 from electionguard_gui.components.component_base import ComponentBase
 from electionguard_gui.eel_utils import utc_to_str
@@ -27,12 +27,12 @@ from electionguard_gui.services.key_ceremony_service import (
 class KeyCeremonyDetailsComponent(ComponentBase):
     """Responsible for retrieving key ceremony details"""
 
-    auth_service: AuthoriationService
+    auth_service: AuthorizationService
 
     def __init__(
         self,
         key_ceremony_service: KeyCeremonyService,
-        auth_service: AuthoriationService,
+        auth_service: AuthorizationService,
     ) -> None:
         super().__init__()
         self._key_ceremony_service = key_ceremony_service
@@ -110,7 +110,7 @@ class KeyCeremonyDetailsComponent(ComponentBase):
         # pylint: disable=no-member
         eel.refresh_key_ceremony(key_ceremony)
 
-    def find_other_keys_for_user(self, key_ceremony, user_id) -> Any:
+    def find_other_keys_for_user(self, key_ceremony: Any, user_id: str) -> Any:
         return next(
             filter(
                 lambda other_key: other_key["owner_id"] == user_id,
@@ -192,7 +192,7 @@ class KeyCeremonyDetailsComponent(ComponentBase):
             f"Guardian private data saved to {file}. This data should be carefully protected and never shared."
         )
 
-    def get_ceremony(self, db: Database, id: str) -> dict[str, Any]:
+    def get_ceremony(self, db: Database, id: str) -> Any:
         self.log.debug(f"getting key ceremony {id}")
         key_ceremony = self._key_ceremony_service.get(db, id)
         created_at_utc = key_ceremony["created_at"]

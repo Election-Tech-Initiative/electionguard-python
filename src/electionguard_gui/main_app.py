@@ -13,7 +13,7 @@ from electionguard_gui.components.key_ceremony_details_component import (
 )
 from electionguard_gui.components.setup_election_component import SetupElectionComponent
 
-from electionguard_gui.services.authorization_service import AuthoriationService
+from electionguard_gui.services.authorization_service import AuthorizationService
 from electionguard_gui.services.db_service import DbService
 from electionguard_gui.services.eel_log_service import EelLogService
 from electionguard_gui.services.service_base import ServiceBase
@@ -35,7 +35,7 @@ class MainApp:
         create_key_ceremony_component: CreateKeyCeremonyComponent,
         key_ceremony_details_component: KeyCeremonyDetailsComponent,
         setup_election_component: SetupElectionComponent,
-        authorization_service: AuthoriationService,
+        authorization_service: AuthorizationService,
     ) -> None:
         super().__init__()
 

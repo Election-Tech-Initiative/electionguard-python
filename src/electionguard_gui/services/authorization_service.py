@@ -5,7 +5,7 @@ from electionguard_gui.services.configuration_service import get_is_admin
 from electionguard_gui.services.service_base import ServiceBase
 
 
-class AuthoriationService(ServiceBase):
+class AuthorizationService(ServiceBase):
     """Responsible for functionality related to authorization and user identify"""
 
     # todo: replace state based storage with configparser https://docs.python.org/3/library/configparser.html
