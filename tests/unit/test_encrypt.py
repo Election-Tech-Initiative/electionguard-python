@@ -18,13 +18,13 @@ from electionguard.group import ONE_MOD_Q, TWO_MOD_Q, ElementModP, ElementModQ, 
 from electionguard.manifest import (
     SelectionDescription,
     VoteVariationType,
-    ContestDescriptionWithPlaceholders,
+    ContestDescription,
 )
 from electionguard.serialize import to_raw
 from electionguard.utils import get_optional
 
 
-def get_sample_contest_description() -> ContestDescriptionWithPlaceholders:
+def get_sample_contest_description() -> ContestDescription:
     ballot_selections = [
         SelectionDescription(
             "some-object-id-affirmative", 0, "some-candidate-id-affirmative"
@@ -33,12 +33,7 @@ def get_sample_contest_description() -> ContestDescriptionWithPlaceholders:
             "some-object-id-negative", 1, "some-candidate-id-negative"
         ),
     ]
-    placeholder_selections = [
-        SelectionDescription(
-            "some-object-id-placeholder", 2, "some-candidate-id-placeholder"
-        )
-    ]
-    metadata = ContestDescriptionWithPlaceholders(
+    metadata = ContestDescription(
         "some-contest-object-id",
         0,
         "some-electoral-district-id",
@@ -49,7 +44,6 @@ def get_sample_contest_description() -> ContestDescriptionWithPlaceholders:
         ballot_selections,
         None,
         None,
-        placeholder_selections,
     )
     return metadata
 

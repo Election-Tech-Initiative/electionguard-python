@@ -6,7 +6,6 @@ from tests.base_test_case import BaseTestCase
 from electionguard.manifest import (
     Candidate,
     ContestDescription,
-    ContestDescriptionWithPlaceholders,
     InternationalizedText,
     Language,
     Manifest,
@@ -187,7 +186,7 @@ class TestManifest(BaseTestCase):
                     self.assertEqual(expected.crypto_hash(), actual.crypto_hash())
 
     def test_contest_description_valid_input_succeeds(self) -> None:
-        description = ContestDescriptionWithPlaceholders(
+        description = ContestDescription(
             object_id="0@A.com-contest",
             electoral_district_id="0@A.com-gp-unit",
             sequence_order=1,
@@ -209,20 +208,13 @@ class TestManifest(BaseTestCase):
             ],
             ballot_title=None,
             ballot_subtitle=None,
-            placeholder_selections=[
-                SelectionDescription(
-                    "0@A.com-contest-2-placeholder",
-                    2,
-                    "0@A.com-contest-2-candidate",
-                )
-            ],
         )
 
         self.assertTrue(description.is_valid())
 
     def test_contest_description_invalid_input_fails(self) -> None:
 
-        description = ContestDescriptionWithPlaceholders(
+        description = ContestDescription(
             object_id="0@A.com-contest",
             electoral_district_id="0@A.com-gp-unit",
             sequence_order=1,
@@ -245,13 +237,6 @@ class TestManifest(BaseTestCase):
             ],
             ballot_title=None,
             ballot_subtitle=None,
-            placeholder_selections=[
-                SelectionDescription(
-                    "0@A.com-contest-2-placeholder",
-                    2,
-                    "0@A.com-contest-2-candidate",
-                )
-            ],
         )
 
         self.assertFalse(description.is_valid())

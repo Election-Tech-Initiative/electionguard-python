@@ -31,7 +31,6 @@ def decrypt_tally(
     shares: Dict[GuardianId, DecryptionShare],
     crypto_extended_base_hash: ElementModQ,
     manifest: Manifest,
-    remove_placeholders: bool = True,
 ) -> Optional[PlaintextTally]:
     """
     Try to decrypt the tally and the spoiled ballots using the provided decryption shares.
@@ -60,7 +59,6 @@ def decrypt_tally(
             shares,
             crypto_extended_base_hash,
             contest_descriptions[contest.object_id],
-            remove_placeholders,
         )
         if not plaintext_contest:
             log_warning(f"contest: {contest.object_id} failed to decrypt with shares")
@@ -75,7 +73,6 @@ def decrypt_ballot(
     shares: Dict[GuardianId, DecryptionShare],
     crypto_extended_base_hash: ElementModQ,
     manifest: Manifest,
-    remove_placeholders: bool = True,
 ) -> Optional[PlaintextTally]:
     """
     Try to decrypt a single ballot using the provided decryption shares.
@@ -104,7 +101,6 @@ def decrypt_ballot(
             shares,
             crypto_extended_base_hash,
             contest_descriptions[contest.object_id],
-            remove_placeholders,
         )
         if not plaintext_contest:
             log_warning(f"contest: {contest.object_id} failed to decrypt with shares")
@@ -119,7 +115,6 @@ def decrypt_contest_with_decryption_shares(
     shares: Dict[GuardianId, DecryptionShare],
     crypto_extended_base_hash: ElementModQ,
     contest_description: ContestDescription,
-    remove_placeholders: bool = True,
 ) -> Optional[PlaintextTallyContest]:
     """
     Decrypt the specified contest within the context of the specified Decryption Shares.
@@ -135,8 +130,8 @@ def decrypt_contest_with_decryption_shares(
     ]
 
     for selection in contest.selections:
-        if selection.object_id not in selection_description_ids and remove_placeholders:
-            continue  # Skip selections not in manifest (Such as placeholders)
+        if selection.object_id not in selection_description_ids:
+            continue  # Skip selections not in manifest
 
         tally_shares = get_shares_for_selection(selection.object_id, shares)
         plaintext_selection = decrypt_selection_with_decryption_shares(

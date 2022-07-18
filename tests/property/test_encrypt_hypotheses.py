@@ -128,15 +128,10 @@ class TestElections(BaseTestCase):
         for contest in internal_manifest.contests:
             # Sanity check the generated data
             self.assertTrue(len(contest.ballot_selections) > 0)
-            self.assertTrue(len(contest.placeholder_selections) > 0)
 
             decrypted_selection_tallies = [
                 decrypted_tallies[selection.object_id]
                 for selection in contest.ballot_selections
-            ]
-            decrypted_placeholder_tallies = [
-                decrypted_tallies[placeholder.object_id]
-                for placeholder in contest.placeholder_selections
             ]
             plaintext_tally_values = [
                 plaintext_tallies[selection.object_id]
@@ -146,10 +141,10 @@ class TestElections(BaseTestCase):
             # verify the plaintext tallies match the decrypted tallies
             self.assertEqual(decrypted_selection_tallies, plaintext_tally_values)
 
-            # validate the right number of selections including placeholders across all ballots
-            self.assertEqual(
+            # validate the number of selections across all ballots
+            self.assertGreaterEqual(
                 contest.number_elected * num_ballots,
-                sum(decrypted_selection_tallies) + sum(decrypted_placeholder_tallies),
+                sum(decrypted_selection_tallies),
             )
 
 
@@ -162,8 +157,6 @@ def _accumulate_encrypted_ballots(
     their `object_id` fields as keys. This function only knows what to do with
     `n_of_m` elections. It's not a general-purpose tallying mechanism for other
     election types.
-
-    Note that the output will include both "normal" and "placeholder" selections.
 
     :param encrypted_zero: an encrypted zero, used for the accumulation
     :param ballots: a list of encrypted ballots

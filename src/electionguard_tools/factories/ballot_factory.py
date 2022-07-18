@@ -1,4 +1,4 @@
-from typing import Any, TypeVar, Callable, List, Tuple, Optional
+from typing import Any, TypeVar, Callable, List, Tuple
 import os
 from random import Random, randint
 import uuid
@@ -42,11 +42,9 @@ class BallotFactory:
     def get_random_selection_from(
         description: SelectionDescription,
         random_source: Random,
-        is_placeholder: bool = False,
     ) -> PlaintextBallotSelection:
-
         selected = bool(random_source.randint(0, 1))
-        return selection_from(description, is_placeholder, selected)
+        return selection_from(description, selected)
 
     def get_random_contest_from(
         self,
@@ -114,19 +112,13 @@ class BallotFactory:
         return fake_ballot
 
     def generate_fake_plaintext_ballots_for_election(
-        self,
-        internal_manifest: InternalManifest,
-        number_of_ballots: int,
-        ballot_style_id: Optional[str] = None,
+        self, internal_manifest: InternalManifest, number_of_ballots: int
     ) -> List[PlaintextBallot]:
         ballots: List[PlaintextBallot] = []
         for _i in range(number_of_ballots):
-            if ballot_style_id is not None:
-                ballot_style = internal_manifest.get_ballot_style(ballot_style_id)
-            else:
-                style_index = randint(0, len(internal_manifest.ballot_styles) - 1)
-                ballot_style = internal_manifest.ballot_styles[style_index]
 
+            style_index = randint(0, len(internal_manifest.ballot_styles) - 1)
+            ballot_style = internal_manifest.ballot_styles[style_index]
             ballot_id = f"ballot-{uuid.uuid1()}"
 
             contests: List[PlaintextBallotContest] = []
@@ -171,7 +163,7 @@ def get_selection_well_formed(
     object_id = f"selection-{draw(ids)}"
     return (
         object_id,
-        PlaintextBallotSelection(object_id, draw(vote), draw(bools), extended_data),
+        PlaintextBallotSelection(object_id, draw(vote), extended_data),
     )
 
 
@@ -192,5 +184,5 @@ def get_selection_poorly_formed(
     object_id = f"selection-{draw(ids)}"
     return (
         object_id,
-        PlaintextBallotSelection(object_id, draw(vote), draw(bools), extended_data),
+        PlaintextBallotSelection(object_id, draw(vote), extended_data),
     )
