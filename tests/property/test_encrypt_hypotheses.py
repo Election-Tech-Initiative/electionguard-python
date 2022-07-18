@@ -143,7 +143,7 @@ class TestElections(BaseTestCase):
 
             # validate the number of selections across all ballots
             self.assertGreaterEqual(
-                contest.number_elected * num_ballots,
+                contest.votes_allowed * num_ballots,
                 sum(decrypted_selection_tallies),
             )
 

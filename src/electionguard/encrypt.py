@@ -141,12 +141,12 @@ def selection_from(
     is_affirmative: bool = False,
 ) -> PlaintextBallotSelection:
     """
-    Construct a `BallotSelection` from a specific `SelectionDescription`.
+    Construct a `PlaintextBallotSelection` from a specific `SelectionDescription`.
     This function is useful for filling selections when a voter undervotes a ballot and for testing.
 
     :param description: The `SelectionDescription` which provides the relevant `object_id`
     :param is_affirmative: Mark this selection as `yes`
-    :return: A BallotSelection
+    :return: A plaintext selection
     """
 
     return PlaintextBallotSelection(
@@ -178,10 +178,11 @@ def encrypt_selection(
     elgamal_public_key: ElGamalPublicKey,
     crypto_extended_base_hash: ElementModQ,
     nonce_seed: ElementModQ,
+    selection_limit: int = 1,
     should_verify_proofs: bool = False,
 ) -> Optional[CiphertextBallotSelection]:
     """
-    Encrypt a specific `BallotSelection` in the context of a specific `BallotContest`
+    Encrypt a specific `PlaintextBallotSelection` in the context of a specific `BallotContest`
 
     :param selection: the selection in the valid input form
     :param selection_description: the `SelectionDescription` from the
@@ -190,6 +191,7 @@ def encrypt_selection(
     :param crypto_extended_base_hash: the extended base hash of the election
     :param nonce_seed: an `ElementModQ` used as a header to seed the `Nonce` generated for this selection.
                  this value can be (or derived from) the BallotContest nonce, but no relationship is required
+    :param selection_limit: maximum number of votes allowed for the selection according to the contest
     :param should_verify_proofs: specify if the proofs should be verified prior to returning (default False)
     """
 
@@ -230,6 +232,7 @@ def encrypt_selection(
         crypto_extended_base_hash,
         range_chaum_pedersen_nonce,
         selection_representation,
+        selection_limit,
         selection_nonce,
     )
 
@@ -297,7 +300,9 @@ def encrypt_contest(
 
     encrypted_selections: List[CiphertextBallotSelection] = []
 
-    selection_count = 0
+    votes_allowed = contest_description.votes_allowed
+    selection_limit = contest_description.votes_allowed_per_selection
+    number_votes = 0
 
     # TODO: ISSUE #54 this code could be inefficient if we had a contest
     # with a lot of choices, although the O(n^2) iteration here is small
@@ -320,13 +325,14 @@ def encrypt_contest(
             ):
                 # Track the selection count so we can construct the range Chaum-Pedersen proof
                 has_selection = True
-                selection_count += selection.vote
+                number_votes += selection.vote
                 encrypted_selection = encrypt_selection(
                     selection,
                     description,
                     elgamal_public_key,
                     crypto_extended_base_hash,
                     contest_nonce,
+                    selection_limit,
                     should_verify_proofs=should_verify_proofs,
                 )
                 break
@@ -340,6 +346,7 @@ def encrypt_contest(
                 elgamal_public_key,
                 crypto_extended_base_hash,
                 contest_nonce,
+                selection_limit,
                 should_verify_proofs=should_verify_proofs,
             )
 
@@ -363,8 +370,8 @@ def encrypt_contest(
         elgamal_public_key,
         crypto_extended_base_hash,
         chaum_pedersen_nonce,
-        number_votes=selection_count,
-        number_elected=contest_description.number_elected,
+        number_votes=number_votes,
+        votes_allowed=votes_allowed,
         nonce=contest_nonce,
         extended_data=encrypted_contest_data,
     )

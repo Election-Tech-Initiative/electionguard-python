@@ -29,7 +29,6 @@
       "sequence_order": 0,
       "vote_variation": "one_of_m",
       "electoral_district_id": "franklin-county",
-      "number_elected": 1,
       "votes_allowed": 1,
       "ballot_selections": [
         {

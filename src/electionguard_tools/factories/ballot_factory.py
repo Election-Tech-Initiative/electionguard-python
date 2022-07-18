@@ -1,4 +1,4 @@
-from typing import Any, TypeVar, Callable, List, Tuple
+from typing import Any, TypeVar, Callable, List, Tuple, Optional
 import os
 from random import Random, randint
 import uuid
@@ -42,14 +42,16 @@ class BallotFactory:
     def get_random_selection_from(
         description: SelectionDescription,
         random_source: Random,
+        limit: int = 1,
     ) -> PlaintextBallotSelection:
-        selected = bool(random_source.randint(0, 1))
+        selected = bool(random_source.randint(0, limit))
         return selection_from(description, selected)
 
     def get_random_contest_from(
         self,
         description: ContestDescription,
         random: Random,
+        limit: int = 1,
         suppress_validity_check: bool = False,
         with_trues: bool = False,
     ) -> PlaintextBallotContest:
@@ -67,7 +69,9 @@ class BallotFactory:
         voted = 0
 
         for selection_description in description.ballot_selections:
-            selection = self.get_random_selection_from(selection_description, random)
+            selection = self.get_random_selection_from(
+                selection_description, random, limit
+            )
             # the caller may force a true value
             voted += selection.vote
             if voted <= 1 and selection.vote and with_trues:
@@ -75,11 +79,11 @@ class BallotFactory:
                 continue
 
             # Possibly append the true selection, indicating an undervote
-            if voted <= description.number_elected and bool(random.randint(0, 1)) == 1:
+            if voted <= description.votes_allowed and random.randint(0, 1):
                 selections.append(selection)
             # Possibly append the false selections as well, indicating some choices
             # may be explicitly false
-            elif bool(random.randint(0, 1)) == 1:
+            elif random.randint(0, 1):
                 selections.append(selection_from(selection_description))
 
         return PlaintextBallotContest(description.object_id, selections)
@@ -91,7 +95,7 @@ class BallotFactory:
         with_trues: bool = True,
     ) -> PlaintextBallot:
         """
-        Get a single Fake Ballot object that is manually constructed with default vaules
+        Get a single Fake Ballot object that is manually constructed with default values
         """
 
         if ballot_id is None:
@@ -112,13 +116,19 @@ class BallotFactory:
         return fake_ballot
 
     def generate_fake_plaintext_ballots_for_election(
-        self, internal_manifest: InternalManifest, number_of_ballots: int
+        self,
+        internal_manifest: InternalManifest,
+        number_of_ballots: int,
+        ballot_style_id: Optional[str] = None,
     ) -> List[PlaintextBallot]:
         ballots: List[PlaintextBallot] = []
         for _i in range(number_of_ballots):
+            if ballot_style_id is not None:
+                ballot_style = internal_manifest.get_ballot_style(ballot_style_id)
+            else:
+                style_index = randint(0, len(internal_manifest.ballot_styles) - 1)
+                ballot_style = internal_manifest.ballot_styles[style_index]
 
-            style_index = randint(0, len(internal_manifest.ballot_styles) - 1)
-            ballot_style = internal_manifest.ballot_styles[style_index]
             ballot_id = f"ballot-{uuid.uuid1()}"
 
             contests: List[PlaintextBallotContest] = []

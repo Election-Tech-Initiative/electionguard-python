@@ -422,8 +422,8 @@ def candidate_contest_descriptions(
             ].object_id,
             sequence_order=sequence_order,
             vote_variation=vote_variation,
-            number_elected=n,
-            votes_allowed=n,  # should this be None or n?
+            votes_allowed=n,
+            votes_allowed_per_selection=1,
             name=draw(emails()),
             ballot_selections=selection_descriptions,
             ballot_title=draw(internationalized_texts()),
@@ -489,8 +489,8 @@ def referendum_contest_descriptions(
             ].object_id,
             sequence_order=sequence_order,
             vote_variation=VoteVariationType.one_of_m,
-            number_elected=1,
-            votes_allowed=1,  # should this be None or 1?
+            votes_allowed=1,
+            votes_allowed_per_selection=1,
             name=draw(emails()),
             ballot_selections=selection_descriptions,
             ballot_title=draw(internationalized_texts()),
@@ -617,7 +617,7 @@ def plaintext_voted_ballot(
     voted_contests: List[PlaintextBallotContest] = []
     for contest in contests:
         assert contest.is_valid(), "every contest needs to be valid"
-        n = contest.number_elected  # we need exactly this many 1's, and the rest 0's
+        n = contest.votes_allowed  # We may have at most this many encryptions of one
         ballot_selections = deepcopy(contest.ballot_selections)
         assert len(ballot_selections) >= n
 
