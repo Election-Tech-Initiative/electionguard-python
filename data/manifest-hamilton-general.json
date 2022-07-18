@@ -1277,7 +1277,6 @@
       "vote_variation": "one_of_m",
       "electoral_district_id": "hamilton-county",
       "name": "Governor of the Commonwealth of Ozark",
-      "number_elected": 1,
       "votes_allowed": 1,
       "sequence_order": 1,
       "ballot_title": {
@@ -1310,7 +1309,6 @@
       "sequence_order": 1,
       "electoral_district_id": "hamilton-county",
       "vote_variation": "one_of_m",
-      "number_elected": 1,
       "votes_allowed": 1,
       "name": "Governor of the Commonwealth of Ozark",
       "ballot_selections": [
