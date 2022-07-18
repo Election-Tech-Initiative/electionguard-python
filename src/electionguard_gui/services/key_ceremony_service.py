@@ -30,7 +30,7 @@ class KeyCeremonyService(ServiceBase):
         self,
         db: Database,
         key_ceremony_id: Optional[str],
-        on_found: Callable,
+        on_found: Callable[[str], None],
     ) -> None:
         # retrieve a tailable cursor of the deltas in key ceremony to avoid polling
         cursor = db.key_ceremony_deltas.find(
@@ -52,7 +52,7 @@ class KeyCeremonyService(ServiceBase):
                 changed_id = delta["key_ceremony_id"]
                 if key_ceremony_id is None or key_ceremony_id == changed_id:
                     print("new key ceremony delta found")
-                    on_found()
+                    on_found(changed_id)
 
             except StopIteration:
                 # the tailable cursor times out after a few seconds and fires a StopIteration exception,
@@ -91,31 +91,44 @@ class KeyCeremonyService(ServiceBase):
             {"$push": {"guardians_joined": guardian_id}},
         )
 
+    def public_key_to_dict(self, key: ElectionPublicKey) -> Any:
+        return {
+            "owner_id": key.owner_id,
+            "sequence_order": key.sequence_order,
+            "key": str(key.key),
+            "coefficient_commitments": [str(c) for c in key.coefficient_commitments],
+            "coefficient_proofs": [
+                {
+                    "public_key": str(cp.public_key),
+                    "commitment": str(cp.commitment),
+                    "challenge": str(cp.challenge),
+                    "response": str(cp.response),
+                    "usage": str(cp.usage),
+                }
+                for cp in key.coefficient_proofs
+            ],
+        }
+
     def add_key(
         self, db: Database, key_ceremony_id: str, key: ElectionPublicKey
     ) -> None:
         db.key_ceremonies.update_one(
             {"_id": ObjectId(key_ceremony_id)},
-            {
-                "$push": {
-                    "keys": {
-                        "owner_id": key.owner_id,
-                        "sequence_order": key.sequence_order,
-                        "key": str(key.key),
-                        "coefficient_commitments": [
-                            str(c) for c in key.coefficient_commitments
-                        ],
-                        "coefficient_proofs": [
-                            {
-                                "public_key": str(cp.public_key),
-                                "commitment": str(cp.commitment),
-                                "challenge": str(cp.challenge),
-                                "response": str(cp.response),
-                                "usage": str(cp.usage),
-                            }
-                            for cp in key.coefficient_proofs
-                        ],
-                    }
-                }
-            },
+            {"$push": {"keys": self.public_key_to_dict(key)}},
         )
+
+    def save_other_keys(self, db: Database, key_ceremony_id: str, keys: Any) -> None:
+        db.key_ceremonies.update_one(
+            {"_id": ObjectId(key_ceremony_id)},
+            {"$push": {"other_keys": {"$each": keys}}},
+        )
+
+
+def get_key_ceremony_status(key_ceremony: Any) -> str:
+    guardians_joined_count = len(key_ceremony["guardians_joined"])
+    guardian_count = key_ceremony["guardian_count"]
+    if guardians_joined_count < guardian_count:
+        return "waiting for guardians"
+    if len(key_ceremony["other_keys"]) == 0:
+        return "waiting for admin to announce guardians"
+    return "waiting for guardians to create backups"

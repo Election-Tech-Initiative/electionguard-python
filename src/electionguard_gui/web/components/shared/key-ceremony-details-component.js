@@ -20,9 +20,6 @@ export default {
     },
   },
   async mounted() {
-    const keyCeremony = await eel.get_key_ceremony(this.keyCeremonyId)();
-    console.log("found a key ceremony", keyCeremony.result);
-    this.keyCeremony = keyCeremony.result;
     eel.expose(this.refresh_key_ceremony, "refresh_key_ceremony");
     eel.watch_key_ceremony(this.keyCeremonyId);
   },
@@ -33,8 +30,9 @@ export default {
   template: /*html*/ `
     <div v-if="keyCeremony">
       <h1>{{keyCeremony.key_ceremony_name}}</h1>
-      <p>Quorum: {{keyCeremony.quorum}}</p>
+      <p>Status: {{keyCeremony.status}}</p>
       <p>Guardians: {{keyCeremony.guardian_count}}</p>
+      <p>Quorum: {{keyCeremony.quorum}}</p>
       <p>Created by: {{keyCeremony.created_by}}, {{keyCeremony.created_at_str}}</p>
       <h2>Joined Guardians</h2>
       <ul v-if="keyCeremony.guardians_joined.length">
