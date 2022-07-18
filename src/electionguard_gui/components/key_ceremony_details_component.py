@@ -90,9 +90,10 @@ class KeyCeremonyDetailsComponent(ComponentBase):
         )
         current_user_backup_exists = current_user_backups > 0
         if is_guardian and other_keys_exist and not current_user_backup_exists:
-            self.log.debug("other keys found, creating backup")
+            self.log.debug(
+                f"other keys found without backup for {current_user_id}, creating backup"
+            )
             guardian = self.load_guardian(current_user_id, key_ceremony)
-            self.log.debug("guardian loaded")
 
             current_user_other_keys = self.find_other_keys_for_user(
                 key_ceremony, current_user_id
@@ -107,6 +108,8 @@ class KeyCeremonyDetailsComponent(ComponentBase):
             guardian.generate_election_partial_key_backups()
             backups = guardian.share_election_partial_key_backups()
             self._key_ceremony_service.append_backups(db, key_ceremony_id, backups)
+            # notify the admin that a new guardian has backups
+            self._key_ceremony_service.notify_changed(db, key_ceremony_id)
 
         key_ceremony["status"] = get_key_ceremony_status(key_ceremony)
         # pylint: disable=no-member
