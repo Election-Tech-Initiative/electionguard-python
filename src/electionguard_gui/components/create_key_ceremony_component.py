@@ -51,6 +51,7 @@ class CreateKeyCeremonyComponent(ComponentBase):
             "guardian_count": guardian_count,
             "quorum": quorum,
             "guardians_joined": [],
+            "keys": [],
             "guardians_keys": [],
             "other_keys": [],
             "backups": [],
