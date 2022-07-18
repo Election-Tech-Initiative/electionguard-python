@@ -85,8 +85,10 @@ class KeyCeremonyDetailsComponent(ComponentBase):
             self._key_ceremony_service.notify_changed(db, key_ceremony_id)
             # todo #689 wait until all guardians have backups
 
-        # todo: search backups to determine if current user has created backup
-        current_user_backup_exists = False
+        current_user_backups = len(
+            self.get_backups_for_user(key_ceremony, current_user_id)
+        )
+        current_user_backup_exists = current_user_backups > 0
         if is_guardian and other_keys_exist and not current_user_backup_exists:
             self.log.debug("other keys found, creating backup")
             guardian = self.load_guardian(current_user_id, key_ceremony)
@@ -109,6 +111,13 @@ class KeyCeremonyDetailsComponent(ComponentBase):
         key_ceremony["status"] = get_key_ceremony_status(key_ceremony)
         # pylint: disable=no-member
         eel.refresh_key_ceremony(key_ceremony)
+
+    def get_backups_for_user(self, key_ceremony: Any, user_id: str) -> List[Any]:
+        return [
+            backup
+            for backup in key_ceremony["backups"]
+            if backup["owner_id"] == user_id
+        ]
 
     def find_other_keys_for_user(self, key_ceremony: Any, user_id: str) -> Any:
         return next(
