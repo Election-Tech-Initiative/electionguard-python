@@ -118,6 +118,7 @@ class KeyCeremonyDetailsComponent(ComponentBase):
             # notify the admin that a new guardian has backups
             self._key_ceremony_service.notify_changed(db, key_ceremony_id)
 
+        key_ceremony = self.get_ceremony(db, key_ceremony_id)
         new_state = self._ceremony_state_service.get_key_ceremony_state(key_ceremony)
         if state != new_state:
             self.log.debug(f"state changed from {state} to {new_state}")
