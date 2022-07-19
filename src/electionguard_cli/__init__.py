@@ -3,18 +3,24 @@ from electionguard_cli import cli_steps
 from electionguard_cli import e2e
 from electionguard_cli import encrypt_ballots
 from electionguard_cli import import_ballots
+from electionguard_cli import mark_ballots
 from electionguard_cli import setup_election
 from electionguard_cli import start
+from electionguard_cli import submit_ballots
 
 from electionguard_cli.cli_models import (
     BuildElectionResults,
     CliDecryptResults,
     CliElectionInputsBase,
     EncryptResults,
+    MarkResults,
+    SubmitResults,
     cli_decrypt_results,
     cli_election_inputs_base,
     e2e_build_election_results,
     encrypt_results,
+    mark_results,
+    submit_results,
 )
 from electionguard_cli.cli_steps import (
     CliStepBase,
@@ -23,8 +29,10 @@ from electionguard_cli.cli_steps import (
     EncryptVotesStep,
     InputRetrievalStepBase,
     KeyCeremonyStep,
+    MarkBallotsStep,
     OutputStepBase,
     PrintResultsStep,
+    SubmitBallotsStep,
     TallyStep,
     cli_step_base,
     decrypt_step,
@@ -32,8 +40,10 @@ from electionguard_cli.cli_steps import (
     encrypt_votes_step,
     input_retrieval_step_base,
     key_ceremony_step,
+    mark_ballots_step,
     output_step_base,
     print_results_step,
+    submit_ballots_step,
     tally_step,
 )
 from electionguard_cli.e2e import (
@@ -74,6 +84,18 @@ from electionguard_cli.import_ballots import (
     import_ballots_input_retrieval_step,
     import_ballots_publish_step,
 )
+from electionguard_cli.mark_ballots import (
+    MarkBallotInputs,
+    MarkBallotsCommand,
+    MarkBallotsElectionBuilderStep,
+    MarkBallotsInputRetrievalStep,
+    MarkBallotsPublishStep,
+    mark_ballot_inputs,
+    mark_ballots_election_builder_step,
+    mark_ballots_input_retrieval_step,
+    mark_ballots_publish_step,
+    mark_command,
+)
 from electionguard_cli.setup_election import (
     OutputSetupFilesStep,
     SetupElectionBuilderStep,
@@ -88,6 +110,18 @@ from electionguard_cli.setup_election import (
 )
 from electionguard_cli.start import (
     cli,
+)
+from electionguard_cli.submit_ballots import (
+    SubmitBallotInputs,
+    SubmitBallotsCommand,
+    SubmitBallotsElectionBuilderStep,
+    SubmitBallotsInputRetrievalStep,
+    SubmitBallotsPublishStep,
+    submit_ballot_inputs,
+    submit_ballots_election_builder_step,
+    submit_ballots_input_retrieval_step,
+    submit_ballots_publish_step,
+    submit_command,
 )
 
 __all__ = [
@@ -116,6 +150,13 @@ __all__ = [
     "ImportBallotsPublishStep",
     "InputRetrievalStepBase",
     "KeyCeremonyStep",
+    "MarkBallotInputs",
+    "MarkBallotsCommand",
+    "MarkBallotsElectionBuilderStep",
+    "MarkBallotsInputRetrievalStep",
+    "MarkBallotsPublishStep",
+    "MarkBallotsStep",
+    "MarkResults",
     "OutputSetupFilesStep",
     "OutputStepBase",
     "PrintResultsStep",
@@ -123,6 +164,13 @@ __all__ = [
     "SetupElectionCommand",
     "SetupInputRetrievalStep",
     "SetupInputs",
+    "SubmitBallotInputs",
+    "SubmitBallotsCommand",
+    "SubmitBallotsElectionBuilderStep",
+    "SubmitBallotsInputRetrievalStep",
+    "SubmitBallotsPublishStep",
+    "SubmitBallotsStep",
+    "SubmitResults",
     "SubmitVotesStep",
     "TallyStep",
     "cli",
@@ -156,6 +204,14 @@ __all__ = [
     "import_ballots_publish_step",
     "input_retrieval_step_base",
     "key_ceremony_step",
+    "mark_ballot_inputs",
+    "mark_ballots",
+    "mark_ballots_election_builder_step",
+    "mark_ballots_input_retrieval_step",
+    "mark_ballots_publish_step",
+    "mark_ballots_step",
+    "mark_command",
+    "mark_results",
     "output_setup_files_step",
     "output_step_base",
     "print_results_step",
@@ -165,6 +221,14 @@ __all__ = [
     "setup_input_retrieval_step",
     "setup_inputs",
     "start",
+    "submit_ballot_inputs",
+    "submit_ballots",
+    "submit_ballots_election_builder_step",
+    "submit_ballots_input_retrieval_step",
+    "submit_ballots_publish_step",
+    "submit_ballots_step",
+    "submit_command",
+    "submit_results",
     "submit_votes_step",
     "tally_step",
 ]

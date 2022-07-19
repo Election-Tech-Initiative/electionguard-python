@@ -82,12 +82,13 @@ auto-lint:
 	poetry run mkinit src/electionguard_tools --write --recursive --black
 	poetry run mkinit src/electionguard_verify --write --black
 	poetry run mkinit src/electionguard_cli --write --recursive --black
+	poetry run mkinit src/electionguard_gui --write --recursive --black
 	@echo Reformatting using Black
 	make blackformat
 	make lint
 	
 pylint:
-	poetry run pylint ./src ./tests
+	poetry run pylint --extension-pkg-allow-list=dependency_injector ./src ./tests
 
 blackformat:
 	poetry run black .
@@ -184,7 +185,6 @@ ifeq ($(OS), Windows)
 endif
 	wget https://github.com/microsoft/electionguard/releases/download/v0.95.0/sample-data.zip
 	unzip -o sample-data.zip
-	unzip sample-data.zip
 
 # Publish
 publish:
@@ -230,6 +230,23 @@ release-notes:
 	echo -en "\n" >> release_notes.md
 	echo "## Issues" >> release_notes.md
 	curl "${GITHUB_API_URL}/${GITHUB_REPOSITORY}/issues?milestone=${MILESTONE_NUM}&state=all" | jq '.[].title' | while read i; do echo "[$i]($MILESTONE_URL)" >> release_notes.md; done
+
+egui:
+ifeq "${EG_DB_PASSWORD}" ""
+	@echo "Set the EG_DB_PASSWORD environment variable"
+	exit 1
+endif
+	poetry run egui
+
+start-db:
+ifeq "${EG_DB_PASSWORD}" ""
+	@echo "Set the EG_DB_PASSWORD environment variable"
+	exit 1
+endif
+	docker compose -f src/electionguard_db/docker-compose.db.yml up -d
+
+stop-db:
+	docker compose -f src/electionguard_db/docker-compose.db.yml down
 
 eg-e2e-simple-election:
 	poetry run eg e2e --guardian-count=2 --quorum=2 --manifest=data/election_manifest_simple.json --ballots=data/plaintext_ballots_simple.json --spoil-id=25a7111b-4334-425a-87c1-f7a49f42b3a2 --output-record="./election_record.zip"

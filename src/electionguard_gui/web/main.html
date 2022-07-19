@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script type="text/javascript" src="/eel.js"></script>
+    <link href="css/bootstrap.min.css" rel="stylesheet" />
+    <link href="css/bootstrap-overrides.css" rel="stylesheet" />
+  </head>
+  <body>
+    <script type="importmap">
+      {
+        "imports": {
+          "vue": "./js/vue.esm-browser.prod.js"
+        }
+      }
+    </script>
+
+    <div id="app">
+      <navbar :user-id="userId"></navbar>
+      <div class="container mt-3">
+        <Login @login="login" v-if="showLogin"></Login>
+        <component :is="currentView" v-bind="currentViewProperties" />
+      </div>
+    </div>
+
+    <script type="module">
+      import { createApp } from "vue";
+
+      // components
+      import Navbar from "./components/shared/navbar-component.js";
+      import Login from "./components/shared/login-component.js";
+
+      // services
+      import AuthorizationService from "./services/authorization-service.js";
+      import RouterService from "./services/router-service.js";
+
+      createApp({
+        data() {
+          return {
+            currentPath: window.location.hash,
+            showLogin: false,
+            userId: null,
+          };
+        },
+        computed: {
+          currentView() {
+            if (this.showLogin) return null;
+            const route = this.getRoute(this.currentPath);
+            console.log("navigating", route);
+            return route.component;
+          },
+          currentViewProperties() {
+            const querystringParams = this.currentPath.split("?")[1];
+            const urlSearchParams = new URLSearchParams(querystringParams);
+            const params = Object.fromEntries(urlSearchParams.entries());
+            console.log("params", params);
+            return params;
+          },
+        },
+        methods: {
+          getRoute(path) {
+            return RouterService.getRoute(path);
+          },
+          login(username) {
+            console.log("login", username);
+            this.showLogin = false;
+            this.userId = username;
+          },
+        },
+        async mounted() {
+          window.addEventListener("hashchange", () => {
+            // setting currentPath will trigger the computed properties to update
+            this.currentPath = window.location.hash;
+            const route = this.getRoute(this.currentPath);
+            this.showLogin = route.secured && !this.userId;
+          });
+          this.userId = await AuthorizationService.getUserId();
+          this.showLogin = !this.userId;
+        },
+        components: {
+          Navbar,
+          Login,
+        },
+      }).mount("#app");
+    </script>
+
+    <script src="js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>
