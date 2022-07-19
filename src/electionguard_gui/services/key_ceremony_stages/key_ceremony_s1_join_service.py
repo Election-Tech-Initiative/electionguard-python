@@ -1,5 +1,4 @@
 from os import getcwd, path
-from typing import Any
 from pymongo.database import Database
 
 from electionguard import to_file

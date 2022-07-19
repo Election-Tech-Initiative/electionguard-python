@@ -1,6 +1,5 @@
 from abc import ABC
 from pymongo.database import Database
-from electionguard.key_ceremony import CeremonyDetails
 from electionguard.key_ceremony_mediator import KeyCeremonyMediator
 
 from electionguard_gui.models.key_ceremony_dto import KeyCeremonyDto
@@ -44,5 +43,4 @@ class KeyCeremonyStageBase(ABC):
     ) -> None:
         for guardian_id in key_ceremony.guardians_joined:
             key = key_ceremony.find_key(guardian_id)
-            self.log.debug(f"announcing {guardian_id}, {key}")
             mediator.announce(key)

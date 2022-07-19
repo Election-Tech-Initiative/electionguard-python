@@ -1,4 +1,3 @@
-from typing import Any
 from electionguard_gui.models.key_ceremony_dto import KeyCeremonyDto
 from electionguard_gui.models.key_ceremony_states import KeyCeremonyStates
 from electionguard_gui.services.eel_log_service import EelLogService

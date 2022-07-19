@@ -21,6 +21,12 @@ from electionguard_gui.services.key_ceremony_stages.key_ceremony_s1_join_service
 from electionguard_gui.services.key_ceremony_stages.key_ceremony_s2_announce_service import (
     KeyCeremonyS2AnnounceService,
 )
+from electionguard_gui.services.key_ceremony_stages.key_ceremony_s3_make_backup_service import (
+    KeyCeremonyS3MakeBackupService,
+)
+from electionguard_gui.services.key_ceremony_stages.key_ceremony_s4_share_backup_service import (
+    KeyCeremonyS4ShareBackupService,
+)
 from electionguard_gui.services.key_ceremony_state_service import (
     KeyCeremonyStateService,
 )
@@ -55,6 +61,22 @@ class Container(containers.DeclarativeContainer):
         auth_service=authorization_service,
         key_ceremony_state_service=key_ceremony_state_service,
     )
+    key_ceremony_s3_make_backup_service = providers.Factory(
+        KeyCeremonyS3MakeBackupService,
+        log_service=log_service,
+        db_service=db_service,
+        key_ceremony_service=key_ceremony_service,
+        auth_service=authorization_service,
+        key_ceremony_state_service=key_ceremony_state_service,
+    )
+    key_ceremony_s4_share_backup_service = providers.Factory(
+        KeyCeremonyS4ShareBackupService,
+        log_service=log_service,
+        db_service=db_service,
+        key_ceremony_service=key_ceremony_service,
+        auth_service=authorization_service,
+        key_ceremony_state_service=key_ceremony_state_service,
+    )
 
     # components
     guardian_home_component = providers.Factory(
@@ -72,6 +94,8 @@ class Container(containers.DeclarativeContainer):
         key_ceremony_state_service=key_ceremony_state_service,
         key_ceremony_s1_join_service=key_ceremony_s1_join_service,
         key_ceremony_s2_announce_service=key_ceremony_s2_announce_service,
+        key_ceremony_s3_make_backup_service=key_ceremony_s3_make_backup_service,
+        key_ceremony_s4_share_backup_service=key_ceremony_s4_share_backup_service,
     )
     setup_election_component = providers.Factory(SetupElectionComponent)
 
