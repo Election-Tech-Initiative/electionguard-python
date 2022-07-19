@@ -48,12 +48,13 @@ class BallotFactory:
         selected = bool(random_source.randint(0, 1))
         return selection_from(description, is_placeholder, selected)
 
+    @staticmethod
     def get_random_contest_from(
-        self,
         description: ContestDescription,
         random: Random,
         suppress_validity_check: bool = False,
-        with_trues: bool = False,
+        allow_null_votes: bool = True,
+        allow_under_votes: bool = True,
     ) -> PlaintextBallotContest:
         """
         Get a randomly filled contest for the given description that
@@ -64,33 +65,40 @@ class BallotFactory:
         if not suppress_validity_check:
             assert description.is_valid(), "the contest description must be valid"
 
-        selections: List[PlaintextBallotSelection] = []
+        shuffled_selections = description.ballot_selections[:]
+        random.shuffle(shuffled_selections)
 
-        voted = 0
+        if allow_null_votes and not allow_under_votes:
+            cut_point = random.choice([0, description.number_elected])
+        else:
+            min_votes = description.number_elected
+            if allow_under_votes:
+                min_votes = 1
+            if allow_null_votes:
+                min_votes = 0
+            cut_point = random.randint(min_votes, description.number_elected)
 
-        for selection_description in description.ballot_selections:
-            selection = self.get_random_selection_from(selection_description, random)
-            # the caller may force a true value
-            voted += selection.vote
-            if voted <= 1 and selection.vote and with_trues:
-                selections.append(selection)
-                continue
+        selections = [
+            selection_from(selection_description, is_affirmative=True)
+            for selection_description in shuffled_selections[0:cut_point]
+        ]
 
-            # Possibly append the true selection, indicating an undervote
-            if voted <= description.number_elected and bool(random.randint(0, 1)) == 1:
-                selections.append(selection)
+        for selection_description in shuffled_selections[cut_point:]:
             # Possibly append the false selections as well, indicating some choices
             # may be explicitly false
-            elif bool(random.randint(0, 1)) == 1:
-                selections.append(selection_from(selection_description))
+            if bool(random.randint(0, 1)) == 1:
+                selections.append(
+                    selection_from(selection_description, is_affirmative=False)
+                )
 
+        random.shuffle(selections)
         return PlaintextBallotContest(description.object_id, selections)
 
     def get_fake_ballot(
         self,
         internal_manifest: InternalManifest,
         ballot_id: str = None,
-        with_trues: bool = True,
+        allow_null_votes: bool = False,
     ) -> PlaintextBallot:
         """
         Get a single Fake Ballot object that is manually constructed with default vaules
@@ -104,7 +112,9 @@ class BallotFactory:
             internal_manifest.ballot_styles[0].object_id
         ):
             contests.append(
-                self.get_random_contest_from(contest, Random(), with_trues=with_trues)
+                self.get_random_contest_from(
+                    contest, Random(), allow_null_votes=allow_null_votes
+                )
             )
 
         fake_ballot = PlaintextBallot(
@@ -118,6 +128,8 @@ class BallotFactory:
         internal_manifest: InternalManifest,
         number_of_ballots: int,
         ballot_style_id: Optional[str] = None,
+        allow_null_votes: bool = False,
+        allow_under_votes: bool = True,
     ) -> List[PlaintextBallot]:
         ballots: List[PlaintextBallot] = []
         for _i in range(number_of_ballots):
@@ -132,7 +144,12 @@ class BallotFactory:
             contests: List[PlaintextBallotContest] = []
             for contest in internal_manifest.get_contests_for(ballot_style.object_id):
                 contests.append(
-                    self.get_random_contest_from(contest, Random(), with_trues=True)
+                    self.get_random_contest_from(
+                        contest,
+                        Random(),
+                        allow_null_votes=allow_null_votes,
+                        allow_under_votes=allow_under_votes,
+                    )
                 )
 
             ballots.append(PlaintextBallot(ballot_id, ballot_style.object_id, contests))
