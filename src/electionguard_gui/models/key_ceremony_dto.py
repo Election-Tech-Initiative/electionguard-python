@@ -55,7 +55,10 @@ class KeyCeremonyDto:
 
     def find_key(self, guardian_id: str) -> ElectionPublicKey:
         keys = self.keys
-        return next(key for key in keys if key.owner_id == guardian_id)
+        key = next((key for key in keys if key.owner_id == guardian_id), None)
+        if key is None:
+            raise Exception("Key not found for guardian: " + guardian_id)
+        return key
 
     def get_backup_count_for_user(self, user_id: str) -> int:
         backups = [backup for backup in self.backups if backup["owner_id"] == user_id]

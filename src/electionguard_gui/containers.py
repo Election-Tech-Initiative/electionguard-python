@@ -18,6 +18,9 @@ from electionguard_gui.services.key_ceremony_service import KeyCeremonyService
 from electionguard_gui.services.key_ceremony_stages.key_ceremony_s1_join_service import (
     KeyCeremonyS1JoinService,
 )
+from electionguard_gui.services.key_ceremony_stages.key_ceremony_s2_announce_service import (
+    KeyCeremonyS2AnnounceService,
+)
 from electionguard_gui.services.key_ceremony_state_service import (
     KeyCeremonyStateService,
 )
@@ -44,6 +47,14 @@ class Container(containers.DeclarativeContainer):
         auth_service=authorization_service,
         key_ceremony_state_service=key_ceremony_state_service,
     )
+    key_ceremony_s2_announce_service = providers.Factory(
+        KeyCeremonyS2AnnounceService,
+        log_service=log_service,
+        db_service=db_service,
+        key_ceremony_service=key_ceremony_service,
+        auth_service=authorization_service,
+        key_ceremony_state_service=key_ceremony_state_service,
+    )
 
     # components
     guardian_home_component = providers.Factory(
@@ -60,6 +71,7 @@ class Container(containers.DeclarativeContainer):
         auth_service=authorization_service,
         key_ceremony_state_service=key_ceremony_state_service,
         key_ceremony_s1_join_service=key_ceremony_s1_join_service,
+        key_ceremony_s2_announce_service=key_ceremony_s2_announce_service,
     )
     setup_election_component = providers.Factory(SetupElectionComponent)
 

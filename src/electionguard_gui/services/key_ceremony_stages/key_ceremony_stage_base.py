@@ -1,6 +1,10 @@
 from abc import ABC
-from electionguard_gui.services.authorization_service import AuthorizationService
+from pymongo.database import Database
+from electionguard.key_ceremony import CeremonyDetails
+from electionguard.key_ceremony_mediator import KeyCeremonyMediator
 
+from electionguard_gui.models.key_ceremony_dto import KeyCeremonyDto
+from electionguard_gui.services.authorization_service import AuthorizationService
 from electionguard_gui.services.db_service import DbService
 from electionguard_gui.services.eel_log_service import EelLogService
 from electionguard_gui.services.key_ceremony_service import KeyCeremonyService
@@ -32,5 +36,13 @@ class KeyCeremonyStageBase(ABC):
         self._key_ceremony_state_service = key_ceremony_state_service
         self.log = log_service
 
-    def run(self, key_ceremony_id: str) -> None:
+    def run(self, db: Database, key_ceremony: KeyCeremonyDto) -> None:
         pass
+
+    def announce_guardians(
+        self, key_ceremony: KeyCeremonyDto, mediator: KeyCeremonyMediator
+    ) -> None:
+        for guardian_id in key_ceremony.guardians_joined:
+            key = key_ceremony.find_key(guardian_id)
+            self.log.debug(f"announcing {guardian_id}, {key}")
+            mediator.announce(key)
