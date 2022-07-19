@@ -2,7 +2,9 @@ from dependency_injector import containers, providers
 from electionguard_gui.components.create_key_ceremony_component import (
     CreateKeyCeremonyComponent,
 )
-from electionguard_gui.components.guardian_home_component import GuardianHomeComponent
+from electionguard_gui.components.key_ceremony_list_component import (
+    KeyCeremonyListComponent,
+)
 from electionguard_gui.components.key_ceremony_details_component import (
     KeyCeremonyDetailsComponent,
 )
@@ -25,7 +27,7 @@ class Container(containers.DeclarativeContainer):
 
     # components
     guardian_home_component = providers.Factory(
-        GuardianHomeComponent, key_ceremony_service=key_ceremony_service
+        KeyCeremonyListComponent, key_ceremony_service=key_ceremony_service
     )
     create_key_ceremony_component = providers.Factory(
         CreateKeyCeremonyComponent,

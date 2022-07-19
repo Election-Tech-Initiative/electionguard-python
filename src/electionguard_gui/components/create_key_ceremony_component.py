@@ -52,6 +52,7 @@ class CreateKeyCeremonyComponent(ComponentBase):
             "quorum": quorum,
             "guardians_joined": [],
             "guardians_keys": [],
+            "other_keys": [],
             "created_by": self._auth_service.get_user_id(),
             "created_at": datetime.utcnow(),
         }
