@@ -4,6 +4,7 @@ from electionguard import Guardian
 from electionguard.guardian import PrivateGuardianRecord
 from electionguard.serialize import from_file
 from electionguard_gui.models.key_ceremony_dto import KeyCeremonyDto
+from electionguard_gui.models.key_ceremony_states import KeyCeremonyStates
 from electionguard_gui.services.key_ceremony_stages.key_ceremony_stage_base import (
     KeyCeremonyStageBase,
 )
@@ -13,6 +14,19 @@ from electionguard_tools import GUARDIAN_PREFIX
 
 class KeyCeremonyS3MakeBackupService(KeyCeremonyStageBase):
     """Responsible for stage 3 of the key ceremony where guardians create backups to send to the admin."""
+
+    def should_run(
+        self, key_ceremony: KeyCeremonyDto, state: KeyCeremonyStates
+    ) -> bool:
+        is_guardian = not self._auth_service.is_admin()
+        current_user_id = self._auth_service.get_user_id()
+        current_user_backups = key_ceremony.get_backup_count_for_user(current_user_id)
+        current_user_backup_exists = current_user_backups > 0
+        return (
+            is_guardian
+            and state == KeyCeremonyStates.PendingGuardianBackups
+            and not current_user_backup_exists
+        )
 
     def run(self, db: Database, key_ceremony: KeyCeremonyDto) -> None:
         current_user_id = self._auth_service.get_user_id()

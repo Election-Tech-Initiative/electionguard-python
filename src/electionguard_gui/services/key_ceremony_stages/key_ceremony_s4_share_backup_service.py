@@ -1,6 +1,7 @@
 from typing import Any, List
 from pymongo.database import Database
 from electionguard_gui.models.key_ceremony_dto import KeyCeremonyDto
+from electionguard_gui.models.key_ceremony_states import KeyCeremonyStates
 from electionguard_gui.services.db_serialization_service import backup_to_dict
 from electionguard_gui.services.guardian_service import (
     announce_guardians,
@@ -16,6 +17,12 @@ class KeyCeremonyS4ShareBackupService(KeyCeremonyStageBase):
     Responsible for stage 4 of the key ceremony where admins receive backups and share them
     back to guardians for verification.
     """
+
+    def should_run(
+        self, key_ceremony: KeyCeremonyDto, state: KeyCeremonyStates
+    ) -> bool:
+        is_admin = self._auth_service.is_admin()
+        return is_admin and state == KeyCeremonyStates.PendingAdminToShareBackups
 
     def run(self, db: Database, key_ceremony: KeyCeremonyDto) -> None:
         current_user_id = self._auth_service.get_user_id()

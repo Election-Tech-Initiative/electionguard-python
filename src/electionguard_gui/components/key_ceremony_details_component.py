@@ -1,3 +1,4 @@
+from typing import List
 import eel
 from pymongo.database import Database
 
@@ -16,12 +17,12 @@ from electionguard_gui.services.key_ceremony_stages.key_ceremony_s4_share_backup
 )
 
 from electionguard_gui.models.key_ceremony_dto import KeyCeremonyDto
+from electionguard_gui.services.key_ceremony_stages.key_ceremony_stage_base import (
+    KeyCeremonyStageBase,
+)
 from electionguard_gui.services.key_ceremony_state_service import (
     KeyCeremonyStateService,
     get_key_ceremony_status,
-)
-from electionguard_gui.models.key_ceremony_states import (
-    KeyCeremonyStates,
 )
 from electionguard_gui.services.authorization_service import AuthorizationService
 from electionguard_gui.components.component_base import ComponentBase
@@ -36,9 +37,7 @@ class KeyCeremonyDetailsComponent(ComponentBase):
     _auth_service: AuthorizationService
     _ceremony_state_service: KeyCeremonyStateService
     _key_ceremony_s1_join_service: KeyCeremonyS1JoinService
-    _key_ceremony_s2_announce_service: KeyCeremonyS2AnnounceService
-    _key_ceremony_s3_make_backup_service: KeyCeremonyS3MakeBackupService
-    _key_ceremony_s4_share_backup_service: KeyCeremonyS4ShareBackupService
+    key_ceremony_watch_stages: List[KeyCeremonyStageBase]
 
     def __init__(
         self,
@@ -55,22 +54,16 @@ class KeyCeremonyDetailsComponent(ComponentBase):
         self._ceremony_state_service = key_ceremony_state_service
         self._auth_service = auth_service
         self._key_ceremony_s1_join_service = key_ceremony_s1_join_service
-        self._key_ceremony_s2_announce_service = key_ceremony_s2_announce_service
-        self._key_ceremony_s3_make_backup_service = key_ceremony_s3_make_backup_service
-        self._key_ceremony_s4_share_backup_service = (
-            key_ceremony_s4_share_backup_service
-        )
+        self.key_ceremony_watch_stages = [
+            key_ceremony_s2_announce_service,
+            key_ceremony_s3_make_backup_service,
+            key_ceremony_s4_share_backup_service,
+        ]
 
     def expose(self) -> None:
         eel.expose(self.join_key_ceremony)
         eel.expose(self.watch_key_ceremony)
         eel.expose(self.stop_watching_key_ceremony)
-
-    def can_join_key_ceremony(self, key_ceremony: KeyCeremonyDto) -> bool:
-        user_id = self._auth_service.get_user_id()
-        already_joined = user_id in key_ceremony.guardians_joined
-        is_admin = self._auth_service.is_admin()
-        return not already_joined and not is_admin
 
     def watch_key_ceremony(self, key_ceremony_id: str) -> None:
         db = self.db_service.get_db()
@@ -87,26 +80,15 @@ class KeyCeremonyDetailsComponent(ComponentBase):
         self.log.debug(
             f"on_key_ceremony_changed key_ceremony_id: '{key_ceremony_id}', current_user_id: '{current_user_id}'"
         )
-        is_admin = self._auth_service.is_admin()
-        is_guardian = not is_admin
         db = self.db_service.get_db()
         key_ceremony = self.get_ceremony(db, key_ceremony_id)
         state = self._ceremony_state_service.get_key_ceremony_state(key_ceremony)
         self.log.debug(f"{key_ceremony_id} state = '{state}'")
-        if is_admin and state == KeyCeremonyStates.PendingAdminAnnounce:
-            self._key_ceremony_s2_announce_service.run(db, key_ceremony)
 
-        current_user_backups = key_ceremony.get_backup_count_for_user(current_user_id)
-        current_user_backup_exists = current_user_backups > 0
-        if (
-            is_guardian
-            and state == KeyCeremonyStates.PendingGuardianBackups
-            and not current_user_backup_exists
-        ):
-            self._key_ceremony_s3_make_backup_service.run(db, key_ceremony)
-
-        if is_admin and state == KeyCeremonyStates.PendingAdminToShareBackups:
-            self._key_ceremony_s4_share_backup_service.run(db, key_ceremony)
+        for stage in self.key_ceremony_watch_stages:
+            if stage.should_run(key_ceremony, state):
+                stage.run(db, key_ceremony)
+                break
 
         key_ceremony = self.get_ceremony(db, key_ceremony_id)
         new_state = self._ceremony_state_service.get_key_ceremony_state(key_ceremony)
@@ -128,3 +110,9 @@ class KeyCeremonyDetailsComponent(ComponentBase):
         key_ceremony = self._key_ceremony_service.get(db, id)
         key_ceremony.can_join = self.can_join_key_ceremony(key_ceremony)
         return key_ceremony
+
+    def can_join_key_ceremony(self, key_ceremony: KeyCeremonyDto) -> bool:
+        user_id = self._auth_service.get_user_id()
+        already_joined = user_id in key_ceremony.guardians_joined
+        is_admin = self._auth_service.is_admin()
+        return not already_joined and not is_admin
