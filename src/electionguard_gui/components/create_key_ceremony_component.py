@@ -55,6 +55,7 @@ class CreateKeyCeremonyComponent(ComponentBase):
             "guardians_keys": [],
             "other_keys": [],
             "backups": [],
+            "shared_backups": [],
             "created_by": self._auth_service.get_user_id(),
             "created_at": datetime.utcnow(),
         }

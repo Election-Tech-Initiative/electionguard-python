@@ -120,3 +120,14 @@ class KeyCeremonyService(ServiceBase):
             {"_id": ObjectId(key_ceremony_id)},
             {"$push": {"backups": {"$each": backups_dict}}},
         )
+
+    def append_shared_backups(
+        self,
+        db: Database,
+        key_ceremony_id: str,
+        shared_backups: List[Any],
+    ) -> None:
+        db.key_ceremonies.update_one(
+            {"_id": ObjectId(key_ceremony_id)},
+            {"$push": {"shared_backups": {"$each": shared_backups}}},
+        )

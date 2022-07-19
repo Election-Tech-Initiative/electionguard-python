@@ -5,7 +5,7 @@ from pymongo.database import Database
 
 from electionguard import to_file
 from electionguard.guardian import Guardian, PrivateGuardianRecord
-from electionguard.key_ceremony import CeremonyDetails
+from electionguard.key_ceremony import CeremonyDetails, ElectionPartialKeyBackup
 from electionguard.key_ceremony_mediator import KeyCeremonyMediator
 from electionguard.serialize import from_file
 from electionguard.utils import get_optional
@@ -20,7 +20,7 @@ from electionguard_gui.models.key_ceremony_states import (
     KeyCeremonyStates,
 )
 from electionguard_gui.services.db_serialization_service import (
-    dict_to_election_public_key,
+    backup_to_dict,
     public_key_to_dict,
 )
 from electionguard_gui.services.authorization_service import AuthorizationService
@@ -90,7 +90,7 @@ class KeyCeremonyDetailsComponent(ComponentBase):
             self._key_ceremony_service.notify_changed(db, key_ceremony_id)
             # todo #689 wait until all guardians have backups
 
-        current_user_backups = len(key_ceremony.get_backups_for_user(current_user_id))
+        current_user_backups = key_ceremony.get_backup_count_for_user(current_user_id)
         current_user_backup_exists = current_user_backups > 0
         if (
             is_guardian
@@ -117,7 +117,10 @@ class KeyCeremonyDetailsComponent(ComponentBase):
 
         if is_admin and state == KeyCeremonyStates.PendingAdminToShareBackups:
             self.log.debug(f"sharing backups for admin {current_user_id}")
-            self.share_backups(key_ceremony)
+            shared_backups = self.share_backups(key_ceremony)
+            self._key_ceremony_service.append_shared_backups(
+                db, key_ceremony.id, shared_backups
+            )
             self._key_ceremony_service.notify_changed(db, key_ceremony_id)
 
         key_ceremony = self.get_ceremony(db, key_ceremony_id)
@@ -128,15 +131,17 @@ class KeyCeremonyDetailsComponent(ComponentBase):
         # pylint: disable=no-member
         eel.refresh_key_ceremony(key_ceremony.to_dict())
 
-    def share_backups(self, key_ceremony: KeyCeremonyDto) -> None:
-        # todo: uncomment and implement for #689
-        # mediator = self.make_mediator(key_ceremony)
-        # mediator.receive_backups(key_ceremony.backups)
-        # for guardian_id in key_ceremony.guardians_joined:
-        #     mediator.receive_backups(guardian.partial_key_backups())
-        # for guardian_id in key_ceremony.guardians_joined:
-        #     backups = mediator.share_backups(guardian.id)
-        pass
+    def share_backups(self, key_ceremony: KeyCeremonyDto) -> List[Any]:
+        mediator = self.make_mediator(key_ceremony)
+        self.announce_guardians(key_ceremony, mediator)
+        mediator.receive_backups(key_ceremony.get_backups())
+        shared_backups = []
+        for guardian_id in key_ceremony.guardians_joined:
+            self.log.debug(f"sharing backups for guardian {guardian_id}")
+            guardian_backups = mediator.share_backups(guardian_id)
+            backups_as_dict = [backup_to_dict(backup) for backup in guardian_backups]
+            shared_backups.append({"owner_id": guardian_id, "backups": backups_as_dict})
+        return shared_backups
 
     def make_mediator(self, key_ceremony: KeyCeremonyDto) -> KeyCeremonyMediator:
         quorum = key_ceremony.quorum
@@ -147,15 +152,19 @@ class KeyCeremonyDetailsComponent(ComponentBase):
         )
         return mediator
 
-    def announce(self, key_ceremony: KeyCeremonyDto) -> List[dict[str, Any]]:
-        other_keys = []
-        mediator = self.make_mediator(key_ceremony)
-        guardians = key_ceremony.guardians_joined
-        for guardian_id in guardians:
+    def announce_guardians(
+        self, key_ceremony: KeyCeremonyDto, mediator: KeyCeremonyMediator
+    ) -> None:
+        for guardian_id in key_ceremony.guardians_joined:
             key = key_ceremony.find_key(guardian_id)
             self.log.debug(f"announcing {guardian_id}, {key}")
             mediator.announce(key)
-        for guardian_id in guardians:
+
+    def announce(self, key_ceremony: KeyCeremonyDto) -> List[dict[str, Any]]:
+        other_keys = []
+        mediator = self.make_mediator(key_ceremony)
+        self.announce_guardians(key_ceremony, mediator)
+        for guardian_id in key_ceremony.guardians_joined:
             other_guardian_keys = get_optional(mediator.share_announced(guardian_id))
             other_keys.append(
                 {
