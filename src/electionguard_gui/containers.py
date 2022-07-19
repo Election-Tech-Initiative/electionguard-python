@@ -15,6 +15,9 @@ from electionguard_gui.services.db_service import DbService
 
 from electionguard_gui.services.eel_log_service import EelLogService
 from electionguard_gui.services.key_ceremony_service import KeyCeremonyService
+from electionguard_gui.services.key_ceremony_stages.key_ceremony_s1_join_service import (
+    KeyCeremonyS1JoinService,
+)
 from electionguard_gui.services.key_ceremony_state_service import (
     KeyCeremonyStateService,
 )
@@ -23,12 +26,23 @@ from electionguard_gui.services.key_ceremony_state_service import (
 class Container(containers.DeclarativeContainer):
     """Responsible for dependency injection and how components are wired together"""
 
+    # services
     log_service = providers.Factory(EelLogService)
     db_service = providers.Singleton(DbService, log_service=log_service)
     key_ceremony_service = providers.Factory(KeyCeremonyService, db_service=db_service)
     authorization_service = providers.Singleton(AuthorizationService)
     key_ceremony_state_service = providers.Factory(
         KeyCeremonyStateService, log_service=log_service
+    )
+
+    # key ceremony services
+    key_ceremony_s1_join_service = providers.Factory(
+        KeyCeremonyS1JoinService,
+        log_service=log_service,
+        db_service=db_service,
+        key_ceremony_service=key_ceremony_service,
+        auth_service=authorization_service,
+        key_ceremony_state_service=key_ceremony_state_service,
     )
 
     # components
@@ -45,6 +59,7 @@ class Container(containers.DeclarativeContainer):
         key_ceremony_service=key_ceremony_service,
         auth_service=authorization_service,
         key_ceremony_state_service=key_ceremony_state_service,
+        key_ceremony_s1_join_service=key_ceremony_s1_join_service,
     )
     setup_election_component = providers.Factory(SetupElectionComponent)
 
