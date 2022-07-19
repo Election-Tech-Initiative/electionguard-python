@@ -2,7 +2,10 @@ from typing import Any, List
 from pymongo.database import Database
 from electionguard_gui.models.key_ceremony_dto import KeyCeremonyDto
 from electionguard_gui.services.db_serialization_service import backup_to_dict
-from electionguard_gui.services.guardian_service import make_mediator
+from electionguard_gui.services.guardian_service import (
+    announce_guardians,
+    make_mediator,
+)
 from electionguard_gui.services.key_ceremony_stages.key_ceremony_stage_base import (
     KeyCeremonyStageBase,
 )
@@ -25,7 +28,7 @@ class KeyCeremonyS4ShareBackupService(KeyCeremonyStageBase):
 
     def share_backups(self, key_ceremony: KeyCeremonyDto) -> List[Any]:
         mediator = make_mediator(key_ceremony)
-        self.announce_guardians(key_ceremony, mediator)
+        announce_guardians(key_ceremony, mediator)
         mediator.receive_backups(key_ceremony.get_backups())
         shared_backups = []
         for guardian_id in key_ceremony.guardians_joined:

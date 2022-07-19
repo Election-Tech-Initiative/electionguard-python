@@ -21,3 +21,11 @@ def make_mediator(key_ceremony: KeyCeremonyDto) -> KeyCeremonyMediator:
     ceremony_details = CeremonyDetails(guardian_count, quorum)
     mediator: KeyCeremonyMediator = KeyCeremonyMediator("mediator_1", ceremony_details)
     return mediator
+
+
+def announce_guardians(
+    key_ceremony: KeyCeremonyDto, mediator: KeyCeremonyMediator
+) -> None:
+    for guardian_id in key_ceremony.guardians_joined:
+        key = key_ceremony.find_key(guardian_id)
+        mediator.announce(key)
