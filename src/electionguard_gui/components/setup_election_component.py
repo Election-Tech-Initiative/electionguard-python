@@ -8,7 +8,7 @@ from electionguard_cli.setup_election.output_setup_files_step import (
 from electionguard_cli.setup_election.setup_election_builder_step import (
     SetupElectionBuilderStep,
 )
-from electionguard_gui.component_base import ComponentBase
+from electionguard_gui.components.component_base import ComponentBase
 from electionguard_gui.eel_utils import eel_success
 from electionguard_gui.gui_setup_election.gui_setup_input_retrieval_step import (
     GuiSetupInputRetrievalStep,
@@ -38,7 +38,9 @@ class SetupElectionComponent(ComponentBase):
         )
         context_file = files[0]
         constants_file = files[1]
-        print(f"Setup complete, context: {context_file}, constants: {constants_file}")
+        self.log.debug(
+            f"Setup complete, context: {context_file}, constants: {constants_file}"
+        )
         with open(context_file, "r", encoding="utf-8") as context_file:
             context_raw: str = context_file.read()
             return eel_success(context_raw)

@@ -1,4 +1,4 @@
-import AuthorizationService from "../../services/authorization-service.js";
+import RouterService from "/services/router-service.js";
 
 export default {
   data() {
@@ -8,11 +8,15 @@ export default {
   },
   methods: {
     key_ceremonies_found: function (key_ceremonies) {
-      console.log("found keys", key_ceremonies);
       this.keyCeremonies = key_ceremonies;
     },
-    join: function (keyCeremonyId) {
-      eel.join_key_ceremony(keyCeremonyId);
+    getKeyCeremonyUrl: function (keyCeremony) {
+      return RouterService.getUrl(
+        RouterService.routes.viewKeyCeremonyGuardianPage,
+        {
+          keyCeremonyId: keyCeremony.id,
+        }
+      );
     },
   },
   async mounted() {
@@ -22,7 +26,7 @@ export default {
   },
   unmounted() {
     console.log("stop watching key ceremonies");
-    eel.stop_watching();
+    eel.stop_watching_key_ceremonies();
   },
   template: /*html*/ `
   <h1>Guardian Home</h1>
@@ -30,7 +34,7 @@ export default {
   <p v-if="!keyCeremonies">No key ceremonies found...</p>
 
   <div v-if="keyCeremonies" class="d-grid gap-2 d-md-block">
-    <button v-for="keyCeremony in keyCeremonies" type="button" @click="join(keyCeremony.id)" class="btn btn-primary me-2">{{ keyCeremony.key_ceremony_name }}</button>
+    <a :href="getKeyCeremonyUrl(keyCeremony)" v-for="keyCeremony in keyCeremonies" class="btn btn-primary me-2 mt-2">{{ keyCeremony.key_ceremony_name }}</a>
   </div>
   `,
 };
