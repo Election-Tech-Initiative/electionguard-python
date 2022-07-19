@@ -57,10 +57,12 @@ class KeyCeremonyDto:
     def get_backups_for_user(self, user_id: str) -> List[Any]:
         return [backup for backup in self.backups if backup["owner_id"] == user_id]
 
-    def find_other_keys_for_user(self, user_id: str) -> Any:
-        return next(
+    def find_other_keys_for_user(self, user_id: str) -> List[ElectionPublicKey]:
+        other_key_wrapper = next(
             filter(
                 lambda other_key: other_key["owner_id"] == user_id,
                 self.other_keys,
             )
         )
+        other_keys = other_key_wrapper["other_keys"]
+        return [dict_to_election_public_key(other_key) for other_key in other_keys]
