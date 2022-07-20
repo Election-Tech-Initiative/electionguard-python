@@ -81,27 +81,35 @@ class KeyCeremonyDetailsComponent(ComponentBase):
         )
 
     def on_key_ceremony_changed(self, key_ceremony_id: str) -> None:
-        current_user_id = self._auth_service.get_user_id()
-        self.log.debug(
-            f"on_key_ceremony_changed key_ceremony_id: '{key_ceremony_id}', current_user_id: '{current_user_id}'"
-        )
-        db = self.db_service.get_db()
-        key_ceremony = self.get_ceremony(db, key_ceremony_id)
-        state = self._ceremony_state_service.get_key_ceremony_state(key_ceremony)
-        self.log.debug(f"{key_ceremony_id} state = '{state}'")
+        try:
+            self.log.debug(
+                f"on_key_ceremony_changed key_ceremony_id: '{key_ceremony_id}'"
+            )
+            db = self.db_service.get_db()
+            key_ceremony = self.get_ceremony(db, key_ceremony_id)
+            state = self._ceremony_state_service.get_key_ceremony_state(key_ceremony)
+            self.log.debug(f"{key_ceremony_id} state = '{state}'")
 
-        for stage in self.key_ceremony_watch_stages:
-            if stage.should_run(key_ceremony, state):
-                stage.run(db, key_ceremony)
-                break
+            for stage in self.key_ceremony_watch_stages:
+                if stage.should_run(key_ceremony, state):
+                    stage.run(db, key_ceremony)
+                    break
 
-        key_ceremony = self.get_ceremony(db, key_ceremony_id)
-        new_state = self._ceremony_state_service.get_key_ceremony_state(key_ceremony)
-        if state != new_state:
-            self.log.debug(f"state changed from {state} to {new_state}")
-        key_ceremony.status = get_key_ceremony_status(new_state)
-        # pylint: disable=no-member
-        eel.refresh_key_ceremony(key_ceremony.to_dict())
+            key_ceremony = self.get_ceremony(db, key_ceremony_id)
+            new_state = self._ceremony_state_service.get_key_ceremony_state(
+                key_ceremony
+            )
+            if state != new_state:
+                self.log.debug(f"state changed from {state} to {new_state}")
+            key_ceremony.status = get_key_ceremony_status(new_state)
+            result = key_ceremony.to_dict()
+            # pylint: disable=no-member
+            self.log.debug(f"sending key ceremony update: {result}")
+            eel.refresh_key_ceremony(eel_success(result))
+        # pylint: disable=broad-except
+        except Exception as e:
+            self.log.error(e)
+            eel.refresh_key_ceremony(eel_fail(str(e)))
 
     def stop_watching_key_ceremony(self) -> None:
         self._key_ceremony_service.stop_watching()

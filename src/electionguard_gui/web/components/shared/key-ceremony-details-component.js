@@ -6,7 +6,7 @@ export default {
   },
   components: { Spinner },
   data() {
-    return { keyCeremony: null, loading: false };
+    return { keyCeremony: null, loading: false, error: false };
   },
   methods: {
     join: async function () {
@@ -14,9 +14,15 @@ export default {
       await eel.join_key_ceremony(this.keyCeremonyId)();
       this.loading = false;
     },
-    refresh_key_ceremony: function (keyCeremony) {
-      console.log("key ceremony refreshed", keyCeremony);
-      this.keyCeremony = keyCeremony;
+    refresh_key_ceremony: function (eelMessage) {
+      console.log("key ceremony refreshed", eelMessage);
+      if (eelMessage.success) {
+        this.keyCeremony = eelMessage.result;
+      } else {
+        console.error(eelMessage.message);
+        this.error = true;
+        this.keyCeremony = undefined;
+      }
     },
   },
   async mounted() {
@@ -45,7 +51,12 @@ export default {
       <spinner :visible="loading"></spinner>
     </div>
     <div v-else>
-      <spinner></spinner>
+      <div v-if="loading">  
+        <spinner></spinner>
+      </div>
+      <div v-if="error">
+        <p class="alert alert-danger" role="alert">An error occurred with the key ceremony. Check the logs and try again.</p>
+      </div>
     </div>
   `,
 };
