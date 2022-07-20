@@ -1,28 +1,21 @@
+import traceback
 from typing import List
 import eel
 from pymongo.database import Database
+from electionguard_gui.eel_utils import eel_fail, eel_success
 
 
-from electionguard_gui.services.key_ceremony_stages.key_ceremony_s1_join_service import (
+from electionguard_gui.services.key_ceremony_stages import (
+    KeyCeremonyStageBase,
     KeyCeremonyS1JoinService,
-)
-from electionguard_gui.services.key_ceremony_stages.key_ceremony_s2_announce_service import (
     KeyCeremonyS2AnnounceService,
-)
-from electionguard_gui.services.key_ceremony_stages.key_ceremony_s3_make_backup_service import (
     KeyCeremonyS3MakeBackupService,
-)
-from electionguard_gui.services.key_ceremony_stages.key_ceremony_s4_share_backup_service import (
     KeyCeremonyS4ShareBackupService,
+    KeyCeremonyS5VerifyBackupService,
+    KeyCeremonyS6PublishKeyService,
 )
 
 from electionguard_gui.models.key_ceremony_dto import KeyCeremonyDto
-from electionguard_gui.services.key_ceremony_stages.key_ceremony_s5_verify_backup_service import (
-    KeyCeremonyS5VerifyBackupService,
-)
-from electionguard_gui.services.key_ceremony_stages.key_ceremony_stage_base import (
-    KeyCeremonyStageBase,
-)
 from electionguard_gui.services.key_ceremony_state_service import (
     KeyCeremonyStateService,
     get_key_ceremony_status,
@@ -52,6 +45,7 @@ class KeyCeremonyDetailsComponent(ComponentBase):
         key_ceremony_s3_make_backup_service: KeyCeremonyS3MakeBackupService,
         key_ceremony_s4_share_backup_service: KeyCeremonyS4ShareBackupService,
         key_ceremony_s5_verification_service: KeyCeremonyS5VerifyBackupService,
+        key_ceremony_s6_publish_key_service: KeyCeremonyS6PublishKeyService,
     ) -> None:
         super().__init__()
         self._key_ceremony_service = key_ceremony_service
@@ -63,6 +57,7 @@ class KeyCeremonyDetailsComponent(ComponentBase):
             key_ceremony_s3_make_backup_service,
             key_ceremony_s4_share_backup_service,
             key_ceremony_s5_verification_service,
+            key_ceremony_s6_publish_key_service,
         ]
 
     def expose(self) -> None:
@@ -104,11 +99,11 @@ class KeyCeremonyDetailsComponent(ComponentBase):
             key_ceremony.status = get_key_ceremony_status(new_state)
             result = key_ceremony.to_dict()
             # pylint: disable=no-member
-            self.log.debug(f"sending key ceremony update: {result}")
             eel.refresh_key_ceremony(eel_success(result))
         # pylint: disable=broad-except
         except Exception as e:
             self.log.error(e)
+            traceback.print_exc()
             eel.refresh_key_ceremony(eel_fail(str(e)))
 
     def stop_watching_key_ceremony(self) -> None:

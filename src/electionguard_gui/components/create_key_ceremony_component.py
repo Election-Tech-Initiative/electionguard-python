@@ -60,6 +60,7 @@ class CreateKeyCeremonyComponent(ComponentBase):
             "backups": [],
             "shared_backups": [],
             "verifications": [],
+            "joint_key": None,
             "created_by": self._auth_service.get_user_id(),
             "created_at": datetime.utcnow(),
         }

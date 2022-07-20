@@ -12,6 +12,7 @@ class KeyCeremonyStateService(ServiceBase):
     def __init__(self, log_service: EelLogService) -> None:
         self.log = log_service
 
+    # pylint: disable=too-many-return-statements
     def get_key_ceremony_state(self, key_ceremony: KeyCeremonyDto) -> KeyCeremonyStates:
         guardians_joined = len(key_ceremony.guardians_joined)
         guardian_count = key_ceremony.guardian_count
@@ -38,7 +39,9 @@ class KeyCeremonyStateService(ServiceBase):
             return KeyCeremonyStates.PendingAdminToShareBackups
         if verifications < expected_verifications:
             return KeyCeremonyStates.PendingGuardiansVerifyBackups
-        return KeyCeremonyStates.PendingAdminToPublishJointKey
+        if not key_ceremony.joint_key_exists():
+            return KeyCeremonyStates.PendingAdminToPublishJointKey
+        return KeyCeremonyStates.Complete
 
 
 status_descriptions = {

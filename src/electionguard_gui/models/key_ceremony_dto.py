@@ -1,5 +1,6 @@
 from typing import Any, List
 from datetime import datetime
+from electionguard import ElectionPartialKeyVerification
 from electionguard.group import ElementModP
 from electionguard.key_ceremony import ElectionPartialKeyBackup, ElectionPublicKey
 from electionguard.election_polynomial import PublicCommitment
@@ -21,11 +22,12 @@ class KeyCeremonyDto:
         self.other_keys = key_ceremony["other_keys"]
         self.backups = key_ceremony["backups"]
         self.shared_backups = key_ceremony["shared_backups"]
+        self.verifications = key_ceremony["verifications"]
+        self.keys = [_dict_to_election_public_key(key) for key in key_ceremony["keys"]]
+        self.joint_key = key_ceremony["joint_key"]
         self.created_by = key_ceremony["created_by"]
         self.created_at_utc = key_ceremony["created_at"]
         self.created_at_str = utc_to_str(self.created_at_utc)
-        self.keys = [_dict_to_election_public_key(key) for key in key_ceremony["keys"]]
-        self.verifications = key_ceremony["verifications"]
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -41,17 +43,20 @@ class KeyCeremonyDto:
         }
 
     id: str
-    guardians_joined: List[str]
-    key_ceremony_name: str
-    created_by: str
-    created_at_utc: datetime
-    can_join: bool
-    keys: List[ElectionPublicKey]
     guardian_count: int
+    key_ceremony_name: str
     quorum: int
+    guardians_joined: List[str]
     other_keys: List[Any]
     backups: List[Any]
     shared_backups: List[Any]
+    verifications: List[Any]
+    keys: List[ElectionPublicKey]
+    joint_key: Any
+    created_by: str
+    created_at_utc: datetime
+    created_at_str: str
+    can_join: bool
     status: str
 
     def find_key(self, guardian_id: str) -> ElectionPublicKey:
@@ -73,6 +78,11 @@ class KeyCeremonyDto:
                 if verification["designated_id"] == user_id
             ]
         )
+
+    def get_verifications(self) -> List[ElectionPartialKeyVerification]:
+        return [
+            _dict_to_verification(verification) for verification in self.verifications
+        ]
 
     def get_shared_backups_for_guardian(
         self, guardian_id: str
@@ -97,6 +107,18 @@ class KeyCeremonyDto:
         )
         other_keys = other_key_wrapper["other_keys"]
         return [_dict_to_election_public_key(other_key) for other_key in other_keys]
+
+    def joint_key_exists(self) -> bool:
+        return self.joint_key is not None
+
+
+def _dict_to_verification(verification: Any) -> ElectionPartialKeyVerification:
+    return ElectionPartialKeyVerification(
+        verification["owner_id"],
+        verification["designated_id"],
+        verification["verifier_id"],
+        verification["verified"],
+    )
 
 
 def _dict_to_backup(backup: Any) -> ElectionPartialKeyBackup:

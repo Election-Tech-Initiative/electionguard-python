@@ -5,6 +5,7 @@ from pymongo import CursorType
 from bson import ObjectId
 import eel
 from electionguard.key_ceremony import (
+    ElectionJointKey,
     ElectionPartialKeyBackup,
     ElectionPartialKeyVerification,
     ElectionPublicKey,
@@ -12,6 +13,7 @@ from electionguard.key_ceremony import (
 from electionguard_gui.models.key_ceremony_dto import KeyCeremonyDto
 from electionguard_gui.services.db_serialization_service import (
     backup_to_dict,
+    joint_key_to_dict,
     public_key_to_dict,
     verification_to_dict,
 )
@@ -153,4 +155,16 @@ class KeyCeremonyService(ServiceBase):
         db.key_ceremonies.update_one(
             {"_id": ObjectId(key_ceremony_id)},
             {"$push": {"verifications": {"$each": verifications_dict}}},
+        )
+
+    def append_joint_key(
+        self,
+        db: Database,
+        key_ceremony_id: str,
+        joint_key: ElectionJointKey,
+    ) -> None:
+        joint_key_dict = joint_key_to_dict(joint_key)
+        db.key_ceremonies.update_one(
+            {"_id": ObjectId(key_ceremony_id)},
+            {"$set": {"joint_key": joint_key_dict}},
         )

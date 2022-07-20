@@ -17,23 +17,16 @@ from electionguard_gui.services.db_service import DbService
 from electionguard_gui.services.eel_log_service import EelLogService
 from electionguard_gui.services.guardian_service import GuardianService
 from electionguard_gui.services.key_ceremony_service import KeyCeremonyService
-from electionguard_gui.services.key_ceremony_stages.key_ceremony_s1_join_service import (
-    KeyCeremonyS1JoinService,
-)
-from electionguard_gui.services.key_ceremony_stages.key_ceremony_s2_announce_service import (
-    KeyCeremonyS2AnnounceService,
-)
-from electionguard_gui.services.key_ceremony_stages.key_ceremony_s3_make_backup_service import (
-    KeyCeremonyS3MakeBackupService,
-)
-from electionguard_gui.services.key_ceremony_stages.key_ceremony_s4_share_backup_service import (
-    KeyCeremonyS4ShareBackupService,
-)
-from electionguard_gui.services.key_ceremony_stages.key_ceremony_s5_verify_backup_service import (
-    KeyCeremonyS5VerifyBackupService,
-)
 from electionguard_gui.services.key_ceremony_state_service import (
     KeyCeremonyStateService,
+)
+from electionguard_gui.services.key_ceremony_stages import (
+    KeyCeremonyS1JoinService,
+    KeyCeremonyS2AnnounceService,
+    KeyCeremonyS3MakeBackupService,
+    KeyCeremonyS4ShareBackupService,
+    KeyCeremonyS5VerifyBackupService,
+    KeyCeremonyS6PublishKeyService,
 )
 
 
@@ -112,6 +105,17 @@ class Container(containers.DeclarativeContainer):
         key_ceremony_state_service=key_ceremony_state_service,
         guardian_service=guardian_service,
     )
+    key_ceremony_s6_publish_key_service: Factory[
+        KeyCeremonyS6PublishKeyService
+    ] = providers.Factory(
+        KeyCeremonyS6PublishKeyService,
+        log_service=log_service,
+        db_service=db_service,
+        key_ceremony_service=key_ceremony_service,
+        auth_service=authorization_service,
+        key_ceremony_state_service=key_ceremony_state_service,
+        guardian_service=guardian_service,
+    )
 
     # components
     guardian_home_component: Factory[KeyCeremonyListComponent] = providers.Factory(
@@ -136,6 +140,7 @@ class Container(containers.DeclarativeContainer):
         key_ceremony_s3_make_backup_service=key_ceremony_s3_make_backup_service,
         key_ceremony_s4_share_backup_service=key_ceremony_s4_share_backup_service,
         key_ceremony_s5_verification_service=key_ceremony_s5_verification_service,
+        key_ceremony_s6_publish_key_service=key_ceremony_s6_publish_key_service,
     )
     setup_election_component: Factory[SetupElectionComponent] = providers.Factory(
         SetupElectionComponent
