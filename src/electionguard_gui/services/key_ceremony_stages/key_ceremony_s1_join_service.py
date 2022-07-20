@@ -12,7 +12,7 @@ class KeyCeremonyS1JoinService(KeyCeremonyStageBase):
 
     def run(self, db: Database, key_ceremony: KeyCeremonyDto) -> None:
         key_ceremony_id = key_ceremony.id
-        user_id = self._auth_service.get_user_id()
+        user_id = self._auth_service.get_required_user_id()
         self._key_ceremony_service.append_guardian_joined(db, key_ceremony_id, user_id)
         # refresh key ceremony to get the list of guardians with the authoritative order they joined in
         key_ceremony = self._key_ceremony_service.get(db, key_ceremony_id)

@@ -13,7 +13,7 @@ class KeyCeremonyS3MakeBackupService(KeyCeremonyStageBase):
         self, key_ceremony: KeyCeremonyDto, state: KeyCeremonyStates
     ) -> bool:
         is_guardian = not self._auth_service.is_admin()
-        current_user_id = self._auth_service.get_user_id()
+        current_user_id = self._auth_service.get_required_user_id()
         current_user_backups = key_ceremony.get_backup_count_for_user(current_user_id)
         current_user_backup_exists = current_user_backups > 0
         return (
@@ -23,7 +23,7 @@ class KeyCeremonyS3MakeBackupService(KeyCeremonyStageBase):
         )
 
     def run(self, db: Database, key_ceremony: KeyCeremonyDto) -> None:
-        current_user_id = self._auth_service.get_user_id()
+        current_user_id = self._auth_service.get_required_user_id()
         key_ceremony_id = key_ceremony.id
         self.log.debug(f"creating backups for guardian {current_user_id}")
         guardian = self._guardian_service.load_guardian(current_user_id, key_ceremony)

@@ -15,7 +15,7 @@ class KeyCeremonyS5VerifyBackupService(KeyCeremonyStageBase):
         self, key_ceremony: KeyCeremonyDto, state: KeyCeremonyStates
     ) -> bool:
         is_guardian = not self._auth_service.is_admin()
-        current_user_id = self._auth_service.get_user_id()
+        current_user_id = self._auth_service.get_required_user_id()
         current_user_verifications = key_ceremony.get_verification_count_for_user(
             current_user_id
         )
@@ -27,7 +27,7 @@ class KeyCeremonyS5VerifyBackupService(KeyCeremonyStageBase):
         )
 
     def run(self, db: Database, key_ceremony: KeyCeremonyDto) -> None:
-        current_user_id = self._auth_service.get_user_id()
+        current_user_id = self._auth_service.get_required_user_id()
         shared_backups = key_ceremony.get_shared_backups_for_guardian(current_user_id)
         guardian = self._guardian_service.load_guardian(current_user_id, key_ceremony)
         self._guardian_service.load_other_keys(key_ceremony, current_user_id, guardian)
