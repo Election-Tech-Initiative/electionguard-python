@@ -17,6 +17,9 @@ from electionguard_gui.services.key_ceremony_stages.key_ceremony_s4_share_backup
 )
 
 from electionguard_gui.models.key_ceremony_dto import KeyCeremonyDto
+from electionguard_gui.services.key_ceremony_stages.key_ceremony_s5_verify_backup_service import (
+    KeyCeremonyS5VerifyBackupService,
+)
 from electionguard_gui.services.key_ceremony_stages.key_ceremony_stage_base import (
     KeyCeremonyStageBase,
 )
@@ -48,6 +51,7 @@ class KeyCeremonyDetailsComponent(ComponentBase):
         key_ceremony_s2_announce_service: KeyCeremonyS2AnnounceService,
         key_ceremony_s3_make_backup_service: KeyCeremonyS3MakeBackupService,
         key_ceremony_s4_share_backup_service: KeyCeremonyS4ShareBackupService,
+        key_ceremony_s5_verification_service: KeyCeremonyS5VerifyBackupService,
     ) -> None:
         super().__init__()
         self._key_ceremony_service = key_ceremony_service
@@ -58,6 +62,7 @@ class KeyCeremonyDetailsComponent(ComponentBase):
             key_ceremony_s2_announce_service,
             key_ceremony_s3_make_backup_service,
             key_ceremony_s4_share_backup_service,
+            key_ceremony_s5_verification_service,
         ]
 
     def expose(self) -> None:

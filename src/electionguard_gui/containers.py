@@ -14,6 +14,7 @@ from electionguard_gui.services.authorization_service import AuthorizationServic
 from electionguard_gui.services.db_service import DbService
 
 from electionguard_gui.services.eel_log_service import EelLogService
+from electionguard_gui.services.guardian_service import GuardianService
 from electionguard_gui.services.key_ceremony_service import KeyCeremonyService
 from electionguard_gui.services.key_ceremony_stages.key_ceremony_s1_join_service import (
     KeyCeremonyS1JoinService,
@@ -26,6 +27,9 @@ from electionguard_gui.services.key_ceremony_stages.key_ceremony_s3_make_backup_
 )
 from electionguard_gui.services.key_ceremony_stages.key_ceremony_s4_share_backup_service import (
     KeyCeremonyS4ShareBackupService,
+)
+from electionguard_gui.services.key_ceremony_stages.key_ceremony_s5_verify_backup_service import (
+    KeyCeremonyS5VerifyBackupService,
 )
 from electionguard_gui.services.key_ceremony_state_service import (
     KeyCeremonyStateService,
@@ -43,6 +47,7 @@ class Container(containers.DeclarativeContainer):
     key_ceremony_state_service = providers.Factory(
         KeyCeremonyStateService, log_service=log_service
     )
+    guardian_service = providers.Factory(GuardianService, log_service=log_service)
 
     # key ceremony services
     key_ceremony_s1_join_service = providers.Factory(
@@ -52,6 +57,7 @@ class Container(containers.DeclarativeContainer):
         key_ceremony_service=key_ceremony_service,
         auth_service=authorization_service,
         key_ceremony_state_service=key_ceremony_state_service,
+        guardian_service=guardian_service,
     )
     key_ceremony_s2_announce_service = providers.Factory(
         KeyCeremonyS2AnnounceService,
@@ -60,6 +66,7 @@ class Container(containers.DeclarativeContainer):
         key_ceremony_service=key_ceremony_service,
         auth_service=authorization_service,
         key_ceremony_state_service=key_ceremony_state_service,
+        guardian_service=guardian_service,
     )
     key_ceremony_s3_make_backup_service = providers.Factory(
         KeyCeremonyS3MakeBackupService,
@@ -68,6 +75,7 @@ class Container(containers.DeclarativeContainer):
         key_ceremony_service=key_ceremony_service,
         auth_service=authorization_service,
         key_ceremony_state_service=key_ceremony_state_service,
+        guardian_service=guardian_service,
     )
     key_ceremony_s4_share_backup_service = providers.Factory(
         KeyCeremonyS4ShareBackupService,
@@ -76,6 +84,16 @@ class Container(containers.DeclarativeContainer):
         key_ceremony_service=key_ceremony_service,
         auth_service=authorization_service,
         key_ceremony_state_service=key_ceremony_state_service,
+        guardian_service=guardian_service,
+    )
+    key_ceremony_s5_verification_service = providers.Factory(
+        KeyCeremonyS5VerifyBackupService,
+        log_service=log_service,
+        db_service=db_service,
+        key_ceremony_service=key_ceremony_service,
+        auth_service=authorization_service,
+        key_ceremony_state_service=key_ceremony_state_service,
+        guardian_service=guardian_service,
     )
 
     # components
@@ -96,6 +114,7 @@ class Container(containers.DeclarativeContainer):
         key_ceremony_s2_announce_service=key_ceremony_s2_announce_service,
         key_ceremony_s3_make_backup_service=key_ceremony_s3_make_backup_service,
         key_ceremony_s4_share_backup_service=key_ceremony_s4_share_backup_service,
+        key_ceremony_s5_verification_service=key_ceremony_s5_verification_service,
     )
     setup_election_component = providers.Factory(SetupElectionComponent)
 

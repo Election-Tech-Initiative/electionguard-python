@@ -1,5 +1,9 @@
 from typing import Any
-from electionguard.key_ceremony import ElectionPartialKeyBackup, ElectionPublicKey
+from electionguard.key_ceremony import (
+    ElectionPartialKeyBackup,
+    ElectionPartialKeyVerification,
+    ElectionPublicKey,
+)
 
 
 def public_key_to_dict(key: ElectionPublicKey) -> dict[str, Any]:
@@ -32,4 +36,15 @@ def backup_to_dict(backup: ElectionPartialKeyBackup) -> dict[str, Any]:
             "data": coordinate.data,
             "mac": coordinate.mac,
         },
+    }
+
+
+def verification_to_dict(
+    verification: ElectionPartialKeyVerification,
+) -> dict[str, Any]:
+    return {
+        "owner_id": verification.owner_id,
+        "designated_id": verification.designated_id,
+        "verifier_id": verification.verifier_id,
+        "verified": verification.verified,
     }
