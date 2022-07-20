@@ -1,5 +1,4 @@
 from pymongo.database import Database
-from electionguard.guardian import Guardian
 from electionguard_gui.models.key_ceremony_dto import KeyCeremonyDto
 from electionguard_gui.models.key_ceremony_states import KeyCeremonyStates
 from electionguard_gui.services.key_ceremony_stages.key_ceremony_stage_base import (

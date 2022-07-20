@@ -21,7 +21,7 @@ class KeyCeremonyS4ShareBackupService(KeyCeremonyStageBase):
     def should_run(
         self, key_ceremony: KeyCeremonyDto, state: KeyCeremonyStates
     ) -> bool:
-        is_admin = self._auth_service.is_admin()
+        is_admin: bool = self._auth_service.is_admin()
         return is_admin and state == KeyCeremonyStates.PendingAdminToShareBackups
 
     def run(self, db: Database, key_ceremony: KeyCeremonyDto) -> None:

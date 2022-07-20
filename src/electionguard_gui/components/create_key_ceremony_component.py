@@ -30,7 +30,10 @@ class CreateKeyCeremonyComponent(ComponentBase):
         self, key_ceremony_name: str, guardian_count: int, quorum: int
     ) -> dict[str, Any]:
         if guardian_count < quorum:
-            return eel_fail("Guardian count must be greater than or equal to quorum")
+            result: dict[str, Any] = eel_fail(
+                "Guardian count must be greater than or equal to quorum"
+            )
+            return result
 
         self.log.debug(
             "Starting ceremony: "
@@ -44,8 +47,8 @@ class CreateKeyCeremonyComponent(ComponentBase):
         )
         if existing_key_ceremonies:
             self.log.debug(f"record '{key_ceremony_name}' already exists")
-            result: dict[str, Any] = eel_fail("Key ceremony name already exists")
-            return result
+            fail_result: dict[str, Any] = eel_fail("Key ceremony name already exists")
+            return fail_result
         key_ceremony = {
             "key_ceremony_name": key_ceremony_name,
             "guardian_count": guardian_count,
@@ -63,4 +66,5 @@ class CreateKeyCeremonyComponent(ComponentBase):
         inserted_id = db.key_ceremonies.insert_one(key_ceremony).inserted_id
         self.log.debug(f"created '{key_ceremony_name}' record, id: {inserted_id}")
         self._key_ceremony_service.notify_changed(db, inserted_id)
-        return eel_success(str(inserted_id))
+        result = eel_success(str(inserted_id))
+        return result

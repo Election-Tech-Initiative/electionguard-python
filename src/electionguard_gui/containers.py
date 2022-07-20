@@ -40,17 +40,23 @@ class Container(containers.DeclarativeContainer):
     """Responsible for dependency injection and how components are wired together"""
 
     # services
-    log_service = providers.Factory(EelLogService)
-    db_service = providers.Singleton(DbService, log_service=log_service)
-    key_ceremony_service = providers.Factory(KeyCeremonyService, db_service=db_service)
-    authorization_service = providers.Singleton(AuthorizationService)
-    key_ceremony_state_service = providers.Factory(
+    log_service: EelLogService = providers.Factory(EelLogService)
+    db_service: DbService = providers.Singleton(DbService, log_service=log_service)
+    key_ceremony_service: KeyCeremonyService = providers.Factory(
+        KeyCeremonyService, db_service=db_service
+    )
+    authorization_service: AuthorizationService = providers.Singleton(
+        AuthorizationService
+    )
+    key_ceremony_state_service: KeyCeremonyStateService = providers.Factory(
         KeyCeremonyStateService, log_service=log_service
     )
-    guardian_service = providers.Factory(GuardianService, log_service=log_service)
+    guardian_service: GuardianService = providers.Factory(
+        GuardianService, log_service=log_service
+    )
 
     # key ceremony services
-    key_ceremony_s1_join_service = providers.Factory(
+    key_ceremony_s1_join_service: KeyCeremonyS1JoinService = providers.Factory(
         KeyCeremonyS1JoinService,
         log_service=log_service,
         db_service=db_service,
@@ -59,7 +65,7 @@ class Container(containers.DeclarativeContainer):
         key_ceremony_state_service=key_ceremony_state_service,
         guardian_service=guardian_service,
     )
-    key_ceremony_s2_announce_service = providers.Factory(
+    key_ceremony_s2_announce_service: KeyCeremonyS2AnnounceService = providers.Factory(
         KeyCeremonyS2AnnounceService,
         log_service=log_service,
         db_service=db_service,
@@ -68,44 +74,50 @@ class Container(containers.DeclarativeContainer):
         key_ceremony_state_service=key_ceremony_state_service,
         guardian_service=guardian_service,
     )
-    key_ceremony_s3_make_backup_service = providers.Factory(
-        KeyCeremonyS3MakeBackupService,
-        log_service=log_service,
-        db_service=db_service,
-        key_ceremony_service=key_ceremony_service,
-        auth_service=authorization_service,
-        key_ceremony_state_service=key_ceremony_state_service,
-        guardian_service=guardian_service,
+    key_ceremony_s3_make_backup_service: KeyCeremonyS3MakeBackupService = (
+        providers.Factory(
+            KeyCeremonyS3MakeBackupService,
+            log_service=log_service,
+            db_service=db_service,
+            key_ceremony_service=key_ceremony_service,
+            auth_service=authorization_service,
+            key_ceremony_state_service=key_ceremony_state_service,
+            guardian_service=guardian_service,
+        )
     )
-    key_ceremony_s4_share_backup_service = providers.Factory(
-        KeyCeremonyS4ShareBackupService,
-        log_service=log_service,
-        db_service=db_service,
-        key_ceremony_service=key_ceremony_service,
-        auth_service=authorization_service,
-        key_ceremony_state_service=key_ceremony_state_service,
-        guardian_service=guardian_service,
+    key_ceremony_s4_share_backup_service: KeyCeremonyS4ShareBackupService = (
+        providers.Factory(
+            KeyCeremonyS4ShareBackupService,
+            log_service=log_service,
+            db_service=db_service,
+            key_ceremony_service=key_ceremony_service,
+            auth_service=authorization_service,
+            key_ceremony_state_service=key_ceremony_state_service,
+            guardian_service=guardian_service,
+        )
     )
-    key_ceremony_s5_verification_service = providers.Factory(
-        KeyCeremonyS5VerifyBackupService,
-        log_service=log_service,
-        db_service=db_service,
-        key_ceremony_service=key_ceremony_service,
-        auth_service=authorization_service,
-        key_ceremony_state_service=key_ceremony_state_service,
-        guardian_service=guardian_service,
+    key_ceremony_s5_verification_service: KeyCeremonyS5VerifyBackupService = (
+        providers.Factory(
+            KeyCeremonyS5VerifyBackupService,
+            log_service=log_service,
+            db_service=db_service,
+            key_ceremony_service=key_ceremony_service,
+            auth_service=authorization_service,
+            key_ceremony_state_service=key_ceremony_state_service,
+            guardian_service=guardian_service,
+        )
     )
 
     # components
-    guardian_home_component = providers.Factory(
+    guardian_home_component: KeyCeremonyListComponent = providers.Factory(
         KeyCeremonyListComponent, key_ceremony_service=key_ceremony_service
     )
-    create_key_ceremony_component = providers.Factory(
+    create_key_ceremony_component: CreateKeyCeremonyComponent = providers.Factory(
         CreateKeyCeremonyComponent,
         key_ceremony_service=key_ceremony_service,
         auth_service=authorization_service,
     )
-    key_ceremony_details_component = providers.Factory(
+    key_ceremony_details_component: KeyCeremonyDetailsComponent = providers.Factory(
         KeyCeremonyDetailsComponent,
         key_ceremony_service=key_ceremony_service,
         auth_service=authorization_service,
@@ -116,10 +128,12 @@ class Container(containers.DeclarativeContainer):
         key_ceremony_s4_share_backup_service=key_ceremony_s4_share_backup_service,
         key_ceremony_s5_verification_service=key_ceremony_s5_verification_service,
     )
-    setup_election_component = providers.Factory(SetupElectionComponent)
+    setup_election_component: SetupElectionComponent = providers.Factory(
+        SetupElectionComponent
+    )
 
     # main
-    main_app = providers.Factory(
+    main_app: MainApp = providers.Factory(
         MainApp,
         log_service=log_service,
         db_service=db_service,

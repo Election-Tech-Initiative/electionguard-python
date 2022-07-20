@@ -21,7 +21,8 @@ class KeyCeremonyS2AnnounceService(KeyCeremonyStageBase):
         self, key_ceremony: KeyCeremonyDto, state: KeyCeremonyStates
     ) -> bool:
         is_admin = self._auth_service.is_admin()
-        return is_admin and state == KeyCeremonyStates.PendingAdminAnnounce
+        should_run: bool = is_admin and state == KeyCeremonyStates.PendingAdminAnnounce
+        return should_run
 
     def run(self, db: Database, key_ceremony: KeyCeremonyDto) -> None:
         key_ceremony_id = key_ceremony.id

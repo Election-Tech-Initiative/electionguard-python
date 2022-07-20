@@ -24,4 +24,5 @@ class AuthorizationService(ServiceBase):
 
     # pylint: disable=no-self-use
     def is_admin(self) -> bool:
-        return get_is_admin()
+        is_admin: bool = get_is_admin()
+        return is_admin
