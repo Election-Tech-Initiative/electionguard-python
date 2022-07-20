@@ -16,7 +16,9 @@ class AuthorizationService(ServiceBase):
         eel.expose(self.set_user_id)
         eel.expose(self.is_admin)
 
-    def get_user_id(self) -> Optional[str]:
+    def get_user_id(self) -> str:
+        if self.user_id is None:
+            raise Exception("User id not set")
         return self.user_id
 
     def set_user_id(self, user_id: str) -> None:

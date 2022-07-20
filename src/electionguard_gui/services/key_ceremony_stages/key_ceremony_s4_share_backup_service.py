@@ -41,6 +41,8 @@ class KeyCeremonyS4ShareBackupService(KeyCeremonyStageBase):
         for guardian_id in key_ceremony.guardians_joined:
             self.log.debug(f"sharing backups for guardian {guardian_id}")
             guardian_backups = mediator.share_backups(guardian_id)
+            if guardian_backups is None:
+                raise Exception("Error sharing backups")
             backups_as_dict = [backup_to_dict(backup) for backup in guardian_backups]
             shared_backups.append({"owner_id": guardian_id, "backups": backups_as_dict})
         return shared_backups

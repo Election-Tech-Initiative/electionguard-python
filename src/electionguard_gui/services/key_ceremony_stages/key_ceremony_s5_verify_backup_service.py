@@ -38,6 +38,8 @@ class KeyCeremonyS5VerifyBackupService(KeyCeremonyStageBase):
             )
             guardian.save_election_partial_key_backup(backup)
             verification = guardian.verify_election_partial_key_backup(backup.owner_id)
+            if verification is None:
+                raise Exception("Error verifying backup")
             verifications.append(verification)
         self._key_ceremony_service.append_verifications(
             db, key_ceremony.id, verifications
