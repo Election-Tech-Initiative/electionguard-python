@@ -18,7 +18,7 @@ class AuthorizationService(ServiceBase):
 
     def get_required_user_id(self) -> str:
         if self.user_id is None:
-            raise Exception("Use must be logged in")
+            raise Exception("User must be logged in")
         return self.user_id
 
     def get_user_id(self) -> Optional[str]:
