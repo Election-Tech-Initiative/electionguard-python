@@ -1,15 +1,19 @@
-from os import getcwd, path
-from typing import Any, List
 import eel
 from pymongo.database import Database
 
-from electionguard import to_file
-from electionguard.guardian import Guardian, PrivateGuardianRecord
-from electionguard.key_ceremony import CeremonyDetails
-from electionguard.key_ceremony_mediator import KeyCeremonyMediator
-from electionguard.serialize import from_file
-from electionguard.utils import get_optional
-from electionguard_tools.helpers.export import GUARDIAN_PREFIX
+
+from electionguard_gui.services.key_ceremony_stages.key_ceremony_s1_join_service import (
+    KeyCeremonyS1JoinService,
+)
+from electionguard_gui.services.key_ceremony_stages.key_ceremony_s2_announce_service import (
+    KeyCeremonyS2AnnounceService,
+)
+from electionguard_gui.services.key_ceremony_stages.key_ceremony_s3_make_backup_service import (
+    KeyCeremonyS3MakeBackupService,
+)
+from electionguard_gui.services.key_ceremony_stages.key_ceremony_s4_share_backup_service import (
+    KeyCeremonyS4ShareBackupService,
+)
 
 from electionguard_gui.models.key_ceremony_dto import KeyCeremonyDto
 from electionguard_gui.services.key_ceremony_state_service import (
@@ -19,12 +23,7 @@ from electionguard_gui.services.key_ceremony_state_service import (
 from electionguard_gui.models.key_ceremony_states import (
     KeyCeremonyStates,
 )
-from electionguard_gui.services.db_serialization_service import (
-    dict_to_election_public_key,
-    public_key_to_dict,
-)
 from electionguard_gui.services.authorization_service import AuthorizationService
-from electionguard_gui.services.guardian_service import make_guardian
 from electionguard_gui.components.component_base import ComponentBase
 from electionguard_gui.services.key_ceremony_service import (
     KeyCeremonyService,
@@ -36,17 +35,31 @@ class KeyCeremonyDetailsComponent(ComponentBase):
 
     _auth_service: AuthorizationService
     _ceremony_state_service: KeyCeremonyStateService
+    _key_ceremony_s1_join_service: KeyCeremonyS1JoinService
+    _key_ceremony_s2_announce_service: KeyCeremonyS2AnnounceService
+    _key_ceremony_s3_make_backup_service: KeyCeremonyS3MakeBackupService
+    _key_ceremony_s4_share_backup_service: KeyCeremonyS4ShareBackupService
 
     def __init__(
         self,
         key_ceremony_service: KeyCeremonyService,
         auth_service: AuthorizationService,
         key_ceremony_state_service: KeyCeremonyStateService,
+        key_ceremony_s1_join_service: KeyCeremonyS1JoinService,
+        key_ceremony_s2_announce_service: KeyCeremonyS2AnnounceService,
+        key_ceremony_s3_make_backup_service: KeyCeremonyS3MakeBackupService,
+        key_ceremony_s4_share_backup_service: KeyCeremonyS4ShareBackupService,
     ) -> None:
         super().__init__()
         self._key_ceremony_service = key_ceremony_service
         self._ceremony_state_service = key_ceremony_state_service
         self._auth_service = auth_service
+        self._key_ceremony_s1_join_service = key_ceremony_s1_join_service
+        self._key_ceremony_s2_announce_service = key_ceremony_s2_announce_service
+        self._key_ceremony_s3_make_backup_service = key_ceremony_s3_make_backup_service
+        self._key_ceremony_s4_share_backup_service = (
+            key_ceremony_s4_share_backup_service
+        )
 
     def expose(self) -> None:
         eel.expose(self.join_key_ceremony)
@@ -81,40 +94,19 @@ class KeyCeremonyDetailsComponent(ComponentBase):
         state = self._ceremony_state_service.get_key_ceremony_state(key_ceremony)
         self.log.debug(f"{key_ceremony_id} state = '{state}'")
         if is_admin and state == KeyCeremonyStates.PendingAdminAnnounce:
-            self.log.info("all guardians have joined, announcing guardians")
-            other_keys = self.announce(key_ceremony)
-            self.log.debug("saving other_keys")
-            self._key_ceremony_service.append_other_key(db, key_ceremony_id, other_keys)
-            # this notify_changed occurs inside watch_key_ceremonies and thus may
-            #       produce an unnecessary UI refresh for the admin
-            self._key_ceremony_service.notify_changed(db, key_ceremony_id)
-            # todo #689 wait until all guardians have backups
+            self._key_ceremony_s2_announce_service.run(db, key_ceremony)
 
-        current_user_backups = len(key_ceremony.get_backups_for_user(current_user_id))
+        current_user_backups = key_ceremony.get_backup_count_for_user(current_user_id)
         current_user_backup_exists = current_user_backups > 0
         if (
             is_guardian
             and state == KeyCeremonyStates.PendingGuardianBackups
             and not current_user_backup_exists
         ):
-            self.log.debug(f"creating backups for guardian {current_user_id}")
-            guardian = self.load_guardian(current_user_id, key_ceremony)
+            self._key_ceremony_s3_make_backup_service.run(db, key_ceremony)
 
-            current_user_other_keys = key_ceremony.find_other_keys_for_user(
-                current_user_id
-            )
-            for other_key in current_user_other_keys["other_keys"]:
-                other_user = other_key["owner_id"]
-                self.log.debug(
-                    f"saving other_key from {other_user} for {current_user_id}"
-                )
-                public_key = dict_to_election_public_key(other_key)
-                guardian.save_guardian_key(public_key)
-            guardian.generate_election_partial_key_backups()
-            backups = guardian.share_election_partial_key_backups()
-            self._key_ceremony_service.append_backups(db, key_ceremony_id, backups)
-            # notify the admin that a new guardian has backups
-            self._key_ceremony_service.notify_changed(db, key_ceremony_id)
+        if is_admin and state == KeyCeremonyStates.PendingAdminToShareBackups:
+            self._key_ceremony_s4_share_backup_service.run(db, key_ceremony)
 
         key_ceremony = self.get_ceremony(db, key_ceremony_id)
         new_state = self._ceremony_state_service.get_key_ceremony_state(key_ceremony)
@@ -124,79 +116,15 @@ class KeyCeremonyDetailsComponent(ComponentBase):
         # pylint: disable=no-member
         eel.refresh_key_ceremony(key_ceremony.to_dict())
 
-    def announce(self, key_ceremony: KeyCeremonyDto) -> List[dict[str, Any]]:
-        other_keys = []
-        quorum = key_ceremony.quorum
-        guardian_count = key_ceremony.guardian_count
-        ceremony_details = CeremonyDetails(guardian_count, quorum)
-        mediator: KeyCeremonyMediator = KeyCeremonyMediator(
-            "mediator_1", ceremony_details
-        )
-        guardians = key_ceremony.guardians_joined
-        for guardian_id in guardians:
-            key = key_ceremony.find_key(guardian_id)
-            self.log.debug(f"announcing {guardian_id}, {key}")
-            mediator.announce(key)
-        for guardian_id in guardians:
-            other_guardian_keys = get_optional(mediator.share_announced(guardian_id))
-            other_keys.append(
-                {
-                    "owner_id": guardian_id,
-                    "other_keys": [
-                        public_key_to_dict(key) for key in other_guardian_keys
-                    ],
-                }
-            )
-        return other_keys
-
     def stop_watching_key_ceremony(self) -> None:
         self._key_ceremony_service.stop_watching()
 
     def join_key_ceremony(self, key_ceremony_id: str) -> None:
         db = self.db_service.get_db()
-
-        # append the current user's id to the list of guardians
-        user_id = self._auth_service.get_user_id()
-        self._key_ceremony_service.append_guardian_joined(db, key_ceremony_id, user_id)
-        key_ceremony = self._key_ceremony_service.get(db, key_ceremony_id)
-        guardian_number = self._key_ceremony_service.get_guardian_number(
-            key_ceremony, user_id
-        )
-        self.log.debug(
-            f"user {user_id} about to join key ceremony {key_ceremony_id} as guardian #{guardian_number}"
-        )
-        guardian = make_guardian(user_id, guardian_number, key_ceremony)
-        self.save_guardian(guardian, key_ceremony)
-        public_key = guardian.share_key()
-        self._key_ceremony_service.append_key(db, key_ceremony_id, public_key)
-        self.log.debug(
-            f"{user_id} joined key ceremony {key_ceremony_id} as guardian #{guardian_number}"
-        )
-        self._key_ceremony_service.notify_changed(db, key_ceremony_id)
-
-    def load_guardian(self, guardian_id: str, key_ceremony: KeyCeremonyDto) -> Guardian:
-        file_name = GUARDIAN_PREFIX + guardian_id + ".json"
-        file_path = path.join(getcwd(), "gui_private_keys", key_ceremony.id, file_name)
-        self.log.debug(f"loading guardian from {file_path}")
-        private_guardian_record = from_file(PrivateGuardianRecord, file_path)
-        return Guardian.from_private_record(
-            private_guardian_record,
-            key_ceremony.guardian_count,
-            key_ceremony.quorum,
-        )
-
-    def save_guardian(self, guardian: Guardian, key_ceremony: Any) -> None:
-        private_guardian_record = guardian.export_private_data()
-        file_name = GUARDIAN_PREFIX + private_guardian_record.guardian_id
-        key_ceremony_id = str(key_ceremony["_id"])
-        file_path = path.join(getcwd(), "gui_private_keys", key_ceremony_id)
-        file = to_file(private_guardian_record, file_name, file_path)
-        self.log.warn(
-            f"Guardian private data saved to {file}. This data should be carefully protected and never shared."
-        )
+        key_ceremony = self.get_ceremony(db, key_ceremony_id)
+        self._key_ceremony_s1_join_service.run(db, key_ceremony)
 
     def get_ceremony(self, db: Database, id: str) -> KeyCeremonyDto:
         key_ceremony = self._key_ceremony_service.get(db, id)
-        key_ceremony_db = KeyCeremonyDto(key_ceremony)
-        key_ceremony_db.can_join = self.can_join_key_ceremony(key_ceremony_db)
-        return key_ceremony_db
+        key_ceremony.can_join = self.can_join_key_ceremony(key_ceremony)
+        return key_ceremony
