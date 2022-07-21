@@ -33,7 +33,7 @@ class TestBallot(BaseTestCase):
         self.assertFalse(first_contest.is_valid("justice-supreme-court", 2, 2, 1))
 
     @settings(
-        deadline=timedelta(milliseconds=2000),
+        deadline=timedelta(milliseconds=5000),
         suppress_health_check=[HealthCheck.too_slow],
         max_examples=10,
     )
@@ -53,7 +53,7 @@ class TestBallot(BaseTestCase):
         self.assertTrue(0 <= as_int <= 1)
 
     @settings(
-        deadline=timedelta(milliseconds=2000),
+        deadline=timedelta(milliseconds=5000),
         suppress_health_check=[HealthCheck.too_slow],
         max_examples=10,
     )
