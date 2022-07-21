@@ -104,6 +104,7 @@ class KeyCeremonyDetailsComponent(ComponentBase):
         except Exception as e:
             self.log.error(e)
             traceback.print_exc()
+            # pylint: disable=no-member
             eel.refresh_key_ceremony(eel_fail(str(e)))
 
     def stop_watching_key_ceremony(self) -> None:
