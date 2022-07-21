@@ -86,8 +86,3 @@ export default {
       </div>
     </form>`,
 };
-
-function getIntById(str) {
-  const valueStr = document.getElementById(str).value;
-  return Number.parseInt(valueStr);
-}
