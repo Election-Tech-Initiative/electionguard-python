@@ -125,7 +125,8 @@ class Container(containers.DeclarativeContainer):
         KeyCeremonyListComponent, key_ceremony_service=key_ceremony_service
     )
     create_election_component: Factory[CreateElectionComponent] = providers.Factory(
-        CreateElectionComponent
+        CreateElectionComponent,
+        key_ceremony_service=key_ceremony_service,
     )
     create_key_ceremony_component: Factory[
         CreateKeyCeremonyComponent

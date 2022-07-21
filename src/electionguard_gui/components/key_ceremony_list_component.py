@@ -19,16 +19,16 @@ class KeyCeremonyListComponent(ComponentBase):
         eel.expose(self.stop_watching_key_ceremonies)
 
     def watch_key_ceremonies(self) -> None:
-        self.log.debug("Watching key ceremonies")
-        db = self.db_service.get_db()
+        self._log.debug("Watching key ceremonies")
+        db = self._db_service.get_db()
         send_key_ceremonies_to_ui(db)
         self._key_ceremony_service.watch_key_ceremonies(
             db, None, lambda _: send_key_ceremonies_to_ui(db)
         )
-        self.log.debug("exited watching key_ceremonies")
+        self._log.debug("exited watching key_ceremonies")
 
     def stop_watching_key_ceremonies(self) -> None:
-        self.log.debug("Stopping watch key_ceremonies")
+        self._log.debug("Stopping watch key_ceremonies")
         self._key_ceremony_service.stop_watching()
 
 

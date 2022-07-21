@@ -35,18 +35,18 @@ class CreateKeyCeremonyComponent(ComponentBase):
             )
             return result
 
-        self.log.debug(
+        self._log.debug(
             "Starting ceremony: "
             + f"key_ceremony_name: {key_ceremony_name}, "
             + f"guardian_count: {guardian_count}, "
             + f"quorum: {quorum}"
         )
-        db = self.db_service.get_db()
+        db = self._db_service.get_db()
         existing_key_ceremonies = db.key_ceremonies.find_one(
             {"key_ceremony_name": key_ceremony_name}
         )
         if existing_key_ceremonies:
-            self.log.debug(f"record '{key_ceremony_name}' already exists")
+            self._log.debug(f"record '{key_ceremony_name}' already exists")
             fail_result: dict[str, Any] = eel_fail("Key ceremony name already exists")
             return fail_result
         key_ceremony = {
@@ -66,7 +66,7 @@ class CreateKeyCeremonyComponent(ComponentBase):
             "completed_at": None,
         }
         inserted_id = db.key_ceremonies.insert_one(key_ceremony).inserted_id
-        self.log.debug(f"created '{key_ceremony_name}' record, id: {inserted_id}")
+        self._log.debug(f"created '{key_ceremony_name}' record, id: {inserted_id}")
         self._key_ceremony_service.notify_changed(db, inserted_id)
         result = eel_success(str(inserted_id))
         return result

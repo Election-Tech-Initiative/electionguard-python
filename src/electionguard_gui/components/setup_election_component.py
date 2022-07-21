@@ -39,7 +39,7 @@ class SetupElectionComponent(ComponentBase):
         )
         context_file = files[0]
         constants_file = files[1]
-        self.log.debug(
+        self._log.debug(
             f"Setup complete, context: {context_file}, constants: {constants_file}"
         )
         with open(context_file, "r", encoding="utf-8") as context_file_io:

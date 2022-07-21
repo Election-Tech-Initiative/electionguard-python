@@ -31,6 +31,12 @@ class KeyCeremonyDto:
         self.completed_at_utc = key_ceremony["completed_at"]
         self.completed_at_str = utc_to_str(key_ceremony["completed_at"])
 
+    def to_id_name_dict(self) -> dict[str, Any]:
+        return {
+            "id": self.id,
+            "key_ceremony_name": self.key_ceremony_name,
+        }
+
     def to_dict(self) -> dict[str, Any]:
         return {
             "id": self.id,

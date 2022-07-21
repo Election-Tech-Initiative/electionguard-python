@@ -35,7 +35,7 @@ export default {
         <div class="col-sm-12">
           <label for="electionKey" class="form-label">Key</label>
           <select id="electionKey" class="form-control" v-model="electionKey">
-            <option v-for="key in keys" :value="key">{{ key }}</option>
+            <option v-for="key in keys" :value="key.id">{{ key.key_ceremony_name }}</option>
           </select>
         </div>
         <div class="col-12">

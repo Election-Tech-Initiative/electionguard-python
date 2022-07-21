@@ -179,3 +179,7 @@ class KeyCeremonyService(ServiceBase):
             {"_id": ObjectId(key_ceremony_id)},
             {"$set": {"completed_at": datetime.utcnow()}},
         )
+
+    def get_completed(self, db: Database) -> List[KeyCeremonyDto]:
+        key_ceremonies = db.key_ceremonies.find({"completed_at": {"$exists": True}})
+        return [KeyCeremonyDto(key_ceremony) for key_ceremony in key_ceremonies]

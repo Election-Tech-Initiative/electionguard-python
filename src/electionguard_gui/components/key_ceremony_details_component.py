@@ -66,10 +66,10 @@ class KeyCeremonyDetailsComponent(ComponentBase):
         eel.expose(self.stop_watching_key_ceremony)
 
     def watch_key_ceremony(self, key_ceremony_id: str) -> None:
-        db = self.db_service.get_db()
+        db = self._db_service.get_db()
         # retrieve and send the key ceremony to the client
         self.on_key_ceremony_changed(key_ceremony_id)
-        self.log.debug(f"watching key ceremony '{key_ceremony_id}'")
+        self._log.debug(f"watching key ceremony '{key_ceremony_id}'")
         # start watching for key ceremony changes from guardians
         self._key_ceremony_service.watch_key_ceremonies(
             db, key_ceremony_id, self.on_key_ceremony_changed
@@ -77,13 +77,13 @@ class KeyCeremonyDetailsComponent(ComponentBase):
 
     def on_key_ceremony_changed(self, key_ceremony_id: str) -> None:
         try:
-            self.log.debug(
+            self._log.debug(
                 f"on_key_ceremony_changed key_ceremony_id: '{key_ceremony_id}'"
             )
-            db = self.db_service.get_db()
+            db = self._db_service.get_db()
             key_ceremony = self.get_ceremony(db, key_ceremony_id)
             state = self._ceremony_state_service.get_key_ceremony_state(key_ceremony)
-            self.log.debug(f"{key_ceremony_id} state = '{state}'")
+            self._log.debug(f"{key_ceremony_id} state = '{state}'")
 
             for stage in self.key_ceremony_watch_stages:
                 if stage.should_run(key_ceremony, state):
@@ -95,14 +95,14 @@ class KeyCeremonyDetailsComponent(ComponentBase):
                 key_ceremony
             )
             if state != new_state:
-                self.log.debug(f"state changed from {state} to {new_state}")
+                self._log.debug(f"state changed from {state} to {new_state}")
             key_ceremony.status = get_key_ceremony_status(new_state)
             result = key_ceremony.to_dict()
             # pylint: disable=no-member
             eel.refresh_key_ceremony(eel_success(result))
         # pylint: disable=broad-except
         except Exception as e:
-            self.log.error(e)
+            self._log.error(e)
             traceback.print_exc()
             # pylint: disable=no-member
             eel.refresh_key_ceremony(eel_fail(str(e)))
@@ -111,7 +111,7 @@ class KeyCeremonyDetailsComponent(ComponentBase):
         self._key_ceremony_service.stop_watching()
 
     def join_key_ceremony(self, key_ceremony_id: str) -> None:
-        db = self.db_service.get_db()
+        db = self._db_service.get_db()
         key_ceremony = self.get_ceremony(db, key_ceremony_id)
         self._key_ceremony_s1_join_service.run(db, key_ceremony)
 
