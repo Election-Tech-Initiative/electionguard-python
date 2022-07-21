@@ -22,6 +22,7 @@ from electionguard_gui.services.configuration_service import (
 )
 from electionguard_gui.services.db_serialization_service import (
     backup_to_dict,
+    joint_key_to_dict,
     public_key_to_dict,
     verification_to_dict,
 )
@@ -46,12 +47,14 @@ from electionguard_gui.services.key_ceremony_stages import (
     KeyCeremonyS3MakeBackupService,
     KeyCeremonyS4ShareBackupService,
     KeyCeremonyS5VerifyBackupService,
+    KeyCeremonyS6PublishKeyService,
     KeyCeremonyStageBase,
     key_ceremony_s1_join_service,
     key_ceremony_s2_announce_service,
     key_ceremony_s3_make_backup_service,
     key_ceremony_s4_share_backup_service,
     key_ceremony_s5_verify_backup_service,
+    key_ceremony_s6_publish_key_service,
     key_ceremony_stage_base,
 )
 from electionguard_gui.services.key_ceremony_state_service import (
@@ -76,6 +79,7 @@ __all__ = [
     "KeyCeremonyS3MakeBackupService",
     "KeyCeremonyS4ShareBackupService",
     "KeyCeremonyS5VerifyBackupService",
+    "KeyCeremonyS6PublishKeyService",
     "KeyCeremonyService",
     "KeyCeremonyStageBase",
     "KeyCeremonyStateService",
@@ -92,11 +96,13 @@ __all__ = [
     "get_is_admin",
     "get_key_ceremony_status",
     "guardian_service",
+    "joint_key_to_dict",
     "key_ceremony_s1_join_service",
     "key_ceremony_s2_announce_service",
     "key_ceremony_s3_make_backup_service",
     "key_ceremony_s4_share_backup_service",
     "key_ceremony_s5_verify_backup_service",
+    "key_ceremony_s6_publish_key_service",
     "key_ceremony_service",
     "key_ceremony_stage_base",
     "key_ceremony_stages",

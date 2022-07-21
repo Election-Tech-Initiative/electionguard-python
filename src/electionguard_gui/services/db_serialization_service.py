@@ -1,5 +1,6 @@
 from typing import Any
 from electionguard.key_ceremony import (
+    ElectionJointKey,
     ElectionPartialKeyBackup,
     ElectionPartialKeyVerification,
     ElectionPublicKey,
@@ -47,4 +48,13 @@ def verification_to_dict(
         "designated_id": verification.designated_id,
         "verifier_id": verification.verifier_id,
         "verified": verification.verified,
+    }
+
+
+def joint_key_to_dict(
+    key: ElectionJointKey,
+) -> dict[str, Any]:
+    return {
+        "joint_public_key": str(key.joint_public_key),
+        "commitment_hash": str(key.commitment_hash),
     }

@@ -11,6 +11,8 @@ def eel_success(result: Any = None) -> dict[str, Any]:
 
 
 def utc_to_str(utc_dt: datetime) -> str:
+    if not utc_dt:
+        return ""
     local = convert_utc_to_local(utc_dt)
     return local.strftime("%b %#d, %Y %#I:%M %p")
 
