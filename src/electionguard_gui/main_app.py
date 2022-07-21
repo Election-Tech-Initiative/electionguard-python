@@ -2,6 +2,9 @@ from typing import List
 import eel
 
 from electionguard_gui.components.component_base import ComponentBase
+from electionguard_gui.components.create_election_component import (
+    CreateElectionComponent,
+)
 from electionguard_gui.components.create_key_ceremony_component import (
     CreateKeyCeremonyComponent,
 )
@@ -40,6 +43,7 @@ class MainApp:
         setup_election_component: SetupElectionComponent,
         authorization_service: AuthorizationService,
         key_ceremony_state_service: KeyCeremonyStateService,
+        create_election_component: CreateElectionComponent,
     ) -> None:
         super().__init__()
 
@@ -51,6 +55,7 @@ class MainApp:
             create_key_ceremony_component,
             key_ceremony_details_component,
             setup_election_component,
+            create_election_component,
         ]
 
         self.services = [

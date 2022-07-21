@@ -1,11 +1,19 @@
 export default {
   data() {
-    return { electionName: "", electionUrl: "", keys: ["A", "B"] };
+    return { electionName: "", electionUrl: "", keys: [] };
   },
   methods: {
     createElection() {
       console.log("creating election");
     },
+  },
+  async mounted() {
+    const result = await eel.get_keys()();
+    if (result.success) {
+      this.keys = result.result;
+    } else {
+      console.error(result.message);
+    }
   },
   template: /*html*/ `
     <form id="mainForm" class="needs-validation" novalidate @submit.prevent="createElection">

@@ -29,7 +29,7 @@ export default {
         </div>
         <div class="col-12">
           <label for="keyName" class="form-label">User ID</label>
-          <input type="textbox" class="form-control" v-model="userId" required pattern="[a-zA-Z0-9]+" />
+          <input type="textbox" class="form-control" v-model="userId" required pattern="[a-zA-Z0-9]+" placeholder="Enter your name or other identifier" />
           <div class="invalid-feedback">
             User ID is required and cannot contain spaces
           </div>

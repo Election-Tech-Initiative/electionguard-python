@@ -1,5 +1,8 @@
 from dependency_injector import containers, providers
 from dependency_injector.providers import Factory, Singleton
+from electionguard_gui.components.create_election_component import (
+    CreateElectionComponent,
+)
 from electionguard_gui.components.create_key_ceremony_component import (
     CreateKeyCeremonyComponent,
 )
@@ -121,6 +124,9 @@ class Container(containers.DeclarativeContainer):
     guardian_home_component: Factory[KeyCeremonyListComponent] = providers.Factory(
         KeyCeremonyListComponent, key_ceremony_service=key_ceremony_service
     )
+    create_election_component: Factory[CreateElectionComponent] = providers.Factory(
+        CreateElectionComponent
+    )
     create_key_ceremony_component: Factory[
         CreateKeyCeremonyComponent
     ] = providers.Factory(
@@ -157,4 +163,5 @@ class Container(containers.DeclarativeContainer):
         setup_election_component=setup_election_component,
         authorization_service=authorization_service,
         key_ceremony_state_service=key_ceremony_state_service,
+        create_election_component=create_election_component,
     )
