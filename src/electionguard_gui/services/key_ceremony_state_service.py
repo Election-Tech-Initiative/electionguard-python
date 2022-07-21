@@ -19,11 +19,14 @@ class KeyCeremonyStateService(ServiceBase):
         backups = len(key_ceremony.backups)
         shared_backups = len(key_ceremony.shared_backups)
         expected_backups = pow(guardian_count, 2)
+        verifications = len(key_ceremony.verifications)
+        expected_verifications = pow(guardian_count, 2) - guardian_count
         self.log.debug(
             f"guardians: {guardians_joined}/{guardian_count}; "
             + f"other_keys: {other_keys}/{guardian_count}; "
             + f"backups: {backups}/{expected_backups}; "
-            + f"shared_backups: {shared_backups}/{guardian_count}"
+            + f"shared_backups: {shared_backups}/{guardian_count}; "
+            + f"verifications: {verifications}/{expected_verifications}"
         )
         if guardians_joined < guardian_count:
             return KeyCeremonyStates.PendingGuardiansJoin
@@ -33,7 +36,9 @@ class KeyCeremonyStateService(ServiceBase):
             return KeyCeremonyStates.PendingGuardianBackups
         if shared_backups == 0:
             return KeyCeremonyStates.PendingAdminToShareBackups
-        return KeyCeremonyStates.PendingGuardiansVerifyBackups
+        if verifications < expected_verifications:
+            return KeyCeremonyStates.PendingGuardiansVerifyBackups
+        return KeyCeremonyStates.PendingAdminToPublishJointKey
 
 
 status_descriptions = {

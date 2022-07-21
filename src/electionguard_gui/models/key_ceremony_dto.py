@@ -25,6 +25,7 @@ class KeyCeremonyDto:
         self.created_at_utc = key_ceremony["created_at"]
         self.created_at_str = utc_to_str(self.created_at_utc)
         self.keys = [_dict_to_election_public_key(key) for key in key_ceremony["keys"]]
+        self.verifications = key_ceremony["verifications"]
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -63,6 +64,26 @@ class KeyCeremonyDto:
     def get_backup_count_for_user(self, user_id: str) -> int:
         backups = [backup for backup in self.backups if backup["owner_id"] == user_id]
         return len(backups)
+
+    def get_verification_count_for_user(self, user_id: str) -> int:
+        return len(
+            [
+                verification
+                for verification in self.verifications
+                if verification["designated_id"] == user_id
+            ]
+        )
+
+    def get_shared_backups_for_guardian(
+        self, guardian_id: str
+    ) -> List[ElectionPartialKeyBackup]:
+        shared_backup_wrapper = next(
+            filter(
+                lambda backup: backup["owner_id"] == guardian_id, self.shared_backups
+            )
+        )
+        backups = shared_backup_wrapper["backups"]
+        return [_dict_to_backup(backup) for backup in backups]
 
     def get_backups(self) -> List[ElectionPartialKeyBackup]:
         return [_dict_to_backup(backup) for backup in self.backups]

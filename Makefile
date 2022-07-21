@@ -97,7 +97,7 @@ blackcheck:
 	poetry run black --check .
 
 mypy:
-	poetry run mypy src/electionguard src/electionguard_tools src/electionguard_cli stubs
+	poetry run mypy src/electionguard src/electionguard_tools src/electionguard_cli src/electionguard_gui stubs
 
 validate: 
 	@echo ✅ VALIDATE

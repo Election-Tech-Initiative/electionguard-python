@@ -1,4 +1,5 @@
 import tempfile
+from typing import Any, Dict
 import eel
 
 from electionguard_cli.cli_steps import KeyCeremonyStep
@@ -24,7 +25,7 @@ class SetupElectionComponent(ComponentBase):
     # pylint: disable=no-self-use
     def setup_election(
         self, guardian_count: int, quorum: int, verification_url: str, manifest: str
-    ) -> str:
+    ) -> Dict[str, Any]:
         election_inputs = GuiSetupInputRetrievalStep().get_gui_inputs(
             guardian_count, quorum, verification_url, manifest
         )
@@ -41,6 +42,7 @@ class SetupElectionComponent(ComponentBase):
         self.log.debug(
             f"Setup complete, context: {context_file}, constants: {constants_file}"
         )
-        with open(context_file, "r", encoding="utf-8") as context_file:
-            context_raw: str = context_file.read()
-            return eel_success(context_raw)
+        with open(context_file, "r", encoding="utf-8") as context_file_io:
+            context_raw: str = context_file_io.read()
+            result: Dict[Any, str] = eel_success(context_raw)
+            return result
