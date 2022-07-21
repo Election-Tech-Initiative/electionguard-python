@@ -5,6 +5,7 @@ import Login from "../components/shared/login-component.js";
 
 // admin components
 import AdminHome from "../components/admin/admin-home-component.js";
+import CreateElection from "../components/admin/create-election-component.js";
 import SetupElection from "../components/admin/setup-election-component.js";
 import CreateKeyCeremony from "../components/admin/create-key-ceremony-component.js";
 import ViewKeyCeremonyAdmin from "../components/admin/view-key-ceremony-component.js";
@@ -27,7 +28,7 @@ export default {
   getRoute(path) {
     const cleanPath = path.split("?")[0].slice(1) || "/";
     const foundRoute = this.getRouteByUrl(cleanPath);
-    console.log("foundRoute", foundRoute);
+    console.log("getRoute", cleanPath, foundRoute);
     return foundRoute || this.routes.notFound;
   },
   routes: {
@@ -38,6 +39,11 @@ export default {
 
     // admin pages
     adminHome: { url: "/admin/home", secured: true, component: AdminHome },
+    createElection: {
+      url: "/admin/create-election",
+      secured: true,
+      component: CreateElection,
+    },
     setupElection: {
       url: "/admin/setup-election",
       secured: true,

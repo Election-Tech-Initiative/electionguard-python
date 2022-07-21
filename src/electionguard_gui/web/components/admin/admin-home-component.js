@@ -13,6 +13,9 @@ export default {
       <div class="col-12 d-grid mb-3">
         <a href="#/admin/create-key-ceremony" class="btn btn-primary">Create Key Ceremony</a>
       </div>
+      <div class="col-12 d-grid mb-3">
+        <a href="#/admin/create-election" class="btn btn-primary">Create Election</a>
+      </div>
       <div class="col-12 d-grid">
         <a href="#/admin/setup-election" class="btn btn-primary">Setup Election</a>
       </div>
