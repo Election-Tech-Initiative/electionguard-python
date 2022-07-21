@@ -363,8 +363,10 @@ class Guardian:
         """
         backup = self._guardian_election_partial_key_backups.get(guardian_id)
         public_key = self._guardian_election_public_keys.get(guardian_id)
-        if backup is None or public_key is None:
-            return None
+        if backup is None:
+            raise ValueError(f"No backup exists for {guardian_id}")
+        if public_key is None:
+            raise ValueError(f"No public key exists for {guardian_id}")
         return verify_election_partial_key_backup(
             self.id, backup, public_key, self._election_keys
         )

@@ -4,10 +4,16 @@ from pymongo.database import Database
 from pymongo import CursorType
 from bson import ObjectId
 import eel
-from electionguard.key_ceremony import ElectionPartialKeyBackup, ElectionPublicKey
+from electionguard.key_ceremony import (
+    ElectionPartialKeyBackup,
+    ElectionPartialKeyVerification,
+    ElectionPublicKey,
+)
+from electionguard_gui.models.key_ceremony_dto import KeyCeremonyDto
 from electionguard_gui.services.db_serialization_service import (
     backup_to_dict,
     public_key_to_dict,
+    verification_to_dict,
 )
 from electionguard_gui.services.db_service import DbService
 
@@ -72,20 +78,23 @@ class KeyCeremonyService(ServiceBase):
         # notify watchers that the key ceremony was modified
         db.key_ceremony_deltas.insert_one({"key_ceremony_id": key_ceremony_id})
 
-    def get_guardian_number(self, key_ceremony: Any, guardian_id: str) -> int:
+    def get_guardian_number(
+        self, key_ceremony: KeyCeremonyDto, guardian_id: str
+    ) -> int:
         """Returns the position of a guardian within the array of guardians that have joined
         a key ceremony. This technique is important because it avoids concurrency problems
         that could arise if simply retrieving the number of guardians"""
         guardian_num = 1
-        for guardian in key_ceremony["guardians_joined"]:
+        for guardian in key_ceremony.guardians_joined:
             if guardian == guardian_id:
                 return guardian_num
             guardian_num += 1
-        raise ValueError("guardian not found")
+        raise ValueError(f"guardian '{guardian_id}' not found")
 
     # pylint: disable=no-self-use
-    def get(self, db: Database, id: str) -> Any:
-        return db.key_ceremonies.find_one({"_id": ObjectId(id)})
+    def get(self, db: Database, id: str) -> KeyCeremonyDto:
+        key_ceremony_dict = db.key_ceremonies.find_one({"_id": ObjectId(id)})
+        return KeyCeremonyDto(key_ceremony_dict)
 
     def append_guardian_joined(
         self, db: Database, key_ceremony_id: str, guardian_id: str
@@ -119,4 +128,29 @@ class KeyCeremonyService(ServiceBase):
         db.key_ceremonies.update_one(
             {"_id": ObjectId(key_ceremony_id)},
             {"$push": {"backups": {"$each": backups_dict}}},
+        )
+
+    def append_shared_backups(
+        self,
+        db: Database,
+        key_ceremony_id: str,
+        shared_backups: List[Any],
+    ) -> None:
+        db.key_ceremonies.update_one(
+            {"_id": ObjectId(key_ceremony_id)},
+            {"$push": {"shared_backups": {"$each": shared_backups}}},
+        )
+
+    def append_verifications(
+        self,
+        db: Database,
+        key_ceremony_id: str,
+        verifications: List[ElectionPartialKeyVerification],
+    ) -> None:
+        verifications_dict = [
+            verification_to_dict(verification) for verification in verifications
+        ]
+        db.key_ceremonies.update_one(
+            {"_id": ObjectId(key_ceremony_id)},
+            {"$push": {"verifications": {"$each": verifications_dict}}},
         )

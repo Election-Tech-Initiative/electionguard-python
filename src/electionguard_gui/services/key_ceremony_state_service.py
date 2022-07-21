@@ -1,4 +1,4 @@
-from typing import Any
+from electionguard_gui.models.key_ceremony_dto import KeyCeremonyDto
 from electionguard_gui.models.key_ceremony_states import KeyCeremonyStates
 from electionguard_gui.services.eel_log_service import EelLogService
 from electionguard_gui.services.service_base import ServiceBase
@@ -12,16 +12,21 @@ class KeyCeremonyStateService(ServiceBase):
     def __init__(self, log_service: EelLogService) -> None:
         self.log = log_service
 
-    def get_key_ceremony_state(self, key_ceremony: Any) -> KeyCeremonyStates:
+    def get_key_ceremony_state(self, key_ceremony: KeyCeremonyDto) -> KeyCeremonyStates:
         guardians_joined = len(key_ceremony.guardians_joined)
         guardian_count = key_ceremony.guardian_count
         other_keys = len(key_ceremony.other_keys)
         backups = len(key_ceremony.backups)
+        shared_backups = len(key_ceremony.shared_backups)
         expected_backups = pow(guardian_count, 2)
+        verifications = len(key_ceremony.verifications)
+        expected_verifications = pow(guardian_count, 2) - guardian_count
         self.log.debug(
             f"guardians: {guardians_joined}/{guardian_count}; "
-            + f"other_keys: {other_keys}; "
-            + f"backups: {backups}/{expected_backups}"
+            + f"other_keys: {other_keys}/{guardian_count}; "
+            + f"backups: {backups}/{expected_backups}; "
+            + f"shared_backups: {shared_backups}/{guardian_count}; "
+            + f"verifications: {verifications}/{expected_verifications}"
         )
         if guardians_joined < guardian_count:
             return KeyCeremonyStates.PendingGuardiansJoin
@@ -29,7 +34,11 @@ class KeyCeremonyStateService(ServiceBase):
             return KeyCeremonyStates.PendingAdminAnnounce
         if backups < expected_backups:
             return KeyCeremonyStates.PendingGuardianBackups
-        return KeyCeremonyStates.PendingAdminToShareBackups
+        if shared_backups == 0:
+            return KeyCeremonyStates.PendingAdminToShareBackups
+        if verifications < expected_verifications:
+            return KeyCeremonyStates.PendingGuardiansVerifyBackups
+        return KeyCeremonyStates.PendingAdminToPublishJointKey
 
 
 status_descriptions = {

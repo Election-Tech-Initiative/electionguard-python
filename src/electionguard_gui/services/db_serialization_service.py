@@ -1,8 +1,9 @@
 from typing import Any
-from electionguard.election_polynomial import PublicCommitment
-from electionguard.elgamal import ElGamalPublicKey
-from electionguard.key_ceremony import ElectionPartialKeyBackup, ElectionPublicKey
-from electionguard.schnorr import SchnorrProof
+from electionguard.key_ceremony import (
+    ElectionPartialKeyBackup,
+    ElectionPartialKeyVerification,
+    ElectionPublicKey,
+)
 
 
 def public_key_to_dict(key: ElectionPublicKey) -> dict[str, Any]:
@@ -38,25 +39,12 @@ def backup_to_dict(backup: ElectionPartialKeyBackup) -> dict[str, Any]:
     }
 
 
-def dict_to_election_public_key(key: Any) -> ElectionPublicKey:
-    coefficient_commitments = [
-        PublicCommitment(x) for x in key["coefficient_commitments"]
-    ]
-    coefficient_proofs = [
-        SchnorrProof(
-            cp["public_key"],
-            cp["commitment"],
-            cp["challenge"],
-            cp["response"],
-            cp["usage"],
-        )
-        for cp in key["coefficient_proofs"]
-    ]
-    guardian_public_key = ElectionPublicKey(
-        key["owner_id"],
-        key["sequence_order"],
-        ElGamalPublicKey(key["key"]),
-        coefficient_commitments,
-        coefficient_proofs,
-    )
-    return guardian_public_key
+def verification_to_dict(
+    verification: ElectionPartialKeyVerification,
+) -> dict[str, Any]:
+    return {
+        "owner_id": verification.owner_id,
+        "designated_id": verification.designated_id,
+        "verifier_id": verification.verifier_id,
+        "verified": verification.verified,
+    }
