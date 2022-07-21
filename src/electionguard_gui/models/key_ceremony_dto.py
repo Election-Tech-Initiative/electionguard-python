@@ -27,19 +27,22 @@ class KeyCeremonyDto:
         self.joint_key = key_ceremony["joint_key"]
         self.created_by = key_ceremony["created_by"]
         self.created_at_utc = key_ceremony["created_at"]
-        self.created_at_str = utc_to_str(self.created_at_utc)
+        self.created_at_str = utc_to_str(key_ceremony["created_at"])
+        self.completed_at_utc = key_ceremony["completed_at"]
+        self.completed_at_str = utc_to_str(key_ceremony["completed_at"])
 
     def to_dict(self) -> dict[str, Any]:
         return {
             "id": self.id,
             "guardian_count": self.guardian_count,
-            "quorum": self.quorum,
             "key_ceremony_name": self.key_ceremony_name,
-            "status": self.status,
+            "quorum": self.quorum,
+            "guardians_joined": self.guardians_joined,
             "created_by": self.created_by,
             "created_at_str": self.created_at_str,
-            "guardians_joined": self.guardians_joined,
+            "completed_at_str": self.completed_at_str,
             "can_join": self.can_join,
+            "status": self.status,
         }
 
     id: str
@@ -55,7 +58,9 @@ class KeyCeremonyDto:
     joint_key: Any
     created_by: str
     created_at_utc: datetime
+    completed_at_utc: datetime
     created_at_str: str
+    completed_at_str: str
     can_join: bool
     status: str
 

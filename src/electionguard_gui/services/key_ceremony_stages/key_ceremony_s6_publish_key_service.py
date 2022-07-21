@@ -37,5 +37,6 @@ class KeyCeremonyS6PublishKeyService(KeyCeremonyStageBase):
         self._key_ceremony_service.append_joint_key(
             db, key_ceremony.id, election_joint_key
         )
+        self._key_ceremony_service.set_complete(db, key_ceremony.id)
         # notify everyone that verifications completed and the joint key published
         self._key_ceremony_service.notify_changed(db, key_ceremony.id)

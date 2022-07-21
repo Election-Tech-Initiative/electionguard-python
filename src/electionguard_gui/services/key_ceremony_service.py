@@ -1,5 +1,6 @@
 from threading import Event
 from typing import Any, Callable, List, Optional
+from datetime import datetime
 from pymongo.database import Database
 from pymongo import CursorType
 from bson import ObjectId
@@ -31,7 +32,7 @@ class KeyCeremonyService(ServiceBase):
         super().__init__()
         self.db_service = db_service
 
-    MS_TO_BLOCK = 500
+    MS_TO_BLOCK = 200
 
     # assumptions: 1. only one thread will be watching key ceremonies at a time, and 2. a class instance will be
     # maintained for the duration of the time watching key ceremonies.  However, both will always be true given
@@ -70,7 +71,7 @@ class KeyCeremonyService(ServiceBase):
                 # the tailable cursor times out after a few seconds and fires a StopIteration exception,
                 # so we need to catch it and restart watching. The sleep is required by eel to allow
                 # it to respond to events such as the very important stop_watching event.
-                eel.sleep(0.2)
+                eel.sleep(0.8)
 
     def stop_watching(self) -> None:
         self.watching_key_ceremonies.clear()
@@ -167,4 +168,14 @@ class KeyCeremonyService(ServiceBase):
         db.key_ceremonies.update_one(
             {"_id": ObjectId(key_ceremony_id)},
             {"$set": {"joint_key": joint_key_dict}},
+        )
+
+    def set_complete(
+        self,
+        db: Database,
+        key_ceremony_id: str,
+    ) -> None:
+        db.key_ceremonies.update_one(
+            {"_id": ObjectId(key_ceremony_id)},
+            {"$set": {"completed_at": datetime.utcnow()}},
         )
