@@ -14,7 +14,7 @@ export default {
         ElectionGuard
       </a>
       <button
-        class="navbar-toggler"
+        class="navbar-toggler ms-auto me-2"
         type="button"
         data-bs-toggle="collapse"
         data-bs-target="#navbarSupportedContent"

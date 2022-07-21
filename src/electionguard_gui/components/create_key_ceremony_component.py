@@ -60,8 +60,10 @@ class CreateKeyCeremonyComponent(ComponentBase):
             "backups": [],
             "shared_backups": [],
             "verifications": [],
+            "joint_key": None,
             "created_by": self._auth_service.get_user_id(),
             "created_at": datetime.utcnow(),
+            "completed_at": None,
         }
         inserted_id = db.key_ceremonies.insert_one(key_ceremony).inserted_id
         self.log.debug(f"created '{key_ceremony_name}' record, id: {inserted_id}")
