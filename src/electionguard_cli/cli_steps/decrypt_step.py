@@ -1,5 +1,6 @@
 from typing import List
-import click
+#import click
+from print_utils import Echo
 from electionguard.guardian import Guardian
 from electionguard.utils import get_optional
 from electionguard.ballot import SubmittedBallot
@@ -54,7 +55,8 @@ class DecryptStep(CliStepBase):
             ballot_shares = guardian.compute_ballot_shares(spoiled_ballots, context)
             decryption_mediator.announce(guardian_key, tally_share, ballot_shares)
             count += 1
-            click.echo(f"Guardian Present: {guardian.id}")
+            #click.echo(f"Guardian Present: {guardian.id}")
+            Echo(f"Guardian Present: {guardian.id}")
 
         lagrange_coefficients = self._get_lagrange_coefficients(decryption_mediator)
 

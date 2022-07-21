@@ -1,6 +1,7 @@
 from typing import List
-import click
+#import click
 
+from print_utils import Echo
 from electionguard.data_store import DataStore
 from electionguard.ballot_box import BallotBox
 from electionguard.election import CiphertextElectionContext
@@ -52,7 +53,11 @@ class SubmitVotesStep(CliStepBase):
             else:
                 submitted_ballot = ballot_box.cast(ballot)
 
-            click.echo(
+            #click.echo(
+                #f"Submitted Ballot Id: {ballot.object_id} state: {get_optional(submitted_ballot).state}"
+            #)
+
+            Echo(
                 f"Submitted Ballot Id: {ballot.object_id} state: {get_optional(submitted_ballot).state}"
             )
         return ballot_store
