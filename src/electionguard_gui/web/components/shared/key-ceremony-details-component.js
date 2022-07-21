@@ -38,7 +38,7 @@ export default {
       <div class="container">
         <h1>{{keyCeremony.key_ceremony_name}}</h1>
         <div class="row">
-          <div class="col col-md-6">
+          <div class="col col-12 col-md-6 col-lg-5">
             <p>Guardians: {{keyCeremony.guardian_count}}</p>
             <p>Quorum: {{keyCeremony.quorum}}</p>
             <p>Created by: {{keyCeremony.created_by}}, {{keyCeremony.created_at_str}}</p>
@@ -52,7 +52,7 @@ export default {
             </div>
             <button v-if="keyCeremony.can_join" @click="join()" :disabled="loading" class="btn btn-primary">Join</button>
           </div>
-          <div class="col col-md-6 text-center">
+          <div class="col col-12 col-md-6 col-lg-7 text-center">
             <img v-if="keyCeremony.completed_at_str" src="/images/check.svg" width="200" height="200" class="mb-2"></img>
             <p class="key-ceremony-status">{{keyCeremony.status}}</p>
             <spinner :visible="loading || !keyCeremony.completed_at_str"></spinner>
