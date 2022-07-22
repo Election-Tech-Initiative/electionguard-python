@@ -1,11 +1,11 @@
-from typing import Optional, List, Type, TypeVar
+from typing import List, Type, TypeVar
 from os.path import isfile, isdir, join
 from os import listdir
 from io import TextIOWrapper
 from click import echo
 
 from electionguard.election import CiphertextElectionContext
-from electionguard.manifest import InternationalizedText, Manifest
+from electionguard.manifest import Manifest
 from electionguard.serialize import from_list_in_file, from_file, from_raw
 from electionguard.serialize import (
     from_file_wrapper,

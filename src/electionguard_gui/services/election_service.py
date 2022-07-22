@@ -1,5 +1,6 @@
 import json
 from pydantic.json import pydantic_encoder
+from pymongo.database import Database
 from electionguard.constants import ElectionConstants
 from electionguard.election import CiphertextElectionContext
 from electionguard.guardian import GuardianRecord
@@ -7,7 +8,6 @@ from electionguard.manifest import Manifest
 from electionguard_gui.models.key_ceremony_dto import KeyCeremonyDto
 from electionguard_gui.services.eel_log_service import EelLogService
 from electionguard_gui.services.service_base import ServiceBase
-from pymongo.database import Database
 
 
 class ElectionService(ServiceBase):
@@ -49,5 +49,6 @@ class ElectionService(ServiceBase):
             "constants": constants_raw,
             "guardian_records": guardian_records_raw,
         }
+        self._log.trace(f"inserting election: {election}")
         inserted_id = db.elections.insert_one(election).inserted_id
         return str(inserted_id)

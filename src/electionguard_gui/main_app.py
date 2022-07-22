@@ -1,28 +1,24 @@
 from typing import List
 import eel
 
-from electionguard_gui.components.component_base import ComponentBase
-from electionguard_gui.components.create_election_component import (
+from electionguard_gui.components import (
+    ViewElectionComponent,
+    ComponentBase,
     CreateElectionComponent,
-)
-from electionguard_gui.components.create_key_ceremony_component import (
     CreateKeyCeremonyComponent,
-)
-from electionguard_gui.components.key_ceremony_list_component import (
     KeyCeremonyListComponent,
-)
-from electionguard_gui.components.key_ceremony_details_component import (
     KeyCeremonyDetailsComponent,
+    SetupElectionComponent,
+    ElectionListComponent,
 )
-from electionguard_gui.components.setup_election_component import SetupElectionComponent
 
-from electionguard_gui.services.authorization_service import AuthorizationService
-from electionguard_gui.services.db_service import DbService
-from electionguard_gui.services.eel_log_service import EelLogService
-from electionguard_gui.services.key_ceremony_state_service import (
+from electionguard_gui.services import (
+    AuthorizationService,
+    DbService,
+    EelLogService,
     KeyCeremonyStateService,
+    ServiceBase,
 )
-from electionguard_gui.services.service_base import ServiceBase
 
 
 class MainApp:
@@ -44,6 +40,8 @@ class MainApp:
         authorization_service: AuthorizationService,
         key_ceremony_state_service: KeyCeremonyStateService,
         create_election_component: CreateElectionComponent,
+        view_election_component: ViewElectionComponent,
+        election_list_component: ElectionListComponent,
     ) -> None:
         super().__init__()
 
@@ -56,6 +54,8 @@ class MainApp:
             key_ceremony_details_component,
             setup_election_component,
             create_election_component,
+            view_election_component,
+            election_list_component,
         ]
 
         self.services = [

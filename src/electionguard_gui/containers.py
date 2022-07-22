@@ -6,19 +6,15 @@ from electionguard_cli.setup_election.output_setup_files_step import (
 from electionguard_cli.setup_election.setup_election_builder_step import (
     SetupElectionBuilderStep,
 )
-from electionguard_gui.components.create_election_component import (
+from electionguard_gui.components import (
     CreateElectionComponent,
-)
-from electionguard_gui.components.create_key_ceremony_component import (
+    ViewElectionComponent,
     CreateKeyCeremonyComponent,
-)
-from electionguard_gui.components.key_ceremony_list_component import (
+    SetupElectionComponent,
+    ElectionListComponent,
     KeyCeremonyListComponent,
-)
-from electionguard_gui.components.key_ceremony_details_component import (
     KeyCeremonyDetailsComponent,
 )
-from electionguard_gui.components.setup_election_component import SetupElectionComponent
 from electionguard_gui.main_app import MainApp
 from electionguard_gui.services import (
     AuthorizationService,
@@ -157,6 +153,12 @@ class Container(containers.DeclarativeContainer):
         key_ceremony_service=key_ceremony_service,
         auth_service=authorization_service,
     )
+    election_list_component: Factory[ElectionListComponent] = providers.Factory(
+        ElectionListComponent
+    )
+    view_election_component: Factory[ViewElectionComponent] = providers.Factory(
+        ViewElectionComponent
+    )
     key_ceremony_details_component: Factory[
         KeyCeremonyDetailsComponent
     ] = providers.Factory(
@@ -187,4 +189,6 @@ class Container(containers.DeclarativeContainer):
         authorization_service=authorization_service,
         key_ceremony_state_service=key_ceremony_state_service,
         create_election_component=create_election_component,
+        view_election_component=view_election_component,
+        election_list_component=election_list_component,
     )

@@ -1,7 +1,6 @@
 from typing import Any
 import eel
 from electionguard.constants import get_constants
-from electionguard_cli.cli_steps.output_step_base import OutputStepBase
 from electionguard_cli.setup_election.setup_election_builder_step import (
     SetupElectionBuilderStep,
 )

@@ -10,6 +10,9 @@ class EelLogService(ServiceBase):
     def _log(self, level: str, message: str) -> None:
         print(f"{datetime.now()} {level} {message}")
 
+    def trace(self, message: str) -> None:
+        pass
+
     def debug(self, message: str) -> None:
         self._log("DEBUG", message)
 

@@ -28,7 +28,7 @@ export default {
       });
     },
   },
-  async mounted() {
+  mounted() {
     console.log("begin watching for key ceremonies");
     eel.expose(this.key_ceremonies_found, "key_ceremonies_found");
     eel.watch_key_ceremonies();

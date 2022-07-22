@@ -1,8 +1,10 @@
 import KeyCeremonyList from "../shared/key-ceremony-list-component.js";
+import ElectionsList from "../shared/election-list-component.js";
 
 export default {
   components: {
     KeyCeremonyList,
+    ElectionsList,
   },
   template: /*html*/ `
   <div class="container col-6">
@@ -20,6 +22,9 @@ export default {
         <a href="#/admin/setup-election" class="btn btn-primary">Setup Election</a>
       </div>
     </div>
+  </div>
+  <div class="text-center mt-4">
+    <elections-list></elections-list>
   </div>
   <div class="text-center mt-4">
     <h2>Active Key Ceremonies</h2>
