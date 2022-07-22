@@ -39,8 +39,10 @@ from electionguard_gui.main_app import (
     MainApp,
 )
 from electionguard_gui.models import (
+    ElectionDto,
     KeyCeremonyDto,
     KeyCeremonyStates,
+    election_dto,
     key_ceremony_dto,
     key_ceremony_states,
 )
@@ -110,6 +112,7 @@ __all__ = [
     "DB_PASSWORD_KEY",
     "DbService",
     "EelLogService",
+    "ElectionDto",
     "ElectionListComponent",
     "ElectionService",
     "GuardianService",
@@ -148,6 +151,7 @@ __all__ = [
     "eel_log_service",
     "eel_success",
     "eel_utils",
+    "election_dto",
     "election_list_component",
     "election_service",
     "get_db_host",

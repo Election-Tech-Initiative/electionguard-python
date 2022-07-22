@@ -154,10 +154,12 @@ class Container(containers.DeclarativeContainer):
         auth_service=authorization_service,
     )
     election_list_component: Factory[ElectionListComponent] = providers.Factory(
-        ElectionListComponent
+        ElectionListComponent,
+        election_service=election_service,
     )
     view_election_component: Factory[ViewElectionComponent] = providers.Factory(
-        ViewElectionComponent
+        ViewElectionComponent,
+        election_service=election_service,
     )
     key_ceremony_details_component: Factory[
         KeyCeremonyDetailsComponent

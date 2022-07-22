@@ -7,7 +7,7 @@ export default {
     ElectionsList,
   },
   template: /*html*/ `
-  <div class="container col-6">
+  <div class="container col-md-6">
     <div class="text-center mb-4">
       <h1>Admin Menu</h1>
     </div>
