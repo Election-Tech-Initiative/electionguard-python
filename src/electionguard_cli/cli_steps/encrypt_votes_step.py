@@ -1,5 +1,6 @@
 from typing import List, Tuple
-import click
+#import click
+from print_utils import Echo
 
 from electionguard.encrypt import EncryptionDevice, EncryptionMediator
 from electionguard.election import CiphertextElectionContext
@@ -62,7 +63,8 @@ class EncryptVotesStep(CliStepBase):
     ) -> List[CiphertextBallot]:
         ciphertext_ballots: List[CiphertextBallot] = []
         for plaintext_ballot in plaintext_ballots:
-            click.echo(f"Encrypting ballot: {plaintext_ballot.object_id}")
+            #clicho(f"Encryptick.eng ballot: {plaintext_ballot.object_id}")
+            Echo(f"Encrypting ballot: {plaintext_ballot.object_id}")
             encrypted_ballot = encrypter.encrypt(plaintext_ballot)
             ciphertext_ballots.append(get_optional(encrypted_ballot))
         return ciphertext_ballots
