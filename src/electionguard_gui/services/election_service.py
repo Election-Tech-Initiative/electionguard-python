@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 from bson import ObjectId
 from pydantic.json import pydantic_encoder
 from pymongo.database import Database
@@ -9,15 +10,20 @@ from electionguard.manifest import Manifest
 from electionguard_gui.models import KeyCeremonyDto, ElectionDto
 from electionguard_gui.services.eel_log_service import EelLogService
 from electionguard_gui.services.service_base import ServiceBase
+from electionguard_gui.services.authorization_service import AuthorizationService
 
 
 class ElectionService(ServiceBase):
     """Responsible for functionality related to elections"""
 
     _log: EelLogService
+    _auth_service: AuthorizationService
 
-    def __init__(self, log_service: EelLogService) -> None:
+    def __init__(
+        self, log_service: EelLogService, auth_service: AuthorizationService
+    ) -> None:
         self._log = log_service
+        self._auth_service = auth_service
 
     def create_election(
         self,
@@ -36,6 +42,8 @@ class ElectionService(ServiceBase):
         election = {
             "election_name": election_name,
             "key_ceremony_id": key_ceremony.id,
+            "guardians": context.number_of_guardians,
+            "quorum": context.quorum,
             "manifest": {
                 "raw": manifest_raw,
                 "name": manifest.get_name(),
@@ -49,6 +57,8 @@ class ElectionService(ServiceBase):
             "context": context_raw,
             "constants": constants_raw,
             "guardian_records": guardian_records_raw,
+            "created_by": self._auth_service.get_user_id(),
+            "created_at": datetime.utcnow(),
         }
         self._log.trace(f"inserting election: {election}")
         inserted_id = db.elections.insert_one(election).inserted_id

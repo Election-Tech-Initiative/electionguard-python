@@ -47,11 +47,11 @@ class Container(containers.DeclarativeContainer):
     key_ceremony_service: Factory[KeyCeremonyService] = providers.Factory(
         KeyCeremonyService
     )
-    election_service: Factory[ElectionService] = providers.Factory(
-        ElectionService, log_service=log_service
-    )
     authorization_service: Singleton[AuthorizationService] = providers.Singleton(
         AuthorizationService
+    )
+    election_service: Factory[ElectionService] = providers.Factory(
+        ElectionService, log_service=log_service, auth_service=authorization_service
     )
     key_ceremony_state_service: Factory[KeyCeremonyStateService] = providers.Factory(
         KeyCeremonyStateService, log_service=log_service

@@ -49,40 +49,45 @@ class CreateElectionComponent(ComponentBase):
     def create_election(
         self, key_ceremony_id: str, election_name: str, manifest_raw: str, url: str
     ) -> dict[str, Any]:
-        self._log.debug(
-            f"Creating election key_ceremony_id: {key_ceremony_id}, "
-            + f"election_name: {election_name}, "
-            + f"url: {url}"
-        )
-        db = self._db_service.get_db()
-        existing_elections = db.elections.find_one({"election_name": election_name})
-        if existing_elections:
-            fail_result: dict[str, Any] = eel_fail("Election already exists")
-            return fail_result
-
-        key_ceremony = self._key_ceremony_service.get(db, key_ceremony_id)
-
-        election_inputs = self._setup_input_retrieval_step.get_gui_inputs(
-            key_ceremony.guardian_count, key_ceremony.quorum, url, manifest_raw
-        )
-        joint_key = key_ceremony.get_joint_key()
-        build_election_results = (
-            self._setup_election_builder_step.build_election_for_setup(
-                election_inputs, joint_key
+        try:
+            self._log.debug(
+                f"Creating election key_ceremony_id: {key_ceremony_id}, "
+                + f"election_name: {election_name}, "
+                + f"url: {url}"
             )
-        )
+            db = self._db_service.get_db()
+            existing_elections = db.elections.find_one({"election_name": election_name})
+            if existing_elections:
+                fail_result: dict[str, Any] = eel_fail("Election already exists")
+                return fail_result
 
-        guardian_records = [
-            guardian.publish() for guardian in election_inputs.guardians
-        ]
-        constants = get_constants()
-        election_id = self._election_service.create_election(
-            db,
-            election_name,
-            key_ceremony,
-            election_inputs.manifest,
-            build_election_results.context,
-            constants,
-            guardian_records,
-        )
-        return eel_success(election_id)
+            key_ceremony = self._key_ceremony_service.get(db, key_ceremony_id)
+
+            election_inputs = self._setup_input_retrieval_step.get_gui_inputs(
+                key_ceremony.guardian_count, key_ceremony.quorum, url, manifest_raw
+            )
+            joint_key = key_ceremony.get_joint_key()
+            build_election_results = (
+                self._setup_election_builder_step.build_election_for_setup(
+                    election_inputs, joint_key
+                )
+            )
+
+            guardian_records = [
+                guardian.publish() for guardian in election_inputs.guardians
+            ]
+            constants = get_constants()
+            election_id = self._election_service.create_election(
+                db,
+                election_name,
+                key_ceremony,
+                election_inputs.manifest,
+                build_election_results.context,
+                constants,
+                guardian_records,
+            )
+            return eel_success(election_id)
+        # pylint: disable=broad-except
+        except Exception as e:
+            self._log.error(e)
+            return eel_fail(str(e))
