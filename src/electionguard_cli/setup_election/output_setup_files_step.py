@@ -67,7 +67,7 @@ class OutputSetupFilesStep(OutputStepBase):
         self.print_value("Guardian records", guardian_records_dir)
 
     def _export_guardian_private_keys(self, inputs: SetupInputs, keys_dir: str) -> None:
-        if path.exists(keys_dir):
+        if path.exists(keys_dir) and not inputs.force:
             confirm = click.confirm(
                 "Existing guardian keys found, are you sure you want to overwrite them?",
                 default=True,
