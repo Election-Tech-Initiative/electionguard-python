@@ -18,19 +18,12 @@ from electionguard_gui.services.db_serialization_service import (
     public_key_to_dict,
     verification_to_dict,
 )
-from electionguard_gui.services.db_service import DbService
 
 from electionguard_gui.services.service_base import ServiceBase
 
 
 class KeyCeremonyService(ServiceBase):
     """Responsible for functionality related to key ceremonies"""
-
-    db_service: DbService
-
-    def __init__(self, db_service: DbService) -> None:
-        super().__init__()
-        self.db_service = db_service
 
     MS_TO_BLOCK = 200
 

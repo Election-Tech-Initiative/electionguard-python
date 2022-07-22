@@ -11,7 +11,7 @@ from electionguard_cli.setup_election.setup_election_builder_step import (
 )
 from electionguard_gui.components.component_base import ComponentBase
 from electionguard_gui.eel_utils import eel_success
-from electionguard_gui.gui_setup_election.gui_setup_input_retrieval_step import (
+from electionguard_gui.services.gui_setup_input_retrieval_step import (
     GuiSetupInputRetrievalStep,
 )
 

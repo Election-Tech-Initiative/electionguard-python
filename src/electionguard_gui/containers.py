@@ -1,5 +1,11 @@
 from dependency_injector import containers, providers
 from dependency_injector.providers import Factory, Singleton
+from electionguard_cli.setup_election.output_setup_files_step import (
+    OutputSetupFilesStep,
+)
+from electionguard_cli.setup_election.setup_election_builder_step import (
+    SetupElectionBuilderStep,
+)
 from electionguard_gui.components.create_election_component import (
     CreateElectionComponent,
 )
@@ -14,14 +20,15 @@ from electionguard_gui.components.key_ceremony_details_component import (
 )
 from electionguard_gui.components.setup_election_component import SetupElectionComponent
 from electionguard_gui.main_app import MainApp
-from electionguard_gui.services.authorization_service import AuthorizationService
-from electionguard_gui.services.db_service import DbService
-
-from electionguard_gui.services.eel_log_service import EelLogService
-from electionguard_gui.services.guardian_service import GuardianService
-from electionguard_gui.services.key_ceremony_service import KeyCeremonyService
-from electionguard_gui.services.key_ceremony_state_service import (
+from electionguard_gui.services import (
+    AuthorizationService,
+    DbService,
+    EelLogService,
+    ElectionService,
+    GuardianService,
+    KeyCeremonyService,
     KeyCeremonyStateService,
+    GuiSetupInputRetrievalStep,
 )
 from electionguard_gui.services.key_ceremony_stages import (
     KeyCeremonyS1JoinService,
@@ -42,7 +49,10 @@ class Container(containers.DeclarativeContainer):
         DbService, log_service=log_service
     )
     key_ceremony_service: Factory[KeyCeremonyService] = providers.Factory(
-        KeyCeremonyService, db_service=db_service
+        KeyCeremonyService
+    )
+    election_service: Factory[ElectionService] = providers.Factory(
+        ElectionService, log_service=log_service
     )
     authorization_service: Singleton[AuthorizationService] = providers.Singleton(
         AuthorizationService
@@ -52,6 +62,15 @@ class Container(containers.DeclarativeContainer):
     )
     guardian_service: Factory[GuardianService] = providers.Factory(
         GuardianService, log_service=log_service
+    )
+    setup_input_retrieval_step: Factory[GuiSetupInputRetrievalStep] = providers.Factory(
+        GuiSetupInputRetrievalStep
+    )
+    setup_election_builder_step: Factory[SetupElectionBuilderStep] = providers.Factory(
+        SetupElectionBuilderStep
+    )
+    output_setup_files_step: Factory[OutputSetupFilesStep] = providers.Factory(
+        OutputSetupFilesStep
     )
 
     # key ceremony services
@@ -127,6 +146,10 @@ class Container(containers.DeclarativeContainer):
     create_election_component: Factory[CreateElectionComponent] = providers.Factory(
         CreateElectionComponent,
         key_ceremony_service=key_ceremony_service,
+        election_service=election_service,
+        setup_election_builder_step=setup_election_builder_step,
+        output_setup_files_step=output_setup_files_step,
+        setup_input_retrieval_step=setup_input_retrieval_step,
     )
     create_key_ceremony_component: Factory[
         CreateKeyCeremonyComponent
