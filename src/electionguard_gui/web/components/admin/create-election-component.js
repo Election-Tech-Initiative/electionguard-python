@@ -1,27 +1,45 @@
+import Spinner from "../shared/spinner-component.js";
+import RouterService from "/services/router-service.js";
+
 export default {
   data() {
-    return { electionName: "", electionUrl: "", keys: [] };
+    return {
+      loading: false,
+      alert: null,
+      electionName: "",
+      electionUrl: "",
+      keys: [],
+    };
+  },
+  components: {
+    Spinner,
   },
   methods: {
     createElection() {
       const form = document.getElementById("mainForm");
       if (form.checkValidity()) {
+        self.loading = true;
+        self.alert = null;
         const manifest = document.getElementById("manifest").files[0];
         var reader = new FileReader();
         reader.onloadend = (e) => {
           const manifestContent = e.target.result;
-          const onSuccess = eel.create_election(
+          const onDone = eel.create_election(
             this.electionKey.id,
             this.electionName,
             manifestContent,
             this.electionUrl
           );
           console.log("creating election");
-          onSuccess((result) => {
+          onDone((result) => {
+            this.loading = false;
+            console.log("creating election completed", result);
             if (result.success) {
-              console.log("completed creating election successfully", result);
+              RouterService.goTo(RouterService.routes.viewElectionAdmin, {
+                electionId: result.result,
+              });
             } else {
-              console.error(result.message);
+              this.alert = result.message;
             }
           });
         };
@@ -45,6 +63,9 @@ export default {
   },
   template: /*html*/ `
     <form id="mainForm" class="needs-validation" novalidate @submit.prevent="createElection">
+      <div v-if="alert" class="alert alert-danger" role="alert">
+        {{ alert }}
+      </div>
       <div class="row g-3 align-items-center">
         <div class="col-12">
           <h1>Create Election</h1>
@@ -87,6 +108,7 @@ export default {
         </div>
         <div class="col-12 mt-4">
           <button type="submit" class="btn btn-primary">Create Election</button>
+          <spinner :visible="loading"></spinner>
         </div>
       </div>
     </form>`,
