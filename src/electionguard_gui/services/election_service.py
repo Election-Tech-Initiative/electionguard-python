@@ -34,6 +34,7 @@ class ElectionService(ServiceBase):
         context: CiphertextElectionContext,
         constants: ElectionConstants,
         guardian_records: list[GuardianRecord],
+        encryption_package_file: str,
     ) -> str:
         context_raw = json.dumps(context, default=pydantic_encoder)
         manifest_raw = json.dumps(manifest, default=pydantic_encoder)
@@ -57,6 +58,8 @@ class ElectionService(ServiceBase):
             "context": context_raw,
             "constants": constants_raw,
             "guardian_records": guardian_records_raw,
+            # Mongo has a max size of 16MG, consider using GridFS https://www.mongodb.com/docs/manual/core/gridfs/
+            "encryption_package_file": encryption_package_file,
             "created_by": self._auth_service.get_user_id(),
             "created_at": datetime.utcnow(),
         }

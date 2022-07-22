@@ -8,6 +8,22 @@ export default {
   data() {
     return { election: null, loading: false, error: false };
   },
+  methods: {
+    download: async function () {
+      this.loading = true;
+      const election_package = await eel.download_election_package(
+        this.electionId
+      )();
+      console.log("made it", election_package);
+      // var a = document.createElement("a");
+      // a.href = window.URL.createObjectURL(
+      //   new Blob([election_package], { type: "application/zip" })
+      // );
+      // a.download = "context.json";
+      // a.click();
+      // console.log("completed setting up election", r);
+    },
+  },
   async mounted() {
     const result = await eel.get_election(this.electionId)();
     if (result.success) {
@@ -24,7 +40,7 @@ export default {
             <h1>{{election.election_name}}</h1>
           </div>
           <div class="col col-2 text-end">
-            <button type="button" class="btn btn-primary">
+            <button type="button" class="btn btn-primary" @click="download">
               <i class="bi-download"></i>
             </button>
           </div>

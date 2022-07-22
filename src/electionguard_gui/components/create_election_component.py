@@ -1,6 +1,13 @@
+from os import path
+from shutil import make_archive, rmtree
+import tempfile
+from turtle import st
 from typing import Any
 import eel
 from electionguard.constants import get_constants
+from electionguard_cli.setup_election.output_setup_files_step import (
+    OutputSetupFilesStep,
+)
 from electionguard_cli.setup_election.setup_election_builder_step import (
     SetupElectionBuilderStep,
 )
@@ -16,10 +23,13 @@ from electionguard_gui.services import (
 class CreateElectionComponent(ComponentBase):
     """Responsible for functionality related to creating encryption packages for elections"""
 
+    _COMPRESSION_FORMAT = "zip"
+
     _key_ceremony_service: KeyCeremonyService
     _setup_input_retrieval_step: GuiSetupInputRetrievalStep
     _setup_election_builder_step: SetupElectionBuilderStep
     _election_service: ElectionService
+    _output_setup_files_step: OutputSetupFilesStep
 
     def __init__(
         self,
@@ -27,11 +37,13 @@ class CreateElectionComponent(ComponentBase):
         election_service: ElectionService,
         setup_input_retrieval_step: GuiSetupInputRetrievalStep,
         setup_election_builder_step: SetupElectionBuilderStep,
+        output_setup_files_step: OutputSetupFilesStep,
     ) -> None:
         self._key_ceremony_service = key_ceremony_service
         self._setup_input_retrieval_step = setup_input_retrieval_step
         self._setup_election_builder_step = setup_election_builder_step
         self._election_service = election_service
+        self._output_setup_files_step = output_setup_files_step
 
     def expose(self) -> None:
         eel.expose(self.get_keys)
@@ -73,6 +85,12 @@ class CreateElectionComponent(ComponentBase):
                 )
             )
 
+            temp_out_dir = path.join(tempfile.gettempdir(), "election_setup")
+            self._output_setup_files_step.output(
+                election_inputs, build_election_results, temp_out_dir, None
+            )
+            zip_file = path.join(tempfile.gettempdir(), "public_encryption_package")
+            encryption_package_file = self._zip(temp_out_dir, zip_file)
             guardian_records = [
                 guardian.publish() for guardian in election_inputs.guardians
             ]
@@ -85,9 +103,16 @@ class CreateElectionComponent(ComponentBase):
                 build_election_results.context,
                 constants,
                 guardian_records,
+                encryption_package_file,
             )
             return eel_success(election_id)
         # pylint: disable=broad-except
         except Exception as e:
             self._log.error(e)
             return eel_fail(str(e))
+
+    def _zip(self, dir_to_zip: str, zip_file_to_make: str) -> str:
+        make_archive(zip_file_to_make, self._COMPRESSION_FORMAT, dir_to_zip)
+        rmtree(dir_to_zip)
+        self._log.debug(f"Temp zip file: {zip_file_to_make}.{self._COMPRESSION_FORMAT}")
+        return f"{zip_file_to_make}.{self._COMPRESSION_FORMAT}"

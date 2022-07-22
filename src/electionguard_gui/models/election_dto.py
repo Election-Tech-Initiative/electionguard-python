@@ -1,5 +1,7 @@
+import json
 from typing import Any
 from datetime import datetime
+from electionguard.manifest import Manifest
 
 from electionguard_gui.eel_utils import utc_to_str
 
@@ -14,6 +16,7 @@ class ElectionDto:
     manifest: dict[str, Any]
     constants: int
     guardian_records: int
+    encryption_package_file: str
     created_by: str
     created_at_utc: datetime
     created_at_str: str
@@ -26,6 +29,7 @@ class ElectionDto:
         self.manifest = election["manifest"]
         self.constants = election["constants"]
         self.guardian_records = election["guardian_records"]
+        self.encryption_package_file = election["encryption_package_file"]
         self.created_by = election["created_by"]
         self.created_at_utc = election["created_at"]
         self.created_at_str = utc_to_str(election["created_at"])

@@ -145,6 +145,7 @@ class Container(containers.DeclarativeContainer):
         election_service=election_service,
         setup_election_builder_step=setup_election_builder_step,
         setup_input_retrieval_step=setup_input_retrieval_step,
+        output_setup_files_step=output_setup_files_step,
     )
     create_key_ceremony_component: Factory[
         CreateKeyCeremonyComponent
