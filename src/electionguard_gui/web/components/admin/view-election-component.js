@@ -19,7 +19,16 @@ export default {
   template: /*html*/ `
     <div v-if="election">
       <div class="container">
-        <h1>{{election.election_name}}</h1>
+        <div class="row">
+          <div class="col col-10">
+            <h1>{{election.election_name}}</h1>
+          </div>
+          <div class="col col-2 text-end">
+            <button type="button" class="btn btn-primary">
+              <i class="bi-download"></i>
+            </button>
+          </div>
+        </div>
         <div class="row">
           <div class="col col-12 col-md-6 col-lg-5">
             <h2>Election Details</h2>
