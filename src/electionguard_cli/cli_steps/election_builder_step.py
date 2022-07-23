@@ -8,7 +8,7 @@ from ..cli_models import CliElectionInputsBase, BuildElectionResults
 from .cli_step_base import CliStepBase
 
 
-class ElectionBuilderStep(): #(CliStepBase):
+class ElectionBuilderStep(CliStepBase):
     """Responsible for creating a manifest and context for use in an election."""
 
     def _build_election(
