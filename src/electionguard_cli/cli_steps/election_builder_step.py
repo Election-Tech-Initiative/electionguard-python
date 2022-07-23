@@ -1,5 +1,4 @@
 from typing import Optional
-#import click
 from electionguard.elgamal import ElGamalPublicKey
 from electionguard.group import ElementModQ
 from electionguard.utils import get_optional
@@ -7,7 +6,8 @@ from electionguard_tools.helpers.election_builder import ElectionBuilder
 
 from ..cli_models import CliElectionInputsBase, BuildElectionResults
 from .cli_step_base import CliStepBase
-from print_utils import Echo
+from print_utils import print_message
+
 
 class ElectionBuilderStep(CliStepBase):
     """Responsible for creating a manifest and context for use in an election."""
@@ -21,9 +21,7 @@ class ElectionBuilderStep(CliStepBase):
     ) -> BuildElectionResults:
         self.print_header("Building election")
 
-        #click.echo("Initializing public key and commitment hash")
-        Echo("Initializing public key and commitment hash")
-
+        print_message("Initializing public key and commitment hash")
         election_builder = ElectionBuilder(
             election_inputs.guardian_count,
             election_inputs.quorum,
@@ -35,9 +33,7 @@ class ElectionBuilderStep(CliStepBase):
             election_builder.add_extended_data_field(
                 self.VERIFICATION_URL_NAME, verification_url
             )
-        #click.echo("Creating context and internal manifest")
-        Echo("Creating context and internal manifest")
-
+        print_message("Creating context and internal manifest")
         build_result = election_builder.build()
         internal_manifest, context = get_optional(build_result)
         return BuildElectionResults(internal_manifest, context)

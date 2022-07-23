@@ -1,4 +1,4 @@
-from click import echo
+from print_utils import *
 
 from electionguard import to_file
 
@@ -17,5 +17,5 @@ class EncryptBallotsPublishStep(OutputStepBase):
         self.print_value("Device file", device_file + ".json")
         for ballot in encrypt_results.ciphertext_ballots:
             ballot_file = to_file(ballot, ballot.object_id, out_dir)
-            echo(f"Writing {ballot_file}")
+            print_message(f"Writing {ballot_file}")
         self.print_value("Encrypted ballots", len(encrypt_results.ciphertext_ballots))

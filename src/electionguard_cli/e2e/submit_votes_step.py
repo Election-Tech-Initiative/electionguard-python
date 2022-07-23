@@ -13,7 +13,7 @@ from electionguard.ballot import (
 from ..cli_models import BuildElectionResults, EncryptResults
 from ..cli_steps import CliStepBase
 from .e2e_inputs import E2eInputs
-from print_utils.py import Echo
+from print_utils import *
 
 class SubmitVotesStep(CliStepBase):
     """Responsible for submitting ballots into a ballot store."""
@@ -52,6 +52,5 @@ class SubmitVotesStep(CliStepBase):
             else:
                 submitted_ballot = ballot_box.cast(ballot)
 
-            #click.echo(f"Submitted Ballot Id: {ballot.object_id} state: {get_optional(submitted_ballot).state}")
-            Echo(f"Submitted Ballot Id: {ballot.object_id} state: {get_optional(submitted_ballot).state}")
+            print_message(f"Submitted Ballot Id: {ballot.object_id} state: {get_optional(submitted_ballot).state}")
         return ballot_store
