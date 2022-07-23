@@ -1,4 +1,5 @@
-from click import echo
+#from click import echo
+from print_utils import print_message
 
 from electionguard import to_file
 
@@ -15,5 +16,5 @@ class MarkBallotsPublishStep(OutputStepBase):
         self.print_header("Writing Marked Ballots")
         for ballot in marked_ballots.plaintext_ballots:
             ballot_file = to_file(ballot, ballot.object_id, out_dir)
-            echo(f"Writing {ballot_file}")
+            print_message(f"Writing {ballot_file}")
         self.print_value("Marked ballots", len(marked_ballots.plaintext_ballots))

@@ -10,7 +10,7 @@ from electionguard.election_polynomial import LagrangeCoefficientsRecord
 
 from ..cli_models import BuildElectionResults, CliDecryptResults
 from .cli_step_base import CliStepBase
-from print_utils import Echo
+from print_utils import print_message
 
 
 class DecryptStep(CliStepBase):
@@ -55,8 +55,7 @@ class DecryptStep(CliStepBase):
             ballot_shares = guardian.compute_ballot_shares(spoiled_ballots, context)
             decryption_mediator.announce(guardian_key, tally_share, ballot_shares)
             count += 1
-            #click.echo(f"Guardian Present: {guardian.id}")
-            Echo(f"Guardian Present: {guardian.id}")
+            print_message(f"Guardian Present: {guardian.id}")
 
         lagrange_coefficients = self._get_lagrange_coefficients(decryption_mediator)
 

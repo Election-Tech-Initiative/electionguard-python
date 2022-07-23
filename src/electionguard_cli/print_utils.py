@@ -6,8 +6,8 @@ def print_header(text: str, header_color="green"):
     click.echo(text, fg=header_color)
     click.echo(f"{'-'*40}", header_color)
 
-def print_message(text: str, underlined=False):
-    click.secho(f"{text}", fg="white", underline=underlined)
+def print_message(text: str, color="white", underlined=False, bolded=False):
+    click.secho(f"{text}", fg=color, underline=underlined, bold=bolded)
 
 def print_warning(text: str, warning_color="bright_red") -> None:
     click.secho(f"WARNING: {text}", fg=warning_color, bold=True)
