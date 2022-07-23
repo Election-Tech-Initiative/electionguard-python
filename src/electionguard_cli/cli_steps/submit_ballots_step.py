@@ -1,7 +1,7 @@
 from typing import List
 #import click
 
-from print_utils import Echo
+from print_utils import print_text_utils
 from electionguard.data_store import DataStore
 from electionguard.ballot_box import BallotBox
 from electionguard.ballot import CiphertextBallot
@@ -29,11 +29,11 @@ class SubmitBallotsStep(CliStepBase):
         for ballot in cast_ballots:
             ballot_box.cast(ballot)
             #click.echo(f"Cast Ballot Id: {ballot.object_id}")
-            Echo(f"Cast Ballot Id: {ballot.object_id}")
+            print_text_utils(f"Cast Ballot Id: {ballot.object_id}")
 
         for ballot in spoil_ballots:
             ballot_box.spoil(ballot)
             #click.echo(f"Spoilt Ballot Id: {ballot.object_id}")
-            Echo(f"Spoilt Ballot Id: {ballot.object_id}")
+            print_text_utils(f"Spoilt Ballot Id: {ballot.object_id}")
 
         return SubmitResults(ballot_store.all())
