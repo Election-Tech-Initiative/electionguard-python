@@ -13,7 +13,7 @@ from electionguard.ballot import (
 from ..cli_models import BuildElectionResults, EncryptResults
 from ..cli_steps import CliStepBase
 from .e2e_inputs import E2eInputs
-from print_utils.py import print_message
+from print_utils import print_message
 
 
 

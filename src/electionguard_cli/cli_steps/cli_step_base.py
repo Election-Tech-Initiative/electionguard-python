@@ -1,5 +1,5 @@
 from typing import Any, Optional
-import click
+import print_utils
 
 
 class CliStepBase:
@@ -15,17 +15,13 @@ class CliStepBase:
     VERIFICATION_URL_NAME = "verification_url"
 
     def print_header(self, s: str) -> None:
-        click.echo("")
-        click.secho(f"{'-'*40}", fg=self.header_color)
-        click.secho(s, fg=self.header_color)
-        click.secho(f"{'-'*40}", fg=self.header_color)
+        print_utils.print_header(s)
 
     def print_section(self, s: Optional[str]) -> None:
-        click.echo("")
-        click.secho(s, fg=self.section_color, bold=True)
+        print_utils.print_section(s)
 
     def print_value(self, name: str, value: Any) -> None:
-        click.echo(click.style(name + ": ") + click.style(value, fg=self.value_color))
+        print_utils.print_value(name, value)
 
     def print_warning(self, s: str) -> None:
-        click.secho(f"WARNING: {s}", fg=self.warning_color)
+        print_utils.print_warning(s)

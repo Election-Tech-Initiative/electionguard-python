@@ -1,5 +1,4 @@
 from typing import List
-#import click
 from electionguard.guardian import Guardian
 from electionguard.utils import get_optional
 from electionguard.ballot import SubmittedBallot
@@ -10,7 +9,6 @@ from electionguard.election_polynomial import LagrangeCoefficientsRecord
 
 from ..cli_models import BuildElectionResults, CliDecryptResults
 from .cli_step_base import CliStepBase
-from print_utils import print_message
 
 
 class DecryptStep(CliStepBase):
@@ -46,6 +44,7 @@ class DecryptStep(CliStepBase):
         self.print_value("Spoiled ballots", ciphertext_tally.spoiled())
         self.print_value("Total ballots", len(ciphertext_tally))
 
+
         count = 0
         for guardian in guardians:
             guardian_key = guardian.share_key()
@@ -55,7 +54,7 @@ class DecryptStep(CliStepBase):
             ballot_shares = guardian.compute_ballot_shares(spoiled_ballots, context)
             decryption_mediator.announce(guardian_key, tally_share, ballot_shares)
             count += 1
-            print_message(f"Guardian Present: {guardian.id}")
+            self.print_value(f"Guardian Present: {guardian.id}")
 
         lagrange_coefficients = self._get_lagrange_coefficients(decryption_mediator)
 

@@ -1,6 +1,3 @@
-#from click import echo
-from print_utils import print_message
-
 from electionguard import to_file
 
 from ..cli_models import MarkResults
