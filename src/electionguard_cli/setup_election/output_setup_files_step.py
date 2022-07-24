@@ -27,7 +27,7 @@ class OutputSetupFilesStep(OutputStepBase):
         build_election_results: BuildElectionResults,
         package_dir: str,
         keys_dir: Optional[str],
-    ):
+    ) -> None:
         self.print_header("Generating Output")
         self._export_context(build_election_results.context, package_dir)
         self._export_constants(package_dir)

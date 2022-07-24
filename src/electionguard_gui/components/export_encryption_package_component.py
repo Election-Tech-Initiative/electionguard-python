@@ -1,11 +1,11 @@
 import os
 from tempfile import gettempdir
 from typing import Any
+from shutil import unpack_archive
 import eel
 from electionguard_gui.eel_utils import eel_success
 from electionguard_gui.components.component_base import ComponentBase
 from electionguard_gui.services import ElectionService
-from shutil import unpack_archive
 
 
 class ExportEncryptionPackage(ComponentBase):
@@ -18,9 +18,10 @@ class ExportEncryptionPackage(ComponentBase):
 
     def expose(self) -> None:
         eel.expose(self.get_export_locations)
-        eel.expose(self.export)
+        eel.expose(self.export_encryption_package)
 
     def get_export_locations(self) -> dict[str, Any]:
+        self._log.trace("getting export locations")
         common_root_dirs = [get_download_path(), gettempdir()]
         locations = [
             os.path.join(location, "public_encryption_package")
@@ -28,7 +29,9 @@ class ExportEncryptionPackage(ComponentBase):
         ]
         return eel_success(locations)
 
-    def export(self, election_id: str, location: str) -> dict[str, Any]:
+    def export_encryption_package(
+        self, election_id: str, location: str
+    ) -> dict[str, Any]:
         db = self._db_service.get_db()
         election = self._election_service.get(db, election_id)
         self._log.debug(f"unzipping: {election.encryption_package_file} to {location}")
@@ -52,5 +55,4 @@ def get_download_path() -> str:
         with winreg.OpenKey(winreg.HKEY_CURRENT_USER, sub_key) as key:
             location = winreg.QueryValueEx(key, downloads_guid)[0]
         return str(location)
-    else:
-        return os.path.join(os.path.expanduser("~"), "downloads")
+    return os.path.join(os.path.expanduser("~"), "downloads")

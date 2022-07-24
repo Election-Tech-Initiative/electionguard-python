@@ -68,11 +68,13 @@ class ElectionService(ServiceBase):
         return str(inserted_id)
 
     def get(self, db: Database, election_id: str) -> ElectionDto:
+        self._log.trace(f"getting election {election_id}")
         election = db.elections.find_one({"_id": ObjectId(election_id)})
         if not election:
             raise Exception(f"Election not found: {election_id}")
         return ElectionDto(election)
 
     def get_all(self, db: Database) -> list[ElectionDto]:
+        self._log.trace("getting all elections")
         elections = db.elections.find()
         return [ElectionDto(election) for election in elections]

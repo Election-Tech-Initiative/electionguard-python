@@ -17,15 +17,20 @@ export default {
   },
   methods: {
     async exportPackage() {
-      const result = await eel.export(this.electionId, this.location)();
-      console.log("done exporting", result);
+      this.loading = true;
+      this.alert = undefined;
+      const result = await eel.export_encryption_package(
+        this.electionId,
+        this.location
+      )();
+      this.loading = false;
       this.success = result.success;
       if (!result.success) {
         console.error(result.message);
         this.alert = "An error occurred exporting the encryption package.";
       }
     },
-    getElectionUrl: function (election) {
+    getElectionUrl: function () {
       const page = RouterService.routes.viewElectionAdmin;
       return RouterService.getUrl(page, {
         electionId: this.electionId,
@@ -33,6 +38,7 @@ export default {
     },
   },
   async mounted() {
+    this.alert = undefined;
     const result = await eel.get_export_locations()();
     if (result.success) {
       this.locations = result.result;
@@ -49,11 +55,11 @@ export default {
     <form id="mainForm" class="needs-validation" novalidate @submit.prevent="exportPackage" v-if="!success">
       <div class="row g-3 align-items-center">
         <div class="col-12">
-          <h1>Export Encryption Package</h1>
+          <h1>Encryption Package</h1>
         </div>
         <div class="col-sm-12">
-          <label for="electionKey" class="form-label">Export Location</label>
-          <select id="location" class="form-control" v-model="location">
+          <label for="electionKey" class="form-label">Location</label>
+          <select id="location" class="form-select" v-model="location">
               <option v-for="location in locations" :value="location">{{ location }}</option>
           </select>
         </div>

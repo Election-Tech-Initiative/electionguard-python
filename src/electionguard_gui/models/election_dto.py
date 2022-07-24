@@ -1,11 +1,10 @@
-import json
 from typing import Any
 from datetime import datetime
-from electionguard.manifest import Manifest
 
 from electionguard_gui.eel_utils import utc_to_str
 
 
+# pylint: disable=too-many-instance-attributes
 class ElectionDto:
     """Responsible for serializing to the front-end GUI and providing helper functions to Python."""
 

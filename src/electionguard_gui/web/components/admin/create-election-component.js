@@ -72,7 +72,7 @@ export default {
         </div>
         <div class="col-sm-12">
           <label for="electionKey" class="form-label">Key</label>
-          <select id="electionKey" class="form-control" v-model="electionKey" @change="keyChanged()">
+          <select id="electionKey" class="form-select" v-model="electionKey" @change="keyChanged()">
             <option v-for="key in keys" :value="key">{{ key.key_ceremony_name }}</option>
           </select>
         </div>

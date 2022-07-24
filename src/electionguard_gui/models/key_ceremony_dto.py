@@ -17,7 +17,7 @@ from electionguard_gui.eel_utils import utc_to_str
 class KeyCeremonyDto:
     """A key ceremony for serializing to the front-end GUI and providing helper functions to Python."""
 
-    def __init__(self, key_ceremony: dict[str, Any]):
+    def __init__(self, key_ceremony: Any):
         self.id = str(key_ceremony["_id"])
         self.guardian_count = key_ceremony["guardian_count"]
         self.key_ceremony_name = key_ceremony["key_ceremony_name"]

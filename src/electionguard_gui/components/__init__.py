@@ -21,6 +21,7 @@ from electionguard_gui.components.election_list_component import (
 )
 from electionguard_gui.components.export_encryption_package_component import (
     ExportEncryptionPackage,
+    get_download_path,
 )
 from electionguard_gui.components.key_ceremony_details_component import (
     KeyCeremonyDetailsComponent,
@@ -48,6 +49,7 @@ __all__ = [
     "create_key_ceremony_component",
     "election_list_component",
     "export_encryption_package_component",
+    "get_download_path",
     "key_ceremony_details_component",
     "key_ceremony_list_component",
     "make_js_key_ceremony",
