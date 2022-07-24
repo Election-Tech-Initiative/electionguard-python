@@ -1,3 +1,4 @@
+import RouterService from "/services/router-service.js";
 import Spinner from "../shared/spinner-component.js";
 
 export default {
@@ -6,27 +7,46 @@ export default {
   },
   components: { Spinner },
   data() {
-    return { locations: [], location: null, loading: false, alert: undefined };
+    return {
+      locations: [],
+      location: null,
+      loading: false,
+      alert: undefined,
+      success: false,
+    };
   },
   methods: {
-    exportPackage() {
-      console.log("exporting to " + this.location);
+    async exportPackage() {
+      const result = await eel.export(this.electionId, this.location)();
+      console.log("done exporting", result);
+      this.success = result.success;
+      if (!result.success) {
+        console.error(result.message);
+        this.alert = "An error occurred exporting the encryption package.";
+      }
+    },
+    getElectionUrl: function (election) {
+      const page = RouterService.routes.viewElectionAdmin;
+      return RouterService.getUrl(page, {
+        electionId: this.electionId,
+      });
     },
   },
   async mounted() {
     const result = await eel.get_export_locations()();
     if (result.success) {
       this.locations = result.result;
+      this.location = this.locations[0];
     } else {
       console.error(result.message);
       this.alert = "An error occurred while loading the export locations.";
     }
   },
   template: /*html*/ `
-    <form id="mainForm" class="needs-validation" novalidate @submit.prevent="exportPackage">
-      <div v-if="alert" class="alert alert-danger" role="alert">
-        {{ alert }}
-      </div>
+    <div v-if="alert" class="alert alert-danger" role="alert">
+      {{ alert }}
+    </div>
+    <form id="mainForm" class="needs-validation" novalidate @submit.prevent="exportPackage" v-if="!success">
       <div class="row g-3 align-items-center">
         <div class="col-12">
           <h1>Export Encryption Package</h1>
@@ -43,5 +63,10 @@ export default {
         </div>
       </div>
     </form>
+    <div v-if="success" class="text-center">
+      <img src="/images/check.svg" width="200" height="200" class="mt-4 mb-2"></img>
+      <p>The encryption package has been exported to {{ location }}.</p>
+      <a :href="getElectionUrl()" class="btn btn-primary">Continue</a>
+    </div>
 `,
 };

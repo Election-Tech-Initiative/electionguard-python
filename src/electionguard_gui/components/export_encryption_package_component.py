@@ -5,6 +5,7 @@ import eel
 from electionguard_gui.eel_utils import eel_success
 from electionguard_gui.components.component_base import ComponentBase
 from electionguard_gui.services import ElectionService
+from shutil import unpack_archive
 
 
 class ExportEncryptionPackage(ComponentBase):
@@ -27,8 +28,12 @@ class ExportEncryptionPackage(ComponentBase):
         ]
         return eel_success(locations)
 
-    def export(self, election_id: str) -> dict[str, Any]:
-        return eel_success("exported")
+    def export(self, election_id: str, location: str) -> dict[str, Any]:
+        db = self._db_service.get_db()
+        election = self._election_service.get(db, election_id)
+        self._log.debug(f"unzipping: {election.encryption_package_file} to {location}")
+        unpack_archive(election.encryption_package_file, location)
+        return eel_success()
 
 
 def get_download_path() -> str:
