@@ -1,3 +1,4 @@
+import RouterService from "/services/router-service.js";
 import Spinner from "../shared/spinner-component.js";
 
 export default {
@@ -9,19 +10,11 @@ export default {
     return { election: null, loading: false, error: false };
   },
   methods: {
-    download: async function () {
-      this.loading = true;
-      const election_package = await eel.download_election_package(
-        this.electionId
-      )();
-      console.log("made it", election_package);
-      // var a = document.createElement("a");
-      // a.href = window.URL.createObjectURL(
-      //   new Blob([election_package], { type: "application/zip" })
-      // );
-      // a.download = "context.json";
-      // a.click();
-      // console.log("completed setting up election", r);
+    getEncryptionPackageUrl: function () {
+      const page = RouterService.routes.exportEncryptionPackage;
+      return RouterService.getUrl(page, {
+        electionId: this.electionId,
+      });
     },
   },
   async mounted() {
@@ -40,9 +33,9 @@ export default {
             <h1>{{election.election_name}}</h1>
           </div>
           <div class="col col-2 text-end">
-            <button type="button" class="btn btn-primary" @click="download">
+            <a :href="getEncryptionPackageUrl()" class="btn btn-primary">
               <i class="bi-download"></i>
-            </button>
+            </a>
           </div>
         </div>
         <div class="row">

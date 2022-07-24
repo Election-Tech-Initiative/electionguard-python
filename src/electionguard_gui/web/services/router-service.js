@@ -10,6 +10,7 @@ import SetupElection from "../components/admin/setup-election-component.js";
 import CreateKeyCeremony from "../components/admin/create-key-ceremony-component.js";
 import ViewKeyCeremonyAdmin from "../components/admin/view-key-ceremony-component.js";
 import ViewElectionAdmin from "../components/admin/view-election-component.js";
+import ExportEncryptionPackage from "../components/admin/export-encryption-package.js";
 
 // guardian components
 import GuardianHome from "../components/guardian/guardian-home-component.js";
@@ -54,6 +55,11 @@ export default {
       url: "/admin/view-election",
       secured: true,
       component: ViewElectionAdmin,
+    },
+    exportEncryptionPackage: {
+      url: "/admin/export-encryption-package",
+      secured: true,
+      component: ExportEncryptionPackage,
     },
     createKeyCeremony: {
       url: "/admin/create-key-ceremony",
