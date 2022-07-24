@@ -1,7 +1,6 @@
 from os import path
 from shutil import make_archive, rmtree
 import tempfile
-from turtle import st
 from typing import Any
 import eel
 from electionguard.constants import get_constants

@@ -8,8 +8,8 @@ from electionguard_gui.components import (
     CreateKeyCeremonyComponent,
     KeyCeremonyListComponent,
     KeyCeremonyDetailsComponent,
-    SetupElectionComponent,
     ElectionListComponent,
+    ExportEncryptionPackage,
 )
 
 from electionguard_gui.services import (
@@ -36,12 +36,12 @@ class MainApp:
         guardian_home_component: KeyCeremonyListComponent,
         create_key_ceremony_component: CreateKeyCeremonyComponent,
         key_ceremony_details_component: KeyCeremonyDetailsComponent,
-        setup_election_component: SetupElectionComponent,
         authorization_service: AuthorizationService,
         key_ceremony_state_service: KeyCeremonyStateService,
         create_election_component: CreateElectionComponent,
         view_election_component: ViewElectionComponent,
         election_list_component: ElectionListComponent,
+        export_encryption_package: ExportEncryptionPackage,
     ) -> None:
         super().__init__()
 
@@ -52,10 +52,10 @@ class MainApp:
             guardian_home_component,
             create_key_ceremony_component,
             key_ceremony_details_component,
-            setup_election_component,
             create_election_component,
             view_election_component,
             election_list_component,
+            export_encryption_package,
         ]
 
         self.services = [

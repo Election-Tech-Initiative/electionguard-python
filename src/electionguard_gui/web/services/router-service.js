@@ -6,7 +6,6 @@ import Login from "../components/shared/login-component.js";
 // admin components
 import AdminHome from "../components/admin/admin-home-component.js";
 import CreateElection from "../components/admin/create-election-component.js";
-import SetupElection from "../components/admin/setup-election-component.js";
 import CreateKeyCeremony from "../components/admin/create-key-ceremony-component.js";
 import ViewKeyCeremonyAdmin from "../components/admin/view-key-ceremony-component.js";
 import ViewElectionAdmin from "../components/admin/view-election-component.js";
@@ -45,11 +44,6 @@ export default {
       url: "/admin/create-election",
       secured: true,
       component: CreateElection,
-    },
-    setupElection: {
-      url: "/admin/setup-election",
-      secured: true,
-      component: SetupElection,
     },
     viewElectionAdmin: {
       url: "/admin/view-election",

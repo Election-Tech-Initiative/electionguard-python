@@ -10,10 +10,10 @@ from electionguard_gui.components import (
     CreateElectionComponent,
     ViewElectionComponent,
     CreateKeyCeremonyComponent,
-    SetupElectionComponent,
     ElectionListComponent,
     KeyCeremonyListComponent,
     KeyCeremonyDetailsComponent,
+    ExportEncryptionPackage,
 )
 from electionguard_gui.main_app import MainApp
 from electionguard_gui.services import (
@@ -176,8 +176,9 @@ class Container(containers.DeclarativeContainer):
         key_ceremony_s5_verification_service=key_ceremony_s5_verification_service,
         key_ceremony_s6_publish_key_service=key_ceremony_s6_publish_key_service,
     )
-    setup_election_component: Factory[SetupElectionComponent] = providers.Factory(
-        SetupElectionComponent
+    export_encryption_package: Factory[ExportEncryptionPackage] = providers.Factory(
+        ExportEncryptionPackage,
+        election_service=election_service,
     )
 
     # main
@@ -188,10 +189,10 @@ class Container(containers.DeclarativeContainer):
         guardian_home_component=guardian_home_component,
         create_key_ceremony_component=create_key_ceremony_component,
         key_ceremony_details_component=key_ceremony_details_component,
-        setup_election_component=setup_election_component,
         authorization_service=authorization_service,
         key_ceremony_state_service=key_ceremony_state_service,
         create_election_component=create_election_component,
         view_election_component=view_election_component,
         election_list_component=election_list_component,
+        export_encryption_package=export_encryption_package,
     )
