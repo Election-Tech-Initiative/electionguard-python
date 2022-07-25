@@ -14,6 +14,7 @@ from electionguard_gui.components import (
     KeyCeremonyListComponent,
     KeyCeremonyDetailsComponent,
     ExportEncryptionPackage,
+    UploadBallotsComponent,
 )
 from electionguard_gui.main_app import MainApp
 from electionguard_gui.services import (
@@ -180,6 +181,10 @@ class Container(containers.DeclarativeContainer):
         ExportEncryptionPackage,
         election_service=election_service,
     )
+    upload_ballots_component: Factory[UploadBallotsComponent] = providers.Factory(
+        UploadBallotsComponent,
+        election_service=election_service,
+    )
 
     # main
     main_app: Factory[MainApp] = providers.Factory(
@@ -195,4 +200,5 @@ class Container(containers.DeclarativeContainer):
         view_election_component=view_election_component,
         election_list_component=election_list_component,
         export_encryption_package=export_encryption_package,
+        upload_ballots_component=upload_ballots_component,
     )
