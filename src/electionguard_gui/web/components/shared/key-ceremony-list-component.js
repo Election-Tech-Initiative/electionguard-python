@@ -4,6 +4,7 @@ import Spinner from "./spinner-component.js";
 export default {
   props: {
     isAdmin: Boolean,
+    showWhenEmpty: Boolean,
   },
   data() {
     return {
@@ -39,7 +40,12 @@ export default {
   },
   template: /*html*/ `
   <spinner :visible="loading"></spinner>
-  <p v-if="!keyCeremonies">No key ceremonies found...</p>
+  <div v-if="showWhenEmpty">
+    <p v-if="!keyCeremonies.length">
+      No key ceremonies are currently active.
+    </p>
+    <h2 v-else>Active Key Ceremonies</h2>
+  </div>
   <div v-if="keyCeremonies" class="d-grid gap-2 d-md-block">
     <a :href="getKeyCeremonyUrl(keyCeremony)" v-for="keyCeremony in keyCeremonies" class="btn btn-primary me-2 mt-2">{{ keyCeremony.key_ceremony_name }}</a>
   </div>

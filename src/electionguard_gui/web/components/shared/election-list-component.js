@@ -30,8 +30,7 @@ export default {
   },
   template: /*html*/ `
   <spinner :visible="loading"></spinner>
-  <p v-if="!elections">No elections found...</p>
-  <div v-if="elections" class="d-grid gap-2 d-md-block">
+  <div v-if="elections && elections.count" class="d-grid gap-2 d-md-block">
     <h2>Elections</h2>
     <a :href="getElectionUrl(election)" v-for="election in elections" class="btn btn-primary me-2 mt-2">{{ election.election_name }}</a>
   </div>
