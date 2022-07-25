@@ -11,8 +11,9 @@ export default {
       election: null,
       loading: false,
       alert: null,
-      filesProcessed: null,
-      filesTotal: null,
+      ballotsProcessed: null,
+      ballotsTotal: null,
+      success: false,
     };
   },
   methods: {
@@ -22,12 +23,13 @@ export default {
         if (form.checkValidity()) {
           this.loading = true;
           this.alert = null;
-          this.filesProcessed = 0;
+          this.ballotsProcessed = 0;
           const ballotFiles = document.getElementById("ballotsFolder").files;
-          this.filesTotal = ballotFiles.length + 1;
+          this.ballotsTotal = ballotFiles.length + 1;
 
           const uploadId = await this.uploadDeviceFile();
           await this.uploadBallotFiles(uploadId, ballotFiles);
+          this.success = true;
         }
         form.classList.add("was-validated");
       } catch (ex) {
@@ -49,7 +51,7 @@ export default {
       if (!result.success) {
         throw new Error(result.message);
       }
-      this.filesProcessed++;
+      this.ballotsProcessed++;
       return result.result;
     },
     async uploadBallotFiles(uploadId, ballotFiles) {
@@ -65,15 +67,21 @@ export default {
         if (!result.success) {
           throw new Error(result.message);
         }
-        this.filesProcessed++;
+        this.ballotsProcessed++;
       }
+    },
+    getElectionUrl: function () {
+      const page = RouterService.routes.viewElectionAdmin;
+      return RouterService.getUrl(page, {
+        electionId: this.electionId,
+      });
     },
   },
   template: /*html*/ `
-    <form id="mainForm" class="needs-validation" novalidate @submit.prevent="uploadBallots">
-      <div v-if="alert" class="alert alert-danger" role="alert">
-        {{ alert }}
-      </div>
+    <div v-if="alert" class="alert alert-danger" role="alert">
+      {{ alert }}
+    </div>
+    <form id="mainForm" class="needs-validation" novalidate @submit.prevent="uploadBallots" v-if="!success">
       <div class="row g-3 align-items-center">
         <div class="col-12">
           <h1>Upload Ballots</h1>
@@ -102,7 +110,13 @@ export default {
         <div class="col-12 mt-4">
           <button type="submit" :disabled="loading" class="btn btn-primary">Upload Ballots</button>
           <spinner :visible="loading"></spinner>
-          <p v-if="loading && filesProcessed">{{ filesProcessed }} of {{ filesTotal }} files processed.</p>
+          <p v-if="loading && ballotsProcessed">{{ ballotsProcessed }} of {{ ballotsTotal }} files processed.</p>
       </div>
-    </form>`,
+    </form>
+    <div v-if="success" class="text-center">
+      <img src="/images/check.svg" width="200" height="200" class="mt-4 mb-2"></img>
+      <p>Successfully uploaded {{ballotsTotal}} ballots.</p>
+      <a :href="getElectionUrl()" class="btn btn-primary">Continue</a>
+    </div>
+  `,
 };
