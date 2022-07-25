@@ -46,6 +46,7 @@ def get_download_path() -> str:
     """
     if os.name == "nt":
         # pylint: disable=import-outside-toplevel
+        # pylint: disable=import-error
         import winreg
 
         sub_key = (
