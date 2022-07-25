@@ -21,9 +21,9 @@ class KeyCeremonyListComponent(ComponentBase):
     def watch_key_ceremonies(self) -> None:
         self._log.debug("Watching key ceremonies")
         db = self._db_service.get_db()
-        send_key_ceremonies_to_ui(db)
+        self.send_key_ceremonies_to_ui(db)
         self._key_ceremony_service.watch_key_ceremonies(
-            db, None, lambda _: send_key_ceremonies_to_ui(db)
+            db, None, lambda _: self.send_key_ceremonies_to_ui(db)
         )
         self._log.debug("exited watching key_ceremonies")
 
@@ -31,18 +31,10 @@ class KeyCeremonyListComponent(ComponentBase):
         self._log.debug("Stopping watch key_ceremonies")
         self._key_ceremony_service.stop_watching()
 
-
-def send_key_ceremonies_to_ui(db: Database) -> None:
-    key_ceremonies = db.key_ceremonies.find()
-    js_key_ceremonies = [
-        make_js_key_ceremony(key_ceremony) for key_ceremony in key_ceremonies
-    ]
-    # pylint: disable=no-member
-    eel.key_ceremonies_found(js_key_ceremonies)
-
-
-def make_js_key_ceremony(key_ceremony: dict) -> dict:
-    return {
-        "key_ceremony_name": key_ceremony["key_ceremony_name"],
-        "id": key_ceremony["_id"].__str__(),
-    }
+    def send_key_ceremonies_to_ui(self, db: Database) -> None:
+        key_ceremonies = self._key_ceremony_service.get_active(db)
+        js_key_ceremonies = [
+            key_ceremony.to_id_name_dict() for key_ceremony in key_ceremonies
+        ]
+        # pylint: disable=no-member
+        eel.key_ceremonies_found(js_key_ceremonies)

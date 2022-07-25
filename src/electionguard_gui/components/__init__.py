@@ -28,8 +28,6 @@ from electionguard_gui.components.key_ceremony_details_component import (
 )
 from electionguard_gui.components.key_ceremony_list_component import (
     KeyCeremonyListComponent,
-    make_js_key_ceremony,
-    send_key_ceremonies_to_ui,
 )
 from electionguard_gui.components.view_election_component import (
     ViewElectionComponent,
@@ -52,7 +50,5 @@ __all__ = [
     "get_download_path",
     "key_ceremony_details_component",
     "key_ceremony_list_component",
-    "make_js_key_ceremony",
-    "send_key_ceremonies_to_ui",
     "view_election_component",
 ]

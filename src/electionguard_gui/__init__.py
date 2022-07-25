@@ -23,8 +23,6 @@ from electionguard_gui.components import (
     get_download_path,
     key_ceremony_details_component,
     key_ceremony_list_component,
-    make_js_key_ceremony,
-    send_key_ceremonies_to_ui,
     view_election_component,
 )
 from electionguard_gui.containers import (
@@ -180,12 +178,10 @@ __all__ = [
     "key_ceremony_states",
     "main_app",
     "make_guardian",
-    "make_js_key_ceremony",
     "make_mediator",
     "models",
     "public_key_to_dict",
     "run",
-    "send_key_ceremonies_to_ui",
     "service_base",
     "services",
     "start",
