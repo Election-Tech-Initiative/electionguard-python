@@ -75,7 +75,7 @@ export default {
                 <dd>{{election.manifest.geopolitical_units}}</dd>
               </dl>
               <dl class="col-md-6">
-                <dt>Paries</dt>
+                <dt>Parties</dt>
                 <dd>{{election.manifest.parties}}</dd>
               </dl>
               <dl class="col-md-6">
