@@ -176,7 +176,7 @@ class KeyCeremonyService(ServiceBase):
         )
 
     def get_completed(self, db: Database) -> List[KeyCeremonyDto]:
-        key_ceremonies = db.key_ceremonies.find({"completed_at": {"$exists": True}})
+        key_ceremonies = db.key_ceremonies.find({"completed_at": {"$ne": None}})
         return [KeyCeremonyDto(key_ceremony) for key_ceremony in key_ceremonies]
 
     def get_active(self, db: Database) -> List[KeyCeremonyDto]:
