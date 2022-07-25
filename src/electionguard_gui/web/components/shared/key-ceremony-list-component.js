@@ -40,10 +40,8 @@ export default {
   },
   template: /*html*/ `
   <spinner :visible="loading"></spinner>
-  <div v-if="showWhenEmpty">
-    <p v-if="!keyCeremonies.length">
-      No key ceremonies are currently active.
-    </p>
+  <div v-if="showWhenEmpty && !keyCeremonies.length">
+    <p>No key ceremonies are currently active.</p>
   </div>
   <div v-if="keyCeremonies.length" class="d-grid gap-2 d-md-block">
     <h2>Active Key Ceremonies</h2>
