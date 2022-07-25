@@ -7,10 +7,102 @@ export default {
   },
   components: { Spinner },
   data() {
-    return { election: null, loading: false };
+    return {
+      election: null,
+      loading: false,
+      alert: null,
+      filesProcessed: null,
+      filesTotal: null,
+    };
+  },
+  methods: {
+    async uploadBallots() {
+      try {
+        const form = document.getElementById("mainForm");
+        if (form.checkValidity()) {
+          this.loading = true;
+          this.alert = null;
+          this.filesProcessed = 0;
+          const ballotFiles = document.getElementById("ballotsFolder").files;
+          this.filesTotal = ballotFiles.length + 1;
+
+          const uploadId = await this.uploadDeviceFile();
+          await this.uploadBallotFiles(uploadId, ballotFiles);
+        }
+        form.classList.add("was-validated");
+      } catch (ex) {
+        console.error(ex);
+        this.alert = ex.message;
+      } finally {
+        this.loading = false;
+      }
+    },
+    async uploadDeviceFile() {
+      const [deviceFile] = document.getElementById("deviceFile").files;
+      const deviceContents = await deviceFile.text();
+      console.log("Creating election", deviceFile.name);
+      const result = await eel.create_ballot_upload(
+        this.electionId,
+        deviceFile.name,
+        deviceContents
+      )();
+      if (!result.success) {
+        throw new Error(result.message);
+      }
+      this.filesProcessed++;
+      return result.result;
+    },
+    async uploadBallotFiles(uploadId, ballotFiles) {
+      for (let i = 0; i < ballotFiles.length; i++) {
+        const ballotFile = ballotFiles[i];
+        const ballotContents = await ballotFile.text();
+        console.log("Uploading ballot", ballotFile.name);
+        const result = await eel.upload_ballot(
+          uploadId,
+          ballotFile.name,
+          ballotContents
+        )();
+        if (!result.success) {
+          throw new Error(result.message);
+        }
+        this.filesProcessed++;
+      }
+    },
   },
   template: /*html*/ `
-    <h1>Upload Ballots</h1>
-    <spinner :visible="loading"></spinner>
-  `,
+    <form id="mainForm" class="needs-validation" novalidate @submit.prevent="uploadBallots">
+      <div v-if="alert" class="alert alert-danger" role="alert">
+        {{ alert }}
+      </div>
+      <div class="row g-3 align-items-center">
+        <div class="col-12">
+          <h1>Upload Ballots</h1>
+        </div>
+        <div class="col-12">
+          <label for="deviceFile" class="form-label">Device File</label>
+          <input
+            type="file"
+            id="deviceFile"
+            class="form-control"
+            required
+          />
+          <div class="invalid-feedback">Please provide a device file.</div>
+        </div>
+        <div class="col-12">
+          <label for="ballotsFolder" class="form-label">Ballot Folder</label>
+          <input
+            type="file"
+            id="ballotsFolder"
+            class="form-control"
+            webkitdirectory directory
+            required
+          />
+          <div class="invalid-feedback">Please provide a ballot folder.</div>
+        </div>
+        <div class="col-12 mt-4">
+          <button type="submit" :disabled="loading" class="btn btn-primary">Upload Ballots</button>
+          <spinner :visible="loading"></spinner>
+          <p v-if="loading && filesProcessed">{{ filesProcessed }} of {{ filesTotal }} files processed.</p>
+      </div>
+    </form>`,
 };

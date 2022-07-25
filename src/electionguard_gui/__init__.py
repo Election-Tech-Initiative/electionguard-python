@@ -49,6 +49,7 @@ from electionguard_gui.models import (
 )
 from electionguard_gui.services import (
     AuthorizationService,
+    BallotUploadService,
     DB_HOST_KEY,
     DB_PASSWORD_KEY,
     DbService,
@@ -70,6 +71,7 @@ from electionguard_gui.services import (
     announce_guardians,
     authorization_service,
     backup_to_dict,
+    ballot_upload_service,
     configuration_service,
     db_serialization_service,
     db_service,
@@ -105,6 +107,7 @@ from electionguard_gui.start import (
 
 __all__ = [
     "AuthorizationService",
+    "BallotUploadService",
     "ComponentBase",
     "Container",
     "CreateElectionComponent",
@@ -140,6 +143,7 @@ __all__ = [
     "announce_guardians",
     "authorization_service",
     "backup_to_dict",
+    "ballot_upload_service",
     "component_base",
     "components",
     "configuration_service",

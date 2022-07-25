@@ -19,6 +19,7 @@ from electionguard_gui.services import (
     EelLogService,
     KeyCeremonyStateService,
     ServiceBase,
+    BallotUploadService,
 )
 
 
@@ -44,6 +45,7 @@ class MainApp:
         election_list_component: ElectionListComponent,
         export_encryption_package: ExportEncryptionPackage,
         upload_ballots_component: UploadBallotsComponent,
+        ballot_upload_service: BallotUploadService,
     ) -> None:
         super().__init__()
 
@@ -66,6 +68,7 @@ class MainApp:
             db_service,
             log_service,
             key_ceremony_state_service,
+            ballot_upload_service,
         ]
 
     def start(self) -> None:
