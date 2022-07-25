@@ -18,19 +18,12 @@ from electionguard_gui.services.db_serialization_service import (
     public_key_to_dict,
     verification_to_dict,
 )
-from electionguard_gui.services.db_service import DbService
 
 from electionguard_gui.services.service_base import ServiceBase
 
 
 class KeyCeremonyService(ServiceBase):
     """Responsible for functionality related to key ceremonies"""
-
-    db_service: DbService
-
-    def __init__(self, db_service: DbService) -> None:
-        super().__init__()
-        self.db_service = db_service
 
     MS_TO_BLOCK = 200
 
@@ -97,6 +90,8 @@ class KeyCeremonyService(ServiceBase):
     # pylint: disable=no-self-use
     def get(self, db: Database, id: str) -> KeyCeremonyDto:
         key_ceremony_dict = db.key_ceremonies.find_one({"_id": ObjectId(id)})
+        if key_ceremony_dict is None:
+            raise ValueError(f"key ceremony '{id}' not found")
         return KeyCeremonyDto(key_ceremony_dict)
 
     def append_guardian_joined(
@@ -179,3 +174,11 @@ class KeyCeremonyService(ServiceBase):
             {"_id": ObjectId(key_ceremony_id)},
             {"$set": {"completed_at": datetime.utcnow()}},
         )
+
+    def get_completed(self, db: Database) -> List[KeyCeremonyDto]:
+        key_ceremonies = db.key_ceremonies.find({"completed_at": {"$ne": None}})
+        return [KeyCeremonyDto(key_ceremony) for key_ceremony in key_ceremonies]
+
+    def get_active(self, db: Database) -> List[KeyCeremonyDto]:
+        key_ceremonies = db.key_ceremonies.find({"completed_at": {"$eq": None}})
+        return [KeyCeremonyDto(key_ceremony) for key_ceremony in key_ceremonies]

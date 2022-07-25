@@ -18,6 +18,7 @@ export default {
     startCeremony() {
       const form = document.getElementById("mainForm");
       this.alert = null;
+      self.alert = null;
       if (form.checkValidity()) {
         this.loading = true;
         const onDone = eel.create_key_ceremony(

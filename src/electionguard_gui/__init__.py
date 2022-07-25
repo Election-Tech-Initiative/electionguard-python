@@ -1,7 +1,6 @@
 from electionguard_gui import components
 from electionguard_gui import containers
 from electionguard_gui import eel_utils
-from electionguard_gui import gui_setup_election
 from electionguard_gui import main_app
 from electionguard_gui import models
 from electionguard_gui import services
@@ -9,17 +8,22 @@ from electionguard_gui import start
 
 from electionguard_gui.components import (
     ComponentBase,
+    CreateElectionComponent,
     CreateKeyCeremonyComponent,
+    ElectionListComponent,
+    ExportEncryptionPackage,
     KeyCeremonyDetailsComponent,
     KeyCeremonyListComponent,
-    SetupElectionComponent,
+    ViewElectionComponent,
     component_base,
+    create_election_component,
     create_key_ceremony_component,
+    election_list_component,
+    export_encryption_package_component,
+    get_download_path,
     key_ceremony_details_component,
     key_ceremony_list_component,
-    make_js_key_ceremony,
-    send_key_ceremonies_to_ui,
-    setup_election_component,
+    view_election_component,
 )
 from electionguard_gui.containers import (
     Container,
@@ -30,16 +34,14 @@ from electionguard_gui.eel_utils import (
     eel_success,
     utc_to_str,
 )
-from electionguard_gui.gui_setup_election import (
-    GuiSetupInputRetrievalStep,
-    gui_setup_input_retrieval_step,
-)
 from electionguard_gui.main_app import (
     MainApp,
 )
 from electionguard_gui.models import (
+    ElectionDto,
     KeyCeremonyDto,
     KeyCeremonyStates,
+    election_dto,
     key_ceremony_dto,
     key_ceremony_states,
 )
@@ -49,7 +51,9 @@ from electionguard_gui.services import (
     DB_PASSWORD_KEY,
     DbService,
     EelLogService,
+    ElectionService,
     GuardianService,
+    GuiSetupInputRetrievalStep,
     IS_ADMIN_KEY,
     KeyCeremonyS1JoinService,
     KeyCeremonyS2AnnounceService,
@@ -68,11 +72,13 @@ from electionguard_gui.services import (
     db_serialization_service,
     db_service,
     eel_log_service,
+    election_service,
     get_db_host,
     get_db_password,
     get_is_admin,
     get_key_ceremony_status,
     guardian_service,
+    gui_setup_input_retrieval_step,
     joint_key_to_dict,
     key_ceremony_s1_join_service,
     key_ceremony_s2_announce_service,
@@ -99,11 +105,16 @@ __all__ = [
     "AuthorizationService",
     "ComponentBase",
     "Container",
+    "CreateElectionComponent",
     "CreateKeyCeremonyComponent",
     "DB_HOST_KEY",
     "DB_PASSWORD_KEY",
     "DbService",
     "EelLogService",
+    "ElectionDto",
+    "ElectionListComponent",
+    "ElectionService",
+    "ExportEncryptionPackage",
     "GuardianService",
     "GuiSetupInputRetrievalStep",
     "IS_ADMIN_KEY",
@@ -122,7 +133,7 @@ __all__ = [
     "KeyCeremonyStates",
     "MainApp",
     "ServiceBase",
-    "SetupElectionComponent",
+    "ViewElectionComponent",
     "announce_guardians",
     "authorization_service",
     "backup_to_dict",
@@ -131,6 +142,7 @@ __all__ = [
     "configuration_service",
     "containers",
     "convert_utc_to_local",
+    "create_election_component",
     "create_key_ceremony_component",
     "db_serialization_service",
     "db_service",
@@ -138,12 +150,16 @@ __all__ = [
     "eel_log_service",
     "eel_success",
     "eel_utils",
+    "election_dto",
+    "election_list_component",
+    "election_service",
+    "export_encryption_package_component",
     "get_db_host",
     "get_db_password",
+    "get_download_path",
     "get_is_admin",
     "get_key_ceremony_status",
     "guardian_service",
-    "gui_setup_election",
     "gui_setup_input_retrieval_step",
     "joint_key_to_dict",
     "key_ceremony_details_component",
@@ -162,17 +178,15 @@ __all__ = [
     "key_ceremony_states",
     "main_app",
     "make_guardian",
-    "make_js_key_ceremony",
     "make_mediator",
     "models",
     "public_key_to_dict",
     "run",
-    "send_key_ceremonies_to_ui",
     "service_base",
     "services",
-    "setup_election_component",
     "start",
     "status_descriptions",
     "utc_to_str",
     "verification_to_dict",
+    "view_election_component",
 ]

@@ -27,7 +27,6 @@ export default {
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <div class="navbar-nav">
           <a href="#/admin/create-key-ceremony" class="nav-link">Create Key Ceremony</a>
-          <a href="#/admin/setup-election" class="nav-link">Setup Election</a>
         </div>
       </div>
       <div class="navbar-text">

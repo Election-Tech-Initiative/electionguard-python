@@ -866,6 +866,12 @@ class Manifest(CryptoHashable):
 
         return {contest.object_id: contest.name for contest in self.contests}
 
+    def get_name(self) -> str:
+        def get_first_value(text: Optional[InternationalizedText]) -> str:
+            return "" if text is None else text.text[0].value
+
+        return get_first_value(self.name)
+
 
 @dataclass(eq=True, unsafe_hash=True)
 class InternalManifest:

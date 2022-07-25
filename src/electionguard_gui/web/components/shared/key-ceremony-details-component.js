@@ -26,7 +26,7 @@ export default {
       }
     },
   },
-  async mounted() {
+  mounted() {
     eel.expose(this.refresh_key_ceremony, "refresh_key_ceremony");
     this.error = false;
     eel.watch_key_ceremony(this.keyCeremonyId);

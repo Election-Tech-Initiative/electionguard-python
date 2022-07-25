@@ -1,8 +1,12 @@
 from typing import Any, List
 from datetime import datetime
 from electionguard import ElectionPartialKeyVerification
-from electionguard.group import ElementModP
-from electionguard.key_ceremony import ElectionPartialKeyBackup, ElectionPublicKey
+from electionguard.group import ElementModP, ElementModQ
+from electionguard.key_ceremony import (
+    ElectionJointKey,
+    ElectionPartialKeyBackup,
+    ElectionPublicKey,
+)
 from electionguard.election_polynomial import PublicCommitment
 from electionguard.elgamal import ElGamalPublicKey, HashedElGamalCiphertext
 from electionguard.schnorr import SchnorrProof
@@ -30,6 +34,12 @@ class KeyCeremonyDto:
         self.created_at_str = utc_to_str(key_ceremony["created_at"])
         self.completed_at_utc = key_ceremony["completed_at"]
         self.completed_at_str = utc_to_str(key_ceremony["completed_at"])
+
+    def to_id_name_dict(self) -> dict[str, Any]:
+        return {
+            "id": self.id,
+            "key_ceremony_name": self.key_ceremony_name,
+        }
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -115,6 +125,12 @@ class KeyCeremonyDto:
 
     def joint_key_exists(self) -> bool:
         return self.joint_key is not None
+
+    def get_joint_key(self) -> ElectionJointKey:
+        return ElectionJointKey(
+            ElGamalPublicKey(self.joint_key["joint_public_key"]),
+            ElementModQ(self.joint_key["commitment_hash"]),
+        )
 
 
 def _dict_to_verification(verification: Any) -> ElectionPartialKeyVerification:
