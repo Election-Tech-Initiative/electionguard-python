@@ -72,10 +72,7 @@ export default {
       }
     },
     getElectionUrl: function () {
-      const page = RouterService.routes.viewElectionAdmin;
-      return RouterService.getUrl(page, {
-        electionId: this.electionId,
-      });
+      return RouterService.getElectionUrl(this.electionId);
     },
   },
   template: /*html*/ `

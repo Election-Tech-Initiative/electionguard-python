@@ -96,4 +96,9 @@ export default {
       component: ViewKeyCeremonyGuardian,
     },
   },
+  getElectionUrl(electionId) {
+    return this.getUrl(this.routes.viewElectionAdmin, {
+      electionId: electionId,
+    });
+  },
 };

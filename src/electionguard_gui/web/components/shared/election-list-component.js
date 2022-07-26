@@ -13,10 +13,7 @@ export default {
   },
   methods: {
     getElectionUrl: function (election) {
-      const page = RouterService.routes.viewElectionAdmin;
-      return RouterService.getUrl(page, {
-        electionId: election.id,
-      });
+      return RouterService.getElectionUrl(election.id);
     },
   },
   async mounted() {
