@@ -17,7 +17,6 @@ from electionguard_gui.components import (
     UploadBallotsComponent,
     CreateDecryptionComponent,
     ViewDecryptionComponent,
-    view_decryption_component,
 )
 from electionguard_gui.main_app import MainApp
 from electionguard_gui.services import (

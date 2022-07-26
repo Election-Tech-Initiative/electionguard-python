@@ -18,7 +18,7 @@ class DecryptionDto:
     created_at_utc: datetime
     created_at_str: str
 
-    def __init__(self, decryption: dict[str, Any]):
+    def __init__(self, decryption: Any):
         self.decryption_id = str(decryption["_id"])
         self.election_id = decryption["election_id"]
         self.election_name = decryption["election_name"]

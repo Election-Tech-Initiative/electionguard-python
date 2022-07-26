@@ -1,4 +1,3 @@
-import traceback
 from typing import Any
 import eel
 from electionguard_gui.eel_utils import eel_fail, eel_success
