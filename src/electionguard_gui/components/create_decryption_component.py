@@ -27,23 +27,30 @@ class CreateDecryptionComponent(ComponentBase):
     def get_suggested_decryption_name(self, election_id: str) -> dict[str, Any]:
         db = self._db_service.get_db()
         election: ElectionDto = self._election_service.get(db, election_id)
-        return eel_success(election.election_name + " #1")
+        existing_decryptions = self._decryption_service.get_decryption_count(
+            db, election_id
+        )
+        return eel_success(f"{election.election_name} #{existing_decryptions + 1}")
 
-    def create_decryption(self, election_id: str, name: str) -> dict[str, Any]:
+    def create_decryption(
+        self, election_id: str, decryption_name: str
+    ) -> dict[str, Any]:
         try:
             self._log.debug(
-                f"Creating decryption for election: {election_id} with name: {name}"
+                f"Creating decryption for election: {election_id} with name: {decryption_name}"
             )
             db = self._db_service.get_db()
             election = self._election_service.get(db, election_id)
             if election is None:
                 return eel_fail(f"Election {election_id} not found")
-            decryption = self._decryption_service.get_by_name(db, name)
-            if decryption is not None:
-                return eel_fail(f"Decryption '{name}' already exists")
-            decryption_id = self._decryption_service.create(db, election_id, name)
+            name_exists = self._decryption_service.name_exists(db, decryption_name)
+            if name_exists:
+                return eel_fail(f"Decryption '{decryption_name}' already exists")
+            decryption_id = self._decryption_service.create(
+                db, election_id, election.election_name, decryption_name
+            )
             self._election_service.append_decryption(
-                db, election_id, decryption_id, name
+                db, election_id, decryption_id, decryption_name
             )
             return eel_success(decryption_id)
         # pylint: disable=broad-except
