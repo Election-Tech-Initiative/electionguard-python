@@ -15,35 +15,29 @@ export default {
     Spinner,
   },
   methods: {
-    createElection() {
+    async createElection() {
       const form = document.getElementById("mainForm");
       if (form.checkValidity()) {
         self.loading = true;
         self.alert = null;
-        const manifest = document.getElementById("manifest").files[0];
-        var reader = new FileReader();
-        reader.onloadend = (e) => {
-          const manifestContent = e.target.result;
-          const onDone = eel.create_election(
-            this.electionKey.id,
-            this.electionName,
-            manifestContent,
-            this.electionUrl
-          );
-          console.log("creating election");
-          onDone((result) => {
-            this.loading = false;
-            console.log("creating election completed", result);
-            if (result.success) {
-              RouterService.goTo(RouterService.routes.viewElectionAdmin, {
-                electionId: result.result,
-              });
-            } else {
-              this.alert = result.message;
-            }
+        const [manifest] = document.getElementById("manifest").files;
+        const manifestContent = await manifest.text();
+        const result = await eel.create_election(
+          this.electionKey.id,
+          this.electionName,
+          manifestContent,
+          this.electionUrl
+        )();
+        console.log("creating election");
+        this.loading = false;
+        console.log("creating election completed", result);
+        if (result.success) {
+          RouterService.goTo(RouterService.routes.viewElectionAdmin, {
+            electionId: result.result,
           });
-        };
-        reader.readAsText(manifest);
+        } else {
+          this.alert = result.message;
+        }
       }
       form.classList.add("was-validated");
     },
