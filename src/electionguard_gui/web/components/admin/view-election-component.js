@@ -1,4 +1,4 @@
-import RouterService from "/services/router-service.js";
+import RouterService from "../../services/router-service.js";
 import Spinner from "../shared/spinner-component.js";
 
 export default {
@@ -18,6 +18,12 @@ export default {
     },
     getUploadBallotsUrl: function () {
       const page = RouterService.routes.uploadBallots;
+      return RouterService.getUrl(page, {
+        electionId: this.electionId,
+      });
+    },
+    getCreateDecryptionUrl: function () {
+      const page = RouterService.routes.createDecryption;
       return RouterService.getUrl(page, {
         electionId: this.electionId,
       });
@@ -45,10 +51,13 @@ export default {
             <a :href="getUploadBallotsUrl()" class="btn btn-primary ms-3" title="Upload ballots">
               <i class="bi-upload"></i>
             </a>
+            <a :href="getCreateDecryptionUrl()" class="btn btn-primary ms-3" title="Create decryption">
+              <i class="bi bi-bar-chart-line-fill"></i>
+            </a>
           </div>
         </div>
         <div class="row">
-          <div class="col col-12 col-md-7 col-lg-5">
+          <div class="col col-12 col-md-8">
             <div class="row">
               <dl class="col-md-6">
                 <dt>Guardians</dt>
@@ -67,8 +76,27 @@ export default {
                 <dd>{{election.created_by}}, {{election.created_at}}</dd>
               </dl>
             </div>
+            <div class="row">
+              <div class="col-12">
+                <h2>Ballot Uploads</h2>
+                <table class="table table-striped">
+                  <thead>
+                    <tr>
+                      <th>Location</th>
+                      <th>Ballot Count</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="ballot_upload in election.ballot_uploads">
+                      <td>{{ballot_upload.location}}</td>
+                      <td>{{ballot_upload.ballot_count}}</td>
+                      <td></td>
+                    </tr>
+              </div>
+            </div>
           </div>
-          <div class="col col-12 col-md-5 col-lg-7">
+          <div class="col col-12 col-md-4">
             <h2>Manifest</h2>
             <p>{{election.manifest.name}}</p>
             <div class="row">
