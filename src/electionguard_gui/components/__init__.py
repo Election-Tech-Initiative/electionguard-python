@@ -1,4 +1,5 @@
 from electionguard_gui.components import component_base
+from electionguard_gui.components import create_decryption_component
 from electionguard_gui.components import create_election_component
 from electionguard_gui.components import create_key_ceremony_component
 from electionguard_gui.components import election_list_component
@@ -10,6 +11,9 @@ from electionguard_gui.components import view_election_component
 
 from electionguard_gui.components.component_base import (
     ComponentBase,
+)
+from electionguard_gui.components.create_decryption_component import (
+    CreateDecryptionComponent,
 )
 from electionguard_gui.components.create_election_component import (
     CreateElectionComponent,
@@ -39,6 +43,7 @@ from electionguard_gui.components.view_election_component import (
 
 __all__ = [
     "ComponentBase",
+    "CreateDecryptionComponent",
     "CreateElectionComponent",
     "CreateKeyCeremonyComponent",
     "ElectionListComponent",
@@ -48,6 +53,7 @@ __all__ = [
     "UploadBallotsComponent",
     "ViewElectionComponent",
     "component_base",
+    "create_decryption_component",
     "create_election_component",
     "create_key_ceremony_component",
     "election_list_component",

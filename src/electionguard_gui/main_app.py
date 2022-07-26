@@ -11,6 +11,7 @@ from electionguard_gui.components import (
     ElectionListComponent,
     ExportEncryptionPackage,
     UploadBallotsComponent,
+    CreateDecryptionComponent,
 )
 
 from electionguard_gui.services import (
@@ -20,6 +21,7 @@ from electionguard_gui.services import (
     KeyCeremonyStateService,
     ServiceBase,
     BallotUploadService,
+    DecryptionService,
 )
 
 
@@ -46,6 +48,8 @@ class MainApp:
         export_encryption_package: ExportEncryptionPackage,
         upload_ballots_component: UploadBallotsComponent,
         ballot_upload_service: BallotUploadService,
+        decryption_service: DecryptionService,
+        create_decryption_component: CreateDecryptionComponent,
     ) -> None:
         super().__init__()
 
@@ -61,6 +65,7 @@ class MainApp:
             election_list_component,
             export_encryption_package,
             upload_ballots_component,
+            create_decryption_component,
         ]
 
         self.services = [
@@ -69,6 +74,7 @@ class MainApp:
             log_service,
             key_ceremony_state_service,
             ballot_upload_service,
+            decryption_service,
         ]
 
     def start(self) -> None:
