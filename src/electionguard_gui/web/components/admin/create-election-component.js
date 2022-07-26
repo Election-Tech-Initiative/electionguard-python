@@ -1,5 +1,5 @@
 import Spinner from "../shared/spinner-component.js";
-import RouterService from "/services/router-service.js";
+import RouterService from "../../services/router-service.js";
 
 export default {
   data() {

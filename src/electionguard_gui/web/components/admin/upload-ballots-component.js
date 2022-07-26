@@ -1,4 +1,4 @@
-import RouterService from "/services/router-service.js";
+import RouterService from "../../services/router-service.js";
 import Spinner from "../shared/spinner-component.js";
 
 export default {
