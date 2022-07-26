@@ -3,6 +3,7 @@ from typing import Any
 from bson import ObjectId
 from pymongo.database import Database
 from electionguard_gui.models.decryption_dto import DecryptionDto
+from electionguard_gui.models.election_dto import ElectionDto
 from electionguard_gui.services.eel_log_service import EelLogService
 from electionguard_gui.services.service_base import ServiceBase
 from electionguard_gui.services.authorization_service import AuthorizationService
@@ -23,20 +24,21 @@ class DecryptionService(ServiceBase):
     def create(
         self,
         db: Database,
-        election_id: str,
-        election_name: str,
+        election: ElectionDto,
         decryption_name: str,
     ) -> str:
-        election = {
-            "election_id": election_id,
-            "election_name": election_name,
+        decryption = {
+            "election_id": election.id,
+            "election_name": election.election_name,
+            "guardians": election.guardians,
+            "quorum": election.quorum,
             "decryption_name": decryption_name,
             "guardians_joined": [],
             "created_by": self._auth_service.get_user_id(),
             "created_at": datetime.utcnow(),
         }
-        self._log.trace(f"inserting decryption for: {election_id}")
-        inserted_id = db.decryptions.insert_one(election).inserted_id
+        self._log.trace(f"inserting decryption for: {election.id}")
+        inserted_id = db.decryptions.insert_one(decryption).inserted_id
         return str(inserted_id)
 
     def name_exists(self, db: Database, name: str) -> Any:

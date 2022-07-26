@@ -29,5 +29,4 @@ class ViewDecryptionComponent(ComponentBase):
             return eel_success(decryption.to_dict())
         # pylint: disable=broad-except
         except Exception as e:
-            self._log.error(e)
-            return eel_fail(str(e))
+            return self.handle_error(e)

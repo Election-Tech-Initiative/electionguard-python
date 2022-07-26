@@ -1,3 +1,4 @@
+import traceback
 from typing import List
 import eel
 
@@ -96,4 +97,5 @@ class MainApp:
             eel.start("main.html", size=(1024, 768), port=0)
         except Exception as e:
             self.log_service.error(e)
+            traceback.print_exc()
             raise e

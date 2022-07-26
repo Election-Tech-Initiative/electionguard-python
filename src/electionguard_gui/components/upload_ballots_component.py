@@ -58,9 +58,7 @@ class UploadBallotsComponent(ComponentBase):
             return eel_success(ballot_upload_id)
         # pylint: disable=broad-except
         except Exception as e:
-            self._log.error(e)
-            traceback.print_exc()
-            return eel_fail(str(e))
+            return self.handle_error(e)
 
     def upload_ballot(
         self, ballot_upload_id: str, file_name: str, file_contents: str
@@ -74,6 +72,4 @@ class UploadBallotsComponent(ComponentBase):
             return eel_success()
         # pylint: disable=broad-except
         except Exception as e:
-            self._log.error(e)
-            traceback.print_exc()
-            return eel_fail(str(e))
+            return self.handle_error(e)

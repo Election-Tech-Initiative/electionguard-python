@@ -1,3 +1,4 @@
+import traceback
 from typing import Any
 import eel
 from electionguard_gui.eel_utils import eel_fail, eel_success
@@ -47,7 +48,7 @@ class CreateDecryptionComponent(ComponentBase):
             if name_exists:
                 return eel_fail(f"Decryption '{decryption_name}' already exists")
             decryption_id = self._decryption_service.create(
-                db, election_id, election.election_name, decryption_name
+                db, election, decryption_name
             )
             self._election_service.append_decryption(
                 db, election_id, decryption_id, decryption_name
@@ -55,5 +56,4 @@ class CreateDecryptionComponent(ComponentBase):
             return eel_success(decryption_id)
         # pylint: disable=broad-except
         except Exception as e:
-            self._log.error(e)
-            return eel_fail(str(e))
+            return self.handle_error(e)
