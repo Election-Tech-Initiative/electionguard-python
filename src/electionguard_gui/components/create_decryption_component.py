@@ -31,10 +31,21 @@ class CreateDecryptionComponent(ComponentBase):
 
     def create_decryption(self, election_id: str, name: str) -> dict[str, Any]:
         try:
-            self._log.debug(f"Creating decryption for election: {election_id}, ")
+            self._log.debug(
+                f"Creating decryption for election: {election_id} with name: {name}"
+            )
             db = self._db_service.get_db()
-            self._decryption_service.create(db, election_id, name)
-            return eel_success(election_id)
+            election = self._election_service.get(db, election_id)
+            if election is None:
+                return eel_fail(f"Election {election_id} not found")
+            decryption = self._decryption_service.get_by_name(db, name)
+            if decryption is not None:
+                return eel_fail(f"Decryption '{name}' already exists")
+            decryption_id = self._decryption_service.create(db, election_id, name)
+            self._election_service.append_decryption(
+                db, election_id, decryption_id, name
+            )
+            return eel_success(decryption_id)
         # pylint: disable=broad-except
         except Exception as e:
             self._log.error(e)

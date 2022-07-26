@@ -63,6 +63,7 @@ class ElectionService(ServiceBase):
             # Mongo has a max size of 16MG, consider using GridFS https://www.mongodb.com/docs/manual/core/gridfs/
             "encryption_package_file": encryption_package_file,
             "ballot_uploads": [],
+            "decryptions": [],
             "created_by": self._auth_service.get_user_id(),
             "created_at": datetime.utcnow(),
         }
@@ -110,4 +111,15 @@ class ElectionService(ServiceBase):
                     }
                 }
             },
+        )
+
+    def append_decryption(
+        self, db: Database, election_id: str, decryption_id: str, name: str
+    ) -> None:
+        self._log.trace(
+            f"appending decryption {decryption_id} to election {election_id}"
+        )
+        db.elections.update_one(
+            {"_id": ObjectId(election_id)},
+            {"$push": {"decryptions": {"decryption_id": decryption_id, "name": name}}},
         )
