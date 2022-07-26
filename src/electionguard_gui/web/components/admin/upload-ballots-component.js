@@ -27,7 +27,7 @@ export default {
           const ballotFiles = document.getElementById("ballotsFolder").files;
           this.ballotsTotal = ballotFiles.length;
 
-          const uploadId = await this.uploadDeviceFile();
+          const uploadId = await this.uploadDeviceFile(this.ballotsTotal);
           await this.uploadBallotFiles(uploadId, ballotFiles);
           this.success = true;
         }
@@ -39,14 +39,15 @@ export default {
         this.loading = false;
       }
     },
-    async uploadDeviceFile() {
+    async uploadDeviceFile(ballotCount) {
       const [deviceFile] = document.getElementById("deviceFile").files;
       const deviceContents = await deviceFile.text();
       console.log("Creating election", deviceFile.name);
       const result = await eel.create_ballot_upload(
         this.electionId,
         deviceFile.name,
-        deviceContents
+        deviceContents,
+        ballotCount
       )();
       if (!result.success) {
         throw new Error(result.message);

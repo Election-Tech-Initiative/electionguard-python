@@ -103,6 +103,7 @@ class CreateElectionComponent(ComponentBase):
                 constants,
                 guardian_records,
                 encryption_package_file,
+                url,
             )
             return eel_success(election_id)
         # pylint: disable=broad-except

@@ -16,6 +16,7 @@ class ElectionDto:
     constants: int
     guardian_records: int
     encryption_package_file: str
+    election_url: str
     created_by: str
     created_at_utc: datetime
     created_at_str: str
@@ -29,6 +30,7 @@ class ElectionDto:
         self.constants = election["constants"]
         self.guardian_records = election["guardian_records"]
         self.encryption_package_file = election["encryption_package_file"]
+        self.election_url = election["election_url"]
         self.created_by = election["created_by"]
         self.created_at_utc = election["created_at"]
         self.created_at_str = utc_to_str(election["created_at"])
@@ -45,6 +47,7 @@ class ElectionDto:
             "election_name": self.election_name,
             "guardians": self.guardians,
             "quorum": self.quorum,
+            "election_url": self.election_url,
             "manifest": {
                 "name": self.manifest["name"],
                 "scope": self.manifest["scope"],

@@ -39,11 +39,11 @@ export default {
             <h1>{{election.election_name}}</h1>
           </div>
           <div class="col col-xs-3 text-end">
-            <a :href="getUploadBallotsUrl()" class="btn btn-primary" title="Upload ballots">
-              <i class="bi-upload"></i>
-            </a>
-            <a :href="getEncryptionPackageUrl()" class="btn btn-primary ms-3" title="Download encryption package">
+            <a :href="getEncryptionPackageUrl()" class="btn btn-primary" title="Download encryption package">
               <i class="bi-download"></i>
+            </a>
+            <a :href="getUploadBallotsUrl()" class="btn btn-primary ms-3" title="Upload ballots">
+              <i class="bi-upload"></i>
             </a>
           </div>
         </div>
@@ -58,6 +58,10 @@ export default {
                 <dt>Quorum</dt>
                 <dd>{{election.quorum}}</dd>
               </dl>
+              <dl class="col-md-12">
+                <dt>Election URL</dt>
+                <dd>{{election.election_url}}</dd>
+              </dl>
               <dl class="col-12">
                   <dt>Created by</dt>
                 <dd>{{election.created_by}}, {{election.created_at}}</dd>
@@ -71,8 +75,6 @@ export default {
               <dl class="col-md-12">
                 <dt>Scope</dt>
                 <dd>{{election.manifest.scope}}</dd>
-                <dt>Geopolitical Units</dt>
-                <dd>{{election.manifest.geopolitical_units}}</dd>
               </dl>
               <dl class="col-md-6">
                 <dt>Parties</dt>
@@ -90,6 +92,10 @@ export default {
                 <dt>Ballot Styles</dt>
                 <dd>{{election.manifest.ballot_styles}}</dd>
               </dl>
+              <dl class="col-md-12">
+                <dt>Geopolitical Units</dt>
+                <dd>{{election.manifest.geopolitical_units}}</dd>
+            </dl>
             </div>
           </div>
         </div>

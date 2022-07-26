@@ -24,14 +24,17 @@ class BallotUploadService(ServiceBase):
         election_id: str,
         device_file_name: str,
         device_file_contents: str,
+        ballot_count: int,
+        created_at: datetime,
     ) -> str:
         election = {
             "election_id": election_id,
             "device_file_name": device_file_name,
             "device_file_contents": device_file_contents,
+            "ballot_count": ballot_count,
             "ballots": [],
             "created_by": self._auth_service.get_user_id(),
-            "created_at": datetime.utcnow(),
+            "created_at": created_at,
         }
         self._log.trace(f"inserting ballot upload for: {election_id}")
         inserted_id = db.ballot_uploads.insert_one(election).inserted_id
