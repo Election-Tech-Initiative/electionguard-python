@@ -15,7 +15,7 @@ from .cli_step_base import CliStepBase
 _T = TypeVar("_T")
 
 
-class InputRetrievalStepBase("""CliStepBase"""):
+class InputRetrievalStepBase(CliStepBase):
     """A common base class for all CLI commands that accept user input"""
 
     def _get_manifest(self, manifest_file: TextIOWrapper) -> Manifest:

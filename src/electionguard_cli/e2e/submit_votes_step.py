@@ -1,5 +1,4 @@
 from typing import List
-#import click
 
 from electionguard.data_store import DataStore
 from electionguard.ballot_box import BallotBox

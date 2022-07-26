@@ -2,16 +2,13 @@ from typing import Any, Optional
 import print_utils
 
 
+
 class CliStepBase:
     """
     Responsible for providing common functionality to the individual steps within an end-to-end election command
     from the CLI.
     """
 
-    header_color = "green"
-    value_color = "yellow"
-    warning_color = "bright_red"
-    section_color = "bright_white"
     VERIFICATION_URL_NAME = "verification_url"
 
     def print_header(self, s: str) -> None:

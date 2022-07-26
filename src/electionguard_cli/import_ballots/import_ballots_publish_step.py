@@ -2,7 +2,6 @@ from typing import List
 from shutil import make_archive
 from os.path import splitext
 from tempfile import TemporaryDirectory
-#from click import echo
 from print_utils import print_message
 from electionguard.encrypt import EncryptionDevice
 
