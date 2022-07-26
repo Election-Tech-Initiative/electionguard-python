@@ -14,6 +14,7 @@ from electionguard_gui.components import (
     ExportEncryptionPackage,
     KeyCeremonyDetailsComponent,
     KeyCeremonyListComponent,
+    UploadBallotsComponent,
     ViewElectionComponent,
     component_base,
     create_election_component,
@@ -23,6 +24,7 @@ from electionguard_gui.components import (
     get_download_path,
     key_ceremony_details_component,
     key_ceremony_list_component,
+    upload_ballots_component,
     view_election_component,
 )
 from electionguard_gui.containers import (
@@ -47,6 +49,7 @@ from electionguard_gui.models import (
 )
 from electionguard_gui.services import (
     AuthorizationService,
+    BallotUploadService,
     DB_HOST_KEY,
     DB_PASSWORD_KEY,
     DbService,
@@ -68,6 +71,7 @@ from electionguard_gui.services import (
     announce_guardians,
     authorization_service,
     backup_to_dict,
+    ballot_upload_service,
     configuration_service,
     db_serialization_service,
     db_service,
@@ -103,6 +107,7 @@ from electionguard_gui.start import (
 
 __all__ = [
     "AuthorizationService",
+    "BallotUploadService",
     "ComponentBase",
     "Container",
     "CreateElectionComponent",
@@ -133,10 +138,12 @@ __all__ = [
     "KeyCeremonyStates",
     "MainApp",
     "ServiceBase",
+    "UploadBallotsComponent",
     "ViewElectionComponent",
     "announce_guardians",
     "authorization_service",
     "backup_to_dict",
+    "ballot_upload_service",
     "component_base",
     "components",
     "configuration_service",
@@ -186,6 +193,7 @@ __all__ = [
     "services",
     "start",
     "status_descriptions",
+    "upload_ballots_component",
     "utc_to_str",
     "verification_to_dict",
     "view_election_component",

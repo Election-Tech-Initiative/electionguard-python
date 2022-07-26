@@ -24,11 +24,6 @@ export default {
       >
         <span class="navbar-toggler-icon"></span>
       </button>
-      <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <div class="navbar-nav">
-          <a href="#/admin/create-key-ceremony" class="nav-link">Create Key Ceremony</a>
-        </div>
-      </div>
       <div class="navbar-text">
         <span class="nav-link">{{userId}}</span>
       </div>
