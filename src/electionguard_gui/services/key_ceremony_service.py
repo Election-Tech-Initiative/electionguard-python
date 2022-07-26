@@ -12,18 +12,29 @@ from electionguard.key_ceremony import (
     ElectionPublicKey,
 )
 from electionguard_gui.models.key_ceremony_dto import KeyCeremonyDto
+from electionguard_gui.services.authorization_service import AuthorizationService
 from electionguard_gui.services.db_serialization_service import (
     backup_to_dict,
     joint_key_to_dict,
     public_key_to_dict,
     verification_to_dict,
 )
+from electionguard_gui.services.eel_log_service import EelLogService
 
 from electionguard_gui.services.service_base import ServiceBase
 
 
 class KeyCeremonyService(ServiceBase):
     """Responsible for functionality related to key ceremonies"""
+
+    _log: EelLogService
+    _auth_service: AuthorizationService
+
+    def __init__(
+        self, log_service: EelLogService, auth_service: AuthorizationService
+    ) -> None:
+        self._log = log_service
+        self._auth_service = auth_service
 
     MS_TO_BLOCK = 200
 
@@ -68,6 +79,29 @@ class KeyCeremonyService(ServiceBase):
 
     def stop_watching(self) -> None:
         self.watching_key_ceremonies.clear()
+
+    def create(
+        self, db: Database, key_ceremony_name: str, guardian_count: int, quorum: int
+    ) -> str:
+        key_ceremony = {
+            "key_ceremony_name": key_ceremony_name,
+            "guardian_count": guardian_count,
+            "quorum": quorum,
+            "guardians_joined": [],
+            "keys": [],
+            "guardians_keys": [],
+            "other_keys": [],
+            "backups": [],
+            "shared_backups": [],
+            "verifications": [],
+            "joint_key": None,
+            "created_by": self._auth_service.get_user_id(),
+            "created_at": datetime.utcnow(),
+            "completed_at": None,
+        }
+        inserted_id = db.key_ceremonies.insert_one(key_ceremony).inserted_id
+        self._log.debug(f"created '{key_ceremony_name}' record, id: {inserted_id}")
+        return str(inserted_id)
 
     # pylint: disable=no-self-use
     def notify_changed(self, db: Database, key_ceremony_id: str) -> None:
@@ -182,3 +216,9 @@ class KeyCeremonyService(ServiceBase):
     def get_active(self, db: Database) -> List[KeyCeremonyDto]:
         key_ceremonies = db.key_ceremonies.find({"completed_at": {"$eq": None}})
         return [KeyCeremonyDto(key_ceremony) for key_ceremony in key_ceremonies]
+
+    def exists(self, db: Database, key_ceremony_name: str) -> bool:
+        existing_key_ceremonies = db.key_ceremonies.find_one(
+            {"key_ceremony_name": key_ceremony_name}
+        )
+        return existing_key_ceremonies is not None
