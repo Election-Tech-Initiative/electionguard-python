@@ -26,11 +26,20 @@ export default {
     <div v-if="decryption">
       <h1>{{decryption.decryption_name}}</h1>
       <div class="row">
-        <div class="col">
-              <dl class="col-md-6">
-                <dt>Election</dt>
-                <dd><a :href="getElectionUrl(decryption.election_id)">{{decryption.election_name}}</a></dd>
-              </dl>
+        <div class="col-12">
+          <dt>Election</dt>
+          <dd><a :href="getElectionUrl(decryption.election_id)">{{decryption.election_name}}</a></dd>
+        </div>
+        <dl class="col-12">
+          <dt>Created</dt>
+          <dd>by {{decryption.created_by}} on {{decryption.created_at}}</dd>
+        </dl>
+        <h3>Joined Guardians</h3>
+        <ul v-if="decryption.guardians_joined.length">
+          <li v-for="guardian in keyCeremony.guardians_joined">{{guardian}}</li>
+        </ul>
+        <div v-else>
+          <p>No guardians have joined yet</p>
         </div>
       </div>
     </div>

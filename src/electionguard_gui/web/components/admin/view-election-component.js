@@ -78,8 +78,8 @@ export default {
                 <dd>{{election.election_url}}</dd>
               </dl>
               <dl class="col-12">
-                  <dt>Created by</dt>
-                <dd>{{election.created_by}}, {{election.created_at}}</dd>
+                  <dt>Created</dt>
+                <dd>by {{election.created_by}} on {{election.created_at}}</dd>
               </dl>
             </div>
             <div class="row" v-if="election.ballot_uploads.length">

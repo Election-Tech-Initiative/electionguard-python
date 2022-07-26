@@ -31,6 +31,7 @@ class DecryptionService(ServiceBase):
             "election_id": election_id,
             "election_name": election_name,
             "decryption_name": decryption_name,
+            "guardians_joined": [],
             "created_by": self._auth_service.get_user_id(),
             "created_at": datetime.utcnow(),
         }
