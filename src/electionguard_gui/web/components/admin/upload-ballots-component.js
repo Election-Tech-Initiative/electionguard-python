@@ -25,7 +25,7 @@ export default {
           this.alert = null;
           this.ballotsProcessed = 0;
           const ballotFiles = document.getElementById("ballotsFolder").files;
-          this.ballotsTotal = ballotFiles.length + 1;
+          this.ballotsTotal = ballotFiles.length;
 
           const uploadId = await this.uploadDeviceFile();
           await this.uploadBallotFiles(uploadId, ballotFiles);
