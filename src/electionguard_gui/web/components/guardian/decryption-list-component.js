@@ -11,7 +11,7 @@ export default {
   },
   methods: {
     getDecryptionUrl: function (decryption) {
-      return RouterService.getUrl(RouterService.routes.viewDecryption, {
+      return RouterService.getUrl(RouterService.routes.viewDecryptionGuardian, {
         decryptionId: decryption.id,
       });
     },
