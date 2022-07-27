@@ -16,8 +16,16 @@ export default {
     Spinner,
   },
   methods: {
-    key_ceremonies_found: function (key_ceremonies) {
-      this.keyCeremonies = key_ceremonies;
+    keyCeremoniesChanged: function () {
+      this.refreshKeyCeremonies();
+    },
+    refreshKeyCeremonies: async function () {
+      const result = await eel.get_key_ceremonies()();
+      if (result.success) {
+        this.keyCeremonies = result.result;
+      } else {
+        console.error(result.error);
+      }
       this.loading = false;
     },
     getKeyCeremonyUrl: function (keyCeremony) {
@@ -29,9 +37,10 @@ export default {
       });
     },
   },
-  mounted() {
+  async mounted() {
     console.log("begin watching for key ceremonies");
-    eel.expose(this.key_ceremonies_found, "key_ceremonies_found");
+    eel.expose(this.keyCeremoniesChanged, "key_ceremonies_changed");
+    await this.refreshKeyCeremonies();
     eel.watch_key_ceremonies();
   },
   unmounted() {
