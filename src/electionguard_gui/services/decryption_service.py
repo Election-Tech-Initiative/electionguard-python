@@ -43,7 +43,7 @@ class DecryptionService(ServiceBase):
 
     def name_exists(self, db: Database, name: str) -> Any:
         self._log.trace(f"getting decryption by name: {name}")
-        decryption = db.decryptions.find_one({"name": name})
+        decryption = db.decryptions.find_one({"decryption_name": name})
         return decryption is not None
 
     def get(self, db: Database, decryption_id: str) -> DecryptionDto:
