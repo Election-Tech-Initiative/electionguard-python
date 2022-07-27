@@ -60,7 +60,11 @@ class DecryptionService(ServiceBase):
     def get(self, db: Database, decryption_id: str) -> DecryptionDto:
         self._log.trace(f"getting decryption {decryption_id}")
         decryption = db.decryptions.find_one({"_id": ObjectId(decryption_id)})
-        return DecryptionDto(decryption)
+        if decryption is None:
+            raise Exception(f"decryption {decryption_id} not found")
+        dto = DecryptionDto(decryption)
+        dto.set_can_join(self._auth_service)
+        return dto
 
     def get_decryption_count(self, db: Database, election_id: str) -> int:
         self._log.trace(f"getting decryption count for election {election_id}")

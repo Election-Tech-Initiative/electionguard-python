@@ -42,6 +42,7 @@ export default {
           <div v-else>
             <p>No guardians have joined yet</p>
           </div>
+          <button v-if="decryption.can_join" @click="join()" :disabled="loading" class="btn btn-primary">Join</button>
         </div>
         <div class="col col-12 col-md-6 col-lg-7 text-center">
           <img v-if="decryption.completed_at_str" src="/images/check.svg" width="200" height="200" class="mb-2"></img>

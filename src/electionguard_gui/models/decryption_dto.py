@@ -2,6 +2,7 @@ from typing import Any
 from datetime import datetime
 
 from electionguard_gui.eel_utils import utc_to_str
+from electionguard_gui.services.authorization_service import AuthorizationService
 
 
 # pylint: disable=too-many-instance-attributes
@@ -14,6 +15,7 @@ class DecryptionDto:
     guardians: int
     decryption_name: str
     guardians_joined: list[str]
+    can_join: bool
     created_by: str
     created_at_utc: datetime
     created_at_str: str
@@ -28,6 +30,7 @@ class DecryptionDto:
         self.created_by = decryption["created_by"]
         self.created_at_utc = decryption["created_at"]
         self.created_at_str = utc_to_str(decryption["created_at"])
+        self.can_join = False
 
     def get_status(self) -> str:
         if len(self.guardians_joined) < self.guardians:
@@ -49,6 +52,13 @@ class DecryptionDto:
             "guardians_joined": self.guardians_joined,
             "status": self.get_status(),
             "completed_at_str": None,
+            "can_join": self.can_join,
             "created_by": self.created_by,
             "created_at": self.created_at_str,
         }
+
+    def set_can_join(self, auth_service: AuthorizationService) -> None:
+        user_id = auth_service.get_user_id()
+        already_joined = user_id in self.guardians_joined
+        is_admin = auth_service.is_admin()
+        self.can_join = not already_joined and not is_admin

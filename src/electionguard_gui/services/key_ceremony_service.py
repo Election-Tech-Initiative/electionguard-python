@@ -83,7 +83,9 @@ class KeyCeremonyService(ServiceBase):
         key_ceremony_dict = db.key_ceremonies.find_one({"_id": ObjectId(id)})
         if key_ceremony_dict is None:
             raise ValueError(f"key ceremony '{id}' not found")
-        return KeyCeremonyDto(key_ceremony_dict)
+        dto = KeyCeremonyDto(key_ceremony_dict)
+        dto.set_can_join(self._auth_service)
+        return dto
 
     def append_guardian_joined(
         self, db: Database, key_ceremony_id: str, guardian_id: str

@@ -21,6 +21,7 @@ import ViewKeyCeremonyGuardian from "../components/guardian/view-key-ceremony-co
 
 export default {
   getUrl(route, params) {
+    if (!route) throw new Error("Invalid route specified");
     return "#" + route.url + "?" + new URLSearchParams(params);
   },
   goTo(route, params) {

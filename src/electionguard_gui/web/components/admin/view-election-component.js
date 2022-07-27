@@ -29,7 +29,7 @@ export default {
       });
     },
     getViewDecryptionUrl: function (decryptionId) {
-      const page = RouterService.routes.viewDecryption;
+      const page = RouterService.routes.viewDecryptionAdmin;
       return RouterService.getUrl(page, {
         decryptionId: decryptionId,
       });
