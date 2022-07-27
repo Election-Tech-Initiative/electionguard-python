@@ -65,19 +65,6 @@ class KeyCeremonyService(ServiceBase):
     def notify_changed(self, db: Database, key_ceremony_id: str) -> None:
         self._db_watcher_service.notify_changed(db, "key_ceremonies", key_ceremony_id)
 
-    def get_guardian_number(
-        self, key_ceremony: KeyCeremonyDto, guardian_id: str
-    ) -> int:
-        """Returns the position of a guardian within the array of guardians that have joined
-        a key ceremony. This technique is important because it avoids concurrency problems
-        that could arise if simply retrieving the number of guardians"""
-        guardian_num = 1
-        for guardian in key_ceremony.guardians_joined:
-            if guardian == guardian_id:
-                return guardian_num
-            guardian_num += 1
-        raise ValueError(f"guardian '{guardian_id}' not found")
-
     # pylint: disable=no-self-use
     def get(self, db: Database, id: str) -> KeyCeremonyDto:
         key_ceremony_dict = db.key_ceremonies.find_one({"_id": ObjectId(id)})
@@ -181,3 +168,15 @@ class KeyCeremonyService(ServiceBase):
             {"key_ceremony_name": key_ceremony_name}
         )
         return existing_key_ceremonies is not None
+
+
+def get_guardian_number(key_ceremony: KeyCeremonyDto, guardian_id: str) -> int:
+    """Returns the position of a guardian within the array of guardians that have joined
+    a key ceremony. This technique is important because it avoids concurrency problems
+    that could arise if simply retrieving the number of guardians"""
+    guardian_num = 1
+    for guardian in key_ceremony.guardians_joined:
+        if guardian == guardian_id:
+            return guardian_num
+        guardian_num += 1
+    raise ValueError(f"guardian '{guardian_id}' not found")

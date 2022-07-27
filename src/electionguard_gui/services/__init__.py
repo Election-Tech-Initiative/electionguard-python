@@ -60,6 +60,7 @@ from electionguard_gui.services.gui_setup_input_retrieval_step import (
 )
 from electionguard_gui.services.key_ceremony_service import (
     KeyCeremonyService,
+    get_guardian_number,
 )
 from electionguard_gui.services.key_ceremony_stages import (
     KeyCeremonyS1JoinService,
@@ -122,6 +123,7 @@ __all__ = [
     "election_service",
     "get_db_host",
     "get_db_password",
+    "get_guardian_number",
     "get_is_admin",
     "get_key_ceremony_status",
     "guardian_service",

@@ -27,6 +27,7 @@ class DbWatcherService(ServiceBase):
 
     def notify_changed(self, db: Database, collection: str, id: str) -> None:
         # notify any watchers that the collection was modified
+        self._log.debug(f"notifying watchers of change to {collection} for {id}")
         db.db_deltas.insert_one({"collection": collection, "changed_id": id})
 
     def watch_database(

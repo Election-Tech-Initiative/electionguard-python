@@ -51,16 +51,17 @@ class GuardianHomeComponent(ComponentBase):
     def watch_db_collections(self) -> None:
         self._log.debug("Watching database")
         db = self._db_service.get_db()
-        self._db_watcher_service.watch_database(db, None, self.notify_ui_db_changed)
+        self._db_watcher_service.watch_database(db, None, notify_ui_db_changed)
         self._log.debug("exited watching key_ceremonies")
 
     def stop_watching_key_ceremonies(self) -> None:
         self._log.debug("Stopping watch key_ceremonies")
         self._db_watcher_service.stop_watching()
 
-    def notify_ui_db_changed(self, collection: str, _: str) -> None:
-        # pylint: disable=no-member
-        if collection == "key_ceremonies":
-            eel.key_ceremonies_changed()
-        if collection == "decryptions":
-            eel.decryptions_changed()
+
+def notify_ui_db_changed(collection: str, _: str) -> None:
+    # pylint: disable=no-member
+    if collection == "key_ceremonies":
+        eel.key_ceremonies_changed()
+    if collection == "decryptions":
+        eel.decryptions_changed()

@@ -1,6 +1,7 @@
 from pymongo.database import Database
 
 from electionguard_gui.models.key_ceremony_dto import KeyCeremonyDto
+from electionguard_gui.services.key_ceremony_service import get_guardian_number
 from electionguard_gui.services.key_ceremony_stages.key_ceremony_stage_base import (
     KeyCeremonyStageBase,
 )
@@ -16,9 +17,7 @@ class KeyCeremonyS1JoinService(KeyCeremonyStageBase):
         self._key_ceremony_service.append_guardian_joined(db, key_ceremony_id, user_id)
         # refresh key ceremony to get the list of guardians with the authoritative order they joined in
         key_ceremony = self._key_ceremony_service.get(db, key_ceremony_id)
-        guardian_number = self._key_ceremony_service.get_guardian_number(
-            key_ceremony, user_id
-        )
+        guardian_number = get_guardian_number(key_ceremony, user_id)
         self.log.debug(
             f"user {user_id} about to join key ceremony {key_ceremony_id} as guardian #{guardian_number}"
         )
