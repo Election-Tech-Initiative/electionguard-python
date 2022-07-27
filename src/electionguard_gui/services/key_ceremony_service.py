@@ -16,6 +16,7 @@ from electionguard_gui.services.db_serialization_service import (
     public_key_to_dict,
     verification_to_dict,
 )
+from electionguard_gui.services.db_watcher_service import DbWatcherService
 from electionguard_gui.services.eel_log_service import EelLogService
 
 from electionguard_gui.services.service_base import ServiceBase
@@ -26,12 +27,17 @@ class KeyCeremonyService(ServiceBase):
 
     _log: EelLogService
     _auth_service: AuthorizationService
+    _db_watcher_service: DbWatcherService
 
     def __init__(
-        self, log_service: EelLogService, auth_service: AuthorizationService
+        self,
+        log_service: EelLogService,
+        auth_service: AuthorizationService,
+        db_watcher_service: DbWatcherService,
     ) -> None:
         self._log = log_service
         self._auth_service = auth_service
+        self._db_watcher_service = db_watcher_service
 
     def create(
         self, db: Database, key_ceremony_name: str, guardian_count: int, quorum: int
@@ -56,10 +62,8 @@ class KeyCeremonyService(ServiceBase):
         self._log.debug(f"created '{key_ceremony_name}' record, id: {inserted_id}")
         return str(inserted_id)
 
-    # pylint: disable=no-self-use
     def notify_changed(self, db: Database, key_ceremony_id: str) -> None:
-        # notify watchers that the key ceremony was modified
-        db.key_ceremony_deltas.insert_one({"key_ceremony_id": key_ceremony_id})
+        self._db_watcher_service.notify_changed(db, "key_ceremonies", key_ceremony_id)
 
     def get_guardian_number(
         self, key_ceremony: KeyCeremonyDto, guardian_id: str

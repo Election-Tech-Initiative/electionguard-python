@@ -72,7 +72,7 @@ class KeyCeremonyDetailsComponent(ComponentBase):
     def watch_key_ceremony(self, key_ceremony_id: str) -> None:
         db = self._db_service.get_db()
         # retrieve and send the key ceremony to the client
-        self.on_key_ceremony_changed(key_ceremony_id)
+        self.on_key_ceremony_changed("key_ceremonies", key_ceremony_id)
         self._log.debug(f"watching key ceremony '{key_ceremony_id}'")
         # start watching for key ceremony changes from guardians
         self._db_watcher_service.watch_database(
@@ -82,7 +82,7 @@ class KeyCeremonyDetailsComponent(ComponentBase):
     def stop_watching_key_ceremony(self) -> None:
         self._db_watcher_service.stop_watching()
 
-    def on_key_ceremony_changed(self, key_ceremony_id: str) -> None:
+    def on_key_ceremony_changed(self, _: str, key_ceremony_id: str) -> None:
         try:
             self._log.debug(
                 f"on_key_ceremony_changed key_ceremony_id: '{key_ceremony_id}'"

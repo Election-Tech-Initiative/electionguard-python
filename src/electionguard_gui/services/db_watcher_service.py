@@ -25,14 +25,18 @@ class DbWatcherService(ServiceBase):
     # how eel works.
     watching_database = Event()
 
+    def notify_changed(self, db: Database, collection: str, id: str) -> None:
+        # notify any watchers that the collection was modified
+        db.db_deltas.insert_one({"collection": collection, "changed_id": id})
+
     def watch_database(
         self,
         db: Database,
         id_to_watch: Optional[str],
-        on_found: Callable[[str], None],
+        on_found: Callable[[str, str], None],
     ) -> None:
         # retrieve a tailable cursor of the deltas in the database to avoid polling
-        cursor = db.key_ceremony_deltas.find(
+        cursor = db.db_deltas.find(
             {}, cursor_type=CursorType.TAILABLE_AWAIT
         ).max_await_time_ms(self.MS_TO_BLOCK)
         # burn through all updates that have occurred up till now so next time we only get new ones
@@ -48,10 +52,11 @@ class DbWatcherService(ServiceBase):
             try:
                 # block for up to a few seconds until someone adds a new delta
                 delta = cursor.next()
-                changed_id = delta["key_ceremony_id"]
+                collection = delta["collection"]
+                changed_id = delta["changed_id"]
                 if id_to_watch is None or id_to_watch == changed_id:
                     print("new delta found")
-                    on_found(changed_id)
+                    on_found(collection, changed_id)
 
             except StopIteration:
                 # the tailable cursor times out after a few seconds and fires a StopIteration exception,

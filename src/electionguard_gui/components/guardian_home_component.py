@@ -58,6 +58,7 @@ class GuardianHomeComponent(ComponentBase):
         self._log.debug("Stopping watch key_ceremonies")
         self._db_watcher_service.stop_watching()
 
-    def notify_ui_db_changed(self, _: str) -> None:
+    def notify_ui_db_changed(self, collection: str, _: str) -> None:
         # pylint: disable=no-member
-        eel.key_ceremonies_changed()
+        if collection == "key_ceremonies":
+            eel.key_ceremonies_changed()

@@ -53,8 +53,14 @@ class Container(containers.DeclarativeContainer):
     authorization_service: Singleton[AuthorizationService] = providers.Singleton(
         AuthorizationService
     )
+    db_watcher_service: Factory[DbWatcherService] = providers.Factory(
+        DbWatcherService, log_service=log_service
+    )
     key_ceremony_service: Factory[KeyCeremonyService] = providers.Factory(
-        KeyCeremonyService, log_service=log_service, auth_service=authorization_service
+        KeyCeremonyService,
+        log_service=log_service,
+        auth_service=authorization_service,
+        db_watcher_service=db_watcher_service,
     )
     election_service: Factory[ElectionService] = providers.Factory(
         ElectionService, log_service=log_service, auth_service=authorization_service
@@ -79,9 +85,6 @@ class Container(containers.DeclarativeContainer):
     )
     decryption_service: Factory[DecryptionService] = providers.Factory(
         DecryptionService, log_service=log_service, auth_service=authorization_service
-    )
-    db_watcher_service: Factory[DbWatcherService] = providers.Factory(
-        DbWatcherService, log_service=log_service
     )
 
     # key ceremony services
