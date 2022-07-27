@@ -5,26 +5,17 @@ export default {
   props: {
     isAdmin: Boolean,
     showWhenEmpty: Boolean,
+    keyCeremonies: Array,
   },
   data() {
     return {
       loading: true,
-      keyCeremonies: [],
     };
   },
   components: {
     Spinner,
   },
   methods: {
-    refreshKeyCeremonies: async function () {
-      const result = await eel.get_key_ceremonies()();
-      if (result.success) {
-        this.keyCeremonies = result.result;
-      } else {
-        console.error(result.error);
-      }
-      this.loading = false;
-    },
     getKeyCeremonyUrl: function (keyCeremony) {
       const page = this.isAdmin
         ? RouterService.routes.viewKeyCeremonyAdminPage
@@ -34,11 +25,7 @@ export default {
       });
     },
   },
-  async mounted() {
-    await this.refreshKeyCeremonies();
-  },
   template: /*html*/ `
-  <spinner :visible="loading"></spinner>
   <div v-if="showWhenEmpty && !keyCeremonies.length">
     <p>No key ceremonies found.</p>
   </div>
