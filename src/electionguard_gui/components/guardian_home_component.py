@@ -62,3 +62,5 @@ class GuardianHomeComponent(ComponentBase):
         # pylint: disable=no-member
         if collection == "key_ceremonies":
             eel.key_ceremonies_changed()
+        if collection == "decryptions":
+            eel.decryptions_changed()

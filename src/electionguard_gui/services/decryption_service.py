@@ -4,6 +4,7 @@ from bson import ObjectId
 from pymongo.database import Database
 from electionguard_gui.models.decryption_dto import DecryptionDto
 from electionguard_gui.models.election_dto import ElectionDto
+from electionguard_gui.services.db_watcher_service import DbWatcherService
 from electionguard_gui.services.eel_log_service import EelLogService
 from electionguard_gui.services.service_base import ServiceBase
 from electionguard_gui.services.authorization_service import AuthorizationService
@@ -14,12 +15,17 @@ class DecryptionService(ServiceBase):
 
     _log: EelLogService
     _auth_service: AuthorizationService
+    _db_watcher_service: DbWatcherService
 
     def __init__(
-        self, log_service: EelLogService, auth_service: AuthorizationService
+        self,
+        log_service: EelLogService,
+        auth_service: AuthorizationService,
+        db_watcher_service: DbWatcherService,
     ) -> None:
         self._log = log_service
         self._auth_service = auth_service
+        self._db_watcher_service = db_watcher_service
 
     def create(
         self,
@@ -38,8 +44,13 @@ class DecryptionService(ServiceBase):
             "created_at": datetime.utcnow(),
         }
         self._log.trace(f"inserting decryption for: {election.id}")
-        inserted_id = db.decryptions.insert_one(decryption).inserted_id
-        return str(inserted_id)
+        insert_result = db.decryptions.insert_one(decryption)
+        inserted_id = str(insert_result.inserted_id)
+        self.notify_changed(db, inserted_id)
+        return inserted_id
+
+    def notify_changed(self, db: Database, decryption_id: str) -> None:
+        self._db_watcher_service.notify_changed(db, "decryptions", decryption_id)
 
     def name_exists(self, db: Database, name: str) -> Any:
         self._log.trace(f"getting decryption by name: {name}")

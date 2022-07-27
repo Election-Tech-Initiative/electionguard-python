@@ -84,7 +84,10 @@ class Container(containers.DeclarativeContainer):
         BallotUploadService, log_service=log_service, auth_service=authorization_service
     )
     decryption_service: Factory[DecryptionService] = providers.Factory(
-        DecryptionService, log_service=log_service, auth_service=authorization_service
+        DecryptionService,
+        log_service=log_service,
+        auth_service=authorization_service,
+        db_watcher_service=db_watcher_service,
     )
 
     # key ceremony services

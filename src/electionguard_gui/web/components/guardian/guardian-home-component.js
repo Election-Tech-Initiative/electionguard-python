@@ -19,6 +19,9 @@ export default {
     keyCeremoniesChanged: async function () {
       await this.refreshKeyCeremonies();
     },
+    decryptionsChanged: async function () {
+      await this.refreshDecryptions();
+    },
     refreshDecryptions: async function () {
       const result = await eel.get_decryptions()();
       if (result.success) {
@@ -38,6 +41,7 @@ export default {
   },
   async mounted() {
     eel.expose(this.keyCeremoniesChanged, "key_ceremonies_changed");
+    eel.expose(this.decryptionsChanged, "decryptions_changed");
     console.log("begin watching for key ceremonies");
     eel.watch_db_collections();
     await this.refreshKeyCeremonies();
