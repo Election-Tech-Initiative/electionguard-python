@@ -16,9 +16,6 @@ export default {
     Spinner,
   },
   methods: {
-    keyCeremoniesChanged: function () {
-      this.refreshKeyCeremonies();
-    },
     refreshKeyCeremonies: async function () {
       const result = await eel.get_key_ceremonies()();
       if (result.success) {
@@ -38,19 +35,12 @@ export default {
     },
   },
   async mounted() {
-    console.log("begin watching for key ceremonies");
-    eel.expose(this.keyCeremoniesChanged, "key_ceremonies_changed");
     await this.refreshKeyCeremonies();
-    eel.watch_key_ceremonies();
-  },
-  unmounted() {
-    console.log("stop watching key ceremonies");
-    eel.stop_watching_key_ceremonies();
   },
   template: /*html*/ `
   <spinner :visible="loading"></spinner>
   <div v-if="showWhenEmpty && !keyCeremonies.length">
-    <p>No key ceremonies are currently active.</p>
+    <p>No key ceremonies found.</p>
   </div>
   <div v-if="keyCeremonies.length" class="d-grid gap-2 d-md-block">
     <h2>Active Key Ceremonies</h2>

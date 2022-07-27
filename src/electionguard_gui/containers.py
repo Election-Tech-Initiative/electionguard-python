@@ -11,7 +11,7 @@ from electionguard_gui.components import (
     ViewElectionComponent,
     CreateKeyCeremonyComponent,
     ElectionListComponent,
-    KeyCeremonyListComponent,
+    GuardianHomeComponent,
     KeyCeremonyDetailsComponent,
     ExportEncryptionPackage,
     UploadBallotsComponent,
@@ -147,8 +147,10 @@ class Container(containers.DeclarativeContainer):
     )
 
     # components
-    guardian_home_component: Factory[KeyCeremonyListComponent] = providers.Factory(
-        KeyCeremonyListComponent, key_ceremony_service=key_ceremony_service
+    guardian_home_component: Factory[GuardianHomeComponent] = providers.Factory(
+        GuardianHomeComponent,
+        key_ceremony_service=key_ceremony_service,
+        decryption_service=decryption_service,
     )
     create_election_component: Factory[CreateElectionComponent] = providers.Factory(
         CreateElectionComponent,

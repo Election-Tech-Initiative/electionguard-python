@@ -34,6 +34,12 @@ class DecryptionDto:
             return "waiting for guardians"
         return "decryption complete"
 
+    def to_id_name_dict(self) -> dict[str, Any]:
+        return {
+            "id": self.decryption_id,
+            "decryption_name": self.decryption_name,
+        }
+
     def to_dict(self) -> dict[str, Any]:
         return {
             "decryption_id": self.decryption_id,

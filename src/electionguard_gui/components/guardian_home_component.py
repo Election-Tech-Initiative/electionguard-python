@@ -3,22 +3,35 @@ import eel
 from electionguard_gui.eel_utils import eel_success
 
 from electionguard_gui.components.component_base import ComponentBase
-from electionguard_gui.services.key_ceremony_service import KeyCeremonyService
+from electionguard_gui.services import KeyCeremonyService, DecryptionService
 
 
-class KeyCeremonyListComponent(ComponentBase):
+class GuardianHomeComponent(ComponentBase):
     """Responsible for functionality related to the guardian home page"""
 
     _key_ceremony_service: KeyCeremonyService
+    _decryption_service: DecryptionService
 
-    def __init__(self, key_ceremony_service: KeyCeremonyService) -> None:
+    def __init__(
+        self,
+        key_ceremony_service: KeyCeremonyService,
+        decryption_service: DecryptionService,
+    ) -> None:
         super().__init__()
         self._key_ceremony_service = key_ceremony_service
+        self._decryption_service = decryption_service
 
     def expose(self) -> None:
+        eel.expose(self.get_decryptions)
         eel.expose(self.get_key_ceremonies)
         eel.expose(self.watch_key_ceremonies)
         eel.expose(self.stop_watching_key_ceremonies)
+
+    def get_decryptions(self) -> dict[str, Any]:
+        db = self._db_service.get_db()
+        decryptions = self._decryption_service.get_all(db)
+        decryptions_json = [decryption.to_id_name_dict() for decryption in decryptions]
+        return eel_success(decryptions_json)
 
     def get_key_ceremonies(self) -> dict[str, Any]:
         db = self._db_service.get_db()
@@ -40,6 +53,6 @@ class KeyCeremonyListComponent(ComponentBase):
         self._log.debug("Stopping watch key_ceremonies")
         self._key_ceremony_service.stop_watching()
 
-    def notify_ui_key_ceremonies_changed(self, _) -> None:
+    def notify_ui_key_ceremonies_changed(self, _: str) -> None:
         # pylint: disable=no-member
         eel.key_ceremonies_changed()

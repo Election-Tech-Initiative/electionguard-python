@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any
+from typing import Any, List
 from bson import ObjectId
 from pymongo.database import Database
 from electionguard_gui.models.decryption_dto import DecryptionDto
@@ -53,5 +53,15 @@ class DecryptionService(ServiceBase):
 
     def get_decryption_count(self, db: Database, election_id: str) -> int:
         self._log.trace(f"getting decryption count for election {election_id}")
-        decryption_count = db.decryptions.count_documents({"election_id": election_id})
+        decryption_count: int = db.decryptions.count_documents(
+            {"election_id": election_id}
+        )
         return decryption_count
+
+    def get_all(self, db: Database) -> List[DecryptionDto]:
+        self._log.trace("getting all decryptions")
+        decryption_cursor = db.decryptions.find()
+        decryption_list = [
+            DecryptionDto(decryption) for decryption in decryption_cursor
+        ]
+        return decryption_list
