@@ -35,6 +35,7 @@ class ElectionService(ServiceBase):
         constants: ElectionConstants,
         guardian_records: list[GuardianRecord],
         encryption_package_file: str,
+        election_url: str,
     ) -> str:
         context_raw = json.dumps(context, default=pydantic_encoder)
         manifest_raw = json.dumps(manifest, default=pydantic_encoder)
@@ -45,6 +46,7 @@ class ElectionService(ServiceBase):
             "key_ceremony_id": key_ceremony.id,
             "guardians": context.number_of_guardians,
             "quorum": context.quorum,
+            "election_url": election_url,
             "manifest": {
                 "raw": manifest_raw,
                 "name": manifest.get_name(),
@@ -60,6 +62,8 @@ class ElectionService(ServiceBase):
             "guardian_records": guardian_records_raw,
             # Mongo has a max size of 16MG, consider using GridFS https://www.mongodb.com/docs/manual/core/gridfs/
             "encryption_package_file": encryption_package_file,
+            "ballot_uploads": [],
+            "decryptions": [],
             "created_by": self._auth_service.get_user_id(),
             "created_at": datetime.utcnow(),
         }
@@ -78,3 +82,44 @@ class ElectionService(ServiceBase):
         self._log.trace("getting all elections")
         elections = db.elections.find()
         return [ElectionDto(election) for election in elections]
+
+    def append_ballot_upload(
+        self,
+        db: Database,
+        election_id: str,
+        ballot_upload_id: str,
+        device_file_contents: str,
+        ballot_count: int,
+        created_at: datetime,
+    ) -> None:
+        self._log.trace(
+            f"appending ballot upload {ballot_upload_id} to election {election_id}"
+        )
+        device_file_json = json.loads(device_file_contents)
+        db.elections.update_one(
+            {"_id": ObjectId(election_id)},
+            {
+                "$push": {
+                    "ballot_uploads": {
+                        "ballot_upload_id": ballot_upload_id,
+                        "device_id": device_file_json["device_id"],
+                        "launch_code": device_file_json["launch_code"],
+                        "location": device_file_json["location"],
+                        "session_id": device_file_json["session_id"],
+                        "ballot_count": ballot_count,
+                        "created_at": created_at,
+                    }
+                }
+            },
+        )
+
+    def append_decryption(
+        self, db: Database, election_id: str, decryption_id: str, name: str
+    ) -> None:
+        self._log.trace(
+            f"appending decryption {decryption_id} to election {election_id}"
+        )
+        db.elections.update_one(
+            {"_id": ObjectId(election_id)},
+            {"$push": {"decryptions": {"decryption_id": decryption_id, "name": name}}},
+        )

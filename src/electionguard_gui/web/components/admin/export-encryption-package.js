@@ -1,4 +1,4 @@
-import RouterService from "/services/router-service.js";
+import RouterService from "../../services/router-service.js";
 import Spinner from "../shared/spinner-component.js";
 
 export default {
@@ -31,10 +31,7 @@ export default {
       }
     },
     getElectionUrl: function () {
-      const page = RouterService.routes.viewElectionAdmin;
-      return RouterService.getUrl(page, {
-        electionId: this.electionId,
-      });
+      return RouterService.getElectionUrl(this.electionId);
     },
   },
   async mounted() {
@@ -57,7 +54,7 @@ export default {
         <div class="col-12">
           <h1>Encryption Package</h1>
         </div>
-        <div class="col-sm-12">
+        <div class="col-12">
           <label for="electionKey" class="form-label">Location</label>
           <select id="location" class="form-select" v-model="location">
               <option v-for="location in locations" :value="location">{{ location }}</option>

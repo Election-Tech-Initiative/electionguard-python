@@ -15,6 +15,8 @@ from electionguard_gui.components import (
     KeyCeremonyDetailsComponent,
     ExportEncryptionPackage,
     UploadBallotsComponent,
+    CreateDecryptionComponent,
+    ViewDecryptionComponent,
 )
 from electionguard_gui.main_app import MainApp
 from electionguard_gui.services import (
@@ -27,6 +29,7 @@ from electionguard_gui.services import (
     KeyCeremonyStateService,
     GuiSetupInputRetrievalStep,
     BallotUploadService,
+    DecryptionService,
 )
 from electionguard_gui.services.key_ceremony_stages import (
     KeyCeremonyS1JoinService,
@@ -46,11 +49,11 @@ class Container(containers.DeclarativeContainer):
     db_service: Singleton[DbService] = providers.Singleton(
         DbService, log_service=log_service
     )
-    key_ceremony_service: Factory[KeyCeremonyService] = providers.Factory(
-        KeyCeremonyService
-    )
     authorization_service: Singleton[AuthorizationService] = providers.Singleton(
         AuthorizationService
+    )
+    key_ceremony_service: Factory[KeyCeremonyService] = providers.Factory(
+        KeyCeremonyService, log_service=log_service, auth_service=authorization_service
     )
     election_service: Factory[ElectionService] = providers.Factory(
         ElectionService, log_service=log_service, auth_service=authorization_service
@@ -72,6 +75,9 @@ class Container(containers.DeclarativeContainer):
     )
     ballot_upload_service: Factory[BallotUploadService] = providers.Factory(
         BallotUploadService, log_service=log_service, auth_service=authorization_service
+    )
+    decryption_service: Factory[DecryptionService] = providers.Factory(
+        DecryptionService, log_service=log_service, auth_service=authorization_service
     )
 
     # key ceremony services
@@ -190,6 +196,16 @@ class Container(containers.DeclarativeContainer):
         election_service=election_service,
         ballot_upload_service=ballot_upload_service,
     )
+    create_decryption_component: Factory[CreateDecryptionComponent] = providers.Factory(
+        CreateDecryptionComponent,
+        election_service=election_service,
+        decryption_service=decryption_service,
+    )
+    view_decryption_component: Factory[ViewDecryptionComponent] = providers.Factory(
+        ViewDecryptionComponent,
+        election_service=election_service,
+        decryption_service=decryption_service,
+    )
 
     # main
     main_app: Factory[MainApp] = providers.Factory(
@@ -207,4 +223,7 @@ class Container(containers.DeclarativeContainer):
         export_encryption_package=export_encryption_package,
         upload_ballots_component=upload_ballots_component,
         ballot_upload_service=ballot_upload_service,
+        create_decryption_component=create_decryption_component,
+        decryption_service=decryption_service,
+        view_decryption_component=view_decryption_component,
     )

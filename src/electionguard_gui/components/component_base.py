@@ -1,4 +1,7 @@
 from abc import ABC
+import traceback
+from typing import Any
+from electionguard_gui.eel_utils import eel_fail
 
 from electionguard_gui.services.db_service import DbService
 from electionguard_gui.services.eel_log_service import EelLogService
@@ -22,3 +25,8 @@ class ComponentBase(ABC):
     def expose(self) -> None:
         """Override to expose the component's methods to JavaScript. This technique hides the
         fact that method names exposed must be globally unique."""
+
+    def handle_error(self, error: Exception) -> dict[str, Any]:
+        self._log.error(error)
+        traceback.print_exc()
+        return eel_fail(str(error))

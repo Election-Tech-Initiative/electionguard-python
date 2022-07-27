@@ -1,3 +1,4 @@
+import traceback
 from typing import List
 import eel
 
@@ -11,6 +12,8 @@ from electionguard_gui.components import (
     ElectionListComponent,
     ExportEncryptionPackage,
     UploadBallotsComponent,
+    CreateDecryptionComponent,
+    ViewDecryptionComponent,
 )
 
 from electionguard_gui.services import (
@@ -20,6 +23,7 @@ from electionguard_gui.services import (
     KeyCeremonyStateService,
     ServiceBase,
     BallotUploadService,
+    DecryptionService,
 )
 
 
@@ -46,6 +50,9 @@ class MainApp:
         export_encryption_package: ExportEncryptionPackage,
         upload_ballots_component: UploadBallotsComponent,
         ballot_upload_service: BallotUploadService,
+        decryption_service: DecryptionService,
+        create_decryption_component: CreateDecryptionComponent,
+        view_decryption_component: ViewDecryptionComponent,
     ) -> None:
         super().__init__()
 
@@ -61,6 +68,8 @@ class MainApp:
             election_list_component,
             export_encryption_package,
             upload_ballots_component,
+            create_decryption_component,
+            view_decryption_component,
         ]
 
         self.services = [
@@ -69,6 +78,7 @@ class MainApp:
             log_service,
             key_ceremony_state_service,
             ballot_upload_service,
+            decryption_service,
         ]
 
     def start(self) -> None:
@@ -87,4 +97,5 @@ class MainApp:
             eel.start("main.html", size=(1024, 768), port=0)
         except Exception as e:
             self.log_service.error(e)
+            traceback.print_exc()
             raise e

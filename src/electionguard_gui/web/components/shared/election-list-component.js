@@ -1,4 +1,4 @@
-import RouterService from "/services/router-service.js";
+import RouterService from "../../services/router-service.js";
 import Spinner from "./spinner-component.js";
 
 export default {
@@ -13,10 +13,7 @@ export default {
   },
   methods: {
     getElectionUrl: function (election) {
-      const page = RouterService.routes.viewElectionAdmin;
-      return RouterService.getUrl(page, {
-        electionId: election.id,
-      });
+      return RouterService.getElectionUrl(election.id);
     },
   },
   async mounted() {

@@ -103,12 +103,12 @@ class CreateElectionComponent(ComponentBase):
                 constants,
                 guardian_records,
                 encryption_package_file,
+                url,
             )
             return eel_success(election_id)
         # pylint: disable=broad-except
         except Exception as e:
-            self._log.error(e)
-            return eel_fail(str(e))
+            return self.handle_error(e)
 
     def _zip(self, dir_to_zip: str, zip_file_to_make: str) -> str:
         make_archive(zip_file_to_make, self._COMPRESSION_FORMAT, dir_to_zip)
