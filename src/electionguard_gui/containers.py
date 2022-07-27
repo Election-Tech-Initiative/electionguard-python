@@ -30,6 +30,7 @@ from electionguard_gui.services import (
     GuiSetupInputRetrievalStep,
     BallotUploadService,
     DecryptionService,
+    DbWatcherService,
 )
 from electionguard_gui.services.key_ceremony_stages import (
     KeyCeremonyS1JoinService,
@@ -78,6 +79,9 @@ class Container(containers.DeclarativeContainer):
     )
     decryption_service: Factory[DecryptionService] = providers.Factory(
         DecryptionService, log_service=log_service, auth_service=authorization_service
+    )
+    db_watcher_service: Factory[DbWatcherService] = providers.Factory(
+        DbWatcherService, log_service=log_service
     )
 
     # key ceremony services
@@ -151,6 +155,7 @@ class Container(containers.DeclarativeContainer):
         GuardianHomeComponent,
         key_ceremony_service=key_ceremony_service,
         decryption_service=decryption_service,
+        db_watcher_service=db_watcher_service,
     )
     create_election_component: Factory[CreateElectionComponent] = providers.Factory(
         CreateElectionComponent,
@@ -181,6 +186,7 @@ class Container(containers.DeclarativeContainer):
         KeyCeremonyDetailsComponent,
         key_ceremony_service=key_ceremony_service,
         auth_service=authorization_service,
+        db_watcher_service=db_watcher_service,
         key_ceremony_state_service=key_ceremony_state_service,
         key_ceremony_s1_join_service=key_ceremony_s1_join_service,
         key_ceremony_s2_announce_service=key_ceremony_s2_announce_service,
@@ -218,14 +224,11 @@ class Container(containers.DeclarativeContainer):
         create_key_ceremony_component=create_key_ceremony_component,
         key_ceremony_details_component=key_ceremony_details_component,
         authorization_service=authorization_service,
-        key_ceremony_state_service=key_ceremony_state_service,
         create_election_component=create_election_component,
         view_election_component=view_election_component,
         election_list_component=election_list_component,
         export_encryption_package=export_encryption_package,
         upload_ballots_component=upload_ballots_component,
-        ballot_upload_service=ballot_upload_service,
         create_decryption_component=create_decryption_component,
-        decryption_service=decryption_service,
         view_decryption_component=view_decryption_component,
     )

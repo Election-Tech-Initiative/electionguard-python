@@ -3,7 +3,11 @@ import eel
 from electionguard_gui.eel_utils import eel_success
 
 from electionguard_gui.components.component_base import ComponentBase
-from electionguard_gui.services import KeyCeremonyService, DecryptionService
+from electionguard_gui.services import (
+    KeyCeremonyService,
+    DecryptionService,
+    DbWatcherService,
+)
 
 
 class GuardianHomeComponent(ComponentBase):
@@ -11,15 +15,18 @@ class GuardianHomeComponent(ComponentBase):
 
     _key_ceremony_service: KeyCeremonyService
     _decryption_service: DecryptionService
+    _db_watcher_service: DbWatcherService
 
     def __init__(
         self,
         key_ceremony_service: KeyCeremonyService,
         decryption_service: DecryptionService,
+        db_watcher_service: DbWatcherService,
     ) -> None:
         super().__init__()
         self._key_ceremony_service = key_ceremony_service
         self._decryption_service = decryption_service
+        self._db_watcher_service = db_watcher_service
 
     def expose(self) -> None:
         eel.expose(self.get_decryptions)
@@ -44,14 +51,12 @@ class GuardianHomeComponent(ComponentBase):
     def watch_db_collections(self) -> None:
         self._log.debug("Watching database")
         db = self._db_service.get_db()
-        self._key_ceremony_service.watch_key_ceremonies(
-            db, None, self.notify_ui_db_changed
-        )
+        self._db_watcher_service.watch_database(db, None, self.notify_ui_db_changed)
         self._log.debug("exited watching key_ceremonies")
 
     def stop_watching_key_ceremonies(self) -> None:
         self._log.debug("Stopping watch key_ceremonies")
-        self._key_ceremony_service.stop_watching()
+        self._db_watcher_service.stop_watching()
 
     def notify_ui_db_changed(self, _: str) -> None:
         # pylint: disable=no-member

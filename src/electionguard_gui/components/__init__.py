@@ -4,8 +4,8 @@ from electionguard_gui.components import create_election_component
 from electionguard_gui.components import create_key_ceremony_component
 from electionguard_gui.components import election_list_component
 from electionguard_gui.components import export_encryption_package_component
-from electionguard_gui.components import key_ceremony_details_component
 from electionguard_gui.components import guardian_home_component
+from electionguard_gui.components import key_ceremony_details_component
 from electionguard_gui.components import upload_ballots_component
 from electionguard_gui.components import view_decryption_component
 from electionguard_gui.components import view_election_component
@@ -29,11 +29,11 @@ from electionguard_gui.components.export_encryption_package_component import (
     ExportEncryptionPackage,
     get_download_path,
 )
-from electionguard_gui.components.key_ceremony_details_component import (
-    KeyCeremonyDetailsComponent,
-)
 from electionguard_gui.components.guardian_home_component import (
     GuardianHomeComponent,
+)
+from electionguard_gui.components.key_ceremony_details_component import (
+    KeyCeremonyDetailsComponent,
 )
 from electionguard_gui.components.upload_ballots_component import (
     UploadBallotsComponent,
@@ -52,8 +52,8 @@ __all__ = [
     "CreateKeyCeremonyComponent",
     "ElectionListComponent",
     "ExportEncryptionPackage",
-    "KeyCeremonyDetailsComponent",
     "GuardianHomeComponent",
+    "KeyCeremonyDetailsComponent",
     "UploadBallotsComponent",
     "ViewDecryptionComponent",
     "ViewElectionComponent",
@@ -64,8 +64,8 @@ __all__ = [
     "election_list_component",
     "export_encryption_package_component",
     "get_download_path",
-    "key_ceremony_details_component",
     "guardian_home_component",
+    "key_ceremony_details_component",
     "upload_ballots_component",
     "view_decryption_component",
     "view_election_component",

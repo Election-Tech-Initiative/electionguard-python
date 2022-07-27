@@ -17,7 +17,7 @@ export default {
   },
   methods: {
     keyCeremoniesChanged: async function () {
-      await this.$refs.keyCeremonyListComponent.refreshKeyCeremonies();
+      await this.refreshKeyCeremonies();
     },
     refreshDecryptions: async function () {
       const result = await eel.get_decryptions()();

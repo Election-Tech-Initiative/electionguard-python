@@ -3,6 +3,7 @@ from electionguard_gui.services import ballot_upload_service
 from electionguard_gui.services import configuration_service
 from electionguard_gui.services import db_serialization_service
 from electionguard_gui.services import db_service
+from electionguard_gui.services import db_watcher_service
 from electionguard_gui.services import decryption_service
 from electionguard_gui.services import eel_log_service
 from electionguard_gui.services import election_service
@@ -35,6 +36,9 @@ from electionguard_gui.services.db_serialization_service import (
 )
 from electionguard_gui.services.db_service import (
     DbService,
+)
+from electionguard_gui.services.db_watcher_service import (
+    DbWatcherService,
 )
 from electionguard_gui.services.decryption_service import (
     DecryptionService,
@@ -88,6 +92,7 @@ __all__ = [
     "DB_HOST_KEY",
     "DB_PASSWORD_KEY",
     "DbService",
+    "DbWatcherService",
     "DecryptionService",
     "EelLogService",
     "ElectionService",
@@ -111,6 +116,7 @@ __all__ = [
     "configuration_service",
     "db_serialization_service",
     "db_service",
+    "db_watcher_service",
     "decryption_service",
     "eel_log_service",
     "election_service",
