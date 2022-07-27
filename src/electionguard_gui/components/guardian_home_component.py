@@ -24,7 +24,7 @@ class GuardianHomeComponent(ComponentBase):
     def expose(self) -> None:
         eel.expose(self.get_decryptions)
         eel.expose(self.get_key_ceremonies)
-        eel.expose(self.watch_key_ceremonies)
+        eel.expose(self.watch_db_collections)
         eel.expose(self.stop_watching_key_ceremonies)
 
     def get_decryptions(self) -> dict[str, Any]:
@@ -41,11 +41,11 @@ class GuardianHomeComponent(ComponentBase):
         ]
         return eel_success(js_key_ceremonies)
 
-    def watch_key_ceremonies(self) -> None:
-        self._log.debug("Watching key ceremonies")
+    def watch_db_collections(self) -> None:
+        self._log.debug("Watching database")
         db = self._db_service.get_db()
         self._key_ceremony_service.watch_key_ceremonies(
-            db, None, self.notify_ui_key_ceremonies_changed
+            db, None, self.notify_ui_db_changed
         )
         self._log.debug("exited watching key_ceremonies")
 
@@ -53,6 +53,6 @@ class GuardianHomeComponent(ComponentBase):
         self._log.debug("Stopping watch key_ceremonies")
         self._key_ceremony_service.stop_watching()
 
-    def notify_ui_key_ceremonies_changed(self, _: str) -> None:
+    def notify_ui_db_changed(self, _: str) -> None:
         # pylint: disable=no-member
         eel.key_ceremonies_changed()

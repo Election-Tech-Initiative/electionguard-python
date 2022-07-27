@@ -30,8 +30,6 @@ class KeyCeremonyS2AnnounceService(KeyCeremonyStageBase):
         other_keys = self.announce(key_ceremony)
         self.log.debug("saving other_keys")
         self._key_ceremony_service.append_other_key(db, key_ceremony_id, other_keys)
-        # this notify_changed occurs inside watch_key_ceremonies and thus may
-        #       produce an unnecessary UI refresh for the admin
         self._key_ceremony_service.notify_changed(db, key_ceremony_id)
 
     def announce(self, key_ceremony: KeyCeremonyDto) -> List[dict[str, Any]]:

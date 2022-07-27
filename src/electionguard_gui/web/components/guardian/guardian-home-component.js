@@ -39,7 +39,7 @@ export default {
   async mounted() {
     eel.expose(this.keyCeremoniesChanged, "key_ceremonies_changed");
     console.log("begin watching for key ceremonies");
-    eel.watch_key_ceremonies();
+    eel.watch_db_collections();
     await this.refreshKeyCeremonies();
     await this.refreshDecryptions();
     this.loading = false;
