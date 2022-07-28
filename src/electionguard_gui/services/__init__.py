@@ -8,6 +8,7 @@ from electionguard_gui.services import decryption_service
 from electionguard_gui.services import decryption_stages
 from electionguard_gui.services import eel_log_service
 from electionguard_gui.services import election_service
+from electionguard_gui.services import export_service
 from electionguard_gui.services import guardian_service
 from electionguard_gui.services import gui_setup_input_retrieval_step
 from electionguard_gui.services import key_ceremony_service
@@ -59,6 +60,9 @@ from electionguard_gui.services.eel_log_service import (
 )
 from electionguard_gui.services.election_service import (
     ElectionService,
+)
+from electionguard_gui.services.export_service import (
+    get_download_path,
 )
 from electionguard_gui.services.guardian_service import (
     GuardianService,
@@ -139,8 +143,10 @@ __all__ = [
     "decryption_stages",
     "eel_log_service",
     "election_service",
+    "export_service",
     "get_db_host",
     "get_db_password",
+    "get_download_path",
     "get_guardian_number",
     "get_is_admin",
     "get_key_ceremony_status",

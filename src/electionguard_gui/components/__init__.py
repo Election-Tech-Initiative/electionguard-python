@@ -31,7 +31,6 @@ from electionguard_gui.components.export_election_record_component import (
 )
 from electionguard_gui.components.export_encryption_package_component import (
     ExportEncryptionPackageComponent,
-    get_download_path,
 )
 from electionguard_gui.components.guardian_home_component import (
     GuardianHomeComponent,
@@ -70,7 +69,6 @@ __all__ = [
     "election_list_component",
     "export_election_record_component",
     "export_encryption_package_component",
-    "get_download_path",
     "guardian_home_component",
     "key_ceremony_details_component",
     "notify_ui_db_changed",

@@ -18,13 +18,6 @@ class DecryptionS2AnnounceService(DecryptionStageBase):
         isCompleted = decryption.completed_at_utc is not None
         return isAdmin and allGuardiansJoined and not isCompleted
 
-    def _get_lagrange_coefficients(
-        self, decryption_mediator: DecryptionMediator
-    ) -> LagrangeCoefficientsRecord:
-        return LagrangeCoefficientsRecord(
-            decryption_mediator.get_lagrange_coefficients()
-        )
-
     def run(self, db: Database, decryption: DecryptionDto) -> None:
         self._log.info(f"S2: Announcing decryption {decryption.decryption_id}")
         election = self._election_service.get(db, decryption.election_id)
@@ -62,7 +55,7 @@ class DecryptionS2AnnounceService(DecryptionStageBase):
         if plaintext_spoiled_ballots is None:
             raise Exception("No plaintext spoiled ballots found")
 
-        lagrange_coefficients = self._get_lagrange_coefficients(decryption_mediator)
+        lagrange_coefficients = _get_lagrange_coefficients(decryption_mediator)
 
         self._log.debug("setting decryption completed")
         self._decryption_service.set_decryption_completed(
@@ -75,3 +68,9 @@ class DecryptionS2AnnounceService(DecryptionStageBase):
         )
 
         self._decryption_service.notify_changed(db, decryption.decryption_id)
+
+
+def _get_lagrange_coefficients(
+    decryption_mediator: DecryptionMediator,
+) -> LagrangeCoefficientsRecord:
+    return LagrangeCoefficientsRecord(decryption_mediator.get_lagrange_coefficients())
