@@ -82,9 +82,13 @@ class DecryptionService(ServiceBase):
         )
         return decryption_count
 
-    def get_all(self, db: Database) -> List[DecryptionDto]:
+    def get_active(self, db: Database) -> List[DecryptionDto]:
         self._log.trace("getting all decryptions")
-        decryption_cursor = db.decryptions.find()
+        decryption_cursor = db.decryptions.find(
+            {
+                "completed_at": None,
+            }
+        )
         decryption_list = [
             DecryptionDto(decryption) for decryption in decryption_cursor
         ]

@@ -36,7 +36,7 @@ class GuardianHomeComponent(ComponentBase):
 
     def get_decryptions(self) -> dict[str, Any]:
         db = self._db_service.get_db()
-        decryptions = self._decryption_service.get_all(db)
+        decryptions = self._decryption_service.get_active(db)
         decryptions_json = [decryption.to_id_name_dict() for decryption in decryptions]
         return eel_success(decryptions_json)
 
