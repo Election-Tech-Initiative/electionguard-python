@@ -19,7 +19,7 @@ export default {
       this.loading = true;
       const result = await eel.create_decryption(this.electionId, this.name)();
       if (result.success) {
-        RouterService.goTo(RouterService.routes.viewDecryption, {
+        RouterService.goTo(RouterService.routes.viewDecryptionAdmin, {
           decryptionId: result.result,
         });
       } else {

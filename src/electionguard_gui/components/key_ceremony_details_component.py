@@ -115,9 +115,13 @@ class KeyCeremonyDetailsComponent(ComponentBase):
             eel.refresh_key_ceremony(eel_fail(str(e)))
 
     def join_key_ceremony(self, key_ceremony_id: str) -> None:
-        db = self._db_service.get_db()
-        key_ceremony = self.get_ceremony(db, key_ceremony_id)
-        self._key_ceremony_s1_join_service.run(db, key_ceremony)
+        try:
+            db = self._db_service.get_db()
+            key_ceremony = self.get_ceremony(db, key_ceremony_id)
+            self._key_ceremony_s1_join_service.run(db, key_ceremony)
+        # pylint: disable=broad-except
+        except Exception as e:
+            self.handle_error(e)
 
     def get_ceremony(self, db: Database, id: str) -> KeyCeremonyDto:
         key_ceremony = self._key_ceremony_service.get(db, id)

@@ -1,5 +1,8 @@
 from typing import Any
 from datetime import datetime
+from electionguard.election import CiphertextElectionContext
+from electionguard.manifest import Manifest
+from electionguard.serialize import from_raw
 
 from electionguard_gui.eel_utils import utc_to_str
 
@@ -10,9 +13,11 @@ class ElectionDto:
 
     id: str
     election_name: str
+    key_ceremony_id: str
     guardians: int
     quorum: int
     manifest: dict[str, Any]
+    context: str
     constants: int
     guardian_records: int
     encryption_package_file: str
@@ -26,9 +31,11 @@ class ElectionDto:
     def __init__(self, election: dict[str, Any]):
         self.id = str(election["_id"])
         self.election_name = election["election_name"]
+        self.key_ceremony_id = election["key_ceremony_id"]
         self.guardians = election["guardians"]
         self.quorum = election["quorum"]
         self.manifest = election["manifest"]
+        self.context = election["context"]
         self.constants = election["constants"]
         self.guardian_records = election["guardian_records"]
         self.encryption_package_file = election["encryption_package_file"]
@@ -66,3 +73,9 @@ class ElectionDto:
             "created_by": self.created_by,
             "created_at": self.created_at_str,
         }
+
+    def get_manifest(self) -> Manifest:
+        return from_raw(Manifest, self.manifest["raw"])
+
+    def get_context(self) -> CiphertextElectionContext:
+        return from_raw(CiphertextElectionContext, self.context)

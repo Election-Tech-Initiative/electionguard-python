@@ -12,7 +12,10 @@ export default {
     join: async function () {
       this.loading = true;
       this.error = false;
-      await eel.join_key_ceremony(this.keyCeremonyId)();
+      const result = await eel.join_key_ceremony(this.keyCeremonyId)();
+      if (!result.success) {
+        this.error = true;
+      }
       this.loading = false;
     },
     refresh_key_ceremony: function (eelMessage) {

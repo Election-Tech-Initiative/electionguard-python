@@ -13,6 +13,7 @@ class DecryptionDto:
     election_id: str
     election_name: str
     guardians: int
+    quorum: int
     decryption_name: str
     guardians_joined: list[str]
     can_join: bool
@@ -23,8 +24,10 @@ class DecryptionDto:
     def __init__(self, decryption: Any):
         self.decryption_id = str(decryption["_id"])
         self.election_id = decryption["election_id"]
+        self.key_ceremony_id = decryption["key_ceremony_id"]
         self.election_name = decryption["election_name"]
         self.guardians = decryption["guardians"]
+        self.quorum = decryption["quorum"]
         self.decryption_name = decryption["decryption_name"]
         self.guardians_joined = decryption["guardians_joined"]
         self.created_by = decryption["created_by"]

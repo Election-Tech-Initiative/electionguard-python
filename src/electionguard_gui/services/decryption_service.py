@@ -1,7 +1,11 @@
 from datetime import datetime
-from typing import Any, List
+import json
+from typing import Any, Dict, List, Optional
 from bson import ObjectId
+from pydantic.json import pydantic_encoder
 from pymongo.database import Database
+from electionguard.decryption_share import DecryptionShare
+from electionguard.type import BallotId
 from electionguard_gui.models.decryption_dto import DecryptionDto
 from electionguard_gui.models.election_dto import ElectionDto
 from electionguard_gui.services.db_watcher_service import DbWatcherService
@@ -11,7 +15,7 @@ from electionguard_gui.services.authorization_service import AuthorizationServic
 
 
 class DecryptionService(ServiceBase):
-    """Responsible for functionality related to ballot uploads"""
+    """Responsible for functionality related to decryption operations"""
 
     _log: EelLogService
     _auth_service: AuthorizationService
@@ -36,6 +40,7 @@ class DecryptionService(ServiceBase):
         decryption = {
             "election_id": election.id,
             "election_name": election.election_name,
+            "key_ceremony_id": election.key_ceremony_id,
             "guardians": election.guardians,
             "quorum": election.quorum,
             "decryption_name": decryption_name,
@@ -80,3 +85,38 @@ class DecryptionService(ServiceBase):
             DecryptionDto(decryption) for decryption in decryption_cursor
         ]
         return decryption_list
+
+    def append_guardian_joined(
+        self,
+        db: Database,
+        decryption_id: str,
+        guardian_id: str,
+        decryption_share: DecryptionShare,
+        ballot_shares: Dict[BallotId, Optional[DecryptionShare]],
+    ) -> None:
+        decryption_share_raw = json.dumps(decryption_share, default=pydantic_encoder)
+        self._log.trace(
+            f"appending guardian {guardian_id} to decryption {decryption_id}"
+        )
+        ballot_shares_array = [
+            {"ballot_id": ballot_id, "ballot_share": to_ballot_share_raw(ballot_share)}
+            for (ballot_id, ballot_share) in ballot_shares.items()
+        ]
+        db.decryptions.update_one(
+            {"_id": ObjectId(decryption_id)},
+            {
+                "$push": {
+                    "guardians_joined": {
+                        "guardian_id": guardian_id,
+                        "decryption_share": decryption_share_raw,
+                        "ballot_shares": ballot_shares_array,
+                    }
+                }
+            },
+        )
+
+
+def to_ballot_share_raw(ballot_share: Optional[DecryptionShare]) -> str:
+    if ballot_share is None:
+        return None
+    return json.dumps(ballot_share, default=pydantic_encoder)

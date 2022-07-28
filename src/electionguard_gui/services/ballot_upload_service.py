@@ -1,6 +1,8 @@
 from datetime import datetime
 from bson import ObjectId
 from pymongo.database import Database
+from electionguard.ballot import SubmittedBallot
+from electionguard.serialize import from_raw
 from electionguard_gui.services.eel_log_service import EelLogService
 from electionguard_gui.services.service_base import ServiceBase
 from electionguard_gui.services.authorization_service import AuthorizationService
@@ -27,7 +29,7 @@ class BallotUploadService(ServiceBase):
         ballot_count: int,
         created_at: datetime,
     ) -> str:
-        election = {
+        ballot_upload = {
             "election_id": election_id,
             "device_file_name": device_file_name,
             "device_file_contents": device_file_contents,
@@ -37,7 +39,7 @@ class BallotUploadService(ServiceBase):
             "created_at": created_at,
         }
         self._log.trace(f"inserting ballot upload for: {election_id}")
-        inserted_id = db.ballot_uploads.insert_one(election).inserted_id
+        inserted_id = db.ballot_uploads.insert_one(ballot_upload).inserted_id
         return str(inserted_id)
 
     def add_ballot(
@@ -56,3 +58,14 @@ class BallotUploadService(ServiceBase):
                 }
             },
         )
+
+    def get_ballots(self, db: Database, election_id: str) -> list[SubmittedBallot]:
+        self._log.trace(f"getting ballots for {election_id}")
+        ballot_uploads = db.ballot_uploads.find({"election_id": election_id})
+        ballots = []
+        for ballot_upload in ballot_uploads:
+            for ballot_obj in ballot_upload["ballots"]:
+                ballot_str = ballot_obj["file_contents"]
+                ballot = from_raw(SubmittedBallot, ballot_str)
+                ballots.append(ballot)
+        return ballots

@@ -13,6 +13,17 @@ export default {
     getElectionUrl: function (electionId) {
       return RouterService.getElectionUrl(electionId);
     },
+    join: async function () {
+      this.loading = true;
+      this.error = false;
+      const result = await eel.join_decryption(this.decryptionId)();
+      if (result.success) {
+        this.success = true;
+      } else {
+        this.error = true;
+      }
+      this.loading = false;
+    },
   },
   async mounted() {
     const result = await eel.get_decryption(this.decryptionId)();
@@ -23,6 +34,9 @@ export default {
     }
   },
   template: /*html*/ `
+    <div v-if="error">
+      <p class="alert alert-danger" role="alert">An error occurred. Check the logs and try again.</p>
+    </div>
     <div v-if="decryption">
       <h1>{{decryption.decryption_name}}</h1>
       <div class="row">
@@ -43,18 +57,13 @@ export default {
             <p>No guardians have joined yet</p>
           </div>
           <button v-if="decryption.can_join" @click="join()" :disabled="loading" class="btn btn-primary">Join</button>
+          <spinner :visible="loading"></spinner>
         </div>
         <div class="col col-12 col-md-6 col-lg-7 text-center">
           <img v-if="decryption.completed_at_str" src="/images/check.svg" width="200" height="200" class="mb-2"></img>
           <p class="key-ceremony-status">{{decryption.status}}</p>
           <spinner :visible="loading || !decryption.completed_at_str"></spinner>
         </div>
-      </div>
-    </div>
-    <div v-else>
-      <spinner :visible="loading"></spinner>
-      <div v-if="error">
-        <p class="alert alert-danger" role="alert">An error occurred with the election. Check the logs and try again.</p>
       </div>
     </div>
 `,
