@@ -46,6 +46,8 @@ class DecryptionStageBase(ABC):
         self._election_service = election_service
         self._ballot_upload_service = ballot_upload_service
 
+    # pylint: disable=unused-argument
+    # pylint: disable=no-self-use
     def should_run(self, db: Database, decryption: DecryptionDto) -> bool:
         return False
 

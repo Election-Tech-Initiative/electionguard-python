@@ -135,7 +135,7 @@ class DecryptionService(ServiceBase):
         decryption_id: str,
         plaintext_tally: PlaintextTally,
         plaintext_spoiled_ballots: Dict[BallotId, PlaintextTally],
-    ):
+    ) -> None:
         self._log.trace("setting decryption completed")
 
         plaintext_spoiled_ballots_dict = {
@@ -155,7 +155,7 @@ class DecryptionService(ServiceBase):
         )
 
 
-def to_ballot_share_raw(ballot_share: Optional[DecryptionShare]) -> str:
+def to_ballot_share_raw(ballot_share: Optional[DecryptionShare]) -> Optional[str]:
     if ballot_share is None:
         return None
     return to_raw(ballot_share)
