@@ -3,7 +3,7 @@ import Spinner from "../shared/spinner-component.js";
 
 export default {
   props: {
-    electionId: String,
+    decryptionId: String,
   },
   components: { Spinner },
   data() {
@@ -16,22 +16,24 @@ export default {
     };
   },
   methods: {
-    async exportPackage() {
+    async exportRecord() {
       this.loading = true;
       this.alert = undefined;
-      const result = await eel.export_encryption_package(
-        this.electionId,
+      const result = await eel.export_election_record(
+        this.decryptionId,
         this.location
       )();
       this.loading = false;
       this.success = result.success;
       if (!result.success) {
         console.error(result.message);
-        this.alert = "An error occurred exporting the encryption package.";
+        this.alert = "An error occurred exporting the election record.";
       }
     },
-    getElectionUrl: function () {
-      return RouterService.getElectionUrl(this.electionId);
+    getDecryptionUrl: function () {
+      return RouterService.getUrl(RouterService.routes.viewDecryptionAdmin, {
+        decryptionId: this.decryptionId,
+      });
     },
   },
   async mounted() {
@@ -49,13 +51,13 @@ export default {
     <div v-if="alert" class="alert alert-danger" role="alert">
       {{ alert }}
     </div>
-    <form id="mainForm" class="needs-validation" novalidate @submit.prevent="exportPackage" v-if="!success">
+    <form id="mainForm" class="needs-validation" novalidate @submit.prevent="exportRecord" v-if="!success">
       <div class="row g-3 align-items-center">
         <div class="col-12">
-          <h1>Encryption Package</h1>
+          <h1>Election Record</h1>
         </div>
         <div class="col-12">
-          <label for="electionKey" class="form-label">Location</label>
+          <label for="location" class="form-label">Location</label>
           <select id="location" class="form-select" v-model="location">
               <option v-for="location in locations" :value="location">{{ location }}</option>
           </select>
@@ -63,13 +65,14 @@ export default {
         <div class="col-12 mt-4">
           <button type="submit" class="btn btn-primary">Export</button>
           <spinner :visible="loading"></spinner>
+          <a :href="getDecryptionUrl()" class="btn btn-secondary ms-3">Cancel</a>
         </div>
       </div>
     </form>
     <div v-if="success" class="text-center">
       <img src="/images/check.svg" width="200" height="200" class="mt-4 mb-2"></img>
-      <p>The encryption package has been exported to {{ location }}.</p>
-      <a :href="getElectionUrl()" class="btn btn-primary">Continue</a>
+      <p>The election record has been exported to {{ location }}.</p>
+      <a :href="getDecryptionUrl()" class="btn btn-primary">Continue</a>
     </div>
 `,
 };
