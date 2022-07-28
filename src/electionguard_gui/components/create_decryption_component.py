@@ -30,7 +30,9 @@ class CreateDecryptionComponent(ComponentBase):
         existing_decryptions = self._decryption_service.get_decryption_count(
             db, election_id
         )
-        return eel_success(f"{election.election_name} #{existing_decryptions + 1}")
+        return eel_success(
+            f"{election.election_name} Decryption #{existing_decryptions + 1}"
+        )
 
     def create_decryption(
         self, election_id: str, decryption_name: str

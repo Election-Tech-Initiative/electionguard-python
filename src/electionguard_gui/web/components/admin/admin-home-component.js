@@ -6,6 +6,21 @@ export default {
     KeyCeremonyList,
     ElectionsList,
   },
+  data() {
+    return {
+      loading: true,
+      keyCeremonies: [],
+    };
+  },
+  async mounted() {
+    const result = await eel.get_key_ceremonies()();
+    if (result.success) {
+      this.keyCeremonies = result.result;
+    } else {
+      console.error(result.error);
+    }
+    this.loading = false;
+  },
   template: /*html*/ `
   <div class="container col-md-6">
     <div class="text-center mb-4">
@@ -24,7 +39,7 @@ export default {
     <elections-list></elections-list>
   </div>
   <div class="text-center mt-4">
-    <key-ceremony-list :show-when-empty="false" :is-admin="true"></key-ceremony-list>
+    <key-ceremony-list :show-when-empty="false" :is-admin="true" :key-ceremonies="keyCeremonies"></key-ceremony-list>
   </div>
 
   `,

@@ -7,7 +7,7 @@ from electionguard_gui.components import (
     ComponentBase,
     CreateElectionComponent,
     CreateKeyCeremonyComponent,
-    KeyCeremonyListComponent,
+    GuardianHomeComponent,
     KeyCeremonyDetailsComponent,
     ElectionListComponent,
     ExportEncryptionPackage,
@@ -20,10 +20,7 @@ from electionguard_gui.services import (
     AuthorizationService,
     DbService,
     EelLogService,
-    KeyCeremonyStateService,
     ServiceBase,
-    BallotUploadService,
-    DecryptionService,
 )
 
 
@@ -39,18 +36,15 @@ class MainApp:
         self,
         log_service: EelLogService,
         db_service: DbService,
-        guardian_home_component: KeyCeremonyListComponent,
+        guardian_home_component: GuardianHomeComponent,
         create_key_ceremony_component: CreateKeyCeremonyComponent,
         key_ceremony_details_component: KeyCeremonyDetailsComponent,
         authorization_service: AuthorizationService,
-        key_ceremony_state_service: KeyCeremonyStateService,
         create_election_component: CreateElectionComponent,
         view_election_component: ViewElectionComponent,
         election_list_component: ElectionListComponent,
         export_encryption_package: ExportEncryptionPackage,
         upload_ballots_component: UploadBallotsComponent,
-        ballot_upload_service: BallotUploadService,
-        decryption_service: DecryptionService,
         create_decryption_component: CreateDecryptionComponent,
         view_decryption_component: ViewDecryptionComponent,
     ) -> None:
@@ -72,13 +66,11 @@ class MainApp:
             view_decryption_component,
         ]
 
+        # services that need to expose methods to the UI
         self.services = [
             authorization_service,
             db_service,
             log_service,
-            key_ceremony_state_service,
-            ballot_upload_service,
-            decryption_service,
         ]
 
     def start(self) -> None:

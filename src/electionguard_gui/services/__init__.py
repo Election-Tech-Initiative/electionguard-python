@@ -3,7 +3,9 @@ from electionguard_gui.services import ballot_upload_service
 from electionguard_gui.services import configuration_service
 from electionguard_gui.services import db_serialization_service
 from electionguard_gui.services import db_service
+from electionguard_gui.services import db_watcher_service
 from electionguard_gui.services import decryption_service
+from electionguard_gui.services import decryption_stages
 from electionguard_gui.services import eel_log_service
 from electionguard_gui.services import election_service
 from electionguard_gui.services import guardian_service
@@ -36,8 +38,21 @@ from electionguard_gui.services.db_serialization_service import (
 from electionguard_gui.services.db_service import (
     DbService,
 )
+from electionguard_gui.services.db_watcher_service import (
+    DbWatcherService,
+)
 from electionguard_gui.services.decryption_service import (
     DecryptionService,
+    to_ballot_share_raw,
+)
+from electionguard_gui.services.decryption_stages import (
+    DecryptionS1JoinService,
+    DecryptionS2AnnounceService,
+    DecryptionStageBase,
+    decryption_s1_join_service,
+    decryption_s2_announce_service,
+    decryption_stage_base,
+    get_tally,
 )
 from electionguard_gui.services.eel_log_service import (
     EelLogService,
@@ -56,6 +71,7 @@ from electionguard_gui.services.gui_setup_input_retrieval_step import (
 )
 from electionguard_gui.services.key_ceremony_service import (
     KeyCeremonyService,
+    get_guardian_number,
 )
 from electionguard_gui.services.key_ceremony_stages import (
     KeyCeremonyS1JoinService,
@@ -88,7 +104,11 @@ __all__ = [
     "DB_HOST_KEY",
     "DB_PASSWORD_KEY",
     "DbService",
+    "DbWatcherService",
+    "DecryptionS1JoinService",
+    "DecryptionS2AnnounceService",
     "DecryptionService",
+    "DecryptionStageBase",
     "EelLogService",
     "ElectionService",
     "GuardianService",
@@ -111,13 +131,20 @@ __all__ = [
     "configuration_service",
     "db_serialization_service",
     "db_service",
+    "db_watcher_service",
+    "decryption_s1_join_service",
+    "decryption_s2_announce_service",
     "decryption_service",
+    "decryption_stage_base",
+    "decryption_stages",
     "eel_log_service",
     "election_service",
     "get_db_host",
     "get_db_password",
+    "get_guardian_number",
     "get_is_admin",
     "get_key_ceremony_status",
+    "get_tally",
     "guardian_service",
     "gui_setup_input_retrieval_step",
     "joint_key_to_dict",
@@ -136,5 +163,6 @@ __all__ = [
     "public_key_to_dict",
     "service_base",
     "status_descriptions",
+    "to_ballot_share_raw",
     "verification_to_dict",
 ]

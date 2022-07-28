@@ -29,7 +29,7 @@ export default {
       });
     },
     getViewDecryptionUrl: function (decryptionId) {
-      const page = RouterService.routes.viewDecryption;
+      const page = RouterService.routes.viewDecryptionAdmin;
       return RouterService.getUrl(page, {
         decryptionId: decryptionId,
       });
@@ -57,7 +57,7 @@ export default {
             <a :href="getUploadBallotsUrl()" class="btn btn-sm btn-primary ms-3" title="Upload ballots">
               <i class="bi-upload"></i>
             </a>
-            <a :href="getCreateDecryptionUrl()" class="btn btn-sm btn-primary ms-3" title="Create decryption">
+            <a :href="getCreateDecryptionUrl()" class="btn btn-sm btn-primary ms-3" title="Create decryption" v-if="election.ballot_uploads.length">
               <i class="bi bi-people-fill"></i>
             </a>
           </div>

@@ -29,7 +29,9 @@ class KeyCeremonyS5VerifyBackupService(KeyCeremonyStageBase):
     def run(self, db: Database, key_ceremony: KeyCeremonyDto) -> None:
         current_user_id = self._auth_service.get_required_user_id()
         shared_backups = key_ceremony.get_shared_backups_for_guardian(current_user_id)
-        guardian = self._guardian_service.load_guardian(current_user_id, key_ceremony)
+        guardian = self._guardian_service.load_guardian_from_key_ceremony(
+            current_user_id, key_ceremony
+        )
         self._guardian_service.load_other_keys(key_ceremony, current_user_id, guardian)
         verifications: List[ElectionPartialKeyVerification] = []
         for backup in shared_backups:

@@ -12,7 +12,8 @@ import ViewElectionAdmin from "../components/admin/view-election-component.js";
 import ExportEncryptionPackage from "../components/admin/export-encryption-package.js";
 import UploadBallots from "../components/admin/upload-ballots-component.js";
 import CreateDecryption from "../components/admin/create-decryption-component.js";
-import ViewDecryption from "../components/admin/view-decryption-component.js";
+import ViewDecryptionAdmin from "../components/admin/view-decryption-admin-component.js";
+import ViewDecryptionGuardian from "../components/guardian/view-decryption-guardian-component.js";
 
 // guardian components
 import GuardianHome from "../components/guardian/guardian-home-component.js";
@@ -20,6 +21,7 @@ import ViewKeyCeremonyGuardian from "../components/guardian/view-key-ceremony-co
 
 export default {
   getUrl(route, params) {
+    if (!route) throw new Error("Invalid route specified");
     return "#" + route.url + "?" + new URLSearchParams(params);
   },
   goTo(route, params) {
@@ -78,10 +80,15 @@ export default {
       secured: true,
       component: CreateDecryption,
     },
-    viewDecryption: {
+    viewDecryptionAdmin: {
       url: "/admin/view-decryption",
       secured: true,
-      component: ViewDecryption,
+      component: ViewDecryptionAdmin,
+    },
+    viewDecryptionGuardian: {
+      url: "/guardian/view-decryption",
+      secured: true,
+      component: ViewDecryptionGuardian,
     },
 
     // guardian pages

@@ -26,7 +26,9 @@ class KeyCeremonyS3MakeBackupService(KeyCeremonyStageBase):
         current_user_id = self._auth_service.get_required_user_id()
         key_ceremony_id = key_ceremony.id
         self.log.debug(f"creating backups for guardian {current_user_id}")
-        guardian = self._guardian_service.load_guardian(current_user_id, key_ceremony)
+        guardian = self._guardian_service.load_guardian_from_key_ceremony(
+            current_user_id, key_ceremony
+        )
         self._guardian_service.load_other_keys(key_ceremony, current_user_id, guardian)
         guardian.generate_election_partial_key_backups()
         backups = guardian.share_election_partial_key_backups()

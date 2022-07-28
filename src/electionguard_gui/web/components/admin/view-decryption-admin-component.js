@@ -13,16 +13,31 @@ export default {
     getElectionUrl: function (electionId) {
       return RouterService.getElectionUrl(electionId);
     },
+    refresh_decryption: async function () {
+      console.log("refreshing decryption");
+      this.loading = true;
+      const result = await eel.get_decryption(this.decryptionId)();
+      this.error = !result.success;
+      if (result.success) {
+        this.decryption = result.result;
+      }
+      this.loading = false;
+    },
   },
   async mounted() {
-    const result = await eel.get_decryption(this.decryptionId)();
-    if (result.success) {
-      this.decryption = result.result;
-    } else {
-      this.error = true;
-    }
+    await this.refresh_decryption();
+    eel.expose(this.refresh_decryption, "refresh_decryption");
+    console.log("watching decryption");
+    eel.watch_decryption(this.decryptionId);
+  },
+  unmounted() {
+    console.log("stop watching decryption");
+    eel.stop_watching_decryption();
   },
   template: /*html*/ `
+    <div v-if="error">
+      <p class="alert alert-danger" role="alert">An error occurred. Check the logs and try again.</p>
+    </div>
     <div v-if="decryption">
       <h1>{{decryption.decryption_name}}</h1>
       <div class="row">
@@ -34,6 +49,10 @@ export default {
           <dl class="col-12">
             <dt>Created</dt>
             <dd>by {{decryption.created_by}} on {{decryption.created_at}}</dd>
+          </dl>
+          <dl class="col-12" v-if="decryption.completed_at_str">
+            <dt>Completed</dt>
+            <dd>{{decryption.completed_at_str}}</dd>
           </dl>
           <h3>Joined Guardians</h3>
           <ul v-if="decryption.guardians_joined.length">
@@ -48,12 +67,6 @@ export default {
           <p class="key-ceremony-status">{{decryption.status}}</p>
           <spinner :visible="loading || !decryption.completed_at_str"></spinner>
         </div>
-      </div>
-    </div>
-    <div v-else>
-      <spinner :visible="loading"></spinner>
-      <div v-if="error">
-        <p class="alert alert-danger" role="alert">An error occurred with the election. Check the logs and try again.</p>
       </div>
     </div>
 `,

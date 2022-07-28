@@ -11,7 +11,7 @@ from electionguard_gui.components import (
     ViewElectionComponent,
     CreateKeyCeremonyComponent,
     ElectionListComponent,
-    KeyCeremonyListComponent,
+    GuardianHomeComponent,
     KeyCeremonyDetailsComponent,
     ExportEncryptionPackage,
     UploadBallotsComponent,
@@ -30,6 +30,11 @@ from electionguard_gui.services import (
     GuiSetupInputRetrievalStep,
     BallotUploadService,
     DecryptionService,
+    DbWatcherService,
+)
+from electionguard_gui.services.decryption_stages import (
+    DecryptionS1JoinService,
+    DecryptionS2AnnounceService,
 )
 from electionguard_gui.services.key_ceremony_stages import (
     KeyCeremonyS1JoinService,
@@ -52,8 +57,14 @@ class Container(containers.DeclarativeContainer):
     authorization_service: Singleton[AuthorizationService] = providers.Singleton(
         AuthorizationService
     )
+    db_watcher_service: Factory[DbWatcherService] = providers.Factory(
+        DbWatcherService, log_service=log_service
+    )
     key_ceremony_service: Factory[KeyCeremonyService] = providers.Factory(
-        KeyCeremonyService, log_service=log_service, auth_service=authorization_service
+        KeyCeremonyService,
+        log_service=log_service,
+        auth_service=authorization_service,
+        db_watcher_service=db_watcher_service,
     )
     election_service: Factory[ElectionService] = providers.Factory(
         ElectionService, log_service=log_service, auth_service=authorization_service
@@ -77,7 +88,34 @@ class Container(containers.DeclarativeContainer):
         BallotUploadService, log_service=log_service, auth_service=authorization_service
     )
     decryption_service: Factory[DecryptionService] = providers.Factory(
-        DecryptionService, log_service=log_service, auth_service=authorization_service
+        DecryptionService,
+        log_service=log_service,
+        auth_service=authorization_service,
+        db_watcher_service=db_watcher_service,
+    )
+
+    # decryption services
+    decryption_s1_join_service: Factory[DecryptionS1JoinService] = providers.Factory(
+        DecryptionS1JoinService,
+        log_service=log_service,
+        db_service=db_service,
+        decryption_service=decryption_service,
+        auth_service=authorization_service,
+        guardian_service=guardian_service,
+        ballot_upload_service=ballot_upload_service,
+        election_service=election_service,
+    )
+    decryption_s2_announce_service: Factory[
+        DecryptionS2AnnounceService
+    ] = providers.Factory(
+        DecryptionS2AnnounceService,
+        log_service=log_service,
+        db_service=db_service,
+        decryption_service=decryption_service,
+        auth_service=authorization_service,
+        guardian_service=guardian_service,
+        ballot_upload_service=ballot_upload_service,
+        election_service=election_service,
     )
 
     # key ceremony services
@@ -147,8 +185,11 @@ class Container(containers.DeclarativeContainer):
     )
 
     # components
-    guardian_home_component: Factory[KeyCeremonyListComponent] = providers.Factory(
-        KeyCeremonyListComponent, key_ceremony_service=key_ceremony_service
+    guardian_home_component: Factory[GuardianHomeComponent] = providers.Factory(
+        GuardianHomeComponent,
+        key_ceremony_service=key_ceremony_service,
+        decryption_service=decryption_service,
+        db_watcher_service=db_watcher_service,
     )
     create_election_component: Factory[CreateElectionComponent] = providers.Factory(
         CreateElectionComponent,
@@ -179,6 +220,7 @@ class Container(containers.DeclarativeContainer):
         KeyCeremonyDetailsComponent,
         key_ceremony_service=key_ceremony_service,
         auth_service=authorization_service,
+        db_watcher_service=db_watcher_service,
         key_ceremony_state_service=key_ceremony_state_service,
         key_ceremony_s1_join_service=key_ceremony_s1_join_service,
         key_ceremony_s2_announce_service=key_ceremony_s2_announce_service,
@@ -205,6 +247,9 @@ class Container(containers.DeclarativeContainer):
         ViewDecryptionComponent,
         election_service=election_service,
         decryption_service=decryption_service,
+        decryption_s1_join_service=decryption_s1_join_service,
+        decryption_s2_announce_service=decryption_s2_announce_service,
+        db_watcher_service=db_watcher_service,
     )
 
     # main
@@ -216,14 +261,11 @@ class Container(containers.DeclarativeContainer):
         create_key_ceremony_component=create_key_ceremony_component,
         key_ceremony_details_component=key_ceremony_details_component,
         authorization_service=authorization_service,
-        key_ceremony_state_service=key_ceremony_state_service,
         create_election_component=create_election_component,
         view_election_component=view_election_component,
         election_list_component=election_list_component,
         export_encryption_package=export_encryption_package,
         upload_ballots_component=upload_ballots_component,
-        ballot_upload_service=ballot_upload_service,
         create_decryption_component=create_decryption_component,
-        decryption_service=decryption_service,
         view_decryption_component=view_decryption_component,
     )

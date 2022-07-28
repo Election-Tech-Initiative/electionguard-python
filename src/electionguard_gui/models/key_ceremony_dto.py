@@ -12,6 +12,7 @@ from electionguard.elgamal import ElGamalPublicKey, HashedElGamalCiphertext
 from electionguard.schnorr import SchnorrProof
 
 from electionguard_gui.eel_utils import utc_to_str
+from electionguard_gui.services.authorization_service import AuthorizationService
 
 # pylint: disable=too-many-instance-attributes
 class KeyCeremonyDto:
@@ -131,6 +132,12 @@ class KeyCeremonyDto:
             ElGamalPublicKey(self.joint_key["joint_public_key"]),
             ElementModQ(self.joint_key["commitment_hash"]),
         )
+
+    def set_can_join(self, auth_service: AuthorizationService) -> None:
+        user_id = auth_service.get_user_id()
+        already_joined = user_id in self.guardians_joined
+        is_admin = auth_service.is_admin()
+        self.can_join = not already_joined and not is_admin
 
 
 def _dict_to_verification(verification: Any) -> ElectionPartialKeyVerification:

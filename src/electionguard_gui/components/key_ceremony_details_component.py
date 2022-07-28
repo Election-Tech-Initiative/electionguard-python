@@ -20,11 +20,12 @@ from electionguard_gui.services.key_ceremony_state_service import (
     KeyCeremonyStateService,
     get_key_ceremony_status,
 )
-from electionguard_gui.services.authorization_service import AuthorizationService
-from electionguard_gui.components.component_base import ComponentBase
-from electionguard_gui.services.key_ceremony_service import (
+from electionguard_gui.services import (
+    AuthorizationService,
+    DbWatcherService,
     KeyCeremonyService,
 )
+from electionguard_gui.components.component_base import ComponentBase
 
 
 class KeyCeremonyDetailsComponent(ComponentBase):
@@ -32,6 +33,7 @@ class KeyCeremonyDetailsComponent(ComponentBase):
 
     _auth_service: AuthorizationService
     _ceremony_state_service: KeyCeremonyStateService
+    _db_watcher_service: DbWatcherService
     _key_ceremony_s1_join_service: KeyCeremonyS1JoinService
     key_ceremony_watch_stages: List[KeyCeremonyStageBase]
 
@@ -39,6 +41,7 @@ class KeyCeremonyDetailsComponent(ComponentBase):
         self,
         key_ceremony_service: KeyCeremonyService,
         auth_service: AuthorizationService,
+        db_watcher_service: DbWatcherService,
         key_ceremony_state_service: KeyCeremonyStateService,
         key_ceremony_s1_join_service: KeyCeremonyS1JoinService,
         key_ceremony_s2_announce_service: KeyCeremonyS2AnnounceService,
@@ -51,6 +54,7 @@ class KeyCeremonyDetailsComponent(ComponentBase):
         self._key_ceremony_service = key_ceremony_service
         self._ceremony_state_service = key_ceremony_state_service
         self._auth_service = auth_service
+        self._db_watcher_service = db_watcher_service
         self._key_ceremony_s1_join_service = key_ceremony_s1_join_service
         self.key_ceremony_watch_stages = [
             key_ceremony_s2_announce_service,
@@ -68,14 +72,17 @@ class KeyCeremonyDetailsComponent(ComponentBase):
     def watch_key_ceremony(self, key_ceremony_id: str) -> None:
         db = self._db_service.get_db()
         # retrieve and send the key ceremony to the client
-        self.on_key_ceremony_changed(key_ceremony_id)
+        self.on_key_ceremony_changed("key_ceremonies", key_ceremony_id)
         self._log.debug(f"watching key ceremony '{key_ceremony_id}'")
         # start watching for key ceremony changes from guardians
-        self._key_ceremony_service.watch_key_ceremonies(
+        self._db_watcher_service.watch_database(
             db, key_ceremony_id, self.on_key_ceremony_changed
         )
 
-    def on_key_ceremony_changed(self, key_ceremony_id: str) -> None:
+    def stop_watching_key_ceremony(self) -> None:
+        self._db_watcher_service.stop_watching()
+
+    def on_key_ceremony_changed(self, _: str, key_ceremony_id: str) -> None:
         try:
             self._log.debug(
                 f"on_key_ceremony_changed key_ceremony_id: '{key_ceremony_id}'"
@@ -107,21 +114,15 @@ class KeyCeremonyDetailsComponent(ComponentBase):
             # pylint: disable=no-member
             eel.refresh_key_ceremony(eel_fail(str(e)))
 
-    def stop_watching_key_ceremony(self) -> None:
-        self._key_ceremony_service.stop_watching()
-
     def join_key_ceremony(self, key_ceremony_id: str) -> None:
-        db = self._db_service.get_db()
-        key_ceremony = self.get_ceremony(db, key_ceremony_id)
-        self._key_ceremony_s1_join_service.run(db, key_ceremony)
+        try:
+            db = self._db_service.get_db()
+            key_ceremony = self.get_ceremony(db, key_ceremony_id)
+            self._key_ceremony_s1_join_service.run(db, key_ceremony)
+        # pylint: disable=broad-except
+        except Exception as e:
+            self.handle_error(e)
 
     def get_ceremony(self, db: Database, id: str) -> KeyCeremonyDto:
         key_ceremony = self._key_ceremony_service.get(db, id)
-        key_ceremony.can_join = self.can_join_key_ceremony(key_ceremony)
         return key_ceremony
-
-    def can_join_key_ceremony(self, key_ceremony: KeyCeremonyDto) -> bool:
-        user_id = self._auth_service.get_user_id()
-        already_joined = user_id in key_ceremony.guardians_joined
-        is_admin = self._auth_service.is_admin()
-        return not already_joined and not is_admin

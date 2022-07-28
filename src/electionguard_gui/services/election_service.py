@@ -1,12 +1,12 @@
 import json
 from datetime import datetime
 from bson import ObjectId
-from pydantic.json import pydantic_encoder
 from pymongo.database import Database
 from electionguard.constants import ElectionConstants
 from electionguard.election import CiphertextElectionContext
 from electionguard.guardian import GuardianRecord
 from electionguard.manifest import Manifest
+from electionguard.serialize import to_raw
 from electionguard_gui.models import KeyCeremonyDto, ElectionDto
 from electionguard_gui.services.eel_log_service import EelLogService
 from electionguard_gui.services.service_base import ServiceBase
@@ -37,10 +37,10 @@ class ElectionService(ServiceBase):
         encryption_package_file: str,
         election_url: str,
     ) -> str:
-        context_raw = json.dumps(context, default=pydantic_encoder)
-        manifest_raw = json.dumps(manifest, default=pydantic_encoder)
-        constants_raw = json.dumps(constants, default=pydantic_encoder)
-        guardian_records_raw = json.dumps(guardian_records, default=pydantic_encoder)
+        context_raw = to_raw(context)
+        manifest_raw = to_raw(manifest)
+        constants_raw = to_raw(constants)
+        guardian_records_raw = to_raw(guardian_records)
         election = {
             "election_name": election_name,
             "key_ceremony_id": key_ceremony.id,
