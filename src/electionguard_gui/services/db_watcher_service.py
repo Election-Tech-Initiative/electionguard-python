@@ -56,7 +56,7 @@ class DbWatcherService(ServiceBase):
                 collection = delta["collection"]
                 changed_id = delta["changed_id"]
                 if id_to_watch is None or id_to_watch == changed_id:
-                    print("new delta found")
+                    self._log.debug(f"new delta found for {collection} {changed_id}")
                     on_found(collection, changed_id)
 
             except StopIteration:

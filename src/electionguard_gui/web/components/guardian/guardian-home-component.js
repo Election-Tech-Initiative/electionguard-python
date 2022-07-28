@@ -50,7 +50,7 @@ export default {
   },
   unmounted() {
     console.log("stop watching key ceremonies");
-    eel.stop_watching_key_ceremonies();
+    eel.stop_watching_db_collections();
   },
   template: /*html*/ `
   <div class="container">

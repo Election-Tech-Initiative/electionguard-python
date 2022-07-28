@@ -32,7 +32,7 @@ class GuardianHomeComponent(ComponentBase):
         eel.expose(self.get_decryptions)
         eel.expose(self.get_key_ceremonies)
         eel.expose(self.watch_db_collections)
-        eel.expose(self.stop_watching_key_ceremonies)
+        eel.expose(self.stop_watching_db_collections)
 
     def get_decryptions(self) -> dict[str, Any]:
         db = self._db_service.get_db()
@@ -54,7 +54,7 @@ class GuardianHomeComponent(ComponentBase):
         self._db_watcher_service.watch_database(db, None, notify_ui_db_changed)
         self._log.debug("exited watching key_ceremonies")
 
-    def stop_watching_key_ceremonies(self) -> None:
+    def stop_watching_db_collections(self) -> None:
         self._log.debug("Stopping watch key_ceremonies")
         self._db_watcher_service.stop_watching()
 
