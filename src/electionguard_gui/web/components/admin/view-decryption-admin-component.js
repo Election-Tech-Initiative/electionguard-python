@@ -46,11 +46,11 @@ export default {
             <dt>Election</dt>
             <dd><a :href="getElectionUrl(decryption.election_id)">{{decryption.election_name}}</a></dd>
           </div>
-          <dl class="col-12" v-if="decryption.completed_at_str">
+          <dl class="col-12">
             <dt>Created</dt>
             <dd>by {{decryption.created_by}} on {{decryption.created_at}}</dd>
           </dl>
-          <dl class="col-12">
+          <dl class="col-12" v-if="decryption.completed_at_str">
             <dt>Completed</dt>
             <dd>{{decryption.completed_at_str}}</dd>
           </dl>
