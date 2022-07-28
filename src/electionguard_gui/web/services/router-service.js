@@ -12,8 +12,8 @@ import ViewElectionAdmin from "../components/admin/view-election-component.js";
 import ExportEncryptionPackage from "../components/admin/export-encryption-package.js";
 import UploadBallots from "../components/admin/upload-ballots-component.js";
 import CreateDecryption from "../components/admin/create-decryption-component.js";
-import ViewDecryptionAdmin from "../components/admin/view-decryption-component.js";
-import ViewDecryptionGuardian from "../components/guardian/view-decryption-component.js";
+import ViewDecryptionAdmin from "../components/admin/view-decryption-admin-component.js";
+import ViewDecryptionGuardian from "../components/guardian/view-decryption-guardian-component.js";
 
 // guardian components
 import GuardianHome from "../components/guardian/guardian-home-component.js";

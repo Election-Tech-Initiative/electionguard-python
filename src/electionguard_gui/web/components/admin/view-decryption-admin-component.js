@@ -13,17 +13,6 @@ export default {
     getElectionUrl: function (electionId) {
       return RouterService.getElectionUrl(electionId);
     },
-    join: async function () {
-      this.loading = true;
-      this.error = false;
-      const result = await eel.join_decryption(this.decryptionId)();
-      if (result.success) {
-        this.success = true;
-      } else {
-        this.error = true;
-      }
-      this.loading = false;
-    },
     refresh_decryption: async function () {
       console.log("refreshing decryption");
       this.loading = true;
@@ -57,9 +46,13 @@ export default {
             <dt>Election</dt>
             <dd><a :href="getElectionUrl(decryption.election_id)">{{decryption.election_name}}</a></dd>
           </div>
-          <dl class="col-12">
+          <dl class="col-12" v-if="decryption.completed_at_str">
             <dt>Created</dt>
             <dd>by {{decryption.created_by}} on {{decryption.created_at}}</dd>
+          </dl>
+          <dl class="col-12">
+            <dt>Completed</dt>
+            <dd>{{decryption.completed_at_str}}</dd>
           </dl>
           <h3>Joined Guardians</h3>
           <ul v-if="decryption.guardians_joined.length">
@@ -68,8 +61,6 @@ export default {
           <div v-else>
             <p>No guardians have joined yet</p>
           </div>
-          <button v-if="decryption.can_join" @click="join()" :disabled="loading" class="btn btn-primary">Join</button>
-          <spinner :visible="loading"></spinner>
         </div>
         <div class="col col-12 col-md-6 col-lg-7 text-center">
           <img v-if="decryption.completed_at_str" src="/images/check.svg" width="200" height="200" class="mb-2"></img>

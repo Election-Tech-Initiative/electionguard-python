@@ -72,15 +72,19 @@ class ViewDecryptionComponent(ComponentBase):
             # pylint: disable=no-member
             eel.refresh_decryption(eel_fail(str(e)))
 
-    def try_run_stage_2(self, db: Database, decryption: DecryptionDto) -> None:
+    def try_run_stage_2(self, db: Database, decryption: DecryptionDto) -> bool:
         if self._decryption_s2_announce_service.should_run(db, decryption):
             self._decryption_s2_announce_service.run(db, decryption)
+            return True
+        return False
 
     def get_decryption(self, decryption_id: str) -> dict[str, Any]:
         try:
             db = self._db_service.get_db()
             decryption = self._decryption_service.get(db, decryption_id)
-            self.try_run_stage_2(db, decryption)
+            did_run = self.try_run_stage_2(db, decryption)
+            if did_run:
+                decryption = self._decryption_service.get(db, decryption_id)
             return eel_success(decryption.to_dict())
         # pylint: disable=broad-except
         except Exception as e:
