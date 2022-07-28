@@ -260,6 +260,7 @@ class Container(containers.DeclarativeContainer):
         ExportElectionRecordComponent,
         election_service=election_service,
         decryption_service=decryption_service,
+        ballot_upload_service=ballot_upload_service,
     )
 
     # main

@@ -38,7 +38,7 @@ export default {
   },
   async mounted() {
     this.alert = undefined;
-    const result = await eel.get_export_locations()();
+    const result = await eel.get_election_record_export_locations()();
     if (result.success) {
       this.locations = result.result;
       this.location = this.locations[0];
@@ -64,8 +64,10 @@ export default {
         </div>
         <div class="col-12 mt-4">
           <button type="submit" class="btn btn-primary">Export</button>
-          <spinner :visible="loading"></spinner>
           <a :href="getDecryptionUrl()" class="btn btn-secondary ms-3">Cancel</a>
+        </div>
+        <div class="col-12">
+          <spinner :visible="loading"></spinner>
         </div>
       </div>
     </form>

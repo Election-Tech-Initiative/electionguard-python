@@ -102,6 +102,7 @@ class ElectionService(ServiceBase):
                 "$push": {
                     "ballot_uploads": {
                         "ballot_upload_id": ballot_upload_id,
+                        "device_file_contents": device_file_contents,
                         "device_id": device_file_json["device_id"],
                         "launch_code": device_file_json["launch_code"],
                         "location": device_file_json["location"],

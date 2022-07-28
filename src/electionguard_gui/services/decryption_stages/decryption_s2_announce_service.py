@@ -1,6 +1,7 @@
 from pymongo.database import Database
 from electionguard import DecryptionMediator
 from electionguard.ballot import BallotBoxState
+from electionguard.election_polynomial import LagrangeCoefficientsRecord
 from electionguard_gui.models.decryption_dto import DecryptionDto
 from electionguard_gui.services.decryption_stages.decryption_stage_base import (
     DecryptionStageBase,
@@ -16,6 +17,13 @@ class DecryptionS2AnnounceService(DecryptionStageBase):
         allGuardiansJoined = len(decryption.guardians_joined) >= decryption.guardians
         isCompleted = decryption.completed_at_utc is not None
         return isAdmin and allGuardiansJoined and not isCompleted
+
+    def _get_lagrange_coefficients(
+        self, decryption_mediator: DecryptionMediator
+    ) -> LagrangeCoefficientsRecord:
+        return LagrangeCoefficientsRecord(
+            decryption_mediator.get_lagrange_coefficients()
+        )
 
     def run(self, db: Database, decryption: DecryptionDto) -> None:
         self._log.info(f"S2: Announcing decryption {decryption.decryption_id}")
@@ -54,9 +62,16 @@ class DecryptionS2AnnounceService(DecryptionStageBase):
         if plaintext_spoiled_ballots is None:
             raise Exception("No plaintext spoiled ballots found")
 
+        lagrange_coefficients = self._get_lagrange_coefficients(decryption_mediator)
+
         self._log.debug("setting decryption completed")
         self._decryption_service.set_decryption_completed(
-            db, decryption.decryption_id, plaintext_tally, plaintext_spoiled_ballots
+            db,
+            decryption.decryption_id,
+            plaintext_tally,
+            plaintext_spoiled_ballots,
+            lagrange_coefficients,
+            ciphertext_tally.publish(),
         )
 
         self._decryption_service.notify_changed(db, decryption.decryption_id)

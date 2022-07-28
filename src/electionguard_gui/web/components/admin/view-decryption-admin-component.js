@@ -45,7 +45,7 @@ export default {
     </div>
     <div v-if="decryption">
       <div class="row mb-4">
-        <div class="col col-auto">
+        <div class="col col-11">
           <h1>{{decryption.decryption_name}}</h1>
         </div>
         <div class="col col-xs-2 text-end" v-if="decryption.completed_at_str">

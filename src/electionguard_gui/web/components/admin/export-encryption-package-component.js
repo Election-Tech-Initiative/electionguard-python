@@ -36,7 +36,7 @@ export default {
   },
   async mounted() {
     this.alert = undefined;
-    const result = await eel.get_export_locations()();
+    const result = await eel.get_encryption_package_export_locations()();
     if (result.success) {
       this.locations = result.result;
       this.location = this.locations[0];
