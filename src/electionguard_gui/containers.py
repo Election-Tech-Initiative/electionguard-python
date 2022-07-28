@@ -233,6 +233,7 @@ class Container(containers.DeclarativeContainer):
         election_service=election_service,
         decryption_service=decryption_service,
         decryption_s1_join_service=decryption_s1_join_service,
+        db_watcher_service=db_watcher_service,
     )
 
     # main

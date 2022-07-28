@@ -45,6 +45,7 @@ class DecryptionService(ServiceBase):
             "quorum": election.quorum,
             "decryption_name": decryption_name,
             "guardians_joined": [],
+            "decryption_shares": [],
             "created_by": self._auth_service.get_user_id(),
             "created_at": datetime.utcnow(),
         }
@@ -106,13 +107,17 @@ class DecryptionService(ServiceBase):
             {"_id": ObjectId(decryption_id)},
             {
                 "$push": {
-                    "guardians_joined": {
+                    "decryption_shares": {
                         "guardian_id": guardian_id,
                         "decryption_share": decryption_share_raw,
                         "ballot_shares": ballot_shares_array,
                     }
                 }
             },
+        )
+        db.decryptions.update_one(
+            {"_id": ObjectId(decryption_id)},
+            {"$push": {"guardians_joined": guardian_id}},
         )
 
 

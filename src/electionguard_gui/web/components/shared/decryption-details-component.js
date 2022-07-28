@@ -24,14 +24,26 @@ export default {
       }
       this.loading = false;
     },
+    refresh_decryption: async function () {
+      console.log("refreshing decryption");
+      this.loading = true;
+      const result = await eel.get_decryption(this.decryptionId)();
+      this.error = !result.success;
+      if (result.success) {
+        this.decryption = result.result;
+      }
+      this.loading = false;
+    },
   },
   async mounted() {
-    const result = await eel.get_decryption(this.decryptionId)();
-    if (result.success) {
-      this.decryption = result.result;
-    } else {
-      this.error = true;
-    }
+    await this.refresh_decryption();
+    eel.expose(this.refresh_decryption, "refresh_decryption");
+    console.log("watching decryption");
+    eel.watch_decryption(this.decryptionId);
+  },
+  unmounted() {
+    console.log("stop watching decryption");
+    eel.stop_watching_decryption();
   },
   template: /*html*/ `
     <div v-if="error">
