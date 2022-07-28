@@ -1,10 +1,11 @@
 from datetime import datetime
-import json
 from typing import Any, Dict, List, Optional
 from bson import ObjectId
-from pydantic.json import pydantic_encoder
 from pymongo.database import Database
 from electionguard.decryption_share import DecryptionShare
+from electionguard.key_ceremony import ElectionPublicKey
+from electionguard.serialize import to_raw
+from electionguard.tally import PlaintextTally
 from electionguard.type import BallotId
 from electionguard_gui.models.decryption_dto import DecryptionDto
 from electionguard_gui.models.election_dto import ElectionDto
@@ -46,6 +47,8 @@ class DecryptionService(ServiceBase):
             "decryption_name": decryption_name,
             "guardians_joined": [],
             "decryption_shares": [],
+            "plaintext_tally": None,
+            "completed_at": None,
             "created_by": self._auth_service.get_user_id(),
             "created_at": datetime.utcnow(),
         }
@@ -94,23 +97,25 @@ class DecryptionService(ServiceBase):
         guardian_id: str,
         decryption_share: DecryptionShare,
         ballot_shares: Dict[BallotId, Optional[DecryptionShare]],
+        guardian_key: ElectionPublicKey,
     ) -> None:
-        decryption_share_raw = json.dumps(decryption_share, default=pydantic_encoder)
+        decryption_share_raw = to_raw(decryption_share)
         self._log.trace(
             f"appending guardian {guardian_id} to decryption {decryption_id}"
         )
-        ballot_shares_array = [
-            {"ballot_id": ballot_id, "ballot_share": to_ballot_share_raw(ballot_share)}
+        ballot_shares_dict = {
+            ballot_id: to_ballot_share_raw(ballot_share)
             for (ballot_id, ballot_share) in ballot_shares.items()
-        ]
+        }
         db.decryptions.update_one(
             {"_id": ObjectId(decryption_id)},
             {
                 "$push": {
                     "decryption_shares": {
                         "guardian_id": guardian_id,
+                        "guardian_key": to_raw(guardian_key),
                         "decryption_share": decryption_share_raw,
-                        "ballot_shares": ballot_shares_array,
+                        "ballot_shares": ballot_shares_dict,
                     }
                 }
             },
@@ -120,8 +125,33 @@ class DecryptionService(ServiceBase):
             {"$push": {"guardians_joined": guardian_id}},
         )
 
+    def set_decryption_completed(
+        self,
+        db: Database,
+        decryption_id: str,
+        plaintext_tally: PlaintextTally,
+        plaintext_spoiled_ballots: Dict[BallotId, PlaintextTally],
+    ):
+        self._log.trace("setting decryption completed")
+
+        plaintext_spoiled_ballots_dict = {
+            str(ballot_id): to_raw(plaintext_tally)
+            for (ballot_id, plaintext_tally) in plaintext_spoiled_ballots.items()
+        }
+
+        db.decryptions.update_one(
+            {"_id": ObjectId(decryption_id)},
+            {
+                "$set": {
+                    "completed_at": datetime.utcnow(),
+                    "plaintext_tally": to_raw(plaintext_tally),
+                    "plaintext_spoiled_ballots": plaintext_spoiled_ballots_dict,
+                }
+            },
+        )
+
 
 def to_ballot_share_raw(ballot_share: Optional[DecryptionShare]) -> str:
     if ballot_share is None:
         return None
-    return json.dumps(ballot_share, default=pydantic_encoder)
+    return to_raw(ballot_share)

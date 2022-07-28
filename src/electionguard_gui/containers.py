@@ -32,7 +32,10 @@ from electionguard_gui.services import (
     DecryptionService,
     DbWatcherService,
 )
-from electionguard_gui.services.decryption_stages import DecryptionS1JoinService
+from electionguard_gui.services.decryption_stages import (
+    DecryptionS1JoinService,
+    DecryptionS2AnnounceService,
+)
 from electionguard_gui.services.key_ceremony_stages import (
     KeyCeremonyS1JoinService,
     KeyCeremonyS2AnnounceService,
@@ -94,6 +97,18 @@ class Container(containers.DeclarativeContainer):
     # decryption services
     decryption_s1_join_service: Factory[DecryptionS1JoinService] = providers.Factory(
         DecryptionS1JoinService,
+        log_service=log_service,
+        db_service=db_service,
+        decryption_service=decryption_service,
+        auth_service=authorization_service,
+        guardian_service=guardian_service,
+        ballot_upload_service=ballot_upload_service,
+        election_service=election_service,
+    )
+    decryption_s2_announce_service: Factory[
+        DecryptionS2AnnounceService
+    ] = providers.Factory(
+        DecryptionS2AnnounceService,
         log_service=log_service,
         db_service=db_service,
         decryption_service=decryption_service,
@@ -233,6 +248,7 @@ class Container(containers.DeclarativeContainer):
         election_service=election_service,
         decryption_service=decryption_service,
         decryption_s1_join_service=decryption_s1_join_service,
+        decryption_s2_announce_service=decryption_s2_announce_service,
         db_watcher_service=db_watcher_service,
     )
 

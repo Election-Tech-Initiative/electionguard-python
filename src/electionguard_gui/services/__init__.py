@@ -47,8 +47,10 @@ from electionguard_gui.services.decryption_service import (
 )
 from electionguard_gui.services.decryption_stages import (
     DecryptionS1JoinService,
+    DecryptionS2AnnounceService,
     DecryptionStageBase,
     decryption_s1_join_service,
+    decryption_s2_announce_service,
     decryption_stage_base,
     get_tally,
 )
@@ -104,6 +106,7 @@ __all__ = [
     "DbService",
     "DbWatcherService",
     "DecryptionS1JoinService",
+    "DecryptionS2AnnounceService",
     "DecryptionService",
     "DecryptionStageBase",
     "EelLogService",
@@ -130,6 +133,7 @@ __all__ = [
     "db_service",
     "db_watcher_service",
     "decryption_s1_join_service",
+    "decryption_s2_announce_service",
     "decryption_service",
     "decryption_stage_base",
     "decryption_stages",

@@ -27,6 +27,7 @@ export default {
         this.error = true;
         this.keyCeremony = undefined;
       }
+      this.loading = false;
     },
   },
   mounted() {

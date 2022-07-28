@@ -1,7 +1,13 @@
 from abc import ABC
+from typing import List
 from pymongo.database import Database
-from electionguard_gui.models.decryption_dto import DecryptionDto
+from electionguard.ballot import SubmittedBallot
+from electionguard.election import CiphertextElectionContext
+from electionguard.manifest import InternalManifest, Manifest
+from electionguard.tally import CiphertextTally
+from electionguard.scheduler import Scheduler
 
+from electionguard_gui.models.decryption_dto import DecryptionDto
 from electionguard_gui.services.authorization_service import AuthorizationService
 from electionguard_gui.services.ballot_upload_service import BallotUploadService
 from electionguard_gui.services.db_service import DbService
@@ -40,5 +46,26 @@ class DecryptionStageBase(ABC):
         self._election_service = election_service
         self._ballot_upload_service = ballot_upload_service
 
+    def should_run(self, db: Database, decryption: DecryptionDto) -> bool:
+        return False
+
     def run(self, db: Database, decryption: DecryptionDto) -> None:
         pass
+
+
+def get_tally(
+    manifest: Manifest,
+    context: CiphertextElectionContext,
+    ballots: List[SubmittedBallot],
+) -> CiphertextTally:
+    internal_manifest = InternalManifest(manifest)
+
+    tally = CiphertextTally(
+        "election-results",
+        internal_manifest,
+        context,
+    )
+    ballot_tuples = [(None, ballot) for ballot in ballots]
+    with Scheduler() as scheduler:
+        tally.batch_append(ballot_tuples, scheduler)
+    return tally

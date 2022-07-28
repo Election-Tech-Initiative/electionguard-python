@@ -1,14 +1,10 @@
-from typing import List
 from pymongo.database import Database
-from electionguard.ballot import BallotBoxState, SubmittedBallot
-from electionguard.election import CiphertextElectionContext
-from electionguard.manifest import InternalManifest, Manifest
-from electionguard.scheduler import Scheduler
-from electionguard.tally import CiphertextTally
+from electionguard.ballot import BallotBoxState
 
 from electionguard_gui.models.decryption_dto import DecryptionDto
 from electionguard_gui.services.decryption_stages.decryption_stage_base import (
     DecryptionStageBase,
+    get_tally,
 )
 
 
@@ -17,7 +13,7 @@ class DecryptionS1JoinService(DecryptionStageBase):
 
     def run(self, db: Database, decryption: DecryptionDto) -> None:
         current_user_id = self._auth_service.get_required_user_id()
-        self._log.debug(f"{current_user_id} decrypting  {decryption.decryption_id}")
+        self._log.info(f"S1: {current_user_id} decrypting  {decryption.decryption_id}")
         election = self._election_service.get(db, decryption.election_id)
         manifest = election.get_manifest()
         context = election.get_context()
@@ -36,6 +32,7 @@ class DecryptionS1JoinService(DecryptionStageBase):
         ballot_shares = guardian.compute_ballot_shares(spoiled_ballots, context)
         if ballot_shares is None:
             raise Exception("No ballot shares found")
+        guardian_key = guardian.share_key()
 
         self._decryption_service.append_guardian_joined(
             db,
@@ -43,23 +40,6 @@ class DecryptionS1JoinService(DecryptionStageBase):
             current_user_id,
             decryption_share,
             ballot_shares,
+            guardian_key,
         )
         self._decryption_service.notify_changed(db, decryption.decryption_id)
-
-
-def get_tally(
-    manifest: Manifest,
-    context: CiphertextElectionContext,
-    ballots: List[SubmittedBallot],
-) -> CiphertextTally:
-    internal_manifest = InternalManifest(manifest)
-
-    tally = CiphertextTally(
-        "election-results",
-        internal_manifest,
-        context,
-    )
-    ballot_tuples = [(None, ballot) for ballot in ballots]
-    with Scheduler() as scheduler:
-        tally.batch_append(ballot_tuples, scheduler)
-    return tally
