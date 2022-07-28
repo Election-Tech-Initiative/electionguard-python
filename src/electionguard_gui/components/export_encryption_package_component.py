@@ -8,7 +8,7 @@ from electionguard_gui.components.component_base import ComponentBase
 from electionguard_gui.services import ElectionService
 
 
-class ExportEncryptionPackage(ComponentBase):
+class ExportEncryptionPackageComponent(ComponentBase):
     """Responsible for exporting an encryption package for an election"""
 
     _election_service: ElectionService

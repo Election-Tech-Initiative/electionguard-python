@@ -10,10 +10,11 @@ from electionguard_gui.components import (
     GuardianHomeComponent,
     KeyCeremonyDetailsComponent,
     ElectionListComponent,
-    ExportEncryptionPackage,
+    ExportEncryptionPackageComponent,
     UploadBallotsComponent,
     CreateDecryptionComponent,
     ViewDecryptionComponent,
+    ExportElectionRecordComponent,
 )
 
 from electionguard_gui.services import (
@@ -43,10 +44,11 @@ class MainApp:
         create_election_component: CreateElectionComponent,
         view_election_component: ViewElectionComponent,
         election_list_component: ElectionListComponent,
-        export_encryption_package: ExportEncryptionPackage,
+        export_encryption_package: ExportEncryptionPackageComponent,
         upload_ballots_component: UploadBallotsComponent,
         create_decryption_component: CreateDecryptionComponent,
         view_decryption_component: ViewDecryptionComponent,
+        export_election_record_component: ExportElectionRecordComponent,
     ) -> None:
         super().__init__()
 
@@ -64,6 +66,7 @@ class MainApp:
             upload_ballots_component,
             create_decryption_component,
             view_decryption_component,
+            export_election_record_component,
         ]
 
         # services that need to expose methods to the UI
