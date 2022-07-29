@@ -80,7 +80,9 @@ class DecryptionDto:
 
     def get_status(self) -> str:
         if len(self.guardians_joined) < self.guardians:
-            return "waiting for guardians"
+            return "waiting for all guardians to join"
+        if self.completed_at_str is None:
+            return "performing decryption"
         return "decryption complete"
 
     def to_id_name_dict(self) -> dict[str, Any]:
