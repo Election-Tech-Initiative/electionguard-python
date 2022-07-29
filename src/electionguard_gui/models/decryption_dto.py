@@ -1,8 +1,10 @@
 from typing import Any, Dict, Optional
 from datetime import datetime
 from electionguard.decryption_share import DecryptionShare
+from electionguard.election_polynomial import LagrangeCoefficientsRecord
 from electionguard.key_ceremony import ElectionPublicKey
 from electionguard.serialize import from_raw
+from electionguard.tally import PlaintextTally, PublishedCiphertextTally
 from electionguard.type import BallotId
 from electionguard_gui.eel_utils import utc_to_str
 from electionguard_gui.services.authorization_service import AuthorizationService
@@ -45,6 +47,10 @@ class DecryptionDto:
     guardians_joined: list[str]
     can_join: bool
     decryption_shares: list[Any]
+    plaintext_tally: str
+    plaintext_spoiled_ballots: dict[str, str]
+    lagrange_coefficients: str
+    ciphertext_tally: str
     completed_at_utc: datetime
     completed_at_str: str
     created_by: str
@@ -61,6 +67,10 @@ class DecryptionDto:
         self.decryption_name = decryption["decryption_name"]
         self.guardians_joined = decryption["guardians_joined"]
         self.decryption_shares = decryption["decryption_shares"]
+        self.plaintext_tally = decryption["plaintext_tally"]
+        self.plaintext_spoiled_ballots = decryption["plaintext_spoiled_ballots"]
+        self.lagrange_coefficients = decryption["lagrange_coefficients"]
+        self.ciphertext_tally = decryption["ciphertext_tally"]
         self.completed_at_utc = decryption["completed_at"]
         self.completed_at_str = utc_to_str(decryption["completed_at"])
         self.created_by = decryption["created_by"]
@@ -109,3 +119,18 @@ class DecryptionDto:
         already_joined = user_id in self.guardians_joined
         is_admin = auth_service.is_admin()
         self.can_join = not already_joined and not is_admin
+
+    def get_plaintext_tally(self) -> PlaintextTally:
+        return from_raw(PlaintextTally, self.plaintext_tally)
+
+    def get_plaintext_spoiled_ballots(self) -> list[PlaintextTally]:
+        return [
+            from_raw(PlaintextTally, tally)
+            for tally in self.plaintext_spoiled_ballots.values()
+        ]
+
+    def get_lagrange_coefficients(self) -> LagrangeCoefficientsRecord:
+        return from_raw(LagrangeCoefficientsRecord, self.lagrange_coefficients)
+
+    def get_ciphertext_tally(self) -> PublishedCiphertextTally:
+        return from_raw(PublishedCiphertextTally, self.ciphertext_tally)

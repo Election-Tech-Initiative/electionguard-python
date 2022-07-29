@@ -9,7 +9,8 @@ import CreateElection from "../components/admin/create-election-component.js";
 import CreateKeyCeremony from "../components/admin/create-key-ceremony-component.js";
 import ViewKeyCeremonyAdmin from "../components/admin/view-key-ceremony-component.js";
 import ViewElectionAdmin from "../components/admin/view-election-component.js";
-import ExportEncryptionPackage from "../components/admin/export-encryption-package.js";
+import ExportEncryptionPackage from "../components/admin/export-encryption-package-component.js";
+import ExportElectionRecord from "../components/admin/export-election-record-component.js";
 import UploadBallots from "../components/admin/upload-ballots-component.js";
 import CreateDecryption from "../components/admin/create-decryption-component.js";
 import ViewDecryptionAdmin from "../components/admin/view-decryption-admin-component.js";
@@ -59,6 +60,11 @@ export default {
       url: "/admin/export-encryption-package",
       secured: true,
       component: ExportEncryptionPackage,
+    },
+    exportElectionRecord: {
+      url: "/admin/export-election-record",
+      secured: true,
+      component: ExportElectionRecord,
     },
     createKeyCeremony: {
       url: "/admin/create-key-ceremony",

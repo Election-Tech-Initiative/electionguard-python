@@ -13,6 +13,11 @@ export default {
     getElectionUrl: function (electionId) {
       return RouterService.getElectionUrl(electionId);
     },
+    getExportElectionRecordUrl: function () {
+      return RouterService.getUrl(RouterService.routes.exportElectionRecord, {
+        decryptionId: this.decryptionId,
+      });
+    },
     refresh_decryption: async function () {
       console.log("refreshing decryption");
       this.loading = true;
@@ -39,7 +44,16 @@ export default {
       <p class="alert alert-danger" role="alert">An error occurred. Check the logs and try again.</p>
     </div>
     <div v-if="decryption">
-      <h1>{{decryption.decryption_name}}</h1>
+      <div class="row mb-4">
+        <div class="col col-11">
+          <h1>{{decryption.decryption_name}}</h1>
+        </div>
+        <div class="col col-xs-2 text-end" v-if="decryption.completed_at_str">
+          <a :href="getExportElectionRecordUrl()" class="btn btn-sm btn-primary" title="Download election record">
+            <i class="bi-download"></i>
+          </a>
+        </div>
+      </div>
       <div class="row">
         <div class="col col-12 col-md-6 col-lg-5">
           <div class="col-12">

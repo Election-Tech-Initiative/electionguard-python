@@ -1,8 +1,10 @@
 from typing import Any
 from datetime import datetime
 from electionguard.election import CiphertextElectionContext
+from electionguard.encrypt import EncryptionDevice
+from electionguard.guardian import GuardianRecord
 from electionguard.manifest import Manifest
-from electionguard.serialize import from_raw
+from electionguard.serialize import from_list_raw, from_raw
 
 from electionguard_gui.eel_utils import utc_to_str
 
@@ -19,7 +21,7 @@ class ElectionDto:
     manifest: dict[str, Any]
     context: str
     constants: int
-    guardian_records: int
+    guardian_records: str
     encryption_package_file: str
     election_url: str
     ballot_uploads: list[dict[str, Any]]
@@ -79,3 +81,17 @@ class ElectionDto:
 
     def get_context(self) -> CiphertextElectionContext:
         return from_raw(CiphertextElectionContext, self.context)
+
+    def get_encryption_devices(self) -> list[EncryptionDevice]:
+        return [
+            EncryptionDevice(
+                ballot_upload["device_id"],
+                ballot_upload["session_id"],
+                ballot_upload["launch_code"],
+                ballot_upload["location"],
+            )
+            for ballot_upload in self.ballot_uploads
+        ]
+
+    def get_guardian_records(self) -> list[GuardianRecord]:
+        return from_list_raw(GuardianRecord, self.guardian_records)
