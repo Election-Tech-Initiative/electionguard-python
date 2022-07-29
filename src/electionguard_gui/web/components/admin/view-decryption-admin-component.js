@@ -30,9 +30,12 @@ export default {
       });
     },
     refresh_decryption: async function () {
-      console.log("refreshing decryption");
+      await this.get_decryption(true);
+    },
+    get_decryption: async function (is_refresh) {
+      console.log("getting decryption");
       this.loading = true;
-      const result = await eel.get_decryption(this.decryptionId)();
+      const result = await eel.get_decryption(this.decryptionId, is_refresh)();
       this.error = !result.success;
       if (result.success) {
         this.decryption = result.result;
@@ -41,7 +44,7 @@ export default {
     },
   },
   async mounted() {
-    await this.refresh_decryption();
+    await this.get_decryption(false);
     eel.expose(this.refresh_decryption, "refresh_decryption");
     console.log("watching decryption");
     eel.watch_decryption(this.decryptionId);
