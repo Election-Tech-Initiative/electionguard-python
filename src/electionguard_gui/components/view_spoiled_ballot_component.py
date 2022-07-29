@@ -3,10 +3,12 @@ import eel
 from electionguard.tally import PlaintextTally
 from electionguard_gui.eel_utils import eel_success
 from electionguard_gui.components.component_base import ComponentBase
-from electionguard_gui.models.election_dto import ElectionDto
 from electionguard_gui.services import (
     DecryptionService,
     ElectionService,
+)
+from electionguard_gui.services.plaintext_ballot_service import (
+    get_plaintext_ballot_report,
 )
 
 
@@ -25,22 +27,6 @@ class ViewSpoiledBallotComponent(ComponentBase):
     def expose(self) -> None:
         eel.expose(self.get_spoiled_ballot)
 
-    def get_plaintext_ballot_report(
-        self, election: ElectionDto, plaintext_ballot: PlaintextTally
-    ) -> Any:
-        manifest = election.get_manifest()
-        selection_names = manifest.get_selection_names("en")
-        contest_names = manifest.get_contest_names()
-        tally_report = {}
-        for tally_contest in plaintext_ballot.contests.values():
-            contest_name = contest_names.get(tally_contest.object_id)
-            selections = {}
-            for selection in tally_contest.selections.values():
-                selection_name = selection_names[selection.object_id]
-                selections[selection_name] = selection.tally
-            tally_report[contest_name] = selections
-        return tally_report
-
     def get_spoiled_ballot(
         self, decryption_id: str, spoiled_ballot_id: str
     ) -> dict[str, Any]:
@@ -55,7 +41,7 @@ class ViewSpoiledBallotComponent(ComponentBase):
             plaintext_tally = get_spoiled_ballot_by_id(
                 spoiled_ballots, spoiled_ballot_id
             )
-            tally_report = self.get_plaintext_ballot_report(election, plaintext_tally)
+            tally_report = get_plaintext_ballot_report(election, plaintext_tally)
             result = {
                 "election_id": election.id,
                 "election_name": election.election_name,
