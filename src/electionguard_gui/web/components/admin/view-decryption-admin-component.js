@@ -23,6 +23,12 @@ export default {
         decryptionId: this.decryptionId,
       });
     },
+    getSpoiledBallotUrl: function (spoiledBallotId) {
+      return RouterService.getUrl(RouterService.routes.viewSpoiledBallot, {
+        decryptionId: this.decryptionId,
+        spoiledBallotId: spoiledBallotId,
+      });
+    },
     refresh_decryption: async function () {
       console.log("refreshing decryption");
       this.loading = true;
@@ -84,11 +90,13 @@ export default {
           </div>
           <div v-if="decryption.completed_at_str">
             <h3>Decryption Results</h3>
-            <a :href="getViewTallyUrl()" class="btn btn-sm btn-primary">View Tally</a>
+            <a :href="getViewTallyUrl()" class="btn btn-sm btn-primary m-2">View Tally</a>
+            <h4>Spoiled Ballots</h4>
+            <a :href="getSpoiledBallotUrl(spoiled_ballot)" class="btn btn-sm btn-primary m-2" v-for="spoiled_ballot in decryption.spoiled_ballots">{{spoiled_ballot}}</a>
           </div>
         </div>
         <div class="col col-12 col-md-6 col-lg-7 text-center">
-          <img v-if="decryption.completed_at_str" src="/images/check.svg" width="200" height="200" class="mb-2"></img>
+          <img v-if="decryption.completed_at_str" src="/images/check.svg" width="150" height="150" class="mb-2"></img>
           <p class="key-ceremony-status">{{decryption.status}}</p>
           <spinner :visible="loading || !decryption.completed_at_str"></spinner>
         </div>

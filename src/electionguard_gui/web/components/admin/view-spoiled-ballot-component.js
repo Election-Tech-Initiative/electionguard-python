@@ -4,6 +4,7 @@ import Spinner from "../shared/spinner-component.js";
 export default {
   props: {
     decryptionId: String,
+    spoiledBallotId: String,
   },
   components: { Spinner },
   data() {
@@ -20,13 +21,13 @@ export default {
     },
   },
   async mounted() {
-    const result = await eel.get_tally(this.decryptionId)();
-    if (result.success) {
-      this.tally = result.result;
-    } else {
-      console.error(result.error);
-    }
-    this.loading = false;
+    // const result = await eel.get_tally(this.decryptionId)();
+    // if (result.success) {
+    //   this.tally = result.result;
+    // } else {
+    //   console.error(result.error);
+    // }
+    // this.loading = false;
   },
   template: /*html*/ `
     <div v-if="tally" class="row">

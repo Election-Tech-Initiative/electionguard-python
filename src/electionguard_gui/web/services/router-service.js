@@ -15,6 +15,7 @@ import UploadBallots from "../components/admin/upload-ballots-component.js";
 import CreateDecryption from "../components/admin/create-decryption-component.js";
 import ViewDecryptionAdmin from "../components/admin/view-decryption-admin-component.js";
 import ViewTally from "../components/admin/view-tally-component.js";
+import ViewSpoiledBallot from "../components/admin/view-spoiled-ballot-component.js";
 
 // guardian components
 import GuardianHome from "../components/guardian/guardian-home-component.js";
@@ -96,6 +97,11 @@ export default {
       url: "/admin/view-tally",
       secured: true,
       component: ViewTally,
+    },
+    viewSpoiledBallot: {
+      url: "/admin/view-spoiled-ballot",
+      secured: true,
+      component: ViewSpoiledBallot,
     },
 
     // guardian pages
