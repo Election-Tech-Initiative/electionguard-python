@@ -21,13 +21,16 @@ export default {
     },
   },
   async mounted() {
-    // const result = await eel.get_tally(this.decryptionId)();
-    // if (result.success) {
-    //   this.tally = result.result;
-    // } else {
-    //   console.error(result.error);
-    // }
-    // this.loading = false;
+    const result = await eel.get_spoiled_ballot(
+      this.decryptionId,
+      this.spoiledBallotId
+    )();
+    if (result.success) {
+      this.tally = result.result;
+    } else {
+      console.error(result.error);
+    }
+    this.loading = false;
   },
   template: /*html*/ `
     <div v-if="tally" class="row">

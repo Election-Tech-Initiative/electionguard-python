@@ -10,6 +10,7 @@ from electionguard_gui.components import key_ceremony_details_component
 from electionguard_gui.components import upload_ballots_component
 from electionguard_gui.components import view_decryption_component
 from electionguard_gui.components import view_election_component
+from electionguard_gui.components import view_spoiled_ballot_component
 from electionguard_gui.components import view_tally_component
 
 from electionguard_gui.components.component_base import (
@@ -49,6 +50,10 @@ from electionguard_gui.components.view_decryption_component import (
 from electionguard_gui.components.view_election_component import (
     ViewElectionComponent,
 )
+from electionguard_gui.components.view_spoiled_ballot_component import (
+    ViewSpoiledBallotComponent,
+    get_spoiled_ballot_by_id,
+)
 from electionguard_gui.components.view_tally_component import (
     ViewTallyComponent,
 )
@@ -66,6 +71,7 @@ __all__ = [
     "UploadBallotsComponent",
     "ViewDecryptionComponent",
     "ViewElectionComponent",
+    "ViewSpoiledBallotComponent",
     "ViewTallyComponent",
     "component_base",
     "create_decryption_component",
@@ -74,11 +80,13 @@ __all__ = [
     "election_list_component",
     "export_election_record_component",
     "export_encryption_package_component",
+    "get_spoiled_ballot_by_id",
     "guardian_home_component",
     "key_ceremony_details_component",
     "notify_ui_db_changed",
     "upload_ballots_component",
     "view_decryption_component",
     "view_election_component",
+    "view_spoiled_ballot_component",
     "view_tally_component",
 ]

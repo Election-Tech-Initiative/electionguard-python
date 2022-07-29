@@ -16,6 +16,7 @@ from electionguard_gui.components import (
     ViewDecryptionComponent,
     ExportElectionRecordComponent,
     ViewTallyComponent,
+    ViewSpoiledBallotComponent,
 )
 
 from electionguard_gui.services import (
@@ -51,6 +52,7 @@ class MainApp:
         view_decryption_component: ViewDecryptionComponent,
         export_election_record_component: ExportElectionRecordComponent,
         view_tally_component: ViewTallyComponent,
+        view_spoiled_ballot_component: ViewSpoiledBallotComponent,
     ) -> None:
         super().__init__()
 
@@ -70,6 +72,7 @@ class MainApp:
             view_decryption_component,
             export_election_record_component,
             view_tally_component,
+            view_spoiled_ballot_component,
         ]
 
         # services that need to expose methods to the UI
