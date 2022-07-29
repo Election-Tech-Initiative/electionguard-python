@@ -1,4 +1,3 @@
-import json
 from typing import Any, Dict, Optional
 from datetime import datetime
 from electionguard.decryption_share import DecryptionShare

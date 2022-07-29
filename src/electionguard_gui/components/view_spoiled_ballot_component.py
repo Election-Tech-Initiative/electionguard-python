@@ -1,4 +1,3 @@
-from pydoc import plain
 from typing import Any
 import eel
 from electionguard.tally import PlaintextTally
