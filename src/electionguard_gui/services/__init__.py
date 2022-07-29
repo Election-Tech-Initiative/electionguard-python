@@ -63,6 +63,7 @@ from electionguard_gui.services.election_service import (
 )
 from electionguard_gui.services.export_service import (
     get_download_path,
+    get_drives,
 )
 from electionguard_gui.services.guardian_service import (
     GuardianService,
@@ -147,6 +148,7 @@ __all__ = [
     "get_db_host",
     "get_db_password",
     "get_download_path",
+    "get_drives",
     "get_guardian_number",
     "get_is_admin",
     "get_key_ceremony_status",

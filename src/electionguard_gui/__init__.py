@@ -19,6 +19,7 @@ from electionguard_gui.components import (
     UploadBallotsComponent,
     ViewDecryptionComponent,
     ViewElectionComponent,
+    ViewTallyComponent,
     component_base,
     create_decryption_component,
     create_election_component,
@@ -32,6 +33,7 @@ from electionguard_gui.components import (
     upload_ballots_component,
     view_decryption_component,
     view_election_component,
+    view_tally_component,
 )
 from electionguard_gui.containers import (
     Container,
@@ -101,6 +103,7 @@ from electionguard_gui.services import (
     get_db_host,
     get_db_password,
     get_download_path,
+    get_drives,
     get_guardian_number,
     get_is_admin,
     get_key_ceremony_status,
@@ -175,6 +178,7 @@ __all__ = [
     "UploadBallotsComponent",
     "ViewDecryptionComponent",
     "ViewElectionComponent",
+    "ViewTallyComponent",
     "announce_guardians",
     "authorization_service",
     "backup_to_dict",
@@ -209,6 +213,7 @@ __all__ = [
     "get_db_host",
     "get_db_password",
     "get_download_path",
+    "get_drives",
     "get_guardian_number",
     "get_is_admin",
     "get_key_ceremony_status",
@@ -247,4 +252,5 @@ __all__ = [
     "verification_to_dict",
     "view_decryption_component",
     "view_election_component",
+    "view_tally_component",
 ]

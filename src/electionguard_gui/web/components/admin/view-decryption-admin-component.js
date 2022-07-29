@@ -18,6 +18,11 @@ export default {
         decryptionId: this.decryptionId,
       });
     },
+    getViewTallyUrl: function () {
+      return RouterService.getUrl(RouterService.routes.viewTally, {
+        decryptionId: this.decryptionId,
+      });
+    },
     refresh_decryption: async function () {
       console.log("refreshing decryption");
       this.loading = true;
@@ -68,12 +73,18 @@ export default {
             <dt>Completed</dt>
             <dd>{{decryption.completed_at_str}}</dd>
           </dl>
-          <h3>Joined Guardians</h3>
-          <ul v-if="decryption.guardians_joined.length">
-            <li v-for="guardian in decryption.guardians_joined">{{guardian}}</li>
-          </ul>
-          <div v-else>
-            <p>No guardians have joined yet</p>
+          <div class="col-12">
+            <h3>Joined Guardians</h3>
+            <ul v-if="decryption.guardians_joined.length">
+              <li v-for="guardian in decryption.guardians_joined">{{guardian}}</li>
+            </ul>
+            <div v-else>
+              <p>No guardians have joined yet</p>
+            </div>
+          </div>
+          <div v-if="decryption.completed_at_str">
+            <h3>Decryption Results</h3>
+            <a :href="getViewTallyUrl()" class="btn btn-sm btn-primary">View Tally</a>
           </div>
         </div>
         <div class="col col-12 col-md-6 col-lg-7 text-center">
