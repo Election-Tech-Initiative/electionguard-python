@@ -3,14 +3,29 @@ export default {
     ballot: Object,
   },
   template: /*html*/ `
-        <div v-for="(contestContents, contestName) in ballot">
-        <h2>{{contestName}}</h2>
-        <div v-for="(selectionTally, selectionName) in contestContents">
-        <dl>
-            <dt>{{selectionName}}</dt>
-            <dd>{{selectionTally}}</dd>
-        </dl>
-        </div>
+    <div v-for="(contestContents, contestName) in ballot" class="mb-5">
+      <h2>{{contestName}}</h2>
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Choice</th>
+            <th class="text-end" width="100">Votes</th>
+            <th class="text-end" width="100">%</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="contestInfo in contestContents">
+            <td>{{contestInfo.name}}</td>
+            <td class="text-end">{{contestInfo.tally}}</td>
+            <td class="text-end">{{(contestInfo.percent * 100).toFixed(2) }}%</td>
+          </tr>
+          <tr class="table-secondary">
+            <td></td>
+            <td class="text-end"></td>
+            <td class="text-end">100%</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
     `,
 };

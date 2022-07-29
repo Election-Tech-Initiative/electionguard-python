@@ -11,10 +11,23 @@ def get_plaintext_ballot_report(
     contest_names = manifest.get_contest_names()
     tally_report = {}
     for tally_contest in plaintext_ballot.contests.values():
-        contest_name = contest_names.get(tally_contest.object_id)
-        selections = {}
-        for selection in tally_contest.selections.values():
+        contest_name = contest_names.get(tally_contest.object_id, "n/a")
+        selections_report = []
+        selections = list(iter(tally_contest.selections.values()))
+        total = float(sum([selection.tally for selection in selections]))
+        for selection in selections:
             selection_name = selection_names[selection.object_id]
-            selections[selection_name] = selection.tally
-        tally_report[contest_name] = selections
+            percent: float = (
+                (float(selection.tally) / total) if selection.tally else float(0)
+            )
+            print(f"{total} / {selection.tally} = {percent}")
+            selections_report.append(
+                {
+                    "name": selection_name,
+                    "tally": selection.tally,
+                    "percent": percent,
+                }
+            )
+        tally_report[contest_name] = selections_report
+    print(tally_report)
     return tally_report
