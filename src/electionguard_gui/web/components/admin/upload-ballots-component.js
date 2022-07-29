@@ -62,6 +62,7 @@ export default {
         console.log("Uploading ballot", ballotFile.name);
         const result = await eel.upload_ballot(
           uploadId,
+          this.electionId,
           ballotFile.name,
           ballotContents
         )();

@@ -60,13 +60,17 @@ class UploadBallotsComponent(ComponentBase):
             return self.handle_error(e)
 
     def upload_ballot(
-        self, ballot_upload_id: str, file_name: str, file_contents: str
+        self,
+        ballot_upload_id: str,
+        election_id: str,
+        file_name: str,
+        file_contents: str,
     ) -> dict[str, Any]:
         try:
             db = self._db_service.get_db()
             self._log.debug(f"adding ballot {file_name} to {ballot_upload_id}")
             self._ballot_upload_service.add_ballot(
-                db, ballot_upload_id, file_name, file_contents
+                db, ballot_upload_id, election_id, file_name, file_contents
             )
             return eel_success()
         # pylint: disable=broad-except
