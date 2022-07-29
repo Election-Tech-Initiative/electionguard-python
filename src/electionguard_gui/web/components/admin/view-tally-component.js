@@ -35,6 +35,8 @@ export default {
         <a :href="getElectionUrl(tally.election_id)">{{tally.election_name}}</a> 
         &gt; 
         <a :href="getDecryptionUrl()">{{tally.decryption_name}}</a>
+        &gt;
+        Tally
       </div>
       <div class="col-md-12">
         <view-plaintext-ballot-component :ballot="tally.report"></view-plaintext-ballot-component>

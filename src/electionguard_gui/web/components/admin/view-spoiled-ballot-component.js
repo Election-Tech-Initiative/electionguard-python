@@ -39,6 +39,8 @@ export default {
         <a :href="getElectionUrl(spoiled_ballot.election_id)">{{spoiled_ballot.election_name}}</a> 
         &gt; 
         <a :href="getDecryptionUrl()">{{spoiled_ballot.decryption_name}}</a>
+        &gt;
+        {{this.spoiledBallotId}}
       </div>
       <div class="col-md-12">
         <view-plaintext-ballot-component :ballot="spoiled_ballot.report"></view-plaintext-ballot-component>
