@@ -14,6 +14,7 @@ from electionguard_gui.services import gui_setup_input_retrieval_step
 from electionguard_gui.services import key_ceremony_service
 from electionguard_gui.services import key_ceremony_stages
 from electionguard_gui.services import key_ceremony_state_service
+from electionguard_gui.services import plaintext_ballot_service
 from electionguard_gui.services import service_base
 
 from electionguard_gui.services.authorization_service import (
@@ -63,6 +64,7 @@ from electionguard_gui.services.election_service import (
 )
 from electionguard_gui.services.export_service import (
     get_download_path,
+    get_drives,
 )
 from electionguard_gui.services.guardian_service import (
     GuardianService,
@@ -97,6 +99,9 @@ from electionguard_gui.services.key_ceremony_state_service import (
     KeyCeremonyStateService,
     get_key_ceremony_status,
     status_descriptions,
+)
+from electionguard_gui.services.plaintext_ballot_service import (
+    get_plaintext_ballot_report,
 )
 from electionguard_gui.services.service_base import (
     ServiceBase,
@@ -147,9 +152,11 @@ __all__ = [
     "get_db_host",
     "get_db_password",
     "get_download_path",
+    "get_drives",
     "get_guardian_number",
     "get_is_admin",
     "get_key_ceremony_status",
+    "get_plaintext_ballot_report",
     "get_tally",
     "guardian_service",
     "gui_setup_input_retrieval_step",
@@ -166,6 +173,7 @@ __all__ = [
     "key_ceremony_state_service",
     "make_guardian",
     "make_mediator",
+    "plaintext_ballot_service",
     "public_key_to_dict",
     "service_base",
     "status_descriptions",

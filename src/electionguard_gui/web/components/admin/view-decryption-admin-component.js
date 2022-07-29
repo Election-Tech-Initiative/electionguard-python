@@ -18,10 +18,24 @@ export default {
         decryptionId: this.decryptionId,
       });
     },
+    getViewTallyUrl: function () {
+      return RouterService.getUrl(RouterService.routes.viewTally, {
+        decryptionId: this.decryptionId,
+      });
+    },
+    getSpoiledBallotUrl: function (spoiledBallotId) {
+      return RouterService.getUrl(RouterService.routes.viewSpoiledBallot, {
+        decryptionId: this.decryptionId,
+        spoiledBallotId: spoiledBallotId,
+      });
+    },
     refresh_decryption: async function () {
-      console.log("refreshing decryption");
+      await this.get_decryption(true);
+    },
+    get_decryption: async function (is_refresh) {
+      console.log("getting decryption");
       this.loading = true;
-      const result = await eel.get_decryption(this.decryptionId)();
+      const result = await eel.get_decryption(this.decryptionId, is_refresh)();
       this.error = !result.success;
       if (result.success) {
         this.decryption = result.result;
@@ -30,7 +44,7 @@ export default {
     },
   },
   async mounted() {
-    await this.refresh_decryption();
+    await this.get_decryption(false);
     eel.expose(this.refresh_decryption, "refresh_decryption");
     console.log("watching decryption");
     eel.watch_decryption(this.decryptionId);
@@ -68,16 +82,24 @@ export default {
             <dt>Completed</dt>
             <dd>{{decryption.completed_at_str}}</dd>
           </dl>
-          <h3>Joined Guardians</h3>
-          <ul v-if="decryption.guardians_joined.length">
-            <li v-for="guardian in decryption.guardians_joined">{{guardian}}</li>
-          </ul>
-          <div v-else>
-            <p>No guardians have joined yet</p>
+          <div class="col-12">
+            <h3>Joined Guardians</h3>
+            <ul v-if="decryption.guardians_joined.length">
+              <li v-for="guardian in decryption.guardians_joined">{{guardian}}</li>
+            </ul>
+            <div v-else>
+              <p>No guardians have joined yet</p>
+            </div>
+          </div>
+          <div v-if="decryption.completed_at_str">
+            <h3>Decryption Results</h3>
+            <a :href="getViewTallyUrl()" class="btn btn-sm btn-primary m-2">View Tally</a>
+            <h4>Spoiled Ballots</h4>
+            <a :href="getSpoiledBallotUrl(spoiled_ballot)" class="btn btn-sm btn-primary m-2" v-for="spoiled_ballot in decryption.spoiled_ballots">{{spoiled_ballot}}</a>
           </div>
         </div>
         <div class="col col-12 col-md-6 col-lg-7 text-center">
-          <img v-if="decryption.completed_at_str" src="/images/check.svg" width="200" height="200" class="mb-2"></img>
+          <img v-if="decryption.completed_at_str" src="/images/check.svg" width="150" height="150" class="mb-2"></img>
           <p class="key-ceremony-status">{{decryption.status}}</p>
           <spinner :visible="loading || !decryption.completed_at_str"></spinner>
         </div>

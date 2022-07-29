@@ -14,11 +14,13 @@ import ExportElectionRecord from "../components/admin/export-election-record-com
 import UploadBallots from "../components/admin/upload-ballots-component.js";
 import CreateDecryption from "../components/admin/create-decryption-component.js";
 import ViewDecryptionAdmin from "../components/admin/view-decryption-admin-component.js";
-import ViewDecryptionGuardian from "../components/guardian/view-decryption-guardian-component.js";
+import ViewTally from "../components/admin/view-tally-component.js";
+import ViewSpoiledBallot from "../components/admin/view-spoiled-ballot-component.js";
 
 // guardian components
 import GuardianHome from "../components/guardian/guardian-home-component.js";
 import ViewKeyCeremonyGuardian from "../components/guardian/view-key-ceremony-component.js";
+import ViewDecryptionGuardian from "../components/guardian/view-decryption-guardian-component.js";
 
 export default {
   getUrl(route, params) {
@@ -91,10 +93,15 @@ export default {
       secured: true,
       component: ViewDecryptionAdmin,
     },
-    viewDecryptionGuardian: {
-      url: "/guardian/view-decryption",
+    viewTally: {
+      url: "/admin/view-tally",
       secured: true,
-      component: ViewDecryptionGuardian,
+      component: ViewTally,
+    },
+    viewSpoiledBallot: {
+      url: "/admin/view-spoiled-ballot",
+      secured: true,
+      component: ViewSpoiledBallot,
     },
 
     // guardian pages
@@ -107,6 +114,11 @@ export default {
       url: "/guardian/view-key-ceremony",
       secured: true,
       component: ViewKeyCeremonyGuardian,
+    },
+    viewDecryptionGuardian: {
+      url: "/guardian/view-decryption",
+      secured: true,
+      component: ViewDecryptionGuardian,
     },
   },
   getElectionUrl(electionId) {
