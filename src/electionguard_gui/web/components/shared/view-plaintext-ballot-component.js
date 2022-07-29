@@ -14,15 +14,15 @@ export default {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="contestInfo in contestContents">
+          <tr v-for="contestInfo in contestContents.selections">
             <td>{{contestInfo.name}}</td>
             <td class="text-end">{{contestInfo.tally}}</td>
             <td class="text-end">{{(contestInfo.percent * 100).toFixed(2) }}%</td>
           </tr>
           <tr class="table-secondary">
             <td></td>
-            <td class="text-end"></td>
-            <td class="text-end">100%</td>
+            <td class="text-end">{{contestContents.total}}</td>
+            <td class="text-end">100.00%</td>
           </tr>
         </tbody>
       </table>

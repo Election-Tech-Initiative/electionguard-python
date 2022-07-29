@@ -20,7 +20,6 @@ def get_plaintext_ballot_report(
             percent: float = (
                 (float(selection.tally) / total) if selection.tally else float(0)
             )
-            print(f"{total} / {selection.tally} = {percent}")
             selections_report.append(
                 {
                     "name": selection_name,
@@ -28,6 +27,8 @@ def get_plaintext_ballot_report(
                     "percent": percent,
                 }
             )
-        tally_report[contest_name] = selections_report
-    print(tally_report)
+        tally_report[contest_name] = {
+            "selections": selections_report,
+            "total": total,
+        }
     return tally_report
