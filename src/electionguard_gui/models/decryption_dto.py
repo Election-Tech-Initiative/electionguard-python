@@ -126,9 +126,6 @@ class DecryptionDto:
     def get_plaintext_tally(self) -> PlaintextTally:
         return from_raw(PlaintextTally, self.plaintext_tally)
 
-    def get_plaintext_tally_json(self) -> Any:
-        return json.loads(self.plaintext_tally)
-
     def get_plaintext_spoiled_ballots(self) -> list[PlaintextTally]:
         return [
             from_raw(PlaintextTally, tally)

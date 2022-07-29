@@ -19,7 +19,15 @@ export default {
   template: /*html*/ `
     <h1>View Tally</h1>
     <div v-if="tally">
-      {{tally.object_id}}
+      <div v-for="(contestContents, contestName) in tally">
+        <h2>{{contestName}}</h2>
+        <div v-for="(selectionTally, selectionName) in contestContents">
+          <dl>
+            <dt>{{selectionName}}</dt>
+            <dd>{{selectionTally}}</dd>
+          </dl>
+        </div>
+      </div>
     </div>
   `,
 };

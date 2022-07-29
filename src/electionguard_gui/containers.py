@@ -266,6 +266,7 @@ class Container(containers.DeclarativeContainer):
     view_tally_component: Factory[ViewTallyComponent] = providers.Factory(
         ViewTallyComponent,
         decryption_service=decryption_service,
+        election_service=election_service,
     )
 
     # main
