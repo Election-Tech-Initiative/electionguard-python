@@ -1,14 +1,15 @@
 import RouterService from "../../services/router-service.js";
 import Spinner from "../shared/spinner-component.js";
+import ViewPlaintextBallotComponent from "../shared/view-plaintext-ballot-component.js";
 
 export default {
   props: {
     decryptionId: String,
     spoiledBallotId: String,
   },
-  components: { Spinner },
+  components: { Spinner, ViewPlaintextBallotComponent },
   data() {
-    return { tally: null, loading: true };
+    return { spoiled_ballot: null, loading: true };
   },
   methods: {
     getElectionUrl: function (electionId) {
@@ -26,27 +27,21 @@ export default {
       this.spoiledBallotId
     )();
     if (result.success) {
-      this.tally = result.result;
+      this.spoiled_ballot = result.result;
     } else {
       console.error(result.error);
     }
     this.loading = false;
   },
   template: /*html*/ `
-    <div v-if="tally" class="row">
+    <div v-if="spoiled_ballot" class="row">
       <div class="col col-12 mb-3">
-        <a :href="getElectionUrl(tally.election_id)">{{tally.election_name}}</a> &gt; <a :href="getDecryptionUrl()">{{tally.decryption_name}}</a>
+        <a :href="getElectionUrl(spoiled_ballot.election_id)">{{spoiled_ballot.election_name}}</a> 
+        &gt; 
+        <a :href="getDecryptionUrl()">{{spoiled_ballot.decryption_name}}</a>
       </div>
       <div class="col-md-12">
-        <div v-for="(contestContents, contestName) in tally.report">
-          <h2>{{contestName}}</h2>
-          <div v-for="(selectionTally, selectionName) in contestContents">
-            <dl>
-              <dt>{{selectionName}}</dt>
-              <dd>{{selectionTally}}</dd>
-            </dl>
-          </div>
-        </div>
+        <view-plaintext-ballot-component :ballot="spoiled_ballot.report"></view-plaintext-ballot-component>
       </div>
     </div>
     <spinner :visible="loading"></spinner>
