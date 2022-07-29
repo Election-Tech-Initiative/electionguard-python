@@ -1,3 +1,4 @@
+import RouterService from "../../services/router-service.js";
 import Spinner from "../shared/spinner-component.js";
 
 export default {
@@ -8,6 +9,16 @@ export default {
   data() {
     return { tally: null };
   },
+  methods: {
+    getElectionUrl: function (electionId) {
+      return RouterService.getElectionUrl(electionId);
+    },
+    getDecryptionUrl: function () {
+      return RouterService.getUrl(RouterService.routes.viewDecryptionAdmin, {
+        decryptionId: this.decryptionId,
+      });
+    },
+  },
   async mounted() {
     const result = await eel.get_tally(this.decryptionId)();
     if (result.success) {
@@ -17,15 +28,19 @@ export default {
     }
   },
   template: /*html*/ `
-    <h1>View Tally</h1>
-    <div v-if="tally">
-      <div v-for="(contestContents, contestName) in tally">
-        <h2>{{contestName}}</h2>
-        <div v-for="(selectionTally, selectionName) in contestContents">
-          <dl>
-            <dt>{{selectionName}}</dt>
-            <dd>{{selectionTally}}</dd>
-          </dl>
+    <div v-if="tally" class="row">
+      <div class="col col-12 mb-3">
+        <a :href="getElectionUrl(tally.election_id)">{{tally.election_name}}</a> &gt; <a :href="getDecryptionUrl()">{{tally.decryption_name}}</a>
+      </div>
+      <div class="col-md-8">
+        <div v-for="(contestContents, contestName) in tally.report">
+          <h2>{{contestName}}</h2>
+          <div v-for="(selectionTally, selectionName) in contestContents">
+            <dl>
+              <dt>{{selectionName}}</dt>
+              <dd>{{selectionTally}}</dd>
+            </dl>
+          </div>
         </div>
       </div>
     </div>
