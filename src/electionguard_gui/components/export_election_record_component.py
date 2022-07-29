@@ -12,7 +12,7 @@ from electionguard_gui.services import (
     DecryptionService,
     BallotUploadService,
 )
-from electionguard_gui.services.export_service import get_download_path
+from electionguard_gui.services.export_service import get_download_path, get_drives
 from electionguard_tools.helpers.export import export_record
 
 
@@ -41,10 +41,12 @@ class ExportElectionRecordComponent(ComponentBase):
 
     def get_election_record_export_locations(self) -> dict[str, Any]:
         self._log.trace("getting export locations")
+        drives = get_drives()
         common_root_dirs = [get_download_path(), gettempdir()]
+        combined_root_dirs = common_root_dirs + drives
         locations = [
             os.path.join(location, "publish-election.zip")
-            for location in common_root_dirs
+            for location in combined_root_dirs
         ]
         return eel_success(locations)
 

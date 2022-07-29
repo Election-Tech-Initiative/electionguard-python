@@ -6,7 +6,7 @@ import eel
 from electionguard_gui.eel_utils import eel_success
 from electionguard_gui.components.component_base import ComponentBase
 from electionguard_gui.services import ElectionService
-from electionguard_gui.services.export_service import get_download_path
+from electionguard_gui.services.export_service import get_download_path, get_drives
 
 
 class ExportEncryptionPackageComponent(ComponentBase):
@@ -23,12 +23,15 @@ class ExportEncryptionPackageComponent(ComponentBase):
 
     def get_encryption_package_export_locations(self) -> dict[str, Any]:
         self._log.trace("getting export locations")
+        drives = get_drives()
+        drive_locations = [os.path.join(drive, "artifacts") for drive in drives]
         common_root_dirs = [get_download_path(), gettempdir()]
-        locations = [
+        common_locations = [
             os.path.join(location, "public_encryption_package")
             for location in common_root_dirs
         ]
-        return eel_success(locations)
+        all_locations = common_locations + drive_locations
+        return eel_success(all_locations)
 
     def export_encryption_package(
         self, election_id: str, location: str

@@ -1,6 +1,12 @@
 import os
 
 
+def get_drives() -> list[str]:
+    dl = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    drives = [f"{d}:\\" for d in dl if os.path.exists(f"{d}:")]
+    return drives
+
+
 def get_download_path() -> str:
     """
     Returns the default downloads path for linux or windows.
