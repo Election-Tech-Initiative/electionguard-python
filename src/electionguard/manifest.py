@@ -1035,9 +1035,7 @@ def generate_placeholder_selections_from(
     return selections
 
 
-def get_i8n_value(
-    name: InternationalizedText, lang: str, default_val: str
-) -> str:
+def get_i8n_value(name: InternationalizedText, lang: str, default_val: str) -> str:
     query = (t.value for t in name.text if t.language == lang)
     result = next(query, "")
     return default_val if result == "" else result

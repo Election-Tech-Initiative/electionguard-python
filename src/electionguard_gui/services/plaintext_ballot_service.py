@@ -1,6 +1,6 @@
 from typing import Any
 from electionguard import PlaintextTally
-from electionguard.manifest import InternationalizedText, Manifest, get_i8n_value
+from electionguard.manifest import Manifest, get_i8n_value
 from electionguard.tally import PlaintextTallySelection
 from electionguard_gui.models.election_dto import ElectionDto
 
@@ -66,7 +66,7 @@ def _get_selection_parties(manifest: Manifest) -> dict[str, str]:
 
 def _get_candidate_write_ins(manifest: Manifest) -> dict[str, bool]:
     candidates = {
-        candidate.object_id: candidate.is_write_in == True
+        candidate.object_id: candidate.is_write_in is True
         for candidate in manifest.candidates
     }
     contest_write_ins = {}
