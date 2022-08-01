@@ -822,10 +822,7 @@ class Manifest(CryptoHashable):
     def _get_candidate_name(self, candidate: Candidate, lang: str) -> str:
         if candidate.is_write_in:
             return "Write-In"
-        query = (t.value for t in candidate.name.text if t.language == lang)
-        name = next(query, None)
-        name = candidate.object_id if name is None else name
-        return name
+        return get_i8n_value(candidate.name, lang, candidate.object_id)
 
     def _get_candidate_names(self, lang: str) -> Dict[str, str]:
         return {
@@ -1036,3 +1033,11 @@ def generate_placeholder_selections_from(
             get_optional(generate_placeholder_selection_from(contest, sequence_order))
         )
     return selections
+
+
+def get_i8n_value(
+    name: InternationalizedText, lang: str, default_val: str
+) -> str:
+    query = (t.value for t in name.text if t.language == lang)
+    result = next(query, "")
+    return default_val if result == "" else result
