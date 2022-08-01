@@ -1,5 +1,4 @@
 from typing import List
-#import click
 
 from electionguard.data_store import DataStore
 from electionguard.ballot_box import BallotBox
@@ -14,6 +13,7 @@ from ..cli_models import BuildElectionResults, EncryptResults
 from ..cli_steps import CliStepBase
 from .e2e_inputs import E2eInputs
 from print_utils import *
+from print_utils import print_message
 
 class SubmitVotesStep(CliStepBase):
     """Responsible for submitting ballots into a ballot store."""

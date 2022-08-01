@@ -22,7 +22,7 @@ class ElectionBuilderStep(CliStepBase):
         self.print_header("Building election")
 
         print_message("Initializing public key and commitment hash")
-        election_builder = ElectionBuilder(
+        election_builder = ElectionBuilder( 
             election_inputs.guardian_count,
             election_inputs.quorum,
             election_inputs.manifest,

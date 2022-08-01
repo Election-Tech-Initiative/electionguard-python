@@ -1,6 +1,5 @@
 from typing import List, Tuple
-#import click
-from print_utils import *
+from print_utils import print_message
 
 from electionguard.encrypt import EncryptionDevice, EncryptionMediator
 from electionguard.election import CiphertextElectionContext

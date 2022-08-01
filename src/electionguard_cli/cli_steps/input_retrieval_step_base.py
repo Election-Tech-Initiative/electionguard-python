@@ -2,7 +2,7 @@ from typing import Optional, List, Type, TypeVar
 from os.path import isfile, isdir, join
 from os import listdir
 from io import TextIOWrapper
-from print_utils import *
+from print_utils import print_message
 
 from electionguard.election import CiphertextElectionContext
 from electionguard.manifest import InternationalizedText, Manifest
