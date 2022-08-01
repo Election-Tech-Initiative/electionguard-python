@@ -21,8 +21,13 @@ export default {
           </tr>
           <tr class="table-secondary">
             <td></td>
-            <td class="text-end">{{contestContents.total}}</td>
-            <td class="text-end">100.00%</td>
+            <td class="text-end"><strong>{{contestContents.nonWriteInTotal}}</strong></td>
+            <td class="text-end"><strong>100.00%</strong></td>
+          </tr>
+          <tr v-if="contestContents.writeInTotal">
+            <td class="text-end">Write-Ins</td>
+            <td class="text-end">{{contestContents.writeInTotal}}</td>
+            <td class="text-end"></td>
           </tr>
         </tbody>
       </table>
