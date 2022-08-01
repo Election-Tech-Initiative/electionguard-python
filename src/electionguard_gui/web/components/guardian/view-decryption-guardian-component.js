@@ -33,7 +33,7 @@ export default {
     refresh_decryption: async function () {
       console.log("refreshing decryption");
       this.loading = true;
-      const result = await eel.get_decryption(this.decryptionId)();
+      const result = await eel.get_decryption(this.decryptionId, true)();
       this.error = !result.success;
       if (result.success) {
         this.decryption = result.result;
