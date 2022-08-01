@@ -201,6 +201,7 @@ class Container(containers.DeclarativeContainer):
         setup_election_builder_step=setup_election_builder_step,
         setup_input_retrieval_step=setup_input_retrieval_step,
         output_setup_files_step=output_setup_files_step,
+        guardian_service=guardian_service,
     )
     create_key_ceremony_component: Factory[
         CreateKeyCeremonyComponent
