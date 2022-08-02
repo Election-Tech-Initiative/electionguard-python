@@ -46,6 +46,7 @@ from electionguard_gui.components.upload_ballots_component import (
 )
 from electionguard_gui.components.view_decryption_component import (
     ViewDecryptionComponent,
+    refresh_decryption,
 )
 from electionguard_gui.components.view_election_component import (
     ViewElectionComponent,
@@ -84,6 +85,7 @@ __all__ = [
     "guardian_home_component",
     "key_ceremony_details_component",
     "notify_ui_db_changed",
+    "refresh_decryption",
     "upload_ballots_component",
     "view_decryption_component",
     "view_election_component",

@@ -80,9 +80,9 @@ class CreateElectionComponent(ComponentBase):
 
             guardians = [
                 self._guardian_service.load_guardian_from_key_ceremony(
-                    "user" + str(i), key_ceremony
+                    guardian_id, key_ceremony
                 )
-                for i in range(1, key_ceremony.guardian_count + 1)
+                for guardian_id in key_ceremony.guardians_joined
             ]
             election_inputs = self._setup_input_retrieval_step.get_gui_inputs(
                 key_ceremony.guardian_count,

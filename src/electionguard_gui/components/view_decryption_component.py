@@ -72,6 +72,8 @@ class ViewDecryptionComponent(ComponentBase):
     def try_run_stage_2(self, db: Database, decryption: DecryptionDto) -> bool:
         if self._decryption_s2_announce_service.should_run(db, decryption):
             refresh_decryption(eel_success())
+            # give the UI a chance to update
+            eel.sleep(0.5)
             self._decryption_s2_announce_service.run(db, decryption)
             return True
         return False
