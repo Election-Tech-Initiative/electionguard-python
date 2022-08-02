@@ -1,4 +1,5 @@
 from datetime import timezone, datetime
+import os
 from typing import Any
 
 
@@ -14,7 +15,10 @@ def utc_to_str(utc_dt: datetime) -> str:
     if not utc_dt:
         return ""
     local = convert_utc_to_local(utc_dt)
-    return local.strftime("%b %#d, %Y %#I:%M %p")
+    if os.name == "nt":
+        return local.strftime("%b %#d, %Y %#I:%M %p")
+    else:
+        return local.strftime("%b %-d, %Y %-I:%M %p")
 
 
 def convert_utc_to_local(utc_dt: datetime) -> datetime:
