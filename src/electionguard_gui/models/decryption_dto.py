@@ -57,25 +57,25 @@ class DecryptionDto:
     created_at_utc: datetime
     created_at_str: str
 
-    def __init__(self, decryption: Any):
-        self.decryption_id = str(decryption["_id"])
-        self.election_id = decryption["election_id"]
-        self.key_ceremony_id = decryption["key_ceremony_id"]
-        self.election_name = decryption["election_name"]
-        self.guardians = decryption["guardians"]
-        self.quorum = decryption["quorum"]
-        self.decryption_name = decryption["decryption_name"]
-        self.guardians_joined = decryption["guardians_joined"]
-        self.decryption_shares = decryption["decryption_shares"]
-        self.plaintext_tally = decryption["plaintext_tally"]
-        self.plaintext_spoiled_ballots = decryption["plaintext_spoiled_ballots"]
-        self.lagrange_coefficients = decryption["lagrange_coefficients"]
-        self.ciphertext_tally = decryption["ciphertext_tally"]
-        self.completed_at_utc = decryption["completed_at"]
-        self.completed_at_str = utc_to_str(decryption["completed_at"])
-        self.created_by = decryption["created_by"]
-        self.created_at_utc = decryption["created_at"]
-        self.created_at_str = utc_to_str(decryption["created_at"])
+    def __init__(self, decryption: dict[str, Any]):
+        self.decryption_id = str(decryption.get("_id"))
+        self.election_id = decryption.get("election_id")
+        self.key_ceremony_id = decryption.get("key_ceremony_id")
+        self.election_name = decryption.get("election_name")
+        self.guardians = decryption.get("guardians")
+        self.quorum = decryption.get("quorum")
+        self.decryption_name = decryption.get("decryption_name")
+        self.guardians_joined = decryption.get("guardians_joined")
+        self.decryption_shares = decryption.get("decryption_shares")
+        self.plaintext_tally = decryption.get("plaintext_tally")
+        self.plaintext_spoiled_ballots = decryption.get("plaintext_spoiled_ballots")
+        self.lagrange_coefficients = decryption.get("lagrange_coefficients")
+        self.ciphertext_tally = decryption.get("ciphertext_tally")
+        self.completed_at_utc = decryption.get("completed_at")
+        self.completed_at_str = utc_to_str(decryption.get("completed_at"))
+        self.created_by = decryption.get("created_by")
+        self.created_at_utc = decryption.get("created_at")
+        self.created_at_str = utc_to_str(decryption.get("created_at"))
         self.can_join = False
 
     def get_status(self) -> str:
