@@ -17,8 +17,7 @@ def utc_to_str(utc_dt: datetime) -> str:
     local = convert_utc_to_local(utc_dt)
     if os.name == "nt":
         return local.strftime("%b %#d, %Y %#I:%M %p")
-    else:
-        return local.strftime("%b %-d, %Y %-I:%M %p")
+    return local.strftime("%b %-d, %Y %-I:%M %p")
 
 
 def convert_utc_to_local(utc_dt: datetime) -> datetime:
