@@ -195,6 +195,21 @@ class Guardian:
         return self._election_keys.sequence_order
 
     @classmethod
+    def from_public_key(
+        cls,
+        id: str,
+        sequence_order: int,
+        number_of_guardians: int,
+        quorum: int,
+        public_key: ElectionPublicKey
+    ):
+        key_pair = generate_election_key_pair(id, sequence_order, quorum)
+        key_pair.key_pair.public_key = public_key
+        key_pair.owner_id = id
+        ceremony_details = CeremonyDetails(number_of_guardians, quorum)
+        return cls(key_pair, ceremony_details)
+
+    @classmethod
     def from_nonce(
         cls,
         id: str,
