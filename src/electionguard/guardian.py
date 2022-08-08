@@ -197,15 +197,16 @@ class Guardian:
     @classmethod
     def from_public_key(
         cls,
-        id: str,
-        sequence_order: int,
         number_of_guardians: int,
         quorum: int,
-        public_key: ElectionPublicKey
-    ):
-        key_pair = generate_election_key_pair(id, sequence_order, quorum)
-        key_pair.key_pair.public_key = public_key
-        key_pair.owner_id = id
+        public_key: ElectionPublicKey,
+    ) -> "Guardian":
+        sequence_order = public_key.sequence_order
+        key_pair = generate_election_key_pair(
+            public_key.owner_id, sequence_order, quorum
+        )
+        key_pair.key_pair.public_key = public_key.key
+        key_pair.owner_id = public_key.owner_id
         ceremony_details = CeremonyDetails(number_of_guardians, quorum)
         return cls(key_pair, ceremony_details)
 
