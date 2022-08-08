@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Optional
 from datetime import datetime
 from electionguard.election import CiphertextElectionContext
 from electionguard.encrypt import EncryptionDevice
@@ -14,20 +14,20 @@ class ElectionDto:
     """Responsible for serializing to the front-end GUI and providing helper functions to Python."""
 
     id: str
-    election_name: str
-    key_ceremony_id: str
-    guardians: int
-    quorum: int
-    manifest: dict[str, Any]
-    context: str
-    constants: int
-    guardian_records: str
-    encryption_package_file: str
-    election_url: str
+    election_name: Optional[str]
+    key_ceremony_id: Optional[str]
+    guardians: Optional[int]
+    quorum: Optional[int]
+    manifest: Optional[dict[str, Any]]
+    context: Optional[str]
+    constants: Optional[int]
+    guardian_records: Optional[str]
+    encryption_package_file: Optional[str]
+    election_url: Optional[str]
     ballot_uploads: list[dict[str, Any]]
     decryptions: list[dict[str, Any]]
-    created_by: str
-    created_at_utc: datetime
+    created_by: Optional[str]
+    created_at_utc: Optional[datetime]
     created_at_str: str
 
     def __init__(self, election: dict[str, Any]):
@@ -42,8 +42,8 @@ class ElectionDto:
         self.guardian_records = election.get("guardian_records")
         self.encryption_package_file = election.get("encryption_package_file")
         self.election_url = election.get("election_url")
-        self.ballot_uploads = election.get("ballot_uploads")
-        self.decryptions = election.get("decryptions")
+        self.ballot_uploads = _get_list(election, "ballot_uploads")
+        self.decryptions = _get_list(election, "decryptions")
         self.created_by = election.get("created_by")
         self.created_at_utc = election.get("created_at")
         self.created_at_str = utc_to_str(election.get("created_at"))
@@ -80,9 +80,13 @@ class ElectionDto:
         }
 
     def get_manifest(self) -> Manifest:
+        if not self.manifest:
+            raise Exception("No manifest found")
         return from_raw(Manifest, self.manifest["raw"])
 
     def get_context(self) -> CiphertextElectionContext:
+        if not self.context:
+            raise Exception("No context found")
         return from_raw(CiphertextElectionContext, self.context)
 
     def get_encryption_devices(self) -> list[EncryptionDevice]:
@@ -97,4 +101,13 @@ class ElectionDto:
         ]
 
     def get_guardian_records(self) -> list[GuardianRecord]:
+        if not self.guardian_records:
+            raise Exception("No guardian records found")
         return from_list_raw(GuardianRecord, self.guardian_records)
+
+
+def _get_list(election: dict[str, Any], name: str) -> list:
+    value = election.get(name)
+    if value:
+        return list(value)
+    return []

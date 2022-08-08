@@ -45,6 +45,8 @@ class GuardianService(ServiceBase):
     def load_guardian_from_decryption(
         self, guardian_id: str, decryption: DecryptionDto
     ) -> Guardian:
+        if not decryption.key_ceremony_id:
+            raise Exception("key_ceremony_id is required")
         return self._load_guardian(
             guardian_id,
             decryption.key_ceremony_id,

@@ -38,12 +38,13 @@ class GuardianDecryptionShare:
 class DecryptionDto:
     """Responsible for serializing to the front-end GUI and providing helper functions to Python."""
 
-    decryption_id: Optional[str]
-    election_id: Optional[str]
+    decryption_id: str
+    election_id: str
     election_name: Optional[str]
-    guardians: Optional[int]
-    quorum: Optional[int]
+    guardians: int
+    quorum: int
     decryption_name: Optional[str]
+    key_ceremony_id: Optional[str]
     guardians_joined: list[str]
     can_join: Optional[bool]
     decryption_shares: list[Any]
@@ -59,11 +60,11 @@ class DecryptionDto:
 
     def __init__(self, decryption: dict[str, Any]):
         self.decryption_id = str(decryption.get("_id"))
-        self.election_id = decryption.get("election_id")
+        self.election_id = str(decryption.get("election_id"))
         self.key_ceremony_id = decryption.get("key_ceremony_id")
         self.election_name = decryption.get("election_name")
-        self.guardians = decryption.get("guardians")
-        self.quorum = decryption.get("quorum")
+        self.guardians = _get_int(decryption, "guardians", 0)
+        self.quorum = _get_int(decryption, "quorum", 0)
         self.decryption_name = decryption.get("decryption_name")
         self.guardians_joined = _get_list(decryption, "guardians_joined")
         self.decryption_shares = _get_list(decryption, "decryption_shares")
@@ -154,3 +155,10 @@ def _get_list(decryption: dict[str, Any], name: str) -> list:
     if value:
         return list(value)
     return []
+
+
+def _get_int(decryption: dict[str, Any], name: str, default: int) -> int:
+    value = decryption.get(name)
+    if value:
+        return int(value)
+    return default
