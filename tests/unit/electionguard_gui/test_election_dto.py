@@ -25,4 +25,4 @@ class TestElectionDto(BaseTestCase):
 
         # ASSERT
         self.assertEqual("ABC", result["id"])
-        self.assertEqual(result["created_at"], "Feb 3, 2022 2:10 PM")
+        self.assertEqual("Feb 3, 2022 2:10 PM", result["created_at"])
