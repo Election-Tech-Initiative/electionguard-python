@@ -38,6 +38,8 @@ class ExportEncryptionPackageComponent(ComponentBase):
     ) -> dict[str, Any]:
         db = self._db_service.get_db()
         election = self._election_service.get(db, election_id)
+        if not election.encryption_package_file:
+            raise Exception("No encryption package file")
         self._log.debug(f"unzipping: {election.encryption_package_file} to {location}")
         unpack_archive(election.encryption_package_file, location)
         return eel_success()

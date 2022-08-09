@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Optional
 from datetime import datetime
 from electionguard.election import CiphertextElectionContext
 from electionguard.encrypt import EncryptionDevice
@@ -14,45 +14,48 @@ class ElectionDto:
     """Responsible for serializing to the front-end GUI and providing helper functions to Python."""
 
     id: str
-    election_name: str
-    key_ceremony_id: str
-    guardians: int
-    quorum: int
-    manifest: dict[str, Any]
-    context: str
-    constants: int
-    guardian_records: str
-    encryption_package_file: str
-    election_url: str
+    election_name: Optional[str]
+    key_ceremony_id: Optional[str]
+    guardians: Optional[int]
+    quorum: Optional[int]
+    manifest: Optional[dict[str, Any]]
+    context: Optional[str]
+    constants: Optional[int]
+    guardian_records: Optional[str]
+    encryption_package_file: Optional[str]
+    election_url: Optional[str]
     ballot_uploads: list[dict[str, Any]]
     decryptions: list[dict[str, Any]]
-    created_by: str
-    created_at_utc: datetime
+    created_by: Optional[str]
+    created_at_utc: Optional[datetime]
     created_at_str: str
 
     def __init__(self, election: dict[str, Any]):
-        self.id = str(election["_id"])
-        self.election_name = election["election_name"]
-        self.key_ceremony_id = election["key_ceremony_id"]
-        self.guardians = election["guardians"]
-        self.quorum = election["quorum"]
-        self.manifest = election["manifest"]
-        self.context = election["context"]
-        self.constants = election["constants"]
-        self.guardian_records = election["guardian_records"]
-        self.encryption_package_file = election["encryption_package_file"]
-        self.election_url = election["election_url"]
-        self.ballot_uploads = election["ballot_uploads"]
-        self.decryptions = election["decryptions"]
-        self.created_by = election["created_by"]
-        self.created_at_utc = election["created_at"]
-        self.created_at_str = utc_to_str(election["created_at"])
+        self.id = str(election.get("_id"))
+        self.election_name = election.get("election_name")
+        self.key_ceremony_id = election.get("key_ceremony_id")
+        self.guardians = election.get("guardians")
+        self.quorum = election.get("quorum")
+        self.manifest = election.get("manifest")
+        self.context = election.get("context")
+        self.constants = election.get("constants")
+        self.guardian_records = election.get("guardian_records")
+        self.encryption_package_file = election.get("encryption_package_file")
+        self.election_url = election.get("election_url")
+        self.ballot_uploads = _get_list(election, "ballot_uploads")
+        self.decryptions = _get_list(election, "decryptions")
+        self.created_by = election.get("created_by")
+        self.created_at_utc = election.get("created_at")
+        self.created_at_str = utc_to_str(election.get("created_at"))
 
     def to_id_name_dict(self) -> dict[str, Any]:
         return {
             "id": self.id,
             "election_name": self.election_name,
         }
+
+    def _get_manifest_field(self, field: str) -> Any:
+        return self.manifest.get(field) if self.manifest else None
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -62,13 +65,13 @@ class ElectionDto:
             "quorum": self.quorum,
             "election_url": self.election_url,
             "manifest": {
-                "name": self.manifest["name"],
-                "scope": self.manifest["scope"],
-                "geopolitical_units": self.manifest["geopolitical_units"],
-                "parties": self.manifest["parties"],
-                "candidates": self.manifest["candidates"],
-                "contests": self.manifest["contests"],
-                "ballot_styles": self.manifest["ballot_styles"],
+                "name": self._get_manifest_field("name"),
+                "scope": self._get_manifest_field("scope"),
+                "geopolitical_units": self._get_manifest_field("geopolitical_units"),
+                "parties": self._get_manifest_field("parties"),
+                "candidates": self._get_manifest_field("candidates"),
+                "contests": self._get_manifest_field("contests"),
+                "ballot_styles": self._get_manifest_field("ballot_styles"),
             },
             "ballot_uploads": self.ballot_uploads,
             "decryptions": self.decryptions,
@@ -77,9 +80,13 @@ class ElectionDto:
         }
 
     def get_manifest(self) -> Manifest:
+        if not self.manifest:
+            raise Exception("No manifest found")
         return from_raw(Manifest, self.manifest["raw"])
 
     def get_context(self) -> CiphertextElectionContext:
+        if not self.context:
+            raise Exception("No context found")
         return from_raw(CiphertextElectionContext, self.context)
 
     def get_encryption_devices(self) -> list[EncryptionDevice]:
@@ -94,4 +101,13 @@ class ElectionDto:
         ]
 
     def get_guardian_records(self) -> list[GuardianRecord]:
+        if not self.guardian_records:
+            raise Exception("No guardian records found")
         return from_list_raw(GuardianRecord, self.guardian_records)
+
+
+def _get_list(election: dict[str, Any], name: str) -> list:
+    value = election.get(name)
+    if value:
+        return list(value)
+    return []

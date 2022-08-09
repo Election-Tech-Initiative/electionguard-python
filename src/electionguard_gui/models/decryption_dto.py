@@ -40,42 +40,43 @@ class DecryptionDto:
 
     decryption_id: str
     election_id: str
-    election_name: str
+    election_name: Optional[str]
     guardians: int
     quorum: int
-    decryption_name: str
+    decryption_name: Optional[str]
+    key_ceremony_id: Optional[str]
     guardians_joined: list[str]
-    can_join: bool
+    can_join: Optional[bool]
     decryption_shares: list[Any]
-    plaintext_tally: str
-    plaintext_spoiled_ballots: dict[str, str]
-    lagrange_coefficients: str
-    ciphertext_tally: str
-    completed_at_utc: datetime
+    plaintext_tally: Optional[str]
+    plaintext_spoiled_ballots: Optional[dict[str, str]]
+    lagrange_coefficients: Optional[str]
+    ciphertext_tally: Optional[str]
+    completed_at_utc: Optional[datetime]
     completed_at_str: str
-    created_by: str
-    created_at_utc: datetime
+    created_by: Optional[str]
+    created_at_utc: Optional[datetime]
     created_at_str: str
 
-    def __init__(self, decryption: Any):
-        self.decryption_id = str(decryption["_id"])
-        self.election_id = decryption["election_id"]
-        self.key_ceremony_id = decryption["key_ceremony_id"]
-        self.election_name = decryption["election_name"]
-        self.guardians = decryption["guardians"]
-        self.quorum = decryption["quorum"]
-        self.decryption_name = decryption["decryption_name"]
-        self.guardians_joined = decryption["guardians_joined"]
-        self.decryption_shares = decryption["decryption_shares"]
-        self.plaintext_tally = decryption["plaintext_tally"]
-        self.plaintext_spoiled_ballots = decryption["plaintext_spoiled_ballots"]
-        self.lagrange_coefficients = decryption["lagrange_coefficients"]
-        self.ciphertext_tally = decryption["ciphertext_tally"]
-        self.completed_at_utc = decryption["completed_at"]
-        self.completed_at_str = utc_to_str(decryption["completed_at"])
-        self.created_by = decryption["created_by"]
-        self.created_at_utc = decryption["created_at"]
-        self.created_at_str = utc_to_str(decryption["created_at"])
+    def __init__(self, decryption: dict[str, Any]):
+        self.decryption_id = str(decryption.get("_id"))
+        self.election_id = str(decryption.get("election_id"))
+        self.key_ceremony_id = decryption.get("key_ceremony_id")
+        self.election_name = decryption.get("election_name")
+        self.guardians = _get_int(decryption, "guardians", 0)
+        self.quorum = _get_int(decryption, "quorum", 0)
+        self.decryption_name = decryption.get("decryption_name")
+        self.guardians_joined = _get_list(decryption, "guardians_joined")
+        self.decryption_shares = _get_list(decryption, "decryption_shares")
+        self.plaintext_tally = decryption.get("plaintext_tally")
+        self.plaintext_spoiled_ballots = decryption.get("plaintext_spoiled_ballots")
+        self.lagrange_coefficients = decryption.get("lagrange_coefficients")
+        self.ciphertext_tally = decryption.get("ciphertext_tally")
+        self.completed_at_utc = decryption.get("completed_at")
+        self.completed_at_str = utc_to_str(decryption.get("completed_at"))
+        self.created_by = decryption.get("created_by")
+        self.created_at_utc = decryption.get("created_at")
+        self.created_at_str = utc_to_str(decryption.get("created_at"))
         self.can_join = False
 
     def get_status(self) -> str:
@@ -126,16 +127,38 @@ class DecryptionDto:
         self.can_join = not already_joined and not is_admin
 
     def get_plaintext_tally(self) -> PlaintextTally:
+        if not self.plaintext_tally:
+            raise ValueError("No plaintext tally found")
         return from_raw(PlaintextTally, self.plaintext_tally)
 
     def get_plaintext_spoiled_ballots(self) -> list[PlaintextTally]:
+        if not self.plaintext_spoiled_ballots:
+            raise ValueError("No plaintext spoiled ballots found")
         return [
             from_raw(PlaintextTally, tally)
             for tally in self.plaintext_spoiled_ballots.values()
         ]
 
     def get_lagrange_coefficients(self) -> LagrangeCoefficientsRecord:
+        if not self.lagrange_coefficients:
+            raise ValueError("No lagrange coefficients found")
         return from_raw(LagrangeCoefficientsRecord, self.lagrange_coefficients)
 
     def get_ciphertext_tally(self) -> PublishedCiphertextTally:
+        if not self.ciphertext_tally:
+            raise ValueError("No ciphertext tally found")
         return from_raw(PublishedCiphertextTally, self.ciphertext_tally)
+
+
+def _get_list(decryption: dict[str, Any], name: str) -> list:
+    value = decryption.get(name)
+    if value:
+        return list(value)
+    return []
+
+
+def _get_int(decryption: dict[str, Any], name: str, default: int) -> int:
+    value = decryption.get(name)
+    if value:
+        return int(value)
+    return default

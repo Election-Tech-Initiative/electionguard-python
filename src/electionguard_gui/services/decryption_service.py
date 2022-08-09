@@ -39,7 +39,7 @@ class DecryptionService(ServiceBase):
         election: ElectionDto,
         decryption_name: str,
     ) -> str:
-        decryption = {
+        decryption: dict[str, Any] = {
             "election_id": election.id,
             "election_name": election.election_name,
             "key_ceremony_id": election.key_ceremony_id,
