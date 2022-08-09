@@ -4,6 +4,7 @@ import tempfile
 from typing import Any
 import eel
 from electionguard.constants import get_constants
+from electionguard.guardian import Guardian
 from electionguard_cli.setup_election.output_setup_files_step import (
     OutputSetupFilesStep,
 )
@@ -79,10 +80,10 @@ class CreateElectionComponent(ComponentBase):
             key_ceremony = self._key_ceremony_service.get(db, key_ceremony_id)
 
             guardians = [
-                self._guardian_service.load_guardian_from_key_ceremony(
-                    guardian_id, key_ceremony
+                Guardian.from_public_key(
+                    key_ceremony.guardian_count, key_ceremony.quorum, key
                 )
-                for guardian_id in key_ceremony.guardians_joined
+                for key in key_ceremony.keys
             ]
             election_inputs = self._setup_input_retrieval_step.get_gui_inputs(
                 key_ceremony.guardian_count,

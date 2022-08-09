@@ -15,8 +15,8 @@ from .decryption import (
 )
 from .decryption_share import CompensatedDecryptionShare, DecryptionShare
 from .election import CiphertextElectionContext
-from .election_polynomial import PublicCommitment
-from .elgamal import ElGamalPublicKey, elgamal_combine_public_keys
+from .election_polynomial import ElectionPolynomial, PublicCommitment
+from .elgamal import ElGamalKeyPair, ElGamalPublicKey, elgamal_combine_public_keys
 from .group import ElementModP, ElementModQ
 from .key_ceremony import (
     CeremonyDetails,
@@ -193,6 +193,23 @@ class Guardian:
     @property
     def sequence_order(self) -> int:
         return self._election_keys.sequence_order
+
+    @classmethod
+    def from_public_key(
+        cls,
+        number_of_guardians: int,
+        quorum: int,
+        public_key: ElectionPublicKey,
+    ) -> "Guardian":
+        el_gamal_key_pair = ElGamalKeyPair(ElementModQ(0), public_key.key)
+        election_key_pair = ElectionKeyPair(
+            public_key.owner_id,
+            public_key.sequence_order,
+            el_gamal_key_pair,
+            ElectionPolynomial([]),
+        )
+        ceremony_details = CeremonyDetails(number_of_guardians, quorum)
+        return cls(election_key_pair, ceremony_details)
 
     @classmethod
     def from_nonce(
