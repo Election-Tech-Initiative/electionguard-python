@@ -7,6 +7,8 @@ PKG_MGR ?= $(shell python3 -c 'import subprocess as sub; print(next(filter(None,
 endif
 SAMPLE_BALLOT_COUNT ?= 5
 SAMPLE_BALLOT_SPOIL_RATE ?= 50
+DBDIR=c:/mongodb/database
+$(shell mkdir -p $(DBDIR))
 
 all: environment install build validate auto-lint coverage
 

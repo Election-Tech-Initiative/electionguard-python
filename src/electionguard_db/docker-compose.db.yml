@@ -1,7 +1,7 @@
 version: "3.8"
 services:
   mongo:
-    image: mongo
+    image: mongo:4.4
     container_name: "electionguard-db"
     restart: always
     ports:
@@ -12,9 +12,10 @@ services:
       MONGO_INITDB_DATABASE: ElectionGuardDb
     volumes:
       - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+      - c:/mongodb/database:/data/db
 
   mongo-express:
-    image: mongo-express
+    image: mongo-express:1.0.0-alpha.4
     restart: always
     ports:
       - 8181:8081
@@ -24,3 +25,5 @@ services:
       ME_CONFIG_MONGODB_ADMINPASSWORD: ${EG_DB_PASSWORD}
     links:
       - mongo
+    volumes:
+      - c:/mongodb/database:/data/db
