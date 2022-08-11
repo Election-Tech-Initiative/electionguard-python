@@ -40,6 +40,8 @@ services:
       EG_MODE: none
       EG_HOST: 0.0.0.0
       EG_IS_ADMIN: True
+      # to get logs via `docker logs`, see also https://stackoverflow.com/a/51362214/40783
+      PYTHONUNBUFFERED: 1
     depends_on:
       - mongo
     volumes:
@@ -57,6 +59,7 @@ services:
       EG_MODE: none
       EG_HOST: 0.0.0.0
       EG_IS_ADMIN: False
+      PYTHONUNBUFFERED: 1
     depends_on:
       - mongo
 
@@ -72,5 +75,6 @@ services:
       EG_MODE: none
       EG_HOST: 0.0.0.0
       EG_IS_ADMIN: False
+      PYTHONUNBUFFERED: 1
     depends_on:
       - mongo
