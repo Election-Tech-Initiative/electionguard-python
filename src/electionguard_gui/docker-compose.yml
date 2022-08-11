@@ -1,0 +1,43 @@
+version: "3.8"
+services:
+  mongo:
+    image: mongo:4.4
+    container_name: "electionguard-db"
+    restart: always
+    ports:
+      - 27017:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: ${EG_DB_PASSWORD}
+      MONGO_INITDB_DATABASE: ElectionGuardDb
+    volumes:
+      - ../electionguard_db/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+      - ${EG_DB_DIR}:/data/db
+
+  mongo-express:
+    image: mongo-express:1.0.0-alpha.4
+    restart: always
+    ports:
+      - 8181:8081
+    environment:
+      ME_CONFIG_MONGODB_SERVER: electionguard-db
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${EG_DB_PASSWORD}
+    depends_on:
+      - mongo
+    volumes:
+      - ${EG_DB_DIR}:/data/db
+
+  egui:
+    image: egui:latest
+    container_name: "guardian1"
+    ports:
+      - 12800:12800
+    environment:
+      EG_DB_PASSWORD: ${EG_DB_PASSWORD}
+      EG_DB_HOST: mongo
+      EG_PORT: 12800
+      EG_MODE: none
+      EG_HOST: 0.0.0.0
+    depends_on:
+      - mongo
