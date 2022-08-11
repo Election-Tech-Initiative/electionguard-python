@@ -1,8 +1,7 @@
 from pymongo import MongoClient
 from pymongo.database import Database
 from electionguard_gui.services.configuration_service import (
-    get_db_host,
-    get_db_password,
+    ConfigurationService,
 )
 from electionguard_gui.services.eel_log_service import EelLogService
 
@@ -14,10 +13,12 @@ class DbService(ServiceBase):
 
     log_service: EelLogService
 
-    def __init__(self, log_service: EelLogService) -> None:
+    def __init__(
+        self, log_service: EelLogService, config_service: ConfigurationService
+    ) -> None:
         self.log_service = log_service
-        self._db_password = get_db_password()
-        self._db_host = get_db_host(self.DEFAULT_HOST)
+        self._db_password = config_service.get_db_password()
+        self._db_host = config_service.get_db_host(self.DEFAULT_HOST)
 
     DEFAULT_HOST = "localhost"
     DEFAULT_PORT = 27017

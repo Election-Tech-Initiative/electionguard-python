@@ -24,12 +24,10 @@ from electionguard_gui.services.ballot_upload_service import (
     BallotUploadService,
 )
 from electionguard_gui.services.configuration_service import (
+    ConfigurationService,
     DB_HOST_KEY,
     DB_PASSWORD_KEY,
     IS_ADMIN_KEY,
-    get_db_host,
-    get_db_password,
-    get_is_admin,
 )
 from electionguard_gui.services.db_serialization_service import (
     backup_to_dict,
@@ -110,6 +108,7 @@ from electionguard_gui.services.service_base import (
 __all__ = [
     "AuthorizationService",
     "BallotUploadService",
+    "ConfigurationService",
     "DB_HOST_KEY",
     "DB_PASSWORD_KEY",
     "DbService",
@@ -149,12 +148,9 @@ __all__ = [
     "eel_log_service",
     "election_service",
     "export_service",
-    "get_db_host",
-    "get_db_password",
     "get_download_path",
     "get_drives",
     "get_guardian_number",
-    "get_is_admin",
     "get_key_ceremony_status",
     "get_plaintext_ballot_report",
     "get_tally",

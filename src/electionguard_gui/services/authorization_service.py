@@ -1,12 +1,17 @@
 from typing import Optional
 import eel
 
-from electionguard_gui.services.configuration_service import get_is_admin
+from electionguard_gui.services.configuration_service import ConfigurationService
 from electionguard_gui.services.service_base import ServiceBase
 
 
 class AuthorizationService(ServiceBase):
     """Responsible for functionality related to authorization and user identify"""
+
+    _is_admin: bool
+
+    def __init__(self, config_service: ConfigurationService) -> None:
+        self._is_admin = config_service.get_is_admin()
 
     # todo: replace state based storage with configparser https://docs.python.org/3/library/configparser.html
     user_id: Optional[str] = None
@@ -27,7 +32,5 @@ class AuthorizationService(ServiceBase):
     def set_user_id(self, user_id: str) -> None:
         self.user_id = user_id
 
-    # pylint: disable=no-self-use
     def is_admin(self) -> bool:
-        is_admin: bool = get_is_admin()
-        return is_admin
+        return self._is_admin
