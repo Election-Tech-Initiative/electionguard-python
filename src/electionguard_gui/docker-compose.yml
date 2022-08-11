@@ -28,16 +28,49 @@ services:
     volumes:
       - ${EG_DB_DIR}:/data/db
 
-  egui:
+  admin1:
     image: egui:latest
-    container_name: "guardian1"
+    container_name: "admin1"
     ports:
-      - 12800:12800
+      - 12801:12800
     environment:
       EG_DB_PASSWORD: ${EG_DB_PASSWORD}
       EG_DB_HOST: mongo
       EG_PORT: 12800
       EG_MODE: none
       EG_HOST: 0.0.0.0
+      EG_IS_ADMIN: True
+    depends_on:
+      - mongo
+    volumes:
+      - G:\:/mnt/host
+
+  guardian1:
+    image: egui:latest
+    container_name: "guardian1"
+    ports:
+      - 12802:12800
+    environment:
+      EG_DB_PASSWORD: ${EG_DB_PASSWORD}
+      EG_DB_HOST: mongo
+      EG_PORT: 12800
+      EG_MODE: none
+      EG_HOST: 0.0.0.0
+      EG_IS_ADMIN: False
+    depends_on:
+      - mongo
+
+  guardian2:
+    image: egui:latest
+    container_name: "guardian2"
+    ports:
+      - 12803:12800
+    environment:
+      EG_DB_PASSWORD: ${EG_DB_PASSWORD}
+      EG_DB_HOST: mongo
+      EG_PORT: 12800
+      EG_MODE: none
+      EG_HOST: 0.0.0.0
+      EG_IS_ADMIN: False
     depends_on:
       - mongo
