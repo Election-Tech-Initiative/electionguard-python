@@ -99,8 +99,9 @@ class MainApp:
             eel.init("src/electionguard_gui/web")
             mode = self.config_service.get_mode()
             port = self.config_service.get_port()
-            self.log_service.debug(f"Starting eel port={port} mode={mode}")
-            eel.start("main.html", size=(1024, 768), port=port, mode=mode)
+            host = self.config_service.get_host()
+            self.log_service.debug(f"Starting eel port={port} mode={mode} host={host}")
+            eel.start("main.html", size=(1024, 768), port=port, mode=mode, host=host)
         except Exception as e:
             self.log_service.error(e)
             traceback.print_exc()

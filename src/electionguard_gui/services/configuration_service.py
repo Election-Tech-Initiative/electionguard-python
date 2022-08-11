@@ -7,6 +7,7 @@ DB_HOST_KEY = "EG_DB_HOST"
 IS_ADMIN_KEY = "EG_IS_ADMIN"
 PORT_KEY = "EG_PORT"
 MODE_KEY = "EG_MODE"
+HOST_KEY = "EG_HOST"
 
 
 class ConfigurationService:
@@ -19,6 +20,9 @@ class ConfigurationService:
 
     def get_port(self) -> int:
         return int(self._get_param_or_default(PORT_KEY, "0"))
+
+    def get_host(self) -> str:
+        return str(self._get_param_or_default(HOST_KEY, "localhost"))
 
     def get_db_password(self) -> str:
         return self._get_param(DB_PASSWORD_KEY)
