@@ -1,6 +1,5 @@
 from os import path
 from shutil import make_archive, rmtree
-import tempfile
 from typing import Any
 import eel
 from electionguard.constants import get_constants
@@ -19,6 +18,7 @@ from electionguard_gui.services import (
     ElectionService,
     GuardianService,
 )
+from electionguard_gui.services.directory_service import get_data_dir
 
 
 class CreateElectionComponent(ComponentBase):
@@ -99,11 +99,11 @@ class CreateElectionComponent(ComponentBase):
                 )
             )
 
-            temp_out_dir = path.join(tempfile.gettempdir(), "election_setup")
+            temp_out_dir = path.join(get_data_dir(), "election_setup")
             self._output_setup_files_step.output(
                 election_inputs, build_election_results, temp_out_dir, None
             )
-            zip_file = path.join(tempfile.gettempdir(), "public_encryption_package")
+            zip_file = path.join(get_data_dir(), "public_encryption_package")
             encryption_package_file = self._zip(temp_out_dir, zip_file)
             guardian_records = [
                 guardian.publish() for guardian in election_inputs.guardians

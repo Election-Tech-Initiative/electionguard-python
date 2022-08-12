@@ -33,6 +33,7 @@ class ConfigurationService:
     def get_is_admin(self) -> bool:
         return self._get_param_or_default(IS_ADMIN_KEY, "false").lower() == "true"
 
+    # pylint: disable=no-self-use
     def _get_param(self, param_name: str) -> str:
         try:
             return environ[param_name]
@@ -40,6 +41,7 @@ class ConfigurationService:
             print(f"The environment variable {param_name} is not set.")
             exit(1)
 
+    # pylint: disable=no-self-use
     def _get_param_or_default(self, param_name: str, default: str) -> str:
         try:
             return environ[param_name]

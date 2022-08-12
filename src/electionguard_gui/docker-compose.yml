@@ -45,7 +45,10 @@ services:
     depends_on:
       - mongo
     volumes:
-      - G:\:/mnt/host
+      # admin devices use /data to store encryption package after election creation. See also directory_service.py
+      - ../../egui_mnt/data:/egui_mnt/data
+      # egui_mnt/export is where admin devices export election records and encryption packages
+      - ../../egui_mnt/export/:/egui_mnt/export
 
   guardian1:
     image: egui:latest
@@ -62,6 +65,9 @@ services:
       PYTHONUNBUFFERED: 1
     depends_on:
       - mongo
+    volumes:
+      # guardian devices store their private keys in /data so it is persists if the docker image is deleted
+      - ../../egui_mnt/data:/egui_mnt/data
 
   guardian2:
     image: egui:latest
@@ -78,3 +84,6 @@ services:
       PYTHONUNBUFFERED: 1
     depends_on:
       - mongo
+    volumes:
+      # guardian devices store their private keys in /data so it is persists if the docker image is deleted
+      - ../../egui_mnt/data:/egui_mnt/data

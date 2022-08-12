@@ -1,5 +1,5 @@
 import os
-from tempfile import TemporaryDirectory, gettempdir
+from tempfile import TemporaryDirectory
 from os.path import splitext
 from typing import Any
 from shutil import make_archive
@@ -12,7 +12,7 @@ from electionguard_gui.services import (
     DecryptionService,
     BallotUploadService,
 )
-from electionguard_gui.services.export_service import get_download_path, get_drives
+from electionguard_gui.services.export_service import get_export_locations
 from electionguard_tools.helpers.export import export_record
 
 
@@ -41,12 +41,10 @@ class ExportElectionRecordComponent(ComponentBase):
 
     def get_election_record_export_locations(self) -> dict[str, Any]:
         self._log.trace("getting export locations")
-        drives = get_drives()
-        common_root_dirs = [get_download_path(), gettempdir()]
-        combined_root_dirs = common_root_dirs + drives
+        export_locations = get_export_locations()
         locations = [
             os.path.join(location, "publish-election.zip")
-            for location in combined_root_dirs
+            for location in export_locations
         ]
         return eel_success(locations)
 
