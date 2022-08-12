@@ -246,7 +246,7 @@ endif
 	docker compose --env-file ./.env -f src/electionguard_db/docker-compose.db.yml up -d
 
 stop-db:
-	docker compose -f src/electionguard_db/docker-compose.db.yml down
+	docker compose --env-file ./.env -f src/electionguard_db/docker-compose.db.yml down
 
 build-egui:
 	docker build -t egui -f src\electionguard_gui\Dockerfile .
