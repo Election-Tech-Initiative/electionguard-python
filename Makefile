@@ -243,7 +243,7 @@ ifeq "${EG_DB_PASSWORD}" ""
 	@echo "Set the EG_DB_PASSWORD environment variable"
 	exit 1
 endif
-	docker compose -f src/electionguard_db/docker-compose.db.yml up -d
+	docker compose --env-file ./.env -f src/electionguard_db/docker-compose.db.yml up -d
 
 stop-db:
 	docker compose -f src/electionguard_db/docker-compose.db.yml down
