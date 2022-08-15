@@ -12,7 +12,7 @@ RUN apt-get install -y tzdata && \
         libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm \
         libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev
 
-RUN apt-get install -y git
+RUN apt-get install -y git apt-utils
 
 # install pyenv
 RUN curl https://pyenv.run | bash
@@ -51,7 +51,7 @@ RUN mkdir /app
 WORKDIR /app
 # --no-root allows us to copy the minimum to just get dependencies to give
 #       Docker very few reasons to invalidate the poetry install layer
-COPY pyproject.toml README.md .
+COPY pyproject.toml README.md ./
 RUN poetry config virtualenvs.in-project true && \
 	poetry install --no-root
 
@@ -65,6 +65,10 @@ RUN rm src/electionguard_gui/__init__.py
 ##################################################################################
 # Run EGUI
 ##################################################################################
+
+# cleanup
+RUN apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 # the final poetry install runs fast, it activates the virtualenv and initializes the modules
 RUN poetry install
