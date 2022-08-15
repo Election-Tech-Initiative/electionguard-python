@@ -34,6 +34,7 @@ from electionguard_gui.services import (
     BallotUploadService,
     DecryptionService,
     DbWatcherService,
+    ConfigurationService,
 )
 from electionguard_gui.services.decryption_stages import (
     DecryptionS1JoinService,
@@ -54,11 +55,14 @@ class Container(containers.DeclarativeContainer):
 
     # services
     log_service: Factory[EelLogService] = providers.Factory(EelLogService)
+    config_service: Factory[ConfigurationService] = providers.Factory(
+        ConfigurationService
+    )
     db_service: Singleton[DbService] = providers.Singleton(
-        DbService, log_service=log_service
+        DbService, log_service=log_service, config_service=config_service
     )
     authorization_service: Singleton[AuthorizationService] = providers.Singleton(
-        AuthorizationService
+        AuthorizationService, config_service=config_service
     )
     db_watcher_service: Factory[DbWatcherService] = providers.Factory(
         DbWatcherService, log_service=log_service
@@ -282,6 +286,7 @@ class Container(containers.DeclarativeContainer):
     main_app: Factory[MainApp] = providers.Factory(
         MainApp,
         log_service=log_service,
+        config_service=config_service,
         db_service=db_service,
         guardian_home_component=guardian_home_component,
         create_key_ceremony_component=create_key_ceremony_component,

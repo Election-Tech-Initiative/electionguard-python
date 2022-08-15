@@ -7,16 +7,6 @@ PKG_MGR ?= $(shell python3 -c 'import subprocess as sub; print(next(filter(None,
 endif
 SAMPLE_BALLOT_COUNT ?= 5
 SAMPLE_BALLOT_SPOIL_RATE ?= 50
-ifeq ($(OS), Linux)
-	DBDIR=/mongodb/database
-endif
-ifeq ($(OPERATING_SYSTEM),Darwin)
-	DBDIR=/mongodb/database
-endif
-ifeq ($(OS), Windows)
-	DBDIR=c:/mongodb/database
-endif
-$(shell mkdir -p $(DBDIR))
 
 all: environment install build validate auto-lint coverage
 
@@ -257,10 +247,23 @@ ifeq "${EG_DB_PASSWORD}" ""
 	@echo "Set the EG_DB_PASSWORD environment variable"
 	exit 1
 endif
-	docker compose -f src/electionguard_db/docker-compose.db.yml up -d
+	docker compose --env-file ./.env -f src/electionguard_db/docker-compose.db.yml up -d
 
 stop-db:
-	docker compose -f src/electionguard_db/docker-compose.db.yml down
+	docker compose --env-file ./.env -f src/electionguard_db/docker-compose.db.yml down
+
+build-egui:
+	docker build -t egui -f src\electionguard_gui\Dockerfile .
+
+start-egui: build-egui
+ifeq "${EG_DB_PASSWORD}" ""
+	@echo "Set the EG_DB_PASSWORD environment variable"
+	exit 1
+endif
+	docker compose --env-file ./.env -f src/electionguard_gui/docker-compose.yml up -d
+
+stop-egui:
+	docker compose --env-file ./.env -f src/electionguard_gui/docker-compose.yml down
 
 eg-e2e-simple-election:
 	poetry run eg e2e --guardian-count=2 --quorum=2 --manifest=data/election_manifest_simple.json --ballots=data/plaintext_ballots_simple.json --spoil-id=25a7111b-4334-425a-87c1-f7a49f42b3a2 --output-record="./election_record.zip"

@@ -1,4 +1,13 @@
 import os
+from electionguard_gui.services.directory_service import get_data_dir, get_export_dir
+
+
+def get_export_locations() -> list[str]:
+    export_dir = get_export_dir()
+    if os.name == "nt":
+        drives = get_drives()
+        return [export_dir, _get_download_path(), get_data_dir()] + drives
+    return [export_dir]
 
 
 def get_drives() -> list[str]:
@@ -7,7 +16,7 @@ def get_drives() -> list[str]:
     return drives
 
 
-def get_download_path() -> str:
+def _get_download_path() -> str:
     """
     Returns the default downloads path for linux or windows.
     Code from https://pyquestions.com/python-finding-the-user-s-downloads-folder

@@ -24,6 +24,7 @@ from electionguard_gui.services import (
     DbService,
     EelLogService,
     ServiceBase,
+    ConfigurationService,
 )
 
 
@@ -38,6 +39,7 @@ class MainApp:
     def __init__(
         self,
         log_service: EelLogService,
+        config_service: ConfigurationService,
         db_service: DbService,
         guardian_home_component: GuardianHomeComponent,
         create_key_ceremony_component: CreateKeyCeremonyComponent,
@@ -58,6 +60,7 @@ class MainApp:
 
         self.log_service = log_service
         self.db_service = db_service
+        self.config_service = config_service
 
         self.components = [
             guardian_home_component,
@@ -94,8 +97,11 @@ class MainApp:
 
             self.db_service.verify_db_connection()
             eel.init("src/electionguard_gui/web")
-            self.log_service.debug("Starting eel")
-            eel.start("main.html", size=(1024, 768), port=0)
+            mode = self.config_service.get_mode()
+            port = self.config_service.get_port()
+            host = self.config_service.get_host()
+            self.log_service.debug(f"Starting eel port={port} mode={mode} host={host}")
+            eel.start("index.html", size=(1024, 768), port=port, mode=mode, host=host)
         except Exception as e:
             self.log_service.error(e)
             traceback.print_exc()
