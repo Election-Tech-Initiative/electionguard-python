@@ -31,6 +31,7 @@ services:
   admin1:
     image: egui:latest
     container_name: "admin1"
+    restart: always
     ports:
       - 12801:12800
     environment:
@@ -53,6 +54,7 @@ services:
   guardian1:
     image: egui:latest
     container_name: "guardian1"
+    restart: always
     ports:
       - 12802:12800
     environment:
@@ -72,6 +74,7 @@ services:
   guardian2:
     image: egui:latest
     container_name: "guardian2"
+    restart: always
     ports:
       - 12803:12800
     environment:
