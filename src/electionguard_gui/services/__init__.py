@@ -6,6 +6,7 @@ from electionguard_gui.services import db_service
 from electionguard_gui.services import db_watcher_service
 from electionguard_gui.services import decryption_service
 from electionguard_gui.services import decryption_stages
+from electionguard_gui.services import directory_service
 from electionguard_gui.services import eel_log_service
 from electionguard_gui.services import election_service
 from electionguard_gui.services import export_service
@@ -24,12 +25,13 @@ from electionguard_gui.services.ballot_upload_service import (
     BallotUploadService,
 )
 from electionguard_gui.services.configuration_service import (
+    ConfigurationService,
     DB_HOST_KEY,
     DB_PASSWORD_KEY,
+    HOST_KEY,
     IS_ADMIN_KEY,
-    get_db_host,
-    get_db_password,
-    get_is_admin,
+    MODE_KEY,
+    PORT_KEY,
 )
 from electionguard_gui.services.db_serialization_service import (
     backup_to_dict,
@@ -56,6 +58,11 @@ from electionguard_gui.services.decryption_stages import (
     decryption_stage_base,
     get_tally,
 )
+from electionguard_gui.services.directory_service import (
+    DOCKER_MOUNT_DIR,
+    get_data_dir,
+    get_export_dir,
+)
 from electionguard_gui.services.eel_log_service import (
     EelLogService,
 )
@@ -63,8 +70,8 @@ from electionguard_gui.services.election_service import (
     ElectionService,
 )
 from electionguard_gui.services.export_service import (
-    get_download_path,
     get_drives,
+    get_export_locations,
 )
 from electionguard_gui.services.guardian_service import (
     GuardianService,
@@ -110,8 +117,10 @@ from electionguard_gui.services.service_base import (
 __all__ = [
     "AuthorizationService",
     "BallotUploadService",
+    "ConfigurationService",
     "DB_HOST_KEY",
     "DB_PASSWORD_KEY",
+    "DOCKER_MOUNT_DIR",
     "DbService",
     "DbWatcherService",
     "DecryptionS1JoinService",
@@ -122,6 +131,7 @@ __all__ = [
     "ElectionService",
     "GuardianService",
     "GuiSetupInputRetrievalStep",
+    "HOST_KEY",
     "IS_ADMIN_KEY",
     "KeyCeremonyS1JoinService",
     "KeyCeremonyS2AnnounceService",
@@ -132,6 +142,8 @@ __all__ = [
     "KeyCeremonyService",
     "KeyCeremonyStageBase",
     "KeyCeremonyStateService",
+    "MODE_KEY",
+    "PORT_KEY",
     "ServiceBase",
     "announce_guardians",
     "authorization_service",
@@ -146,15 +158,15 @@ __all__ = [
     "decryption_service",
     "decryption_stage_base",
     "decryption_stages",
+    "directory_service",
     "eel_log_service",
     "election_service",
     "export_service",
-    "get_db_host",
-    "get_db_password",
-    "get_download_path",
+    "get_data_dir",
     "get_drives",
+    "get_export_dir",
+    "get_export_locations",
     "get_guardian_number",
-    "get_is_admin",
     "get_key_ceremony_status",
     "get_plaintext_ballot_report",
     "get_tally",

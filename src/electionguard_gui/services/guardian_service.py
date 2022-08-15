@@ -1,10 +1,11 @@
-from os import getcwd, path
+from os import path
 from electionguard.serialize import from_file, to_file
 from electionguard.guardian import Guardian, PrivateGuardianRecord
 from electionguard.key_ceremony import CeremonyDetails
 from electionguard.key_ceremony_mediator import KeyCeremonyMediator
 from electionguard_gui.models.decryption_dto import DecryptionDto
 from electionguard_gui.models.key_ceremony_dto import KeyCeremonyDto
+from electionguard_gui.services.directory_service import get_data_dir
 from electionguard_gui.services.eel_log_service import EelLogService
 from electionguard_gui.services.service_base import ServiceBase
 from electionguard_tools.helpers.export import GUARDIAN_PREFIX
@@ -21,7 +22,7 @@ class GuardianService(ServiceBase):
     def save_guardian(self, guardian: Guardian, key_ceremony: KeyCeremonyDto) -> None:
         private_guardian_record = guardian.export_private_data()
         file_name = GUARDIAN_PREFIX + private_guardian_record.guardian_id
-        file_path = path.join(getcwd(), "gui_private_keys", key_ceremony.id)
+        file_path = path.join(get_data_dir(), "gui_private_keys", key_ceremony.id)
         file = to_file(private_guardian_record, file_name, file_path)
         self._log.warn(
             f"Guardian private data saved to {file}. This data should be carefully protected and never shared."
@@ -31,7 +32,9 @@ class GuardianService(ServiceBase):
         self, guardian_id: str, key_ceremony_id: str, guardian_count: int, quorum: int
     ) -> Guardian:
         file_name = GUARDIAN_PREFIX + guardian_id + ".json"
-        file_path = path.join(getcwd(), "gui_private_keys", key_ceremony_id, file_name)
+        file_path = path.join(
+            get_data_dir(), "gui_private_keys", key_ceremony_id, file_name
+        )
         self._log.debug(f"loading guardian from {file_path}")
         if not path.exists(file_path):
             raise Exception(f"Guardian file not found: {file_path}")

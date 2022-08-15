@@ -12,7 +12,7 @@ services:
       MONGO_INITDB_DATABASE: ElectionGuardDb
     volumes:
       - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
-      - c:/mongodb/database:/data/db
+      - ${EG_DB_DIR}:/data/db
 
   mongo-express:
     image: mongo-express:1.0.0-alpha.4
@@ -23,7 +23,7 @@ services:
       ME_CONFIG_MONGODB_SERVER: electionguard-db
       ME_CONFIG_MONGODB_ADMINUSERNAME: root
       ME_CONFIG_MONGODB_ADMINPASSWORD: ${EG_DB_PASSWORD}
-    links:
+    depends_on:
       - mongo
     volumes:
-      - c:/mongodb/database:/data/db
+      - ${EG_DB_DIR}:/data/db

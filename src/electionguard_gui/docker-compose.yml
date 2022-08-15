@@ -1,0 +1,92 @@
+version: "3.8"
+services:
+  mongo:
+    image: mongo:4.4
+    container_name: "electionguard-db"
+    restart: always
+    ports:
+      - 27017:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: ${EG_DB_PASSWORD}
+      MONGO_INITDB_DATABASE: ElectionGuardDb
+    volumes:
+      - ../electionguard_db/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+      - ${EG_DB_DIR}:/data/db
+
+  mongo-express:
+    image: mongo-express:1.0.0-alpha.4
+    restart: always
+    ports:
+      - 8181:8081
+    environment:
+      ME_CONFIG_MONGODB_SERVER: electionguard-db
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${EG_DB_PASSWORD}
+    depends_on:
+      - mongo
+    volumes:
+      - ${EG_DB_DIR}:/data/db
+
+  admin1:
+    image: egui:latest
+    container_name: "admin1"
+    restart: always
+    ports:
+      - 12801:12800
+    environment:
+      EG_DB_PASSWORD: ${EG_DB_PASSWORD}
+      EG_DB_HOST: mongo
+      EG_PORT: 12800
+      EG_MODE: none
+      EG_HOST: 0.0.0.0
+      EG_IS_ADMIN: True
+      # to get logs via `docker logs`, see also https://stackoverflow.com/a/51362214/40783
+      PYTHONUNBUFFERED: 1
+    depends_on:
+      - mongo
+    volumes:
+      # admin devices use /data to store encryption package after election creation. See also directory_service.py
+      - ../../egui_mnt/data:/egui_mnt/data
+      # egui_mnt/export is where admin devices export election records and encryption packages
+      - ../../egui_mnt/export/:/egui_mnt/export
+
+  guardian1:
+    image: egui:latest
+    container_name: "guardian1"
+    restart: always
+    ports:
+      - 12802:12800
+    environment:
+      EG_DB_PASSWORD: ${EG_DB_PASSWORD}
+      EG_DB_HOST: mongo
+      EG_PORT: 12800
+      EG_MODE: none
+      EG_HOST: 0.0.0.0
+      EG_IS_ADMIN: False
+      PYTHONUNBUFFERED: 1
+    depends_on:
+      - mongo
+    volumes:
+      # guardian devices store their private keys in /data so it is persists if the docker image is deleted
+      - ../../egui_mnt/data:/egui_mnt/data
+
+  guardian2:
+    image: egui:latest
+    container_name: "guardian2"
+    restart: always
+    ports:
+      - 12803:12800
+    environment:
+      EG_DB_PASSWORD: ${EG_DB_PASSWORD}
+      EG_DB_HOST: mongo
+      EG_PORT: 12800
+      EG_MODE: none
+      EG_HOST: 0.0.0.0
+      EG_IS_ADMIN: False
+      PYTHONUNBUFFERED: 1
+    depends_on:
+      - mongo
+    volumes:
+      # guardian devices store their private keys in /data so it is persists if the docker image is deleted
+      - ../../egui_mnt/data:/egui_mnt/data
