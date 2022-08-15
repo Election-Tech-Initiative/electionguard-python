@@ -196,6 +196,10 @@ endif
 	wget https://github.com/microsoft/electionguard/releases/download/v0.95.0/sample-data.zip
 	unzip -o sample-data.zip
 
+generate-sample-data:
+	@echo 🔁 GENERATE Sample Data
+	poetry run python3 src/electionguard_tools/scripts/sample_generator.py -m "hamilton-general" -n $(SAMPLE_BALLOT_COUNT) -s $(SAMPLE_BALLOT_SPOIL_RATE)
+
 # Publish
 publish:
 	poetry publish
