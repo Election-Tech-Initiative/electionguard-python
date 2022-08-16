@@ -68,9 +68,9 @@ class BallotUploadService(ServiceBase):
             ballot_str = ballot_obj["file_contents"]
             try:
                 ballot = from_raw(SubmittedBallot, ballot_str)
+            # pylint: disable=broad-except
             except Exception as e:
-                self._log.info(f"error deserializing ballot: {ballot_obj}")
-                self._log.error(e)
-                raise
+                self._log.error("error deserializing ballot: {ballot_obj}", e)
+                # per RC 8/15/22 log errors and continue processing even if it makes numbers incorrect
             ballots.append(ballot)
         return ballots
