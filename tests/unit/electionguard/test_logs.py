@@ -1,3 +1,4 @@
+import logging
 from tests.base_test_case import BaseTestCase
 
 from electionguard.logs import (
@@ -45,7 +46,7 @@ class TestLogs(BaseTestCase):
         self.assertEqual(len(empty_handlers), 0)
 
         # Act
-        log_add_handler(get_stream_handler())
+        log_add_handler(get_stream_handler(logging.INFO))
         added_handlers = log_handlers()
 
         # Assert
