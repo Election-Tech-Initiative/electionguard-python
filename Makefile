@@ -183,7 +183,7 @@ ifeq ($(OS), Windows)
 	choco install wget
 	choco install unzip
 endif
-	wget https://github.com/microsoft/electionguard/releases/download/v0.95.0/sample-data.zip
+	wget -O sample-data.zip https://github.com/microsoft/electionguard/releases/download/v1.0/sample-data.zip
 	unzip -o sample-data.zip
 
 generate-sample-data:
