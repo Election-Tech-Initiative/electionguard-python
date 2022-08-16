@@ -1,3 +1,4 @@
+from datetime import datetime
 import logging
 from os import path, makedirs
 from typing import Any
@@ -22,7 +23,8 @@ class EelLogService(ServiceBase):
         LOG.set_stream_log_level(logging.DEBUG)
         file_dir = path.join(get_data_dir(), "logs")
         makedirs(file_dir, exist_ok=True)
-        file_name = path.join(file_dir, "electionguard.log")
+        now = datetime.now().strftime("%Y-%m-%d-%H-%M-%S-%f")
+        file_name = path.join(file_dir, f"electionguard-{now}.log")
         LOG.add_handler(get_file_handler(logging.DEBUG, file_name))
 
     def trace(self, message: str, *args: Any, **kwargs: Any) -> None:
