@@ -1,6 +1,8 @@
 import logging
+from os import path, makedirs
 from typing import Any
 from electionguard.logs import (
+    get_file_handler,
     log_critical,
     log_debug,
     log_error,
@@ -8,6 +10,7 @@ from electionguard.logs import (
     log_warning,
     LOG,
 )
+from electionguard_gui.services.directory_service import get_data_dir
 from electionguard_gui.services.service_base import ServiceBase
 
 
@@ -17,6 +20,10 @@ class EelLogService(ServiceBase):
 
     def __init__(self) -> None:
         LOG.set_stream_log_level(logging.DEBUG)
+        file_dir = path.join(get_data_dir(), "logs")
+        makedirs(file_dir, exist_ok=True)
+        file_name = path.join(file_dir, "electionguard.log")
+        LOG.add_handler(get_file_handler(logging.DEBUG, file_name))
 
     def trace(self, message: str, *args: Any, **kwargs: Any) -> None:
         pass

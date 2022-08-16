@@ -115,7 +115,7 @@ def get_stream_handler(log_level: int) -> logging.StreamHandler:
     return stream_handler
 
 
-def get_file_handler() -> logging.FileHandler:
+def get_file_handler(log_level: int, filename: str) -> logging.FileHandler:
     """
     Get a File System Handler, sends verbose logging to a file, `electionguard.log`.
     When that file gets too large, the logs will rotate, creating files with names
@@ -125,9 +125,9 @@ def get_file_handler() -> logging.FileHandler:
     # TODO: add file compression, save a bunch of space.
     #   https://medium.com/@rahulraghu94/overriding-pythons-timedrotatingfilehandler-to-compress-your-log-files-iot-c766a4ace240 # pylint: disable=line-too-long
     file_handler = RotatingFileHandler(
-        "electionguard.log", "a", maxBytes=10_000_000, backupCount=10
+        filename, "a", maxBytes=10_000_000, backupCount=10
     )
-    file_handler.setLevel(logging.DEBUG)
+    file_handler.setLevel(log_level)
     file_handler.setFormatter(logging.Formatter(FORMAT))
     return file_handler
 
