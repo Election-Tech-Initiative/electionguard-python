@@ -43,9 +43,17 @@ class EelLogService(ServiceBase):
         log_warning(message, *args, **kwargs)
 
     # pylint: disable=no-self-use
-    def error(self, message: str, *args: Any, **kwargs: Any) -> None:
-        log_error(message, *args, **kwargs)
+    def error(self, message: str, exception: Exception) -> None:
+        log_error(
+            f"{message} '{exception}'",
+            exc_info=1,
+            extra={"exception": exception},
+        )
 
     # pylint: disable=no-self-use
-    def fatal(self, message: str, *args: Any, **kwargs: Any) -> None:
-        log_critical(message, *args, **kwargs)
+    def fatal(self, message: str, exception: Exception) -> None:
+        log_critical(
+            f"{message} '{str(exception)}'",
+            exc_info=1,
+            extra={"exception": exception},
+        )
