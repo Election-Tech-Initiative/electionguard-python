@@ -103,6 +103,6 @@ class MainApp:
             self.log_service.debug(f"Starting eel port={port} mode={mode} host={host}")
             eel.start("index.html", size=(1024, 768), port=port, mode=mode, host=host)
         except Exception as e:
-            self.log_service.error(e)
+            self.log_service.error("error in main app start", e)
             traceback.print_exc()
             raise e

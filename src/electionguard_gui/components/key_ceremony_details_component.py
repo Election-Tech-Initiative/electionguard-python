@@ -109,7 +109,7 @@ class KeyCeremonyDetailsComponent(ComponentBase):
             eel.refresh_key_ceremony(eel_success(result))
         # pylint: disable=broad-except
         except Exception as e:
-            self._log.error(e)
+            self._log.error("error on key ceremony changed", e)
             traceback.print_exc()
             # pylint: disable=no-member
             eel.refresh_key_ceremony(eel_fail(str(e)))

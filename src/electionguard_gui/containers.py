@@ -54,7 +54,7 @@ class Container(containers.DeclarativeContainer):
     """Responsible for dependency injection and how components are wired together"""
 
     # services
-    log_service: Factory[EelLogService] = providers.Factory(EelLogService)
+    log_service: Factory[EelLogService] = providers.Singleton(EelLogService)
     config_service: Factory[ConfigurationService] = providers.Factory(
         ConfigurationService
     )
