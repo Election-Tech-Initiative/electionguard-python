@@ -59,16 +59,16 @@ RUN poetry config virtualenvs.in-project true && \
 # Get Source
 ##################################################################################
 
+# cleanup first, the next layer will get invalidated easiliy
+RUN apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
 COPY ./src ./src
 RUN rm src/electionguard_gui/__init__.py
 
 ##################################################################################
 # Run EGUI
 ##################################################################################
-
-# cleanup
-RUN apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
 
 # the final poetry install runs fast, it activates the virtualenv and initializes the modules
 RUN poetry install
