@@ -33,6 +33,8 @@ class DecryptionS2AnnounceService(DecryptionStageBase):
             guardian_sequence_number = election.get_guardian_sequence_order(
                 decryption_share_dict.guardian_id
             )
+            # coefficients will fail validation unless the key is a numeric encoded
+            #       string of the guardian's sequence number
             decryption_share_dict.guardian_key.owner_id = str(guardian_sequence_number)
             decryption_mediator.announce(
                 decryption_share_dict.guardian_key,
