@@ -28,16 +28,17 @@ class DecryptionS2AnnounceService(DecryptionStageBase):
             context,
         )
         decryption_shares = decryption.get_decryption_shares()
-        i = 1
         for decryption_share_dict in decryption_shares:
             self._log.debug(f"announcing {decryption_share_dict.guardian_id}")
-            decryption_share_dict.guardian_key.owner_id = str(i)
+            guardian_sequence_number = election.get_guardian_sequence_order(
+                decryption_share_dict.guardian_id
+            )
+            decryption_share_dict.guardian_key.owner_id = str(guardian_sequence_number)
             decryption_mediator.announce(
                 decryption_share_dict.guardian_key,
                 decryption_share_dict.tally_share,
                 decryption_share_dict.ballot_shares,
             )
-            i += 1
 
         manifest = election.get_manifest()
         ballots = self._ballot_upload_service.get_ballots(db, election.id)
