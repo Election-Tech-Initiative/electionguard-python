@@ -27,6 +27,6 @@ class ComponentBase(ABC):
         fact that method names exposed must be globally unique."""
 
     def handle_error(self, error: Exception) -> dict[str, Any]:
-        self._log.error(error)
+        self._log.error("error in component_base", error)
         traceback.print_exc()
         return eel_fail(str(error))

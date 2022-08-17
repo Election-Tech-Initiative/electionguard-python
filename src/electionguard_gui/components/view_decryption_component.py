@@ -65,7 +65,7 @@ class ViewDecryptionComponent(ComponentBase):
             refresh_decryption(eel_success())
         # pylint: disable=broad-except
         except Exception as e:
-            self._log.error(e)
+            self._log.error("error in on decryption changed", e)
             traceback.print_exc()
             refresh_decryption(eel_fail(str(e)))
 

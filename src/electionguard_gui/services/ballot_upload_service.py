@@ -59,13 +59,18 @@ class BallotUploadService(ServiceBase):
         )
 
     def get_ballots(self, db: Database, election_id: str) -> list[SubmittedBallot]:
-        self._log.trace(f"getting ballots for {election_id}")
+        self._log.debug(f"getting ballots for {election_id}")
         ballot_uploads = db.ballot_uploads.find(
             {"election_id": election_id, "file_contents": {"$exists": True}}
         )
         ballots = []
         for ballot_obj in ballot_uploads:
             ballot_str = ballot_obj["file_contents"]
-            ballot = from_raw(SubmittedBallot, ballot_str)
-            ballots.append(ballot)
+            try:
+                ballot = from_raw(SubmittedBallot, ballot_str)
+                ballots.append(ballot)
+            # pylint: disable=broad-except
+            except Exception as e:
+                self._log.error("error deserializing ballot: {ballot_obj}", e)
+                # per RC 8/15/22 log errors and continue processing even if it makes numbers incorrect
         return ballots
