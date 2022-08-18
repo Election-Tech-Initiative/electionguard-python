@@ -105,6 +105,12 @@ class ElectionDto:
             raise Exception("No guardian records found")
         return from_list_raw(GuardianRecord, self.guardian_records)
 
+    def get_guardian_sequence_order(self, guardian_id: str) -> int:
+        for record in self.get_guardian_records():
+            if record.guardian_id == guardian_id:
+                return record.sequence_order
+        raise Exception("Guardian not found")
+
 
 def _get_list(election: dict[str, Any], name: str) -> list:
     value = election.get(name)
