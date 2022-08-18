@@ -302,9 +302,6 @@ class PlaintextBallotContest(ElectionObjectBase):
     )
     """Collection of ballot selections"""
 
-    selection_limit: int = 1
-    """Maximum number of votes allowed per selection"""
-
     @cached_property
     def selected_ids(self) -> List[SelectionId]:
         return [
