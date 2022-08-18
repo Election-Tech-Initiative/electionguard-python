@@ -154,8 +154,8 @@ class CiphertextBallotSelection(
     proof: Optional[RangeChaumPedersenProof] = field(default=None)
     """The proof that the selection used the `nonce` to encrypt an integer in a certain range"""
 
-    selection_limit: Optional[int] = field(default=None)
-    """The selection limit determined by the contest"""
+    selection_limit: int = 1
+    """Maximum number of votes allowed for the selection"""
 
     def is_valid_encryption(
         self,
@@ -301,9 +301,6 @@ class PlaintextBallotContest(ElectionObjectBase):
         default_factory=lambda: []
     )
     """Collection of ballot selections"""
-
-    selection_limit: int = 1
-    """Maximum number of votes allowed per selection"""
 
     @cached_property
     def selected_ids(self) -> List[SelectionId]:
