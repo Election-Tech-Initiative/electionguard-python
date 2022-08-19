@@ -179,7 +179,7 @@ class TestTally(BaseTestCase):
 
         # cast a ballot
         first_ballot.state = BallotBoxState.CAST
-        self.assertTrue(tally.append(first_ballot, True))
+        self.assertTrue(tally.append(first_ballot, False))
 
         # try to append a spoiled ballot
         first_ballot.state = BallotBoxState.SPOILED
@@ -218,7 +218,7 @@ class TestTally(BaseTestCase):
         # verify a cast ballot cannot be added twice
         first_ballot.state = BallotBoxState.CAST
         self.assertTrue(tally.append(first_ballot, True))
-        self.assertFalse(tally.append(first_ballot, True))
+        self.assertFalse(tally.append(first_ballot, False))
 
         # verify an already submitted ballot cannot be changed or readded
         first_ballot.state = BallotBoxState.SPOILED
