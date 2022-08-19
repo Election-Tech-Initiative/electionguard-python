@@ -226,7 +226,10 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
         return False
 
     def append(
-        self, ballot: SubmittedBallot, isAdmin: bool, scheduler: Optional[Scheduler] = None
+        self,
+        ballot: SubmittedBallot,
+        isAdmin: bool,
+        scheduler: Optional[Scheduler] = None,
     ) -> bool:
         """
         Append a ballot to the tally and recalculate the tally.
