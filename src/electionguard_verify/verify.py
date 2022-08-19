@@ -77,7 +77,7 @@ def verify_aggregation(
     new_tally = CiphertextTally("verify", InternalManifest(manifest), context)
 
     for ballot in submitted_ballots:
-        new_tally.append(ballot)
+        new_tally.append(ballot, True)
 
     if (
         isinstance(tally, CiphertextTally)

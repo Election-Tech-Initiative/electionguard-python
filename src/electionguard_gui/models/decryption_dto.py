@@ -49,7 +49,7 @@ class DecryptionDto:
     can_join: Optional[bool]
     decryption_shares: list[Any]
     plaintext_tally: Optional[str]
-    plaintext_spoiled_ballots: Optional[dict[str, str]]
+    plaintext_spoiled_ballots: dict[str, str]
     lagrange_coefficients: Optional[str]
     ciphertext_tally: Optional[str]
     completed_at_utc: Optional[datetime]
@@ -69,7 +69,9 @@ class DecryptionDto:
         self.guardians_joined = _get_list(decryption, "guardians_joined")
         self.decryption_shares = _get_list(decryption, "decryption_shares")
         self.plaintext_tally = decryption.get("plaintext_tally")
-        self.plaintext_spoiled_ballots = decryption.get("plaintext_spoiled_ballots")
+        self.plaintext_spoiled_ballots = _get_dict(
+            decryption, "plaintext_spoiled_ballots"
+        )
         self.lagrange_coefficients = decryption.get("lagrange_coefficients")
         self.ciphertext_tally = decryption.get("ciphertext_tally")
         self.completed_at_utc = decryption.get("completed_at")
@@ -132,8 +134,6 @@ class DecryptionDto:
         return from_raw(PlaintextTally, self.plaintext_tally)
 
     def get_plaintext_spoiled_ballots(self) -> list[PlaintextTally]:
-        if not self.plaintext_spoiled_ballots:
-            raise ValueError("No plaintext spoiled ballots found")
         return [
             from_raw(PlaintextTally, tally)
             for tally in self.plaintext_spoiled_ballots.values()
@@ -155,6 +155,13 @@ def _get_list(decryption: dict[str, Any], name: str) -> list:
     if value:
         return list(value)
     return []
+
+
+def _get_dict(decryption: dict[str, Any], name: str) -> dict:
+    value = decryption.get(name)
+    if value:
+        return dict(value)
+    return {}
 
 
 def _get_int(decryption: dict[str, Any], name: str, default: int) -> int:

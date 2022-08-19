@@ -12,6 +12,7 @@ def ballot_is_valid_for_election(
     ballot: CiphertextBallot,
     internal_manifest: InternalManifest,
     context: CiphertextElectionContext,
+    should_validate: bool,
 ) -> bool:
     """
     Determine if a ballot is valid for a given election
@@ -20,15 +21,16 @@ def ballot_is_valid_for_election(
     if not ballot_is_valid_for_style(ballot, internal_manifest):
         return False
 
-    if not ballot.is_valid_encryption(
-        internal_manifest.manifest_hash,
-        context.elgamal_public_key,
-        context.crypto_extended_base_hash,
-    ):
-        log_warning(
-            f"ballot_is_valid_for_election: mismatching ballot encryption {ballot.object_id}"
-        )
-        return False
+    if should_validate:
+        if not ballot.is_valid_encryption(
+            internal_manifest.manifest_hash,
+            context.elgamal_public_key,
+            context.crypto_extended_base_hash,
+        ):
+            log_warning(
+                f"ballot_is_valid_for_election: mismatching ballot encryption {ballot.object_id}"
+            )
+            return False
 
     return True
 
