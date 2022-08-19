@@ -43,6 +43,7 @@ class BallotFactory:
         description: SelectionDescription,
         random_source: Random,
         limit: int = 1,
+        limit: int = 1,
     ) -> PlaintextBallotSelection:
         selected = bool(random_source.randint(0, limit))
         return selection_from(description, selected)
@@ -51,6 +52,7 @@ class BallotFactory:
     def get_random_contest_from(
         description: ContestDescription,
         random: Random,
+        limit: int = 1,
         limit: int = 1,
         suppress_validity_check: bool = False,
         allow_null_votes: bool = True,
