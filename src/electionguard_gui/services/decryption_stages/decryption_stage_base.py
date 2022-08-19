@@ -59,6 +59,7 @@ def get_tally(
     manifest: Manifest,
     context: CiphertextElectionContext,
     ballots: List[SubmittedBallot],
+    should_validate: bool,
 ) -> CiphertextTally:
     internal_manifest = InternalManifest(manifest)
 
@@ -69,5 +70,5 @@ def get_tally(
     )
     ballot_tuples = [(None, ballot) for ballot in ballots]
     with Scheduler() as scheduler:
-        tally.batch_append(ballot_tuples, scheduler)
+        tally.batch_append(ballot_tuples, should_validate, scheduler)
     return tally

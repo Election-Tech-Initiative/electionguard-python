@@ -57,7 +57,7 @@ def submit_ballot_to_box(
     that the ballot has not already been cast or spoiled.
     :return: a `SubmittedBallot` or `None` if there was an error
     """
-    if not ballot_is_valid_for_election(ballot, internal_manifest, context):
+    if not ballot_is_valid_for_election(ballot, internal_manifest, context, True):
         log_warning(f"ballot: {ballot.object_id} failed validity check")
         return None
 
