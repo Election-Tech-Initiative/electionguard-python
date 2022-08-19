@@ -228,7 +228,7 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
     def append(
         self,
         ballot: SubmittedBallot,
-        isAdmin: bool,
+        should_validate: bool,
         scheduler: Optional[Scheduler] = None,
     ) -> bool:
         """
@@ -243,7 +243,7 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
             return False
 
         if not ballot_is_valid_for_election(
-            ballot, self._internal_manifest, self._encryption, isAdmin
+            ballot, self._internal_manifest, self._encryption, should_validate
         ):
             return False
 
@@ -259,7 +259,7 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
     def batch_append(
         self,
         ballots: Iterable[Tuple[Any, SubmittedBallot]],
-        isAdmin: bool,
+        should_validate: bool,
         scheduler: Optional[Scheduler] = None,
     ) -> bool:
         """
@@ -272,7 +272,7 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
             # get the value of the dict
             ballot_value = ballot[1]
             if not self.__contains__(ballot) and ballot_is_valid_for_election(
-                ballot_value, self._internal_manifest, self._encryption, isAdmin
+                ballot_value, self._internal_manifest, self._encryption, should_validate
             ):
                 if ballot_value.state == BallotBoxState.CAST:
 

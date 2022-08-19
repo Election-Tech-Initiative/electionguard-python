@@ -12,7 +12,7 @@ def ballot_is_valid_for_election(
     ballot: CiphertextBallot,
     internal_manifest: InternalManifest,
     context: CiphertextElectionContext,
-    isAdmin: bool,
+    should_validate: bool,
 ) -> bool:
     """
     Determine if a ballot is valid for a given election
@@ -21,7 +21,7 @@ def ballot_is_valid_for_election(
     if not ballot_is_valid_for_style(ballot, internal_manifest):
         return False
 
-    if isAdmin:
+    if should_validate:
         if not ballot.is_valid_encryption(
             internal_manifest.manifest_hash,
             context.elgamal_public_key,
