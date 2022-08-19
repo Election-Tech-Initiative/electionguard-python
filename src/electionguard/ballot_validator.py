@@ -21,7 +21,7 @@ def ballot_is_valid_for_election(
     if not ballot_is_valid_for_style(ballot, internal_manifest):
         return False
 
-    if(isAdmin):
+    if isAdmin:
         if not ballot.is_valid_encryption(
             internal_manifest.manifest_hash,
             context.elgamal_public_key,
