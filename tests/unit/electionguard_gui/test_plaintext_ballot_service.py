@@ -54,3 +54,25 @@ class TestPlaintextBallotService(BaseTestCase):
         self.assertEqual(2, selection["tally"])
         self.assertEqual("National Union Party", selection["party"])
         self.assertEqual(1, selection["percent"])
+
+    @patch("electionguard.tally.PlaintextTallySelection")
+    def test_one_write_in(self, plaintext_tally_selection: MagicMock) -> None:
+        # ARRANGE
+        plaintext_tally_selection.object_id = "ST"
+        plaintext_tally_selection.tally = 1
+        selections: list[PlaintextTallySelection] = [plaintext_tally_selection]
+        selection_names: dict[str, str] = {}
+        selection_write_ins: dict[str, bool] = {
+            "ST": True,
+        }
+        parties: dict[str, str] = {}
+
+        # ACT
+        result = _get_contest_details(
+            selections, selection_names, selection_write_ins, parties
+        )
+
+        # ASSERT
+        self.assertEqual(0, result["nonWriteInTotal"])
+        self.assertEqual(1, result["writeInTotal"])
+        self.assertEqual(0, len(result["selections"]))
