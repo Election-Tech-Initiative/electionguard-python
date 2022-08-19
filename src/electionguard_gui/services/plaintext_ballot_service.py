@@ -1,7 +1,7 @@
 from typing import Any
 from electionguard import PlaintextTally
 from electionguard.manifest import Manifest, get_i8n_value
-from electionguard.tally import PlaintextTallyContest, PlaintextTallySelection
+from electionguard.tally import PlaintextTallySelection
 from electionguard_gui.models.election_dto import ElectionDto
 
 

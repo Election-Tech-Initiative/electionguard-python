@@ -63,7 +63,7 @@ class TestDecryptionDto(BaseTestCase):
         self.assertEqual(status, "decryption complete")
 
     @patch("electionguard_gui.services.authorization_service.AuthorizationService")
-    def test_admins_can_not_join_key_ceremony(self, auth_service: MagicMock):
+    def test_admins_can_not_join_key_ceremony(self, auth_service: MagicMock) -> None:
         # ARRANGE
         decryption_dto = DecryptionDto({"guardians_joined": []})
 
@@ -80,7 +80,7 @@ class TestDecryptionDto(BaseTestCase):
     @patch("electionguard_gui.services.authorization_service.AuthorizationService")
     def test_users_can_join_key_ceremony_if_not_already_joined(
         self, auth_service: MagicMock
-    ):
+    ) -> None:
         # ARRANGE
         decryption_dto = DecryptionDto({"guardians_joined": []})
 
@@ -95,7 +95,7 @@ class TestDecryptionDto(BaseTestCase):
         self.assertTrue(decryption_dto.can_join)
 
     @patch("electionguard_gui.services.authorization_service.AuthorizationService")
-    def test_users_cant_join_twice(self, auth_service: MagicMock):
+    def test_users_cant_join_twice(self, auth_service: MagicMock) -> None:
         # ARRANGE
         decryption_dto = DecryptionDto({"guardians_joined": ["user1"]})
 
