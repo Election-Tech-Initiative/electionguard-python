@@ -27,7 +27,7 @@ export default {
             <td class="text-end"><strong>{{contestContents.nonWriteInTotal}}</strong></td>
             <td class="text-end"><strong>100.00%</strong></td>
           </tr>
-          <tr v-if="contestContents.writeInTotal">
+          <tr v-if="contestContents.writeInTotal !== null">
             <td></td>
             <td class="text-end">Write-Ins</td>
             <td class="text-end">{{contestContents.writeInTotal}}</td>

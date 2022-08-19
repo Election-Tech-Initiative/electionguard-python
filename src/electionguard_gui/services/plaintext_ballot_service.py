@@ -30,13 +30,13 @@ def get_plaintext_ballot_report(
         )
 
         # write-in selections
-        write_ins_total = sum(
-            [
-                selection.tally
-                for selection in tally_contest.selections.values()
-                if selection_write_ins[selection.object_id]
-            ]
-        )
+        write_ins = [
+            selection.tally
+            for selection in tally_contest.selections.values()
+            if selection_write_ins[selection.object_id]
+        ]
+        any_write_ins = len(write_ins) > 0
+        write_ins_total = sum(write_ins) if any_write_ins else None
 
         tally_report[contest_name] = {
             "selections": non_write_in_selections_report,
@@ -65,14 +65,18 @@ def _get_selection_parties(manifest: Manifest) -> dict[str, str]:
 
 
 def _get_candidate_write_ins(manifest: Manifest) -> dict[str, bool]:
-    candidates = {
+    """
+    Returns a dictionary where the key is a selection's object_id and the value is a boolean
+    indicating whether the selection's candidate is marked as a write-in.
+    """
+    write_in_candidates = {
         candidate.object_id: candidate.is_write_in is True
         for candidate in manifest.candidates
     }
     contest_write_ins = {}
     for contest in manifest.contests:
         for selection in contest.ballot_selections:
-            candidate_is_write_in = candidates[selection.candidate_id]
+            candidate_is_write_in = write_in_candidates[selection.candidate_id]
             contest_write_ins[selection.object_id] = candidate_is_write_in
     return contest_write_ins
 
