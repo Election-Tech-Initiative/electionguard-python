@@ -9,6 +9,16 @@ from tests.base_test_case import BaseTestCase
 class TestDecryptionDto(BaseTestCase):
     """Test the DecryptionDto class"""
 
+    def test_no_spoiled_ballots(self) -> None:
+        # ARRANGE
+        decryption_dto = DecryptionDto({})
+
+        # ACT
+        spoiled_ballots = decryption_dto.get_plaintext_spoiled_ballots()
+
+        # ASSERT
+        self.assertEqual(0, len(spoiled_ballots))
+
     def test_get_status_with_no_guardians(self) -> None:
         # ARRANGE
         decryption_dto = DecryptionDto(
