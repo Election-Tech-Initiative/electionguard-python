@@ -25,7 +25,7 @@ class DecryptionS1JoinService(DecryptionStageBase):
         spoiled_ballots = [
             ballot for ballot in ballots if ballot.state == BallotBoxState.SPOILED
         ]
-        ciphertext_tally = get_tally(manifest, context, ballots)
+        ciphertext_tally = get_tally(manifest, context, ballots, False)
         decryption_share = guardian.compute_tally_share(ciphertext_tally, context)
         if decryption_share is None:
             raise Exception("No decryption_shares found")

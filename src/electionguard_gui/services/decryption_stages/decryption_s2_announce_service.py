@@ -47,7 +47,7 @@ class DecryptionS2AnnounceService(DecryptionStageBase):
         spoiled_ballots = [
             ballot for ballot in ballots if ballot.state == BallotBoxState.SPOILED
         ]
-        ciphertext_tally = get_tally(manifest, context, ballots)
+        ciphertext_tally = get_tally(manifest, context, ballots, True)
         self._log.debug("getting plaintext tally")
         plaintext_tally = decryption_mediator.get_plaintext_tally(
             ciphertext_tally, manifest
