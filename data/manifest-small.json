@@ -127,7 +127,6 @@
       "sequence_order": 0,
       "electoral_district_id": "franklin-county",
       "vote_variation": "one_of_m",
-      "number_elected": 1,
       "votes_allowed": 1,
       "name": "Representative to US Congress",
       "ballot_selections": [
@@ -155,7 +154,6 @@
       "sequence_order": 1,
       "electoral_district_id": "franklin-county",
       "vote_variation": "one_of_m",
-      "number_elected": 1,
       "votes_allowed": 1,
       "name": "The Pineapple Question",
       "ballot_selections": [
