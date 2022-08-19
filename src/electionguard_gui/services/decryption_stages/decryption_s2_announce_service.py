@@ -13,10 +13,10 @@ class DecryptionS2AnnounceService(DecryptionStageBase):
     """Responsible for the 2nd stage in decryptions where the admin announces guardian decryptions"""
 
     def should_run(self, db: Database, decryption: DecryptionDto) -> bool:
-        isAdmin = self._auth_service.is_admin()
-        allGuardiansJoined = len(decryption.guardians_joined) >= decryption.guardians
-        isCompleted = decryption.completed_at_utc is not None
-        return isAdmin and allGuardiansJoined and not isCompleted
+        is_admin = self._auth_service.is_admin()
+        all_guardians_joined = len(decryption.guardians_joined) >= decryption.guardians
+        is_completed = decryption.completed_at_utc is not None
+        return is_admin and all_guardians_joined and not is_completed
 
     def run(self, db: Database, decryption: DecryptionDto) -> None:
         self._log.info(f"S2: Announcing decryption {decryption.decryption_id}")
