@@ -121,7 +121,6 @@ class AnnotatedString(CryptoHashable):
         A hash representation of the object
         """
         hash = hash_elems(self.annotation, self.value)
-        log_debug(f"{self.__class__} : crypto_hash: {hash.to_hex()}")
         return hash
 
 
@@ -151,7 +150,6 @@ class Language(CryptoHashable):
         A hash representation of the object
         """
         hash = hash_elems(self.value, self.language)
-        log_debug(f"{self.__class__} : crypto_hash: {hash.to_hex()}")
         return hash
 
 
@@ -178,7 +176,6 @@ class InternationalizedText(CryptoHashable):
         A hash representation of the object
         """
         hash = hash_elems(self.text)
-        log_debug(f"{self.__class__} : crypto_hash: {hash.to_hex()}")
         return hash
 
 
@@ -214,7 +211,6 @@ class ContactInformation(CryptoHashable):
         A hash representation of the object
         """
         hash = hash_elems(self.name, self.address_line, self.email, self.phone)
-        log_debug(f"{self.__class__} : crypto_hash: {hash.to_hex()}")
         return hash
 
 
@@ -237,7 +233,6 @@ class GeopoliticalUnit(ElectionObjectBase, CryptoHashable):
         hash = hash_elems(
             self.object_id, self.name, str(self.type.name), self.contact_information
         )
-        log_debug(f"{self.__class__} : crypto_hash: {hash.to_hex()}")
         return hash
 
 
@@ -258,7 +253,6 @@ class BallotStyle(ElectionObjectBase, CryptoHashable):
         hash = hash_elems(
             self.object_id, self.geopolitical_unit_ids, self.party_ids, self.image_uri
         )
-        log_debug(f"{self.__class__} : crypto_hash: {hash.to_hex()}")
         return hash
 
 
@@ -291,7 +285,6 @@ class Party(ElectionObjectBase, CryptoHashable):
             self.color,
             self.logo_uri,
         )
-        log_debug(f"{self.__class__} : crypto_hash: {hash.to_hex()}")
         return hash
 
 
@@ -323,7 +316,6 @@ class Candidate(ElectionObjectBase, CryptoHashable):
         A hash representation of the object
         """
         hash = hash_elems(self.object_id, self.name, self.party_id, self.image_uri)
-        log_debug(f"{self.__class__} : crypto_hash: {hash.to_hex()}")
         return hash
 
 
@@ -426,7 +418,6 @@ class ContestDescription(OrderedObjectBase, CryptoHashable):
             self.votes_allowed,
             self.ballot_selections,
         )
-        log_debug(f"{self.__class__} : crypto_hash: {hash.to_hex()}")
         return hash
 
     def is_valid(self) -> bool:
@@ -674,7 +665,6 @@ class Manifest(CryptoHashable):
             self.contests,
             self.ballot_styles,
         )
-        log_debug(f"{self.__class__} : crypto_hash: {hash.to_hex()}")
         return hash
 
     def is_valid(self) -> bool:
