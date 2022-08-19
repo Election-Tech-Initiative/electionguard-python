@@ -512,21 +512,6 @@ class ContestDescription(OrderedObjectBase, CryptoHashable):
 
         return None
 
-    def selection_for(self, selection_id: str) -> Optional[SelectionDescription]:
-        """
-        Gets the description for a particular id
-        :param selection_id: Id of Selection
-        :return: description
-        """
-        matching_selections = list(
-            filter(lambda i: i.object_id == selection_id, self.ballot_selections)
-        )
-
-        if any(matching_selections):
-            return matching_selections[0]
-
-        return None
-
 
 @dataclass(eq=True, unsafe_hash=True)
 class CandidateContestDescription(ContestDescription):
@@ -904,7 +889,6 @@ class InternalManifest:
             filter(lambda i: i.electoral_district_id in gp_unit_ids, self.contests)
         )
         return contests
-<<<<<<< HEAD
 
 
 def get_i8n_value(name: InternationalizedText, lang: str, default_val: str) -> str:

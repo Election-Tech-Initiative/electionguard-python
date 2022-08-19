@@ -43,7 +43,6 @@ class BallotFactory:
         description: SelectionDescription,
         random_source: Random,
         limit: int = 1,
-        limit: int = 1,
     ) -> PlaintextBallotSelection:
         selected = bool(random_source.randint(0, limit))
         return selection_from(description, selected)
@@ -52,8 +51,6 @@ class BallotFactory:
     def get_random_contest_from(
         description: ContestDescription,
         random: Random,
-        limit: int = 1,
-        limit: int = 1,
         suppress_validity_check: bool = False,
         allow_null_votes: bool = True,
         allow_under_votes: bool = True,
@@ -70,28 +67,27 @@ class BallotFactory:
         shuffled_selections = description.ballot_selections[:]
         random.shuffle(shuffled_selections)
 
-        if allow_null_votes and not allow_under_votes:
-            cut_point = random.choice([0, description.number_elected])
-        else:
-            min_votes = description.number_elected
-            if allow_under_votes:
-                min_votes = 1
-            if allow_null_votes:
-                min_votes = 0
-            cut_point = random.randint(min_votes, description.number_elected)
+        min_votes = (
+            0
+            if allow_null_votes
+            else 1
+            if allow_under_votes
+            else description.votes_allowed
+        )
+        cut_point = random.choice([min_votes, description.votes_allowed])
 
         selections = [
             selection_from(selection_description, is_affirmative=True)
             for selection_description in shuffled_selections[0:cut_point]
         ]
 
-            # Possibly append the true selection, indicating an undervote
-            if voted <= description.votes_allowed and random.randint(0, 1):
-                selections.append(selection)
+        for selection_description in shuffled_selections[cut_point:]:
             # Possibly append the false selections as well, indicating some choices
             # may be explicitly false
-            elif random.randint(0, 1):
-                selections.append(selection_from(selection_description))
+            if random.randint(0, 1):
+                selections.append(
+                    selection_from(selection_description, is_affirmative=False)
+                )
 
         random.shuffle(selections)
         return PlaintextBallotContest(description.object_id, selections)

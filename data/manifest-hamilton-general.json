@@ -1270,15 +1270,7 @@
           "sequence_order": 6,
           "candidate_id": "write-in"
         }
-      ]
-    },
-    {
-      "object_id": "ozark-governor",
-      "vote_variation": "one_of_m",
-      "electoral_district_id": "hamilton-county",
-      "name": "Governor of the Commonwealth of Ozark",
-      "votes_allowed": 1,
-      "sequence_order": 1,
+      ],
       "ballot_title": {
         "text": [
           {
