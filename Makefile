@@ -97,7 +97,7 @@ blackcheck:
 	poetry run black --check .
 
 mypy:
-	poetry run mypy src/electionguard src/electionguard_tools src/electionguard_cli stubs
+	poetry run mypy src/electionguard src/electionguard_tools src/electionguard_cli src/electionguard_gui stubs
 
 validate: 
 	@echo ✅ VALIDATE
@@ -183,8 +183,12 @@ ifeq ($(OS), Windows)
 	choco install wget
 	choco install unzip
 endif
-	wget https://github.com/microsoft/electionguard/releases/download/v0.95.0/sample-data.zip
+	wget -O sample-data.zip https://github.com/microsoft/electionguard/releases/download/v1.0/sample-data.zip
 	unzip -o sample-data.zip
+
+generate-sample-data:
+	@echo 🔁 GENERATE Sample Data
+	poetry run python3 src/electionguard_tools/scripts/sample_generator.py -m "hamilton-general" -n $(SAMPLE_BALLOT_COUNT) -s $(SAMPLE_BALLOT_SPOIL_RATE)
 
 # Publish
 publish:
@@ -243,10 +247,23 @@ ifeq "${EG_DB_PASSWORD}" ""
 	@echo "Set the EG_DB_PASSWORD environment variable"
 	exit 1
 endif
-	docker compose -f src/electionguard_db/docker-compose.db.yml up -d
+	docker compose --env-file ./.env -f src/electionguard_db/docker-compose.db.yml up -d
 
 stop-db:
-	docker compose -f src/electionguard_db/docker-compose.db.yml down
+	docker compose --env-file ./.env -f src/electionguard_db/docker-compose.db.yml down
+
+build-egui:
+	docker build -t egui -f src\electionguard_gui\Dockerfile .
+
+start-egui: build-egui
+ifeq "${EG_DB_PASSWORD}" ""
+	@echo "Set the EG_DB_PASSWORD environment variable"
+	exit 1
+endif
+	docker compose --env-file ./.env -f src/electionguard_gui/docker-compose.yml up -d
+
+stop-egui:
+	docker compose --env-file ./.env -f src/electionguard_gui/docker-compose.yml down
 
 eg-e2e-simple-election:
 	poetry run eg e2e --guardian-count=2 --quorum=2 --manifest=data/election_manifest_simple.json --ballots=data/plaintext_ballots_simple.json --spoil-id=25a7111b-4334-425a-87c1-f7a49f42b3a2 --output-record="./election_record.zip"

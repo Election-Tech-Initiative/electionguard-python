@@ -1,22 +1,31 @@
+import traceback
 from typing import List
 import eel
 
-from electionguard_gui.components.component_base import ComponentBase
-from electionguard_gui.components.create_key_ceremony_component import (
+from electionguard_gui.components import (
+    ViewElectionComponent,
+    ComponentBase,
+    CreateElectionComponent,
     CreateKeyCeremonyComponent,
-)
-from electionguard_gui.components.key_ceremony_list_component import (
-    KeyCeremonyListComponent,
-)
-from electionguard_gui.components.key_ceremony_details_component import (
+    GuardianHomeComponent,
     KeyCeremonyDetailsComponent,
+    ElectionListComponent,
+    ExportEncryptionPackageComponent,
+    UploadBallotsComponent,
+    CreateDecryptionComponent,
+    ViewDecryptionComponent,
+    ExportElectionRecordComponent,
+    ViewTallyComponent,
+    ViewSpoiledBallotComponent,
 )
-from electionguard_gui.components.setup_election_component import SetupElectionComponent
 
-from electionguard_gui.services.authorization_service import AuthoriationService
-from electionguard_gui.services.db_service import DbService
-from electionguard_gui.services.eel_log_service import EelLogService
-from electionguard_gui.services.service_base import ServiceBase
+from electionguard_gui.services import (
+    AuthorizationService,
+    DbService,
+    EelLogService,
+    ServiceBase,
+    ConfigurationService,
+)
 
 
 class MainApp:
@@ -30,26 +39,51 @@ class MainApp:
     def __init__(
         self,
         log_service: EelLogService,
+        config_service: ConfigurationService,
         db_service: DbService,
-        guardian_home_component: KeyCeremonyListComponent,
+        guardian_home_component: GuardianHomeComponent,
         create_key_ceremony_component: CreateKeyCeremonyComponent,
         key_ceremony_details_component: KeyCeremonyDetailsComponent,
-        setup_election_component: SetupElectionComponent,
-        authorization_service: AuthoriationService,
+        authorization_service: AuthorizationService,
+        create_election_component: CreateElectionComponent,
+        view_election_component: ViewElectionComponent,
+        election_list_component: ElectionListComponent,
+        export_encryption_package: ExportEncryptionPackageComponent,
+        upload_ballots_component: UploadBallotsComponent,
+        create_decryption_component: CreateDecryptionComponent,
+        view_decryption_component: ViewDecryptionComponent,
+        export_election_record_component: ExportElectionRecordComponent,
+        view_tally_component: ViewTallyComponent,
+        view_spoiled_ballot_component: ViewSpoiledBallotComponent,
     ) -> None:
         super().__init__()
 
         self.log_service = log_service
         self.db_service = db_service
+        self.config_service = config_service
 
         self.components = [
             guardian_home_component,
             create_key_ceremony_component,
             key_ceremony_details_component,
-            setup_election_component,
+            create_election_component,
+            view_election_component,
+            election_list_component,
+            export_encryption_package,
+            upload_ballots_component,
+            create_decryption_component,
+            view_decryption_component,
+            export_election_record_component,
+            view_tally_component,
+            view_spoiled_ballot_component,
         ]
 
-        self.services = [authorization_service, log_service, db_service]
+        # services that need to expose methods to the UI
+        self.services = [
+            authorization_service,
+            db_service,
+            log_service,
+        ]
 
     def start(self) -> None:
         try:
@@ -63,8 +97,12 @@ class MainApp:
 
             self.db_service.verify_db_connection()
             eel.init("src/electionguard_gui/web")
-            self.log_service.debug("Starting eel")
-            eel.start("main.html", size=(1024, 768), port=0)
+            mode = self.config_service.get_mode()
+            port = self.config_service.get_port()
+            host = self.config_service.get_host()
+            self.log_service.debug(f"Starting eel port={port} mode={mode} host={host}")
+            eel.start("index.html", size=(1024, 768), port=port, mode=mode, host=host)
         except Exception as e:
-            self.log_service.error(e)
+            self.log_service.error("error in main app start", e)
+            traceback.print_exc()
             raise e

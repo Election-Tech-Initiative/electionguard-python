@@ -15,8 +15,8 @@ from .decryption import (
 )
 from .decryption_share import CompensatedDecryptionShare, DecryptionShare
 from .election import CiphertextElectionContext
-from .election_polynomial import PublicCommitment
-from .elgamal import ElGamalPublicKey, elgamal_combine_public_keys
+from .election_polynomial import ElectionPolynomial, PublicCommitment
+from .elgamal import ElGamalKeyPair, ElGamalPublicKey, elgamal_combine_public_keys
 from .group import ElementModP, ElementModQ
 from .key_ceremony import (
     CeremonyDetails,
@@ -195,6 +195,23 @@ class Guardian:
         return self._election_keys.sequence_order
 
     @classmethod
+    def from_public_key(
+        cls,
+        number_of_guardians: int,
+        quorum: int,
+        public_key: ElectionPublicKey,
+    ) -> "Guardian":
+        el_gamal_key_pair = ElGamalKeyPair(ElementModQ(0), public_key.key)
+        election_key_pair = ElectionKeyPair(
+            public_key.owner_id,
+            public_key.sequence_order,
+            el_gamal_key_pair,
+            ElectionPolynomial([]),
+        )
+        ceremony_details = CeremonyDetails(number_of_guardians, quorum)
+        return cls(election_key_pair, ceremony_details)
+
+    @classmethod
     def from_nonce(
         cls,
         id: str,
@@ -363,8 +380,10 @@ class Guardian:
         """
         backup = self._guardian_election_partial_key_backups.get(guardian_id)
         public_key = self._guardian_election_public_keys.get(guardian_id)
-        if backup is None or public_key is None:
-            return None
+        if backup is None:
+            raise ValueError(f"No backup exists for {guardian_id}")
+        if public_key is None:
+            raise ValueError(f"No public key exists for {guardian_id}")
         return verify_election_partial_key_backup(
             self.id, backup, public_key, self._election_keys
         )

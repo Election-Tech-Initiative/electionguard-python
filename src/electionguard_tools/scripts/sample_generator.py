@@ -38,7 +38,7 @@ DEFAULT_NUMBER_OF_BALLOTS = 5
 DEFAULT_SPOIL_RATE = 50
 DEFAULT_USE_ALL_GUARDIANS = False
 DEFAULT_USE_PRIVATE_DATA = False
-DEFAULT_SPEC_VERSION = "0.95.0"
+DEFAULT_SPEC_VERSION = "1.0"
 DEFAULT_SAMPLE_MANIFEST = "hamilton-general"
 
 
@@ -65,7 +65,6 @@ class ElectionSampleDataGenerator:
         spoil_rate: int = DEFAULT_SPOIL_RATE,
         use_all_guardians: bool = DEFAULT_USE_ALL_GUARDIANS,
         use_private_data: bool = DEFAULT_USE_PRIVATE_DATA,
-        spec_version: str = DEFAULT_SPEC_VERSION,
         sample_manifest: str = DEFAULT_SAMPLE_MANIFEST,
     ) -> None:
         """
@@ -82,7 +81,7 @@ class ElectionSampleDataGenerator:
             public_data,
             private_data,
         ) = self.election_factory.get_sample_manifest_with_encryption_context(
-            spec_version, sample_manifest
+            sample_manifest
         )
         plaintext_ballots = (
             self.ballot_factory.generate_fake_plaintext_ballots_for_election(
@@ -258,6 +257,5 @@ if __name__ == "__main__":
         args.spoil_rate,
         args.all_guardians,
         args.private_data,
-        args.version,
         args.manifest,
     )

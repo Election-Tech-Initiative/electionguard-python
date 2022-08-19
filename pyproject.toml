@@ -24,6 +24,7 @@ packages = [
   { include = "electionguard", from = "src" }, 
   { include = "electionguard_tools", from = "src" }, 
   { include = "electionguard_cli", from = "src" },
+  { include = "electionguard_gui", from = "src" },
 ]
 
 
@@ -46,6 +47,7 @@ types-python-dateutil = "^2.8.14"
 Eel = {extras = ["jinja2"], version = "^0.14.0"}
 pymongo = "^4.1.1"
 dependency-injector = "^4.39.1"
+pytest-mock = "^3.8.2"
 
 [tool.poetry.dev-dependencies]
 atomicwrites = "*"
