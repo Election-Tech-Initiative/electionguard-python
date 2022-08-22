@@ -62,10 +62,10 @@ export default {
     </div>
     <div v-if="decryption">
       <div class="row mb-4">
-        <div class="col col-11">
+        <div class="col-11">
           <h1>{{decryption.decryption_name}}</h1>
         </div>
-        <div class="col col-xs-1 text-end" v-if="decryption.completed_at_str">
+        <div class="col-1 text-end" v-if="decryption.completed_at_str">
           <div class="dropdown">
             <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
               <i class="bi-gear-fill me-1"></i>

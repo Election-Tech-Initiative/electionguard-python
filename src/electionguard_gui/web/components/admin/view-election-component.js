@@ -47,10 +47,10 @@ export default {
     <div v-if="election">
       <div class="container">
         <div class="row mb-4">
-          <div class="col">
+          <div class="col-11">
             <h1>{{election.election_name}}</h1>
           </div>
-          <div class="col col-xs-3 text-end">
+          <div class="col-1 text-end">
             <div class="dropdown">
               <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                 <i class="bi-gear-fill me-1"></i>
@@ -70,7 +70,7 @@ export default {
                 <li><hr class="dropdown-divider"></li>
                 <li>
                   <a :href="getCreateDecryptionUrl()" class="dropdown-item" v-if="election.ballot_uploads.length">
-                    <i class="bi bi-people-fill me-1"></i> Create decryption
+                    <i class="bi bi-people-fill me-1"></i> Create tally
                   </a>
                 </li>
               </ul>
@@ -120,7 +120,7 @@ export default {
             </div>
             <div class="row" v-if="election.decryptions.length">
               <div class="col-12">
-                <h2>Decryptions</h2>
+                <h2>Tallies</h2>
                 <table class="table table-striped">
                   <thead>
                     <tr>

@@ -31,7 +31,7 @@ class CreateDecryptionComponent(ComponentBase):
             db, election_id
         )
         return eel_success(
-            f"{election.election_name} Decryption #{existing_decryptions + 1}"
+            f"{election.election_name} Tally #{existing_decryptions + 1}"
         )
 
     def create_decryption(

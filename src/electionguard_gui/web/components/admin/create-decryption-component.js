@@ -43,10 +43,10 @@ export default {
     <form id="mainForm" class="needs-validation" novalidate @submit.prevent="createDecryption">
       <div class="row g-3 text-center col-6 mx-auto">
         <div class="col-12">
-          <h1>Create Decryption</h1>
+          <h1>Create Tally</h1>
         </div>
         <div class="col-12">
-          <label for="name" class="form-label">Decryption Name</label>
+          <label for="name" class="form-label">Name</label>
           <input type="text" id="name" class="form-control" v-model="name" required>
         </div>
         <div class="col-12 mt-4">
