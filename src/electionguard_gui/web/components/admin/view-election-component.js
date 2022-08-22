@@ -34,14 +34,18 @@ export default {
         decryptionId: decryptionId,
       });
     },
+    setBallotSum: function (election) {
+      this.ballotSum = 0;
+      for (const spoiledBallot of election.ballot_uploads) {
+        this.ballotSum += spoiledBallot.ballot_count;
+      }
+    },
   },
   async mounted() {
     const result = await eel.get_election(this.electionId)();
     if (result.success) {
       this.election = result.result;
-      this.ballotSum = this.election.ballots.reduce((a, b) => {
-        a.ballot_count + b.ballot_count, 0;
-      });
+      this.setBallotSum(this.election);
     } else {
       this.error = true;
     }
