@@ -51,15 +51,30 @@ export default {
             <h1>{{election.election_name}}</h1>
           </div>
           <div class="col col-xs-3 text-end">
-            <a :href="getEncryptionPackageUrl()" class="btn btn-sm btn-primary" title="Download encryption package">
-              <i class="bi-download"></i>
-            </a>
-            <a :href="getUploadBallotsUrl()" class="btn btn-sm btn-primary ms-3" title="Upload ballots">
-              <i class="bi-upload"></i>
-            </a>
-            <a :href="getCreateDecryptionUrl()" class="btn btn-sm btn-primary ms-3" title="Create decryption" v-if="election.ballot_uploads.length">
-              <i class="bi bi-people-fill"></i>
-            </a>
+            <div class="dropdown">
+              <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi-gear-fill me-1"></i>
+              </button>
+              <ul class="dropdown-menu">
+                <li>
+                  <a :href="getEncryptionPackageUrl()" class="dropdown-item">
+                    <i class="bi-download me-1"></i> Download encryption package
+                  </a>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                  <a :href="getUploadBallotsUrl()" class="dropdown-item">
+                    <i class="bi-upload me-1"></i> Upload ballots
+                  </a>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                  <a :href="getCreateDecryptionUrl()" class="dropdown-item" v-if="election.ballot_uploads.length">
+                    <i class="bi bi-people-fill me-1"></i> Create decryption
+                  </a>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
         <div class="row">

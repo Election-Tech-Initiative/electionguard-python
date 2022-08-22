@@ -62,10 +62,24 @@ export default {
         <div class="col col-11">
           <h1>{{decryption.decryption_name}}</h1>
         </div>
-        <div class="col col-xs-2 text-end" v-if="decryption.completed_at_str">
-          <a :href="getExportElectionRecordUrl()" class="btn btn-sm btn-primary" title="Download election record">
-            <i class="bi-download"></i>
-          </a>
+        <div class="col col-xs-1 text-end" v-if="decryption.completed_at_str">
+          <div class="dropdown">
+            <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="bi-gear-fill me-1"></i>
+            </button>
+            <ul class="dropdown-menu">
+              <li>
+                <a :href="getExportElectionRecordUrl()" class="dropdown-item">
+                  <i class="bi-download me-1"></i> Download election record
+                </a>
+              </li>
+              <li>
+                <a :href="getViewTallyUrl()" class="dropdown-item" v-if="decryption.completed_at_str">
+                  <i class="bi-card-text me-1"></i> View Tally
+                </a>
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
       <div class="row">
