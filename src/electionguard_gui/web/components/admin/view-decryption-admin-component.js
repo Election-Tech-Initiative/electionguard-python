@@ -47,7 +47,10 @@ export default {
     await this.get_decryption(false);
     eel.expose(this.refresh_decryption, "refresh_decryption");
     console.log("watching decryption");
-    eel.watch_decryption(this.decryptionId);
+    // only watch for changes if the decryption is in-progress
+    if (!this.decryption.completed_at_str) {
+      eel.watch_decryption(this.decryptionId);
+    }
   },
   unmounted() {
     console.log("stop watching decryption");
