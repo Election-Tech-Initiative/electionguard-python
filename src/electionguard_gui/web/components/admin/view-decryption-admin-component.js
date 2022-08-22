@@ -87,9 +87,19 @@ export default {
       </div>
       <div class="row">
         <div class="col col-12 col-md-6 col-lg-5">
-          <div class="col-12">
+          <div class="col-md-8">
             <dt>Election</dt>
             <dd><a :href="getElectionUrl(decryption.election_id)">{{decryption.election_name}}</a></dd>
+          </div>
+          <div class="row">
+            <div class="col-md-6">
+              <dt>Ballot Uploads</dt>
+              <dd>{{decryption.ballot_upload_count}}</dd>
+            </div>
+            <div class="col-md-6">
+              <dt>Total Ballots</dt>
+              <dd>{{decryption.ballot_count}}</dd>
+            </div>
           </div>
           <dl class="col-12">
             <dt>Created</dt>

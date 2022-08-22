@@ -39,9 +39,13 @@ class DecryptionService(ServiceBase):
         election: ElectionDto,
         decryption_name: str,
     ) -> str:
+        ballot_count = election.sum_ballots()
+        ballot_upload_count = len(election.ballot_uploads)
         decryption: dict[str, Any] = {
             "election_id": election.id,
             "election_name": election.election_name,
+            "ballot_count": ballot_count,
+            "ballot_upload_count": ballot_upload_count,
             "key_ceremony_id": election.key_ceremony_id,
             "guardians": election.guardians,
             "quorum": election.quorum,
