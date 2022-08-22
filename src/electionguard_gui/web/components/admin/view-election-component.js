@@ -7,7 +7,7 @@ export default {
   },
   components: { Spinner },
   data() {
-    return { election: null, loading: false, error: false };
+    return { election: null, loading: false, error: false, ballotSum: 0 };
   },
   methods: {
     getEncryptionPackageUrl: function () {
@@ -39,6 +39,9 @@ export default {
     const result = await eel.get_election(this.electionId)();
     if (result.success) {
       this.election = result.result;
+      this.ballotSum = this.election.ballots.reduce((a, b) => {
+        a.ballot_count + b.ballot_count, 0;
+      });
     } else {
       this.error = true;
     }
@@ -115,6 +118,13 @@ export default {
                       <td></td>
                     </tr>
                   </tbody>
+                  <tfoot>
+                    <tr class="table-secondary">
+                      <td><em>Total</em></td>
+                      <td>{{ballotSum}}
+                      <td></td>
+                    </tr>
+                  </tfoot>
                 </table>
               </div>
             </div>
