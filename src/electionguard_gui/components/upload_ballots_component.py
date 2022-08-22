@@ -29,7 +29,6 @@ class UploadBallotsComponent(ComponentBase):
         election_id: str,
         device_file_name: str,
         device_file_contents: str,
-        ballot_count: int,
     ) -> dict[str, Any]:
         try:
             db = self._db_service.get_db()
@@ -43,7 +42,6 @@ class UploadBallotsComponent(ComponentBase):
                 election_id,
                 device_file_name,
                 device_file_contents,
-                ballot_count,
                 created_at,
             )
             self._election_service.append_ballot_upload(
@@ -51,7 +49,6 @@ class UploadBallotsComponent(ComponentBase):
                 election_id,
                 ballot_upload_id,
                 device_file_contents,
-                ballot_count,
                 created_at,
             )
             return eel_success(ballot_upload_id)
@@ -69,10 +66,15 @@ class UploadBallotsComponent(ComponentBase):
         try:
             db = self._db_service.get_db()
             self._log.debug(f"adding ballot {file_name} to {ballot_upload_id}")
-            self._ballot_upload_service.add_ballot(
+            success = self._ballot_upload_service.add_ballot(
                 db, ballot_upload_id, election_id, file_name, file_contents
             )
-            return eel_success()
+            if success:
+                self._ballot_upload_service.increment_ballot_count(db, ballot_upload_id)
+                self._election_service.increment_ballot_upload_ballot_count(
+                    db, election_id, ballot_upload_id
+                )
+            return eel_success({"is_duplicate": not success})
         # pylint: disable=broad-except
         except Exception as e:
             return self.handle_error(e)

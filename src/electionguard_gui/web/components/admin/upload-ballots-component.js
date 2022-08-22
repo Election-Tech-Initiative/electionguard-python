@@ -14,6 +14,7 @@ export default {
       ballotsProcessed: null,
       ballotsTotal: null,
       success: false,
+      duplicateCount: 0,
     };
   },
   methods: {
@@ -27,7 +28,7 @@ export default {
           const ballotFiles = document.getElementById("ballotsFolder").files;
           this.ballotsTotal = ballotFiles.length;
 
-          const uploadId = await this.uploadDeviceFile(this.ballotsTotal);
+          const uploadId = await this.uploadDeviceFile();
           await this.uploadBallotFiles(uploadId, ballotFiles);
           this.success = true;
         }
@@ -39,15 +40,14 @@ export default {
         this.loading = false;
       }
     },
-    async uploadDeviceFile(ballotCount) {
+    async uploadDeviceFile() {
       const [deviceFile] = document.getElementById("deviceFile").files;
       const deviceContents = await deviceFile.text();
       console.log("Creating election", deviceFile.name);
       const result = await eel.create_ballot_upload(
         this.electionId,
         deviceFile.name,
-        deviceContents,
-        ballotCount
+        deviceContents
       )();
       if (!result.success) {
         throw new Error(result.message);
@@ -69,6 +69,9 @@ export default {
         if (!result.success) {
           throw new Error(result.message);
         }
+        if (result.result.is_duplicate) {
+          this.duplicateCount++;
+        }
         this.ballotsProcessed++;
       }
     },
@@ -79,6 +82,9 @@ export default {
   template: /*html*/ `
     <div v-if="alert" class="alert alert-danger" role="alert">
       {{ alert }}
+    </div>
+    <div v-if="duplicateCount" class="alert alert-warning" role="alert">
+      {{ duplicateCount }} ballots were skipped because their object_ids had already been uploaded for this election.
     </div>
     <form id="mainForm" class="needs-validation" novalidate @submit.prevent="uploadBallots" v-if="!success">
       <div class="row g-3 align-items-center">
@@ -114,7 +120,7 @@ export default {
     </form>
     <div v-if="success" class="text-center">
       <img src="/images/check.svg" width="200" height="200" class="mt-4 mb-2"></img>
-      <p>Successfully uploaded {{ballotsTotal}} ballots.</p>
+      <p>Successfully uploaded {{ballotsTotal-duplicateCount}} ballots.</p>
       <a :href="getElectionUrl()" class="btn btn-primary">Continue</a>
     </div>
   `,

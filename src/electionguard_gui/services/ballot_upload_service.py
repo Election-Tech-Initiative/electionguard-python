@@ -25,14 +25,13 @@ class BallotUploadService(ServiceBase):
         election_id: str,
         device_file_name: str,
         device_file_contents: str,
-        ballot_count: int,
         created_at: datetime,
     ) -> str:
         ballot_upload = {
             "election_id": election_id,
             "device_file_name": device_file_name,
             "device_file_contents": device_file_contents,
-            "ballot_count": ballot_count,
+            "ballot_count": 0,
             "created_by": self._auth_service.get_user_id(),
             "created_at": created_at,
         }
@@ -47,15 +46,40 @@ class BallotUploadService(ServiceBase):
         election_id: str,
         file_name: str,
         file_contents: str,
-    ) -> None:
+    ) -> bool:
         self._log.trace(f"adding ballot {file_name} to {ballot_upload_id}")
+        ballot = from_raw(SubmittedBallot, file_contents)
+        ballot_object_id = ballot.object_id
+        if self.any_ballot_exists(db, election_id, ballot_object_id):
+            self._log.warn(
+                "ballot '{ballot_object_id}' already exists in election '{election_id}'"
+            )
+            return False
         db.ballot_uploads.insert_one(
             {
                 "ballot_upload_id": ballot_upload_id,
                 "election_id": election_id,
                 "file_name": file_name,
+                "object_id": ballot_object_id,
                 "file_contents": file_contents,
             }
+        )
+        return True
+
+    def increment_ballot_count(self, db: Database, ballot_upload_id: str) -> None:
+        self._log.trace(f"incrementing ballot count for {ballot_upload_id}")
+        db.ballot_uploads.update_one(
+            {"_id": ballot_upload_id, "ballot_count": {"$exists": True}},
+            {"$inc": {"ballot_count": 1}},
+        )
+
+    def any_ballot_exists(self, db: Database, election_id: str, object_id: str) -> bool:
+        self._log.trace("checking if ballot exists for {election_id}")
+        return (
+            db.ballot_uploads.count_documents(
+                {"election_id": election_id, "object_id": object_id}
+            )
+            > 0
         )
 
     def get_ballots(self, db: Database, election_id: str) -> list[SubmittedBallot]:
