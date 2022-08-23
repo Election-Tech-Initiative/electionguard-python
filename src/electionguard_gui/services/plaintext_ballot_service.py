@@ -7,7 +7,7 @@ from electionguard_gui.models.election_dto import ElectionDto
 
 def get_plaintext_ballot_report(
     election: ElectionDto, plaintext_ballot: PlaintextTally
-) -> dict[str, Any]:
+) -> list:
     manifest = election.get_manifest()
     selection_names = manifest.get_selection_names("en")
     contest_names = manifest.get_contest_names()
