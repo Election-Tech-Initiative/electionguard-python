@@ -13,6 +13,19 @@ def get_plaintext_ballot_report(
     contest_names = manifest.get_contest_names()
     selection_write_ins = _get_candidate_write_ins(manifest)
     parties = _get_selection_parties(manifest)
+    tally_report = _get_tally_report(
+        plaintext_ballot, selection_names, contest_names, selection_write_ins, parties
+    )
+    return tally_report
+
+
+def _get_tally_report(
+    plaintext_ballot: PlaintextTally,
+    selection_names: dict[str, str],
+    contest_names: dict[str, str],
+    selection_write_ins: dict[str, bool],
+    parties: dict[str, str],
+) -> dict[str, Any]:
     tally_report = {}
     contests = plaintext_ballot.contests.values()
     for tally_contest in contests:

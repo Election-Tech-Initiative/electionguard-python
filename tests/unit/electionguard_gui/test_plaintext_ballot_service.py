@@ -1,11 +1,120 @@
 from unittest.mock import MagicMock, patch
-from electionguard.tally import PlaintextTallySelection
-from electionguard_gui.services.plaintext_ballot_service import _get_contest_details
+from electionguard.tally import PlaintextTally, PlaintextTallySelection
+from electionguard_gui.services.plaintext_ballot_service import (
+    _get_contest_details,
+    _get_tally_report,
+)
 from tests.base_test_case import BaseTestCase
 
 
 class TestPlaintextBallotService(BaseTestCase):
     """Test the ElectionDto class"""
+
+    def test_get_tally_report_with_no_contests(self) -> None:
+        # ARRANGE
+        plaintext_ballot = PlaintextTally("tally", {})
+        selection_names: dict[str, str] = {}
+        selection_write_ins: dict[str, bool] = {}
+        parties: dict[str, str] = {}
+        contest_names: dict[str, str] = {}
+
+        # ACT
+        result = _get_tally_report(
+            plaintext_ballot,
+            selection_names,
+            contest_names,
+            selection_write_ins,
+            parties,
+        )
+
+        # ASSERT
+        self.assertEqual(0, len(result.items()))
+
+    @patch("electionguard.tally.PlaintextTallySelection")
+    def test_given_one_contest_with_valid_name_when_get_tally_report_then_name_returned(
+        self, plaintext_tally_selection: MagicMock
+    ) -> None:
+        # ARRANGE
+        plaintext_tally_selection.object_id = "c-1"
+        plaintext_ballot = PlaintextTally("tally", {"c-1": plaintext_tally_selection})
+        selection_names: dict[str, str] = {}
+        selection_write_ins: dict[str, bool] = {}
+        parties: dict[str, str] = {}
+        contest_names: dict[str, str] = {"c-1": "Contest 1"}
+
+        # ACT
+        result = _get_tally_report(
+            plaintext_ballot,
+            selection_names,
+            contest_names,
+            selection_write_ins,
+            parties,
+        )
+
+        # ASSERT
+        self.assertEqual(1, len(result.items()))
+        self.assertEqual("Contest 1", list(result.keys())[0])
+
+    @patch("electionguard.tally.PlaintextTallySelection")
+    def test_given_one_contest_with_invalid_name_when_get_tally_report_then_name_is_na(
+        self, plaintext_tally_selection: MagicMock
+    ) -> None:
+        # ARRANGE
+        plaintext_tally_selection.object_id = "c-1"
+        plaintext_ballot = PlaintextTally("tally", {"c-1": plaintext_tally_selection})
+        selection_names: dict[str, str] = {}
+        selection_write_ins: dict[str, bool] = {}
+        parties: dict[str, str] = {}
+        contest_names: dict[str, str] = {}
+
+        # ACT
+        result = _get_tally_report(
+            plaintext_ballot,
+            selection_names,
+            contest_names,
+            selection_write_ins,
+            parties,
+        )
+
+        # ASSERT
+        self.assertEqual(1, len(result.items()))
+        self.assertEqual("n/a", list(result.keys())[0])
+
+    @patch("electionguard.tally.PlaintextTallySelection")
+    @patch("electionguard.tally.PlaintextTallySelection")
+    def test_given_two_contests_with_duplicate_names_when_get_tally_report_then_both_names_returned(
+        self,
+        plaintext_tally_selection1: MagicMock,
+        plaintext_tally_selection2: MagicMock,
+    ) -> None:
+        # ARRANGE
+        plaintext_tally_selection1.object_id = "c-1"
+        plaintext_tally_selection2.object_id = "c-2"
+        plaintext_ballot = PlaintextTally(
+            "tally",
+            {
+                "c-1": plaintext_tally_selection1,
+                "c-2": plaintext_tally_selection2,
+            },
+        )
+        selection_names: dict[str, str] = {}
+        selection_write_ins: dict[str, bool] = {}
+        parties: dict[str, str] = {}
+        contest_names: dict[str, str] = {"c-1": "My Contest", "c-2": "My Contest"}
+
+        # ACT
+        result = _get_tally_report(
+            plaintext_ballot,
+            selection_names,
+            contest_names,
+            selection_write_ins,
+            parties,
+        )
+
+        # ASSERT
+        self.assertEqual(2, len(result.items()))
+        self.assertEqual("My Contest", list(result.keys())[0])
+        self.assertEqual("My Contest", list(result.keys())[1])
 
     def test_zero_sections(self) -> None:
         # ARRANGE
