@@ -7,13 +7,26 @@ from electionguard_gui.models.election_dto import ElectionDto
 
 def get_plaintext_ballot_report(
     election: ElectionDto, plaintext_ballot: PlaintextTally
-) -> dict[str, Any]:
+) -> list:
     manifest = election.get_manifest()
     selection_names = manifest.get_selection_names("en")
     contest_names = manifest.get_contest_names()
     selection_write_ins = _get_candidate_write_ins(manifest)
     parties = _get_selection_parties(manifest)
-    tally_report = {}
+    tally_report = _get_tally_report(
+        plaintext_ballot, selection_names, contest_names, selection_write_ins, parties
+    )
+    return tally_report
+
+
+def _get_tally_report(
+    plaintext_ballot: PlaintextTally,
+    selection_names: dict[str, str],
+    contest_names: dict[str, str],
+    selection_write_ins: dict[str, bool],
+    parties: dict[str, str],
+) -> list:
+    tally_report = []
     contests = plaintext_ballot.contests.values()
     for tally_contest in contests:
         selections = list(tally_contest.selections.values())
@@ -21,7 +34,12 @@ def get_plaintext_ballot_report(
             selections, selection_names, selection_write_ins, parties
         )
         contest_name = contest_names.get(tally_contest.object_id, "n/a")
-        tally_report[contest_name] = contest_details
+        tally_report.append(
+            {
+                "name": contest_name,
+                "details": contest_details,
+            }
+        )
     return tally_report
 
 

@@ -3,8 +3,8 @@ export default {
     ballot: Object,
   },
   template: /*html*/ `
-    <div v-for="(contestContents, contestName) in ballot" class="mb-5">
-      <h2>{{contestName}}</h2>
+    <div v-for="contest in ballot" class="mb-5">
+      <h2>{{contest.name}}</h2>
       <table class="table table-striped">
         <thead>
           <tr>
@@ -15,7 +15,7 @@ export default {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="contestInfo in contestContents.selections">
+          <tr v-for="contestInfo in contest.details.selections">
             <td>{{contestInfo.name}}</td>
             <td>{{contestInfo.party}}</td>
             <td class="text-end">{{contestInfo.tally}}</td>
@@ -24,13 +24,13 @@ export default {
           <tr class="table-secondary">
             <td></td>
             <td></td>
-            <td class="text-end"><strong>{{contestContents.nonWriteInTotal}}</strong></td>
+            <td class="text-end"><strong>{{contest.details.nonWriteInTotal}}</strong></td>
             <td class="text-end"><strong>100.00%</strong></td>
           </tr>
-          <tr v-if="contestContents.writeInTotal !== null">
+          <tr v-if="contest.details.writeInTotal !== null">
             <td></td>
             <td class="text-end">Write-Ins</td>
-            <td class="text-end">{{contestContents.writeInTotal}}</td>
+            <td class="text-end">{{contest.details.writeInTotal}}</td>
             <td class="text-end"></td>
           </tr>
         </tbody>
