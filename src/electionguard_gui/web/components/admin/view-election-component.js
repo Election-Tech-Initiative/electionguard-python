@@ -7,7 +7,7 @@ export default {
   },
   components: { Spinner },
   data() {
-    return { election: null, loading: false, error: false };
+    return { election: null, loading: false, error: false, ballotSum: 0 };
   },
   methods: {
     getEncryptionPackageUrl: function () {
@@ -34,11 +34,18 @@ export default {
         decryptionId: decryptionId,
       });
     },
+    setBallotSum: function (election) {
+      this.ballotSum = 0;
+      for (const spoiledBallot of election.ballot_uploads) {
+        this.ballotSum += spoiledBallot.ballot_count;
+      }
+    },
   },
   async mounted() {
     const result = await eel.get_election(this.electionId)();
     if (result.success) {
       this.election = result.result;
+      this.setBallotSum(this.election);
     } else {
       this.error = true;
     }
@@ -47,19 +54,34 @@ export default {
     <div v-if="election">
       <div class="container">
         <div class="row mb-4">
-          <div class="col">
+          <div class="col-11">
             <h1>{{election.election_name}}</h1>
           </div>
-          <div class="col col-xs-3 text-end">
-            <a :href="getEncryptionPackageUrl()" class="btn btn-sm btn-primary" title="Download encryption package">
-              <i class="bi-download"></i>
-            </a>
-            <a :href="getUploadBallotsUrl()" class="btn btn-sm btn-primary ms-3" title="Upload ballots">
-              <i class="bi-upload"></i>
-            </a>
-            <a :href="getCreateDecryptionUrl()" class="btn btn-sm btn-primary ms-3" title="Create decryption" v-if="election.ballot_uploads.length">
-              <i class="bi bi-people-fill"></i>
-            </a>
+          <div class="col-1 text-end">
+            <div class="dropdown">
+              <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi-gear-fill me-1"></i>
+              </button>
+              <ul class="dropdown-menu">
+                <li>
+                  <a :href="getEncryptionPackageUrl()" class="dropdown-item">
+                    <i class="bi-download me-1"></i> Download encryption package
+                  </a>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                  <a :href="getUploadBallotsUrl()" class="dropdown-item">
+                    <i class="bi-upload me-1"></i> Upload ballots
+                  </a>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                  <a :href="getCreateDecryptionUrl()" class="dropdown-item" v-if="election.ballot_uploads.length">
+                    <i class="bi bi-people-fill me-1"></i> Create tally
+                  </a>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
         <div class="row">
@@ -100,12 +122,19 @@ export default {
                       <td></td>
                     </tr>
                   </tbody>
+                  <tfoot>
+                    <tr class="table-secondary">
+                      <td><em>Total</em></td>
+                      <td>{{ballotSum}}
+                      <td></td>
+                    </tr>
+                  </tfoot>
                 </table>
               </div>
             </div>
             <div class="row" v-if="election.decryptions.length">
               <div class="col-12">
-                <h2>Decryptions</h2>
+                <h2>Tallies</h2>
                 <table class="table table-striped">
                   <thead>
                     <tr>

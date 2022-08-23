@@ -26,3 +26,36 @@ class TestElectionDto(BaseTestCase):
         # ASSERT
         self.assertEqual("ABC", result["id"])
         self.assertEqual("Feb 3, 2022 2:10 PM", result["created_at"])
+
+    def test_sum_two_ballots(self) -> None:
+        # ARRANGE
+        election_dto = ElectionDto(
+            {
+                "ballot_uploads": [
+                    {
+                        "ballot_count": 1,
+                        "ballot_type": "ballot_type_1",
+                    },
+                    {
+                        "ballot_count": 2,
+                        "ballot_type": "ballot_type_2",
+                    },
+                ]
+            }
+        )
+
+        # ACT
+        result = election_dto.sum_ballots()
+
+        # ASSERT
+        self.assertEqual(3, result)
+
+    def test_sum_zero_ballots(self) -> None:
+        # ARRANGE
+        election_dto = ElectionDto({"ballot_uploads": []})
+
+        # ACT
+        result = election_dto.sum_ballots()
+
+        # ASSERT
+        self.assertEqual(0, result)

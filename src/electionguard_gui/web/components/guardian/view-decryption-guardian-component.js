@@ -64,9 +64,9 @@ export default {
     <div v-if="decryption">
       <div class="row text-center">
         <div class="col col-12" v-if="decryption.can_join">
-          <h1>Join Decryption</h1>
-          <p>Click below to decrypt <i>{{decryption.decryption_name}}</i></p>
-          <button @click="decrypt()" :disabled="loading" class="btn btn-primary mb-3">Decrypt</button>
+          <h1>Join Tally</h1>
+          <p>Click below to join <i>{{decryption.decryption_name}}</i></p>
+          <button @click="decrypt()" :disabled="loading" class="btn btn-primary mb-3">Join</button>
           <spinner :visible="loading"></spinner>
         </div>
         <div class="col col-12" v-if="successfully_joined">

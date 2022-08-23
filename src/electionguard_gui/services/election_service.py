@@ -89,7 +89,6 @@ class ElectionService(ServiceBase):
         election_id: str,
         ballot_upload_id: str,
         device_file_contents: str,
-        ballot_count: int,
         created_at: datetime,
     ) -> None:
         self._log.trace(
@@ -107,7 +106,7 @@ class ElectionService(ServiceBase):
                         "launch_code": device_file_json["launch_code"],
                         "location": device_file_json["location"],
                         "session_id": device_file_json["session_id"],
-                        "ballot_count": ballot_count,
+                        "ballot_count": 0,
                         "created_at": created_at,
                     }
                 }
@@ -123,4 +122,18 @@ class ElectionService(ServiceBase):
         db.elections.update_one(
             {"_id": ObjectId(election_id)},
             {"$push": {"decryptions": {"decryption_id": decryption_id, "name": name}}},
+        )
+
+    def increment_ballot_upload_ballot_count(
+        self, db: Database, election_id: str, ballot_upload_id: str
+    ) -> None:
+        self._log.trace(
+            f"incrementing ballot upload {ballot_upload_id} ballot count in election {election_id}"
+        )
+        db.elections.update_one(
+            {
+                "_id": ObjectId(election_id),
+                "ballot_uploads.ballot_upload_id": ballot_upload_id,
+            },
+            {"$inc": {"ballot_uploads.$.ballot_count": 1}},
         )

@@ -41,6 +41,8 @@ class DecryptionDto:
     decryption_id: str
     election_id: str
     election_name: Optional[str]
+    ballot_upload_count: int
+    ballot_count: int
     guardians: int
     quorum: int
     decryption_name: Optional[str]
@@ -63,6 +65,8 @@ class DecryptionDto:
         self.election_id = str(decryption.get("election_id"))
         self.key_ceremony_id = decryption.get("key_ceremony_id")
         self.election_name = decryption.get("election_name")
+        self.ballot_upload_count = _get_int(decryption, "ballot_upload_count", 0)
+        self.ballot_count = _get_int(decryption, "ballot_count", 0)
         self.guardians = _get_int(decryption, "guardians", 0)
         self.quorum = _get_int(decryption, "quorum", 0)
         self.decryption_name = decryption.get("decryption_name")
@@ -99,6 +103,8 @@ class DecryptionDto:
             "decryption_id": self.decryption_id,
             "election_id": self.election_id,
             "election_name": self.election_name,
+            "ballot_upload_count": self.ballot_upload_count,
+            "ballot_count": self.ballot_count,
             "decryption_name": self.decryption_name,
             "guardians_joined": self.guardians_joined,
             "status": self.get_status(),

@@ -47,7 +47,10 @@ export default {
     await this.get_decryption(false);
     eel.expose(this.refresh_decryption, "refresh_decryption");
     console.log("watching decryption");
-    eel.watch_decryption(this.decryptionId);
+    // only watch for changes if the decryption is in-progress
+    if (!this.decryption.completed_at_str) {
+      eel.watch_decryption(this.decryptionId);
+    }
   },
   unmounted() {
     console.log("stop watching decryption");
@@ -59,20 +62,44 @@ export default {
     </div>
     <div v-if="decryption">
       <div class="row mb-4">
-        <div class="col col-11">
+        <div class="col-11">
           <h1>{{decryption.decryption_name}}</h1>
         </div>
-        <div class="col col-xs-2 text-end" v-if="decryption.completed_at_str">
-          <a :href="getExportElectionRecordUrl()" class="btn btn-sm btn-primary" title="Download election record">
-            <i class="bi-download"></i>
-          </a>
+        <div class="col-1 text-end" v-if="decryption.completed_at_str">
+          <div class="dropdown">
+            <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="bi-gear-fill me-1"></i>
+            </button>
+            <ul class="dropdown-menu">
+              <li>
+                <a :href="getExportElectionRecordUrl()" class="dropdown-item">
+                  <i class="bi-download me-1"></i> Download election record
+                </a>
+              </li>
+              <li>
+                <a :href="getViewTallyUrl()" class="dropdown-item" v-if="decryption.completed_at_str">
+                  <i class="bi-card-text me-1"></i> View Tally
+                </a>
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
       <div class="row">
         <div class="col col-12 col-md-6 col-lg-5">
-          <div class="col-12">
+          <div class="col-md-8">
             <dt>Election</dt>
             <dd><a :href="getElectionUrl(decryption.election_id)">{{decryption.election_name}}</a></dd>
+          </div>
+          <div class="row">
+            <div class="col-md-6">
+              <dt>Ballot Uploads</dt>
+              <dd>{{decryption.ballot_upload_count}}</dd>
+            </div>
+            <div class="col-md-6">
+              <dt>Total Ballots</dt>
+              <dd>{{decryption.ballot_count}}</dd>
+            </div>
           </div>
           <dl class="col-12">
             <dt>Created</dt>

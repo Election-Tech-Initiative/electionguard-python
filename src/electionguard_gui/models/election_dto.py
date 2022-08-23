@@ -111,6 +111,9 @@ class ElectionDto:
                 return record.sequence_order
         raise Exception("Guardian not found")
 
+    def sum_ballots(self) -> int:
+        return sum(ballot["ballot_count"] for ballot in self.ballot_uploads)
+
 
 def _get_list(election: dict[str, Any], name: str) -> list:
     value = election.get(name)
