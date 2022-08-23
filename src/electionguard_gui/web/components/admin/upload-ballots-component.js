@@ -78,6 +78,27 @@ export default {
     getElectionUrl: function () {
       return RouterService.getElectionUrl(this.electionId);
     },
+    uploadMore: function () {
+      this.success = false;
+      this.duplicateCount = 0;
+      this.election = null;
+      this.loading = false;
+      this.alert = null;
+      this.ballotsProcessed = null;
+      this.ballotsTotal = null;
+      this.success = false;
+      this.duplicateCount = 0;
+      this.$nextTick(() => {
+        this.resetFiles();
+      });
+    },
+    resetFiles: function () {
+      document.getElementById("deviceFile").value = null;
+      document.getElementById("ballotsFolder").value = null;
+    },
+  },
+  mounted() {
+    this.resetFiles();
   },
   template: /*html*/ `
     <div v-if="alert" class="alert alert-danger" role="alert">
@@ -113,7 +134,8 @@ export default {
           <div class="invalid-feedback">Please provide a ballot folder.</div>
         </div>
         <div class="col-12 mt-4">
-          <button type="submit" :disabled="loading" class="btn btn-primary">Upload Ballots</button>
+          <button type="submit" :disabled="loading" class="btn btn-primary me-2">Upload Ballots</button>
+          <a :href="getElectionUrl()" class="btn btn-secondary me-2">Cancel</a>
           <spinner :visible="loading"></spinner>
           <p v-if="loading && ballotsProcessed">{{ ballotsProcessed }} of {{ ballotsTotal }} files processed.</p>
       </div>
@@ -121,7 +143,8 @@ export default {
     <div v-if="success" class="text-center">
       <img src="/images/check.svg" width="200" height="200" class="mt-4 mb-2"></img>
       <p>Successfully uploaded {{ballotsTotal-duplicateCount}} ballots.</p>
-      <a :href="getElectionUrl()" class="btn btn-primary">Continue</a>
+      <a :href="getElectionUrl()" class="btn btn-primary me-2">Done Uploading</a>
+      <button type="button" @click="uploadMore()" class="btn btn-secondary">Upload More Ballots</button>
     </div>
   `,
 };
