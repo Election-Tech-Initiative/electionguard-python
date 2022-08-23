@@ -165,6 +165,57 @@ class TestPlaintextBallotService(BaseTestCase):
         self.assertEqual(1, selection["percent"])
 
     @patch("electionguard.tally.PlaintextTallySelection")
+    @patch("electionguard.tally.PlaintextTallySelection")
+    def test_duplicate_section_names(
+        self,
+        plaintext_tally_selection1: MagicMock,
+        plaintext_tally_selection2: MagicMock,
+    ) -> None:
+        # ARRANGE
+        plaintext_tally_selection1.object_id = "S1"
+        plaintext_tally_selection1.tally = 1
+        plaintext_tally_selection2.object_id = "S2"
+        plaintext_tally_selection2.tally = 9
+        selections: list[PlaintextTallySelection] = [
+            plaintext_tally_selection1,
+            plaintext_tally_selection2,
+        ]
+        selection_names: dict[str, str] = {
+            "S1": "Abraham Lincoln",
+            "S2": "Abraham Lincoln",
+        }
+        selection_write_ins: dict[str, bool] = {
+            "S1": False,
+            "S2": False,
+        }
+        parties: dict[str, str] = {
+            "S1": "National Union Party",
+            "S2": "National Union Party",
+        }
+
+        # ACT
+        result = _get_contest_details(
+            selections, selection_names, selection_write_ins, parties
+        )
+
+        # ASSERT
+        self.assertEqual(10, result["nonWriteInTotal"])
+        self.assertEqual(None, result["writeInTotal"])
+        self.assertEqual(2, len(result["selections"]))
+
+        selection = result["selections"][0]
+        self.assertEqual("Abraham Lincoln", selection["name"])
+        self.assertEqual(1, selection["tally"])
+        self.assertEqual("National Union Party", selection["party"])
+        self.assertEqual(0.1, selection["percent"])
+
+        selection = result["selections"][1]
+        self.assertEqual("Abraham Lincoln", selection["name"])
+        self.assertEqual(9, selection["tally"])
+        self.assertEqual("National Union Party", selection["party"])
+        self.assertEqual(0.9, selection["percent"])
+
+    @patch("electionguard.tally.PlaintextTallySelection")
     def test_one_write_in(self, plaintext_tally_selection: MagicMock) -> None:
         # ARRANGE
         plaintext_tally_selection.object_id = "ST"
