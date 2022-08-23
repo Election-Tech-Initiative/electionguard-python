@@ -24,7 +24,6 @@ from .logs import log_info, log_warning
 from .manifest import (
     InternalManifest,
     ContestDescription,
-    ContestDescriptionWithPlaceholders,
     SelectionDescription,
 )
 from .nonces import Nonces
@@ -139,31 +138,27 @@ def generate_device_uuid() -> int:
 
 def selection_from(
     description: SelectionDescription,
-    is_placeholder: bool = False,
     is_affirmative: bool = False,
 ) -> PlaintextBallotSelection:
     """
-    Construct a `BallotSelection` from a specific `SelectionDescription`.
-    This function is useful for filling selections when a voter undervotes a ballot.
-    It is also used to create placeholder representations when generating the `ConstantChaumPedersenProof`
+    Construct a `PlaintextBallotSelection` from a specific `SelectionDescription`.
+    This function is useful for filling selections when a voter undervotes a ballot and for testing.
 
     :param description: The `SelectionDescription` which provides the relevant `object_id`
-    :param is_placeholder: Mark this selection as a placeholder value
     :param is_affirmative: Mark this selection as `yes`
-    :return: A BallotSelection
+    :return: A plaintext selection
     """
 
     return PlaintextBallotSelection(
         description.object_id,
         1 if is_affirmative else 0,
-        is_placeholder,
     )
 
 
 def contest_from(description: ContestDescription) -> PlaintextBallotContest:
     """
     Construct a `BallotContest` from a specific `ContestDescription` with all false fields.
-    This function is useful for filling contests and selections when a voter undervotes a ballot.
+    This function is useful for filling contests and selections for a null-vote ballot.
 
     :param description: The `ContestDescription` used to derive the well-formed `BallotContest`
     :return: a `BallotContest`
@@ -183,11 +178,11 @@ def encrypt_selection(
     elgamal_public_key: ElGamalPublicKey,
     crypto_extended_base_hash: ElementModQ,
     nonce_seed: ElementModQ,
-    is_placeholder: bool = False,
+    selection_limit: int = 1,
     should_verify_proofs: bool = False,
 ) -> Optional[CiphertextBallotSelection]:
     """
-    Encrypt a specific `BallotSelection` in the context of a specific `BallotContest`
+    Encrypt a specific `PlaintextBallotSelection` in the context of a specific `BallotContest`
 
     :param selection: the selection in the valid input form
     :param selection_description: the `SelectionDescription` from the
@@ -196,7 +191,7 @@ def encrypt_selection(
     :param crypto_extended_base_hash: the extended base hash of the election
     :param nonce_seed: an `ElementModQ` used as a header to seed the `Nonce` generated for this selection.
                  this value can be (or derived from) the BallotContest nonce, but no relationship is required
-    :param is_placeholder: specifies if this is a placeholder selection
+    :param selection_limit: maximum number of votes allowed for the selection according to the contest
     :param should_verify_proofs: specify if the proofs should be verified prior to returning (default False)
     """
 
@@ -208,7 +203,7 @@ def encrypt_selection(
     selection_description_hash = selection_description.crypto_hash()
     nonce_sequence = Nonces(selection_description_hash, nonce_seed)
     selection_nonce = nonce_sequence[selection_description.sequence_order]
-    disjunctive_chaum_pedersen_nonce = next(iter(nonce_sequence))
+    range_chaum_pedersen_nonce = next(iter(nonce_sequence))
 
     log_info(
         f": encrypt_selection: for {selection_description.object_id} hash: {selection_description_hash.to_hex()}"
@@ -235,9 +230,9 @@ def encrypt_selection(
         get_optional(elgamal_encryption),
         elgamal_public_key,
         crypto_extended_base_hash,
-        disjunctive_chaum_pedersen_nonce,
+        range_chaum_pedersen_nonce,
         selection_representation,
-        is_placeholder,
+        selection_limit,
         selection_nonce,
     )
 
@@ -261,7 +256,7 @@ def encrypt_selection(
 
 def encrypt_contest(
     contest: PlaintextBallotContest,
-    contest_description: ContestDescriptionWithPlaceholders,
+    contest_description: ContestDescription,
     elgamal_public_key: ElGamalPublicKey,
     crypto_extended_base_hash: ElementModQ,
     nonce_seed: ElementModQ,
@@ -271,14 +266,12 @@ def encrypt_contest(
     Encrypt a specific `BallotContest` in the context of a specific `Ballot`.
 
     This method accepts a contest representation that only includes `True` selections.
-    It will fill missing selections for a contest with `False` values, and generate `placeholder`
-    selections to represent the number of seats available for a given contest.  By adding `placeholder`
-    votes
+    It will fill missing selections for a contest with `False` values.
 
     :param contest: the contest in the valid input form
-    :param contest_description: the `ContestDescriptionWithPlaceholders`
-        from the `ContestDescription` which defines this contest's structure
-    :param elgamal_public_key: the public key (k) used to encrypt the ballot
+    :param contest_description: the `ContestDescription`
+        which defines this contest's structure
+    :param elgamal_public_key: the public key (K) used to encrypt the ballot
     :param crypto_extended_base_hash: the extended base hash of the election
     :param nonce_seed: an `ElementModQ` used as a header to seed the `Nonce` generated for this contest.
                  this value can be (or derived from) the Ballot nonce, but no relationship is required
@@ -307,7 +300,9 @@ def encrypt_contest(
 
     encrypted_selections: List[CiphertextBallotSelection] = []
 
-    selection_count = 0
+    votes_allowed = contest_description.votes_allowed
+    selection_limit = contest_description.votes_allowed_per_selection
+    number_votes = 0
 
     # TODO: ISSUE #54 this code could be inefficient if we had a contest
     # with a lot of choices, although the O(n^2) iteration here is small
@@ -323,21 +318,21 @@ def encrypt_contest(
         # false is entered instead and the selection_count is not incremented
         # this allows consumers to only pass in the relevant selections made by a voter
         for selection in contest.ballot_selections:
-            # If overvote, no votes should be counted and instead placeholders should be used.
+            # If overvote, no votes should be counted
             if (
                 selection.object_id == description.object_id
                 and error is not ContestErrorType.OverVote
             ):
-                # track the selection count so we can append the
-                # appropriate number of true placeholder votes
+                # Track the selection count so we can construct the range Chaum-Pedersen proof
                 has_selection = True
-                selection_count += selection.vote
+                number_votes += selection.vote
                 encrypted_selection = encrypt_selection(
                     selection,
                     description,
                     elgamal_public_key,
                     crypto_extended_base_hash,
                     contest_nonce,
+                    selection_limit,
                     should_verify_proofs=should_verify_proofs,
                 )
                 break
@@ -351,40 +346,10 @@ def encrypt_contest(
                 elgamal_public_key,
                 crypto_extended_base_hash,
                 contest_nonce,
+                selection_limit,
                 should_verify_proofs=should_verify_proofs,
             )
 
-        if encrypted_selection is None:
-            return None  # log will have happened earlier
-        encrypted_selections.append(get_optional(encrypted_selection))
-
-    # Handle Placeholder selections
-    # After we loop through all of the real selections on the ballot,
-    # we loop through each placeholder value and determine if it should be filled in
-
-    # Add a placeholder selection for each possible seat in the contest
-    for placeholder in contest_description.placeholder_selections:
-        # for undervotes, select the placeholder value as true for each available seat
-        # note this pattern is used since DisjunctiveChaumPedersen expects a 0 or 1
-        # so each seat can only have a maximum value of 1 in the current implementation
-        select_placeholder = False
-        if selection_count < contest_description.number_elected:
-            select_placeholder = True
-            selection_count += 1
-
-        encrypted_selection = encrypt_selection(
-            selection=selection_from(
-                description=placeholder,
-                is_placeholder=True,
-                is_affirmative=select_placeholder,
-            ),
-            selection_description=placeholder,
-            elgamal_public_key=elgamal_public_key,
-            crypto_extended_base_hash=crypto_extended_base_hash,
-            nonce_seed=contest_nonce,
-            is_placeholder=True,
-            should_verify_proofs=should_verify_proofs,
-        )
         if encrypted_selection is None:
             return None  # log will have happened earlier
         encrypted_selections.append(get_optional(encrypted_selection))
@@ -405,7 +370,8 @@ def encrypt_contest(
         elgamal_public_key,
         crypto_extended_base_hash,
         chaum_pedersen_nonce,
-        contest_description.number_elected,
+        number_votes=number_votes,
+        votes_allowed=votes_allowed,
         nonce=contest_nonce,
         extended_data=encrypted_contest_data,
     )
@@ -440,11 +406,10 @@ def encrypt_ballot(
     Encrypt a specific `Ballot` in the context of a specific `CiphertextElectionContext`.
 
     This method accepts a ballot representation that only includes `True` selections.
-    It will fill missing selections for a contest with `False` values, and generate `placeholder`
-    selections to represent the number of seats available for a given contest.
+    It will fill missing selections for a contest with `False` values.
 
     This method also allows for ballots to exclude passing contests for which the voter made no selections.
-    It will fill missing contests with `False` selections and generate `placeholder` selections that are marked `True`.
+    It will fill missing contests with `False` selections.
 
     :param ballot: the ballot in the valid input form
     :param internal_manifest: the `InternalManifest` which defines this ballot's structure

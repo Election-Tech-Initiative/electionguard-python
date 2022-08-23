@@ -9,7 +9,7 @@ from hypothesis.strategies import integers
 
 from tests.base_test_case import BaseTestCase
 
-from electionguard.chaum_pedersen import DisjunctiveChaumPedersenProof
+from electionguard.chaum_pedersen import RangeChaumPedersenProof
 from electionguard.decrypt_with_secrets import (
     decrypt_selection_with_secret,
     decrypt_selection_with_nonce,
@@ -33,8 +33,6 @@ from electionguard.group import (
 from electionguard.manifest import (
     ContestDescription,
     SelectionDescription,
-    generate_placeholder_selections_from,
-    contest_description_with_placeholders_from,
 )
 
 import electionguard_tools.factories.ballot_factory as BallotFactory
@@ -142,19 +140,16 @@ class TestDecryptWithSecrets(BaseTestCase):
 
         # tamper with the proof
         malformed_proof = deepcopy(subject)
-        altered_a0 = mult_p(subject.proof.proof_zero_pad, TWO_MOD_P)
-        malformed_disjunctive = DisjunctiveChaumPedersenProof(
-            altered_a0,
-            malformed_proof.proof.proof_zero_data,
-            malformed_proof.proof.proof_one_pad,
-            malformed_proof.proof.proof_one_data,
-            malformed_proof.proof.proof_zero_challenge,
-            malformed_proof.proof.proof_one_challenge,
-            malformed_proof.proof.challenge,
-            malformed_proof.proof.proof_zero_response,
-            malformed_proof.proof.proof_one_response,
+        malformed_commitments = malformed_proof.proof.commitments
+        malformed_commitments[0] = mult_p(
+            malformed_proof.proof.commitments[0], TWO_MOD_P
         )
-        malformed_proof.proof = malformed_disjunctive
+        malformed_range = RangeChaumPedersenProof(
+            malformed_commitments,
+            malformed_proof.proof.challenges,
+            malformed_proof.proof.responses,
+        )
+        malformed_proof.proof = malformed_range
 
         result_from_key_malformed_encryption = decrypt_selection_with_secret(
             malformed_encryption,
@@ -209,7 +204,10 @@ class TestDecryptWithSecrets(BaseTestCase):
         # Arrange
         random = Random(random_seed)
         _, description = selection_description
-        data = ballot_factory.get_random_selection_from(description, random)
+        selection_limit = 2
+        data = ballot_factory.get_random_selection_from(
+            description, random, selection_limit
+        )
 
         # Act
         subject = encrypt_selection(
@@ -218,6 +216,7 @@ class TestDecryptWithSecrets(BaseTestCase):
             keypair.public_key,
             ONE_MOD_Q,
             nonce_seed,
+            selection_limit,
             should_verify_proofs=True,
         )
         self.assertIsNotNone(subject)
@@ -258,19 +257,12 @@ class TestDecryptWithSecrets(BaseTestCase):
         random = Random(random_seed)
         data = ballot_factory.get_random_contest_from(description, random)
 
-        placeholders = generate_placeholder_selections_from(
-            description, description.number_elected
-        )
-        description_with_placeholders = contest_description_with_placeholders_from(
-            description, placeholders
-        )
-
-        self.assertTrue(description_with_placeholders.is_valid())
+        self.assertTrue(description.is_valid())
 
         # Act
         subject = encrypt_contest(
             data,
-            description_with_placeholders,
+            description,
             keypair.public_key,
             ONE_MOD_Q,
             nonce_seed,
@@ -278,30 +270,26 @@ class TestDecryptWithSecrets(BaseTestCase):
         )
         self.assertIsNotNone(subject)
 
-        # Decrypt the contest, but keep the placeholders
-        # so we can verify the selection count matches as expected in the test
+        # Decrypt the contest
         result_from_key = decrypt_contest_with_secret(
             subject,
-            description_with_placeholders,
+            description,
             keypair.public_key,
             keypair.secret_key,
             ONE_MOD_Q,
-            remove_placeholders=False,
         )
         result_from_nonce = decrypt_contest_with_nonce(
             subject,
-            description_with_placeholders,
+            description,
             keypair.public_key,
             ONE_MOD_Q,
-            remove_placeholders=False,
         )
         result_from_nonce_seed = decrypt_contest_with_nonce(
             subject,
-            description_with_placeholders,
+            description,
             keypair.public_key,
             ONE_MOD_Q,
             nonce_seed,
-            remove_placeholders=False,
         )
 
         # Assert
@@ -310,32 +298,29 @@ class TestDecryptWithSecrets(BaseTestCase):
         self.assertIsNotNone(result_from_nonce_seed)
 
         # The decrypted contest should include an entry for each possible selection
-        # and placeholders for each seat
-        expected_entries = (
-            len(description.ballot_selections) + description.number_elected
-        )
+        expected_entries = len(description.ballot_selections)
         self.assertTrue(
             result_from_key.is_valid(
                 description.object_id,
                 expected_entries,
-                description.number_elected,
                 description.votes_allowed,
+                description.votes_allowed_per_selection,
             )
         )
         self.assertTrue(
             result_from_nonce.is_valid(
                 description.object_id,
                 expected_entries,
-                description.number_elected,
                 description.votes_allowed,
+                description.votes_allowed_per_selection,
             )
         )
         self.assertTrue(
             result_from_nonce_seed.is_valid(
                 description.object_id,
                 expected_entries,
-                description.number_elected,
                 description.votes_allowed,
+                description.votes_allowed_per_selection,
             )
         )
 
@@ -352,7 +337,7 @@ class TestDecryptWithSecrets(BaseTestCase):
 
         self.assertEqual(key_selected, nonce_selected)
         self.assertEqual(seed_selected, nonce_selected)
-        self.assertEqual(description.number_elected, key_selected)
+        self.assertGreaterEqual(description.votes_allowed, key_selected)
 
         # Assert each selection is valid
         for selection_description in description.ballot_selections:
@@ -386,9 +371,6 @@ class TestDecryptWithSecrets(BaseTestCase):
                 self.assertTrue(data_selections_exist[0].vote == nonce_selection.vote)
                 self.assertTrue(data_selections_exist[0].vote == seed_selection.vote)
 
-            # TODO: also check edge cases such as:
-            # - placeholder selections are true for under votes
-
             self.assertTrue(key_selection.is_valid(selection_description.object_id))
             self.assertTrue(nonce_selection.is_valid(selection_description.object_id))
             self.assertTrue(seed_selection.is_valid(selection_description.object_id))
@@ -419,19 +401,12 @@ class TestDecryptWithSecrets(BaseTestCase):
         random = Random(random_seed)
         data = ballot_factory.get_random_contest_from(description, random)
 
-        placeholders = generate_placeholder_selections_from(
-            description, description.number_elected
-        )
-        description_with_placeholders = contest_description_with_placeholders_from(
-            description, placeholders
-        )
-
-        self.assertTrue(description_with_placeholders.is_valid())
+        self.assertTrue(description.is_valid())
 
         # Act
         subject = encrypt_contest(
             data,
-            description_with_placeholders,
+            description,
             keypair.public_key,
             ONE_MOD_Q,
             nonce_seed,
@@ -443,18 +418,16 @@ class TestDecryptWithSecrets(BaseTestCase):
 
         result_from_nonce = decrypt_contest_with_nonce(
             subject,
-            description_with_placeholders,
+            description,
             keypair.public_key,
             ONE_MOD_Q,
-            remove_placeholders=False,
         )
         result_from_nonce_seed = decrypt_contest_with_nonce(
             subject,
-            description_with_placeholders,
+            description,
             keypair.public_key,
             ONE_MOD_Q,
             nonce_seed,
-            remove_placeholders=False,
         )
 
         # Assert
@@ -468,26 +441,23 @@ class TestDecryptWithSecrets(BaseTestCase):
 
         result_from_key_tampered = decrypt_contest_with_secret(
             subject,
-            description_with_placeholders,
+            description,
             keypair.public_key,
             keypair.secret_key,
             ONE_MOD_Q,
-            remove_placeholders=False,
         )
         result_from_nonce_tampered = decrypt_contest_with_nonce(
             subject,
-            description_with_placeholders,
+            description,
             keypair.public_key,
             ONE_MOD_Q,
-            remove_placeholders=False,
         )
         result_from_nonce_seed_tampered = decrypt_contest_with_nonce(
             subject,
-            description_with_placeholders,
+            description,
             keypair.public_key,
             ONE_MOD_Q,
             nonce_seed,
-            remove_placeholders=False,
         )
 
         # Assert
@@ -531,14 +501,12 @@ class TestDecryptWithSecrets(BaseTestCase):
             context.crypto_extended_base_hash,
             keypair.public_key,
             keypair.secret_key,
-            remove_placeholders=False,
         )
         result_from_nonce = decrypt_ballot_with_nonce(
             subject,
             internal_manifest,
             context.crypto_extended_base_hash,
             keypair.public_key,
-            remove_placeholders=False,
         )
         result_from_nonce_seed = decrypt_ballot_with_nonce(
             subject,
@@ -546,7 +514,6 @@ class TestDecryptWithSecrets(BaseTestCase):
             context.crypto_extended_base_hash,
             keypair.public_key,
             subject.nonce,
-            remove_placeholders=False,
         )
 
         # Assert
@@ -559,11 +526,7 @@ class TestDecryptWithSecrets(BaseTestCase):
         self.assertEqual(data.object_id, result_from_nonce_seed.object_id)
 
         for description in internal_manifest.get_contests_for(data.style_id):
-
-            expected_entries = (
-                len(description.ballot_selections) + description.number_elected
-            )
-
+            expected_entries = len(description.ballot_selections)
             key_contest = [
                 contest
                 for contest in result_from_key.contests
@@ -595,24 +558,24 @@ class TestDecryptWithSecrets(BaseTestCase):
                 key_contest.is_valid(
                     description.object_id,
                     expected_entries,
-                    description.number_elected,
                     description.votes_allowed,
+                    description.votes_allowed_per_selection,
                 )
             )
             self.assertTrue(
                 nonce_contest.is_valid(
                     description.object_id,
                     expected_entries,
-                    description.number_elected,
                     description.votes_allowed,
+                    description.votes_allowed_per_selection,
                 )
             )
             self.assertTrue(
                 seed_contest.is_valid(
                     description.object_id,
                     expected_entries,
-                    description.number_elected,
                     description.votes_allowed,
+                    description.votes_allowed_per_selection,
                 )
             )
 
@@ -651,9 +614,6 @@ class TestDecryptWithSecrets(BaseTestCase):
                     self.assertTrue(data_selection.vote == seed_selection.vote)
                 else:
                     data_selection = None
-
-                # TODO: also check edge cases such as:
-                # - placeholder selections are true for under votes
 
                 self.assertTrue(key_selection.is_valid(selection_description.object_id))
                 self.assertTrue(

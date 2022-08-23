@@ -18,7 +18,7 @@ environment:
 	poetry config virtualenvs.in-project true 
 	poetry install
 	@echo 🚨 Be sure to add poetry to PATH
-	make fetch-sample-data
+#	make fetch-sample-data
 
 install:
 	@echo 🔧 INSTALL

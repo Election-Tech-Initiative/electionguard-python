@@ -1,4 +1,4 @@
-from typing import Any, TypeVar, Callable, List, Tuple, Optional
+from typing import Any, Optional, TypeVar, Callable, List, Tuple
 import os
 from random import Random, randint
 import uuid
@@ -42,11 +42,10 @@ class BallotFactory:
     def get_random_selection_from(
         description: SelectionDescription,
         random_source: Random,
-        is_placeholder: bool = False,
+        limit: int = 1,
     ) -> PlaintextBallotSelection:
-
-        selected = bool(random_source.randint(0, 1))
-        return selection_from(description, is_placeholder, selected)
+        selected = bool(random_source.randint(0, limit))
+        return selection_from(description, selected)
 
     @staticmethod
     def get_random_contest_from(
@@ -68,15 +67,14 @@ class BallotFactory:
         shuffled_selections = description.ballot_selections[:]
         random.shuffle(shuffled_selections)
 
-        if allow_null_votes and not allow_under_votes:
-            cut_point = random.choice([0, description.number_elected])
-        else:
-            min_votes = description.number_elected
-            if allow_under_votes:
-                min_votes = 1
-            if allow_null_votes:
-                min_votes = 0
-            cut_point = random.randint(min_votes, description.number_elected)
+        min_votes = (
+            0
+            if allow_null_votes
+            else 1
+            if allow_under_votes
+            else description.votes_allowed
+        )
+        cut_point = random.choice([min_votes, description.votes_allowed])
 
         selections = [
             selection_from(selection_description, is_affirmative=True)
@@ -86,7 +84,7 @@ class BallotFactory:
         for selection_description in shuffled_selections[cut_point:]:
             # Possibly append the false selections as well, indicating some choices
             # may be explicitly false
-            if bool(random.randint(0, 1)) == 1:
+            if random.randint(0, 1):
                 selections.append(
                     selection_from(selection_description, is_affirmative=False)
                 )
@@ -101,7 +99,7 @@ class BallotFactory:
         allow_null_votes: bool = False,
     ) -> PlaintextBallot:
         """
-        Get a single Fake Ballot object that is manually constructed with default vaules
+        Get a single Fake Ballot object that is manually constructed with default values
         """
 
         if ballot_id is None:
@@ -188,7 +186,7 @@ def get_selection_well_formed(
     object_id = f"selection-{draw(ids)}"
     return (
         object_id,
-        PlaintextBallotSelection(object_id, draw(vote), draw(bools), extended_data),
+        PlaintextBallotSelection(object_id, draw(vote), extended_data),
     )
 
 
@@ -209,5 +207,5 @@ def get_selection_poorly_formed(
     object_id = f"selection-{draw(ids)}"
     return (
         object_id,
-        PlaintextBallotSelection(object_id, draw(vote), draw(bools), extended_data),
+        PlaintextBallotSelection(object_id, draw(vote), extended_data),
     )

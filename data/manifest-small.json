@@ -127,7 +127,6 @@
       "sequence_order": 0,
       "electoral_district_id": "franklin-county",
       "vote_variation": "one_of_m",
-      "number_elected": 1,
       "votes_allowed": 1,
       "name": "Representative to US Congress",
       "ballot_selections": [
@@ -155,7 +154,6 @@
       "sequence_order": 1,
       "electoral_district_id": "franklin-county",
       "vote_variation": "one_of_m",
-      "number_elected": 1,
       "votes_allowed": 1,
       "name": "The Pineapple Question",
       "ballot_selections": [
@@ -178,7 +176,6 @@
       "sequence_order": 2,
       "electoral_district_id": "ozark-school-district",
       "vote_variation": "n_of_m",
-      "number_elected": 2,
       "votes_allowed": 2,
       "name": "Ozark School Board",
       "ballot_selections": [

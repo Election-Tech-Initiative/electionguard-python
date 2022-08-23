@@ -12,6 +12,7 @@ from electionguard.chaum_pedersen import (
     make_chaum_pedersen,
     make_constant_chaum_pedersen,
     make_disjunctive_chaum_pedersen,
+    make_range_chaum_pedersen,
 )
 from electionguard.elgamal import (
     ElGamalKeyPair,
@@ -24,8 +25,143 @@ from electionguard_tools.strategies.elgamal import elgamal_keypairs
 from electionguard_tools.strategies.group import elements_mod_q_no_zero, elements_mod_q
 
 
+class TestRangeChaumPedersen(BaseTestCase):
+    """Range Chaum-Pedersen tests"""
+
+    def test_rcp_proofs_simple(self):
+        keypair = elgamal_keypair_from_secret(TWO_MOD_Q)
+        nonce = ONE_MOD_Q
+        seed = TWO_MOD_Q
+
+        # Encode 0; able to prove within range 0 - L for any L >= 0 (default 1)
+        message0 = get_optional(elgamal_encrypt(0, nonce, keypair.public_key))
+        proof00 = make_range_chaum_pedersen(
+            message0, nonce, keypair.public_key, ONE_MOD_Q, seed, 0, 0
+        )
+        self.assertTrue(proof00.is_valid(message0, keypair.public_key, ONE_MOD_Q))
+        proof01 = make_range_chaum_pedersen(
+            message0, nonce, keypair.public_key, ONE_MOD_Q, seed, 0
+        )
+        self.assertTrue(proof01.is_valid(message0, keypair.public_key, ONE_MOD_Q))
+        proof02 = make_range_chaum_pedersen(
+            message0, nonce, keypair.public_key, ONE_MOD_Q, seed, 0, 2
+        )
+        self.assertTrue(proof02.is_valid(message0, keypair.public_key, ONE_MOD_Q))
+
+        # Encode 1; able to prove within range 0 - L for any L >= 1 (default 1)
+        message1 = get_optional(elgamal_encrypt(1, nonce, keypair.public_key))
+        proof11 = make_range_chaum_pedersen(
+            message1, nonce, keypair.public_key, ONE_MOD_Q, seed, 1
+        )
+        self.assertTrue(proof11.is_valid(message1, keypair.public_key, ONE_MOD_Q))
+        proof12 = make_range_chaum_pedersen(
+            message1, nonce, keypair.public_key, ONE_MOD_Q, seed, 1, 2
+        )
+        self.assertTrue(proof12.is_valid(message1, keypair.public_key, ONE_MOD_Q))
+
+        # Encode 2; able to prove within range 0 - L for any L >= 2
+        message2 = get_optional(elgamal_encrypt(2, nonce, keypair.public_key))
+        proof22 = make_range_chaum_pedersen(
+            message2, nonce, keypair.public_key, ONE_MOD_Q, seed, 2, 2
+        )
+        self.assertTrue(proof22.is_valid(message2, keypair.public_key, ONE_MOD_Q))
+        proof23 = make_range_chaum_pedersen(
+            message2, nonce, keypair.public_key, ONE_MOD_Q, seed, 2, 5
+        )
+        self.assertTrue(proof23.is_valid(message2, keypair.public_key, ONE_MOD_Q))
+
+    def test_rcp_proofs_invalid_input(self):
+        keypair = elgamal_keypair_from_secret(TWO_MOD_Q)
+        nonce = ONE_MOD_Q
+        seed = TWO_MOD_Q
+
+        # Encode 2; cannot construct range proof for range not including plaintext
+        message2 = get_optional(elgamal_encrypt(2, nonce, keypair.public_key))
+        self.assertRaises(
+            AssertionError,
+            make_range_chaum_pedersen,
+            message2,
+            nonce,
+            keypair.public_key,
+            ONE_MOD_Q,
+            seed,
+            2,
+            1,
+        )
+        # Encode 0; proof with incorrect plaintext runs but is invalid, even for valid range/encryption
+        message0 = get_optional(elgamal_encrypt(0, nonce, keypair.public_key))
+        proof03bad = make_range_chaum_pedersen(
+            message0, nonce, keypair.public_key, ONE_MOD_Q, seed, 3, 10
+        )
+        self.assertFalse(proof03bad.is_valid(message0, keypair.public_key, ONE_MOD_Q))
+        # Encode 2; proof is invalid when issued wrong encryption for validation
+        proof24 = make_range_chaum_pedersen(
+            message2, nonce, keypair.public_key, ONE_MOD_Q, seed, 2, 4
+        )
+        self.assertFalse(proof24.is_valid(message0, keypair.public_key, ONE_MOD_Q))
+
+    @settings(
+        deadline=timedelta(milliseconds=2000),
+        suppress_health_check=[HealthCheck.too_slow],
+        max_examples=10,
+    )
+    @given(elgamal_keypairs(), elements_mod_q_no_zero(), elements_mod_q())
+    def test_rcp_proof_zero(
+        self, keypair: ElGamalKeyPair, nonce: ElementModQ, seed: ElementModQ
+    ):
+        message = get_optional(elgamal_encrypt(0, nonce, keypair.public_key))
+        proof = make_range_chaum_pedersen(
+            message, nonce, keypair.public_key, ONE_MOD_Q, seed, 0
+        )
+        proof_bad = make_range_chaum_pedersen(
+            message, nonce, keypair.public_key, ONE_MOD_Q, seed, 1
+        )
+        self.assertTrue(proof.is_valid(message, keypair.public_key, ONE_MOD_Q))
+        self.assertFalse(proof_bad.is_valid(message, keypair.public_key, ONE_MOD_Q))
+
+    @settings(
+        deadline=timedelta(milliseconds=2000),
+        suppress_health_check=[HealthCheck.too_slow],
+        max_examples=10,
+    )
+    @given(elgamal_keypairs(), elements_mod_q_no_zero(), elements_mod_q())
+    def test_rcp_proof_one(
+        self, keypair: ElGamalKeyPair, nonce: ElementModQ, seed: ElementModQ
+    ):
+        message = get_optional(elgamal_encrypt(1, nonce, keypair.public_key))
+        proof = make_range_chaum_pedersen(
+            message, nonce, keypair.public_key, ONE_MOD_Q, seed, 1
+        )
+        proof_bad = make_range_chaum_pedersen(
+            message, nonce, keypair.public_key, ONE_MOD_Q, seed, 0
+        )
+        self.assertTrue(proof.is_valid(message, keypair.public_key, ONE_MOD_Q))
+        self.assertFalse(proof_bad.is_valid(message, keypair.public_key, ONE_MOD_Q))
+
+    @settings(
+        deadline=timedelta(milliseconds=2000),
+        suppress_health_check=[HealthCheck.too_slow],
+        max_examples=10,
+    )
+    @given(elgamal_keypairs(), elements_mod_q_no_zero(), elements_mod_q())
+    def test_rcp_proof_broken(
+        self, keypair: ElGamalKeyPair, nonce: ElementModQ, seed: ElementModQ
+    ):
+        # Verify two different ways to generate an invalid range C-P proof
+        message = get_optional(elgamal_encrypt(0, nonce, keypair.public_key))
+        message_bad = get_optional(elgamal_encrypt(2, nonce, keypair.public_key))
+        proof = make_range_chaum_pedersen(
+            message, nonce, keypair.public_key, ONE_MOD_Q, seed, 0
+        )
+        proof_bad = make_range_chaum_pedersen(
+            message_bad, nonce, keypair.public_key, ONE_MOD_Q, seed, 0
+        )
+        self.assertFalse(proof_bad.is_valid(message_bad, keypair.public_key, ONE_MOD_Q))
+        self.assertFalse(proof.is_valid(message_bad, keypair.public_key, ONE_MOD_Q))
+
+
 class TestDisjunctiveChaumPedersen(BaseTestCase):
-    """Disjunctive Chaum Pedersen tests"""
+    """Disjunctive Chaum-Pedersen tests"""
 
     def test_djcp_proofs_simple(self):
         # doesn't get any simpler than this
@@ -130,7 +266,7 @@ class TestDisjunctiveChaumPedersen(BaseTestCase):
 
 
 class TestChaumPedersen(BaseTestCase):
-    """Chaum Pedersen tests"""
+    """Chaum-Pedersen tests"""
 
     def test_cp_proofs_simple(self):
         keypair = elgamal_keypair_from_secret(TWO_MOD_Q)
@@ -139,10 +275,10 @@ class TestChaumPedersen(BaseTestCase):
         message = get_optional(elgamal_encrypt(0, nonce, keypair.public_key))
         decryption = message.partial_decrypt(keypair.secret_key)
         proof = make_chaum_pedersen(
-            message, keypair.secret_key, decryption, seed, ONE_MOD_Q
+            message, keypair.secret_key, ONE_MOD_Q, seed, decryption
         )
         bad_proof = make_chaum_pedersen(
-            message, keypair.secret_key, TWO_MOD_P, seed, ONE_MOD_Q
+            message, keypair.secret_key, ONE_MOD_Q, seed, TWO_MOD_P
         )
         self.assertTrue(
             proof.is_valid(message, keypair.public_key, decryption, ONE_MOD_Q)
@@ -178,10 +314,10 @@ class TestChaumPedersen(BaseTestCase):
         message = get_optional(elgamal_encrypt(constant, nonce, keypair.public_key))
         decryption = message.partial_decrypt(keypair.secret_key)
         proof = make_chaum_pedersen(
-            message, keypair.secret_key, decryption, seed, ONE_MOD_Q
+            message, keypair.secret_key, ONE_MOD_Q, seed, decryption
         )
         bad_proof = make_chaum_pedersen(
-            message, keypair.secret_key, int_to_p(bad_constant), seed, ONE_MOD_Q
+            message, keypair.secret_key, ONE_MOD_Q, seed, int_to_p(bad_constant)
         )
         self.assertTrue(
             proof.is_valid(message, keypair.public_key, decryption, ONE_MOD_Q)
@@ -192,7 +328,7 @@ class TestChaumPedersen(BaseTestCase):
 
 
 class TestConstantChaumPedersen(BaseTestCase):
-    """Constant Chaum Pedersen tests"""
+    """Constant Chaum-Pedersen tests"""
 
     def test_ccp_proofs_simple_encryption_of_zero(self):
         keypair = elgamal_keypair_from_secret(TWO_MOD_Q)
@@ -200,10 +336,10 @@ class TestConstantChaumPedersen(BaseTestCase):
         seed = TWO_MOD_Q
         message = get_optional(elgamal_encrypt(0, nonce, keypair.public_key))
         proof = make_constant_chaum_pedersen(
-            message, 0, nonce, keypair.public_key, seed, ONE_MOD_Q
+            message, nonce, keypair.public_key, ONE_MOD_Q, seed, 0
         )
         bad_proof = make_constant_chaum_pedersen(
-            message, 1, nonce, keypair.public_key, seed, ONE_MOD_Q
+            message, nonce, keypair.public_key, ONE_MOD_Q, seed, 1
         )
         self.assertTrue(proof.is_valid(message, keypair.public_key, ONE_MOD_Q))
         self.assertFalse(bad_proof.is_valid(message, keypair.public_key, ONE_MOD_Q))
@@ -214,10 +350,10 @@ class TestConstantChaumPedersen(BaseTestCase):
         seed = TWO_MOD_Q
         message = get_optional(elgamal_encrypt(1, nonce, keypair.public_key))
         proof = make_constant_chaum_pedersen(
-            message, 1, nonce, keypair.public_key, seed, ONE_MOD_Q
+            message, nonce, keypair.public_key, ONE_MOD_Q, seed, 1
         )
         bad_proof = make_constant_chaum_pedersen(
-            message, 0, nonce, keypair.public_key, seed, ONE_MOD_Q
+            message, nonce, keypair.public_key, ONE_MOD_Q, seed, 0
         )
         self.assertTrue(proof.is_valid(message, keypair.public_key, ONE_MOD_Q))
         self.assertFalse(bad_proof.is_valid(message, keypair.public_key, ONE_MOD_Q))
@@ -253,19 +389,19 @@ class TestConstantChaumPedersen(BaseTestCase):
         )
 
         proof = make_constant_chaum_pedersen(
-            message, constant, nonce, keypair.public_key, seed, ONE_MOD_Q
+            message, nonce, keypair.public_key, ONE_MOD_Q, seed, constant
         )
         self.assertTrue(proof.is_valid(message, keypair.public_key, ONE_MOD_Q))
 
         proof_bad1 = make_constant_chaum_pedersen(
-            message_bad, constant, nonce, keypair.public_key, seed, ONE_MOD_Q
+            message_bad, nonce, keypair.public_key, ONE_MOD_Q, seed, constant
         )
         self.assertFalse(
             proof_bad1.is_valid(message_bad, keypair.public_key, ONE_MOD_Q)
         )
 
         proof_bad2 = make_constant_chaum_pedersen(
-            message, bad_constant, nonce, keypair.public_key, seed, ONE_MOD_Q
+            message, nonce, keypair.public_key, ONE_MOD_Q, seed, bad_constant
         )
         self.assertFalse(proof_bad2.is_valid(message, keypair.public_key, ONE_MOD_Q))
 

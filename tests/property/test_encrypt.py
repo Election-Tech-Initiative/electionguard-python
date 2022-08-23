@@ -20,10 +20,8 @@ from electionguard_tools.strategies.group import elements_mod_q_no_zero
 
 from electionguard.constants import get_small_prime
 from electionguard.chaum_pedersen import (
-    ConstantChaumPedersenProof,
-    DisjunctiveChaumPedersenProof,
-    make_constant_chaum_pedersen,
-    make_disjunctive_chaum_pedersen,
+    RangeChaumPedersenProof,
+    make_range_chaum_pedersen,
 )
 from electionguard.elgamal import (
     ElGamalKeyPair,
@@ -49,8 +47,6 @@ from electionguard.group import (
 )
 from electionguard.manifest import (
     ContestDescription,
-    contest_description_with_placeholders_from,
-    generate_placeholder_selections_from,
     SelectionDescription,
     VoteVariationType,
 )
@@ -220,19 +216,16 @@ class TestEncrypt(BaseTestCase):
 
         # tamper with the proof
         malformed_proof = deepcopy(result)
-        altered_a0 = mult_p(result.proof.proof_zero_pad, TWO_MOD_P)
-        malformed_disjunctive = DisjunctiveChaumPedersenProof(
-            altered_a0,
-            malformed_proof.proof.proof_zero_data,
-            malformed_proof.proof.proof_one_pad,
-            malformed_proof.proof.proof_one_data,
-            malformed_proof.proof.proof_zero_challenge,
-            malformed_proof.proof.proof_one_challenge,
-            malformed_proof.proof.challenge,
-            malformed_proof.proof.proof_zero_response,
-            malformed_proof.proof.proof_one_response,
+        malformed_commitments = malformed_proof.proof.commitments
+        malformed_commitments[0] = mult_p(
+            malformed_proof.proof.commitments[0], TWO_MOD_P
         )
-        malformed_proof.proof = malformed_disjunctive
+        malformed_range = RangeChaumPedersenProof(
+            malformed_commitments,
+            malformed_proof.proof.challenges,
+            malformed_proof.proof.responses,
+        )
+        malformed_proof.proof = malformed_range
 
         # Assert
         self.assertFalse(
@@ -289,10 +282,7 @@ class TestEncrypt(BaseTestCase):
         )
 
         # The encrypted contest should include an entry for each possible selection
-        # and placeholders for each seat
-        expected_entries = (
-            len(description.ballot_selections) + description.number_elected
-        )
+        expected_entries = len(description.ballot_selections)
         self.assertEqual(len(result.ballot_selections), expected_entries)
 
     @settings(
@@ -331,15 +321,15 @@ class TestEncrypt(BaseTestCase):
 
         # tamper with the proof
         malformed_proof = deepcopy(result)
-        altered_a = mult_p(result.proof.pad, TWO_MOD_P)
-        malformed_disjunctive = ConstantChaumPedersenProof(
+        altered_a = mult_p(result.proof.commitments[0], TWO_MOD_P)
+        malformed_pad = RangeChaumPedersenProof(
             altered_a,
-            malformed_proof.proof.data,
-            malformed_proof.proof.challenge,
-            malformed_proof.proof.response,
-            malformed_proof.proof.constant,
+            malformed_proof.proof.commitments[1],
+            malformed_proof.proof.challenges[0],
+            malformed_proof.proof.responses[0],
+            malformed_proof.proof.limit,
         )
-        malformed_proof.proof = malformed_disjunctive
+        malformed_proof.proof = malformed_pad
 
         # remove the proof
         missing_proof = deepcopy(result)
@@ -403,8 +393,8 @@ class TestEncrypt(BaseTestCase):
             electoral_district_id="0@A.com-gp-unit",
             sequence_order=1,
             vote_variation=VoteVariationType.n_of_m,
-            number_elected=1,
             votes_allowed=1,
+            votes_allowed_per_selection=1,
             name="",
             ballot_selections=[
                 SelectionDescription(
@@ -424,17 +414,51 @@ class TestEncrypt(BaseTestCase):
         ####################
         data = ballot_factory.get_random_contest_from(description, Random(0))
 
-        placeholders = generate_placeholder_selections_from(
-            description, description.number_elected
+        # Act
+        subject = encrypt_contest(
+            data,
+            description,
+            keypair.public_key,
+            ONE_MOD_Q,
+            seed,
+            should_verify_proofs=True,
         )
-        description_with_placeholders = contest_description_with_placeholders_from(
-            description, placeholders
+        self.assertIsNotNone(subject)
+
+    def test_encrypt_contest_manually_formed_cumulative_contest_description_valid_succeeds(
+        self,
+    ):
+        description = ContestDescription(
+            object_id="0@A.com-contest",
+            electoral_district_id="0@A.com-gp-unit",
+            sequence_order=1,
+            vote_variation=VoteVariationType.cumulative,
+            votes_allowed=4,
+            votes_allowed_per_selection=2,
+            name="",
+            ballot_selections=[
+                SelectionDescription(
+                    "0@A.com-selection",
+                    0,
+                    "0@A.com",
+                ),
+                SelectionDescription("0@B.com-selection", 1, "0@B.com"),
+                SelectionDescription("0@C.com-selection", 2, "0@C.com"),
+            ],
+            ballot_title=None,
+            ballot_subtitle=None,
         )
+
+        keypair = elgamal_keypair_from_secret(TWO_MOD_Q)
+        seed = ONE_MOD_Q
+
+        ####################
+        data = ballot_factory.get_random_contest_from(description, Random(0))
 
         # Act
         subject = encrypt_contest(
             data,
-            description_with_placeholders,
+            description,
             keypair.public_key,
             ONE_MOD_Q,
             seed,
@@ -453,8 +477,8 @@ class TestEncrypt(BaseTestCase):
             electoral_district_id="0@A.com-gp-unit",
             sequence_order=1,
             vote_variation=VoteVariationType.n_of_m,
-            number_elected=1,
             votes_allowed=1,
+            votes_allowed_per_selection=1,
             name="",
             ballot_selections=[
                 SelectionDescription(
@@ -479,16 +503,9 @@ class TestEncrypt(BaseTestCase):
             description, Random(0), suppress_validity_check=True
         )
 
-        placeholders = generate_placeholder_selections_from(
-            description, description.number_elected
-        )
-        description_with_placeholders = contest_description_with_placeholders_from(
-            description, placeholders
-        )
-
         # Act
         subject = encrypt_contest(
-            data, description_with_placeholders, keypair.public_key, ONE_MOD_Q, seed
+            data, description, keypair.public_key, ONE_MOD_Q, seed
         )
         self.assertIsNone(subject)
 
@@ -681,33 +698,19 @@ class TestEncrypt(BaseTestCase):
                 *[selection.nonce for selection in contest.ballot_selections]
             )
 
-            regenerated_constant = make_constant_chaum_pedersen(
-                elgamal_accumulation,
-                contest_description.number_elected,
-                aggregate_nonce,
-                keypair.public_key,
-                add_q(contest.nonce, TWO_MOD_Q),
-                context.crypto_extended_base_hash,
-            )
-
-            self.assertTrue(
-                regenerated_constant.is_valid(
-                    elgamal_accumulation,
-                    keypair.public_key,
-                    context.crypto_extended_base_hash,
-                )
-            )
-
+            # Track plaintext votes to regenerate range proof for contest sum
+            total_votes = 0
             for selection in contest.ballot_selections:
                 # Since we know the nonce, we can decrypt the plaintext
                 representation = selection.ciphertext.decrypt_known_nonce(
                     keypair.public_key, selection.nonce
                 )
+                total_votes += representation
 
                 # one could also decrypt with the secret key:
                 # representation = selection.message.decrypt(keypair.secret_key)
 
-                regenerated_disjuctive = make_disjunctive_chaum_pedersen(
+                regenerated_selection_range = make_range_chaum_pedersen(
                     selection.ciphertext,
                     selection.nonce,
                     keypair.public_key,
@@ -717,12 +720,30 @@ class TestEncrypt(BaseTestCase):
                 )
 
                 self.assertTrue(
-                    regenerated_disjuctive.is_valid(
+                    regenerated_selection_range.is_valid(
                         selection.ciphertext,
                         keypair.public_key,
                         context.crypto_extended_base_hash,
                     )
                 )
+
+            regenerated_contest_range = make_range_chaum_pedersen(
+                elgamal_accumulation,
+                aggregate_nonce,
+                keypair.public_key,
+                context.crypto_extended_base_hash,
+                add_q(contest.nonce, TWO_MOD_Q),
+                plaintext=total_votes,
+                limit=contest_description.votes_allowed,
+            )
+
+            self.assertTrue(
+                regenerated_contest_range.is_valid(
+                    elgamal_accumulation,
+                    keypair.public_key,
+                    context.crypto_extended_base_hash,
+                )
+            )
 
     def test_encrypt_ballot_with_verify_proofs_false_passed_on(self):
         """

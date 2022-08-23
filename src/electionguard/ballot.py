@@ -15,10 +15,8 @@ from typing import (
 
 from .ballot_code import get_ballot_code
 from .chaum_pedersen import (
-    ConstantChaumPedersenProof,
-    DisjunctiveChaumPedersenProof,
-    make_constant_chaum_pedersen,
-    make_disjunctive_chaum_pedersen,
+    RangeChaumPedersenProof,
+    make_range_chaum_pedersen,
 )
 from .election_object_base import (
     ElectionObjectBase,
@@ -50,28 +48,19 @@ from .utils import (
 @dataclass(unsafe_hash=True)
 class PlaintextBallotSelection(ElectionObjectBase):
     """
-    A BallotSelection represents an individual selection on a ballot.
+    Represents an unencrypted, individual selection on a ballot.
 
-    This class accepts a `vote` integer field which has no constraints
-    in the ElectionGuard Data Specification, but is constrained logically
-    in the application to resolve to `False` or `True` aka only 0 and 1 is
-    supported for now.
+    This class accepts a `vote` integer field which has no constraints.
+    The range Chaum-Pedersen proofs now support encodings of any nonnegative integer,
+    not just the binary 0 or 1 as previously supported.
 
-    This class can also be designated as `is_placeholder_selection` which has no
-    context to the data specification but is useful for running validity checks internally
-
-    Write_in field exists to support the cleartext representation of a write-in candidate value.
+    The `write_in` field exists to support cleartext representation of a write-in candidate value.
     """
 
     vote: int
 
-    is_placeholder_selection: bool = field(default=False)
-    """Determines if this is a placeholder selection"""
-
     write_in: Optional[str] = field(default=None)
-    """
-    Write_in field exists to support the cleartext representation of a write-in candidate value.
-    """
+    """Cleartext representation of a write-in candidate value"""
 
     def is_valid(self, expected_object_id: str) -> bool:
         """
@@ -86,8 +75,8 @@ class PlaintextBallotSelection(ElectionObjectBase):
             return False
 
         vote = self.vote
-        if vote < 0 or vote > 1:
-            log_warning(f"Currently only supporting choices of 0 or 1: {str(self)}")
+        if vote < 0:
+            log_warning(f"Currently only supporting nonnegative choices: {str(self)}")
             return False
 
         return True
@@ -97,7 +86,6 @@ class PlaintextBallotSelection(ElectionObjectBase):
             isinstance(other, PlaintextBallotSelection)
             and self.object_id == other.object_id
             and self.vote == other.vote
-            and self.is_placeholder_selection == other.is_placeholder_selection
             and self.write_in == other.write_in
         )
 
@@ -114,7 +102,7 @@ class CiphertextSelection(Protocol):
     object_id: str
 
     sequence_order: int
-    """Order the selection."""
+    """Order the selection"""
 
     description_hash: ElementModQ
     """The SelectionDescription hash"""
@@ -134,21 +122,21 @@ class CiphertextBallotSelection(
     in its constructor.
 
     When a selection is encrypted, the `description_hash` and `ciphertext` required fields must
-    be populated at construction however the `nonce` is also usually provided by convention.
+    be populated at construction; however, the `nonce` is also usually provided by convention.
 
-    After construction, the `crypto_hash` field is populated automatically in the `__post_init__` cycle
+    After construction, the `crypto_hash` field is populated automatically in the `__post_init__` cycle.
 
     A consumer of this object has the option to discard the `nonce` and/or discard the `proof`,
     or keep both values.
 
     By discarding the `nonce`, the encrypted representation and `proof`
     can only be regenerated if the nonce was derived from the ballot's master nonce.  If the nonce
-    used for this selection is truly random, and it is discarded, then the proofs cannot be regenerated.
+    used for this selection is truly random and is discarded, then the proofs cannot be regenerated.
 
-    By keeping the `nonce`, or deriving the selection nonce from the ballot nonce, an external system can
-    regenerate the proofs on demand.  This is useful for storage or memory constrained systems.
+    By keeping the `nonce` or deriving the selection nonce from the ballot nonce, an external system can
+    regenerate the proofs on demand.  This is useful for storage- or memory-constrained systems.
 
-    By keeping the `proof` the nonce is not required fotor verify the encrypted selection.
+    By keeping the `proof`, verifying the encryption does not require the `nonce`.
     """
 
     description_hash: ElementModQ
@@ -160,14 +148,14 @@ class CiphertextBallotSelection(
     crypto_hash: ElementModQ
     """The hash of the encrypted values"""
 
-    is_placeholder_selection: bool = field(default=False)
-    """Determines if this is a placeholder selection"""
-
     nonce: Optional[ElementModQ] = field(default=None)
     """The nonce used to generate the encryption. Sensitive & should be treated as a secret"""
 
-    proof: Optional[DisjunctiveChaumPedersenProof] = field(default=None)
-    """The proof that demonstrates the selection is an encryption of 0 or 1, and was encrypted using the `nonce`"""
+    proof: Optional[RangeChaumPedersenProof] = field(default=None)
+    """The proof that the selection used the `nonce` to encrypt an integer in a certain range"""
+
+    selection_limit: int = 1
+    """Maximum number of votes allowed for the selection"""
 
     def is_valid_encryption(
         self,
@@ -176,11 +164,11 @@ class CiphertextBallotSelection(
         crypto_extended_base_hash: ElementModQ,
     ) -> bool:
         """
-        Given an encrypted BallotSelection, validates the encryption state against a specific seed and public key.
-        Calling this function expects that the object is in a well-formed encrypted state
-        with the elgamal encrypted `message` field populated along with
-        the DisjunctiveChaumPedersenProof`proof` populated.
-        the ElementModQ `description_hash` and the ElementModQ `crypto_hash` are also checked.
+        Given an encrypted ballot selection, validates the encryption state against a specific
+        seed and public key. Calling this function expects that the object is in a well-formed
+        encrypted state with the ElGamal encrypted `message` field populated along with the
+        RangeChaumPedersenProof `proof` populated.
+        The ElementModQ `description_hash` and the ElementModQ `crypto_hash` are also checked.
 
         :param encryption_seed: the hash of the SelectionDescription, or
                                 whatever `ElementModQ` was used to populate the `description_hash` field.
@@ -209,6 +197,14 @@ class CiphertextBallotSelection(
         if self.proof is None:
             log_warning(f"no proof exists for: {self.object_id}")
             return False
+        if self.proof.limit != self.selection_limit:
+            log_warning(
+                (
+                    f"mismatching range proof limit: {self.object_id} expected {str(self.selection_limit)}, "
+                    f"actual({str(self.proof.limit)})"
+                )
+            )
+            return False
 
         return self.proof.is_valid(
             self.ciphertext, elgamal_public_key, crypto_extended_base_hash
@@ -216,11 +212,11 @@ class CiphertextBallotSelection(
 
     def crypto_hash_with(self, encryption_seed: ElementModQ) -> ElementModQ:
         """
-        Given an encrypted BallotSelection, generates a hash, suitable for rolling up
+        Given an encrypted ballot selection, generates a hash suitable for rolling up
         into a hash for an entire ballot / ballot code. Of note, this particular hash examines
         the `encryption_seed` and `message`, but not the proof.
         This is deliberate, allowing for the possibility of ElectionGuard variants running on
-        much more limited hardware, wherein the Disjunctive Chaum-Pedersen proofs might be computed
+        much more limited hardware, wherein the range Chaum-Pedersen proofs might be computed
         later on.
 
         In most cases the encryption_seed should match the `description_hash`
@@ -245,14 +241,14 @@ def make_ciphertext_ballot_selection(
     crypto_extended_base_hash: ElementModQ,
     proof_seed: ElementModQ,
     selection_representation: int,
-    is_placeholder_selection: bool = False,
+    selection_limit: int,
     nonce: Optional[ElementModQ] = None,
     crypto_hash: Optional[ElementModQ] = None,
-    proof: Optional[DisjunctiveChaumPedersenProof] = None,
+    proof: Optional[RangeChaumPedersenProof] = None,
 ) -> CiphertextBallotSelection:
     """
     Constructs a `CipherTextBallotSelection` object. Most of the parameters here match up to fields
-    in the class, but this helper function will optionally compute a Chaum-Pedersen proof if the
+    in the class, but this helper function will optionally compute a range Chaum-Pedersen proof if the
     given nonce isn't `None`. Likewise, if a crypto_hash is not provided, it will be derived from
     the other fields.
     """
@@ -264,13 +260,14 @@ def make_ciphertext_ballot_selection(
     if proof is None:
         proof = flatmap_optional(
             nonce,
-            lambda n: make_disjunctive_chaum_pedersen(
+            lambda n: make_range_chaum_pedersen(
                 ciphertext,
                 n,
                 elgamal_public_key,
                 crypto_extended_base_hash,
                 proof_seed,
-                selection_representation,
+                plaintext=selection_representation,
+                limit=selection_limit,
             ),
         )
 
@@ -280,9 +277,9 @@ def make_ciphertext_ballot_selection(
         description_hash,
         ciphertext,
         crypto_hash,
-        is_placeholder_selection,
         nonce,
         proof,
+        selection_limit,
     )
 
 
@@ -291,14 +288,13 @@ class PlaintextBallotContest(ElectionObjectBase):
     """
     A PlaintextBallotContest represents the selections made by a voter for a specific ContestDescription
 
-    this class can be either a partial or a complete representation of a contest dataset.  Specifically,
+    This class can be either a partial or a complete representation of a contest dataset.  Specifically,
     a partial representation must include at a minimum the "affirmative" selections of a contest.
     A complete representation of a ballot must include both affirmative and negative selections of
-    the contest, AND the placeholder selections necessary to satisfy the ConstantChaumPedersen proof
-    in the CiphertextBallotContest.
+    the contest. With the range Chaum-Pedersen proofs, placeholder selections are no longer needed.
 
-    Typically partial contests are passed into Electionguard for memory constrained systems,
-    while complete contests are passed into ElectionGuard when running encryption on an existing dataset.
+    Typically, ElectionGuard operates with partial contests for memory-constrained systems,
+    while complete contests are used when encrypting existing datasets.
     """
 
     ballot_selections: List[PlaintextBallotSelection] = field(
@@ -316,12 +312,8 @@ class PlaintextBallotContest(ElectionObjectBase):
 
     @cached_property
     def total_selected(self) -> int:
-        """Returns the total number of selected selections."""
-        return reduce(
-            lambda prev, next: prev + (1 if next.vote > 0 else 0),
-            self.ballot_selections,
-            0,
-        )
+        """Returns the total number of selections with positive vote."""
+        return len(self.selected_ids)
 
     @cached_property
     def total_votes(self) -> int:
@@ -351,7 +343,7 @@ class PlaintextBallotContest(ElectionObjectBase):
                 override_message=f"invalid format of contest or description for contest {self.object_id}",
             )
 
-        # Selections ids match description
+        # Selection ids match description
         selection_ids = {
             selection.object_id for selection in description.ballot_selections
         }
@@ -363,38 +355,26 @@ class PlaintextBallotContest(ElectionObjectBase):
                 )
 
         # Specialty cases
-        if self.total_selected < 1:
+        if self.total_votes == 0:
             raise NullVoteException(self.object_id)
 
-        if self.total_selected < description.number_elected:
+        if self.total_votes < description.votes_allowed:
             raise UnderVoteException(self.object_id)
 
-        if self.total_selected > description.number_elected:
+        if self.total_votes > description.votes_allowed:
             raise OverVoteException(self.object_id, self.selected_ids)
-
-        if description.votes_allowed is not None:
-            if self.total_votes > description.votes_allowed:
-                raise OverVoteException(self.object_id, self.selected_ids)
-
-            # Support for other cases such as cumulative voting not currently supported.
-            # (individual selections being an encryption of > 1)
-            if self.total_selected < description.votes_allowed:
-                raise ContestException(
-                    self.object_id,
-                    override_message=f"`on contest {self.object_id}: only n-of-m style elections are supported",
-                )
 
     def is_valid(
         self,
         expected_object_id: str,
         expected_number_selections: int,
-        expected_number_elected: int,
-        votes_allowed: Optional[int] = None,
+        votes_allowed: int = 1,
+        votes_allowed_per_selection: int = 1,
     ) -> bool:
         """
-        Given a PlaintextBallotContest returns true if the state is representative of the expected values.
+        Returns whether the PlaintextBallotContest state represents the expected values.
 
-        Note: because this class supports partial representations, undervotes are considered a valid state.
+        Note: Due to partial representation support, an undervote is a valid state.
         """
 
         if self.object_id != expected_object_id:
@@ -415,23 +395,21 @@ class PlaintextBallotContest(ElectionObjectBase):
             )
             return False
 
-        number_elected = 0
-        votes = 0
-
-        # Verify the selections are well-formed
+        num_votes = 0
+        # Verify that each selection is well-formed
         for selection in self.ballot_selections:
-            votes += selection.vote
-            if selection.vote >= 1:
-                number_elected += 1
+            if selection.vote > votes_allowed_per_selection:
+                log_warning(
+                    f"invalid selection.vote: expected(<={votes_allowed_per_selection}) "
+                    f"actual ({selection.vote})"
+                )
+                return False
+            num_votes += selection.vote
 
-        if number_elected > expected_number_elected:
+        if num_votes > votes_allowed:
             log_warning(
-                f"invalid number_elected: expected({expected_number_elected}) actual({number_elected})"
+                f"invalid num_votes: expected({votes_allowed}) actual({num_votes})"
             )
-            return False
-
-        if votes_allowed is not None and votes > votes_allowed:
-            log_warning(f"invalid votes: expected({votes_allowed}) actual({votes})")
             return False
 
         return True
@@ -458,6 +436,7 @@ class CiphertextContest(OrderedObjectBase):
     """Collection of selections"""
 
 
+# pylint: disable=too-many-instance-attributes
 @dataclass(unsafe_hash=True)
 class CiphertextBallotContest(OrderedObjectBase, CryptoHashCheckable):
     """
@@ -466,17 +445,16 @@ class CiphertextBallotContest(OrderedObjectBase, CryptoHashCheckable):
     CiphertextBallotContest can only be a complete representation of a contest dataset.  While
     PlaintextBallotContest supports a partial representation, a CiphertextBallotContest includes all data
     necessary for a verifier to verify the contest.  Specifically, it includes both explicit affirmative
-    and negative selections of the contest, as well as the placeholder selections that satisfy
-    the ConstantChaumPedersen proof.
+    and negative selections of the contest.
 
     Similar to `CiphertextBallotSelection` the consuming application can choose to discard or keep both
-    the `nonce` and the `proof` in some circumstances.  For deterministic nonce's derived from the
+    the `nonce` and the `proof` in some circumstances.  For deterministic nonces derived from the
     master nonce, both values can be regenerated.  If the `nonce` for this contest is completely random,
     then it is required in order to regenerate the proof.
     """
 
     description_hash: ElementModQ
-    """Hash from contestDescription"""
+    """Hash from ContestDescription"""
 
     ballot_selections: List[CiphertextBallotSelection]
     """Collection of ballot selections"""
@@ -487,17 +465,20 @@ class CiphertextBallotContest(OrderedObjectBase, CryptoHashCheckable):
     crypto_hash: ElementModQ
     """Hash of the encrypted values"""
 
+    contest_limit: int
+    """The count of allotted votes for the contest"""
+
     nonce: Optional[ElementModQ] = None
     """The nonce used to generate the encryption. Sensitive & should be treated as a secret"""
 
-    proof: Optional[ConstantChaumPedersenProof] = None
+    proof: Optional[RangeChaumPedersenProof] = None
     """
-    The proof demonstrates the sum of the selections does not exceed the maximum
-    available selections for the contest, and that the proof was generated with the nonce
+    The proof demonstrates that the sum of selections does not exceed the count of allotted votes
+    for the contest and that the proof was generated with the `nonce`
     """
 
     extended_data: Optional[HashedElGamalCiphertext] = field(default=None)
-    """encrypted representation of the extended_data field"""
+    """Encrypted representation of the extended_data field"""
 
     def __eq__(self, other: Any) -> bool:
         return (
@@ -527,7 +508,7 @@ class CiphertextBallotContest(OrderedObjectBase, CryptoHashCheckable):
         into a hash for an entire ballot / ballot code. Of note, this particular hash examines
         the `encryption_seed` and `ballot_selections`, but not the proof.
         This is deliberate, allowing for the possibility of ElectionGuard variants running on
-        much more limited hardware, wherein the Disjunctive Chaum-Pedersen proofs might be computed
+        much more limited hardware, wherein the Chaum-Pedersen proofs might be computed
         later on.
 
         In most cases, the encryption_seed is the description_hash
@@ -538,7 +519,7 @@ class CiphertextBallotContest(OrderedObjectBase, CryptoHashCheckable):
 
     def elgamal_accumulate(self) -> ElGamalCiphertext:
         """
-        Add the individual ballot_selections `message` fields together, suitable for use
+        Add the individual ballot_selections' `message` fields together, suitable for use
         in a Chaum-Pedersen proof.
         """
         return _ciphertext_ballot_elgamal_accumulate(self.ballot_selections)
@@ -550,13 +531,13 @@ class CiphertextBallotContest(OrderedObjectBase, CryptoHashCheckable):
         crypto_extended_base_hash: ElementModQ,
     ) -> bool:
         """
-        Given an encrypted BallotContest, validates the encryption state against a specific seed and public key
-        by verifying the accumulated sum of selections match the proof.
+        Given an encrypted BallotContest, validates the encryption state against a specific seed
+        and public key by verifying that the accumulated sum of selections matches the proof.
         Calling this function expects that the object is in a well-formed encrypted state
-        with the `ballot_selections` populated with valid encrypted ballot selections,
-        the ElementModQ `description_hash`, the ElementModQ `crypto_hash`,
-        and the ConstantChaumPedersenProof all populated.
-        Specifically, the seed in this context is the hash of the ContestDescription,
+        with the `ballot_selections` populated with valid encrypted ballot selections and
+        that the ElementModQ `description_hash`, ElementModQ `crypto_hash`,
+        and range Chaum-Pedersen proof are all populated.
+        Specifically, the seed in this context is the hash of the ContestDescription
         or whatever `ElementModQ` was used to populate the `description_hash` field.
         """
         if encryption_seed != self.description_hash:
@@ -578,10 +559,18 @@ class CiphertextBallotContest(OrderedObjectBase, CryptoHashCheckable):
             )
             return False
 
-        # NOTE: this check does not verify the proofs of the individual selections by design.
-
+        # NOTE: By design, this check does not verify the proof of each individual selection
+        # This only ensures that the proof exists for the contest sum
         if self.proof is None:
             log_warning(f"no proof exists for: {self.object_id}")
+            return False
+        if self.proof.limit != self.contest_limit:
+            log_warning(
+                (
+                    f"mismatching range proof limit: {self.object_id} expected {str(self.contest_limit)}, "
+                    f"actual({str(self.proof.limit)})"
+                )
+            )
             return False
 
         computed_ciphertext_accumulation = self.elgamal_accumulate()
@@ -648,9 +637,10 @@ def make_ciphertext_ballot_contest(
     elgamal_public_key: ElGamalPublicKey,
     crypto_extended_base_hash: ElementModQ,
     proof_seed: ElementModQ,
-    number_elected: int,
+    number_votes: int,
+    votes_allowed: int,
     crypto_hash: Optional[ElementModQ] = None,
-    proof: Optional[ConstantChaumPedersenProof] = None,
+    proof: Optional[RangeChaumPedersenProof] = None,
     nonce: Optional[ElementModQ] = None,
     extended_data: Optional[HashedElGamalCiphertext] = None,
 ) -> CiphertextBallotContest:
@@ -670,13 +660,14 @@ def make_ciphertext_ballot_contest(
     if proof is None:
         proof = flatmap_optional(
             aggregate,
-            lambda ag: make_constant_chaum_pedersen(
+            lambda ag: make_range_chaum_pedersen(
                 elgamal_accumulation,
-                number_elected,
                 ag,
                 elgamal_public_key,
-                proof_seed,
                 crypto_extended_base_hash,
+                proof_seed,
+                plaintext=number_votes,
+                limit=votes_allowed,
             ),
         )
     return CiphertextBallotContest(
@@ -686,6 +677,7 @@ def make_ciphertext_ballot_contest(
         ballot_selections,
         elgamal_accumulation,
         crypto_hash,
+        votes_allowed,
         nonce,
         proof,
         extended_data,
@@ -695,7 +687,7 @@ def make_ciphertext_ballot_contest(
 @dataclass(unsafe_hash=True)
 class PlaintextBallot(ElectionObjectBase):
     """
-    A PlaintextBallot represents a voters selections for a given ballot and ballot style
+    A PlaintextBallot represents a voter's selections for a given ballot and ballot style
     :field object_id: A unique Ballot ID that is relevant to the external system
     """
 
@@ -737,13 +729,13 @@ class PlaintextBallot(ElectionObjectBase):
 @dataclass(unsafe_hash=True)
 class CiphertextBallot(ElectionObjectBase, CryptoHashCheckable):
     """
-    A CiphertextBallot represents a voters encrypted selections for a given ballot and ballot style.
+    A CiphertextBallot represents a voter's encrypted selections for a given ballot and ballot style.
 
-    When a ballot is in it's complete, encrypted state, the `nonce` is the master nonce
-    from which all other nonces can be derived to encrypt the ballot.  Allong with the `nonce`
-    fields on `Ballotcontest` and `BallotSelection`, this value is sensitive.
+    When a ballot is in its complete, encrypted state, the `nonce` is the master nonce
+    from which all other nonces can be derived to encrypt the ballot.  Along with the `nonce`
+    fields on `BallotContest` and `PlaintextBallotSelection`, this value is sensitive.
 
-    Don't make this directly. Use `make_ciphertext_ballot` instead.
+    Do not directly construct this; use `make_ciphertext_ballot` instead.
     :field object_id: A unique Ballot ID that is relevant to the external system
     """
 
@@ -793,7 +785,7 @@ class CiphertextBallot(ElectionObjectBase, CryptoHashCheckable):
         manifest_hash: ElementModQ, object_id: str, nonce: ElementModQ
     ) -> ElementModQ:
         """
-        :return: a representation of the election and the external Id in the nonce's used
+        :return: a representation of the election, the external Id, and the nonce used
         to derive other nonce values on the ballot
         """
         return hash_elems(manifest_hash, object_id, nonce)
@@ -818,7 +810,7 @@ class CiphertextBallot(ElectionObjectBase, CryptoHashCheckable):
         into a hash for an entire ballot / ballot code. Of note, this particular hash examines
         the `manifest_hash` and `ballot_selections`, but not the proof.
         This is deliberate, allowing for the possibility of ElectionGuard variants running on
-        much more limited hardware, wherein the Disjunctive Chaum-Pedersen proofs might be computed
+        much more limited hardware, wherein the Chaum-Pedersen proofs might be computed
         later on.
         """
         if len(self.contests) == 0:
@@ -838,11 +830,11 @@ class CiphertextBallot(ElectionObjectBase, CryptoHashCheckable):
     ) -> bool:
         """
         Given an encrypted Ballot, validates the encryption state against a specific seed and public key
-        by verifying the states of this ballot's children (BallotContest's and BallotSelection's).
+        by verifying the states of this ballot's children (BallotContests and BallotSelections).
         Calling this function expects that the object is in a well-formed encrypted state
-        with the `contests` populated with valid encrypted ballot selections,
+        with the `contests` populated with valid encrypted ballot selections
         and the ElementModQ `manifest_hash` also populated.
-        Specifically, the seed in this context is the hash of the Election Manifest,
+        Specifically, the seed in this context is the hash of the election manifest
         or whatever `ElementModQ` was used to populate the `manifest_hash` field.
         """
 
@@ -943,7 +935,7 @@ def make_ciphertext_ballot(
     ballot_code: Optional[ElementModQ] = None,
 ) -> CiphertextBallot:
     """
-    Makes a `CiphertextBallot`, initially in the state where it's neither been cast nor spoiled.
+    Makes a `CiphertextBallot`, initially in the unknown state: neither cast nor spoiled.
 
     :param object_id: the object_id of this specific ballot
     :param style_id: The `object_id` of the `BallotStyle` in the `Election` Manifest

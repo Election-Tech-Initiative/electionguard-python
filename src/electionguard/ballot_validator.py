@@ -2,7 +2,7 @@ from .ballot import CiphertextBallot, CiphertextBallotContest, CiphertextBallotS
 from .election import CiphertextElectionContext
 from .logs import log_warning
 from .manifest import (
-    ContestDescriptionWithPlaceholders,
+    ContestDescription,
     InternalManifest,
     SelectionDescription,
 )
@@ -57,7 +57,7 @@ def selection_is_valid_for_style(
 
 
 def contest_is_valid_for_style(
-    contest: CiphertextBallotContest, description: ContestDescriptionWithPlaceholders
+    contest: CiphertextBallotContest, description: ContestDescription
 ) -> bool:
     """
     Determine if contest is valid for ballot style
@@ -75,10 +75,8 @@ def contest_is_valid_for_style(
         )
         return False
 
-    # verify the placeholder count
-    if len(contest.ballot_selections) != len(description.ballot_selections) + len(
-        description.placeholder_selections
-    ):
+    # verify the selection count
+    if len(contest.ballot_selections) > len(description.ballot_selections):
         log_warning(
             f"ballot is not valid for style: mismatched selection count for contest {description.object_id}"
         )

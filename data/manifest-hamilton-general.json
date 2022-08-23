@@ -1232,7 +1232,6 @@
       "sequence_order": 0,
       "electoral_district_id": "hamilton-county",
       "vote_variation": "one_of_m",
-      "number_elected": 1,
       "votes_allowed": 1,
       "name": "President and Vice President of the United States",
       "ballot_selections": [
@@ -1302,7 +1301,6 @@
       "sequence_order": 1,
       "electoral_district_id": "hamilton-county",
       "vote_variation": "one_of_m",
-      "number_elected": 1,
       "votes_allowed": 1,
       "name": "Governor of the Commonwealth of Ozark",
       "ballot_selections": [
@@ -1472,7 +1470,6 @@
       "sequence_order": 2,
       "electoral_district_id": "congress-district-5",
       "vote_variation": "one_of_m",
-      "number_elected": 1,
       "votes_allowed": 1,
       "name": "Congressional District 5",
       "ballot_selections": [
@@ -1537,7 +1534,6 @@
       "sequence_order": 3,
       "electoral_district_id": "congress-district-7",
       "vote_variation": "one_of_m",
-      "number_elected": 1,
       "votes_allowed": 1,
       "name": "Congressional District 7",
       "ballot_selections": [
@@ -1602,7 +1598,6 @@
       "sequence_order": 4,
       "electoral_district_id": "pismo-beach-school-district-precinct-1",
       "vote_variation": "n_of_m",
-      "number_elected": 3,
       "votes_allowed": 3,
       "name": "Pismo Beach School Board",
       "ballot_selections": [
@@ -1687,7 +1682,6 @@
       "sequence_order": 5,
       "electoral_district_id": "somerset-school-district-precinct-1",
       "vote_variation": "n_of_m",
-      "number_elected": 2,
       "votes_allowed": 2,
       "name": "Somerset School Board",
       "ballot_selections": [
@@ -1762,7 +1756,6 @@
       "sequence_order": 6,
       "electoral_district_id": "arlington-township-precinct-1",
       "vote_variation": "one_of_m",
-      "number_elected": 1,
       "votes_allowed": 1,
       "name": "Retain Robert Demergue as Chief Justice?",
       "ballot_selections": [
@@ -1807,7 +1800,6 @@
       "sequence_order": 7,
       "electoral_district_id": "lacroix-exeter-utility-district",
       "vote_variation": "one_of_m",
-      "number_elected": 1,
       "votes_allowed": 1,
       "name": "Capital Projects Levy",
       "ballot_selections": [

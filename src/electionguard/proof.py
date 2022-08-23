@@ -8,8 +8,9 @@ class ProofUsage(Enum):
 
     Unknown = "Unknown"
     SecretValue = "Prove knowledge of secret value"
-    SelectionLimit = "Prove value within selection's limit"
-    SelectionValue = "Prove selection's value (0 or 1)"
+    ConstantValue = "Prove value is a given constant"
+    RangeValue = "Prove value is within a given range (0, 1, ..., or limit)"
+    BinaryValue = "Prove value is binary (0 or 1)"
 
 
 class Proof:

@@ -113,11 +113,7 @@ class CiphertextTallyContest(OrderedObjectBase):
 
         # Validate the input data by comparing the selection id's provided
         # to the valid selection id's for this tally contest
-        selection_ids = {
-            selection.object_id
-            for selection in contest_selections
-            if not selection.is_placeholder_selection
-        }
+        selection_ids = {selection.object_id for selection in contest_selections}
 
         if any(set(self.selections).difference(selection_ids)):
             log_warning(
@@ -369,7 +365,6 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
         cast_collection: Dict[str, CiphertextTallyContest] = {}
         for contest in internal_manifest.contests:
             # build a collection of valid selections for the contest description
-            # note: we explicitly ignore the Placeholder Selections.
             contest_selections: Dict[str, CiphertextTallySelection] = {}
             for selection in contest.ballot_selections:
                 contest_selections[selection.object_id] = CiphertextTallySelection(

@@ -139,7 +139,7 @@ class TestEndToEndElection(BaseTestCase):
 
     def step_0_configure_election(self) -> None:
         """
-        To conduct an election, load an `Manifest` file.
+        To conduct an election, load a `Manifest` file.
         """
 
         # Load a pre-configured Election Description
