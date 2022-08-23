@@ -25,8 +25,8 @@ def _get_tally_report(
     contest_names: dict[str, str],
     selection_write_ins: dict[str, bool],
     parties: dict[str, str],
-) -> dict[str, Any]:
-    tally_report = {}
+) -> list:
+    tally_report = []
     contests = plaintext_ballot.contests.values()
     for tally_contest in contests:
         selections = list(tally_contest.selections.values())
@@ -34,7 +34,12 @@ def _get_tally_report(
             selections, selection_names, selection_write_ins, parties
         )
         contest_name = contest_names.get(tally_contest.object_id, "n/a")
-        tally_report[contest_name] = contest_details
+        tally_report.append(
+            {
+                "name": contest_name,
+                "details": contest_details,
+            }
+        )
     return tally_report
 
 

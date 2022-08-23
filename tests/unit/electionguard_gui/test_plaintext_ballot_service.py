@@ -28,7 +28,7 @@ class TestPlaintextBallotService(BaseTestCase):
         )
 
         # ASSERT
-        self.assertEqual(0, len(result.items()))
+        self.assertEqual(0, len(result))
 
     @patch("electionguard.tally.PlaintextTallySelection")
     def test_given_one_contest_with_valid_name_when_get_tally_report_then_name_returned(
@@ -52,8 +52,8 @@ class TestPlaintextBallotService(BaseTestCase):
         )
 
         # ASSERT
-        self.assertEqual(1, len(result.items()))
-        self.assertEqual("Contest 1", list(result.keys())[0])
+        self.assertEqual(1, len(result))
+        self.assertEqual("Contest 1", result[0]["name"])
 
     @patch("electionguard.tally.PlaintextTallySelection")
     def test_given_one_contest_with_invalid_name_when_get_tally_report_then_name_is_na(
@@ -77,8 +77,8 @@ class TestPlaintextBallotService(BaseTestCase):
         )
 
         # ASSERT
-        self.assertEqual(1, len(result.items()))
-        self.assertEqual("n/a", list(result.keys())[0])
+        self.assertEqual(1, len(result))
+        self.assertEqual("n/a", list(result)[0]["name"])
 
     @patch("electionguard.tally.PlaintextTallySelection")
     @patch("electionguard.tally.PlaintextTallySelection")
@@ -112,9 +112,9 @@ class TestPlaintextBallotService(BaseTestCase):
         )
 
         # ASSERT
-        self.assertEqual(2, len(result.items()))
-        self.assertEqual("My Contest", list(result.keys())[0])
-        self.assertEqual("My Contest", list(result.keys())[1])
+        self.assertEqual(2, len(result))
+        self.assertEqual("My Contest", list(result)[0]["name"])
+        self.assertEqual("My Contest", list(result)[1]["name"])
 
     def test_zero_sections(self) -> None:
         # ARRANGE
