@@ -2,6 +2,8 @@ import KeyCeremonyList from "../shared/key-ceremony-list-component.js";
 import DecryptionList from "./decryption-list-component.js";
 import Spinner from "../shared/spinner-component.js";
 
+const sleepResumeInterval = 2000;
+
 export default {
   components: {
     KeyCeremonyList,
@@ -13,6 +15,7 @@ export default {
       loading: true,
       decryptions: [],
       keyCeremonies: [],
+      lastAwakeTime: new Date().getTime(),
     };
   },
   methods: {
@@ -38,8 +41,18 @@ export default {
         console.error(result.error);
       }
     },
+    sleepResumeChecker: function () {
+      var currentTime = new Date().getTime();
+      if (currentTime > this.lastAwakeTime + sleepResumeInterval * 2) {
+        console.log("system appears to have returned from sleep, refreshing");
+        document.location.reload(true);
+      }
+      this.lastAwakeTime = currentTime;
+    },
   },
   async mounted() {
+    console.log("start sleepResumeChecker");
+    setInterval(this.sleepResumeChecker, sleepResumeInterval);
     eel.expose(this.keyCeremoniesChanged, "key_ceremonies_changed");
     eel.expose(this.decryptionsChanged, "decryptions_changed");
     console.log("begin watching for key ceremonies");
@@ -51,6 +64,7 @@ export default {
   unmounted() {
     console.log("stop watching key ceremonies");
     eel.stop_watching_db_collections();
+    clearInterval(this.sleepResumeChecker);
   },
   template: /*html*/ `
   <div class="container">
