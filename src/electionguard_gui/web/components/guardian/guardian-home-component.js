@@ -19,6 +19,14 @@ export default {
     };
   },
   methods: {
+    refresh: async function () {
+      this.loading = true;
+      this.decryptions = [];
+      this.keyCeremonies = [];
+      await this.refreshDecryptions();
+      await this.refreshKeyCeremonies();
+      this.loading = false;
+    },
     keyCeremoniesChanged: async function () {
       await this.refreshKeyCeremonies();
     },
@@ -68,7 +76,14 @@ export default {
   },
   template: /*html*/ `
   <div class="container">
-    <h1>Guardian Home</h1>
+    <div class="row">
+      <div class="col-11">
+        <h1>Guardian Home</h1>
+      </div>
+      <div class="col-1 text-end">
+        <button class="btn btn-lg btn-light" @click="refresh"><i class="bi-arrow-clockwise"></i></button>
+      </div>
+    </div>
     <spinner :visible="loading"></spinner>
     <div v-if="!loading" class="row">
       <div class="col-12 col-lg-6">
