@@ -116,4 +116,4 @@ class MainApp:
             raise e
 
     def on_close(self, _page: str, _open_sockets: list) -> None:
-        self.log_service.info(f"To close the egui app hit Ctrl+C")
+        self.log_service.info("To close the egui app hit Ctrl+C")
