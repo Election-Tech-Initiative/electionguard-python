@@ -21,11 +21,14 @@ export default {
   methods: {
     refresh: async function () {
       this.loading = true;
-      this.decryptions = [];
-      this.keyCeremonies = [];
-      await this.refreshDecryptions();
-      await this.refreshKeyCeremonies();
-      this.loading = false;
+      try {
+        this.decryptions = [];
+        this.keyCeremonies = [];
+        await this.refreshDecryptions();
+        await this.refreshKeyCeremonies();
+      } finally {
+        this.loading = false;
+      }
     },
     keyCeremoniesChanged: async function () {
       await this.refreshKeyCeremonies();
@@ -59,7 +62,6 @@ export default {
     },
   },
   async mounted() {
-    console.log("start sleepResumeChecker");
     setInterval(this.sleepResumeChecker, sleepResumeInterval);
     eel.expose(this.keyCeremoniesChanged, "key_ceremonies_changed");
     eel.expose(this.decryptionsChanged, "decryptions_changed");

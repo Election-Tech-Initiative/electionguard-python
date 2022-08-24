@@ -84,6 +84,7 @@ class KeyCeremonyDetailsComponent(ComponentBase):
             self._db_watcher_service.stop_watching()
         except Exception as e:  # pylint: disable=broad-except
             self.handle_error(e)
+            self._db_watcher_service.stop_watching()
             # we're in a fire-and-forget scenario, so no need to raise an exception or return anything
 
     def stop_watching_key_ceremony(self) -> None:
