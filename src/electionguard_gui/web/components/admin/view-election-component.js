@@ -70,12 +70,6 @@ export default {
                 </li>
                 <li><hr class="dropdown-divider"></li>
                 <li>
-                  <a :href="getUploadBallotsUrl()" class="dropdown-item">
-                    <i class="bi-upload me-1"></i> Upload ballots
-                  </a>
-                </li>
-                <li><hr class="dropdown-divider"></li>
-                <li>
                   <a :href="getCreateDecryptionUrl()" class="dropdown-item" v-if="election.ballot_uploads.length">
                     <i class="bi bi-people-fill me-1"></i> Create tally
                   </a>
@@ -104,9 +98,9 @@ export default {
                 <dd>by {{election.created_by}} on {{election.created_at}}</dd>
               </dl>
             </div>
-            <div class="row" v-if="election.ballot_uploads.length">
+            <div class="row mb-5">
               <div class="col-12">
-                <h2>Ballot Uploads</h2>
+                <h2>Ballots</h2>
                 <table class="table table-striped">
                   <thead>
                     <tr>
@@ -130,6 +124,11 @@ export default {
                     </tr>
                   </tfoot>
                 </table>
+                <div>
+                  <a :href="getUploadBallotsUrl()" class="btn btn-sm btn-secondary">
+                    <i class="bi-plus bi-plus me-2"></i> Add Ballots
+                  </a>
+                </div>
               </div>
             </div>
             <div class="row" v-if="election.decryptions.length">
