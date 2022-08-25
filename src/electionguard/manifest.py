@@ -6,7 +6,7 @@ from typing import Dict, cast, List, Optional, Set, Any
 from .election_object_base import ElectionObjectBase, OrderedObjectBase, list_eq
 from .group import ElementModQ
 from .hash import CryptoHashable, hash_elems
-from .logs import log_warning, log_debug
+from .logs import log_warning
 from .utils import get_optional, to_iso_date_string
 
 
@@ -341,7 +341,6 @@ class SelectionDescription(OrderedObjectBase, CryptoHashable):
         A hash representation of the object
         """
         hash = hash_elems(self.object_id, self.sequence_order, self.candidate_id)
-        log_debug(f"{self.__class__} : crypto_hash: {hash.to_hex()}")
         return hash
 
 
