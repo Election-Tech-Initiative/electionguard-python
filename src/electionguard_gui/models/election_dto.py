@@ -74,7 +74,13 @@ class ElectionDto:
                 "ballot_styles": self._get_manifest_field("ballot_styles"),
             },
             "ballot_uploads": self.ballot_uploads,
-            "decryptions": self.decryptions,
+            "decryptions": [
+                {
+                    "name": decryption["name"],
+                    "created_at": utc_to_str(decryption.get("created_at")),
+                }
+                for decryption in self.decryptions
+            ],
             "created_by": self.created_by,
             "created_at": self.created_at_str,
         }

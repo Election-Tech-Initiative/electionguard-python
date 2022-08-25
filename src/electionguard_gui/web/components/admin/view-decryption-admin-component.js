@@ -143,7 +143,7 @@ export default {
                   <th>Ballot ID</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody class="table-group-divider">
                 <tr v-for="spoiledBallot in decryption.spoiled_ballots">
                   <td><a :href="getSpoiledBallotUrl(spoiledBallot)">{{spoiledBallot}}</a></td>
                 </tr>

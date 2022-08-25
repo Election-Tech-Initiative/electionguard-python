@@ -94,12 +94,12 @@ export default {
                 <table class="table table-striped" v-if="election.ballot_uploads.length">
                   <thead>
                     <tr>
-                      <th>Location</th>
+                      <th>Location1</th>
                       <th>Ballot Count</th>
                       <th></th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody class="table-group-divider">
                     <tr v-for="ballot_upload in election.ballot_uploads">
                       <td>{{ballot_upload.location}}</td>
                       <td>{{ballot_upload.ballot_count}}</td>
@@ -124,19 +124,21 @@ export default {
                 </div>
               </div>
             </div>
-            <div class="row" v-if="election.ballot_uploads.length">
+            <div class="row mb-4" v-if="election.ballot_uploads.length">
               <div class="col-12">
                 <h2>Tallies</h2>
                 <table class="table table-striped" v-if="election.decryptions.length">
                   <thead>
                     <tr>
                       <th>Name</th>
+                      <th>Date</th>
                       <th></th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody class="table-group-divider">
                     <tr v-for="decryption in election.decryptions">
                       <td><a :href="getViewDecryptionUrl(decryption.decryption_id)">{{decryption.name}}</a></td>
+                      <td>{{decryption.created_at}}</td>
                       <td></td>
                     </tr>
                   </tbody>

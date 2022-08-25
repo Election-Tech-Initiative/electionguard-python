@@ -121,7 +121,15 @@ class ElectionService(ServiceBase):
         )
         db.elections.update_one(
             {"_id": ObjectId(election_id)},
-            {"$push": {"decryptions": {"decryption_id": decryption_id, "name": name}}},
+            {
+                "$push": {
+                    "decryptions": {
+                        "decryption_id": decryption_id,
+                        "name": name,
+                        "created_at": datetime.utcnow(),
+                    }
+                }
+            },
         )
 
     def increment_ballot_upload_ballot_count(
