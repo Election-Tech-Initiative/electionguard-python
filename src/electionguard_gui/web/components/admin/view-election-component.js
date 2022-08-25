@@ -53,23 +53,18 @@ export default {
   template: /*html*/ `
     <div v-if="election">
       <div class="container">
-        <div class="row">
-          <div class="col-11">
-            
-          </div>
-          <div class="col-1 text-end">
-            <div class="dropdown">
-              <button class="btn btn-sm btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="bi-gear-fill me-1"></i>
-              </button>
-              <ul class="dropdown-menu">
-                <li>
-                  <a :href="getEncryptionPackageUrl()" class="dropdown-item">
-                    <i class="bi-download me-1"></i> Download encryption package
-                  </a>
-                </li>
-              </ul>
-            </div>
+        <div class="text-end">
+          <div class="dropdown">
+            <button class="btn btn-sm btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="bi-gear-fill me-1"></i>
+            </button>
+            <ul class="dropdown-menu">
+              <li>
+                <a :href="getEncryptionPackageUrl()" class="dropdown-item">
+                  <i class="bi-download me-1"></i> Download encryption package
+                </a>
+              </li>
+            </ul>
           </div>
         </div>
         <div class="row">
