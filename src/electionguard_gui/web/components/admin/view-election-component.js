@@ -94,13 +94,15 @@ export default {
                 <table class="table table-striped" v-if="election.ballot_uploads.length">
                   <thead>
                     <tr>
-                      <th>Location1</th>
+                      <th>Uploaded</th>
+                      <th>Location</th>
                       <th>Ballot Count</th>
                       <th></th>
                     </tr>
                   </thead>
                   <tbody class="table-group-divider">
                     <tr v-for="ballot_upload in election.ballot_uploads">
+                      <td>{{ballot_upload.created_at}}</td>
                       <td>{{ballot_upload.location}}</td>
                       <td>{{ballot_upload.ballot_count}}</td>
                       <td></td>
@@ -109,6 +111,7 @@ export default {
                   <tfoot>
                     <tr class="table-secondary">
                       <td><em>Total</em></td>
+                      <td>&nbsp;</td>
                       <td>{{ballotSum}}
                       <td></td>
                     </tr>
@@ -130,15 +133,15 @@ export default {
                 <table class="table table-striped" v-if="election.decryptions.length">
                   <thead>
                     <tr>
+                      <th>Created</th>
                       <th>Name</th>
-                      <th>Date</th>
                       <th></th>
                     </tr>
                   </thead>
                   <tbody class="table-group-divider">
                     <tr v-for="decryption in election.decryptions">
-                      <td><a :href="getViewDecryptionUrl(decryption.decryption_id)">{{decryption.name}}</a></td>
                       <td>{{decryption.created_at}}</td>
+                      <td><a :href="getViewDecryptionUrl(decryption.decryption_id)">{{decryption.name}}</a></td>
                       <td></td>
                     </tr>
                   </tbody>

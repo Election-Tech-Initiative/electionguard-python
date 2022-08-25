@@ -73,7 +73,14 @@ class ElectionDto:
                 "contests": self._get_manifest_field("contests"),
                 "ballot_styles": self._get_manifest_field("ballot_styles"),
             },
-            "ballot_uploads": self.ballot_uploads,
+            "ballot_uploads": [
+                {
+                    "location": ballot_upload["location"],
+                    "ballot_count": ballot_upload["ballot_count"],
+                    "created_at": utc_to_str(ballot_upload.get("created_at")),
+                }
+                for ballot_upload in self.ballot_uploads
+            ],
             "decryptions": [
                 {
                     "name": decryption["name"],
