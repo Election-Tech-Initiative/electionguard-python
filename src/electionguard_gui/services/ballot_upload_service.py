@@ -43,7 +43,7 @@ class BallotUploadService(ServiceBase):
         self,
         db: Database,
         ballot_upload_id: str,
-        election_id: str,   
+        election_id: str,
         file_name: str,
         file_contents: str,
     ) -> bool:
