@@ -1,8 +1,8 @@
 from typing import Any
 from datetime import datetime
+import eel
 from electionguard.serialize import from_raw
 from electionguard.ballot import SubmittedBallot
-import eel
 from electionguard_gui.components.component_base import ComponentBase
 from electionguard_gui.eel_utils import eel_fail, eel_success
 from electionguard_gui.services import ElectionService, BallotUploadService
