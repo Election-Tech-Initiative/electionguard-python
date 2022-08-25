@@ -341,7 +341,6 @@ class SelectionDescription(OrderedObjectBase, CryptoHashable):
         A hash representation of the object
         """
         hash = hash_elems(self.object_id, self.sequence_order, self.candidate_id)
-        log_debug(f"{self.__class__} : crypto_hash: {hash.to_hex()}")
         return hash
 
 

@@ -43,11 +43,11 @@ class BallotUploadService(ServiceBase):
         self,
         db: Database,
         ballot_upload_id: str,
-        election_id: str,
+        election_id: str,   
         file_name: str,
         file_contents: str,
     ) -> bool:
-        self._log.trace(f"adding ballot {file_name} to {ballot_upload_id}")
+#        self._log.trace(f"adding ballot {file_name} to {ballot_upload_id}")
         ballot = from_raw(SubmittedBallot, file_contents)
         ballot_object_id = ballot.object_id
         if self.any_ballot_exists(db, election_id, ballot_object_id):
@@ -67,14 +67,12 @@ class BallotUploadService(ServiceBase):
         return True
 
     def increment_ballot_count(self, db: Database, ballot_upload_id: str) -> None:
-        self._log.trace(f"incrementing ballot count for {ballot_upload_id}")
         db.ballot_uploads.update_one(
             {"_id": ballot_upload_id, "ballot_count": {"$exists": True}},
             {"$inc": {"ballot_count": 1}},
         )
 
     def any_ballot_exists(self, db: Database, election_id: str, object_id: str) -> bool:
-        self._log.trace("checking if ballot exists for {election_id}")
         return (
             db.ballot_uploads.count_documents(
                 {"election_id": election_id, "object_id": object_id}
