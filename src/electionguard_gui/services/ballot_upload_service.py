@@ -46,15 +46,9 @@ class BallotUploadService(ServiceBase):
         election_id: str,
         file_name: str,
         file_contents: str,
+        ballot_object_id: str,
     ) -> bool:
         self._log.trace(f"adding ballot {file_name} to {ballot_upload_id}")
-        ballot = from_raw(SubmittedBallot, file_contents)
-        ballot_object_id = ballot.object_id
-        if self.any_ballot_exists(db, election_id, ballot_object_id):
-            self._log.warn(
-                "ballot '{ballot_object_id}' already exists in election '{election_id}'"
-            )
-            return False
         db.ballot_uploads.insert_one(
             {
                 "ballot_upload_id": ballot_upload_id,

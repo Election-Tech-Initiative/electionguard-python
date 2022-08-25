@@ -1,5 +1,7 @@
 from typing import Any
 from datetime import datetime
+from electionguard.serialize import from_raw
+from electionguard.ballot import SubmittedBallot
 import eel
 from electionguard_gui.components.component_base import ComponentBase
 from electionguard_gui.eel_utils import eel_fail, eel_success
@@ -66,15 +68,41 @@ class UploadBallotsComponent(ComponentBase):
         try:
             db = self._db_service.get_db()
             self._log.debug(f"adding ballot {file_name} to {ballot_upload_id}")
+            ballot = from_raw(SubmittedBallot, file_contents)
+            election = self._election_service.get(db, election_id)
+            context = election.get_context()
+            if context.manifest_hash != ballot.manifest_hash:
+                self._log.warn(
+                    f"ballot '{ballot.object_id}' had a mismatched manifest hash. "
+                    + f"Expected {context.manifest_hash}, got {ballot.manifest_hash}."
+                )
+                return eel_fail(
+                    "The uploaded ballot didn't match the encryption package for this election. "
+                    + "Please try a different ballot."
+                )
+            is_duplicate = self._ballot_upload_service.any_ballot_exists(
+                db, election_id, ballot.object_id
+            )
+            if is_duplicate:
+                self._log.warn(
+                    "ballot '{ballot.object_id}' already exists in election '{election_id}'"
+                )
+                return eel_success({"is_duplicate": True})
+
             success = self._ballot_upload_service.add_ballot(
-                db, ballot_upload_id, election_id, file_name, file_contents
+                db,
+                ballot_upload_id,
+                election_id,
+                file_name,
+                file_contents,
+                ballot.object_id,
             )
             if success:
                 self._ballot_upload_service.increment_ballot_count(db, ballot_upload_id)
                 self._election_service.increment_ballot_upload_ballot_count(
                     db, election_id, ballot_upload_id
                 )
-            return eel_success({"is_duplicate": not success})
+            return eel_success({"is_duplicate": False})
         # pylint: disable=broad-except
         except Exception as e:
             return self.handle_error(e)
