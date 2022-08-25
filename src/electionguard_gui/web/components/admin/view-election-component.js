@@ -53,13 +53,13 @@ export default {
   template: /*html*/ `
     <div v-if="election">
       <div class="container">
-        <div class="row mb-4">
+        <div class="row">
           <div class="col-11">
-            <h1>{{election.election_name}}</h1>
+            
           </div>
           <div class="col-1 text-end">
             <div class="dropdown">
-              <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <button class="btn btn-sm btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                 <i class="bi-gear-fill me-1"></i>
               </button>
               <ul class="dropdown-menu">
@@ -68,40 +68,35 @@ export default {
                     <i class="bi-download me-1"></i> Download encryption package
                   </a>
                 </li>
-                <li><hr class="dropdown-divider"></li>
-                <li>
-                  <a :href="getCreateDecryptionUrl()" class="dropdown-item" v-if="election.ballot_uploads.length">
-                    <i class="bi bi-people-fill me-1"></i> Create tally
-                  </a>
-                </li>
               </ul>
             </div>
           </div>
         </div>
         <div class="row">
           <div class="col col-12 col-md-8">
-            <div class="row">
-              <dl class="col-md-6">
+            <h1>{{election.election_name}}</h1>
+            <div class="row mb-4">
+              <dl class="col-md-6 mb-1">
                 <dt>Guardians</dt>
                 <dd>{{election.guardians}}</dd>
               </dl>
-              <dl class="col-md-6">
+              <dl class="col-md-6 mb-1">
                 <dt>Quorum</dt>
                 <dd>{{election.quorum}}</dd>
               </dl>
-              <dl class="col-md-12" v-if="election.election_url">
+              <dl class="col-md-12 mb-1" v-if="election.election_url">
                 <dt>Election URL</dt>
                 <dd>{{election.election_url}}</dd>
               </dl>
-              <dl class="col-12">
-                  <dt>Created</dt>
+              <dl class="col-12 mb-1">
+                <dt>Created</dt>
                 <dd>by {{election.created_by}} on {{election.created_at}}</dd>
               </dl>
             </div>
-            <div class="row mb-5">
+            <div class="row mb-4">
               <div class="col-12">
                 <h2>Ballots</h2>
-                <table class="table table-striped">
+                <table class="table table-striped" v-if="election.ballot_uploads.length">
                   <thead>
                     <tr>
                       <th>Location</th>
@@ -124,6 +119,9 @@ export default {
                     </tr>
                   </tfoot>
                 </table>
+                <div v-else>
+                  <p>No ballots have been added yet.</p>
+                </div>
                 <div>
                   <a :href="getUploadBallotsUrl()" class="btn btn-sm btn-secondary">
                     <i class="bi-plus bi-plus me-2"></i> Add Ballots
@@ -131,10 +129,10 @@ export default {
                 </div>
               </div>
             </div>
-            <div class="row" v-if="election.decryptions.length">
+            <div class="row" v-if="election.ballot_uploads.length">
               <div class="col-12">
                 <h2>Tallies</h2>
-                <table class="table table-striped">
+                <table class="table table-striped" v-if="election.decryptions.length">
                   <thead>
                     <tr>
                       <th>Name</th>
@@ -148,7 +146,13 @@ export default {
                     </tr>
                   </tbody>
                 </table>
-              </div>
+                <div v-else>
+                  <p>No tallies have been created yet.</p>
+                </div>
+                <a :href="getCreateDecryptionUrl()" class="btn btn-sm btn-secondary">
+                  <i class="bi bi-people-fill me-1"></i> Create tally
+                </a>
+          </div>
             </div>
           </div>
           <div class="col col-12 col-md-4">
