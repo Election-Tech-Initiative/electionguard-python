@@ -29,26 +29,37 @@ export default {
         spoiledBallotId: spoiledBallotId,
       });
     },
-    refresh_decryption: async function () {
-      await this.get_decryption(true);
+    refresh_decryption: async function (result) {
+      if (result.success) {
+        await this.get_decryption(true);
+      } else {
+        console.error(result.message);
+        this.error = true;
+      }
     },
     get_decryption: async function (is_refresh) {
       console.log("getting decryption");
       this.loading = true;
-      const result = await eel.get_decryption(this.decryptionId, is_refresh)();
-      this.error = !result.success;
-      if (result.success) {
-        this.decryption = result.result;
+      try {
+        const result = await eel.get_decryption(
+          this.decryptionId,
+          is_refresh
+        )();
+        this.error = !result.success;
+        if (result.success) {
+          this.decryption = result.result;
+        }
+      } finally {
+        this.loading = false;
       }
-      this.loading = false;
     },
   },
   async mounted() {
-    await this.get_decryption(false);
     eel.expose(this.refresh_decryption, "refresh_decryption");
+    await this.get_decryption(false);
     console.log("watching decryption");
     // only watch for changes if the decryption is in-progress
-    if (!this.decryption.completed_at_str) {
+    if (this.decryption && !this.decryption.completed_at_str) {
       eel.watch_decryption(this.decryptionId);
     }
   },
@@ -131,6 +142,9 @@ export default {
           <spinner :visible="loading || !decryption.completed_at_str"></spinner>
         </div>
       </div>
+    </div>
+    <div v-else>
+      <spinner :visible="loading"></spinner>
     </div>
 `,
 };
