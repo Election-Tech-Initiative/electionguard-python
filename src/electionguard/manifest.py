@@ -6,7 +6,7 @@ from typing import Dict, cast, List, Optional, Set, Any
 from .election_object_base import ElectionObjectBase, OrderedObjectBase, list_eq
 from .group import ElementModQ
 from .hash import CryptoHashable, hash_elems
-from .logs import log_warning, log_debug
+from .logs import log_warning
 from .utils import get_optional, to_iso_date_string
 
 
