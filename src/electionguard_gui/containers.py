@@ -35,6 +35,7 @@ from electionguard_gui.services import (
     DecryptionService,
     DbWatcherService,
     ConfigurationService,
+    VersionService,
 )
 from electionguard_gui.services.decryption_stages import (
     DecryptionS1JoinService,
@@ -57,6 +58,9 @@ class Container(containers.DeclarativeContainer):
     log_service: Singleton[EelLogService] = providers.Singleton(EelLogService)
     config_service: Factory[ConfigurationService] = providers.Factory(
         ConfigurationService
+    )
+    version_service: Factory[VersionService] = providers.Factory(
+        VersionService, log_service=log_service
     )
     db_service: Singleton[DbService] = providers.Singleton(
         DbService, log_service=log_service, config_service=config_service
@@ -302,4 +306,5 @@ class Container(containers.DeclarativeContainer):
         export_election_record_component=export_election_record_component,
         view_tally_component=view_tally_component,
         view_spoiled_ballot_component=view_spoiled_ballot_component,
+        version_service=version_service,
     )

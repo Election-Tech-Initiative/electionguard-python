@@ -25,6 +25,7 @@ from electionguard_gui.services import (
     EelLogService,
     ServiceBase,
     ConfigurationService,
+    VersionService,
 )
 
 
@@ -55,6 +56,7 @@ class MainApp:
         export_election_record_component: ExportElectionRecordComponent,
         view_tally_component: ViewTallyComponent,
         view_spoiled_ballot_component: ViewSpoiledBallotComponent,
+        version_service: VersionService,
     ) -> None:
         super().__init__()
 
@@ -83,6 +85,7 @@ class MainApp:
             authorization_service,
             db_service,
             log_service,
+            version_service,
         ]
 
     def start(self) -> None:

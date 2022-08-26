@@ -17,6 +17,7 @@ from electionguard_gui.services import key_ceremony_stages
 from electionguard_gui.services import key_ceremony_state_service
 from electionguard_gui.services import plaintext_ballot_service
 from electionguard_gui.services import service_base
+from electionguard_gui.services import version_service
 
 from electionguard_gui.services.authorization_service import (
     AuthorizationService,
@@ -113,6 +114,9 @@ from electionguard_gui.services.plaintext_ballot_service import (
 from electionguard_gui.services.service_base import (
     ServiceBase,
 )
+from electionguard_gui.services.version_service import (
+    VersionService,
+)
 
 __all__ = [
     "AuthorizationService",
@@ -145,6 +149,7 @@ __all__ = [
     "MODE_KEY",
     "PORT_KEY",
     "ServiceBase",
+    "VersionService",
     "announce_guardians",
     "authorization_service",
     "backup_to_dict",
@@ -191,4 +196,5 @@ __all__ = [
     "status_descriptions",
     "to_ballot_share_raw",
     "verification_to_dict",
+    "version_service",
 ]
