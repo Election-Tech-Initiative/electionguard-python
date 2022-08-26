@@ -59,6 +59,9 @@ class Container(containers.DeclarativeContainer):
     config_service: Factory[ConfigurationService] = providers.Factory(
         ConfigurationService
     )
+    version_service: Factory[VersionService] = providers.Factory(
+        VersionService, log_service=log_service
+    )
     db_service: Singleton[DbService] = providers.Singleton(
         DbService, log_service=log_service, config_service=config_service
     )
@@ -127,7 +130,6 @@ class Container(containers.DeclarativeContainer):
     )
 
     # key ceremony services
-    version_service: Factory[VersionService] = providers.Factory(VersionService)
     key_ceremony_s1_join_service: Factory[KeyCeremonyS1JoinService] = providers.Factory(
         KeyCeremonyS1JoinService,
         log_service=log_service,
