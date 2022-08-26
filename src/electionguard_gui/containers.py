@@ -35,6 +35,7 @@ from electionguard_gui.services import (
     DecryptionService,
     DbWatcherService,
     ConfigurationService,
+    VersionService,
 )
 from electionguard_gui.services.decryption_stages import (
     DecryptionS1JoinService,
@@ -126,6 +127,7 @@ class Container(containers.DeclarativeContainer):
     )
 
     # key ceremony services
+    version_service: Factory[VersionService] = providers.Factory(VersionService)
     key_ceremony_s1_join_service: Factory[KeyCeremonyS1JoinService] = providers.Factory(
         KeyCeremonyS1JoinService,
         log_service=log_service,
@@ -302,4 +304,5 @@ class Container(containers.DeclarativeContainer):
         export_election_record_component=export_election_record_component,
         view_tally_component=view_tally_component,
         view_spoiled_ballot_component=view_spoiled_ballot_component,
+        version_service=version_service,
     )

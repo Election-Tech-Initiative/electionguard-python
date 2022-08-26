@@ -93,6 +93,7 @@ from electionguard_gui.services import (
     MODE_KEY,
     PORT_KEY,
     ServiceBase,
+    VersionService,
     announce_guardians,
     authorization_service,
     backup_to_dict,
@@ -139,6 +140,7 @@ from electionguard_gui.services import (
     status_descriptions,
     to_ballot_share_raw,
     verification_to_dict,
+    version_service,
 )
 from electionguard_gui.start import (
     run,
@@ -192,6 +194,7 @@ __all__ = [
     "PORT_KEY",
     "ServiceBase",
     "UploadBallotsComponent",
+    "VersionService",
     "ViewDecryptionComponent",
     "ViewElectionComponent",
     "ViewSpoiledBallotComponent",
@@ -271,6 +274,7 @@ __all__ = [
     "upload_ballots_component",
     "utc_to_str",
     "verification_to_dict",
+    "version_service",
     "view_decryption_component",
     "view_election_component",
     "view_spoiled_ballot_component",
