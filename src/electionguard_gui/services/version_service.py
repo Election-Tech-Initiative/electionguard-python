@@ -1,5 +1,5 @@
 from os import path
-from subprocess import Popen, PIPE, check_output
+from subprocess import check_output
 from typing import Optional
 import eel
 from electionguard_gui.services.eel_log_service import EelLogService
@@ -25,4 +25,5 @@ class VersionService(ServiceBase):
             .decode("ascii")
             .strip()
         )
+        self._log.info(f"Version: {commit_hash}")
         return commit_hash
