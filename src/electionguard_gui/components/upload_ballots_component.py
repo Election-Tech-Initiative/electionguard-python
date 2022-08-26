@@ -67,7 +67,7 @@ class UploadBallotsComponent(ComponentBase):
     ) -> dict[str, Any]:
         try:
             db = self._db_service.get_db()
-            self._log.debug(f"adding ballot {file_name} to {ballot_upload_id}")
+            self._log.trace(f"adding ballot {file_name} to {ballot_upload_id}")
             ballot = from_raw(SubmittedBallot, file_contents)
             election = self._election_service.get(db, election_id)
             context = election.get_context()
