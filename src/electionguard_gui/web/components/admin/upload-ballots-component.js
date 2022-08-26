@@ -134,7 +134,7 @@ export default {
           <div class="invalid-feedback">Please provide a ballot folder.</div>
         </div>
         <div class="col-12 mt-4">
-          <button type="submit" :disabled="loading" class="btn btn-primary me-2">Upload Ballots</button>
+          <button type="submit" :disabled="loading" class="btn btn-primary me-2">Upload</button>
           <a :href="getElectionUrl()" class="btn btn-secondary me-2">Cancel</a>
           <spinner :visible="loading"></spinner>
           <p v-if="loading && ballotsProcessed">{{ ballotsProcessed }} of {{ ballotsTotal }} files processed.</p>

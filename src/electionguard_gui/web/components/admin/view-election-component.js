@@ -53,70 +53,56 @@ export default {
   template: /*html*/ `
     <div v-if="election">
       <div class="container">
-        <div class="row mb-4">
-          <div class="col-11">
-            <h1>{{election.election_name}}</h1>
-          </div>
-          <div class="col-1 text-end">
-            <div class="dropdown">
-              <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="bi-gear-fill me-1"></i>
-              </button>
-              <ul class="dropdown-menu">
-                <li>
-                  <a :href="getEncryptionPackageUrl()" class="dropdown-item">
-                    <i class="bi-download me-1"></i> Download encryption package
-                  </a>
-                </li>
-                <li><hr class="dropdown-divider"></li>
-                <li>
-                  <a :href="getUploadBallotsUrl()" class="dropdown-item">
-                    <i class="bi-upload me-1"></i> Upload ballots
-                  </a>
-                </li>
-                <li><hr class="dropdown-divider"></li>
-                <li>
-                  <a :href="getCreateDecryptionUrl()" class="dropdown-item" v-if="election.ballot_uploads.length">
-                    <i class="bi bi-people-fill me-1"></i> Create tally
-                  </a>
-                </li>
-              </ul>
-            </div>
+        <div class="text-end">
+          <div class="dropdown">
+            <button class="btn btn-sm btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="bi-gear-fill me-1"></i>
+            </button>
+            <ul class="dropdown-menu">
+              <li>
+                <a :href="getEncryptionPackageUrl()" class="dropdown-item">
+                  <i class="bi-download me-1"></i> Download encryption package
+                </a>
+              </li>
+            </ul>
           </div>
         </div>
         <div class="row">
           <div class="col col-12 col-md-8">
-            <div class="row">
-              <dl class="col-md-6">
+            <h1>{{election.election_name}}</h1>
+            <div class="row mb-4">
+              <dl class="col-md-6 mb-1">
                 <dt>Guardians</dt>
                 <dd>{{election.guardians}}</dd>
               </dl>
-              <dl class="col-md-6">
+              <dl class="col-md-6 mb-1">
                 <dt>Quorum</dt>
                 <dd>{{election.quorum}}</dd>
               </dl>
-              <dl class="col-md-12" v-if="election.election_url">
+              <dl class="col-md-12 mb-1" v-if="election.election_url">
                 <dt>Election URL</dt>
                 <dd>{{election.election_url}}</dd>
               </dl>
-              <dl class="col-12">
-                  <dt>Created</dt>
+              <dl class="col-12 mb-1">
+                <dt>Created</dt>
                 <dd>by {{election.created_by}} on {{election.created_at}}</dd>
               </dl>
             </div>
-            <div class="row" v-if="election.ballot_uploads.length">
+            <div class="row mb-4">
               <div class="col-12">
-                <h2>Ballot Uploads</h2>
-                <table class="table table-striped">
+                <h2>Ballots</h2>
+                <table class="table table-striped" v-if="election.ballot_uploads.length">
                   <thead>
                     <tr>
+                      <th>Uploaded</th>
                       <th>Location</th>
                       <th>Ballot Count</th>
                       <th></th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody class="table-group-divider">
                     <tr v-for="ballot_upload in election.ballot_uploads">
+                      <td>{{ballot_upload.created_at}}</td>
                       <td>{{ballot_upload.location}}</td>
                       <td>{{ballot_upload.ballot_count}}</td>
                       <td></td>
@@ -125,31 +111,48 @@ export default {
                   <tfoot>
                     <tr class="table-secondary">
                       <td><em>Total</em></td>
+                      <td>&nbsp;</td>
                       <td>{{ballotSum}}
                       <td></td>
                     </tr>
                   </tfoot>
                 </table>
+                <div v-else>
+                  <p>No ballots have been added yet.</p>
+                </div>
+                <div>
+                  <a :href="getUploadBallotsUrl()" class="btn btn-sm btn-secondary">
+                    <i class="bi-plus bi-plus me-2"></i> Add Ballots
+                  </a>
+                </div>
               </div>
             </div>
-            <div class="row" v-if="election.decryptions.length">
+            <div class="row mb-4" v-if="election.ballot_uploads.length">
               <div class="col-12">
                 <h2>Tallies</h2>
-                <table class="table table-striped">
+                <table class="table table-striped" v-if="election.decryptions.length">
                   <thead>
                     <tr>
+                      <th>Created</th>
                       <th>Name</th>
                       <th></th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody class="table-group-divider">
                     <tr v-for="decryption in election.decryptions">
+                      <td>{{decryption.created_at}}</td>
                       <td><a :href="getViewDecryptionUrl(decryption.decryption_id)">{{decryption.name}}</a></td>
                       <td></td>
                     </tr>
                   </tbody>
                 </table>
-              </div>
+                <div v-else>
+                  <p>No tallies have been created yet.</p>
+                </div>
+                <a :href="getCreateDecryptionUrl()" class="btn btn-sm btn-secondary">
+                  <i class="bi bi-people-fill me-1"></i> Create tally
+                </a>
+          </div>
             </div>
           </div>
           <div class="col col-12 col-md-4">
