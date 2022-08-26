@@ -49,10 +49,18 @@ class GuardianHomeComponent(ComponentBase):
         return eel_success(js_key_ceremonies)
 
     def watch_db_collections(self) -> None:
-        self._log.debug("Watching database")
-        db = self._db_service.get_db()
-        self._db_watcher_service.watch_database(db, None, notify_ui_db_changed)
-        self._log.debug("exited watching database")
+        try:
+            self._log.debug("Watching database")
+            db = self._db_service.get_db()
+            self._db_watcher_service.watch_database(db, None, notify_ui_db_changed)
+            self._log.debug("exited watching database")
+        except KeyboardInterrupt:
+            self._log.debug("Keyboard interrupt, exiting watch database")
+            self._db_watcher_service.stop_watching()
+        except Exception as e:  # pylint: disable=broad-except
+            self.handle_error(e)
+            self._db_watcher_service.stop_watching()
+            # no need to raise exception or return anything, we're in fire-and-forget mode here
 
     def stop_watching_db_collections(self) -> None:
         self._log.debug("Stopping watch database")

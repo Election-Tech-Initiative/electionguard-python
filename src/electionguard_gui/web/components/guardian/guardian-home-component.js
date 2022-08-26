@@ -2,6 +2,8 @@ import KeyCeremonyList from "../shared/key-ceremony-list-component.js";
 import DecryptionList from "./decryption-list-component.js";
 import Spinner from "../shared/spinner-component.js";
 
+const sleepResumeInterval = 2000;
+
 export default {
   components: {
     KeyCeremonyList,
@@ -13,9 +15,21 @@ export default {
       loading: true,
       decryptions: [],
       keyCeremonies: [],
+      lastAwakeTime: new Date().getTime(),
     };
   },
   methods: {
+    refresh: async function () {
+      this.loading = true;
+      try {
+        this.decryptions = [];
+        this.keyCeremonies = [];
+        await this.refreshDecryptions();
+        await this.refreshKeyCeremonies();
+      } finally {
+        this.loading = false;
+      }
+    },
     keyCeremoniesChanged: async function () {
       await this.refreshKeyCeremonies();
     },
@@ -38,8 +52,17 @@ export default {
         console.error(result.error);
       }
     },
+    sleepResumeChecker: function () {
+      var currentTime = new Date().getTime();
+      if (currentTime > this.lastAwakeTime + sleepResumeInterval * 2) {
+        console.log("system appears to have returned from sleep, refreshing");
+        document.location.reload(true);
+      }
+      this.lastAwakeTime = currentTime;
+    },
   },
   async mounted() {
+    setInterval(this.sleepResumeChecker, sleepResumeInterval);
     eel.expose(this.keyCeremoniesChanged, "key_ceremonies_changed");
     eel.expose(this.decryptionsChanged, "decryptions_changed");
     console.log("begin watching for key ceremonies");
@@ -51,10 +74,18 @@ export default {
   unmounted() {
     console.log("stop watching key ceremonies");
     eel.stop_watching_db_collections();
+    clearInterval(this.sleepResumeChecker);
   },
   template: /*html*/ `
   <div class="container">
-    <h1>Guardian Home</h1>
+    <div class="row">
+      <div class="col-11">
+        <h1>Guardian Home</h1>
+      </div>
+      <div class="col-1 text-end">
+        <button class="btn btn-lg btn-light" @click="refresh"><i class="bi-arrow-clockwise"></i></button>
+      </div>
+    </div>
     <spinner :visible="loading"></spinner>
     <div v-if="!loading" class="row">
       <div class="col-12 col-lg-6">

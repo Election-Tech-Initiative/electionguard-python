@@ -70,14 +70,22 @@ class KeyCeremonyDetailsComponent(ComponentBase):
         eel.expose(self.stop_watching_key_ceremony)
 
     def watch_key_ceremony(self, key_ceremony_id: str) -> None:
-        db = self._db_service.get_db()
-        # retrieve and send the key ceremony to the client
-        self.on_key_ceremony_changed("key_ceremonies", key_ceremony_id)
-        self._log.debug(f"watching key ceremony '{key_ceremony_id}'")
-        # start watching for key ceremony changes from guardians
-        self._db_watcher_service.watch_database(
-            db, key_ceremony_id, self.on_key_ceremony_changed
-        )
+        try:
+            db = self._db_service.get_db()
+            # retrieve and send the key ceremony to the client
+            self.on_key_ceremony_changed("key_ceremonies", key_ceremony_id)
+            self._log.debug(f"watching key ceremony '{key_ceremony_id}'")
+            # start watching for key ceremony changes from guardians
+            self._db_watcher_service.watch_database(
+                db, key_ceremony_id, self.on_key_ceremony_changed
+            )
+        except KeyboardInterrupt:
+            self._log.debug("Keyboard interrupt, exiting watch database")
+            self._db_watcher_service.stop_watching()
+        except Exception as e:  # pylint: disable=broad-except
+            self.handle_error(e)
+            self._db_watcher_service.stop_watching()
+            # we're in a fire-and-forget scenario, so no need to raise an exception or return anything
 
     def stop_watching_key_ceremony(self) -> None:
         self._db_watcher_service.stop_watching()

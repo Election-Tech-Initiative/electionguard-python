@@ -101,8 +101,21 @@ class MainApp:
             port = self.config_service.get_port()
             host = self.config_service.get_host()
             self.log_service.debug(f"Starting eel port={port} mode={mode} host={host}")
-            eel.start("index.html", size=(1024, 768), port=port, mode=mode, host=host)
+            eel.start(
+                "index.html",
+                size=(1024, 768),
+                port=port,
+                mode=mode,
+                host=host,
+                close_callback=self.on_close,
+            )
+            self.log_service.info("Exiting main app normally")
         except Exception as e:
             self.log_service.error("error in main app start", e)
             traceback.print_exc()
             raise e
+
+    def on_close(self, _page: str, _open_sockets: list) -> None:
+        self.log_service.info(
+            "To close the egui app ensure the browser tab is closed and hit Ctrl+C"
+        )
