@@ -11,7 +11,7 @@ class VersionService(ServiceBase):
 
     _log: EelLogService
 
-    def __init__(self, log_service: ServiceBase) -> None:
+    def __init__(self, log_service: EelLogService) -> None:
         self._log = log_service
 
     def expose(self) -> None:
@@ -22,6 +22,6 @@ class VersionService(ServiceBase):
             return None
         repo = Repo("./")
         commit_hash = repo.git.rev_parse("HEAD")
-        short_hash = commit_hash[:6]
+        short_hash = str(commit_hash[:6])
         self._log.info(f"Version: {short_hash}")
         return short_hash
