@@ -1,5 +1,5 @@
 import Spinner from "../shared/spinner-component.js";
-import RouterService from "/services/router-service.js";
+import RouterService from "../../services/router-service.js";
 
 export default {
   components: {
@@ -18,6 +18,7 @@ export default {
     startCeremony() {
       const form = document.getElementById("mainForm");
       this.alert = null;
+      self.alert = null;
       if (form.checkValidity()) {
         this.loading = true;
         const onDone = eel.create_key_ceremony(

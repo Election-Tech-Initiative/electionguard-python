@@ -1,48 +1,75 @@
+from typing import Any
 import eel
-from pymongo.database import Database
+from electionguard_gui.eel_utils import eel_success
 
 from electionguard_gui.components.component_base import ComponentBase
-from electionguard_gui.services.key_ceremony_service import KeyCeremonyService
+from electionguard_gui.services import (
+    KeyCeremonyService,
+    DecryptionService,
+    DbWatcherService,
+)
 
 
 class GuardianHomeComponent(ComponentBase):
     """Responsible for functionality related to the guardian home page"""
 
     _key_ceremony_service: KeyCeremonyService
+    _decryption_service: DecryptionService
+    _db_watcher_service: DbWatcherService
 
-    def __init__(self, key_ceremony_service: KeyCeremonyService) -> None:
+    def __init__(
+        self,
+        key_ceremony_service: KeyCeremonyService,
+        decryption_service: DecryptionService,
+        db_watcher_service: DbWatcherService,
+    ) -> None:
         super().__init__()
         self._key_ceremony_service = key_ceremony_service
+        self._decryption_service = decryption_service
+        self._db_watcher_service = db_watcher_service
 
     def expose(self) -> None:
-        eel.expose(self.watch_key_ceremonies)
-        eel.expose(self.stop_watching_key_ceremonies)
+        eel.expose(self.get_decryptions)
+        eel.expose(self.get_key_ceremonies)
+        eel.expose(self.watch_db_collections)
+        eel.expose(self.stop_watching_db_collections)
 
-    def watch_key_ceremonies(self) -> None:
-        self.log.debug("Watching key ceremonies")
-        db = self.db_service.get_db()
-        send_key_ceremonies_to_ui(db)
-        self._key_ceremony_service.watch_key_ceremonies(
-            db, None, lambda: send_key_ceremonies_to_ui(db)
-        )
-        self.log.debug("exited watching key_ceremonies")
+    def get_decryptions(self) -> dict[str, Any]:
+        db = self._db_service.get_db()
+        decryptions = self._decryption_service.get_active(db)
+        decryptions_json = [decryption.to_id_name_dict() for decryption in decryptions]
+        return eel_success(decryptions_json)
 
-    def stop_watching_key_ceremonies(self) -> None:
-        self.log.debug("Stopping watch key_ceremonies")
-        self._key_ceremony_service.stop_watching()
+    def get_key_ceremonies(self) -> dict[str, Any]:
+        db = self._db_service.get_db()
+        key_ceremonies = self._key_ceremony_service.get_active(db)
+        js_key_ceremonies = [
+            key_ceremony.to_id_name_dict() for key_ceremony in key_ceremonies
+        ]
+        return eel_success(js_key_ceremonies)
+
+    def watch_db_collections(self) -> None:
+        try:
+            self._log.debug("Watching database")
+            db = self._db_service.get_db()
+            self._db_watcher_service.watch_database(db, None, notify_ui_db_changed)
+            self._log.debug("exited watching database")
+        except KeyboardInterrupt:
+            self._log.debug("Keyboard interrupt, exiting watch database")
+            self._db_watcher_service.stop_watching()
+        except Exception as e:  # pylint: disable=broad-except
+            self.handle_error(e)
+            self._db_watcher_service.stop_watching()
+            # no need to raise exception or return anything, we're in fire-and-forget mode here
+
+    def stop_watching_db_collections(self) -> None:
+        self._log.debug("Stopping watch database")
+        self._db_watcher_service.stop_watching()
 
 
-def send_key_ceremonies_to_ui(db: Database) -> None:
-    key_ceremonies = db.key_ceremonies.find()
-    js_key_ceremonies = [
-        make_js_key_ceremony(key_ceremony) for key_ceremony in key_ceremonies
-    ]
+def notify_ui_db_changed(collection: str, _: str) -> None:
     # pylint: disable=no-member
-    eel.key_ceremonies_found(js_key_ceremonies)
-
-
-def make_js_key_ceremony(key_ceremony: dict) -> dict:
-    return {
-        "key_ceremony_name": key_ceremony["key_ceremony_name"],
-        "id": key_ceremony["_id"].__str__(),
-    }
+    if collection == "key_ceremonies":
+        eel.key_ceremonies_changed()
+    if collection == "decryptions":
+        eel.decryptions_changed()

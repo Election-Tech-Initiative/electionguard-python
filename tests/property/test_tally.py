@@ -175,15 +175,15 @@ class TestTally(BaseTestCase):
 
         # verify an UNKNOWN state ballot fails
         self.assertIsNone(tally_ballot(first_ballot, tally))
-        self.assertFalse(tally.append(first_ballot))
+        self.assertFalse(tally.append(first_ballot, True))
 
         # cast a ballot
         first_ballot.state = BallotBoxState.CAST
-        self.assertTrue(tally.append(first_ballot))
+        self.assertTrue(tally.append(first_ballot, False))
 
         # try to append a spoiled ballot
         first_ballot.state = BallotBoxState.SPOILED
-        self.assertFalse(tally.append(first_ballot))
+        self.assertFalse(tally.append(first_ballot, True))
 
         # Verify accumulation fails if the selection collection is empty
         if first_ballot.state == BallotBoxState.CAST:
@@ -217,12 +217,12 @@ class TestTally(BaseTestCase):
 
         # verify a cast ballot cannot be added twice
         first_ballot.state = BallotBoxState.CAST
-        self.assertTrue(tally.append(first_ballot))
-        self.assertFalse(tally.append(first_ballot))
+        self.assertTrue(tally.append(first_ballot, True))
+        self.assertFalse(tally.append(first_ballot, False))
 
         # verify an already submitted ballot cannot be changed or readded
         first_ballot.state = BallotBoxState.SPOILED
-        self.assertFalse(tally.append(first_ballot))
+        self.assertFalse(tally.append(first_ballot, True))
 
     @staticmethod
     def _decrypt_with_secret(
@@ -255,7 +255,7 @@ class TestTally(BaseTestCase):
         ballot.contests[0].ballot_selections.remove(first_selection)
 
         self.assertIsNone(tally_ballot(ballot, tally))
-        self.assertFalse(tally.append(ballot))
+        self.assertFalse(tally.append(ballot, True))
 
         # Verify accumulation fails if the selection count does not match
         if ballot.state == BallotBoxState.CAST:
@@ -278,7 +278,7 @@ class TestTally(BaseTestCase):
         first_contest_hash = ballot.contests[0].description_hash
         ballot.contests[0].description_hash = ONE_MOD_Q
         self.assertIsNone(tally_ballot(ballot, tally))
-        self.assertFalse(tally.append(ballot))
+        self.assertFalse(tally.append(ballot, True))
 
         ballot.contests[0].description_hash = first_contest_hash
 
@@ -286,7 +286,7 @@ class TestTally(BaseTestCase):
         first_contest_object_id = ballot.contests[0].object_id
         ballot.contests[0].object_id = "a-bad-object-id"
         self.assertIsNone(tally_ballot(ballot, tally))
-        self.assertFalse(tally.append(ballot))
+        self.assertFalse(tally.append(ballot, True))
 
         ballot.contests[0].object_id = first_contest_object_id
 
@@ -297,7 +297,7 @@ class TestTally(BaseTestCase):
         ballot.contests[0].ballot_selections[0].object_id = "another-bad-object-id"
 
         self.assertIsNone(tally_ballot(ballot, tally))
-        self.assertFalse(tally.append(ballot))
+        self.assertFalse(tally.append(ballot, True))
 
         # Verify accumulation fails if the selection object id does not match
         if ballot.state == BallotBoxState.CAST:
@@ -315,7 +315,7 @@ class TestTally(BaseTestCase):
         first_ballot_hash = ballot.manifest_hash
         ballot.manifest_hash = ONE_MOD_Q
         self.assertIsNone(tally_ballot(ballot, tally))
-        self.assertFalse(tally.append(ballot))
+        self.assertFalse(tally.append(ballot, True))
 
         ballot.manifest_hash = first_ballot_hash
         ballot.state = input_state

@@ -6,6 +6,8 @@
     <script type="text/javascript" src="/eel.js"></script>
     <link href="css/bootstrap.min.css" rel="stylesheet" />
     <link href="css/bootstrap-overrides.css" rel="stylesheet" />
+    <link rel="stylesheet" href="css/bootstrap-icons.css" />
+    <link href="css/eg-styles.css" rel="stylesheet" />
   </head>
   <body>
     <script type="importmap">
@@ -18,10 +20,11 @@
 
     <div id="app">
       <navbar :user-id="userId"></navbar>
-      <div class="container mt-3">
+      <div class="container mt-3 mb-4">
         <Login @login="login" v-if="showLogin"></Login>
         <component :is="currentView" v-bind="currentViewProperties" />
       </div>
+      <eg-footer></eg-footer>
     </div>
 
     <script type="module">
@@ -30,6 +33,7 @@
       // components
       import Navbar from "./components/shared/navbar-component.js";
       import Login from "./components/shared/login-component.js";
+      import EgFooter from "./components/shared/footer-component.js";
 
       // services
       import AuthorizationService from "./services/authorization-service.js";
@@ -81,10 +85,12 @@
         components: {
           Navbar,
           Login,
+          EgFooter,
         },
       }).mount("#app");
     </script>
 
+    <script src="js/popper.min.js"></script>
     <script src="js/bootstrap.bundle.min.js"></script>
   </body>
 </html>
