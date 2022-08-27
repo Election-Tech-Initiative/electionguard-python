@@ -44,7 +44,7 @@ class TallyStep(CliStepBase):
             build_election_results.context,
         )
         with Scheduler() as scheduler:
-            tally.batch_append(ballots, scheduler)
+            tally.batch_append(ballots, True, scheduler)
         self.print_value("Ballots in tally", tally.__len__())
         return tally
 

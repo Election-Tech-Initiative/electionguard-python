@@ -71,6 +71,16 @@ def from_raw(type_: Type[_T], raw: Union[str, bytes]) -> _T:
     return from_dict(type_, json.loads(raw), _config)
 
 
+def from_list_raw(type_: Type[_T], raw: Union[str, bytes]) -> List[_T]:
+    """Deserialize raw json string as type."""
+
+    data = json.loads(raw)
+    ls: List[_T] = []
+    for item in data:
+        ls.append(from_dict(type_, item, _config))
+    return ls
+
+
 def to_raw(data: Any) -> str:
     """Serialize data to raw json format."""
 

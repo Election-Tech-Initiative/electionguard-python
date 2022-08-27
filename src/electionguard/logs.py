@@ -16,12 +16,17 @@ class ElectionGuardLog(Singleton):
     """
 
     __logger: logging.Logger
+    __stream_handler: logging.StreamHandler
 
     def __init__(self) -> None:
         super().__init__()
 
         self.__logger = logging.getLogger("electionguard")
-        self.__logger.addHandler(get_stream_handler())
+        # Pythong's logger will use the most restrictive of the logger level and the handler level,
+        #   so set the logger to the lowest level the handler ever might log at
+        self.__logger.setLevel(logging.DEBUG)
+        self.__stream_handler = get_stream_handler(logging.INFO)
+        self.__logger.addHandler(self.__stream_handler)
 
     @staticmethod
     def __get_call_info() -> Tuple[str, str, int]:
@@ -43,6 +48,13 @@ class ElectionGuardLog(Singleton):
         filename, funcname, line = self.__get_call_info()
         message = f"{os.path.basename(filename)}.{funcname}:#L{line}: {message}"
         return message
+
+    def set_stream_log_level(self, Level: int) -> None:
+        """
+        Sets the stream log level
+        """
+        self.remove_handler(self.__stream_handler)
+        self.add_handler(get_stream_handler(Level))
 
     def add_handler(self, handler: logging.Handler) -> None:
         """
@@ -93,17 +105,17 @@ class ElectionGuardLog(Singleton):
         self.__logger.critical(self.__formatted_message(message), *args, **kwargs)
 
 
-def get_stream_handler() -> logging.StreamHandler:
+def get_stream_handler(log_level: int) -> logging.StreamHandler:
     """
     Get a Stream Handler, sends only warnings and errors to stdout.
     """
     stream_handler = logging.StreamHandler(sys.stdout)
-    stream_handler.setLevel(logging.INFO)
+    stream_handler.setLevel(log_level)
     stream_handler.setFormatter(logging.Formatter(FORMAT))
     return stream_handler
 
 
-def get_file_handler() -> logging.FileHandler:
+def get_file_handler(log_level: int, filename: str) -> logging.FileHandler:
     """
     Get a File System Handler, sends verbose logging to a file, `electionguard.log`.
     When that file gets too large, the logs will rotate, creating files with names
@@ -113,9 +125,9 @@ def get_file_handler() -> logging.FileHandler:
     # TODO: add file compression, save a bunch of space.
     #   https://medium.com/@rahulraghu94/overriding-pythons-timedrotatingfilehandler-to-compress-your-log-files-iot-c766a4ace240 # pylint: disable=line-too-long
     file_handler = RotatingFileHandler(
-        "electionguard.log", "a", maxBytes=10_000_000, backupCount=10
+        filename, "a", maxBytes=10_000_000, backupCount=10
     )
-    file_handler.setLevel(logging.DEBUG)
+    file_handler.setLevel(log_level)
     file_handler.setFormatter(logging.Formatter(FORMAT))
     return file_handler
 

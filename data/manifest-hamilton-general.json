@@ -1,53 +1,19 @@
 {
-  "spec_version": "v0.95",
-  "name": {
-    "text": [
-      {
-        "value": "Hamiltion County General Election",
-        "language": "en"
-      },
-      {
-        "value": "Elección general del condado de Hamilton",
-        "language": "es"
-      }
-    ]
-  },
-  "contact_information": {
-    "address_line": ["1234 Paul Revere Run", "Hamilton, Ozark 99999"],
-    "name": "Hamilton State Election Commission",
-    "email": [
-      {
-        "annotation": "press",
-        "value": "inquiries@hamilton.state.gov"
-      },
-      {
-        "annotation": "federal",
-        "value": "commissioner@hamilton.state.gov"
-      }
-    ],
-    "phone": [
-      {
-        "annotation": "domestic",
-        "value": "123-456-7890"
-      },
-      {
-        "annotation": "international",
-        "value": "+1-123-456-7890"
-      }
-    ]
-  },
+  "election_scope_id": "hamilton-county-general-election",
+  "spec_version": "1.0",
+  "type": "general",
   "start_date": "2020-03-01T08:00:00-05:00",
   "end_date": "2020-03-01T20:00:00-05:00",
-  "election_scope_id": "hamilton-county-general-election",
-  "type": "general",
   "geopolitical_units": [
     {
       "object_id": "hamilton-county",
       "name": "Hamilton County",
       "type": "county",
       "contact_information": {
-        "address_line": ["1234 Samuel Adams Way", "Hamilton, Ozark 99999"],
-        "name": "Hamilton County Clerk",
+        "address_line": [
+          "1234 Samuel Adams Way",
+          "Hamilton, Ozark 99999"
+        ],
         "email": [
           {
             "annotation": "inquiries",
@@ -59,7 +25,8 @@
             "annotation": "domestic",
             "value": "123-456-7890"
           }
-        ]
+        ],
+        "name": "Hamilton County Clerk"
       }
     },
     {
@@ -67,8 +34,10 @@
       "name": "Congressional District 5",
       "type": "congressional",
       "contact_information": {
-        "address_line": ["1234 Somerville Gateway", "Medford, Ozark 999999"],
-        "name": "Medford Town Hall",
+        "address_line": [
+          "1234 Somerville Gateway",
+          "Medford, Ozark 999999"
+        ],
         "email": [
           {
             "annotation": "inquiries",
@@ -80,7 +49,8 @@
             "annotation": "domestic",
             "value": "123-456-7890"
           }
-        ]
+        ],
+        "name": "Medford Town Hall"
       }
     },
     {
@@ -88,8 +58,10 @@
       "name": "Congressional District 7",
       "type": "congressional",
       "contact_information": {
-        "address_line": ["1234 Somerville Gateway", "Arlington, Ozark 999999"],
-        "name": "Arlington Town Hall",
+        "address_line": [
+          "1234 Somerville Gateway",
+          "Arlington, Ozark 999999"
+        ],
         "email": [
           {
             "annotation": "inquiries",
@@ -101,7 +73,8 @@
             "annotation": "domestic",
             "value": "123-456-7890"
           }
-        ]
+        ],
+        "name": "Arlington Town Hall"
       }
     },
     {
@@ -109,8 +82,10 @@
       "name": "LaCroix Township Precinct 1",
       "type": "precinct",
       "contact_information": {
-        "address_line": ["1234 Thorton Drive", "LaCroix, Ozark 99999"],
-        "name": "LaCroix Town Hall",
+        "address_line": [
+          "1234 Thorton Drive",
+          "LaCroix, Ozark 99999"
+        ],
         "email": [
           {
             "annotation": "inquiries",
@@ -122,7 +97,8 @@
             "annotation": "domestic",
             "value": "123-456-7890"
           }
-        ]
+        ],
+        "name": "LaCroix Town Hall"
       }
     },
     {
@@ -130,8 +106,10 @@
       "name": "Exeter Utility District",
       "type": "utility",
       "contact_information": {
-        "address_line": ["1234 Watt Drive", "LaCroix, Ozark 99999"],
-        "name": "Exeter Utility District coordinator",
+        "address_line": [
+          "1234 Watt Drive",
+          "LaCroix, Ozark 99999"
+        ],
         "email": [
           {
             "annotation": "inquiries",
@@ -143,7 +121,8 @@
             "annotation": "domestic",
             "value": "123-456-7890"
           }
-        ]
+        ],
+        "name": "Exeter Utility District coordinator"
       }
     },
     {
@@ -151,8 +130,10 @@
       "name": "Arlington Township Precinct 1",
       "type": "precinct",
       "contact_information": {
-        "address_line": ["1234 Pahk Avenue", "Arlinton, Ozark 99999"],
-        "name": "Arlington Town Hall",
+        "address_line": [
+          "1234 Pahk Avenue",
+          "Arlinton, Ozark 99999"
+        ],
         "email": [
           {
             "annotation": "inquiries",
@@ -164,7 +145,8 @@
             "annotation": "domestic",
             "value": "123-456-7890"
           }
-        ]
+        ],
+        "name": "Arlington Town Hall"
       }
     },
     {
@@ -176,7 +158,6 @@
           "1234 Pismo Beach Elementary",
           "Arlington, Ozark 99999"
         ],
-        "name": "Pismo Beah Elementary",
         "email": [
           {
             "annotation": "inquiries",
@@ -188,7 +169,8 @@
             "annotation": "domestic",
             "value": "123-456-7890"
           }
-        ]
+        ],
+        "name": "Pismo Beah Elementary"
       }
     },
     {
@@ -196,8 +178,10 @@
       "name": "Somerset School District",
       "type": "school",
       "contact_information": {
-        "address_line": ["1234 Somerset Avenue", "Arlinton, Ozark 99999"],
-        "name": "Someset Elementary",
+        "address_line": [
+          "1234 Somerset Avenue",
+          "Arlinton, Ozark 99999"
+        ],
         "email": [
           {
             "annotation": "inquiries",
@@ -209,7 +193,8 @@
             "annotation": "domestic",
             "value": "123-456-7890"
           }
-        ]
+        ],
+        "name": "Someset Elementary"
       }
     },
     {
@@ -217,8 +202,10 @@
       "name": "Harris Township",
       "type": "township",
       "contact_information": {
-        "address_line": ["1234 Pahk Avenue", "Harris, Ozark 99999"],
-        "name": "harris Town Hall",
+        "address_line": [
+          "1234 Pahk Avenue",
+          "Harris, Ozark 99999"
+        ],
         "email": [
           {
             "annotation": "inquiries",
@@ -230,16 +217,14 @@
             "annotation": "domestic",
             "value": "123-456-7890"
           }
-        ]
+        ],
+        "name": "harris Town Hall"
       }
     }
   ],
   "parties": [
     {
       "object_id": "whig",
-      "abbreviation": "WHI",
-      "color": "AAAAAA",
-      "logo_uri": "http://some/path/to/whig.svg",
       "name": {
         "text": [
           {
@@ -247,13 +232,13 @@
             "language": "en"
           }
         ]
-      }
+      },
+      "abbreviation": "WHI",
+      "color": "AAAAAA",
+      "logo_uri": "http://some/path/to/whig.svg"
     },
     {
       "object_id": "federalist",
-      "abbreviation": "FED",
-      "color": "BBBBBB",
-      "logo_uri": "http://some/path/to/federalist.svg",
       "name": {
         "text": [
           {
@@ -261,13 +246,13 @@
             "language": "en"
           }
         ]
-      }
+      },
+      "abbreviation": "FED",
+      "color": "BBBBBB",
+      "logo_uri": "http://some/path/to/federalist.svg"
     },
     {
       "object_id": "peoples",
-      "abbreviation": "PPL",
-      "color": "CCCCCC",
-      "logo_uri": "http://some/path/to/people-s.svg",
       "name": {
         "text": [
           {
@@ -275,13 +260,13 @@
             "language": "en"
           }
         ]
-      }
+      },
+      "abbreviation": "PPL",
+      "color": "CCCCCC",
+      "logo_uri": "http://some/path/to/people-s.svg"
     },
     {
       "object_id": "liberty",
-      "abbreviation": "LIB",
-      "color": "DDDDDD",
-      "logo_uri": "http://some/path/to/liberty.svg",
       "name": {
         "text": [
           {
@@ -289,13 +274,13 @@
             "language": "en"
           }
         ]
-      }
+      },
+      "abbreviation": "LIB",
+      "color": "DDDDDD",
+      "logo_uri": "http://some/path/to/liberty.svg"
     },
     {
       "object_id": "constitution",
-      "abbreviation": "CONST",
-      "color": "EEEEEE",
-      "logo_uri": "http://some/path/to/democratic-repulbican.svg",
       "name": {
         "text": [
           {
@@ -303,13 +288,13 @@
             "language": "en"
           }
         ]
-      }
+      },
+      "abbreviation": "CONST",
+      "color": "EEEEEE",
+      "logo_uri": "http://some/path/to/democratic-repulbican.svg"
     },
     {
       "object_id": "labor",
-      "abbreviation": "LBR",
-      "color": "FFFFFF",
-      "logo_uri": "http://some/path/to/laobr.svg",
       "name": {
         "text": [
           {
@@ -317,13 +302,13 @@
             "language": "en"
           }
         ]
-      }
+      },
+      "abbreviation": "LBR",
+      "color": "FFFFFF",
+      "logo_uri": "http://some/path/to/laobr.svg"
     },
     {
       "object_id": "independent",
-      "abbreviation": "IND",
-      "color": "000000",
-      "logo_uri": "http://some/path/to/independent.svg",
       "name": {
         "text": [
           {
@@ -331,7 +316,10 @@
             "language": "en"
           }
         ]
-      }
+      },
+      "abbreviation": "IND",
+      "color": "000000",
+      "logo_uri": "http://some/path/to/independent.svg"
     }
   ],
   "candidates": [
@@ -345,7 +333,9 @@
           }
         ]
       },
-      "party_id": "whig"
+      "party_id": "whig",
+      "image_uri": null,
+      "is_write_in": null
     },
     {
       "object_id": "cramer-vuocolo",
@@ -357,7 +347,9 @@
           }
         ]
       },
-      "party_id": "federalist"
+      "party_id": "federalist",
+      "image_uri": null,
+      "is_write_in": null
     },
     {
       "object_id": "court-blumhardt",
@@ -369,7 +361,9 @@
           }
         ]
       },
-      "party_id": "peoples"
+      "party_id": "peoples",
+      "image_uri": null,
+      "is_write_in": null
     },
     {
       "object_id": "boone-lian",
@@ -381,7 +375,9 @@
           }
         ]
       },
-      "party_id": "liberty"
+      "party_id": "liberty",
+      "image_uri": null,
+      "is_write_in": null
     },
     {
       "object_id": "hildebrand-garritty",
@@ -393,7 +389,9 @@
           }
         ]
       },
-      "party_id": "constitution"
+      "party_id": "constitution",
+      "image_uri": null,
+      "is_write_in": null
     },
     {
       "object_id": "patterson-lariviere",
@@ -405,7 +403,9 @@
           }
         ]
       },
-      "party_id": "labor"
+      "party_id": "labor",
+      "image_uri": null,
+      "is_write_in": null
     },
     {
       "object_id": "franz",
@@ -417,7 +417,9 @@
           }
         ]
       },
-      "party_id": "federalist"
+      "party_id": "federalist",
+      "image_uri": null,
+      "is_write_in": null
     },
     {
       "object_id": "harris",
@@ -429,7 +431,9 @@
           }
         ]
       },
-      "party_id": "peoples"
+      "party_id": "peoples",
+      "image_uri": null,
+      "is_write_in": null
     },
     {
       "object_id": "bargmann",
@@ -441,7 +445,9 @@
           }
         ]
       },
-      "party_id": "constitution"
+      "party_id": "constitution",
+      "image_uri": null,
+      "is_write_in": null
     },
     {
       "object_id": "abcock",
@@ -453,7 +459,9 @@
           }
         ]
       },
-      "party_id": "liberty"
+      "party_id": "liberty",
+      "image_uri": null,
+      "is_write_in": null
     },
     {
       "object_id": "steel-loy",
@@ -465,7 +473,9 @@
           }
         ]
       },
-      "party_id": "labor"
+      "party_id": "labor",
+      "image_uri": null,
+      "is_write_in": null
     },
     {
       "object_id": "sharp",
@@ -477,7 +487,9 @@
           }
         ]
       },
-      "party_id": "constitution"
+      "party_id": "constitution",
+      "image_uri": null,
+      "is_write_in": null
     },
     {
       "object_id": "wallace",
@@ -489,7 +501,9 @@
           }
         ]
       },
-      "party_id": "independent"
+      "party_id": "independent",
+      "image_uri": null,
+      "is_write_in": null
     },
     {
       "object_id": "williams",
@@ -501,7 +515,9 @@
           }
         ]
       },
-      "party_id": "peoples"
+      "party_id": "peoples",
+      "image_uri": null,
+      "is_write_in": null
     },
     {
       "object_id": "sharp-althea",
@@ -513,7 +529,9 @@
           }
         ]
       },
-      "party_id": "whig"
+      "party_id": "whig",
+      "image_uri": null,
+      "is_write_in": null
     },
     {
       "object_id": "alpern",
@@ -525,7 +543,9 @@
           }
         ]
       },
-      "party_id": "federalist"
+      "party_id": "federalist",
+      "image_uri": null,
+      "is_write_in": null
     },
     {
       "object_id": "windbeck",
@@ -537,7 +557,9 @@
           }
         ]
       },
-      "party_id": "peoples"
+      "party_id": "peoples",
+      "image_uri": null,
+      "is_write_in": null
     },
     {
       "object_id": "greher",
@@ -549,7 +571,9 @@
           }
         ]
       },
-      "party_id": "constitution"
+      "party_id": "constitution",
+      "image_uri": null,
+      "is_write_in": null
     },
     {
       "object_id": "alexander",
@@ -561,7 +585,9 @@
           }
         ]
       },
-      "party_id": "whig"
+      "party_id": "whig",
+      "image_uri": null,
+      "is_write_in": null
     },
     {
       "object_id": "mitchell",
@@ -573,7 +599,9 @@
           }
         ]
       },
-      "party_id": "federalist"
+      "party_id": "federalist",
+      "image_uri": null,
+      "is_write_in": null
     },
     {
       "object_id": "lee",
@@ -585,7 +613,9 @@
           }
         ]
       },
-      "party_id": "independent"
+      "party_id": "independent",
+      "image_uri": null,
+      "is_write_in": null
     },
     {
       "object_id": "ash",
@@ -597,7 +627,9 @@
           }
         ]
       },
-      "party_id": "liberty"
+      "party_id": "liberty",
+      "image_uri": null,
+      "is_write_in": null
     },
     {
       "object_id": "kennedy",
@@ -609,7 +641,9 @@
           }
         ]
       },
-      "party_id": "independent"
+      "party_id": "independent",
+      "image_uri": null,
+      "is_write_in": null
     },
     {
       "object_id": "jackson",
@@ -621,7 +655,9 @@
           }
         ]
       },
-      "party_id": "labor"
+      "party_id": "labor",
+      "image_uri": null,
+      "is_write_in": null
     },
     {
       "object_id": "brown",
@@ -633,7 +669,9 @@
           }
         ]
       },
-      "party_id": "peoples"
+      "party_id": "peoples",
+      "image_uri": null,
+      "is_write_in": null
     },
     {
       "object_id": "teller",
@@ -645,7 +683,9 @@
           }
         ]
       },
-      "party_id": "peoples"
+      "party_id": "peoples",
+      "image_uri": null,
+      "is_write_in": null
     },
     {
       "object_id": "ward",
@@ -657,7 +697,9 @@
           }
         ]
       },
-      "party_id": "independent"
+      "party_id": "independent",
+      "image_uri": null,
+      "is_write_in": null
     },
     {
       "object_id": "murphy",
@@ -669,7 +711,9 @@
           }
         ]
       },
-      "party_id": "federalist"
+      "party_id": "federalist",
+      "image_uri": null,
+      "is_write_in": null
     },
     {
       "object_id": "newman",
@@ -681,7 +725,9 @@
           }
         ]
       },
-      "party_id": "whig"
+      "party_id": "whig",
+      "image_uri": null,
+      "is_write_in": null
     },
     {
       "object_id": "callanann",
@@ -693,7 +739,9 @@
           }
         ]
       },
-      "party_id": "labor"
+      "party_id": "labor",
+      "image_uri": null,
+      "is_write_in": null
     },
     {
       "object_id": "york",
@@ -705,7 +753,9 @@
           }
         ]
       },
-      "party_id": "labor"
+      "party_id": "labor",
+      "image_uri": null,
+      "is_write_in": null
     },
     {
       "object_id": "chandler",
@@ -717,7 +767,9 @@
           }
         ]
       },
-      "party_id": "labor"
+      "party_id": "labor",
+      "image_uri": null,
+      "is_write_in": null
     },
     {
       "object_id": "solis",
@@ -729,7 +781,9 @@
           }
         ]
       },
-      "party_id": "labor"
+      "party_id": "labor",
+      "image_uri": null,
+      "is_write_in": null
     },
     {
       "object_id": "keller",
@@ -741,7 +795,9 @@
           }
         ]
       },
-      "party_id": "constitution"
+      "party_id": "constitution",
+      "image_uri": null,
+      "is_write_in": null
     },
     {
       "object_id": "rangel",
@@ -753,7 +809,9 @@
           }
         ]
       },
-      "party_id": "peoples"
+      "party_id": "peoples",
+      "image_uri": null,
+      "is_write_in": null
     },
     {
       "object_id": "argent",
@@ -765,7 +823,9 @@
           }
         ]
       },
-      "party_id": "liberty"
+      "party_id": "liberty",
+      "image_uri": null,
+      "is_write_in": null
     },
     {
       "object_id": "witherspoon-smithson",
@@ -777,7 +837,9 @@
           }
         ]
       },
-      "party_id": "independent"
+      "party_id": "independent",
+      "image_uri": null,
+      "is_write_in": null
     },
     {
       "object_id": "bainbridge",
@@ -789,7 +851,9 @@
           }
         ]
       },
-      "party_id": "peoples"
+      "party_id": "peoples",
+      "image_uri": null,
+      "is_write_in": null
     },
     {
       "object_id": "hennessey",
@@ -801,7 +865,9 @@
           }
         ]
       },
-      "party_id": "whig"
+      "party_id": "whig",
+      "image_uri": null,
+      "is_write_in": null
     },
     {
       "object_id": "savoy",
@@ -813,7 +879,9 @@
           }
         ]
       },
-      "party_id": "labor"
+      "party_id": "labor",
+      "image_uri": null,
+      "is_write_in": null
     },
     {
       "object_id": "tawa",
@@ -825,7 +893,9 @@
           }
         ]
       },
-      "party_id": "constitution"
+      "party_id": "constitution",
+      "image_uri": null,
+      "is_write_in": null
     },
     {
       "object_id": "tawa-mary",
@@ -837,7 +907,9 @@
           }
         ]
       },
-      "party_id": "independent"
+      "party_id": "independent",
+      "image_uri": null,
+      "is_write_in": null
     },
     {
       "object_id": "altman",
@@ -849,7 +921,9 @@
           }
         ]
       },
-      "party_id": "peoples"
+      "party_id": "peoples",
+      "image_uri": null,
+      "is_write_in": null
     },
     {
       "object_id": "moore",
@@ -860,7 +934,10 @@
             "language": "en"
           }
         ]
-      }
+      },
+      "party_id": null,
+      "image_uri": null,
+      "is_write_in": null
     },
     {
       "object_id": "white",
@@ -871,7 +948,10 @@
             "language": "en"
           }
         ]
-      }
+      },
+      "party_id": null,
+      "image_uri": null,
+      "is_write_in": null
     },
     {
       "object_id": "smallberries",
@@ -882,7 +962,10 @@
             "language": "en"
           }
         ]
-      }
+      },
+      "party_id": null,
+      "image_uri": null,
+      "is_write_in": null
     },
     {
       "object_id": "warfin",
@@ -893,7 +976,10 @@
             "language": "en"
           }
         ]
-      }
+      },
+      "party_id": null,
+      "image_uri": null,
+      "is_write_in": null
     },
     {
       "object_id": "norberg",
@@ -904,7 +990,10 @@
             "language": "en"
           }
         ]
-      }
+      },
+      "party_id": null,
+      "image_uri": null,
+      "is_write_in": null
     },
     {
       "object_id": "parks",
@@ -915,7 +1004,10 @@
             "language": "en"
           }
         ]
-      }
+      },
+      "party_id": null,
+      "image_uri": null,
+      "is_write_in": null
     },
     {
       "object_id": "savannah",
@@ -926,7 +1018,10 @@
             "language": "en"
           }
         ]
-      }
+      },
+      "party_id": null,
+      "image_uri": null,
+      "is_write_in": null
     },
     {
       "object_id": "summers",
@@ -937,7 +1032,10 @@
             "language": "en"
           }
         ]
-      }
+      },
+      "party_id": null,
+      "image_uri": null,
+      "is_write_in": null
     },
     {
       "object_id": "chase",
@@ -948,7 +1046,10 @@
             "language": "en"
           }
         ]
-      }
+      },
+      "party_id": null,
+      "image_uri": null,
+      "is_write_in": null
     },
     {
       "object_id": "osborne",
@@ -959,7 +1060,10 @@
             "language": "en"
           }
         ]
-      }
+      },
+      "party_id": null,
+      "image_uri": null,
+      "is_write_in": null
     },
     {
       "object_id": "rosenberg",
@@ -970,7 +1074,10 @@
             "language": "en"
           }
         ]
-      }
+      },
+      "party_id": null,
+      "image_uri": null,
+      "is_write_in": null
     },
     {
       "object_id": "head",
@@ -981,7 +1088,10 @@
             "language": "en"
           }
         ]
-      }
+      },
+      "party_id": null,
+      "image_uri": null,
+      "is_write_in": null
     },
     {
       "object_id": "marsters",
@@ -992,7 +1102,64 @@
             "language": "en"
           }
         ]
-      }
+      },
+      "party_id": null,
+      "image_uri": null,
+      "is_write_in": null
+    },
+    {
+      "object_id": "write-in-1",
+      "name": {
+        "text": [
+          {
+            "value": "Write In Candidate",
+            "language": "en"
+          },
+          {
+            "value": "Escribir en la candidata",
+            "language": "es"
+          }
+        ]
+      },
+      "party_id": null,
+      "image_uri": null,
+      "is_write_in": true
+    },
+    {
+      "object_id": "write-in-2",
+      "name": {
+        "text": [
+          {
+            "value": "Write In Candidate",
+            "language": "en"
+          },
+          {
+            "value": "Escribir en la candidata",
+            "language": "es"
+          }
+        ]
+      },
+      "party_id": null,
+      "image_uri": null,
+      "is_write_in": true
+    },
+    {
+      "object_id": "write-in-3",
+      "name": {
+        "text": [
+          {
+            "value": "Write In Candidate",
+            "language": "en"
+          },
+          {
+            "value": "Escribir en la candidata",
+            "language": "es"
+          }
+        ]
+      },
+      "party_id": null,
+      "image_uri": null,
+      "is_write_in": true
     },
     {
       "object_id": "ozark-chief-justice-retain-demergue-affirmative",
@@ -1007,7 +1174,10 @@
             "language": "es"
           }
         ]
-      }
+      },
+      "party_id": null,
+      "image_uri": null,
+      "is_write_in": null
     },
     {
       "object_id": "ozark-chief-justice-retain-demergue-negative",
@@ -1022,7 +1192,10 @@
             "language": "es"
           }
         ]
-      }
+      },
+      "party_id": null,
+      "image_uri": null,
+      "is_write_in": null
     },
     {
       "object_id": "exeter-utility-district-referendum-affirmative",
@@ -1033,7 +1206,10 @@
             "language": "en"
           }
         ]
-      }
+      },
+      "party_id": null,
+      "image_uri": null,
+      "is_write_in": null
     },
     {
       "object_id": "exeter-utility-district-referendum-negative",
@@ -1044,42 +1220,21 @@
             "language": "en"
           }
         ]
-      }
+      },
+      "party_id": null,
+      "image_uri": null,
+      "is_write_in": null
     }
   ],
   "contests": [
     {
       "object_id": "president-vice-president-contest",
-      "vote_variation": "one_of_m",
+      "sequence_order": 0,
       "electoral_district_id": "hamilton-county",
-      "name": "President and Vice President of the United States",
+      "vote_variation": "one_of_m",
       "number_elected": 1,
       "votes_allowed": 1,
-      "sequence_order": 0,
-      "ballot_title": {
-        "text": [
-          {
-            "value": "President and Vice President of the United States",
-            "language": "en"
-          },
-          {
-            "value": "Presidente y Vicepresidente de los Estados Unidos",
-            "language": "es"
-          }
-        ]
-      },
-      "ballot_subtitle": {
-        "text": [
-          {
-            "value": "Vote for one",
-            "language": "en"
-          },
-          {
-            "value": "Votar por uno",
-            "language": "es"
-          }
-        ]
-      },
+      "name": "President and Vice President of the United States",
       "ballot_selections": [
         {
           "object_id": "barchi-hallaren-selection",
@@ -1116,24 +1271,15 @@
           "sequence_order": 6,
           "candidate_id": "write-in"
         }
-      ]
-    },
-    {
-      "object_id": "ozark-governor",
-      "vote_variation": "one_of_m",
-      "electoral_district_id": "hamilton-county",
-      "name": "Governor of the Commonwealth of Ozark",
-      "number_elected": 1,
-      "votes_allowed": 1,
-      "sequence_order": 1,
+      ],
       "ballot_title": {
         "text": [
           {
-            "value": "Governor of the Commonwealth of Ozark",
+            "value": "President and Vice President of the United States",
             "language": "en"
           },
           {
-            "value": "Gobernador de la Mancomunidad de Ozark",
+            "value": "Presidente y Vicepresidente de los Estados Unidos",
             "language": "es"
           }
         ]
@@ -1149,7 +1295,16 @@
             "language": "es"
           }
         ]
-      },
+      }
+    },
+    {
+      "object_id": "ozark-governor",
+      "sequence_order": 1,
+      "electoral_district_id": "hamilton-county",
+      "vote_variation": "one_of_m",
+      "number_elected": 1,
+      "votes_allowed": 1,
+      "name": "Governor of the Commonwealth of Ozark",
       "ballot_selections": [
         {
           "object_id": "franz-selection",
@@ -1286,24 +1441,15 @@
           "sequence_order": 27,
           "candidate_id": "write-in"
         }
-      ]
-    },
-    {
-      "object_id": "congress-district-5-contest",
-      "vote_variation": "one_of_m",
-      "electoral_district_id": "congress-district-5",
-      "name": "Congressional District 5",
-      "number_elected": 1,
-      "votes_allowed": 1,
-      "sequence_order": 2,
+      ],
       "ballot_title": {
         "text": [
           {
-            "value": "House of Representatives Congressional District 5",
+            "value": "Governor of the Commonwealth of Ozark",
             "language": "en"
           },
           {
-            "value": "Cámara de Representantes de Distrito 5 del Congreso de Ozark",
+            "value": "Gobernador de la Mancomunidad de Ozark",
             "language": "es"
           }
         ]
@@ -1319,7 +1465,16 @@
             "language": "es"
           }
         ]
-      },
+      }
+    },
+    {
+      "object_id": "congress-district-5-contest",
+      "sequence_order": 2,
+      "electoral_district_id": "congress-district-5",
+      "vote_variation": "one_of_m",
+      "number_elected": 1,
+      "votes_allowed": 1,
+      "name": "Congressional District 5",
       "ballot_selections": [
         {
           "object_id": "soliz-selection",
@@ -1351,24 +1506,15 @@
           "sequence_order": 5,
           "candidate_id": "write-in"
         }
-      ]
-    },
-    {
-      "object_id": "congress-district-7-contest",
-      "vote_variation": "one_of_m",
-      "electoral_district_id": "congress-district-7",
-      "name": "Congressional District 7",
-      "number_elected": 1,
-      "votes_allowed": 1,
-      "sequence_order": 3,
+      ],
       "ballot_title": {
         "text": [
           {
-            "value": "House of Representatives Ozark Congressional District 7",
+            "value": "House of Representatives Congressional District 5",
             "language": "en"
           },
           {
-            "value": "Cámara de Representantes de Distrito 7 del Congreso de Ozark",
+            "value": "C\u00e1mara de Representantes de Distrito 5 del Congreso de Ozark",
             "language": "es"
           }
         ]
@@ -1384,7 +1530,16 @@
             "language": "es"
           }
         ]
-      },
+      }
+    },
+    {
+      "object_id": "congress-district-7-contest",
+      "sequence_order": 3,
+      "electoral_district_id": "congress-district-7",
+      "vote_variation": "one_of_m",
+      "number_elected": 1,
+      "votes_allowed": 1,
+      "name": "Congressional District 7",
       "ballot_selections": [
         {
           "object_id": "bainbridge-selection",
@@ -1416,24 +1571,15 @@
           "sequence_order": 5,
           "candidate_id": "write-in"
         }
-      ]
-    },
-    {
-      "object_id": "pismo-beach-school-board-contest",
-      "vote_variation": "n_of_m",
-      "electoral_district_id": "pismo-beach-school-district-precinct-1",
-      "name": "Pismo Beach School Board",
-      "number_elected": 3,
-      "votes_allowed": 3,
-      "sequence_order": 4,
+      ],
       "ballot_title": {
         "text": [
           {
-            "value": "Pismo Beach School Board",
+            "value": "House of Representatives Ozark Congressional District 7",
             "language": "en"
           },
           {
-            "value": "Junta Escolar de Pismo Beach",
+            "value": "C\u00e1mara de Representantes de Distrito 7 del Congreso de Ozark",
             "language": "es"
           }
         ]
@@ -1441,15 +1587,24 @@
       "ballot_subtitle": {
         "text": [
           {
-            "value": "Vote for up to 3",
+            "value": "Vote for one",
             "language": "en"
           },
           {
-            "value": "Vote por hasta 3",
+            "value": "Votar por uno",
             "language": "es"
           }
         ]
-      },
+      }
+    },
+    {
+      "object_id": "pismo-beach-school-board-contest",
+      "sequence_order": 4,
+      "electoral_district_id": "pismo-beach-school-district-precinct-1",
+      "vote_variation": "n_of_m",
+      "number_elected": 3,
+      "votes_allowed": 3,
+      "name": "Pismo Beach School Board",
       "ballot_selections": [
         {
           "object_id": "moore-selection",
@@ -1501,16 +1656,7 @@
           "sequence_order": 9,
           "candidate_id": "write-in-3"
         }
-      ]
-    },
-    {
-      "object_id": "somerset-school-board-contest",
-      "vote_variation": "n_of_m",
-      "electoral_district_id": "somerset-school-district-precinct-1",
-      "name": "Somerset School Board",
-      "number_elected": 2,
-      "votes_allowed": 2,
-      "sequence_order": 5,
+      ],
       "ballot_title": {
         "text": [
           {
@@ -1518,7 +1664,7 @@
             "language": "en"
           },
           {
-            "value": "Junta Escolar de Somerset",
+            "value": "Junta Escolar de Pismo Beach",
             "language": "es"
           }
         ]
@@ -1526,15 +1672,24 @@
       "ballot_subtitle": {
         "text": [
           {
-            "value": "Vote for up to 2",
+            "value": "Vote for up to 3",
             "language": "en"
           },
           {
-            "value": "Vote por hasta 2",
+            "value": "Vote por hasta 3",
             "language": "es"
           }
         ]
-      },
+      }
+    },
+    {
+      "object_id": "somerset-school-board-contest",
+      "sequence_order": 5,
+      "electoral_district_id": "somerset-school-district-precinct-1",
+      "vote_variation": "n_of_m",
+      "number_elected": 2,
+      "votes_allowed": 2,
+      "name": "Somerset School Board",
       "ballot_selections": [
         {
           "object_id": "summers-selection",
@@ -1576,16 +1731,52 @@
           "sequence_order": 7,
           "candidate_id": "write-in-2"
         }
-      ]
+      ],
+      "ballot_title": {
+        "text": [
+          {
+            "value": "Pismo Beach School Board",
+            "language": "en"
+          },
+          {
+            "value": "Junta Escolar de Somerset",
+            "language": "es"
+          }
+        ]
+      },
+      "ballot_subtitle": {
+        "text": [
+          {
+            "value": "Vote for up to 2",
+            "language": "en"
+          },
+          {
+            "value": "Vote por hasta 2",
+            "language": "es"
+          }
+        ]
+      }
     },
     {
       "object_id": "arlington-chief-justice-retain-demergue",
       "sequence_order": 6,
-      "vote_variation": "one_of_m",
       "electoral_district_id": "arlington-township-precinct-1",
-      "name": "Retain Robert Demergue as Chief Justice?",
+      "vote_variation": "one_of_m",
       "number_elected": 1,
       "votes_allowed": 1,
+      "name": "Retain Robert Demergue as Chief Justice?",
+      "ballot_selections": [
+        {
+          "object_id": "ozark-chief-justice-retain-demergue-affirmative-selection",
+          "sequence_order": 0,
+          "candidate_id": "ozark-chief-justice-retain-demergue-affirmative"
+        },
+        {
+          "object_id": "ozark-chief-justice-retain-demergue-negative-selection",
+          "sequence_order": 1,
+          "candidate_id": "ozark-chief-justice-retain-demergue-negative"
+        }
+      ],
       "ballot_title": {
         "text": [
           {
@@ -1593,7 +1784,7 @@
             "language": "en"
           },
           {
-            "value": "¿Retener a Robert Demergue como Presidente del Tribunal Supremo?",
+            "value": "\u00bfRetener a Robert Demergue como Presidente del Tribunal Supremo?",
             "language": "es"
           }
         ]
@@ -1609,28 +1800,16 @@
             "language": "es"
           }
         ]
-      },
-      "ballot_selections": [
-        {
-          "object_id": "ozark-chief-justice-retain-demergue-affirmative-selection",
-          "sequence_order": 0,
-          "candidate_id": "ozark-chief-justice-retain-demergue-affirmative"
-        },
-        {
-          "object_id": "ozark-chief-justice-retain-demergue-negative-selection",
-          "sequence_order": 1,
-          "candidate_id": "ozark-chief-justice-retain-demergue-negative"
-        }
-      ]
+      }
     },
     {
       "object_id": "exeter-utility-district-referendum-contest",
       "sequence_order": 7,
-      "vote_variation": "one_of_m",
       "electoral_district_id": "lacroix-exeter-utility-district",
-      "name": "Capital Projects Levy",
+      "vote_variation": "one_of_m",
       "number_elected": 1,
       "votes_allowed": 1,
+      "name": "Capital Projects Levy",
       "ballot_selections": [
         {
           "object_id": "exeter-utility-district-referendum-affirmative-selection",
@@ -1650,7 +1829,7 @@
             "language": "en"
           },
           {
-            "value": "Levy Lift para Mantener la Seguridad Pública y Otros Servicios Básicos",
+            "value": "Levy Lift para Mantener la Seguridad P\u00fablica y Otros Servicios B\u00e1sicos",
             "language": "es"
           }
         ]
@@ -1672,7 +1851,12 @@
   "ballot_styles": [
     {
       "object_id": "congress-district-7-hamilton-county",
-      "geopolitical_unit_ids": ["hamilton-county", "congress-district-7"]
+      "geopolitical_unit_ids": [
+        "hamilton-county",
+        "congress-district-7"
+      ],
+      "party_ids": null,
+      "image_uri": null
     },
     {
       "object_id": "congress-district-7-lacroix",
@@ -1680,7 +1864,9 @@
         "hamilton-county",
         "congress-district-7",
         "lacroix-township-precinct-1"
-      ]
+      ],
+      "party_ids": null,
+      "image_uri": null
     },
     {
       "object_id": "congress-district-7-lacroix-exeter",
@@ -1689,7 +1875,9 @@
         "congress-district-7",
         "lacroix-township-precinct-1",
         "lacroix-exeter-utility-district"
-      ]
+      ],
+      "party_ids": null,
+      "image_uri": null
     },
     {
       "object_id": "congress-district-7-arlington",
@@ -1697,7 +1885,9 @@
         "hamilton-county",
         "congress-district-7",
         "arlington-township-precinct-1"
-      ]
+      ],
+      "party_ids": null,
+      "image_uri": null
     },
     {
       "object_id": "congress-district-7-arlington-pismo-beach",
@@ -1706,7 +1896,9 @@
         "congress-district-7",
         "arlington-township-precinct-1",
         "pismo-beach-school-district-precinct-1"
-      ]
+      ],
+      "party_ids": null,
+      "image_uri": null
     },
     {
       "object_id": "congress-district-7-arlington-somerset",
@@ -1715,11 +1907,18 @@
         "congress-district-7",
         "arlington-township-precinct-1",
         "somerset-school-district-precinct-1"
-      ]
+      ],
+      "party_ids": null,
+      "image_uri": null
     },
     {
       "object_id": "congress-district-5-hamilton-county",
-      "geopolitical_unit_ids": ["hamilton-county", "congress-district-5"]
+      "geopolitical_unit_ids": [
+        "hamilton-county",
+        "congress-district-5"
+      ],
+      "party_ids": null,
+      "image_uri": null
     },
     {
       "object_id": "congress-district-5-lacroix",
@@ -1727,7 +1926,9 @@
         "hamilton-county",
         "congress-district-5",
         "lacroix-township-precinct-1"
-      ]
+      ],
+      "party_ids": null,
+      "image_uri": null
     },
     {
       "object_id": "congress-district-5-harris",
@@ -1735,7 +1936,9 @@
         "hamilton-county",
         "congress-district-5",
         "harris-township"
-      ]
+      ],
+      "party_ids": null,
+      "image_uri": null
     },
     {
       "object_id": "congress-district-5-arlington-pismo-beach",
@@ -1744,7 +1947,9 @@
         "congress-district-5",
         "arlington-township-precinct-1",
         "pismo-beach-school-district-precinct-1"
-      ]
+      ],
+      "party_ids": null,
+      "image_uri": null
     },
     {
       "object_id": "congress-district-5-arlington-somerset",
@@ -1753,7 +1958,48 @@
         "congress-district-5",
         "arlington-township-precinct-1",
         "somerset-school-district-precinct-1"
-      ]
+      ],
+      "party_ids": null,
+      "image_uri": null
     }
-  ]
+  ],
+  "name": {
+    "text": [
+      {
+        "value": "Hamiltion County General Election",
+        "language": "en"
+      },
+      {
+        "value": "Elecci\u00f3n general del condado de Hamilton",
+        "language": "es"
+      }
+    ]
+  },
+  "contact_information": {
+    "address_line": [
+      "1234 Paul Revere Run",
+      "Hamilton, Ozark 99999"
+    ],
+    "email": [
+      {
+        "annotation": "press",
+        "value": "inquiries@hamilton.state.gov"
+      },
+      {
+        "annotation": "federal",
+        "value": "commissioner@hamilton.state.gov"
+      }
+    ],
+    "phone": [
+      {
+        "annotation": "domestic",
+        "value": "123-456-7890"
+      },
+      {
+        "annotation": "international",
+        "value": "+1-123-456-7890"
+      }
+    ],
+    "name": "Hamilton State Election Commission"
+  }
 }

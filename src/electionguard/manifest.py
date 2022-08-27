@@ -6,7 +6,7 @@ from typing import Dict, cast, List, Optional, Set, Any
 from .election_object_base import ElectionObjectBase, OrderedObjectBase, list_eq
 from .group import ElementModQ
 from .hash import CryptoHashable, hash_elems
-from .logs import log_warning, log_debug
+from .logs import log_warning
 from .utils import get_optional, to_iso_date_string
 
 
@@ -121,7 +121,6 @@ class AnnotatedString(CryptoHashable):
         A hash representation of the object
         """
         hash = hash_elems(self.annotation, self.value)
-        log_debug(f"{self.__class__} : crypto_hash: {hash.to_hex()}")
         return hash
 
 
@@ -151,7 +150,6 @@ class Language(CryptoHashable):
         A hash representation of the object
         """
         hash = hash_elems(self.value, self.language)
-        log_debug(f"{self.__class__} : crypto_hash: {hash.to_hex()}")
         return hash
 
 
@@ -178,7 +176,6 @@ class InternationalizedText(CryptoHashable):
         A hash representation of the object
         """
         hash = hash_elems(self.text)
-        log_debug(f"{self.__class__} : crypto_hash: {hash.to_hex()}")
         return hash
 
 
@@ -214,7 +211,6 @@ class ContactInformation(CryptoHashable):
         A hash representation of the object
         """
         hash = hash_elems(self.name, self.address_line, self.email, self.phone)
-        log_debug(f"{self.__class__} : crypto_hash: {hash.to_hex()}")
         return hash
 
 
@@ -237,7 +233,6 @@ class GeopoliticalUnit(ElectionObjectBase, CryptoHashable):
         hash = hash_elems(
             self.object_id, self.name, str(self.type.name), self.contact_information
         )
-        log_debug(f"{self.__class__} : crypto_hash: {hash.to_hex()}")
         return hash
 
 
@@ -258,7 +253,6 @@ class BallotStyle(ElectionObjectBase, CryptoHashable):
         hash = hash_elems(
             self.object_id, self.geopolitical_unit_ids, self.party_ids, self.image_uri
         )
-        log_debug(f"{self.__class__} : crypto_hash: {hash.to_hex()}")
         return hash
 
 
@@ -291,7 +285,6 @@ class Party(ElectionObjectBase, CryptoHashable):
             self.color,
             self.logo_uri,
         )
-        log_debug(f"{self.__class__} : crypto_hash: {hash.to_hex()}")
         return hash
 
 
@@ -323,7 +316,6 @@ class Candidate(ElectionObjectBase, CryptoHashable):
         A hash representation of the object
         """
         hash = hash_elems(self.object_id, self.name, self.party_id, self.image_uri)
-        log_debug(f"{self.__class__} : crypto_hash: {hash.to_hex()}")
         return hash
 
 
@@ -349,7 +341,6 @@ class SelectionDescription(OrderedObjectBase, CryptoHashable):
         A hash representation of the object
         """
         hash = hash_elems(self.object_id, self.sequence_order, self.candidate_id)
-        log_debug(f"{self.__class__} : crypto_hash: {hash.to_hex()}")
         return hash
 
 
@@ -426,7 +417,6 @@ class ContestDescription(OrderedObjectBase, CryptoHashable):
             self.votes_allowed,
             self.ballot_selections,
         )
-        log_debug(f"{self.__class__} : crypto_hash: {hash.to_hex()}")
         return hash
 
     def is_valid(self) -> bool:
@@ -674,7 +664,6 @@ class Manifest(CryptoHashable):
             self.contests,
             self.ballot_styles,
         )
-        log_debug(f"{self.__class__} : crypto_hash: {hash.to_hex()}")
         return hash
 
     def is_valid(self) -> bool:
@@ -822,10 +811,7 @@ class Manifest(CryptoHashable):
     def _get_candidate_name(self, candidate: Candidate, lang: str) -> str:
         if candidate.is_write_in:
             return "Write-In"
-        query = (t.value for t in candidate.name.text if t.language == lang)
-        name = next(query, None)
-        name = candidate.object_id if name is None else name
-        return name
+        return get_i8n_value(candidate.name, lang, candidate.object_id)
 
     def _get_candidate_names(self, lang: str) -> Dict[str, str]:
         return {
@@ -865,6 +851,12 @@ class Manifest(CryptoHashable):
         """
 
         return {contest.object_id: contest.name for contest in self.contests}
+
+    def get_name(self) -> str:
+        def get_first_value(text: Optional[InternationalizedText]) -> str:
+            return "" if text is None else text.text[0].value
+
+        return get_first_value(self.name)
 
 
 @dataclass(eq=True, unsafe_hash=True)
@@ -1030,3 +1022,9 @@ def generate_placeholder_selections_from(
             get_optional(generate_placeholder_selection_from(contest, sequence_order))
         )
     return selections
+
+
+def get_i8n_value(name: InternationalizedText, lang: str, default_val: str) -> str:
+    query = (t.value for t in name.text if t.language == lang)
+    result = next(query, "")
+    return default_val if result == "" else result

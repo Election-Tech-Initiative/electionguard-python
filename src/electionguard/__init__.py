@@ -335,6 +335,7 @@ from electionguard.manifest import (
     contest_description_with_placeholders_from,
     generate_placeholder_selection_from,
     generate_placeholder_selections_from,
+    get_i8n_value,
 )
 from electionguard.nonces import (
     Nonces,
@@ -356,6 +357,7 @@ from electionguard.serialize import (
     from_file_wrapper,
     from_list_in_file,
     from_list_in_file_wrapper,
+    from_list_raw,
     from_raw,
     get_schema,
     padded_decode,
@@ -624,6 +626,7 @@ __all__ = [
     "from_file_wrapper",
     "from_list_in_file",
     "from_list_in_file_wrapper",
+    "from_list_raw",
     "from_raw",
     "g_pow_p",
     "generate_device_uuid",
@@ -642,6 +645,7 @@ __all__ = [
     "get_generator",
     "get_hash_for_device",
     "get_hmac",
+    "get_i8n_value",
     "get_large_prime",
     "get_optional",
     "get_or_else_optional",
