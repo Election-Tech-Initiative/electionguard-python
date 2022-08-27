@@ -11,6 +11,7 @@ from ..cli_models import BuildElectionResults, CliDecryptResults
 from .cli_step_base import CliStepBase
 from print_utils import *
 
+
 class DecryptStep(CliStepBase):
     """Responsible for decrypting a tally and/or cast ballots"""
 

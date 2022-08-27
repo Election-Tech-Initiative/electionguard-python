@@ -15,6 +15,7 @@ from .e2e_inputs import E2eInputs
 from print_utils import *
 from print_utils import print_message
 
+
 class SubmitVotesStep(CliStepBase):
     """Responsible for submitting ballots into a ballot store."""
 
@@ -52,5 +53,7 @@ class SubmitVotesStep(CliStepBase):
             else:
                 submitted_ballot = ballot_box.cast(ballot)
 
-            print_message(f"Submitted Ballot Id: {ballot.object_id} state: {get_optional(submitted_ballot).state}")
+            print_message(
+                f"Submitted Ballot Id: {ballot.object_id} state: {get_optional(submitted_ballot).state}"
+            )
         return ballot_store

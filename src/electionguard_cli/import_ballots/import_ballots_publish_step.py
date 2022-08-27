@@ -49,4 +49,6 @@ class ImportBallotsPublishStep(OutputStepBase):
             )
             file_name = splitext(election_inputs.output_record)[0]
             make_archive(file_name, self._COMPRESSION_FORMAT, temp_dir)
-            print_message(f"Exported election record to '{election_inputs.output_record}'")
+            print_message(
+                f"Exported election record to '{election_inputs.output_record}'"
+            )

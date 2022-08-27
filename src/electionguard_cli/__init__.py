@@ -4,6 +4,7 @@ from electionguard_cli import e2e
 from electionguard_cli import encrypt_ballots
 from electionguard_cli import import_ballots
 from electionguard_cli import mark_ballots
+from electionguard_cli import print_utils
 from electionguard_cli import setup_election
 from electionguard_cli import start
 from electionguard_cli import submit_ballots
@@ -96,6 +97,16 @@ from electionguard_cli.mark_ballots import (
     mark_ballots_publish_step,
     mark_command,
 )
+from electionguard_cli.print_utils import (
+    VERIFICATION_URL_NAME,
+    cleanup,
+    print_error,
+    print_header,
+    print_message,
+    print_section,
+    print_value,
+    print_warning,
+)
 from electionguard_cli.setup_election import (
     OutputSetupFilesStep,
     SetupElectionBuilderStep,
@@ -173,6 +184,8 @@ __all__ = [
     "SubmitResults",
     "SubmitVotesStep",
     "TallyStep",
+    "VERIFICATION_URL_NAME",
+    "cleanup",
     "cli",
     "cli_decrypt_results",
     "cli_election_inputs_base",
@@ -214,7 +227,14 @@ __all__ = [
     "mark_results",
     "output_setup_files_step",
     "output_step_base",
+    "print_error",
+    "print_header",
+    "print_message",
     "print_results_step",
+    "print_section",
+    "print_utils",
+    "print_value",
+    "print_warning",
     "setup_election",
     "setup_election_builder_step",
     "setup_election_command",

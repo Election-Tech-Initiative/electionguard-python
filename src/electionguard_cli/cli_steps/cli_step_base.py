@@ -1,6 +1,7 @@
 from typing import Any, Optional
 import print_utils
 
+
 class CliStepBase:
     """
     Responsible for providing common functionality to the individual steps within an end-to-end election command
