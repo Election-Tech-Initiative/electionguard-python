@@ -71,7 +71,7 @@ from electionguard_gui.services.election_service import (
     ElectionService,
 )
 from electionguard_gui.services.export_service import (
-    get_drives,
+    get_removable_drives,
     get_export_locations,
 )
 from electionguard_gui.services.guardian_service import (
@@ -168,7 +168,7 @@ __all__ = [
     "election_service",
     "export_service",
     "get_data_dir",
-    "get_drives",
+    "get_removable_drives",
     "get_export_dir",
     "get_export_locations",
     "get_guardian_number",

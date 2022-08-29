@@ -2,11 +2,13 @@ import os
 from typing import Any
 from datetime import datetime
 import eel
-from electionguard.serialize import from_raw
+from electionguard.encrypt import EncryptionDevice
+from electionguard.serialize import from_file, from_raw
 from electionguard.ballot import SubmittedBallot
 from electionguard_gui.components.component_base import ComponentBase
 from electionguard_gui.eel_utils import eel_fail, eel_success
 from electionguard_gui.services import ElectionService, BallotUploadService
+from electionguard_gui.services.export_service import get_removable_drives
 
 
 class UploadBallotsComponent(ComponentBase):
@@ -27,6 +29,7 @@ class UploadBallotsComponent(ComponentBase):
         eel.expose(self.create_ballot_upload)
         eel.expose(self.upload_ballot)
         eel.expose(self.is_wizard_supported)
+        eel.expose(self.scan_drives)
 
     def create_ballot_upload(
         self,
@@ -112,3 +115,36 @@ class UploadBallotsComponent(ComponentBase):
     def is_wizard_supported(self) -> bool:
         on_windows = os.name == "nt"
         return on_windows
+
+    def scan_drives(self) -> dict[str, Any]:
+        try:
+            removable_drives = get_removable_drives()
+            self._log.debug(f"found {len(removable_drives)} removable drives")
+            candidate_drives = [
+                self.parse_drive(drive)
+                for drive in removable_drives
+                if os.path.exists(os.path.join(drive, "artifacts", "encrypted_ballots"))
+                and os.path.exists(os.path.join(drive, "artifacts", "devices"))
+            ]
+            first_candidate = next(iter(candidate_drives), None)
+            return eel_success(first_candidate)
+        # pylint: disable=broad-except
+        except Exception as e:
+            return self.handle_error(e)
+
+    def parse_drive(self, drive: str) -> dict[str, Any]:
+        ballots_dir = os.path.join(drive, "artifacts", "encrypted_ballots")
+        devices_dir = os.path.join(drive, "artifacts", "devices")
+        device_files = os.listdir(devices_dir)
+        device_file = next(iter(os.listdir(devices_dir)))
+        device_file_full = os.path.join(devices_dir, device_file)
+        if len(device_files) > 1:
+            self._log.warn("found multiple device files in drive, using " + device_file)
+        device_file_json = from_file(EncryptionDevice, device_file_full)
+        location = device_file_json.location
+        ballot_count = len(os.listdir(ballots_dir))
+        return {
+            "drive": drive,
+            "ballots": ballot_count,
+            "location": location,
+        }
