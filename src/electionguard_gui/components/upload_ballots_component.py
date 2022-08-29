@@ -1,3 +1,4 @@
+import os
 from typing import Any
 from datetime import datetime
 import eel
@@ -25,6 +26,7 @@ class UploadBallotsComponent(ComponentBase):
     def expose(self) -> None:
         eel.expose(self.create_ballot_upload)
         eel.expose(self.upload_ballot)
+        eel.expose(self.is_wizard_supported)
 
     def create_ballot_upload(
         self,
@@ -106,3 +108,7 @@ class UploadBallotsComponent(ComponentBase):
         # pylint: disable=broad-except
         except Exception as e:
             return self.handle_error(e)
+
+    def is_wizard_supported(self) -> bool:
+        on_windows = os.name == "nt"
+        return on_windows
