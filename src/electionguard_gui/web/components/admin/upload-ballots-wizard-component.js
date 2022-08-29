@@ -13,6 +13,9 @@ export default {
     uploadBallots: function () {
       console.log("Importing");
     },
+    closeWizard: function () {
+      this.$emit("close");
+    },
     getElectionUrl: function () {
       return RouterService.getElectionUrl(this.electionId);
     },
@@ -27,11 +30,26 @@ export default {
     }
   },
   template: /*html*/ `
+  <div class="row">
+    <div class="col-md-12 text-end">
+      <button type="button" class="btn btn-sm btn-default" @click="closeWizard">
+        <i class="bi bi-x-square"></i>
+      </button>
+    </div>
+  </div>
   <div class="text-center">
     <h1>Upload Wizard</h1>
     <div v-if="!drive">Insert a USB drive containing ballots</div>
     <div v-if="drive">
       <p class="mt-4">Ready to import?</p>
+      <div class="row g-1">
+        <div class="col-6 fw-bold text-end">
+          {{drive.drive}}
+        </div>
+        <div class="col-6 text-start">
+          drive
+        </div>
+      </div>
       <div class="row g-1">
         <div class="col-6 fw-bold text-end">
           {{drive.ballots}}
@@ -46,14 +64,6 @@ export default {
         </div>
         <div class="col-6 text-start">
           device
-        </div>
-      </div>
-      <div class="row g-1">
-        <div class="col-6 fw-bold text-end">
-          {{drive.drive}}
-        </div>
-        <div class="col-6 text-start">
-          drive
         </div>
       </div>
       <div class="mt-4">

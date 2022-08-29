@@ -5,6 +5,11 @@ export default {
   props: {
     electionId: String,
   },
+  methods: {
+    closeWizard: function () {
+      this.useWizard = false;
+    },
+  },
   data() {
     return {
       useWizard: null,
@@ -19,6 +24,6 @@ export default {
   },
   template: /*html*/ `
     <upload-ballots-legacy :election-id="electionId" v-if="useWizard !== null && !useWizard"></upload-ballots-legacy>
-    <upload-ballots-wizard :election-id="electionId" v-if="useWizard !== null && useWizard"></upload-ballots-wizard>
+    <upload-ballots-wizard @close="closeWizard" :election-id="electionId" v-if="useWizard !== null && useWizard"></upload-ballots-wizard>
   `,
 };
