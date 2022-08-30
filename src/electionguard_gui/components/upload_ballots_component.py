@@ -30,6 +30,7 @@ class UploadBallotsComponent(ComponentBase):
         eel.expose(self.upload_ballot)
         eel.expose(self.is_wizard_supported)
         eel.expose(self.scan_drives)
+        eel.expose(self.upload_ballots)
 
     def create_ballot_upload(
         self,
@@ -136,15 +137,74 @@ class UploadBallotsComponent(ComponentBase):
         ballots_dir = os.path.join(drive, "artifacts", "encrypted_ballots")
         devices_dir = os.path.join(drive, "artifacts", "devices")
         device_files = os.listdir(devices_dir)
-        device_file = next(iter(os.listdir(devices_dir)))
-        device_file_full = os.path.join(devices_dir, device_file)
+        device_file_name = next(iter(os.listdir(devices_dir)))
+        device_file_path = os.path.join(devices_dir, device_file_name)
         if len(device_files) > 1:
-            self._log.warn("found multiple device files in drive, using " + device_file)
-        device_file_json = from_file(EncryptionDevice, device_file_full)
+            self._log.warn(
+                "found multiple device files in drive, using " + device_file_name
+            )
+        device_file_json = from_file(EncryptionDevice, device_file_path)
         location = device_file_json.location
         ballot_count = len(os.listdir(ballots_dir))
         return {
             "drive": drive,
             "ballots": ballot_count,
             "location": location,
+            "device_file_name": device_file_name,
+            "device_file_path": device_file_path,
+            "ballots_dir": ballots_dir,
         }
+
+    def upload_ballots(self, election_id: str) -> dict[str, Any]:
+        try:
+            drive_info = self.scan_drives()
+            device_file_name = drive_info["result"]["device_file_name"]
+            device_file_path = drive_info["result"]["device_file_path"]
+            self._log.debug(
+                f"uploading ballots for {election_id} from {device_file_path} device {device_file_name}"
+            )
+            ballot_upload_result = self.create_ballot_upload_from_file(
+                election_id,
+                device_file_name,
+                device_file_path,
+            )
+            if not ballot_upload_result["success"]:
+                return ballot_upload_result
+
+            ballots_dir: str = drive_info["result"]["ballots_dir"]
+            ballot_files = os.listdir(ballots_dir)
+            ballot_upload_id: str = ballot_upload_result["result"]
+            for ballot_file in ballot_files:
+                self._log.debug("uploading ballot " + ballot_file)
+                result = self.create_ballot_from_file(
+                    election_id, ballot_file, ballot_upload_id, ballots_dir
+                )
+                if not result["success"]:
+                    return result
+            return eel_success()
+        # pylint: disable=broad-except
+        except Exception as e:
+            return self.handle_error(e)
+
+    def create_ballot_from_file(
+        self,
+        election_id: str,
+        ballot_file_name: str,
+        ballot_upload_id: str,
+        ballots_dir: str,
+    ) -> dict[str, Any]:
+        ballot_file_path = os.path.join(ballots_dir, ballot_file_name)
+        with open(ballot_file_path, "r", encoding="utf-8") as ballot_file:
+            ballot_contents = ballot_file.read()
+            return self.upload_ballot(
+                ballot_upload_id, election_id, ballot_file_name, ballot_contents
+            )
+
+    def create_ballot_upload_from_file(
+        self, election_id: str, device_file_name: str, device_file_path: str
+    ) -> dict[str, Any]:
+        with open(device_file_path, "r", encoding="utf-8") as device_file:
+            ballot_upload = self.create_ballot_upload(
+                election_id, device_file_name, device_file.read()
+            )
+            return ballot_upload
