@@ -236,14 +236,14 @@ release-notes:
 	curl "${GITHUB_API_URL}/${GITHUB_REPOSITORY}/issues?milestone=${MILESTONE_NUM}&state=all" | jq '.[].title' | while read i; do echo "[$i]($MILESTONE_URL)" >> release_notes.md; done
 
 egui:
-ifeq "${EG_DB_PASSWORD}" ""
+ifeq "pedrorangel1" ""
 	@echo "Set the EG_DB_PASSWORD environment variable"
 	exit 1
 endif
 	poetry run egui
 
 start-db:
-ifeq "${EG_DB_PASSWORD}" ""
+ifeq "pedrorangel1" ""
 	@echo "Set the EG_DB_PASSWORD environment variable"
 	exit 1
 endif
@@ -256,20 +256,7 @@ build-egui:
 	docker build -t egui -f src\electionguard_gui\Dockerfile .
 
 start-egui: build-egui
-ifeq "${EG_DB_PASSWORD}" ""
-	@echo "Set the EG_DB_PASSWORD environment variable"
-	exit 1
-endif
-	docker compose --env-file ./.env -f src/electionguard_gui/docker-compose.yml up -d
-
-stop-egui:
-	docker compose --env-file ./.env -f src/electionguard_gui/docker-compose.yml down
-
-build-egui:
-	docker build -t egui -f src\electionguard_gui\Dockerfile .
-
-start-egui: build-egui
-ifeq "${EG_DB_PASSWORD}" ""
+ifeq "pedrorangel1" ""
 	@echo "Set the EG_DB_PASSWORD environment variable"
 	exit 1
 endif
