@@ -83,6 +83,7 @@ class ElectionDto:
             ],
             "decryptions": [
                 {
+                    "decryption_id": decryption["decryption_id"],
                     "name": decryption["name"],
                     "created_at": utc_to_str(decryption.get("created_at")),
                 }
