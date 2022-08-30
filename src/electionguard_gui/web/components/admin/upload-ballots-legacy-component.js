@@ -1,11 +1,12 @@
 import RouterService from "../../services/router-service.js";
 import Spinner from "../shared/spinner-component.js";
+import UploadBallotsSuccess from "./upload-ballots-success-component.js";
 
 export default {
   props: {
     electionId: String,
   },
-  components: { Spinner },
+  components: { Spinner, UploadBallotsSuccess },
   data() {
     return {
       election: null,
@@ -140,11 +141,6 @@ export default {
           <p v-if="loading && ballotsProcessed">{{ ballotsProcessed }} of {{ ballotsTotal }} files processed.</p>
       </div>
     </form>
-    <div v-if="success" class="text-center">
-      <img src="/images/check.svg" width="200" height="200" class="mt-4 mb-2"></img>
-      <p>Successfully uploaded {{ballotsTotal-duplicateCount}} ballots.</p>
-      <a :href="getElectionUrl()" class="btn btn-primary me-2">Done Uploading</a>
-      <button type="button" @click="uploadMore()" class="btn btn-secondary">Upload More Ballots</button>
-    </div>
+    <upload-ballots-success v-if="success" :back-url="getElectionUrl()" @upload-more="uploadMore()" :ballot-count="ballotsTotal-duplicateCount"></upload-ballots-success>
   `,
 };

@@ -1,4 +1,5 @@
 import RouterService from "../../services/router-service.js";
+import UploadBallotsSuccess from "./upload-ballots-success-component.js";
 
 export default {
   props: {
@@ -8,6 +9,8 @@ export default {
     return {
       drive: null,
       success: false,
+      alert: null,
+      ballotCount: null,
     };
   },
   methods: {
@@ -18,6 +21,7 @@ export default {
         if (result.success) {
           console.log("success", result);
           this.success = true;
+          this.ballotCount = result.result;
         } else {
           this.alert = result.message;
         }
@@ -31,23 +35,32 @@ export default {
     getElectionUrl: function () {
       return RouterService.getElectionUrl(this.electionId);
     },
+    uploadMore: async function () {
+      this.success = false;
+      this.drive = null;
+      this.alert = null;
+      this.ballotCount = null;
+      await this.scanDrives();
+    },
+    scanDrives: async function () {
+      const result = await eel.scan_drives()();
+      if (!result.success) {
+        console.error(result.message);
+        // todo: show error
+      } else {
+        this.drive = result.result;
+        console.log("successfully uploaded ballots", this.drive);
+      }
+    },
   },
   async mounted() {
-    const result = await eel.scan_drives()();
-    if (!result.success) {
-      console.error(result.message);
-    } else {
-      this.drive = result.result;
-      console.log(this.drive);
-    }
+    await this.scanDrives();
+  },
+  components: {
+    UploadBallotsSuccess,
   },
   template: /*html*/ `
-  <div v-if="success" class="text-center">
-    <img src="/images/check.svg" width="200" height="200" class="mt-4 mb-2"></img>
-    <p>Successfully uploaded {{ballotsTotal-duplicateCount}} ballots.</p>
-    <a :href="getElectionUrl()" class="btn btn-primary me-2">Done Uploading</a>
-    <button type="button" @click="uploadMore()" class="btn btn-secondary">Upload More Ballots</button>
-  </div>
+  <upload-ballots-success v-if="success" :back-url="getElectionUrl()" @upload-more="uploadMore()" :ballot-count="ballotCount"></upload-ballots-success>
   <div v-else>
     <div class="row">
       <div class="col-md-12 text-end">
