@@ -97,7 +97,6 @@ export default {
                       <th>Uploaded</th>
                       <th>Location</th>
                       <th>Ballot Count</th>
-                      <th></th>
                     </tr>
                   </thead>
                   <tbody class="table-group-divider">
@@ -105,7 +104,6 @@ export default {
                       <td>{{ballot_upload.created_at}}</td>
                       <td>{{ballot_upload.location}}</td>
                       <td>{{ballot_upload.ballot_count}}</td>
-                      <td></td>
                     </tr>
                   </tbody>
                   <tfoot>
@@ -113,7 +111,6 @@ export default {
                       <td><em>Total</em></td>
                       <td>&nbsp;</td>
                       <td>{{ballotSum}}
-                      <td></td>
                     </tr>
                   </tfoot>
                 </table>
@@ -135,14 +132,12 @@ export default {
                     <tr>
                       <th>Created</th>
                       <th>Name</th>
-                      <th></th>
                     </tr>
                   </thead>
                   <tbody class="table-group-divider">
                     <tr v-for="decryption in election.decryptions">
                       <td>{{decryption.created_at}}</td>
                       <td><a :href="getViewDecryptionUrl(decryption.decryption_id)">{{decryption.name}}</a></td>
-                      <td></td>
                     </tr>
                   </tbody>
                 </table>
