@@ -71,7 +71,10 @@ export default {
     </div>
     <div class="text-center">
       <h1>Upload Wizard</h1>
-      <div v-if="!drive">Insert a USB drive containing ballots</div>
+      <div v-if="!drive">
+        <p>Insert a USB drive containing ballots</p>
+        <button type="button" class="btn btn-primary" @click="scanDrives()">Scan Drives</button>
+      </div>
       <div v-if="drive">
         <p class="mt-4">Ready to import?</p>
         <div class="row g-1">
