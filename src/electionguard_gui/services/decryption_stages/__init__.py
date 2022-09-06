@@ -7,6 +7,7 @@ from electionguard_gui.services.decryption_stages.decryption_s1_join_service imp
 )
 from electionguard_gui.services.decryption_stages.decryption_s2_announce_service import (
     DecryptionS2AnnounceService,
+    update_decrypt_status,
 )
 from electionguard_gui.services.decryption_stages.decryption_stage_base import (
     DecryptionStageBase,
@@ -21,4 +22,5 @@ __all__ = [
     "decryption_s2_announce_service",
     "decryption_stage_base",
     "get_tally",
+    "update_decrypt_status",
 ]

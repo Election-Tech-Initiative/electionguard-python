@@ -113,6 +113,7 @@ class UploadBallotsComponent(ComponentBase):
         except Exception as e:
             return self.handle_error(e)
 
+    # pylint: disable=no-self-use
     def is_wizard_supported(self) -> bool:
         on_windows = os.name == "nt"
         return on_windows
