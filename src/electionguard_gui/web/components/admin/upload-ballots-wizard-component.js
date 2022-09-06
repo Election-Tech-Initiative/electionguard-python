@@ -14,6 +14,7 @@ export default {
       ballotCount: null,
       status: null,
       loading: false,
+      duplicateCount: 0,
     };
   },
   methods: {
@@ -24,7 +25,8 @@ export default {
         if (result.success) {
           console.log("success", result);
           this.success = true;
-          this.ballotCount = result.result;
+          this.ballotCount = result.result.ballot_count;
+          this.duplicateCount = result.result.duplicate_count;
         } else {
           this.alert = result.message;
         }
@@ -44,6 +46,9 @@ export default {
       this.drive = null;
       this.alert = null;
       this.ballotCount = null;
+      this.duplicateCount = 0;
+      this.status = null;
+      this.loading = false;
       await this.scanDrives();
     },
     scanDrives: async function () {
@@ -72,6 +77,9 @@ export default {
   template: /*html*/ `
   <div v-if="alert" class="alert alert-danger" role="alert">
     {{ alert }}
+  </div>
+  <div v-if="duplicateCount" class="alert alert-warning" role="alert">
+    {{ duplicateCount }} ballots were skipped because their object_ids had already been uploaded for this election.
   </div>
   <upload-ballots-success v-if="success" :back-url="getElectionUrl()" @upload-more="uploadMore()" :ballot-count="ballotCount"></upload-ballots-success>
   <div v-else>

@@ -87,8 +87,6 @@ export default {
       this.alert = null;
       this.ballotsProcessed = null;
       this.ballotsTotal = null;
-      this.success = false;
-      this.duplicateCount = 0;
       this.$nextTick(() => {
         this.resetFiles();
       });

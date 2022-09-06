@@ -177,6 +177,7 @@ class UploadBallotsComponent(ComponentBase):
             ballot_files = os.listdir(ballots_dir)
             ballot_upload_id: str = ballot_upload_result["result"]
             ballot_num = 1
+            duplicate_count = 0
             ballot_count = len(ballot_files)
             for ballot_file in ballot_files:
                 self._log.debug("uploading ballot " + ballot_file)
@@ -184,10 +185,14 @@ class UploadBallotsComponent(ComponentBase):
                 result = self.create_ballot_from_file(
                     election_id, ballot_file, ballot_upload_id, ballots_dir
                 )
+                if result["result"]["is_duplicate"]:
+                    duplicate_count += 1
                 if not result["success"]:
                     return result
                 ballot_num += 1
-            return eel_success()
+            return eel_success(
+                {"ballot_count": ballot_count, "duplicate_count": duplicate_count}
+            )
         # pylint: disable=broad-except
         except Exception as e:
             return self.handle_error(e)
