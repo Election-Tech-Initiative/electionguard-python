@@ -67,8 +67,8 @@ export default {
     },
   },
   async mounted() {
-    await this.scanDrives();
     eel.expose(this.updateUploadStatus, "update_upload_status");
+    await this.scanDrives();
   },
   components: {
     UploadBallotsSuccess,
