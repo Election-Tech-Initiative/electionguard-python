@@ -22,8 +22,8 @@ export default {
       this.loading = true;
       try {
         const result = await eel.upload_ballots(this.electionId)();
+        console.log("upload completed", result);
         if (result.success) {
-          console.log("success", result);
           this.success = true;
           this.ballotCount = result.result.ballot_count;
           this.duplicateCount = result.result.duplicate_count;
@@ -55,7 +55,7 @@ export default {
       const result = await eel.scan_drives()();
       if (!result.success) {
         console.error(result.message);
-        // todo: show error
+        this.alert = result.message;
       } else {
         this.drive = result.result;
         console.log("successfully uploaded ballots", this.drive);

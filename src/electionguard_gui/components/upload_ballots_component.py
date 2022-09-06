@@ -186,10 +186,10 @@ class UploadBallotsComponent(ComponentBase):
                 result = self.create_ballot_from_file(
                     election_id, ballot_file, ballot_upload_id, ballots_dir
                 )
-                if result["result"]["is_duplicate"]:
-                    duplicate_count += 1
                 if not result["success"]:
                     return result
+                if result["result"]["is_duplicate"]:
+                    duplicate_count += 1
                 ballot_num += 1
             return eel_success(
                 {"ballot_count": ballot_count, "duplicate_count": duplicate_count}
