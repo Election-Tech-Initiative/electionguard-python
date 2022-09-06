@@ -1,4 +1,5 @@
 import RouterService from "../../services/router-service.js";
+import Spinner from "../shared/spinner-component.js";
 import UploadBallotsSuccess from "./upload-ballots-success-component.js";
 
 export default {
@@ -11,6 +12,8 @@ export default {
       success: false,
       alert: null,
       ballotCount: null,
+      status: null,
+      loading: false,
     };
   },
   methods: {
@@ -27,6 +30,7 @@ export default {
         }
       } finally {
         this.loading = false;
+        this.status = null;
       }
     },
     closeWizard: function () {
@@ -52,14 +56,23 @@ export default {
         console.log("successfully uploaded ballots", this.drive);
       }
     },
+    updateUploadStatus: function (status) {
+      console.log("updateUploadStatus", status);
+      this.status = status;
+    },
   },
   async mounted() {
     await this.scanDrives();
+    eel.expose(this.updateUploadStatus, "update_upload_status");
   },
   components: {
     UploadBallotsSuccess,
+    Spinner,
   },
   template: /*html*/ `
+  <div v-if="alert" class="alert alert-danger" role="alert">
+    {{ alert }}
+  </div>
   <upload-ballots-success v-if="success" :back-url="getElectionUrl()" @upload-more="uploadMore()" :ballot-count="ballotCount"></upload-ballots-success>
   <div v-else>
     <div class="row">
@@ -103,7 +116,9 @@ export default {
         </div>
         <div class="mt-4">
           <a :href="getElectionUrl()" class="btn btn-secondary me-2">Cancel</a>
-          <button class="btn btn-primary" @click="uploadBallots">Import</button>
+          <button class="btn btn-primary" :disabled="loading" @click="uploadBallots">Import</button>
+          <p class="mt-3" v-if="status">{{ status }}</p>
+          <spinner class="mt-4" :visible="loading"></spinner>
         </div>
       </div>
     </div>

@@ -157,12 +157,14 @@ class UploadBallotsComponent(ComponentBase):
 
     def upload_ballots(self, election_id: str) -> dict[str, Any]:
         try:
+            update_upload_status("Scanning drives")
             drive_info = self.scan_drives()
             device_file_name = drive_info["result"]["device_file_name"]
             device_file_path = drive_info["result"]["device_file_path"]
             self._log.debug(
                 f"uploading ballots for {election_id} from {device_file_path} device {device_file_name}"
             )
+            update_upload_status("Uploading device file")
             ballot_upload_result = self.create_ballot_upload_from_file(
                 election_id,
                 device_file_name,
@@ -174,13 +176,17 @@ class UploadBallotsComponent(ComponentBase):
             ballots_dir: str = drive_info["result"]["ballots_dir"]
             ballot_files = os.listdir(ballots_dir)
             ballot_upload_id: str = ballot_upload_result["result"]
+            ballot_num = 1
+            ballot_count = len(ballot_files)
             for ballot_file in ballot_files:
                 self._log.debug("uploading ballot " + ballot_file)
+                update_upload_status(f"Uploading ballot {ballot_num}/{ballot_count}")
                 result = self.create_ballot_from_file(
                     election_id, ballot_file, ballot_upload_id, ballots_dir
                 )
                 if not result["success"]:
                     return result
+                ballot_num += 1
             return eel_success()
         # pylint: disable=broad-except
         except Exception as e:
@@ -208,3 +214,8 @@ class UploadBallotsComponent(ComponentBase):
                 election_id, device_file_name, device_file.read()
             )
             return ballot_upload
+
+
+def update_upload_status(status: str) -> None:
+    # pylint: disable=no-member
+    eel.update_upload_status(status)
