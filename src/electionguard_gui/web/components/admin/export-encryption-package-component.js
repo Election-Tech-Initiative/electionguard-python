@@ -61,8 +61,8 @@ export default {
           </select>
         </div>
         <div class="col-12 mt-4">
-          <button type="submit" class="btn btn-primary">Export</button>
-          <a :href="getElectionUrl()" class="btn btn-secondary ms-3">Cancel</a>
+        <a :href="getElectionUrl()" class="btn btn-secondary">Cancel</a>
+        <button type="submit" class="btn btn-primary ms-3">Export</button>
           <spinner :visible="loading"></spinner>
         </div>
       </div>
