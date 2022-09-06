@@ -65,10 +65,18 @@ export default {
       console.log("updateUploadStatus", status);
       this.status = status;
     },
+    pollDrives: async function () {
+      if (this.drive) return;
+      await this.scanDrives();
+      if (!this.drive) {
+        // keep polling until a valid drive is found
+        setTimeout(this.pollDrives.bind(this), 1000);
+      }
+    },
   },
   async mounted() {
     eel.expose(this.updateUploadStatus, "update_upload_status");
-    await this.scanDrives();
+    await this.pollDrives();
   },
   components: {
     UploadBallotsSuccess,
@@ -94,7 +102,7 @@ export default {
       <h1>Upload Wizard</h1>
       <div v-if="!drive">
         <p>Insert a USB drive containing ballots</p>
-        <button type="button" class="btn btn-primary" @click="scanDrives()">Scan Drives</button>
+        <spinner class="mt-4" :visible="true"></spinner>
       </div>
       <div v-if="drive">
         <p class="mt-4">Ready to import?</p>

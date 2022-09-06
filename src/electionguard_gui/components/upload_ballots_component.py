@@ -121,7 +121,7 @@ class UploadBallotsComponent(ComponentBase):
     def scan_drives(self) -> dict[str, Any]:
         try:
             removable_drives = get_removable_drives()
-            self._log.debug(f"found {len(removable_drives)} removable drives")
+            self._log.trace(f"found {len(removable_drives)} removable drives")
             candidate_drives = [
                 self.parse_drive(drive)
                 for drive in removable_drives
