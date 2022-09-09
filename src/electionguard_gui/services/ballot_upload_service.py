@@ -145,7 +145,11 @@ class BallotUploadService(ServiceBase):
         if not ballot_str[-1] == "}":
             self._log.warn(f"ballot {ballot_upload_id} is missing a closing bracket")
             raise RetryException
-        ballot = from_raw(SubmittedBallot, ballot_str)
+        try:
+            ballot = from_raw(SubmittedBallot, ballot_str)
+        except Exception as e:
+            self._log.error(f"error deserializing ballot {ballot_upload_id}", e)
+            raise RetryException from e
         return ballot
 
 
