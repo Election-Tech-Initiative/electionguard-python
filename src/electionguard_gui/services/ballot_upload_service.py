@@ -1,4 +1,6 @@
 from datetime import datetime
+from time import sleep
+from tkinter import E
 from pymongo.database import Database
 from electionguard.ballot import SubmittedBallot
 from electionguard.serialize import from_raw
@@ -79,16 +81,65 @@ class BallotUploadService(ServiceBase):
     def get_ballots(self, db: Database, election_id: str) -> list[SubmittedBallot]:
         self._log.debug(f"getting ballots for {election_id}")
         ballot_uploads = db.ballot_uploads.find(
-            {"election_id": election_id, "file_contents": {"$exists": True}}
+            {"election_id": election_id, "file_contents": {"$exists": True}},
+            projection={"_id": 1, "file_contents": 0},
         )
         ballots = []
-        for ballot_obj in ballot_uploads:
-            ballot_str = ballot_obj["file_contents"]
+        for ballot_id_obj in ballot_uploads:
+            ballot_id = ballot_id_obj["_id"]
             try:
-                ballot = from_raw(SubmittedBallot, ballot_str)
+                ballot = self.get_submitted_ballot_with_retry(db, ballot_id)
                 ballots.append(ballot)
             # pylint: disable=broad-except
             except Exception as e:
-                self._log.error("error deserializing ballot: {ballot_obj}", e)
+                self._log.error(
+                    f"Error deserializing ballot {ballot_id}. Skipping, but this may cause Chaum Pederson errors later.",
+                    e,
+                )
                 # per RC 8/15/22 log errors and continue processing even if it makes numbers incorrect
         return ballots
+
+    def get_submitted_ballot_with_retry(
+        self, db: Database, ballot_upload_id: str
+    ) -> SubmittedBallot:
+        retry_num = 0
+        max_retries = 3
+        while retry_num < max_retries:
+            try:
+                return self.get_submitted_ballot(db, ballot_upload_id)
+            except RetryException:
+                self._log.warn(
+                    f"retrying get ballot {ballot_upload_id} in {retry_num + 1} second(s). Retry #{retry_num + 1}"
+                )
+                # wait 1 second before retrying in case network was slow
+                sleep(retry_num + 1)
+            retry_num += 1
+        raise Exception(
+            f"Failed to get ballot {ballot_upload_id} after {max_retries} retries"
+        )
+
+    def get_submitted_ballot(
+        self, db: Database, ballot_upload_id: str
+    ) -> SubmittedBallot:
+        self._log.trace(f"getting submitted ballot {ballot_upload_id}")
+        ballot_obj = None
+        try:
+            ballot_obj = db.ballot_uploads.find_one(
+                {"_id": ballot_upload_id}, projection={"file_contents": 1}
+            )
+        except Exception as e:
+            self._log.error(f"mongo error getting ballot {ballot_upload_id}", e)
+            raise RetryException from e
+        if ballot_obj is None:
+            raise Exception(f"Ballot {ballot_upload_id} not found")
+        ballot_str = ballot_obj["file_contents"]
+        # if ballot_str ends with a }
+        if not ballot_str[-1] == "}":
+            self._log.warn(f"ballot {ballot_upload_id} is missing a closing bracket")
+            raise RetryException
+        ballot = from_raw(SubmittedBallot, ballot_str)
+        return ballot
+
+
+class RetryException(Exception):
+    """An exception to notify the caller to retry"""
