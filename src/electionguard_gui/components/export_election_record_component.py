@@ -59,7 +59,9 @@ class ExportElectionRecordComponent(ComponentBase):
         manifest = election.get_manifest()
         constants = get_constants()
         encryption_devices = election.get_encryption_devices()
-        submitted_ballots = self._ballot_upload_service.get_ballots(db, election.id)
+        submitted_ballots = self._ballot_upload_service.get_ballots(
+            db, election.id, lambda x: None
+        )
         plaintext_tally = decryption.get_plaintext_tally()
         spoiled_ballots = decryption.get_plaintext_spoiled_ballots()
         lagrange_coefficients = decryption.get_lagrange_coefficients()

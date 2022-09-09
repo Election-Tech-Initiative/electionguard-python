@@ -23,7 +23,9 @@ class DecryptionS1JoinService(DecryptionStageBase):
         guardian = self._guardian_service.load_guardian_from_decryption(
             current_user_id, decryption
         )
-        ballots = self._ballot_upload_service.get_ballots(db, election.id)
+        ballots = self._ballot_upload_service.get_ballots(
+            db, election.id, update_decrypt_status
+        )
         update_decrypt_status("Calculating tally")
         self._log.debug(f"getting tally for {len(ballots)} ballots")
         ciphertext_tally = get_tally(manifest, context, ballots, False)

@@ -48,12 +48,14 @@ class DecryptionS2AnnounceService(DecryptionStageBase):
             )
             current_share += 1
 
-        update_decrypt_status("Decrypting spoiled ballots")
         manifest = election.get_manifest()
-        ballots = self._ballot_upload_service.get_ballots(db, election.id)
+        ballots = self._ballot_upload_service.get_ballots(
+            db, election.id, update_decrypt_status
+        )
         spoiled_ballots = [
             ballot for ballot in ballots if ballot.state == BallotBoxState.SPOILED
         ]
+        update_decrypt_status("Calculating tally")
         self._log.debug(f"getting tally for {len(ballots)} ballots")
         ciphertext_tally = get_tally(manifest, context, ballots, False)
         self._log.debug("getting plaintext tally")
@@ -63,6 +65,7 @@ class DecryptionS2AnnounceService(DecryptionStageBase):
         if plaintext_tally is None:
             raise Exception("No plaintext tally found")
         self._log.debug("getting plaintext spoiled ballots")
+        update_decrypt_status("Processing spoiled ballots")
         plaintext_spoiled_ballots = decryption_mediator.get_plaintext_ballots(
             spoiled_ballots, manifest
         )

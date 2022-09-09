@@ -1,6 +1,6 @@
 from datetime import datetime
 from time import sleep
-from tkinter import E
+from typing import Callable
 from pymongo.database import Database
 from electionguard.ballot import SubmittedBallot
 from electionguard.serialize import from_raw
@@ -78,15 +78,22 @@ class BallotUploadService(ServiceBase):
             > 0
         )
 
-    def get_ballots(self, db: Database, election_id: str) -> list[SubmittedBallot]:
+    def get_ballots(
+        self, db: Database, election_id: str, report_status: Callable[[str], None]
+    ) -> list[SubmittedBallot]:
         self._log.debug(f"getting ballots for {election_id}")
-        ballot_uploads = db.ballot_uploads.find(
-            {"election_id": election_id, "file_contents": {"$exists": True}},
-            projection={"_id": 1, "file_contents": 0},
+        ballot_uploads = list(
+            db.ballot_uploads.find(
+                {"election_id": election_id, "file_contents": {"$exists": True}},
+                projection={"_id": 1, "file_contents": 0},
+            )
         )
         ballots = []
+        total_ballots = len(ballot_uploads)
+        ballot_num = 1
         for ballot_id_obj in ballot_uploads:
             ballot_id = ballot_id_obj["_id"]
+            report_status(f"Loading ballot {ballot_num}/{total_ballots}")
             try:
                 ballot = self.get_submitted_ballot_with_retry(db, ballot_id)
                 ballots.append(ballot)
@@ -97,6 +104,7 @@ class BallotUploadService(ServiceBase):
                     e,
                 )
                 # per RC 8/15/22 log errors and continue processing even if it makes numbers incorrect
+            ballot_num += 1
         return ballots
 
     def get_submitted_ballot_with_retry(
