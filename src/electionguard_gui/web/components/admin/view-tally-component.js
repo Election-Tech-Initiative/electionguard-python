@@ -2,6 +2,8 @@ import RouterService from "../../services/router-service.js";
 import Spinner from "../shared/spinner-component.js";
 import ViewPlaintextBallotComponent from "../shared/view-plaintext-ballot-component.js";
 
+import { jsPDF } from "jspdf";
+
 export default {
   props: {
     decryptionId: String,
@@ -18,6 +20,11 @@ export default {
       return RouterService.getUrl(RouterService.routes.viewDecryptionAdmin, {
         decryptionId: this.decryptionId,
       });
+    },
+    generatePDF()
+    {
+      const doc = new jsPDF();
+      doc.save("ElectionInformation.pdf");
     },
   },
   async mounted() {
@@ -40,6 +47,9 @@ export default {
       </div>
       <div class="col-md-12">
         <view-plaintext-ballot-component :ballot="tally.report"></view-plaintext-ballot-component>
+      </div>
+      <div class="col-12 d-grid mb-3">
+        <a href="#/admin/generate-pdf" class="btn btn-primary">Generate PDF</a>
       </div>
     </div>
     <spinner :visible="loading"></spinner>
