@@ -25,12 +25,15 @@ class DecryptionS1JoinService(DecryptionStageBase):
         )
         ballots = self._ballot_upload_service.get_ballots(db, election.id)
         update_decrypt_status("Calculating tally")
+        self._log.debug(f"getting tally for {len(ballots)} ballots")
         ciphertext_tally = get_tally(manifest, context, ballots, False)
+        self._log.debug("computing tally share")
         decryption_share = guardian.compute_tally_share(ciphertext_tally, context)
         if decryption_share is None:
             raise Exception("No decryption_shares found")
 
         update_decrypt_status("Calculating spoiled ballots")
+        self._log.debug("decrypting spoiled ballots")
         spoiled_ballots = [
             ballot for ballot in ballots if ballot.state == BallotBoxState.SPOILED
         ]
@@ -48,6 +51,7 @@ class DecryptionS1JoinService(DecryptionStageBase):
             ballot_shares,
             guardian_key,
         )
+        self._log.debug("Completed tally")
         self._decryption_service.notify_changed(db, decryption.decryption_id)
 
 
