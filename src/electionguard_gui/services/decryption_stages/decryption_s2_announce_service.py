@@ -20,7 +20,7 @@ class DecryptionS2AnnounceService(DecryptionStageBase):
         return is_admin and all_guardians_joined and not is_completed
 
     def run(self, db: Database, decryption: DecryptionDto) -> None:
-        update_decrypt_status("Starting tally")
+        _update_decrypt_status("Starting tally")
         self._log.info(f"S2: Announcing decryption {decryption.decryption_id}")
         election = self._election_service.get(db, decryption.election_id)
         context = election.get_context()
@@ -33,7 +33,7 @@ class DecryptionS2AnnounceService(DecryptionStageBase):
         share_count = len(decryption_shares)
         current_share = 1
         for decryption_share_dict in decryption_shares:
-            update_decrypt_status(f"Calculating share {current_share}/{share_count}")
+            _update_decrypt_status(f"Calculating share {current_share}/{share_count}")
             self._log.debug(f"announcing {decryption_share_dict.guardian_id}")
             guardian_sequence_number = election.get_guardian_sequence_order(
                 decryption_share_dict.guardian_id
@@ -50,12 +50,12 @@ class DecryptionS2AnnounceService(DecryptionStageBase):
 
         manifest = election.get_manifest()
         ballots = self._ballot_upload_service.get_ballots(
-            db, election.id, update_decrypt_status
+            db, election.id, _update_decrypt_status
         )
         spoiled_ballots = [
             ballot for ballot in ballots if ballot.state == BallotBoxState.SPOILED
         ]
-        update_decrypt_status("Calculating tally")
+        _update_decrypt_status("Calculating tally")
         self._log.debug(f"getting tally for {len(ballots)} ballots")
         ciphertext_tally = get_tally(manifest, context, ballots, False)
         self._log.debug("getting plaintext tally")
@@ -65,14 +65,14 @@ class DecryptionS2AnnounceService(DecryptionStageBase):
         if plaintext_tally is None:
             raise Exception("No plaintext tally found")
         self._log.debug("getting plaintext spoiled ballots")
-        update_decrypt_status("Processing spoiled ballots")
+        _update_decrypt_status("Processing spoiled ballots")
         plaintext_spoiled_ballots = decryption_mediator.get_plaintext_ballots(
             spoiled_ballots, manifest
         )
         if plaintext_spoiled_ballots is None:
             raise Exception("No plaintext spoiled ballots found")
 
-        update_decrypt_status("Finalizing tally")
+        _update_decrypt_status("Finalizing tally")
 
         lagrange_coefficients = _get_lagrange_coefficients(decryption_mediator)
 
@@ -95,6 +95,6 @@ def _get_lagrange_coefficients(
     return LagrangeCoefficientsRecord(decryption_mediator.get_lagrange_coefficients())
 
 
-def update_decrypt_status(status: str) -> None:
+def _update_decrypt_status(status: str) -> None:
     # pylint: disable=no-member
     eel.update_decrypt_status(status)

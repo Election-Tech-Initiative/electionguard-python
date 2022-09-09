@@ -100,7 +100,8 @@ class BallotUploadService(ServiceBase):
             # pylint: disable=broad-except
             except Exception as e:
                 self._log.error(
-                    f"Error deserializing ballot {ballot_id}. Skipping, but this may cause Chaum Pederson errors later.",
+                    f"Error deserializing ballot {ballot_id}. "
+                    + "Skipping ballot, but this may cause Chaum Pederson errors later.",
                     e,
                 )
                 # per RC 8/15/22 log errors and continue processing even if it makes numbers incorrect
