@@ -58,6 +58,7 @@ from electionguard_gui.services.decryption_stages import (
     decryption_s2_announce_service,
     decryption_stage_base,
     get_tally,
+    update_decrypt_status,
 )
 from electionguard_gui.services.directory_service import (
     DOCKER_MOUNT_DIR,
@@ -71,8 +72,8 @@ from electionguard_gui.services.election_service import (
     ElectionService,
 )
 from electionguard_gui.services.export_service import (
-    get_drives,
     get_export_locations,
+    get_removable_drives,
 )
 from electionguard_gui.services.guardian_service import (
     GuardianService,
@@ -168,12 +169,12 @@ __all__ = [
     "election_service",
     "export_service",
     "get_data_dir",
-    "get_drives",
     "get_export_dir",
     "get_export_locations",
     "get_guardian_number",
     "get_key_ceremony_status",
     "get_plaintext_ballot_report",
+    "get_removable_drives",
     "get_tally",
     "guardian_service",
     "gui_setup_input_retrieval_step",
@@ -195,6 +196,7 @@ __all__ = [
     "service_base",
     "status_descriptions",
     "to_ballot_share_raw",
+    "update_decrypt_status",
     "verification_to_dict",
     "version_service",
 ]

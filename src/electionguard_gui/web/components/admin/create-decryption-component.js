@@ -27,6 +27,9 @@ export default {
       }
       this.loading = false;
     },
+    getElectionUrl: function () {
+      return RouterService.getElectionUrl(this.electionId);
+    },
   },
   async mounted() {
     const result = await eel.get_suggested_decryption_name(this.electionId)();
@@ -50,7 +53,8 @@ export default {
           <input type="text" id="name" class="form-control" v-model="name" required>
         </div>
         <div class="col-12 mt-4">
-          <button type="submit" class="btn btn-primary">Create</button>
+          <a :href="getElectionUrl()" class="btn btn-secondary">Cancel</a>
+          <button type="submit" class="btn btn-primary ms-3">Create</button>
           <spinner :visible="loading"></spinner>
         </div>
       </div>

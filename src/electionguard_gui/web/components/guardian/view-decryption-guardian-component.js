@@ -13,6 +13,7 @@ export default {
       loading: false,
       error: false,
       successfully_joined: false,
+      status: null,
     };
   },
   methods: {
@@ -21,14 +22,18 @@ export default {
     },
     decrypt: async function () {
       this.loading = true;
-      this.error = false;
-      const result = await eel.join_decryption(this.decryptionId)();
-      if (result.success) {
-        this.success = true;
-      } else {
-        this.error = true;
+      try {
+        this.error = false;
+        const result = await eel.join_decryption(this.decryptionId)();
+        if (result.success) {
+          this.success = true;
+        } else {
+          this.error = true;
+        }
+      } finally {
+        this.loading = false;
+        this.status = null;
       }
-      this.loading = false;
     },
     refresh_decryption: async function () {
       console.log("refreshing decryption");
@@ -43,10 +48,15 @@ export default {
       }
       this.loading = false;
     },
+    updateDecryptStatus: function (status) {
+      console.log("updateDecryptStatus", status);
+      this.status = status;
+    },
   },
   async mounted() {
-    await this.refresh_decryption();
+    eel.expose(this.updateDecryptStatus, "update_decrypt_status");
     eel.expose(this.refresh_decryption, "refresh_decryption");
+    await this.refresh_decryption();
     console.log("watching decryption");
     eel.watch_decryption(this.decryptionId);
   },
@@ -67,6 +77,7 @@ export default {
           <h1>Join Tally</h1>
           <p>Click below to join <i>{{decryption.decryption_name}}</i></p>
           <button @click="decrypt()" :disabled="loading" class="btn btn-primary mb-3">Join</button>
+          <p class="mt-3" v-if="status">{{ status }}</p>
           <spinner :visible="loading"></spinner>
         </div>
         <div class="col col-12" v-if="successfully_joined">
