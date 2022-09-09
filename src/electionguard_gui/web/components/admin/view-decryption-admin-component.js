@@ -35,6 +35,9 @@ export default {
       } else {
         console.error(result.message);
         this.error = true;
+        this.loading = false;
+        this.status = null;
+        this.decryption = null;
       }
     },
     get_decryption: async function (is_refresh) {
@@ -45,17 +48,17 @@ export default {
           this.decryptionId,
           is_refresh
         )();
+        console.log("get_decryption complete", result);
         this.error = !result.success;
-        if (result.success) {
-          this.decryption = result.result;
-        }
+        this.decryption = result.success ? result.result : null;
+      } catch (error) {
+        console.error(error);
       } finally {
         this.loading = false;
         this.status = null;
       }
     },
     updateDecryptStatus: function (status) {
-      console.log("updateDecryptStatus", status);
       this.status = status;
     },
   },
@@ -75,7 +78,7 @@ export default {
   },
   template: /*html*/ `
     <div v-if="error">
-      <p class="alert alert-danger" role="alert">An error occurred. Check the logs and try again.</p>
+      <p class="alert alert-danger" role="alert">An error occurred. Check the logs and/or <a href="javascript:history.back()">try again</a>.</p>
     </div>
     <div v-if="decryption">
       <div class="text-end">
