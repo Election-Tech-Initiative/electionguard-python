@@ -103,7 +103,12 @@ class CreateElectionComponent(ComponentBase):
             self._output_setup_files_step.output(
                 election_inputs, build_election_results, temp_out_dir, None
             )
-            zip_file = path.join(get_data_dir(), "public_encryption_package")
+            zip_file = path.join(
+                get_data_dir(),
+                "encryption_packages",
+                key_ceremony_id,
+                "public_encryption_package",
+            )
             encryption_package_file = self._zip(temp_out_dir, zip_file)
             guardian_records = [
                 guardian.publish() for guardian in election_inputs.guardians

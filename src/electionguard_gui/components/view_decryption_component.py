@@ -46,11 +46,16 @@ class ViewDecryptionComponent(ComponentBase):
         eel.expose(self.join_decryption)
 
     def watch_decryption(self, decryption_id: str) -> None:
-        db = self._db_service.get_db()
-        self._log.debug(f"watching decryption '{decryption_id}'")
-        self._db_watcher_service.watch_database(
-            db, decryption_id, self.on_decryption_changed
-        )
+        try:
+            db = self._db_service.get_db()
+            self._log.debug(f"watching decryption '{decryption_id}'")
+            self._db_watcher_service.watch_database(
+                db, decryption_id, self.on_decryption_changed
+            )
+        except Exception as e:  # pylint: disable=broad-except
+            self.handle_error(e)
+            self._db_watcher_service.stop_watching()
+            # no need to raise exception or return anything, we're in fire-and-forget mode here
 
     def stop_watching_decryption(self) -> None:
         self._db_watcher_service.stop_watching()

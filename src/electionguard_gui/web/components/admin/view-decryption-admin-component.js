@@ -7,7 +7,7 @@ export default {
   },
   components: { Spinner },
   data() {
-    return { decryption: null, loading: false, error: false };
+    return { decryption: null, loading: false, error: false, status: null };
   },
   methods: {
     getElectionUrl: function (electionId) {
@@ -51,11 +51,17 @@ export default {
         }
       } finally {
         this.loading = false;
+        this.status = null;
       }
+    },
+    updateDecryptStatus: function (status) {
+      console.log("updateDecryptStatus", status);
+      this.status = status;
     },
   },
   async mounted() {
     eel.expose(this.refresh_decryption, "refresh_decryption");
+    eel.expose(this.updateDecryptStatus, "update_decrypt_status");
     await this.get_decryption(false);
     console.log("watching decryption");
     // only watch for changes if the decryption is in-progress
@@ -157,6 +163,7 @@ export default {
         <div class="col col-12 col-md-6 col-lg-7 text-center">
           <img v-if="decryption.completed_at_str" src="/images/check.svg" width="150" height="150" class="mb-2"></img>
           <p class="key-ceremony-status">{{decryption.status}}</p>
+          <p class="mt-3" v-if="status">{{ status }}</p>
           <spinner :visible="loading || !decryption.completed_at_str"></spinner>
         </div>
       </div>

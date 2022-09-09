@@ -5,13 +5,13 @@ from electionguard_gui.services.directory_service import get_data_dir, get_expor
 def get_export_locations() -> list[str]:
     export_dir = get_export_dir()
     if os.name == "nt":
-        drives = get_drives()
+        drives = get_removable_drives()
         return [export_dir, _get_download_path(), get_data_dir()] + drives
     return [export_dir]
 
 
-def get_drives() -> list[str]:
-    dl = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+def get_removable_drives() -> list[str]:
+    dl = "DEFGHIJKLMNOPQRSTUVWXYZ"
     drives = [f"{d}:\\" for d in dl if os.path.exists(f"{d}:")]
     return drives
 

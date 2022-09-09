@@ -1,4 +1,5 @@
 from pymongo.database import Database
+import eel
 from electionguard import DecryptionMediator
 from electionguard.ballot import BallotBoxState
 from electionguard.election_polynomial import LagrangeCoefficientsRecord
@@ -19,6 +20,7 @@ class DecryptionS2AnnounceService(DecryptionStageBase):
         return is_admin and all_guardians_joined and not is_completed
 
     def run(self, db: Database, decryption: DecryptionDto) -> None:
+        update_decrypt_status("Starting tally")
         self._log.info(f"S2: Announcing decryption {decryption.decryption_id}")
         election = self._election_service.get(db, decryption.election_id)
         context = election.get_context()
@@ -28,7 +30,10 @@ class DecryptionS2AnnounceService(DecryptionStageBase):
             context,
         )
         decryption_shares = decryption.get_decryption_shares()
+        share_count = len(decryption_shares)
+        current_share = 1
         for decryption_share_dict in decryption_shares:
+            update_decrypt_status(f"Calculating share {current_share}/{share_count}")
             self._log.debug(f"announcing {decryption_share_dict.guardian_id}")
             guardian_sequence_number = election.get_guardian_sequence_order(
                 decryption_share_dict.guardian_id
@@ -41,7 +46,9 @@ class DecryptionS2AnnounceService(DecryptionStageBase):
                 decryption_share_dict.tally_share,
                 decryption_share_dict.ballot_shares,
             )
+            current_share += 1
 
+        update_decrypt_status("Decrypting spoiled ballots")
         manifest = election.get_manifest()
         ballots = self._ballot_upload_service.get_ballots(db, election.id)
         spoiled_ballots = [
@@ -60,6 +67,8 @@ class DecryptionS2AnnounceService(DecryptionStageBase):
         )
         if plaintext_spoiled_ballots is None:
             raise Exception("No plaintext spoiled ballots found")
+
+        update_decrypt_status("Finalizing tally")
 
         lagrange_coefficients = _get_lagrange_coefficients(decryption_mediator)
 
@@ -80,3 +89,8 @@ def _get_lagrange_coefficients(
     decryption_mediator: DecryptionMediator,
 ) -> LagrangeCoefficientsRecord:
     return LagrangeCoefficientsRecord(decryption_mediator.get_lagrange_coefficients())
+
+
+def update_decrypt_status(status: str) -> None:
+    # pylint: disable=no-member
+    eel.update_decrypt_status(status)
