@@ -39,7 +39,6 @@ export default {
   template: /*html*/ `
     <div v-if="tally" class="row">
       <div class="col col-12 mb-3">
-        <button type="button" onclick="window.print()">Generate PDF</button>
         <a :href="getElectionUrl(tally.election_id)">{{tally.election_name}}</a> 
         &gt; 
         <a :href="getDecryptionUrl()">{{tally.decryption_name}}</a>
@@ -50,6 +49,7 @@ export default {
         <view-plaintext-ballot-component :ballot="tally.report"></view-plaintext-ballot-component>
       </div>
       <div class="col-12 d-grid mb-3">
+        <button type="button" onclick="window.print()">Generate PDF</button>
         <a href="#/admin/generate-pdf" class="btn btn-primary">Generate PDF</a>
       </div>
     </div>
