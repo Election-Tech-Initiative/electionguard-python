@@ -13,7 +13,7 @@ class DecryptionS1JoinService(DecryptionStageBase):
     """Responsible for the 1st stage during a decryption were guardians join the decryption"""
 
     def run(self, db: Database, decryption: DecryptionDto) -> None:
-        update_decrypt_status("Starting tally")
+        _update_decrypt_status("Starting tally")
         current_user_id = self._auth_service.get_required_user_id()
         self._log.info(f"S1: {current_user_id} decrypting  {decryption.decryption_id}")
         election = self._election_service.get(db, decryption.election_id)
@@ -23,14 +23,19 @@ class DecryptionS1JoinService(DecryptionStageBase):
         guardian = self._guardian_service.load_guardian_from_decryption(
             current_user_id, decryption
         )
-        ballots = self._ballot_upload_service.get_ballots(db, election.id)
-        update_decrypt_status("Calculating tally")
+        ballots = self._ballot_upload_service.get_ballots(
+            db, election.id, _update_decrypt_status
+        )
+        _update_decrypt_status("Calculating tally")
+        self._log.debug(f"getting tally for {len(ballots)} ballots")
         ciphertext_tally = get_tally(manifest, context, ballots, False)
+        self._log.debug("computing tally share")
         decryption_share = guardian.compute_tally_share(ciphertext_tally, context)
         if decryption_share is None:
             raise Exception("No decryption_shares found")
 
-        update_decrypt_status("Calculating spoiled ballots")
+        _update_decrypt_status("Calculating spoiled ballots")
+        self._log.debug("decrypting spoiled ballots")
         spoiled_ballots = [
             ballot for ballot in ballots if ballot.state == BallotBoxState.SPOILED
         ]
@@ -39,7 +44,7 @@ class DecryptionS1JoinService(DecryptionStageBase):
             raise Exception("No ballot shares found")
         guardian_key = guardian.share_key()
 
-        update_decrypt_status("Finalizing tally")
+        _update_decrypt_status("Finalizing tally")
         self._decryption_service.append_guardian_joined(
             db,
             decryption.decryption_id,
@@ -48,9 +53,10 @@ class DecryptionS1JoinService(DecryptionStageBase):
             ballot_shares,
             guardian_key,
         )
+        self._log.debug("Completed tally")
         self._decryption_service.notify_changed(db, decryption.decryption_id)
 
 
-def update_decrypt_status(status: str) -> None:
+def _update_decrypt_status(status: str) -> None:
     # pylint: disable=no-member
     eel.update_decrypt_status(status)
