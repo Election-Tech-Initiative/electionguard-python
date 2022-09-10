@@ -24,6 +24,7 @@ from electionguard_gui.services.authorization_service import (
 )
 from electionguard_gui.services.ballot_upload_service import (
     BallotUploadService,
+    RetryException,
 )
 from electionguard_gui.services.configuration_service import (
     ConfigurationService,
@@ -58,7 +59,6 @@ from electionguard_gui.services.decryption_stages import (
     decryption_s2_announce_service,
     decryption_stage_base,
     get_tally,
-    update_decrypt_status,
 )
 from electionguard_gui.services.directory_service import (
     DOCKER_MOUNT_DIR,
@@ -149,6 +149,7 @@ __all__ = [
     "KeyCeremonyStateService",
     "MODE_KEY",
     "PORT_KEY",
+    "RetryException",
     "ServiceBase",
     "VersionService",
     "announce_guardians",
@@ -196,7 +197,6 @@ __all__ = [
     "service_base",
     "status_descriptions",
     "to_ballot_share_raw",
-    "update_decrypt_status",
     "verification_to_dict",
     "version_service",
 ]
