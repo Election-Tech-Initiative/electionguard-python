@@ -39,7 +39,7 @@ export default {
   template: /*html*/ `
     <div v-if="tally" class="row">
       <div class="col col-12 mb-3">
-        <button type="button" onclick="window.print()">Generate PDF</button>
+        <button type="button" onclick="window.print()">Generate PDF</button> 
         <a :href="getElectionUrl(tally.election_id)">{{tally.election_name}}</a> 
         &gt; 
         <a :href="getDecryptionUrl()">{{tally.decryption_name}}</a>
