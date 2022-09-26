@@ -117,7 +117,6 @@ jobs:
           release_name: Release ${{ env.PACKAGE_VERSION }}
           draft: false
           prerelease: false
-          body_path: ./release_notes.md
       - name: Dependency Graph
         run: make dependency-graph-ci
       - name: Upload Dependency Graph as Artifact
