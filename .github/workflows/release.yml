@@ -136,8 +136,6 @@ jobs:
           TEST_PYPI_TOKEN: ${{ secrets.TEST_PYPI_TOKEN }}
           PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
         run: make publish-ci
-      - name: Validate Import
-        run: make publish-validate
       - name: Zip Artifacts
         run: make release-zip-ci
       - name: Add Artifacts to Release

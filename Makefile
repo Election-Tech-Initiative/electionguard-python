@@ -205,16 +205,6 @@ publish-test-ci:
 	@echo 🚀 PUBLISH TEST
 	poetry publish --repository testpypi --username __token__ --password $(TEST_PYPI_TOKEN)
 
-publish-validate:
-	@echo ✅ VALIDATE
-	python3 -m pip install --no-deps electionguard
-	python3 -c 'import electionguard'
-
-publish-validate-test:
-	@echo ✅ VALIDATE
-	python3 -m pip install --index-url https://test.pypi.org/simple/ --no-deps electionguard
-	python3 -c 'import electionguard'
-
 # Release
 release-zip-ci:
 	@echo 📁 ZIP RELEASE ARTIFACTS
