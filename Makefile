@@ -243,7 +243,7 @@ stop-db:
 	docker compose --env-file ./.env -f src/electionguard_db/docker-compose.db.yml down
 
 build-egui:
-	docker build -t egui -f src\electionguard_gui\Dockerfile .
+	docker build -t egui -f ./src/electionguard_gui/Dockerfile .
 
 start-egui: build-egui
 ifeq "${EG_DB_PASSWORD}" ""
