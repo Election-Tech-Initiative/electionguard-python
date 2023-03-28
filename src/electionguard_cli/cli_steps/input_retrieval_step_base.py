@@ -2,7 +2,6 @@ from typing import List, Type, TypeVar
 from os.path import isfile, isdir, join
 from os import listdir
 from io import TextIOWrapper
-from click import echo
 
 from electionguard.election import CiphertextElectionContext
 from electionguard.manifest import Manifest
@@ -63,5 +62,5 @@ class InputRetrievalStepBase(CliStepBase):
     @staticmethod
     def _get_ballot(ballots_dir: str, filename: str, ballot_type: Type[_T]) -> _T:
         full_file = join(ballots_dir, filename)
-        echo(f"Importing {filename}")
+        print_message(f"Importing {filename}")
         return from_file(ballot_type, full_file)
