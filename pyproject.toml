@@ -39,7 +39,7 @@ packages = [
 python = "^3.9.5"
 gmpy2 = "^2.0.8"
 psutil = ">=5.7.2"
-pydantic = "1.9.0"
+pydantic = "^1.10"
 click = "^8.1.0"
 dacite = "^1.6.0"
 python-dateutil = "^2.8.2"

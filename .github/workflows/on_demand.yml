@@ -1,0 +1,102 @@
+name: Validate Pull Request
+
+on:
+  workflow_dispatch:
+
+env:
+  PYTHON_VERSION: 3.9
+  POETRY_PATH: "$HOME/.poetry/bin"
+
+jobs:
+  code_analysis:
+    name: Code Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ["python"]
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Change Directory
+        run: cd ${{ github.workspace }}
+      - name: Setup Environment
+        run: make environment
+      - name: Add Poetry Path
+        run: echo ${{ env.POETRY_PATH }} >> $GITHUB_PATH
+      - name: Install Dependencies
+        run: make install
+      - name: Lint
+        run: make lint
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+          languages: "${{ matrix.language }}"
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v2
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v2
+
+  linux_check:
+    name: Linux Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Change Directory
+        run: cd ${{ github.workspace }}
+      - name: Setup Environment
+        run: make environment
+      - name: Add Poetry Path
+        run: echo ${{ env.POETRY_PATH }} >> $GITHUB_PATH
+      - name: Install Dependencies
+        run: make install
+      - name: Build
+        run: make build validate
+      - name: Full Test Suite & Coverage
+        uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 1
+          retry_on: timeout
+          command: make coverage
+
+  mac_check:
+    name: MacOS Check
+    runs-on: macos-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Change Directory
+        run: cd ${{ github.workspace }}
+      - name: Setup Environment
+        run: make environment
+      - name: Add Poetry Path
+        run: echo ${{ env.POETRY_PATH }} >> $GITHUB_PATH
+      - name: Install Dependencies
+        run: make install
+      - name: Build
+        run: make build validate
+      - name: Integration Tests
+        uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 3
+          max_attempts: 1
+          retry_on: timeout
+          command: make test-integration
