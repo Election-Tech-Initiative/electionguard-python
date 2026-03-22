@@ -53,7 +53,7 @@ class CiphertextTallySelection(ElectionObjectBase, CiphertextSelection):
     """
 
     ciphertext: ElGamalCiphertext = field(
-        default=ElGamalCiphertext(ONE_MOD_P, ONE_MOD_P)
+        default_factory=lambda: ElGamalCiphertext(ONE_MOD_P, ONE_MOD_P)
     )
     """
     The encrypted representation of the total of all ballots for this selection
