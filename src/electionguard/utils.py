@@ -69,7 +69,8 @@ def get_optional(optional: Optional[_T]) -> _T:
     Raises an exception if it's actually `None`, otherwise
     returns the internal type.
     """
-    assert optional is not None, "Unwrap called on None"
+    if optional is None:
+        raise ValueError("Unwrap called on None")
     return optional
 
 

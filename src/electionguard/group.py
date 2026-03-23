@@ -196,7 +196,8 @@ def mult_inv_p(e: ElementModPOrQorInt) -> ElementModP:
     :param e:  An element in [1, P).
     """
     e = _get_mpz(e)
-    assert e != 0, "No multiplicative inverse for zero"
+    if e == 0:
+        raise ValueError("No multiplicative inverse for zero")
     return ElementModP(powmod(e, -1, get_large_prime()))
 
 
