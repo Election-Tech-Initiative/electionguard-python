@@ -282,7 +282,8 @@ def elgamal_add(*ciphertexts: ElGamalCiphertext) -> ElGamalCiphertext:
     Homomorphically accumulates one or more ElGamal ciphertexts by pairwise multiplication. The exponents
     of vote counters will add.
     """
-    assert len(ciphertexts) != 0, "Must have one or more ciphertexts for elgamal_add"
+    if len(ciphertexts) == 0:
+        raise ValueError("Must have one or more ciphertexts for elgamal_add")
 
     result = ciphertexts[0]
     for c in ciphertexts[1:]:

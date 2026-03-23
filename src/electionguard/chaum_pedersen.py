@@ -389,9 +389,10 @@ def make_disjunctive_chaum_pedersen(
     :param plaintext: Zero or one
     """
 
-    assert (
-        0 <= plaintext <= 1
-    ), "make_disjunctive_chaum_pedersen only supports plaintexts of 0 or 1"
+    if not (0 <= plaintext <= 1):
+        raise ValueError(
+            "make_disjunctive_chaum_pedersen only supports plaintexts of 0 or 1"
+        )
     if plaintext == 0:
         return make_disjunctive_chaum_pedersen_zero(message, r, k, q, seed)
     return make_disjunctive_chaum_pedersen_one(message, r, k, q, seed)
