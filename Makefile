@@ -17,6 +17,7 @@ environment:
 	pip3 install 'poetry==1.8.3'
 	poetry config virtualenvs.in-project true 
 	poetry install
+	poetry run pip install setuptools
 	@echo 🚨 Be sure to add poetry to PATH
 	make fetch-sample-data
 
