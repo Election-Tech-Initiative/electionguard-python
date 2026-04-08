@@ -24,11 +24,13 @@ environment:
 install:
 	@echo 🔧 INSTALL
 	poetry install
+	poetry run pip install setuptools
 
 build:
 	@echo 🔨 BUILD
 	poetry build
 	poetry install 
+	poetry run pip install setuptools
 
 openssl-fix:
 	export LDFLAGS=-L/usr/local/opt/openssl/lib
