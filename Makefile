@@ -16,6 +16,7 @@ environment:
 	python3 -m pip install -U pip
 	pip3 install 'poetry==1.8.3'
 	poetry config virtualenvs.in-project true 
+	poetry config installer.modern-installation false
 	printf "Cython<3\n" > /tmp/pip-constraints.txt
 	PIP_CONSTRAINT=/tmp/pip-constraints.txt poetry install
 	poetry run pip install 'setuptools<81'
