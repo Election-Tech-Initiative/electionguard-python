@@ -82,7 +82,7 @@ jobs:
 
   mac_check:
     name: MacOS Check
-    runs-on: macos-13
+    runs-on: macos-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v2
