@@ -64,7 +64,7 @@ class DecryptionMediator:
         self,
         guardian_key: ElectionPublicKey,
         tally_share: DecryptionShare,
-        ballot_shares: Dict[BallotId, Optional[DecryptionShare]] = None,
+        ballot_shares: Optional[Dict[BallotId, Optional[DecryptionShare]]] = None,
     ) -> None:
         """
         Announce that a Guardian is present and participating in the decryption.

@@ -14,6 +14,7 @@ from electionguard.schnorr import SchnorrProof
 from electionguard_gui.eel_utils import utc_to_str
 from electionguard_gui.services.authorization_service import AuthorizationService
 
+
 # pylint: disable=too-many-instance-attributes
 class KeyCeremonyDto:
     """A key ceremony for serializing to the front-end GUI and providing helper functions to Python."""

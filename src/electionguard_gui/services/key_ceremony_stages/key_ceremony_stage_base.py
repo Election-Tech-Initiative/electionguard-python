@@ -1,4 +1,4 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 from pymongo.database import Database
 
 from electionguard_gui.models.key_ceremony_dto import KeyCeremonyDto
@@ -39,10 +39,12 @@ class KeyCeremonyStageBase(ABC):
         self.log = log_service
         self._guardian_service = guardian_service
 
+    @abstractmethod
     def should_run(
         self, key_ceremony: KeyCeremonyDto, state: KeyCeremonyStates
     ) -> bool:
-        pass
+        raise NotImplementedError
 
+    @abstractmethod
     def run(self, db: Database, key_ceremony: KeyCeremonyDto) -> None:
-        pass
+        raise NotImplementedError

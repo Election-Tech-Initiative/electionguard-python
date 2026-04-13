@@ -289,21 +289,21 @@ def compute_compensated_decryption_share_for_contest(
 
     selections: Dict[SelectionId, CiphertextCompensatedDecryptionSelection] = {}
 
-    selection_decryptions: List[
-        Optional[CiphertextCompensatedDecryptionSelection]
-    ] = scheduler.schedule(
-        compute_compensated_decryption_share_for_selection,
-        [
-            (
-                missing_guardian_coordinate,
-                present_guardian_key,
-                missing_guardian_key,
-                selection,
-                context,
-            )
-            for selection in contest.selections
-        ],
-        with_shared_resources=True,
+    selection_decryptions: List[Optional[CiphertextCompensatedDecryptionSelection]] = (
+        scheduler.schedule(
+            compute_compensated_decryption_share_for_selection,
+            [
+                (
+                    missing_guardian_coordinate,
+                    present_guardian_key,
+                    missing_guardian_key,
+                    selection,
+                    context,
+                )
+                for selection in contest.selections
+            ],
+            with_shared_resources=True,
+        )
     )
 
     for decryption in selection_decryptions:
@@ -425,7 +425,7 @@ def partially_decrypt(
     key_pair: ElectionKeyPair,
     elgamal: ElGamalCiphertext,
     extended_base_hash: ElementModQ,
-    nonce_seed: ElementModQ = None,
+    nonce_seed: Optional[ElementModQ] = None,
 ) -> Tuple[ElementModP, ChaumPedersenProof]:
     """
     Compute a partial decryption of an elgamal encryption
@@ -488,7 +488,7 @@ def decrypt_with_threshold(
     coordinate: ElementModQ,
     ciphertext: ElGamalCiphertext,
     extended_base_hash: ElementModQ,
-    nonce_seed: ElementModQ = None,
+    nonce_seed: Optional[ElementModQ] = None,
 ) -> Optional[Tuple[ElementModP, ChaumPedersenProof]]:
     """
     Compute a compensated partial decryption of an elgamal encryption

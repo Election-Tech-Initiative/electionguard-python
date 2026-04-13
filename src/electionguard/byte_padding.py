@@ -1,8 +1,9 @@
 from enum import IntEnum
+from typing import Literal
 
 
 _PAD_BYTE = b"\x00"
-_BYTE_ORDER = "big"
+_BYTE_ORDER: Literal["little", "big"] = "big"
 _PAD_INDICATOR_SIZE = 2
 
 

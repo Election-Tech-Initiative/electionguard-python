@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from .elgamal import ElGamalKeyPair
 from .group import (
@@ -61,7 +61,7 @@ class ElectionPolynomial:
 
 
 def generate_polynomial(
-    number_of_coefficients: int, nonce: ElementModQ = None
+    number_of_coefficients: int, nonce: Optional[ElementModQ] = None
 ) -> ElectionPolynomial:
     """
     Generates a polynomial for sharing election keys
@@ -99,7 +99,7 @@ def compute_polynomial_coordinate(
     exponent_modifier_mod_q = ElementModQ(exponent_modifier)
 
     computed_value = ZERO_MOD_Q
-    for (i, coefficient) in enumerate(polynomial.coefficients):
+    for i, coefficient in enumerate(polynomial.coefficients):
         exponent = pow_q(exponent_modifier_mod_q, i)
         factor = mult_q(coefficient.value, exponent)
         computed_value = add_q(computed_value, factor)
@@ -148,7 +148,7 @@ def verify_polynomial_coordinate(
     exponent_modifier_mod_q = ElementModQ(exponent_modifier)
 
     commitment_output = ONE_MOD_P
-    for (i, commitment) in enumerate(commitments):
+    for i, commitment in enumerate(commitments):
         exponent = pow_p(exponent_modifier_mod_q, i)
         factor = pow_p(commitment, exponent)
         commitment_output = mult_p(commitment_output, factor)

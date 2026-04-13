@@ -728,9 +728,10 @@ class TestEncrypt(BaseTestCase):
         """
         This test is for https://github.com/microsoft/electionguard-python/issues/459
         """
-        with patch("electionguard.encrypt.encrypt_contest") as patched_contest, patch(
-            "electionguard.encrypt.encrypt_selection"
-        ) as patched_selection:
+        with (
+            patch("electionguard.encrypt.encrypt_contest") as patched_contest,
+            patch("electionguard.encrypt.encrypt_selection") as patched_selection,
+        ):
             # Arrange
             keypair = elgamal_keypair_from_secret(int_to_q(2))
             manifest = election_factory.get_fake_manifest()

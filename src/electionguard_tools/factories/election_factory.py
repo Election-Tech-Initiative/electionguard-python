@@ -244,7 +244,7 @@ class ElectionFactory:
 
     # TODO: Move to ballot Factory?
     def get_fake_ballot(
-        self, manifest: Manifest = None, ballot_id: str = None
+        self, manifest: Optional[Manifest] = None, ballot_id: Optional[str] = None
     ) -> PlaintextBallot:
         """Get a single mock Ballot object that is manually constructed with default values."""
         if manifest is None:

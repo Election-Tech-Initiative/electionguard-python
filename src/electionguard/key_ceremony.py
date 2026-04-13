@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List, Type, TypeVar
+from typing import List, Type, TypeVar, Optional
 
 from .serialize import padded_decode, padded_encode
 from .election_polynomial import (
@@ -184,7 +184,10 @@ class CoordinateData:
 
 
 def generate_election_key_pair(
-    guardian_id: str, sequence_order: int, quorum: int, nonce: ElementModQ = None
+    guardian_id: str,
+    sequence_order: int,
+    quorum: int,
+    nonce: Optional[ElementModQ] = None,
 ) -> ElectionKeyPair:
     """
     Generate election key pair, proof, and polynomial

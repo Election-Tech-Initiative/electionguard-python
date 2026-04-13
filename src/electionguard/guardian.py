@@ -151,11 +151,13 @@ class Guardian:
         self,
         key_pair: ElectionKeyPair,
         ceremony_details: CeremonyDetails,
-        election_public_keys: Dict[GuardianId, ElectionPublicKey] = None,
-        partial_key_backups: Dict[GuardianId, ElectionPartialKeyBackup] = None,
-        backups_to_share: Dict[GuardianId, ElectionPartialKeyBackup] = None,
-        guardian_election_partial_key_verifications: Dict[
-            GuardianId, ElectionPartialKeyVerification
+        election_public_keys: Optional[Dict[GuardianId, ElectionPublicKey]] = None,
+        partial_key_backups: Optional[
+            Dict[GuardianId, ElectionPartialKeyBackup]
+        ] = None,
+        backups_to_share: Optional[Dict[GuardianId, ElectionPartialKeyBackup]] = None,
+        guardian_election_partial_key_verifications: Optional[
+            Dict[GuardianId, ElectionPartialKeyVerification]
         ] = None,
     ) -> None:
         """
@@ -218,7 +220,7 @@ class Guardian:
         sequence_order: int,
         number_of_guardians: int,
         quorum: int,
-        nonce: ElementModQ = None,
+        nonce: Optional[ElementModQ] = None,
     ) -> "Guardian":
         """Creates a guardian with an `ElementModQ` value that will be used to generate
         the `ElectionKeyPair`. If no nonce provided, this will be generated automatically.
@@ -577,7 +579,7 @@ _SHARE = TypeVar("_SHARE")
 
 
 def get_valid_ballot_shares(
-    ballot_shares: Dict[BallotId, Optional[_SHARE]]
+    ballot_shares: Dict[BallotId, Optional[_SHARE]],
 ) -> Dict[BallotId, _SHARE]:
     """Get valid ballot shares."""
     filtered_shares = {}

@@ -109,9 +109,11 @@ class DecryptionDto:
             "guardians_joined": self.guardians_joined,
             "status": self.get_status(),
             "completed_at_str": self.completed_at_str,
-            "spoiled_ballots": list(self.plaintext_spoiled_ballots.keys())
-            if self.plaintext_spoiled_ballots
-            else [],
+            "spoiled_ballots": (
+                list(self.plaintext_spoiled_ballots.keys())
+                if self.plaintext_spoiled_ballots
+                else []
+            ),
             "can_join": self.can_join,
             "created_by": self.created_by,
             "created_at": self.created_at_str,

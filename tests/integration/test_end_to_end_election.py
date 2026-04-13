@@ -80,6 +80,7 @@ guardians_directory = path.join(ELECTION_RECORD_DIR, GUARDIANS_DIR)
 submitted_ballots_directory = path.join(ELECTION_RECORD_DIR, SUBMITTED_BALLOTS_DIR)
 spoiled_ballots_directory = path.join(ELECTION_RECORD_DIR, SPOILED_BALLOTS_DIR)
 
+
 # pylint: disable=too-many-instance-attributes
 class TestEndToEndElection(BaseTestCase):
     """

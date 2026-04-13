@@ -2,7 +2,7 @@
 # support for computing discrete logs, with a cache so they're never recomputed
 
 import asyncio
-from typing import Dict, Tuple
+from typing import Dict, Tuple, Optional
 
 from .constants import get_generator
 from .singleton import Singleton
@@ -91,7 +91,7 @@ async def compute_discrete_log_async(
 
 
 def precompute_discrete_log_cache(
-    max_exponent: int, cache: DiscreteLogCache = None
+    max_exponent: int, cache: Optional[DiscreteLogCache] = None
 ) -> DiscreteLogCache:
     """
     Precompute the discrete log by the max exponent.

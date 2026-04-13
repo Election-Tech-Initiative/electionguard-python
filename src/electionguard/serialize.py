@@ -8,8 +8,8 @@ from typing import Any, List, Type, TypeVar, Union
 
 from dacite import Config, from_dict
 from dateutil import parser
-from pydantic.json import pydantic_encoder
-from pydantic.tools import schema_json_of
+from pydantic_core import to_jsonable_python
+from pydantic.v1.tools import schema_json_of
 
 
 from .big_integer import BigInteger
@@ -27,7 +27,6 @@ _file_extension = "json"
 
 _config = Config(
     cast=[
-        datetime,
         BigInteger,
         ContestErrorType,
         ElementModP,
@@ -84,7 +83,7 @@ def from_list_raw(type_: Type[_T], raw: Union[str, bytes]) -> List[_T]:
 def to_raw(data: Any) -> str:
     """Serialize data to raw json format."""
 
-    return json.dumps(data, default=pydantic_encoder)
+    return json.dumps(to_jsonable_python(data))
 
 
 def from_file_wrapper(type_: Type[_T], file: TextIOWrapper) -> _T:
@@ -139,7 +138,7 @@ def to_file(
         "w",
         encoding=BYTE_ENCODING,
     ) as outfile:
-        json.dump(data, outfile, default=pydantic_encoder)
+        json.dump(to_jsonable_python(data), outfile)
         return path
 
 

@@ -1,4 +1,5 @@
 """Creating and managing mathematic constants for the election."""
+
 from os import getenv
 
 from dataclasses import dataclass

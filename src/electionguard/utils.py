@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from enum import Enum
 from re import sub
-from typing import Callable, List, Optional, TypeVar
+from typing import Callable, List, Optional, TypeVar, Literal
 from base64 import b16decode
 
 from .type import ContestId, SelectionId
@@ -9,7 +9,7 @@ from .type import ContestId, SelectionId
 _T = TypeVar("_T")
 _U = TypeVar("_U")
 
-BYTE_ORDER = "big"
+BYTE_ORDER: Literal["little", "big"] = "big"
 BYTE_ENCODING = "utf-8"
 
 

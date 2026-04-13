@@ -116,17 +116,17 @@ class Container(containers.DeclarativeContainer):
         ballot_upload_service=ballot_upload_service,
         election_service=election_service,
     )
-    decryption_s2_announce_service: Factory[
-        DecryptionS2AnnounceService
-    ] = providers.Factory(
-        DecryptionS2AnnounceService,
-        log_service=log_service,
-        db_service=db_service,
-        decryption_service=decryption_service,
-        auth_service=authorization_service,
-        guardian_service=guardian_service,
-        ballot_upload_service=ballot_upload_service,
-        election_service=election_service,
+    decryption_s2_announce_service: Factory[DecryptionS2AnnounceService] = (
+        providers.Factory(
+            DecryptionS2AnnounceService,
+            log_service=log_service,
+            db_service=db_service,
+            decryption_service=decryption_service,
+            auth_service=authorization_service,
+            guardian_service=guardian_service,
+            ballot_upload_service=ballot_upload_service,
+            election_service=election_service,
+        )
     )
 
     # key ceremony services
@@ -139,60 +139,60 @@ class Container(containers.DeclarativeContainer):
         key_ceremony_state_service=key_ceremony_state_service,
         guardian_service=guardian_service,
     )
-    key_ceremony_s2_announce_service: Factory[
-        KeyCeremonyS2AnnounceService
-    ] = providers.Factory(
-        KeyCeremonyS2AnnounceService,
-        log_service=log_service,
-        db_service=db_service,
-        key_ceremony_service=key_ceremony_service,
-        auth_service=authorization_service,
-        key_ceremony_state_service=key_ceremony_state_service,
-        guardian_service=guardian_service,
+    key_ceremony_s2_announce_service: Factory[KeyCeremonyS2AnnounceService] = (
+        providers.Factory(
+            KeyCeremonyS2AnnounceService,
+            log_service=log_service,
+            db_service=db_service,
+            key_ceremony_service=key_ceremony_service,
+            auth_service=authorization_service,
+            key_ceremony_state_service=key_ceremony_state_service,
+            guardian_service=guardian_service,
+        )
     )
-    key_ceremony_s3_make_backup_service: Factory[
-        KeyCeremonyS3MakeBackupService
-    ] = providers.Factory(
-        KeyCeremonyS3MakeBackupService,
-        log_service=log_service,
-        db_service=db_service,
-        key_ceremony_service=key_ceremony_service,
-        auth_service=authorization_service,
-        key_ceremony_state_service=key_ceremony_state_service,
-        guardian_service=guardian_service,
+    key_ceremony_s3_make_backup_service: Factory[KeyCeremonyS3MakeBackupService] = (
+        providers.Factory(
+            KeyCeremonyS3MakeBackupService,
+            log_service=log_service,
+            db_service=db_service,
+            key_ceremony_service=key_ceremony_service,
+            auth_service=authorization_service,
+            key_ceremony_state_service=key_ceremony_state_service,
+            guardian_service=guardian_service,
+        )
     )
-    key_ceremony_s4_share_backup_service: Factory[
-        KeyCeremonyS4ShareBackupService
-    ] = providers.Factory(
-        KeyCeremonyS4ShareBackupService,
-        log_service=log_service,
-        db_service=db_service,
-        key_ceremony_service=key_ceremony_service,
-        auth_service=authorization_service,
-        key_ceremony_state_service=key_ceremony_state_service,
-        guardian_service=guardian_service,
+    key_ceremony_s4_share_backup_service: Factory[KeyCeremonyS4ShareBackupService] = (
+        providers.Factory(
+            KeyCeremonyS4ShareBackupService,
+            log_service=log_service,
+            db_service=db_service,
+            key_ceremony_service=key_ceremony_service,
+            auth_service=authorization_service,
+            key_ceremony_state_service=key_ceremony_state_service,
+            guardian_service=guardian_service,
+        )
     )
-    key_ceremony_s5_verification_service: Factory[
-        KeyCeremonyS5VerifyBackupService
-    ] = providers.Factory(
-        KeyCeremonyS5VerifyBackupService,
-        log_service=log_service,
-        db_service=db_service,
-        key_ceremony_service=key_ceremony_service,
-        auth_service=authorization_service,
-        key_ceremony_state_service=key_ceremony_state_service,
-        guardian_service=guardian_service,
+    key_ceremony_s5_verification_service: Factory[KeyCeremonyS5VerifyBackupService] = (
+        providers.Factory(
+            KeyCeremonyS5VerifyBackupService,
+            log_service=log_service,
+            db_service=db_service,
+            key_ceremony_service=key_ceremony_service,
+            auth_service=authorization_service,
+            key_ceremony_state_service=key_ceremony_state_service,
+            guardian_service=guardian_service,
+        )
     )
-    key_ceremony_s6_publish_key_service: Factory[
-        KeyCeremonyS6PublishKeyService
-    ] = providers.Factory(
-        KeyCeremonyS6PublishKeyService,
-        log_service=log_service,
-        db_service=db_service,
-        key_ceremony_service=key_ceremony_service,
-        auth_service=authorization_service,
-        key_ceremony_state_service=key_ceremony_state_service,
-        guardian_service=guardian_service,
+    key_ceremony_s6_publish_key_service: Factory[KeyCeremonyS6PublishKeyService] = (
+        providers.Factory(
+            KeyCeremonyS6PublishKeyService,
+            log_service=log_service,
+            db_service=db_service,
+            key_ceremony_service=key_ceremony_service,
+            auth_service=authorization_service,
+            key_ceremony_state_service=key_ceremony_state_service,
+            guardian_service=guardian_service,
+        )
     )
 
     # components
@@ -211,12 +211,12 @@ class Container(containers.DeclarativeContainer):
         output_setup_files_step=output_setup_files_step,
         guardian_service=guardian_service,
     )
-    create_key_ceremony_component: Factory[
-        CreateKeyCeremonyComponent
-    ] = providers.Factory(
-        CreateKeyCeremonyComponent,
-        key_ceremony_service=key_ceremony_service,
-        auth_service=authorization_service,
+    create_key_ceremony_component: Factory[CreateKeyCeremonyComponent] = (
+        providers.Factory(
+            CreateKeyCeremonyComponent,
+            key_ceremony_service=key_ceremony_service,
+            auth_service=authorization_service,
+        )
     )
     election_list_component: Factory[ElectionListComponent] = providers.Factory(
         ElectionListComponent,
@@ -226,26 +226,26 @@ class Container(containers.DeclarativeContainer):
         ViewElectionComponent,
         election_service=election_service,
     )
-    key_ceremony_details_component: Factory[
-        KeyCeremonyDetailsComponent
-    ] = providers.Factory(
-        KeyCeremonyDetailsComponent,
-        key_ceremony_service=key_ceremony_service,
-        auth_service=authorization_service,
-        db_watcher_service=db_watcher_service,
-        key_ceremony_state_service=key_ceremony_state_service,
-        key_ceremony_s1_join_service=key_ceremony_s1_join_service,
-        key_ceremony_s2_announce_service=key_ceremony_s2_announce_service,
-        key_ceremony_s3_make_backup_service=key_ceremony_s3_make_backup_service,
-        key_ceremony_s4_share_backup_service=key_ceremony_s4_share_backup_service,
-        key_ceremony_s5_verification_service=key_ceremony_s5_verification_service,
-        key_ceremony_s6_publish_key_service=key_ceremony_s6_publish_key_service,
+    key_ceremony_details_component: Factory[KeyCeremonyDetailsComponent] = (
+        providers.Factory(
+            KeyCeremonyDetailsComponent,
+            key_ceremony_service=key_ceremony_service,
+            auth_service=authorization_service,
+            db_watcher_service=db_watcher_service,
+            key_ceremony_state_service=key_ceremony_state_service,
+            key_ceremony_s1_join_service=key_ceremony_s1_join_service,
+            key_ceremony_s2_announce_service=key_ceremony_s2_announce_service,
+            key_ceremony_s3_make_backup_service=key_ceremony_s3_make_backup_service,
+            key_ceremony_s4_share_backup_service=key_ceremony_s4_share_backup_service,
+            key_ceremony_s5_verification_service=key_ceremony_s5_verification_service,
+            key_ceremony_s6_publish_key_service=key_ceremony_s6_publish_key_service,
+        )
     )
-    export_encryption_package: Factory[
-        ExportEncryptionPackageComponent
-    ] = providers.Factory(
-        ExportEncryptionPackageComponent,
-        election_service=election_service,
+    export_encryption_package: Factory[ExportEncryptionPackageComponent] = (
+        providers.Factory(
+            ExportEncryptionPackageComponent,
+            election_service=election_service,
+        )
     )
     upload_ballots_component: Factory[UploadBallotsComponent] = providers.Factory(
         UploadBallotsComponent,
@@ -265,25 +265,25 @@ class Container(containers.DeclarativeContainer):
         decryption_s2_announce_service=decryption_s2_announce_service,
         db_watcher_service=db_watcher_service,
     )
-    export_election_record_component: Factory[
-        ExportElectionRecordComponent
-    ] = providers.Factory(
-        ExportElectionRecordComponent,
-        election_service=election_service,
-        decryption_service=decryption_service,
-        ballot_upload_service=ballot_upload_service,
+    export_election_record_component: Factory[ExportElectionRecordComponent] = (
+        providers.Factory(
+            ExportElectionRecordComponent,
+            election_service=election_service,
+            decryption_service=decryption_service,
+            ballot_upload_service=ballot_upload_service,
+        )
     )
     view_tally_component: Factory[ViewTallyComponent] = providers.Factory(
         ViewTallyComponent,
         decryption_service=decryption_service,
         election_service=election_service,
     )
-    view_spoiled_ballot_component: Factory[
-        ViewSpoiledBallotComponent
-    ] = providers.Factory(
-        ViewSpoiledBallotComponent,
-        decryption_service=decryption_service,
-        election_service=election_service,
+    view_spoiled_ballot_component: Factory[ViewSpoiledBallotComponent] = (
+        providers.Factory(
+            ViewSpoiledBallotComponent,
+            decryption_service=decryption_service,
+            election_service=election_service,
+        )
     )
 
     # main

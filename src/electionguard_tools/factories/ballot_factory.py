@@ -97,7 +97,7 @@ class BallotFactory:
     def get_fake_ballot(
         self,
         internal_manifest: InternalManifest,
-        ballot_id: str = None,
+        ballot_id: Optional[str] = None,
         allow_null_votes: bool = False,
     ) -> PlaintextBallot:
         """

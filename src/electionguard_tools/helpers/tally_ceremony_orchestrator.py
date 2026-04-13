@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from electionguard.ballot import SubmittedBallot
 from electionguard.election import CiphertextElectionContext
@@ -18,7 +18,7 @@ class TallyCeremonyOrchestrator:
         mediator: DecryptionMediator,
         context: CiphertextElectionContext,
         ciphertext_tally: CiphertextTally,
-        submitted_ballots: List[SubmittedBallot] = None,
+        submitted_ballots: Optional[List[SubmittedBallot]] = None,
     ) -> None:
         """
         Perform the necessary setup to ensure that a mediator can decrypt with all guardians available
@@ -39,7 +39,7 @@ class TallyCeremonyOrchestrator:
         mediator: DecryptionMediator,
         context: CiphertextElectionContext,
         ciphertext_tally: CiphertextTally,
-        submitted_ballots: List[SubmittedBallot] = None,
+        submitted_ballots: Optional[List[SubmittedBallot]] = None,
     ) -> None:
         """
         Perform the necessary setup to ensure that a mediator can decrypt when there are guardians missing
@@ -63,7 +63,7 @@ class TallyCeremonyOrchestrator:
         mediator: DecryptionMediator,
         context: CiphertextElectionContext,
         ciphertext_tally: CiphertextTally,
-        submitted_ballots: List[SubmittedBallot] = None,
+        submitted_ballots: Optional[List[SubmittedBallot]] = None,
     ) -> None:
         """
         Each available guardian announces their presence. The missing guardians are also announced
@@ -101,7 +101,7 @@ class TallyCeremonyOrchestrator:
         mediator: DecryptionMediator,
         context: CiphertextElectionContext,
         ciphertext_tally: CiphertextTally,
-        submitted_ballots: List[SubmittedBallot] = None,
+        submitted_ballots: Optional[List[SubmittedBallot]] = None,
     ) -> None:
         """
         Available guardians generate the compensated decryption shares for the missing guardians

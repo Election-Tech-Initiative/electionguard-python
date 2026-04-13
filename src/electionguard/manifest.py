@@ -95,6 +95,7 @@ SUPPORTED_VOTE_VARIATIONS = [
     VoteVariationType.super_majority,
 ]
 
+
 # pylint: disable=super-init-not-called
 @dataclass(eq=True, unsafe_hash=True)
 class AnnotatedString(CryptoHashable):
@@ -167,7 +168,7 @@ class InternationalizedText(CryptoHashable):
     # can potentially be removed with future python version >3.9.7
     def __init__(
         self,
-        text: List[Language] = None,
+        text: Optional[List[Language]] = None,
     ):
         self.text = text if text else []
 
@@ -829,7 +830,7 @@ class Manifest(CryptoHashable):
     def _replace_candidate_ids_with_names(
         self, selections: Dict[str, str], candidates: Dict[str, str]
     ) -> None:
-        for (selection_id, candidate_id) in selections.items():
+        for selection_id, candidate_id in selections.items():
             candidate_name = candidates.get(candidate_id)
             if candidate_name is not None:
                 selections.update({selection_id: candidate_name})

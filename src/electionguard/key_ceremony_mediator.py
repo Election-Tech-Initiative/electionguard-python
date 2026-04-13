@@ -122,7 +122,7 @@ class KeyCeremonyMediator:
         """
         Share all backups designated for a specific guardian
         """
-        if not self.all_guardians_announced() or not self.all_backups_available:
+        if not self.all_guardians_announced() or not self.all_backups_available():
             return None
         if not requesting_guardian_id:
             return list(self._election_partial_key_backups.values())

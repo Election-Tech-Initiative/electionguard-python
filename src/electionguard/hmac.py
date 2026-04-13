@@ -1,10 +1,10 @@
 """Implementation of Hashing for Message Authentication Codes (HMAC)"""
 
 from hmac import digest
-from typing import Optional
+from typing import Optional, Literal
 
 _BYTE_LENGTH = 4
-_BYTE_ORDER = "little"
+_BYTE_ORDER: Literal["little", "big"] = "little"
 
 
 def get_hmac(

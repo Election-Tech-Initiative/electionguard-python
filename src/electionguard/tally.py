@@ -129,17 +129,17 @@ class CiphertextTallyContest(OrderedObjectBase):
             scheduler = Scheduler()
 
         # iterate through the tally selections and add the new value to the total
-        results: List[
-            Tuple[SelectionId, Optional[ElGamalCiphertext]]
-        ] = scheduler.schedule(
-            self._accumulate_selections,
-            [
-                (key, selection_tally, contest_selections)
-                for (key, selection_tally) in self.selections.items()
-            ],
+        results: List[Tuple[SelectionId, Optional[ElGamalCiphertext]]] = (
+            scheduler.schedule(
+                self._accumulate_selections,
+                [
+                    (key, selection_tally, contest_selections)
+                    for (key, selection_tally) in self.selections.items()
+                ],
+            )
         )
 
-        for (key, ciphertext) in results:
+        for key, ciphertext in results:
             if ciphertext is None:
                 return False
             self.selections[key].ciphertext = ciphertext
@@ -265,9 +265,9 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
         """
         Append a collection of Ballots to the tally and recalculate
         """
-        cast_ballot_selections: Dict[
-            SelectionId, Dict[BallotId, ElGamalCiphertext]
-        ] = {}
+        cast_ballot_selections: Dict[SelectionId, Dict[BallotId, ElGamalCiphertext]] = (
+            {}
+        )
         for ballot in ballots:
             # get the value of the dict
             ballot_value = ballot[1]
