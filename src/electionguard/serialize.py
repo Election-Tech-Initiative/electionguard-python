@@ -84,7 +84,7 @@ def from_list_raw(type_: Type[_T], raw: Union[str, bytes]) -> List[_T]:
 def to_raw(data: Any) -> str:
     """Serialize data to raw json format."""
 
-    return json.dumps(data, default=pydantic_encoder)
+    return json.dumps(data, ensure_ascii=False, default=pydantic_encoder)
 
 
 def from_file_wrapper(type_: Type[_T], file: TextIOWrapper) -> _T:
@@ -139,7 +139,7 @@ def to_file(
         "w",
         encoding=BYTE_ENCODING,
     ) as outfile:
-        json.dump(data, outfile, default=pydantic_encoder)
+        json.dump(data, outfile, ensure_ascii=False, default=pydantic_encoder)
         return path
 
 
