@@ -41,7 +41,7 @@ RUN pyenv install 3.9.9 && \
 ##################################################################################
 
 RUN apt-get install -y libgmp-dev libmpfr-dev libmpc-dev
-RUN pip install 'poetry==1.1.13'
+RUN pip install 'poetry==2.2.1'
 
 ##################################################################################
 # Poetry Install

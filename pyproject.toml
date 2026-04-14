@@ -1,55 +1,56 @@
-[tool.poetry]
+[project]
 name = "electionguard"
 version = "1.4.0"
+requires-python = ">=3.9.5,<4.0.0"
 description = "ElectionGuard: Support for e2e verified elections."
 license = "MIT"
-authors = ["Microsoft <electionguard@microsoft.com>"]
+authors = [{"name" = "Microsoft", "email" = "electionguard@microsoft.com"}]
 maintainers = []
 readme = "README.md"
-homepage = "https://microsoft.github.io/electionguard-python"
-repository = "https://github.com/microsoft/electionguard-python"
-documentation = "https://microsoft.github.io/electionguard-python"
 keywords = []
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: Unix",
     "Operating System :: POSIX",
     "Operating System :: MacOS",
     "Operating System :: Microsoft :: Windows",
     "Programming Language :: Python",
-    "Topic :: Utilities"]
-packages = [
-  { include = "electionguard", from = "src" }, 
-  { include = "electionguard_tools", from = "src" }, 
-  { include = "electionguard_cli", from = "src" },
-  { include = "electionguard_gui", from = "src" },
+    "Topic :: Utilities"
+]
+dependencies = [
+  "gmpy2>=2.0.8,<3.0.0",
+  "psutil>=5.7.2",
+  "pydantic==2.13.0",
+  "click>=8.1.0,<9.0.0",
+  "dacite>=1.6.0,<2.0.0",
+  "python-dateutil>=2.8.2,<3.0.0",
+  "types-python-dateutil>=2.8.14,<3.0.0",
+  "Eel[jinja2]>=0.14.0,<0.15.0",
+  "pymongo>=4.1.1,<5.0.0",
+  "dependency-injector>=4.39.1,<5.0.0",
+  "pytest-mock>=3.8.2,<4.0.0",
 ]
 
-
-[tool.poetry.urls]
+[project.urls]
+homepage = "https://microsoft.github.io/electionguard-python"
+repository = "https://github.com/microsoft/electionguard-python"
+documentation = "https://microsoft.github.io/electionguard-python"
 "GitHub Pages" = "https://microsoft.github.io/electionguard-python"
 "Read the Docs" = "https://electionguard-python.readthedocs.io"
 "Releases" = "https://github.com/microsoft/electionguard-python/releases"
 "Milestones" = "https://github.com/microsoft/electionguard-python/milestones"
 "Issue Tracker" = "https://github.com/microsoft/electionguard-python/issues"
 
-[tool.poetry.dependencies]
-python = "^3.9.5"
-gmpy2 = "^2.0.8"
-psutil = ">=5.7.2"
-pydantic = "2.13.0"
-click = "^8.1.0"
-dacite = "^1.6.0"
-python-dateutil = "^2.8.2"
-types-python-dateutil = "^2.8.14"
-Eel = {extras = ["jinja2"], version = "^0.14.0"}
-pymongo = "^4.1.1"
-dependency-injector = "^4.39.1"
-pytest-mock = "^3.8.2"
+[tool.poetry]
+packages = [
+  { include = "electionguard", from = "src" },
+  { include = "electionguard_tools", from = "src" },
+  { include = "electionguard_cli", from = "src" },
+  { include = "electionguard_gui", from = "src" },
+]
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 atomicwrites = "*"
 black = "25.11.0"
 coverage = "*"
@@ -70,7 +71,7 @@ secretstorage = "*"
 twine = "*"
 typish = '*'
 
-[tool.poetry.scripts]
+[project.scripts]
 eg = 'electionguard_cli.start:cli'
 egui = 'electionguard_gui.start:run'
 
@@ -111,7 +112,7 @@ source = ["src/electionguard"]
 directory = "coverage_html_report"
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
+requires = ["poetry-core>=2.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.mypy]
