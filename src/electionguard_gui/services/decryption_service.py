@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 from bson import ObjectId
 from pymongo.database import Database
@@ -58,7 +58,7 @@ class DecryptionService(ServiceBase):
             "ciphertext_tally": None,
             "completed_at": None,
             "created_by": self._auth_service.get_user_id(),
-            "created_at": datetime.utcnow(),
+            "created_at": datetime.now(timezone.utc),
         }
         self._log.trace(f"inserting decryption for: {election.id}")
         insert_result = db.decryptions.insert_one(decryption)
@@ -157,7 +157,7 @@ class DecryptionService(ServiceBase):
             {"_id": ObjectId(decryption_id)},
             {
                 "$set": {
-                    "completed_at": datetime.utcnow(),
+                    "completed_at": datetime.now(timezone.utc),
                     "plaintext_tally": to_raw(plaintext_tally),
                     "plaintext_spoiled_ballots": plaintext_spoiled_ballots_dict,
                     "lagrange_coefficients": to_raw(lagrange_coefficients),

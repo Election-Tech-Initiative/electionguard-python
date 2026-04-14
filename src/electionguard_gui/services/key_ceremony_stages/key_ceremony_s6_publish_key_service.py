@@ -1,4 +1,4 @@
-from gridfs import Database
+from pymongo.database import Database
 from electionguard_gui.models.key_ceremony_dto import KeyCeremonyDto
 from electionguard_gui.models.key_ceremony_states import KeyCeremonyStates
 from electionguard_gui.services.guardian_service import (

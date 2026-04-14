@@ -1,5 +1,5 @@
 from typing import Any, List
-from datetime import datetime
+from datetime import datetime, timezone
 from pymongo.database import Database
 from bson import ObjectId
 from electionguard.key_ceremony import (
@@ -55,7 +55,7 @@ class KeyCeremonyService(ServiceBase):
             "verifications": [],
             "joint_key": None,
             "created_by": self._auth_service.get_user_id(),
-            "created_at": datetime.utcnow(),
+            "created_at": datetime.now(timezone.utc),
             "completed_at": None,
         }
         inserted_id = db.key_ceremonies.insert_one(key_ceremony).inserted_id
@@ -152,7 +152,7 @@ class KeyCeremonyService(ServiceBase):
     ) -> None:
         db.key_ceremonies.update_one(
             {"_id": ObjectId(key_ceremony_id)},
-            {"$set": {"completed_at": datetime.utcnow()}},
+            {"$set": {"completed_at": datetime.now(timezone.utc)}},
         )
 
     def get_completed(self, db: Database) -> List[KeyCeremonyDto]:

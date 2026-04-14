@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from unittest.mock import MagicMock, patch
 
@@ -52,7 +52,7 @@ class TestDecryptionDto(BaseTestCase):
             {
                 "guardians_joined": ["g1"],
                 "guardians": 1,
-                "completed_at": datetime.utcnow(),
+                "completed_at": datetime.now(timezone.utc),
             }
         )
 

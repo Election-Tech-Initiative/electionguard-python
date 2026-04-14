@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field, replace
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from functools import cached_property, reduce
 from typing import (
@@ -1018,7 +1018,7 @@ def make_ciphertext_submitted_ballot(
     contest_hashes = [contest.crypto_hash for contest in sequence_order_sort(contests)]
     contest_hash = hash_elems(object_id, manifest_hash, *contest_hashes)
 
-    timestamp = to_ticks(datetime.utcnow()) if timestamp is None else timestamp
+    timestamp = to_ticks(datetime.now(timezone.utc)) if timestamp is None else timestamp
     if code_seed is None:
         code_seed = manifest_hash
     if ballot_code is None:

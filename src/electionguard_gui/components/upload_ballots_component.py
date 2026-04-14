@@ -1,6 +1,6 @@
 import os
 from typing import Any
-from datetime import datetime
+from datetime import datetime, timezone
 import eel
 from electionguard.encrypt import EncryptionDevice
 from electionguard.serialize import from_file, from_raw
@@ -44,7 +44,7 @@ class UploadBallotsComponent(ComponentBase):
             election = self._election_service.get(db, election_id)
             if election is None:
                 return eel_fail(f"Election {election_id} not found")
-            created_at = datetime.utcnow()
+            created_at = datetime.now(timezone.utc)
             ballot_upload_id = self._ballot_upload_service.create(
                 db,
                 election_id,

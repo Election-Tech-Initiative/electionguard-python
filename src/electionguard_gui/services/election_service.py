@@ -1,5 +1,5 @@
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from bson import ObjectId
 from pymongo.database import Database
 from electionguard.constants import ElectionConstants
@@ -65,7 +65,7 @@ class ElectionService(ServiceBase):
             "ballot_uploads": [],
             "decryptions": [],
             "created_by": self._auth_service.get_user_id(),
-            "created_at": datetime.utcnow(),
+            "created_at": datetime.now(timezone.utc),
         }
         self._log.trace(f"inserting election: {election}")
         inserted_id = db.elections.insert_one(election).inserted_id
@@ -126,7 +126,7 @@ class ElectionService(ServiceBase):
                     "decryptions": {
                         "decryption_id": decryption_id,
                         "name": name,
-                        "created_at": datetime.utcnow(),
+                        "created_at": datetime.now(timezone.utc),
                     }
                 }
             },
