@@ -18,20 +18,20 @@ environment:
 	poetry config virtualenvs.in-project true 
 	printf "Cython<3\n" > /tmp/pip-constraints.txt
 	PIP_CONSTRAINT=/tmp/pip-constraints.txt poetry install
-	poetry run pip install 'setuptools<81'
+	poetry run pip install 'setuptools<83'
 	@echo 🚨 Be sure to add poetry to PATH
 	make fetch-sample-data
 
 install:
 	@echo 🔧 INSTALL
 	poetry install
-	poetry run pip install 'setuptools<81'
+	poetry run pip install 'setuptools<83'
 
 build:
 	@echo 🔨 BUILD
 	poetry build
 	poetry install 
-	poetry run pip install 'setuptools<81'
+	poetry run pip install 'setuptools<83'
 
 openssl-fix:
 	export LDFLAGS=-L/usr/local/opt/openssl/lib

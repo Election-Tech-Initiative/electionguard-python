@@ -1065,22 +1065,23 @@ files = [
 
 [[package]]
 name = "eel"
-version = "0.14.0"
+version = "0.18.2"
 description = "For little HTML GUI applications, with easy Python/JS interop"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.7"
 groups = ["main"]
 files = [
-    {file = "Eel-0.14.0.tar.gz", hash = "sha256:b21f88c21e050eb2b5f6296f1eeeaf57ad9a2dfbffdf1bf88b90ef05a6ffcdb9"},
+    {file = "eel-0.18.2.tar.gz", hash = "sha256:0f70b0f8aa2da57859b35d448ea89ad2102d56b206f8500f130df069e9df2c3a"},
 ]
 
 [package.dependencies]
 bottle = "*"
 bottle-websocket = "*"
 future = "*"
+importlib_resources = "*"
 jinja2 = {version = ">=2.10", optional = true, markers = "extra == \"jinja2\""}
 pyparsing = "*"
-whichcraft = "*"
+typing_extensions = "*"
 
 [package.extras]
 jinja2 = ["jinja2 (>=2.10)"]
@@ -1492,15 +1493,15 @@ zoneinfo = ["tzdata (>=2025.2) ; sys_platform == \"win32\" or sys_platform == \"
 
 [[package]]
 name = "hypothesis"
-version = "6.151.14"
+version = "6.152.1"
 description = "The property-based testing library for Python"
 optional = false
 python-versions = ">=3.10"
 groups = ["dev"]
 markers = "python_version >= \"3.11\""
 files = [
-    {file = "hypothesis-6.151.14-py3-none-any.whl", hash = "sha256:0c27a1e1092752d8c424b7f1caeb6ecfbed9af87914f510b59c1be69945e85a5"},
-    {file = "hypothesis-6.151.14.tar.gz", hash = "sha256:14fffdfdb50e816cf114f9946aebbf533d7e0920c07ddc1531889f0a22ffaa20"},
+    {file = "hypothesis-6.152.1-py3-none-any.whl", hash = "sha256:40a3619d9e0cb97b018857c7986f75cf5de2e5ec0fa8a0b172d00747758f749e"},
+    {file = "hypothesis-6.152.1.tar.gz", hash = "sha256:4f4ed934eee295dd84ee97592477d23e8dc03e9f12ae0ee30a4e7c9ef3fca3b0"},
 ]
 
 [package.dependencies]
@@ -1607,6 +1608,51 @@ doc = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "rst.linke
 enabler = ["pytest-enabler (>=3.4)"]
 perf = ["ipython"]
 test = ["packaging", "pyfakefs", "pytest (>=6,!=8.1.*)", "pytest-perf (>=0.9.2)"]
+type = ["pytest-mypy (>=1.0.1) ; platform_python_implementation != \"PyPy\""]
+
+[[package]]
+name = "importlib-resources"
+version = "6.5.2"
+description = "Read resources from Python packages"
+optional = false
+python-versions = ">=3.9"
+groups = ["main"]
+markers = "python_version < \"3.11\""
+files = [
+    {file = "importlib_resources-6.5.2-py3-none-any.whl", hash = "sha256:789cfdc3ed28c78b67a06acb8126751ced69a3d5f79c095a98298cd8a760ccec"},
+    {file = "importlib_resources-6.5.2.tar.gz", hash = "sha256:185f87adef5bcc288449d98fb4fba07cea78bc036455dd44c5fc4a2fe78fed2c"},
+]
+
+[package.dependencies]
+zipp = {version = ">=3.1.0", markers = "python_version < \"3.10\""}
+
+[package.extras]
+check = ["pytest-checkdocs (>=2.4)", "pytest-ruff (>=0.2.1) ; sys_platform != \"cygwin\""]
+cover = ["pytest-cov"]
+doc = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "rst.linker (>=1.9)", "sphinx (>=3.5)", "sphinx-lint"]
+enabler = ["pytest-enabler (>=2.2)"]
+test = ["jaraco.test (>=5.4)", "pytest (>=6,!=8.1.*)", "zipp (>=3.17)"]
+type = ["pytest-mypy"]
+
+[[package]]
+name = "importlib-resources"
+version = "7.1.0"
+description = "Read resources from Python packages"
+optional = false
+python-versions = ">=3.10"
+groups = ["main"]
+markers = "python_version >= \"3.11\""
+files = [
+    {file = "importlib_resources-7.1.0-py3-none-any.whl", hash = "sha256:1bd7b48b4088eddb2cd16382150bb515af0bd2c70128194392725f82ad2c96a1"},
+    {file = "importlib_resources-7.1.0.tar.gz", hash = "sha256:0722d4c6212489c530f2a145a34c0a7a3b4721bc96a15fada5930e2a0b760708"},
+]
+
+[package.extras]
+check = ["pytest-checkdocs (>=2.14)", "pytest-ruff (>=0.2.1) ; sys_platform != \"cygwin\""]
+cover = ["pytest-cov"]
+doc = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "rst.linker (>=1.9)", "sphinx (>=3.5)", "sphinx-lint"]
+enabler = ["pytest-enabler (>=3.4)"]
+test = ["jaraco.test (>=5.4)", "pytest (>=6,!=8.1.*)", "zipp (>=3.17)"]
 type = ["pytest-mypy (>=1.0.1) ; platform_python_implementation != \"PyPy\""]
 
 [[package]]
@@ -3063,14 +3109,14 @@ files = [
 
 [[package]]
 name = "packaging"
-version = "26.0"
+version = "26.1"
 description = "Core utilities for Python packages"
 optional = false
 python-versions = ">=3.8"
 groups = ["main", "dev"]
 files = [
-    {file = "packaging-26.0-py3-none-any.whl", hash = "sha256:b36f1fef9334a5588b4166f8bcd26a14e521f2b55e6b9de3aaa80d3ff7a37529"},
-    {file = "packaging-26.0.tar.gz", hash = "sha256:00243ae351a257117b6a241061796684b084ed1c516a08c48a3f7e147a9d80b4"},
+    {file = "packaging-26.1-py3-none-any.whl", hash = "sha256:5d9c0669c6285e491e0ced2eee587eaf67b670d94a19e94e3984a481aba6802f"},
+    {file = "packaging-26.1.tar.gz", hash = "sha256:f042152b681c4bfac5cae2742a55e103d27ab2ec0f3d88037136b6bfe7c9c5de"},
 ]
 
 [[package]]
@@ -4954,18 +5000,6 @@ files = [
 ]
 
 [[package]]
-name = "whichcraft"
-version = "0.6.1"
-description = "This package provides cross-platform cross-python shutil.which functionality."
-optional = false
-python-versions = "*"
-groups = ["main"]
-files = [
-    {file = "whichcraft-0.6.1-py2.py3-none-any.whl", hash = "sha256:deda9266fbb22b8c64fd3ee45c050d61139cd87419765f588e37c8d23e236dd9"},
-    {file = "whichcraft-0.6.1.tar.gz", hash = "sha256:acdbb91b63d6a15efbd6430d1d7b2d36e44a71697e93e19b7ded477afd9fce87"},
-]
-
-[[package]]
 name = "xdoctest"
 version = "1.3.2"
 description = "A rewrite of the builtin doctest module"
@@ -4999,12 +5033,12 @@ version = "3.23.1"
 description = "Backport of pathlib-compatible object wrapper for zip files"
 optional = false
 python-versions = ">=3.9"
-groups = ["dev"]
-markers = "platform_machine != \"ppc64le\" and platform_machine != \"s390x\" and python_version <= \"3.11\" or python_version < \"3.10\""
+groups = ["main", "dev"]
 files = [
     {file = "zipp-3.23.1-py3-none-any.whl", hash = "sha256:0b3596c50a5c700c9cb40ba8d86d9f2cc4807e9bedb06bcdf7fac85633e444dc"},
     {file = "zipp-3.23.1.tar.gz", hash = "sha256:32120e378d32cd9714ad503c1d024619063ec28aad2248dc6672ad13edfa5110"},
 ]
+markers = {main = "python_version < \"3.10\"", dev = "platform_machine != \"ppc64le\" and platform_machine != \"s390x\" and python_version <= \"3.11\" or python_version < \"3.10\""}
 
 [package.extras]
 check = ["pytest-checkdocs (>=2.4)", "pytest-ruff (>=0.2.1) ; sys_platform != \"cygwin\""]
@@ -5148,4 +5182,4 @@ testing = ["coverage[toml]", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.9.5,<4.0.0"
-content-hash = "bd976f0a48ae994bedb204952bcc76bba076b5ec964ba834a6bec71744abe106"
+content-hash = "0bfefa168dac4aa8b341b3acd2620e5d24a14c33660894efdf1cb6ced6a86ab1"
