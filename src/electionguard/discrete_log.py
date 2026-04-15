@@ -169,14 +169,12 @@ class DiscreteLog(Singleton):
         self._lazy_evaluation = lazy_evaluation
 
     def precompute_cache(self, exponent: int) -> None:
-        if exponent > self._max_exponent:
-            exponent = self._max_exponent
+        exponent = min(exponent, self._max_exponent)
 
         precompute_discrete_log_cache(exponent, self._cache)
 
     async def precompute_cache_async(self, exponent: int) -> None:
-        if exponent > self._max_exponent:
-            exponent = self._max_exponent
+        exponent = min(exponent, self._max_exponent)
 
         async with self._mutex:
             precompute_discrete_log_cache(exponent)

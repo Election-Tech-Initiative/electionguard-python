@@ -86,7 +86,6 @@ class EncryptionDevice:
             self.device_id, self.session_id, self.launch_code, self.location
         )
 
-    # pylint: disable=no-self-use
     def get_timestamp(self) -> int:
         """
         Get the current timestamp in utc

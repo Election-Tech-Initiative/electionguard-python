@@ -33,8 +33,8 @@ class TestNonces(BaseTestCase):
     )
     def test_nonces_seed_matters(self, seed1: ElementModQ, seed2: ElementModQ):
         assume(seed1 != seed2)
-        n1 = Nonces(seed1)
-        n2 = Nonces(seed2)
+        n1 = Nonces(seed1)  # pylint: disable=unreachable
+        n2 = Nonces(seed2)  # pylint: disable=unreachable
         self.assertNotEqual(n1[0], n2[0])
 
     @given(elements_mod_q())

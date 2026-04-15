@@ -45,7 +45,7 @@ class TallyStep(CliStepBase):
         )
         with Scheduler() as scheduler:
             tally.batch_append(ballots, True, scheduler)
-        self.print_value("Ballots in tally", tally.__len__())
+        self.print_value("Ballots in tally", len(tally))
         return tally
 
     def _get_spoiled_ballots(self, ballot_store: DataStore) -> List[SubmittedBallot]:

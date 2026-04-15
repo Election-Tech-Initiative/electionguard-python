@@ -94,6 +94,7 @@ disable = '''
   missing-function-docstring,
   no-value-for-parameter,
   redefined-builtin,
+  broad-exception-raised,
   too-few-public-methods,
   too-many-arguments,
   too-many-branches,
@@ -101,6 +102,7 @@ disable = '''
   too-many-lines,
   too-many-locals,
   too-many-nested-blocks,
+  too-many-positional-arguments,
   unnecessary-lambda,
   '''
 

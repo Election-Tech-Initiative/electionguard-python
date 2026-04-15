@@ -30,19 +30,15 @@ class EelLogService(ServiceBase):
     def trace(self, message: str, *args: Any, **kwargs: Any) -> None:
         pass
 
-    # pylint: disable=no-self-use
     def debug(self, message: str, *args: Any, **kwargs: Any) -> None:
         log_debug(message, *args, **kwargs)
 
-    # pylint: disable=no-self-use
     def info(self, message: str, *args: Any, **kwargs: Any) -> None:
         log_info(message, *args, **kwargs)
 
-    # pylint: disable=no-self-use
     def warn(self, message: str, *args: Any, **kwargs: Any) -> None:
         log_warning(message, *args, **kwargs)
 
-    # pylint: disable=no-self-use
     def error(self, message: str, exception: Exception) -> None:
         log_error(
             f"{message} '{exception}'",
@@ -50,7 +46,6 @@ class EelLogService(ServiceBase):
             extra={"exception": exception},
         )
 
-    # pylint: disable=no-self-use
     def fatal(self, message: str, exception: Exception) -> None:
         log_critical(
             f"{message} '{str(exception)}'",

@@ -78,7 +78,17 @@ def get_constants() -> ElectionConstants:
     return option_map.get(option) or STANDARD_CONSTANTS
 
 
-get_large_prime = lambda: int(get_constants().large_prime.value)
-get_small_prime = lambda: int(get_constants().small_prime.value)
-get_cofactor = lambda: int(get_constants().cofactor.value)
-get_generator = lambda: int(get_constants().generator.value)
+def get_large_prime() -> int:
+    return int(get_constants().large_prime.value)
+
+
+def get_small_prime() -> int:
+    return int(get_constants().small_prime.value)
+
+
+def get_cofactor() -> int:
+    return int(get_constants().cofactor.value)
+
+
+def get_generator() -> int:
+    return int(get_constants().generator.value)

@@ -341,13 +341,13 @@ class TestDecryptWithSecrets(BaseTestCase):
 
         # Assert the ballot selections sum to the expected number of selections
         key_selected = sum(
-            [selection.vote for selection in result_from_key.ballot_selections]
+            selection.vote for selection in result_from_key.ballot_selections
         )
         nonce_selected = sum(
-            [selection.vote for selection in result_from_nonce.ballot_selections]
+            selection.vote for selection in result_from_nonce.ballot_selections
         )
         seed_selected = sum(
-            [selection.vote for selection in result_from_nonce_seed.ballot_selections]
+            selection.vote for selection in result_from_nonce_seed.ballot_selections
         )
 
         self.assertEqual(key_selected, nonce_selected)

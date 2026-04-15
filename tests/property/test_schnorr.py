@@ -48,7 +48,7 @@ class TestSchnorr(BaseTestCase):
     ) -> None:
         proof = make_schnorr_proof(keypair, nonce)
         assume(other != proof.response)
-        proof2 = SchnorrProof(
+        proof2 = SchnorrProof(  # pylint: disable=unreachable
             proof.public_key, proof.commitment, proof.challenge, other
         )
         self.assertFalse(proof2.is_valid())
@@ -59,7 +59,7 @@ class TestSchnorr(BaseTestCase):
     ) -> None:
         proof = make_schnorr_proof(keypair, nonce)
         assume(other != proof.commitment)
-        proof_bad = SchnorrProof(
+        proof_bad = SchnorrProof(  # pylint: disable=unreachable
             proof.public_key, other, proof.challenge, proof.response
         )
         self.assertFalse(proof_bad.is_valid())
@@ -70,7 +70,9 @@ class TestSchnorr(BaseTestCase):
     ) -> None:
         proof = make_schnorr_proof(keypair, nonce)
         assume(other != proof.public_key)
-        proof2 = SchnorrProof(other, proof.commitment, proof.challenge, proof.response)
+        proof2 = SchnorrProof(  # pylint: disable=unreachable
+            other, proof.commitment, proof.challenge, proof.response
+        )
         self.assertFalse(proof2.is_valid())
 
     @given(elgamal_keypairs(), elements_mod_q())

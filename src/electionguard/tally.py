@@ -238,7 +238,7 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
             log_warning(f"append cannot add {ballot.object_id} with invalid state")
             return False
 
-        if self.__contains__(ballot):
+        if ballot in self:
             log_warning(f"append cannot add {ballot.object_id} that is already tallied")
             return False
 
@@ -271,7 +271,7 @@ class CiphertextTally(ElectionObjectBase, Container, Sized):
         for ballot in ballots:
             # get the value of the dict
             ballot_value = ballot[1]
-            if not self.__contains__(ballot) and ballot_is_valid_for_election(
+            if ballot_value not in self and ballot_is_valid_for_election(
                 ballot_value, self._internal_manifest, self._encryption, should_validate
             ):
                 if ballot_value.state == BallotBoxState.CAST:

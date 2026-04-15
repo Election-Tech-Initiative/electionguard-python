@@ -1014,7 +1014,7 @@ def generate_placeholder_selections_from(
     :return: a collection of `SelectionDescription` objects, which may be empty
     """
     max_sequence_order = max(
-        [selection.sequence_order for selection in contest.ballot_selections]
+        selection.sequence_order for selection in contest.ballot_selections
     )
     selections: List[SelectionDescription] = []
     for i in range(count):

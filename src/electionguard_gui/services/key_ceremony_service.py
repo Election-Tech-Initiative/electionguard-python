@@ -65,7 +65,6 @@ class KeyCeremonyService(ServiceBase):
     def notify_changed(self, db: Database, key_ceremony_id: str) -> None:
         self._db_watcher_service.notify_changed(db, "key_ceremonies", key_ceremony_id)
 
-    # pylint: disable=no-self-use
     def get(self, db: Database, id: str) -> KeyCeremonyDto:
         key_ceremony_dict = db.key_ceremonies.find_one({"_id": ObjectId(id)})
         if key_ceremony_dict is None:

@@ -56,7 +56,7 @@ def _get_contest_details(
         for selection in selections
         if not selection_write_ins[selection.object_id]
     ]
-    non_write_in_total = sum([selection.tally for selection in non_write_in_selections])
+    non_write_in_total = sum(selection.tally for selection in non_write_in_selections)
     non_write_in_selections_report = _get_selections_report(
         non_write_in_selections, selection_names, parties, non_write_in_total
     )
