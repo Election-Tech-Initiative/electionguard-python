@@ -1,6 +1,6 @@
 import traceback
 from typing import Any
-import eel
+import eel  # type: ignore[import-untyped]
 from pymongo.database import Database
 from electionguard_gui.eel_utils import eel_fail, eel_success
 from electionguard_gui.components.component_base import ComponentBase
@@ -109,4 +109,4 @@ class ViewDecryptionComponent(ComponentBase):
 
 def refresh_decryption(result: dict[str, Any]) -> None:
     # pylint: disable=no-member
-    eel.refresh_decryption(result)
+    eel.refresh_decryption(result)  # type: ignore[attr-defined]

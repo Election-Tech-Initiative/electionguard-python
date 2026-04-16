@@ -1,5 +1,5 @@
 from pymongo.database import Database
-import eel
+import eel  # type: ignore[import-untyped]
 from electionguard import DecryptionMediator
 from electionguard.ballot import BallotBoxState
 from electionguard.election_polynomial import LagrangeCoefficientsRecord
@@ -97,4 +97,4 @@ def _get_lagrange_coefficients(
 
 def _update_decrypt_status(status: str) -> None:
     # pylint: disable=no-member
-    eel.update_decrypt_status(status)
+    eel.update_decrypt_status(status)  # type: ignore[attr-defined]

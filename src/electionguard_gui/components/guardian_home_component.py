@@ -1,5 +1,5 @@
 from typing import Any
-import eel
+import eel  # type: ignore[import-untyped]
 from electionguard_gui.eel_utils import eel_success
 
 from electionguard_gui.components.component_base import ComponentBase
@@ -70,6 +70,6 @@ class GuardianHomeComponent(ComponentBase):
 def notify_ui_db_changed(collection: str, _: str) -> None:
     # pylint: disable=no-member
     if collection == "key_ceremonies":
-        eel.key_ceremonies_changed()
+        eel.key_ceremonies_changed()  # type: ignore[attr-defined]
     if collection == "decryptions":
-        eel.decryptions_changed()
+        eel.decryptions_changed()  # type: ignore[attr-defined]

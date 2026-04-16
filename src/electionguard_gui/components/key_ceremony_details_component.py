@@ -1,6 +1,6 @@
 import traceback
 from typing import List
-import eel
+import eel  # type: ignore[import-untyped]
 from pymongo.database import Database
 from electionguard_gui.eel_utils import eel_fail, eel_success
 
@@ -114,13 +114,13 @@ class KeyCeremonyDetailsComponent(ComponentBase):
             key_ceremony.status = get_key_ceremony_status(new_state)
             result = key_ceremony.to_dict()
             # pylint: disable=no-member
-            eel.refresh_key_ceremony(eel_success(result))
+            eel.refresh_key_ceremony(eel_success(result))  # type: ignore[attr-defined]
         # pylint: disable=broad-except
         except Exception as e:
             self._log.error("error on key ceremony changed", e)
             traceback.print_exc()
             # pylint: disable=no-member
-            eel.refresh_key_ceremony(eel_fail(str(e)))
+            eel.refresh_key_ceremony(eel_fail(str(e)))  # type: ignore[attr-defined]
 
     def join_key_ceremony(self, key_ceremony_id: str) -> None:
         try:

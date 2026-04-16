@@ -1,5 +1,5 @@
 from pymongo.database import Database
-import eel
+import eel  # type: ignore[import-untyped]
 from electionguard.ballot import BallotBoxState
 
 from electionguard_gui.models.decryption_dto import DecryptionDto
@@ -59,4 +59,4 @@ class DecryptionS1JoinService(DecryptionStageBase):
 
 def _update_decrypt_status(status: str) -> None:
     # pylint: disable=no-member
-    eel.update_decrypt_status(status)
+    eel.update_decrypt_status(status)  # type: ignore[attr-defined]

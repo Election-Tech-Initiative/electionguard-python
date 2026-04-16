@@ -24,13 +24,17 @@ def _get_download_path() -> str:
     if os.name == "nt":
         # pylint: disable=import-outside-toplevel
         # pylint: disable=import-error
-        import winreg
+        import winreg  # type: ignore[import-not-found]
 
         sub_key = (
             r"SOFTWARE\\Microsoft\Windows\\CurrentVersion\\Explorer\\Shell Folders"
         )
         downloads_guid = "{374DE290-123F-4565-9164-39C4925E467B}"
-        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, sub_key) as key:
-            location = winreg.QueryValueEx(key, downloads_guid)[0]
+        with winreg.OpenKey(  # type: ignore[attr-defined]
+            winreg.HKEY_CURRENT_USER, sub_key  # type: ignore[attr-defined]
+        ) as key:
+            location = winreg.QueryValueEx(  # type: ignore[attr-defined]
+                key, downloads_guid
+            )[0]
         return str(location)
     return os.path.join(os.path.expanduser("~"), "downloads")

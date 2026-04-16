@@ -1,7 +1,7 @@
 import os
 from typing import Any
 from datetime import datetime, timezone
-import eel
+import eel  # type: ignore[import-untyped]
 from electionguard.encrypt import EncryptionDevice
 from electionguard.serialize import from_file, from_raw
 from electionguard.ballot import SubmittedBallot
@@ -223,4 +223,4 @@ class UploadBallotsComponent(ComponentBase):
 
 def update_upload_status(status: str) -> None:
     # pylint: disable=no-member
-    eel.update_upload_status(status)
+    eel.update_upload_status(status)  # type: ignore[attr-defined]
