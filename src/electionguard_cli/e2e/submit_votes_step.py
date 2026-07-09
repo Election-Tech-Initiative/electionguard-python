@@ -1,5 +1,4 @@
 from typing import List
-import click
 
 from electionguard.data_store import DataStore
 from electionguard.ballot_box import BallotBox
@@ -13,6 +12,8 @@ from electionguard.ballot import (
 from ..cli_models import BuildElectionResults, EncryptResults
 from ..cli_steps import CliStepBase
 from .e2e_inputs import E2eInputs
+from print_utils import print_message
+
 
 
 class SubmitVotesStep(CliStepBase):
@@ -52,7 +53,5 @@ class SubmitVotesStep(CliStepBase):
             else:
                 submitted_ballot = ballot_box.cast(ballot)
 
-            click.echo(
-                f"Submitted Ballot Id: {ballot.object_id} state: {get_optional(submitted_ballot).state}"
-            )
+            print_message(f"Submitted Ballot Id: {ballot.object_id} state: {get_optional(submitted_ballot).state}")
         return ballot_store

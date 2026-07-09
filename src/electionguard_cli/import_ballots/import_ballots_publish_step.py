@@ -2,7 +2,7 @@ from typing import List
 from shutil import make_archive
 from os.path import splitext
 from tempfile import TemporaryDirectory
-from click import echo
+from print_utils import print_message
 from electionguard.encrypt import EncryptionDevice
 
 from electionguard.constants import get_constants
@@ -49,4 +49,4 @@ class ImportBallotsPublishStep(OutputStepBase):
             )
             file_name = splitext(election_inputs.output_record)[0]
             make_archive(file_name, self._COMPRESSION_FORMAT, temp_dir)
-            echo(f"Exported election record to '{election_inputs.output_record}'")
+            print_message(f"Exported election record to '{election_inputs.output_record}'")
