@@ -28,6 +28,8 @@ dependencies = [
     "Eel[jinja2]>=0.18.2,<1.0.0",
   "pymongo>=4.19.0,<5.0.0",
   "dependency-injector>=4.49.1,<5.0.0",
+  # electionguard_tools (used by the eg CLI) builds ballots with hypothesis strategies
+  "hypothesis>=6.170.5",
 ]
 
 [project.urls]
@@ -46,7 +48,6 @@ dev = [
   "black==26.10.1",
   "coverage>=7.16.2",
   "docutils",
-  "hypothesis>=6.170.5",
   "ipykernel>=7.4.0,<8.0.0",
   "ipython>=9.17.1,<10.0.0",
   "jeepney",
