@@ -6,6 +6,9 @@ from electionguard.manifest import Manifest
 from electionguard.tally import CiphertextTally
 from electionguard.decryption_mediator import DecryptionMediator
 from electionguard.election_polynomial import LagrangeCoefficientsRecord
+from electionguard_tools.helpers.tally_ceremony_orchestrator import (
+    TallyCeremonyOrchestrator,
+)
 
 from ..cli_models import BuildElectionResults, CliDecryptResults
 from .cli_step_base import CliStepBase
@@ -44,16 +47,30 @@ class DecryptStep(CliStepBase):
         self.print_value("Spoiled ballots", ciphertext_tally.spoiled())
         self.print_value("Total ballots", len(ciphertext_tally))
 
-        count = 0
-        for guardian in guardians:
-            guardian_key = guardian.share_key()
-            tally_share = get_optional(
-                guardian.compute_tally_share(ciphertext_tally, context)
+        if len(guardians) < context.quorum:
+            raise click.ClickException(
+                f"{len(guardians)} guardian(s) present, "
+                f"but a quorum of {context.quorum} is required to decrypt"
             )
-            ballot_shares = guardian.compute_ballot_shares(spoiled_ballots, context)
-            decryption_mediator.announce(guardian_key, tally_share, ballot_shares)
-            count += 1
+
+        all_guardian_keys = self._get_all_guardian_keys(guardians)
+        present_ids = {guardian.id for guardian in guardians}
+        for guardian in guardians:
             click.echo(f"Guardian Present: {guardian.id}")
+        for guardian_id in all_guardian_keys:
+            if guardian_id not in present_ids:
+                click.echo(f"Guardian Missing: {guardian_id}")
+
+        # announces the present guardians, and when some are missing has the present
+        # guardians compensate for them so a quorum can still decrypt
+        TallyCeremonyOrchestrator.perform_compensated_decryption_setup(
+            guardians,
+            list(all_guardian_keys.values()),
+            decryption_mediator,
+            context,
+            ciphertext_tally,
+            spoiled_ballots,
+        )
 
         lagrange_coefficients = self._get_lagrange_coefficients(decryption_mediator)
 
