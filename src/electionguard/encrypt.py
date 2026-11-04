@@ -20,7 +20,7 @@ from .election import CiphertextElectionContext
 from .elgamal import ElGamalPublicKey, elgamal_encrypt, hashed_elgamal_encrypt
 from .serialize import padded_decode, padded_encode
 from .group import ElementModQ, rand_q
-from .logs import log_info, log_warning
+from .logs import log_debug, log_warning
 from .manifest import (
     InternalManifest,
     ContestDescription,
@@ -118,7 +118,7 @@ class EncryptionMediator:
         Encrypt the specified ballot using the cached election context.
         """
 
-        log_info(f" encrypt: objectId: {ballot.object_id}")
+        log_debug(f" encrypt: objectId: {ballot.object_id}")
         encrypted_ballot = encrypt_ballot(
             ballot, self._internal_manifest, self._context, self._encryption_seed
         )
@@ -208,7 +208,7 @@ def encrypt_selection(
     selection_nonce = nonce_sequence[selection_description.sequence_order]
     disjunctive_chaum_pedersen_nonce = next(iter(nonce_sequence))
 
-    log_info(
+    log_debug(
         f": encrypt_selection: for {selection_description.object_id} hash: {selection_description_hash.to_hex()}"
     )
 
@@ -472,8 +472,8 @@ def encrypt_ballot(
         random_master_nonce,
     )
 
-    log_info(f": manifest_hash : {internal_manifest.manifest_hash.to_hex()}")
-    log_info(f": encryption_seed : {encryption_seed.to_hex()}")
+    log_debug(f": manifest_hash : {internal_manifest.manifest_hash.to_hex()}")
+    log_debug(f": encryption_seed : {encryption_seed.to_hex()}")
 
     encrypted_contests = encrypt_ballot_contests(
         ballot,

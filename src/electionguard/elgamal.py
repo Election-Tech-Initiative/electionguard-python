@@ -19,7 +19,7 @@ from .group import (
 )
 from .hash import hash_elems
 from .hmac import get_hmac
-from .logs import log_info, log_error
+from .logs import log_debug, log_error
 from .utils import get_optional
 
 ElGamalSecretKey = ElementModQ
@@ -213,9 +213,9 @@ def elgamal_encrypt(
     pubkey_pow_n = pow_p(public_key, nonce)
     data = mult_p(gpowp_m, pubkey_pow_n)
 
-    log_info(f": publicKey: {public_key.to_hex()}")
-    log_info(f": pad: {pad.to_hex()}")
-    log_info(f": data: {data.to_hex()}")
+    log_debug(f": publicKey: {public_key.to_hex()}")
+    log_debug(f": pad: {pad.to_hex()}")
+    log_debug(f": data: {data.to_hex()}")
 
     return ElGamalCiphertext(pad, data)
 
@@ -257,11 +257,11 @@ def hashed_elgamal_encrypt(
     to_mac = pad.to_hex_bytes() + data
     mac = get_hmac(mac_key, to_mac)
 
-    log_info(f": publicKey: {public_key.to_hex()}")
-    log_info(f": pad: {pad.to_hex()}")
-    log_info(f": data: {data!r}")
-    log_info(f": mac: {bytes_to_hex(mac)}")
-    log_info(f"to_mac {to_mac!r}")
+    log_debug(f": publicKey: {public_key.to_hex()}")
+    log_debug(f": pad: {pad.to_hex()}")
+    log_debug(f": data: {data!r}")
+    log_debug(f": mac: {bytes_to_hex(mac)}")
+    log_debug(f"to_mac {to_mac!r}")
 
     return HashedElGamalCiphertext(pad, bytes_to_hex(data), bytes_to_hex(mac))
 
