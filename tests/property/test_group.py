@@ -25,6 +25,7 @@ from electionguard.group import (
     div_q,
     div_p,
     a_plus_bc_q,
+    negate_q,
 )
 from electionguard.utils import (
     flatmap_optional,
@@ -92,6 +93,13 @@ class TestModularArithmetic(BaseTestCase):
         as_int = a_minus_b_q(q, 1)
         as_elem = a_minus_b_q(q, ElementModQ(1))
         self.assertEqual(as_int, as_elem)
+
+    @given(elements_mod_q())
+    def test_negate_q(self, q: ElementModQ) -> None:
+        self.assertEqual(add_q(q, negate_q(q)), ZERO_MOD_Q)
+
+    def test_negate_q_of_zero(self) -> None:
+        self.assertEqual(negate_q(ZERO_MOD_Q), ZERO_MOD_Q)
 
     @given(elements_mod_q())
     def test_div_q(self, q: ElementModQ) -> None:

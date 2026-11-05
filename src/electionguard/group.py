@@ -175,7 +175,7 @@ def div_q(a: ElementModPOrQorInt, b: ElementModPOrQorInt) -> ElementModQ:
 def negate_q(a: ElementModQorInt) -> ElementModQ:
     """Compute (Q - a) mod q."""
     a = _get_mpz(a)
-    return ElementModQ(get_small_prime() - a)
+    return ElementModQ((get_small_prime() - a) % get_small_prime())
 
 
 def a_plus_bc_q(
