@@ -21,15 +21,15 @@ classifiers = [
 dependencies = [
   "gmpy2>=2.3.2,<3.0.0",
   "psutil>=7.2.2",
-  "pydantic>=2.14.2,<3.0.0",
-  "click>=8.5.0,<9.0.0",
+  "pydantic>=2.14.3,<3.0.0",
+  "click>=8.5.1,<9.0.0",
   "dacite>=1.9.2,<2.0.0",
   "python-dateutil>=4.0.0,<5.0.0",
     "Eel[jinja2]>=0.18.2,<1.0.0",
   "pymongo>=4.19.0,<5.0.0",
   "dependency-injector>=4.49.1,<5.0.0",
   # electionguard_tools (used by the eg CLI) builds ballots with hypothesis strategies
-  "hypothesis>=6.170.14",
+  "hypothesis>=6.170.15",
 ]
 
 [project.urls]
