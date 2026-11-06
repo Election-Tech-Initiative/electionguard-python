@@ -1,4 +1,3 @@
-from unittest import skip
 from unittest.mock import patch
 from copy import deepcopy
 from datetime import timedelta
@@ -17,6 +16,7 @@ import electionguard_tools.factories.election_factory as ElectionFactory
 from electionguard_tools.strategies.elgamal import elgamal_keypairs
 from electionguard_tools.strategies.group import elements_mod_q_no_zero
 
+from electionguard.ballot import PlaintextBallotContest
 from electionguard.constants import get_small_prime
 from electionguard.chaum_pedersen import (
     ConstantChaumPedersenProof,
@@ -30,6 +30,7 @@ from electionguard.elgamal import (
     elgamal_add,
 )
 from electionguard.encrypt import (
+    ContestData,
     EncryptionDevice,
     encrypt_ballot,
     encrypt_contest,
@@ -53,6 +54,7 @@ from electionguard.manifest import (
     SelectionDescription,
     VoteVariationType,
 )
+from electionguard.utils import ContestErrorType, get_optional
 
 election_factory = ElectionFactory.ElectionFactory()
 ballot_factory = BallotFactory.BallotFactory()
@@ -355,45 +357,86 @@ class TestEncrypt(BaseTestCase):
             )
         )
 
-    @skip("runs forever")
-    @settings(
-        deadline=timedelta(milliseconds=2000),
-        suppress_health_check=[HealthCheck.too_slow],
-        max_examples=10,
-    )
-    @given(
-        ElectionFactory.get_contest_description_well_formed(),
-        elgamal_keypairs(),
-        elements_mod_q_no_zero(),
-        integers(1, 6),
-        integers(),
-    )
-    def test_encrypt_contest_overvote_fails(
-        self,
-        contest_description: tuple[str, ContestDescription],
-        keypair: ElGamalKeyPair,
-        seed: ElementModQ,
-        overvotes: int,
-        random_seed: int,
-    ):
+    def test_encrypt_contest_overvote_counts_no_votes(self):
         # Arrange
-        _id, description = contest_description
-        random = Random(random_seed)
-        subject = ballot_factory.get_random_contest_from(description, random)
-
-        for _i in range(overvotes):
-            overvote = ballot_factory.get_random_selection_from(
-                description.ballot_selections[0], random
-            )
-            subject.ballot_selections.append(overvote)
-
-        # Act
-        result = encrypt_contest(
-            subject, description, keypair.public_key, ONE_MOD_Q, seed
+        selection_descriptions = [
+            SelectionDescription(f"selection-{i}", i, f"candidate-{i}")
+            for i in range(3)
+        ]
+        description = ContestDescription(
+            object_id="contest",
+            electoral_district_id="gp-unit",
+            sequence_order=1,
+            vote_variation=VoteVariationType.one_of_m,
+            number_elected=1,
+            votes_allowed=1,
+            name="",
+            ballot_selections=selection_descriptions,
         )
+        description_with_placeholders = contest_description_with_placeholders_from(
+            description,
+            generate_placeholder_selections_from(
+                description, description.number_elected
+            ),
+        )
+        keypair = elgamal_keypair_from_secret(TWO_MOD_Q)
 
-        # Assert
-        self.assertIsNone(result)
+        for overvotes in (2, 3):
+            with self.subTest(overvotes=overvotes):
+                selected = selection_descriptions[:overvotes]
+                subject = PlaintextBallotContest(
+                    description.object_id,
+                    [selection_from(s, is_affirmative=True) for s in selected],
+                )
+
+                # Act
+                result = get_optional(
+                    encrypt_contest(
+                        subject,
+                        description_with_placeholders,
+                        keypair.public_key,
+                        ONE_MOD_Q,
+                        ONE_MOD_Q,
+                        should_verify_proofs=True,
+                    )
+                )
+
+                # Assert
+                self.assertTrue(
+                    result.is_valid_encryption(
+                        description_with_placeholders.crypto_hash(),
+                        keypair.public_key,
+                        ONE_MOD_Q,
+                    )
+                )
+                votes = {
+                    selection.object_id: selection.ciphertext.decrypt(
+                        keypair.secret_key
+                    )
+                    for selection in result.ballot_selections
+                    if not selection.is_placeholder_selection
+                }
+                self.assertEqual(
+                    votes, {s.object_id: 0 for s in selection_descriptions}
+                )
+                placeholder_votes = [
+                    selection.ciphertext.decrypt(keypair.secret_key)
+                    for selection in result.ballot_selections
+                    if selection.is_placeholder_selection
+                ]
+                self.assertEqual(placeholder_votes, [1])
+
+                contest_data = ContestData.from_bytes(
+                    get_optional(
+                        get_optional(result.extended_data).decrypt(
+                            keypair.secret_key, ONE_MOD_Q
+                        )
+                    )
+                )
+                self.assertEqual(contest_data.error, ContestErrorType.OverVote)
+                self.assertEqual(
+                    contest_data.error_data, [s.object_id for s in selected]
+                )
 
     def test_encrypt_contest_manually_formed_contest_description_valid_succeeds(self):
         description = ContestDescription(
