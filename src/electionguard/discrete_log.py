@@ -14,6 +14,9 @@ DiscreteLogCache = dict[ElementModP, int]
 _DLOG_MAX_EXPONENT = 100_000_000
 """The max exponent to calculate.  This value is used to stop a race condition."""
 
+_MAX_CACHE_FILL = 100_000
+"""The most steps to walk and cache on the way to a value. Beyond this, only the value is cached."""
+
 _INITIAL_CACHE = {ONE_MOD_P: 0}
 
 
@@ -137,12 +140,12 @@ def _get_baby_steps(generator: int, step_count: int) -> dict[ElementModP, int]:
     return baby_steps
 
 
-def _is_within_max_exponent(element: ElementModP, max_exponent: int) -> bool:
+def _find_exponent(element: ElementModP, max_exponent: int) -> int | None:
     """
-    Check whether element is g^x for some x up to max_exponent, using baby-step
-    giant-step. This takes about 2 * sqrt(max_exponent) multiplications and stores
-    no results in the cache, so a value with no small exponent (a wrong key or a
-    corrupted ciphertext) fails at once rather than filling memory on the way there.
+    Find the smallest x up to max_exponent with element = g^x, using baby-step
+    giant-step, or None if there is none. This takes about 2 * sqrt(max_exponent)
+    multiplications and stores nothing in the cache, so a value with no small exponent
+    (a wrong key or a corrupted ciphertext) fails at once and a large one costs no memory.
     """
     step_count = isqrt(max_exponent) + 1
     baby_steps = _get_baby_steps(get_generator(), step_count)
@@ -152,9 +155,10 @@ def _is_within_max_exponent(element: ElementModP, max_exponent: int) -> bool:
     for giant_exponent in range(step_count):
         baby_exponent = baby_steps.get(current_element)
         if baby_exponent is not None:
-            return giant_exponent * step_count + baby_exponent <= max_exponent
+            exponent = giant_exponent * step_count + baby_exponent
+            return exponent if exponent <= max_exponent else None
         current_element = mult_p(current_element, giant_step)
-    return False
+    return None
 
 
 def compute_discrete_log_cache(
@@ -176,13 +180,17 @@ def compute_discrete_log_cache(
     exponent = cache[max_element]
     if exponent > max_exponent:
         raise DiscreteLogExponentError(exponent, max_exponent)
-    if not _is_within_max_exponent(element, max_exponent):
+    element_exponent = _find_exponent(element, max_exponent)
+    if element_exponent is None:
         raise DiscreteLogExponentError(
             max_exponent + 1,
             max_exponent,
             f"Value is not g^x for any x up to {max_exponent}: "
             "a wrong key, corrupted data, or a count above the maximum.",
         )
+    if not 0 < element_exponent - exponent <= _MAX_CACHE_FILL:
+        cache[element] = element_exponent
+        return cache
 
     g = ElementModP(get_generator(), False)
 

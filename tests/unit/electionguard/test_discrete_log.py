@@ -1,4 +1,5 @@
 import asyncio
+from unittest.mock import patch
 
 from tests.base_test_case import BaseTestCase
 
@@ -85,3 +86,35 @@ class TestDiscreteLog(BaseTestCase):
         with self.assertRaisesRegex(DiscreteLogExponentError, "wrong key"):
             compute_discrete_log(outside_subgroup, cache, max_exponent=1000)
         self.assertEqual(cache, {ONE_MOD_P: 0})
+
+    def test_exponent_far_past_the_cache_stores_only_that_value(self):
+        # Arrange
+        cache = {ONE_MOD_P: 0}
+
+        with patch("electionguard.discrete_log._MAX_CACHE_FILL", 10):
+            # Act
+            far_exponent, _ = compute_discrete_log(g_pow_p(1000), cache)
+
+            # Assert
+            self.assertEqual(far_exponent, 1000)
+            self.assertEqual(cache, {ONE_MOD_P: 0, g_pow_p(1000): 1000})
+
+            # a value below the last one stored is still found
+            lower_exponent, _ = compute_discrete_log(g_pow_p(500), cache)
+            self.assertEqual(lower_exponent, 500)
+            self.assertEqual(len(cache), 3)
+
+            # and so is one above it
+            next_exponent, _ = compute_discrete_log(g_pow_p(1003), cache)
+            self.assertEqual(next_exponent, 1003)
+
+    def test_value_near_the_cache_still_fills_every_step(self):
+        # Arrange
+        cache = {ONE_MOD_P: 0}
+
+        with patch("electionguard.discrete_log._MAX_CACHE_FILL", 10):
+            # Act
+            compute_discrete_log(g_pow_p(5), cache)
+
+        # Assert
+        self.assertEqual(cache, {g_pow_p(i): i for i in range(6)})
