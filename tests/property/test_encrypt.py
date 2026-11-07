@@ -6,7 +6,7 @@ from secrets import randbelow
 
 from hypothesis import HealthCheck
 from hypothesis import given, settings
-from hypothesis.strategies import integers
+from hypothesis.strategies import integers, just
 
 
 from tests.base_test_case import BaseTestCase
@@ -356,6 +356,19 @@ class TestEncrypt(BaseTestCase):
                 description.crypto_hash(), keypair.public_key, ONE_MOD_Q
             )
         )
+
+    @given(
+        ElectionFactory.get_contest_description_well_formed(
+            selections=ElectionFactory.get_selection_description_well_formed(
+                email_addresses=just("same@example.com")
+            )
+        )
+    )
+    def test_well_formed_contest_description_is_valid_with_repeated_emails(
+        self, contest_description: tuple[str, ContestDescription]
+    ):
+        _id, description = contest_description
+        self.assertTrue(description.is_valid())
 
     def test_encrypt_contest_overvote_counts_no_votes(self):
         # Arrange

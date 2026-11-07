@@ -328,6 +328,8 @@ def get_contest_description_well_formed(
         selection: tuple[str, SelectionDescription] = draw(selections)
         _, selection_description = selection
         selection_description.sequence_order = i
+        # the emails drawn for candidates can repeat, and a contest needs unique ones
+        selection_description.candidate_id = f"{selection_description.candidate_id}-{i}"
         selection_descriptions.append(selection_description)
 
     contest_description = ContestDescription(
