@@ -274,8 +274,8 @@ def rand_range_q(start: ElementModQorInt) -> ElementModQ:
     :param start: Starting value of range
     :return: Random value between start and Q
     """
-    start = _get_mpz(start)
-    random = 0
-    while random < start:
-        random = randbelow(get_small_prime())
-    return ElementModQ(random)
+    start = max(_get_mpz(start), _get_mpz(0))
+    small_prime = _get_mpz(get_small_prime())
+    if start >= small_prime:
+        raise ValueError(f"start {start} leaves no values below Q")
+    return ElementModQ(start + randbelow(int(small_prime - start)))

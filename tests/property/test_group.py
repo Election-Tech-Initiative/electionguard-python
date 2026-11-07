@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 from hypothesis import given
 
 from tests.base_test_case import BaseTestCase
@@ -26,6 +28,7 @@ from electionguard.group import (
     div_p,
     a_plus_bc_q,
     negate_q,
+    rand_range_q,
 )
 from electionguard.utils import (
     flatmap_optional,
@@ -200,6 +203,34 @@ class TestModularArithmetic(BaseTestCase):
     def test_large_values_rejected_by_int_to_q(self, q: ElementModQ) -> None:
         oversize = q.value + get_small_prime()
         self.assertEqual(None, int_to_q(oversize))
+
+
+class TestRandRangeQ(BaseTestCase):
+    """rand_range_q tests"""
+
+    def test_rejects_a_start_with_no_valid_values(self) -> None:
+        # a loop would draw forever here, so a draw fails the test instead of hanging
+        with patch(
+            "electionguard.group.randbelow", side_effect=AssertionError("drew a value")
+        ):
+            with self.assertRaises(ValueError):
+                rand_range_q(get_small_prime())
+
+    def test_last_value_below_q_needs_one_draw(self) -> None:
+        start = get_small_prime() - 1
+        # a second draw raises, so a loop fails the test instead of hanging
+        with patch("electionguard.group.randbelow", side_effect=[0]) as randbelow:
+            self.assertEqual(rand_range_q(start), ElementModQ(start))
+        randbelow.assert_called_once_with(1)
+
+    def test_start_of_zero_is_random(self) -> None:
+        with patch("electionguard.group.randbelow", return_value=5):
+            self.assertEqual(rand_range_q(0), ElementModQ(5))
+
+    def test_draw_is_offset_by_start(self) -> None:
+        with patch("electionguard.group.randbelow", return_value=3) as randbelow:
+            self.assertEqual(rand_range_q(2), ElementModQ(5))
+        randbelow.assert_called_once_with(get_small_prime() - 2)
 
 
 class TestOptionalFunctions(BaseTestCase):
