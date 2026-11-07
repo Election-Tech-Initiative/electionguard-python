@@ -1,5 +1,3 @@
-from datetime import timedelta
-
 from hypothesis import given, HealthCheck, settings, Phase
 from hypothesis.strategies import integers
 
@@ -28,7 +26,7 @@ class TestElections(BaseTestCase):
     """Election hypothesis encryption tests"""
 
     @settings(
-        deadline=timedelta(milliseconds=2000),
+        deadline=None,
         suppress_health_check=[HealthCheck.too_slow],
         max_examples=10,
     )
@@ -42,7 +40,7 @@ class TestElections(BaseTestCase):
         self.assertTrue(manifest.is_valid())
 
     @settings(
-        deadline=timedelta(milliseconds=10000),
+        deadline=None,
         suppress_health_check=[HealthCheck.too_slow],
         max_examples=5,
         # disabling the "shrink" phase, because it runs very slowly

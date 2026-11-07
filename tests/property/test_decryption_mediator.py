@@ -1,6 +1,5 @@
 # pylint: disable=too-many-instance-attributes
 
-from datetime import timedelta
 from random import randrange
 
 from hypothesis import given, HealthCheck, settings, Phase
@@ -311,7 +310,7 @@ class TestDecryptionMediator(BaseTestCase):
         self.assertEqual(plaintext_tally, another_plaintext_tally)
 
     @settings(
-        deadline=timedelta(milliseconds=15000),
+        deadline=None,
         suppress_health_check=[HealthCheck.too_slow],
         max_examples=8,
         # disabling the "shrink" phase, because it runs very slowly

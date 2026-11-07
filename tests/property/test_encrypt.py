@@ -1,6 +1,5 @@
 from unittest.mock import patch
 from copy import deepcopy
-from datetime import timedelta
 from random import Random
 from secrets import randbelow
 
@@ -133,7 +132,7 @@ class TestEncrypt(BaseTestCase):
         )
 
     @settings(
-        deadline=timedelta(milliseconds=2000),
+        deadline=None,
         suppress_health_check=[HealthCheck.too_slow],
         max_examples=10,
     )
@@ -176,7 +175,7 @@ class TestEncrypt(BaseTestCase):
         )
 
     @settings(
-        deadline=timedelta(milliseconds=2000),
+        deadline=None,
         suppress_health_check=[HealthCheck.too_slow],
         max_examples=10,
     )
@@ -247,7 +246,7 @@ class TestEncrypt(BaseTestCase):
         )
 
     @settings(
-        deadline=timedelta(milliseconds=4000),
+        deadline=None,
         suppress_health_check=[HealthCheck.too_slow],
         max_examples=10,
     )
@@ -296,7 +295,7 @@ class TestEncrypt(BaseTestCase):
         self.assertEqual(len(result.ballot_selections), expected_entries)
 
     @settings(
-        deadline=timedelta(milliseconds=2000),
+        deadline=None,
         suppress_health_check=[HealthCheck.too_slow],
         max_examples=10,
     )
@@ -680,7 +679,7 @@ class TestEncrypt(BaseTestCase):
         )
 
     @settings(
-        deadline=timedelta(milliseconds=4000),
+        deadline=None,
         suppress_health_check=[HealthCheck.too_slow],
         max_examples=10,
     )

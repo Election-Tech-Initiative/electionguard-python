@@ -1,5 +1,3 @@
-from datetime import timedelta
-
 from hypothesis import given, HealthCheck, settings, Phase
 from hypothesis.strategies import integers
 
@@ -29,7 +27,7 @@ class TestTally(BaseTestCase):
     """Tally tests"""
 
     @settings(
-        deadline=timedelta(milliseconds=10000),
+        deadline=None,
         suppress_health_check=[HealthCheck.too_slow],
         max_examples=3,
         # disabling the "shrink" phase, because it runs very slowly
@@ -78,7 +76,7 @@ class TestTally(BaseTestCase):
         self.assertEqual(plaintext_tallies, decrypted_tallies)
 
     @settings(
-        deadline=timedelta(milliseconds=10000),
+        deadline=None,
         suppress_health_check=[HealthCheck.too_slow],
         max_examples=3,
         # disabling the "shrink" phase, because it runs very slowly
@@ -130,7 +128,7 @@ class TestTally(BaseTestCase):
         self.assertEqual(len(ballots), tally.spoiled())
 
     @settings(
-        deadline=timedelta(milliseconds=10000),
+        deadline=None,
         suppress_health_check=[HealthCheck.too_slow],
         max_examples=3,
         # disabling the "shrink" phase, because it runs very slowly

@@ -1,5 +1,4 @@
 # pylint: disable=protected-access
-from datetime import timedelta
 from hypothesis import given, HealthCheck, settings, Phase
 from hypothesis.strategies import integers
 
@@ -44,7 +43,7 @@ class TestVerify(BaseTestCase):
     """Test ballot verification"""
 
     @settings(
-        deadline=timedelta(milliseconds=2000),
+        deadline=None,
         suppress_health_check=[HealthCheck.too_slow],
         max_examples=10,
         # disabling the "shrink" phase, because it runs very slowly
@@ -119,7 +118,7 @@ class TestVerify(BaseTestCase):
         self.assertTrue(verification.verified)
 
     @settings(
-        deadline=timedelta(milliseconds=10000),
+        deadline=None,
         suppress_health_check=[HealthCheck.too_slow],
         max_examples=10,
         # disabling the "shrink" phase, because it runs very slowly

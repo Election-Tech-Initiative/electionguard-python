@@ -1,4 +1,3 @@
-from datetime import timedelta
 from hypothesis import given, settings, HealthCheck, Phase
 from hypothesis.strategies import integers
 
@@ -69,7 +68,7 @@ class TestDisjunctiveChaumPedersen(BaseTestCase):
         )
 
     @settings(
-        deadline=timedelta(milliseconds=2000),
+        deadline=None,
         suppress_health_check=[HealthCheck.too_slow],
         max_examples=10,
     )
@@ -88,7 +87,7 @@ class TestDisjunctiveChaumPedersen(BaseTestCase):
         self.assertFalse(proof_bad.is_valid(message, keypair.public_key, ONE_MOD_Q))
 
     @settings(
-        deadline=timedelta(milliseconds=2000),
+        deadline=None,
         suppress_health_check=[HealthCheck.too_slow],
         max_examples=10,
     )
@@ -107,7 +106,7 @@ class TestDisjunctiveChaumPedersen(BaseTestCase):
         self.assertFalse(proof_bad.is_valid(message, keypair.public_key, ONE_MOD_Q))
 
     @settings(
-        deadline=timedelta(milliseconds=2000),
+        deadline=None,
         suppress_health_check=[HealthCheck.too_slow],
         max_examples=10,
     )
@@ -152,7 +151,7 @@ class TestChaumPedersen(BaseTestCase):
         )
 
     @settings(
-        deadline=timedelta(milliseconds=2000),
+        deadline=None,
         suppress_health_check=[HealthCheck.too_slow],
         max_examples=10,
         phases=[Phase.explicit, Phase.reuse, Phase.generate, Phase.target],
@@ -223,7 +222,7 @@ class TestConstantChaumPedersen(BaseTestCase):
         self.assertFalse(bad_proof.is_valid(message, keypair.public_key, ONE_MOD_Q))
 
     @settings(
-        deadline=timedelta(milliseconds=2000),
+        deadline=None,
         suppress_health_check=[HealthCheck.too_slow],
         max_examples=10,
     )

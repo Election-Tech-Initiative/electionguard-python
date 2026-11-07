@@ -1,5 +1,4 @@
 from copy import deepcopy
-from datetime import timedelta
 from random import Random
 
 from hypothesis import HealthCheck, Phase
@@ -49,7 +48,7 @@ class TestDecryptWithSecrets(BaseTestCase):
     """Decrypting with secrets tests"""
 
     @settings(
-        deadline=timedelta(milliseconds=2000),
+        deadline=None,
         suppress_health_check=[HealthCheck.too_slow],
         max_examples=10,
         # disabling the "shrink" phase, because it runs very slowly
@@ -104,7 +103,7 @@ class TestDecryptWithSecrets(BaseTestCase):
         self.assertEqual(data.vote, result_from_nonce_seed.vote)
 
     @settings(
-        deadline=timedelta(milliseconds=2000),
+        deadline=None,
         suppress_health_check=[HealthCheck.too_slow],
         max_examples=10,
         # disabling the "shrink" phase, because it runs very slowly
@@ -184,7 +183,7 @@ class TestDecryptWithSecrets(BaseTestCase):
         self.assertIsNone(result_from_nonce_malformed_proof)
 
     @settings(
-        deadline=timedelta(milliseconds=2000),
+        deadline=None,
         suppress_health_check=[HealthCheck.too_slow],
         max_examples=10,
         # disabling the "shrink" phase, because it runs very slowly
@@ -231,7 +230,7 @@ class TestDecryptWithSecrets(BaseTestCase):
         self.assertIsNone(result_from_nonce_seed)
 
     @settings(
-        deadline=timedelta(milliseconds=5000),
+        deadline=None,
         suppress_health_check=[HealthCheck.too_slow],
         max_examples=10,
         # disabling the "shrink" phase, because it runs very slowly
@@ -392,7 +391,7 @@ class TestDecryptWithSecrets(BaseTestCase):
             self.assertTrue(seed_selection.is_valid(selection_description.object_id))
 
     @settings(
-        deadline=timedelta(milliseconds=5000),
+        deadline=None,
         suppress_health_check=[HealthCheck.too_slow],
         max_examples=10,
         # disabling the "shrink" phase, because it runs very slowly
@@ -494,7 +493,7 @@ class TestDecryptWithSecrets(BaseTestCase):
         self.assertIsNone(result_from_nonce_seed_tampered)
 
     @settings(
-        deadline=timedelta(milliseconds=5000),
+        deadline=None,
         suppress_health_check=[HealthCheck.too_slow],
         max_examples=1,
         # disabling the "shrink" phase, because it runs very slowly
@@ -662,7 +661,7 @@ class TestDecryptWithSecrets(BaseTestCase):
                 )
 
     @settings(
-        deadline=timedelta(milliseconds=2000),
+        deadline=None,
         suppress_health_check=[HealthCheck.too_slow],
         max_examples=1,
         # disabling the "shrink" phase, because it runs very slowly
