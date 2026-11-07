@@ -2,9 +2,22 @@ import asyncio
 
 from tests.base_test_case import BaseTestCase
 
-from electionguard.discrete_log import DiscreteLog, DiscreteLogNotFoundError
+from electionguard.constants import get_small_prime
+from electionguard.discrete_log import (
+    DiscreteLog,
+    DiscreteLogExponentError,
+    DiscreteLogNotFoundError,
+    compute_discrete_log,
+)
 from electionguard.elgamal import elgamal_encrypt, elgamal_keypair_from_secret
-from electionguard.group import ONE_MOD_Q, TWO_MOD_Q
+from electionguard.group import (
+    ElementModP,
+    ONE_MOD_P,
+    ONE_MOD_Q,
+    TWO_MOD_Q,
+    g_pow_p,
+    pow_p,
+)
 from electionguard.utils import get_optional
 
 # far beyond any value the rest of the suite decrypts, so it is never cached
@@ -38,3 +51,37 @@ class TestDiscreteLog(BaseTestCase):
 
         # Assert
         self.assertEqual(max(dlog.get_cache().values()), exponent)
+
+    def test_max_exponent_is_still_reachable(self):
+        # Arrange
+        cache = {ONE_MOD_P: 0}
+
+        # Act
+        exponent, _ = compute_discrete_log(g_pow_p(1000), cache, max_exponent=1000)
+
+        # Assert
+        self.assertEqual(exponent, 1000)
+        self.assertEqual(len(cache), 1001)
+
+    def test_exponent_over_the_limit_fails_without_filling_cache(self):
+        # Arrange
+        cache = {ONE_MOD_P: 0}
+
+        # Act & Assert
+        with self.assertRaises(DiscreteLogExponentError):
+            compute_discrete_log(g_pow_p(1001), cache, max_exponent=1000)
+        self.assertEqual(cache, {ONE_MOD_P: 0})
+
+    def test_value_outside_the_subgroup_fails_without_filling_cache(self):
+        # Arrange
+        outside_subgroup = next(
+            candidate
+            for candidate in map(ElementModP, range(2, 100))
+            if pow_p(candidate, get_small_prime()) != ONE_MOD_P
+        )
+        cache = {ONE_MOD_P: 0}
+
+        # Act & Assert
+        with self.assertRaisesRegex(DiscreteLogExponentError, "wrong key"):
+            compute_discrete_log(outside_subgroup, cache, max_exponent=1000)
+        self.assertEqual(cache, {ONE_MOD_P: 0})

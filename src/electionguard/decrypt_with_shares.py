@@ -4,7 +4,11 @@ from .decryption_share import (
     DecryptionShare,
     get_shares_for_selection,
 )
-from .discrete_log import DiscreteLog
+from .discrete_log import (
+    DiscreteLog,
+    DiscreteLogExponentError,
+    DiscreteLogNotFoundError,
+)
 from .group import ElementModP, ElementModQ, mult_p, div_p
 from .logs import log_warning
 from .manifest import (
@@ -186,7 +190,11 @@ def decrypt_selection_with_decryption_shares(
 
     # Calculate 𝑀=𝐵⁄(∏𝑀𝑖) mod 𝑝.
     decrypted_value = div_p(selection.ciphertext.data, all_shares_product_M)
-    d_log = DiscreteLog.get_instance().discrete_log(decrypted_value)
+    try:
+        d_log = DiscreteLog.get_instance().discrete_log(decrypted_value)
+    except (DiscreteLogExponentError, DiscreteLogNotFoundError) as error:
+        log_warning(f"selection: {selection.object_id} did not decrypt: {error}")
+        return None
     return PlaintextTallySelection(
         selection.object_id,
         d_log,

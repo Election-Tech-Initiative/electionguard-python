@@ -3,6 +3,8 @@
 # pylint: disable=unnecessary-comprehension
 
 
+from unittest.mock import patch
+
 from tests.base_test_case import BaseTestCase
 
 from electionguard.ballot_box import BallotBox, BallotBoxState, get_ballots
@@ -19,6 +21,10 @@ from electionguard.decryption import (
     reconstruct_decryption_share_for_ballot,
 )
 from electionguard.decryption_share import DecryptionShare
+from electionguard.discrete_log import (
+    DiscreteLogExponentError,
+    DiscreteLogNotFoundError,
+)
 from electionguard.encrypt import EncryptionMediator
 from electionguard.group import ElementModP
 from electionguard.guardian import Guardian
@@ -167,6 +173,29 @@ class TestDecryptWithShares(BaseTestCase):
         self.key_ceremony_mediator.reset(
             CeremonyDetails(self.NUMBER_OF_GUARDIANS, self.QUORUM)
         )
+
+    def test_decrypt_selection_returns_none_when_value_has_no_discrete_log(self):
+        # Arrange
+        first_contest = list(self.ciphertext_tally.contests.values())[0]
+        first_selection = list(first_contest.selections.values())[0]
+
+        for error in (DiscreteLogExponentError(2, 1), DiscreteLogNotFoundError(1)):
+            with self.subTest(error=type(error).__name__):
+                with patch(
+                    "electionguard.decrypt_with_shares.DiscreteLog.get_instance"
+                ) as get_instance:
+                    get_instance.return_value.discrete_log.side_effect = error
+
+                    # Act
+                    result = decrypt_selection_with_decryption_shares(
+                        first_selection,
+                        {},
+                        self.context.crypto_extended_base_hash,
+                        suppress_validity_check=True,
+                    )
+
+                # Assert
+                self.assertIsNone(result)
 
     def test_decrypt_selection_with_all_guardians_present(self):
         # Arrange

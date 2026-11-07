@@ -2,10 +2,12 @@
 # support for computing discrete logs, with a cache so they're never recomputed
 
 import asyncio
+from functools import lru_cache
+from math import isqrt
 
 from .constants import get_generator
 from .singleton import Singleton
-from .group import BaseElement, ElementModP, ONE_MOD_P, mult_p
+from .group import BaseElement, ElementModP, ONE_MOD_P, mult_inv_p, mult_p, pow_p
 
 DiscreteLogCache = dict[ElementModP, int]
 
@@ -18,9 +20,15 @@ _INITIAL_CACHE = {ONE_MOD_P: 0}
 class DiscreteLogExponentError(ValueError):
     """Raised when the max exponent is larger than the system allows."""
 
-    def __init__(self, exponent: int, max_exponent: int = _DLOG_MAX_EXPONENT) -> None:
+    def __init__(
+        self,
+        exponent: int,
+        max_exponent: int = _DLOG_MAX_EXPONENT,
+        message: str | None = None,
+    ) -> None:
         super().__init__(
-            f"Discrete log exponent of {exponent} exceeds maximum of {max_exponent}."
+            message
+            or f"Discrete log exponent of {exponent} exceeds maximum of {max_exponent}."
         )
 
 
@@ -117,6 +125,38 @@ def precompute_discrete_log_cache(
     return cache
 
 
+@lru_cache(maxsize=4)
+def _get_baby_steps(generator: int, step_count: int) -> dict[ElementModP, int]:
+    """Map g^j to j for every j below step_count, keeping the smallest j of a repeat."""
+    g = ElementModP(generator, False)
+    baby_steps: dict[ElementModP, int] = {}
+    current_element = ONE_MOD_P
+    for exponent in range(step_count):
+        baby_steps.setdefault(current_element, exponent)
+        current_element = mult_p(g, current_element)
+    return baby_steps
+
+
+def _is_within_max_exponent(element: ElementModP, max_exponent: int) -> bool:
+    """
+    Check whether element is g^x for some x up to max_exponent, using baby-step
+    giant-step. This takes about 2 * sqrt(max_exponent) multiplications and stores
+    no results in the cache, so a value with no small exponent (a wrong key or a
+    corrupted ciphertext) fails at once rather than filling memory on the way there.
+    """
+    step_count = isqrt(max_exponent) + 1
+    baby_steps = _get_baby_steps(get_generator(), step_count)
+    giant_step = mult_inv_p(pow_p(ElementModP(get_generator(), False), step_count))
+
+    current_element = element
+    for giant_exponent in range(step_count):
+        baby_exponent = baby_steps.get(current_element)
+        if baby_exponent is not None:
+            return giant_exponent * step_count + baby_exponent <= max_exponent
+        current_element = mult_p(current_element, giant_step)
+    return False
+
+
 def compute_discrete_log_cache(
     element: ElementModP,
     cache: DiscreteLogCache,
@@ -136,6 +176,13 @@ def compute_discrete_log_cache(
     exponent = cache[max_element]
     if exponent > max_exponent:
         raise DiscreteLogExponentError(exponent, max_exponent)
+    if not _is_within_max_exponent(element, max_exponent):
+        raise DiscreteLogExponentError(
+            max_exponent + 1,
+            max_exponent,
+            f"Value is not g^x for any x up to {max_exponent}: "
+            "a wrong key, corrupted data, or a count above the maximum.",
+        )
 
     g = ElementModP(get_generator(), False)
 
