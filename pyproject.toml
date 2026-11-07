@@ -77,6 +77,13 @@ build-backend = "uv_build"
 [tool.uv.build-backend]
 module-name = ["electionguard", "electionguard_cli", "electionguard_gui", "electionguard_tools"]
 
+[tool.pytest.ini_options]
+filterwarnings = [
+  # This hides the warnings rather than fixing them: eel 0.18.2 uses names pyparsing has
+  # deprecated, and only eel can change that. Remove this once eel stops using them.
+  "ignore:.*deprecated.*:DeprecationWarning:eel",
+]
+
 [tool.black]
 target-version = ['py311']
 
