@@ -79,6 +79,42 @@ jobs:
           retry_on: timeout
           command: make coverage
 
+  linux_check_versions:
+    name: Linux Check (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.13", "3.14", "3.15"]
+    env:
+      UV_PYTHON: ${{ matrix.python-version }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v7
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install uv
+        uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+      - name: Change Directory
+        run: cd ${{ github.workspace }}
+      - name: Setup Environment
+        run: make environment
+      - name: Install Dependencies
+        run: make install
+      - name: Check Python Version
+        run: uv run --locked python -c "import sys; print(sys.version); assert sys.version_info[:2] == tuple(map(int, '${{ matrix.python-version }}'.split('.')))"
+      - name: Build
+        run: make build validate
+      - name: Full Test Suite
+        uses: nick-fields/retry@v4
+        with:
+          timeout_minutes: 10
+          max_attempts: 1
+          retry_on: timeout
+          command: make test
+
   mac_check:
     name: MacOS Check
     runs-on: macos-latest
