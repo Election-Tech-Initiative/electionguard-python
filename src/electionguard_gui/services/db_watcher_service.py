@@ -1,8 +1,8 @@
 from collections.abc import Callable
 from threading import Event
-import eel
 from pymongo.database import Database
 from pymongo import CursorType
+import electionguard_eel as eel
 from electionguard_gui.services.eel_log_service import EelLogService
 from electionguard_gui.services.service_base import ServiceBase
 

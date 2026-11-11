@@ -25,7 +25,12 @@ dependencies = [
   "click>=8.5.1,<9.0.0",
   "dacite>=1.9.2,<2.0.0",
   "python-dateutil>=4.0.0,<5.0.0",
-    "Eel[jinja2]>=0.18.2,<1.0.0",
+  # web bridge of the GUI: the dependencies of the vendored Eel copy in src/electionguard_eel
+  "bottle>=0.13.4,<0.14.0",
+  "bottle-websocket>=0.2.9,<0.3.0",
+  "gevent>=26.9.0",
+  "pyparsing>=3.3.3,<4.0.0",
+  "typing-extensions>=4.16.0",
   "pymongo>=4.19.0,<5.0.0",
   "dependency-injector>=4.49.1,<5.0.0",
   # electionguard_tools (used by the eg CLI) builds ballots with hypothesis strategies
@@ -75,17 +80,16 @@ requires = ["uv_build>=0.13.4,<0.14"]
 build-backend = "uv_build"
 
 [tool.uv.build-backend]
-module-name = ["electionguard", "electionguard_cli", "electionguard_gui", "electionguard_tools"]
-
-[tool.pytest.ini_options]
-filterwarnings = [
-  # This hides the warnings rather than fixing them: eel 0.18.2 uses names pyparsing has
-  # deprecated, and only eel can change that. Remove this once eel stops using them.
-  "ignore:.*deprecated.*:DeprecationWarning:eel",
-]
+module-name = ["electionguard", "electionguard_cli", "electionguard_eel", "electionguard_gui", "electionguard_tools"]
 
 [tool.black]
 target-version = ['py311']
+# vendored third-party code, kept close to upstream
+extend-exclude = "src/electionguard_eel/"
+
+[tool.pylint.main]
+# vendored third-party code, kept close to upstream
+ignore = ["electionguard_eel"]
 
 [tool.pylint.basic]
 extension-pkg-whitelist = "pydantic"
@@ -132,3 +136,8 @@ warn_unused_configs = true
 disallow_untyped_defs = true
 ignore_missing_imports = true
 show_column_numbers = true
+
+[[tool.mypy.overrides]]
+# vendored third-party code, kept close to upstream
+module = ["electionguard_eel", "electionguard_eel.*"]
+ignore_errors = true

@@ -1,6 +1,6 @@
 from os import path
 from subprocess import check_output
-import eel
+import electionguard_eel as eel
 from electionguard_gui.services.eel_log_service import EelLogService
 from electionguard_gui.services.service_base import ServiceBase
 

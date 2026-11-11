@@ -1,4 +1,4 @@
-import eel
+import electionguard_eel as eel
 
 from electionguard_gui.services.configuration_service import ConfigurationService
 from electionguard_gui.services.service_base import ServiceBase

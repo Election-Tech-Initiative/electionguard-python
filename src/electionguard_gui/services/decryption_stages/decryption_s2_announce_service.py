@@ -1,5 +1,5 @@
 from pymongo.database import Database
-import eel  # type: ignore[import-untyped]
+import electionguard_eel as eel
 from electionguard import DecryptionMediator
 from electionguard.ballot import BallotBoxState
 from electionguard.election_polynomial import LagrangeCoefficientsRecord

@@ -1,7 +1,7 @@
 import os
 from typing import Any
 from datetime import datetime, UTC
-import eel  # type: ignore[import-untyped]
+import electionguard_eel as eel
 from electionguard.encrypt import EncryptionDevice
 from electionguard.serialize import from_file, from_raw
 from electionguard.ballot import SubmittedBallot

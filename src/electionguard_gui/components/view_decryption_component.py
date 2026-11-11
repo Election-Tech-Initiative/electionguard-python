@@ -1,7 +1,7 @@
 import traceback
 from typing import Any
-import eel  # type: ignore[import-untyped]
 from pymongo.database import Database
+import electionguard_eel as eel
 from electionguard_gui.eel_utils import eel_fail, eel_success
 from electionguard_gui.components.component_base import ComponentBase
 from electionguard_gui.models.decryption_dto import DecryptionDto

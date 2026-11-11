@@ -1,6 +1,6 @@
 import traceback
-import eel  # type: ignore[import-untyped]
 from pymongo.database import Database
+import electionguard_eel as eel
 from electionguard_gui.eel_utils import eel_fail, eel_success
 
 

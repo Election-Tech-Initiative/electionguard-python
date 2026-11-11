@@ -1,7 +1,7 @@
 from os import path
 from shutil import make_archive, rmtree
 from typing import Any
-import eel
+import electionguard_eel as eel
 from electionguard.constants import get_constants
 from electionguard.guardian import Guardian
 from electionguard_cli.setup_election.output_setup_files_step import (

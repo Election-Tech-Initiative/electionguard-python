@@ -1,5 +1,5 @@
 import traceback
-import eel
+import electionguard_eel as eel
 
 from electionguard_gui.components import (
     ViewElectionComponent,

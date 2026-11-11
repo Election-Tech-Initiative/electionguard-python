@@ -1,5 +1,5 @@
 from typing import Any
-import eel  # type: ignore[import-untyped]
+import electionguard_eel as eel
 from electionguard_gui.eel_utils import eel_success
 
 from electionguard_gui.components.component_base import ComponentBase
