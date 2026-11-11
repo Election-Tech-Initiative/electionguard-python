@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Dict, Optional, List
 
 from electionguard.ballot import CiphertextBallot, SubmittedBallot
 from electionguard.election import CiphertextElectionContext
@@ -20,7 +19,7 @@ class Verification:
 
     verified: bool
     """Verification successful?"""
-    message: Optional[str]
+    message: str | None
 
 
 def verify_ballot(
@@ -47,7 +46,7 @@ def verify_ballot(
 
 def verify_decryption(
     tally: PlaintextTally,
-    election_public_keys: Dict[GuardianId, ElectionPublicKey],
+    election_public_keys: dict[GuardianId, ElectionPublicKey],
     context: CiphertextElectionContext,
 ) -> Verification:
     for _, contest in tally.contests.items():
@@ -69,7 +68,7 @@ def verify_decryption(
 
 
 def verify_aggregation(
-    submitted_ballots: List[SubmittedBallot],
+    submitted_ballots: list[SubmittedBallot],
     tally: CiphertextTally,
     manifest: Manifest,
     context: CiphertextElectionContext,

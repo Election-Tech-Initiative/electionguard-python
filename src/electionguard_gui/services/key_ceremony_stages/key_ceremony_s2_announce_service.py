@@ -1,4 +1,4 @@
-from typing import Any, List
+from typing import Any
 from pymongo.database import Database
 from electionguard.key_ceremony import ElectionPublicKey
 from electionguard.utils import get_optional
@@ -32,13 +32,13 @@ class KeyCeremonyS2AnnounceService(KeyCeremonyStageBase):
         self._key_ceremony_service.append_other_key(db, key_ceremony_id, other_keys)
         self._key_ceremony_service.notify_changed(db, key_ceremony_id)
 
-    def announce(self, key_ceremony: KeyCeremonyDto) -> List[dict[str, Any]]:
+    def announce(self, key_ceremony: KeyCeremonyDto) -> list[dict[str, Any]]:
         other_keys = []
         mediator = make_mediator(key_ceremony)
         announce_guardians(key_ceremony, mediator)
         for guardian_id in key_ceremony.guardians_joined:
             self.log.debug(f"announcing guardian {guardian_id}")
-            other_guardian_keys: List[ElectionPublicKey] = get_optional(
+            other_guardian_keys: list[ElectionPublicKey] = get_optional(
                 mediator.share_announced(guardian_id)
             )
             other_keys.append(

@@ -18,7 +18,6 @@ from electionguard.serialize import from_raw, to_raw
 import electionguard_tools.factories.election_factory as ElectionFactory
 import electionguard_tools.factories.ballot_factory as BallotFactory
 
-
 election_factory = ElectionFactory.ElectionFactory()
 ballot_factory = BallotFactory.BallotFactory()
 

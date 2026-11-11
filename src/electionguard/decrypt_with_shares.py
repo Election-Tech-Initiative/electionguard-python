@@ -1,13 +1,14 @@
-from typing import Dict, Optional, Tuple
-
-
 from .ballot import SubmittedBallot, CiphertextContest, CiphertextSelection
 from .decryption_share import (
     CiphertextDecryptionSelection,
     DecryptionShare,
     get_shares_for_selection,
 )
-from .discrete_log import DiscreteLog
+from .discrete_log import (
+    DiscreteLog,
+    DiscreteLogExponentError,
+    DiscreteLogNotFoundError,
+)
 from .group import ElementModP, ElementModQ, mult_p, div_p
 from .logs import log_warning
 from .manifest import (
@@ -28,11 +29,11 @@ from .type import ContestId, GuardianId, SelectionId
 
 def decrypt_tally(
     tally: CiphertextTally,
-    shares: Dict[GuardianId, DecryptionShare],
+    shares: dict[GuardianId, DecryptionShare],
     crypto_extended_base_hash: ElementModQ,
     manifest: Manifest,
     remove_placeholders: bool = True,
-) -> Optional[PlaintextTally]:
+) -> PlaintextTally | None:
     """
     Try to decrypt the tally and the spoiled ballots using the provided decryption shares.
 
@@ -41,13 +42,13 @@ def decrypt_tally(
     :param context: the Ciphertextelectioncontext
     :return: A PlaintextTally or None if there is an error
     """
-    contests: Dict[ContestId, PlaintextTallyContest] = {}
+    contests: dict[ContestId, PlaintextTallyContest] = {}
     contest_descriptions = {
         description.object_id: description for description in manifest.contests
     }
 
     for contest in tally.contests.values():
-        if contest.object_id not in contest_descriptions.keys():
+        if contest.object_id not in contest_descriptions:
             continue  # Skip contests not in manifest
 
         plaintext_contest = decrypt_contest_with_decryption_shares(
@@ -72,11 +73,11 @@ def decrypt_tally(
 
 def decrypt_ballot(
     ballot: SubmittedBallot,
-    shares: Dict[GuardianId, DecryptionShare],
+    shares: dict[GuardianId, DecryptionShare],
     crypto_extended_base_hash: ElementModQ,
     manifest: Manifest,
     remove_placeholders: bool = True,
-) -> Optional[PlaintextTally]:
+) -> PlaintextTally | None:
     """
     Try to decrypt a single ballot using the provided decryption shares.
 
@@ -85,13 +86,13 @@ def decrypt_ballot(
     :param crypto_extended_base_hash: The extended base hash
     :return: A PlaintextTally or None if there is an error
     """
-    contests: Dict[ContestId, PlaintextTallyContest] = {}
+    contests: dict[ContestId, PlaintextTallyContest] = {}
     contest_descriptions = {
         description.object_id: description for description in manifest.contests
     }
 
     for contest in ballot.contests:
-        if contest.object_id not in contest_descriptions.keys():
+        if contest.object_id not in contest_descriptions:
             continue  # Skip contests not in manifest
 
         plaintext_contest = decrypt_contest_with_decryption_shares(
@@ -116,11 +117,11 @@ def decrypt_ballot(
 
 def decrypt_contest_with_decryption_shares(
     contest: CiphertextContest,
-    shares: Dict[GuardianId, DecryptionShare],
+    shares: dict[GuardianId, DecryptionShare],
     crypto_extended_base_hash: ElementModQ,
     contest_description: ContestDescription,
     remove_placeholders: bool = True,
-) -> Optional[PlaintextTallyContest]:
+) -> PlaintextTallyContest | None:
     """
     Decrypt the specified contest within the context of the specified Decryption Shares.
 
@@ -129,7 +130,7 @@ def decrypt_contest_with_decryption_shares(
     :param crypto_extended_base_hash: the extended base hash code (𝑄') for the election
     :return: a collection of `PlaintextTallyContest` or `None` if there is an error
     """
-    plaintext_selections: Dict[SelectionId, PlaintextTallySelection] = {}
+    plaintext_selections: dict[SelectionId, PlaintextTallySelection] = {}
     selection_description_ids = [
         description.object_id for description in contest_description.ballot_selections
     ]
@@ -144,10 +145,8 @@ def decrypt_contest_with_decryption_shares(
         )
         if plaintext_selection is None:
             log_warning(
-                (
-                    f"could not decrypt contest {contest.object_id} "
-                    f"with selection {selection.object_id}"
-                )
+                f"could not decrypt contest {contest.object_id} "
+                f"with selection {selection.object_id}"
             )
             return None
         plaintext_selections[plaintext_selection.object_id] = plaintext_selection
@@ -157,10 +156,10 @@ def decrypt_contest_with_decryption_shares(
 
 def decrypt_selection_with_decryption_shares(
     selection: CiphertextSelection,
-    shares: Dict[GuardianId, Tuple[ElementModP, CiphertextDecryptionSelection]],
+    shares: dict[GuardianId, tuple[ElementModP, CiphertextDecryptionSelection]],
     crypto_extended_base_hash: ElementModQ,
     suppress_validity_check: bool = False,
-) -> Optional[PlaintextTallySelection]:
+) -> PlaintextTallySelection | None:
     """
     Decrypt the specified `CiphertextSelection` with the collection of `ElementModP` decryption shares.
     Each share is expected to be passed with the corresponding public key so that the encryption can be validated
@@ -191,7 +190,11 @@ def decrypt_selection_with_decryption_shares(
 
     # Calculate 𝑀=𝐵⁄(∏𝑀𝑖) mod 𝑝.
     decrypted_value = div_p(selection.ciphertext.data, all_shares_product_M)
-    d_log = DiscreteLog().discrete_log(decrypted_value)
+    try:
+        d_log = DiscreteLog.get_instance().discrete_log(decrypted_value)
+    except (DiscreteLogExponentError, DiscreteLogNotFoundError) as error:
+        log_warning(f"selection: {selection.object_id} did not decrypt: {error}")
+        return None
     return PlaintextTallySelection(
         selection.object_id,
         d_log,

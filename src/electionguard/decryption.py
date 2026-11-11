@@ -1,4 +1,3 @@
-from typing import Dict, List, Optional, Tuple
 from electionguard.chaum_pedersen import ChaumPedersenProof, make_chaum_pedersen
 
 from electionguard.elgamal import ElGamalCiphertext
@@ -37,7 +36,7 @@ from .key_ceremony import (
     get_backup_seed,
 )
 from .logs import log_warning
-from .scheduler import Scheduler
+from .scheduler import Scheduler, use_scheduler
 from .tally import CiphertextTally
 
 from .type import ContestId, GuardianId, SelectionId
@@ -49,8 +48,8 @@ def compute_decryption_share(
     key_pair: ElectionKeyPair,
     tally: CiphertextTally,
     context: CiphertextElectionContext,
-    scheduler: Optional[Scheduler] = None,
-) -> Optional[DecryptionShare]:
+    scheduler: Scheduler | None = None,
+) -> DecryptionShare | None:
     """
     Compute the decryption for all of the contests in the Ciphertext Tally
 
@@ -61,7 +60,7 @@ def compute_decryption_share(
     :return: Return a guardian's decryption share of tally or None if error
     """
 
-    contests: Dict[ContestId, CiphertextDecryptionContest] = {}
+    contests: dict[ContestId, CiphertextDecryptionContest] = {}
 
     for contest in tally.contests.values():
         contest_share = compute_decryption_share_for_contest(
@@ -93,8 +92,8 @@ def compute_compensated_decryption_share(
     missing_guardian_key: ElectionPublicKey,
     tally: CiphertextTally,
     context: CiphertextElectionContext,
-    scheduler: Optional[Scheduler] = None,
-) -> Optional[CompensatedDecryptionShare]:
+    scheduler: Scheduler | None = None,
+) -> CompensatedDecryptionShare | None:
     """
     Compute the compensated decryption for all of the contests in the Ciphertext Tally
 
@@ -108,7 +107,7 @@ def compute_compensated_decryption_share(
         or None if error
     """
 
-    contests: Dict[ContestId, CiphertextCompensatedDecryptionContest] = {}
+    contests: dict[ContestId, CiphertextCompensatedDecryptionContest] = {}
 
     for contest in tally.contests.values():
         contest_share = compute_compensated_decryption_share_for_contest(
@@ -141,8 +140,8 @@ def compute_decryption_share_for_ballot(
     key_pair: ElectionKeyPair,
     ballot: SubmittedBallot,
     context: CiphertextElectionContext,
-    scheduler: Optional[Scheduler] = None,
-) -> Optional[DecryptionShare]:
+    scheduler: Scheduler | None = None,
+) -> DecryptionShare | None:
     """
     Compute the decryption for a single ballot
 
@@ -152,7 +151,7 @@ def compute_decryption_share_for_ballot(
     :param scheduler: Scheduler
     :return: Decryption share for ballot or `None` if there is an error
     """
-    contests: Dict[ContestId, CiphertextDecryptionContest] = {}
+    contests: dict[ContestId, CiphertextDecryptionContest] = {}
 
     for contest in ballot.contests:
         contest_share = compute_decryption_share_for_contest(
@@ -184,8 +183,8 @@ def compute_compensated_decryption_share_for_ballot(
     present_guardian_key: ElectionPublicKey,
     ballot: SubmittedBallot,
     context: CiphertextElectionContext,
-    scheduler: Optional[Scheduler] = None,
-) -> Optional[CompensatedDecryptionShare]:
+    scheduler: Scheduler | None = None,
+) -> CompensatedDecryptionShare | None:
     """
     Compute the compensated decryption for a single ballot
 
@@ -198,7 +197,7 @@ def compute_compensated_decryption_share_for_ballot(
     :return: Return a guardian's compensated decryption share of ballot for the missing guardian
         or None if error
     """
-    contests: Dict[ContestId, CiphertextCompensatedDecryptionContest] = {}
+    contests: dict[ContestId, CiphertextCompensatedDecryptionContest] = {}
 
     for contest in ballot.contests:
         contest_share = compute_compensated_decryption_share_for_contest(
@@ -231,8 +230,8 @@ def compute_decryption_share_for_contest(
     key_pair: ElectionKeyPair,
     contest: CiphertextContest,
     context: CiphertextElectionContext,
-    scheduler: Optional[Scheduler] = None,
-) -> Optional[CiphertextDecryptionContest]:
+    scheduler: Scheduler | None = None,
+) -> CiphertextDecryptionContest | None:
     """
     Compute the decryption share for a single contest
 
@@ -242,16 +241,15 @@ def compute_decryption_share_for_contest(
     :param scheduler: Scheduler
     :return: Decryption share for contest or `None` if there is an error
     """
-    if not scheduler:
-        scheduler = Scheduler()
+    selections: dict[SelectionId, CiphertextDecryptionSelection] = {}
 
-    selections: Dict[SelectionId, CiphertextDecryptionSelection] = {}
-
-    decryptions: List[Optional[CiphertextDecryptionSelection]] = scheduler.schedule(
-        compute_decryption_share_for_selection,
-        [(key_pair, selection, context) for selection in contest.selections],
-        with_shared_resources=True,
-    )
+    decryptions: list[CiphertextDecryptionSelection | None]
+    with use_scheduler(scheduler) as active_scheduler:
+        decryptions = active_scheduler.schedule(
+            compute_decryption_share_for_selection,
+            [(key_pair, selection, context) for selection in contest.selections],
+            with_shared_resources=True,
+        )
 
     for decryption in decryptions:
         if decryption is None:
@@ -272,8 +270,8 @@ def compute_compensated_decryption_share_for_contest(
     missing_guardian_key: ElectionPublicKey,
     contest: CiphertextContest,
     context: CiphertextElectionContext,
-    scheduler: Optional[Scheduler] = None,
-) -> Optional[CiphertextCompensatedDecryptionContest]:
+    scheduler: Scheduler | None = None,
+) -> CiphertextCompensatedDecryptionContest | None:
     """
     Compute the compensated decryption share for a single contest
 
@@ -284,13 +282,11 @@ def compute_compensated_decryption_share_for_contest(
     :param context: The public election encryption context
     :return: a `CiphertextCompensatedDecryptionContest` or `None` if there is an error
     """
-    if not scheduler:
-        scheduler = Scheduler()
+    selections: dict[SelectionId, CiphertextCompensatedDecryptionSelection] = {}
 
-    selections: Dict[SelectionId, CiphertextCompensatedDecryptionSelection] = {}
-
-    selection_decryptions: List[Optional[CiphertextCompensatedDecryptionSelection]] = (
-        scheduler.schedule(
+    selection_decryptions: list[CiphertextCompensatedDecryptionSelection | None]
+    with use_scheduler(scheduler) as active_scheduler:
+        selection_decryptions = active_scheduler.schedule(
             compute_compensated_decryption_share_for_selection,
             [
                 (
@@ -304,7 +300,6 @@ def compute_compensated_decryption_share_for_contest(
             ],
             with_shared_resources=True,
         )
-    )
 
     for decryption in selection_decryptions:
         if decryption is None:
@@ -324,7 +319,7 @@ def compute_decryption_share_for_selection(
     key_pair: ElectionKeyPair,
     selection: CiphertextSelection,
     context: CiphertextElectionContext,
-) -> Optional[CiphertextDecryptionSelection]:
+) -> CiphertextDecryptionSelection | None:
     """
     Compute a partial decryption for a specific selection
 
@@ -334,7 +329,7 @@ def compute_decryption_share_for_selection(
     :return: a `CiphertextDecryptionSelection` or `None` if there is an error
     """
 
-    (decryption, proof) = partially_decrypt(
+    decryption, proof = partially_decrypt(
         key_pair, selection.ciphertext, context.crypto_extended_base_hash
     )
 
@@ -363,7 +358,7 @@ def compute_compensated_decryption_share_for_selection(
     missing_guardian_key: ElectionPublicKey,
     selection: CiphertextSelection,
     context: CiphertextElectionContext,
-) -> Optional[CiphertextCompensatedDecryptionSelection]:
+) -> CiphertextCompensatedDecryptionSelection | None:
     """
     Compute a compensated decryption share for a specific selection using the
     available guardian's share of the missing guardian's private key polynomial
@@ -384,14 +379,12 @@ def compute_compensated_decryption_share_for_selection(
 
     if compensated is None:
         log_warning(
-            (
-                f"compute compensated decryption share failed for {available_guardian_key.owner_id} "
-                f"missing: {missing_guardian_key.owner_id} {selection.object_id}"
-            )
+            f"compute compensated decryption share failed for {available_guardian_key.owner_id} "
+            f"missing: {missing_guardian_key.owner_id} {selection.object_id}"
         )
         return None
 
-    (decryption, proof) = compensated
+    decryption, proof = compensated
 
     recovery_public_key = compute_recovery_public_key(
         available_guardian_key, missing_guardian_key
@@ -413,10 +406,8 @@ def compute_compensated_decryption_share_for_selection(
         )
         return share
     log_warning(
-        (
-            f"compute compensated decryption share proof failed for {available_guardian_key.owner_id} "
-            f"missing: {missing_guardian_key.owner_id} {selection.object_id}"
-        )
+        f"compute compensated decryption share proof failed for {available_guardian_key.owner_id} "
+        f"missing: {missing_guardian_key.owner_id} {selection.object_id}"
     )
     return None
 
@@ -425,8 +416,8 @@ def partially_decrypt(
     key_pair: ElectionKeyPair,
     elgamal: ElGamalCiphertext,
     extended_base_hash: ElementModQ,
-    nonce_seed: Optional[ElementModQ] = None,
-) -> Tuple[ElementModP, ChaumPedersenProof]:
+    nonce_seed: ElementModQ | None = None,
+) -> tuple[ElementModP, ChaumPedersenProof]:
     """
     Compute a partial decryption of an elgamal encryption
 
@@ -460,7 +451,7 @@ def partially_decrypt(
 def decrypt_backup(
     guardian_backup: ElectionPartialKeyBackup,
     key_pair: ElectionKeyPair,
-) -> Optional[ElementModQ]:
+) -> ElementModQ | None:
     """
     Decrypts a compensated partial decryption of an elgamal encryption
     on behalf of a missing guardian
@@ -488,8 +479,8 @@ def decrypt_with_threshold(
     coordinate: ElementModQ,
     ciphertext: ElGamalCiphertext,
     extended_base_hash: ElementModQ,
-    nonce_seed: Optional[ElementModQ] = None,
-) -> Optional[Tuple[ElementModP, ChaumPedersenProof]]:
+    nonce_seed: ElementModQ | None = None,
+) -> tuple[ElementModP, ChaumPedersenProof] | None:
     """
     Compute a compensated partial decryption of an elgamal encryption
     given a coordinate from a missing guardian.
@@ -541,8 +532,8 @@ def compute_recovery_public_key(
 def reconstruct_decryption_share(
     missing_guardian_key: ElectionPublicKey,
     tally: CiphertextTally,
-    shares: Dict[GuardianId, CompensatedDecryptionShare],
-    lagrange_coefficients: Dict[GuardianId, ElementModQ],
+    shares: dict[GuardianId, CompensatedDecryptionShare],
+    lagrange_coefficients: dict[GuardianId, ElementModQ],
 ) -> DecryptionShare:
     """
     Reconstruct the missing Decryption Share for a missing guardian
@@ -554,7 +545,7 @@ def reconstruct_decryption_share(
     :shares: the collection of `CompensatedTallyDecryptionShare` for the missing guardian from available guardians
     :lagrange_coefficients: the lagrange coefficients corresponding to the available guardians that provided shares
     """
-    contests: Dict[ContestId, CiphertextDecryptionContest] = {}
+    contests: dict[ContestId, CiphertextDecryptionContest] = {}
 
     for contest in tally.contests.values():
         contests[contest.object_id] = reconstruct_decryption_contest(
@@ -580,8 +571,8 @@ def reconstruct_decryption_share(
 def reconstruct_decryption_share_for_ballot(
     missing_guardian_key: ElectionPublicKey,
     ballot: SubmittedBallot,
-    shares: Dict[GuardianId, CompensatedDecryptionShare],
-    lagrange_coefficients: Dict[GuardianId, ElementModQ],
+    shares: dict[GuardianId, CompensatedDecryptionShare],
+    lagrange_coefficients: dict[GuardianId, ElementModQ],
 ) -> DecryptionShare:
     """
     Reconstruct a missing ballot Decryption share for a missing guardian
@@ -594,7 +585,7 @@ def reconstruct_decryption_share_for_ballot(
         the missing guardian, each keyed by the ID of the guardian that produced it from available guardians
     :lagrange_coefficients: the lagrange coefficients corresponding to the available guardians that provided shares
     """
-    contests: Dict[ContestId, CiphertextDecryptionContest] = {}
+    contests: dict[ContestId, CiphertextDecryptionContest] = {}
 
     for contest in ballot.contests:
         contests[contest.object_id] = reconstruct_decryption_contest(
@@ -620,8 +611,8 @@ def reconstruct_decryption_share_for_ballot(
 def reconstruct_decryption_contest(
     missing_guardian_id: GuardianId,
     contest: CiphertextContest,
-    shares: Dict[GuardianId, CompensatedDecryptionShare],
-    lagrange_coefficients: Dict[GuardianId, ElementModQ],
+    shares: dict[GuardianId, CompensatedDecryptionShare],
+    lagrange_coefficients: dict[GuardianId, ElementModQ],
 ) -> CiphertextDecryptionContest:
     """
     Reconstruct the missing Decryption Share for a missing guardian
@@ -633,16 +624,16 @@ def reconstruct_decryption_contest(
     :lagrange_coefficients: the lagrange coefficients corresponding to the available guardians that provided shares
     """
 
-    contest_shares: Dict[GuardianId, CiphertextCompensatedDecryptionContest] = {
+    contest_shares: dict[GuardianId, CiphertextCompensatedDecryptionContest] = {
         available_guardian_id: compensated_share.contests[contest.object_id]
         for available_guardian_id, compensated_share in shares.items()
     }
 
-    selections: Dict[SelectionId, CiphertextDecryptionSelection] = {}
+    selections: dict[SelectionId, CiphertextDecryptionSelection] = {}
     for selection in contest.selections:
 
         # collect all of the shares generated for each selection
-        compensated_selection_shares: Dict[
+        compensated_selection_shares: dict[
             GuardianId, CiphertextCompensatedDecryptionSelection
         ] = {
             available_guardian_id: compensated_contest.selections[selection.object_id]
@@ -672,8 +663,8 @@ def reconstruct_decryption_contest(
 
 
 def compute_lagrange_coefficients_for_guardians(
-    available_guardians_keys: List[ElectionPublicKey],
-) -> Dict[GuardianId, ElementModQ]:
+    available_guardians_keys: list[ElectionPublicKey],
+) -> dict[GuardianId, ElementModQ]:
     """
     Produce all Lagrange coefficients for a collection of available
     Guardians, to be used when reconstructing a missing share.
@@ -688,7 +679,7 @@ def compute_lagrange_coefficients_for_guardians(
 
 def compute_lagrange_coefficients_for_guardian(
     guardian_key: ElectionPublicKey,
-    other_guardians_keys: List[ElectionPublicKey],
+    other_guardians_keys: list[ElectionPublicKey],
 ) -> ElementModQ:
     """
     Produce a Lagrange coefficient for a single Guardian, to be used when reconstructing a missing share.

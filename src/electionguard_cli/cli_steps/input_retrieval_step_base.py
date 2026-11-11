@@ -1,4 +1,4 @@
-from typing import List, Type, TypeVar
+from typing import TypeVar
 from os.path import isfile, isdir, join
 from os import listdir
 from io import TextIOWrapper
@@ -47,7 +47,7 @@ class InputRetrievalStepBase(CliStepBase):
         return from_file_wrapper(CiphertextElectionContext, context_file)
 
     @staticmethod
-    def _get_ballots(ballots_path: str, ballot_type: Type[_T]) -> List[_T]:
+    def _get_ballots(ballots_path: str, ballot_type: type[_T]) -> list[_T]:
         if isfile(ballots_path):
             return from_list_in_file(ballot_type, ballots_path)
         if isdir(ballots_path):
@@ -61,7 +61,7 @@ class InputRetrievalStepBase(CliStepBase):
         )
 
     @staticmethod
-    def _get_ballot(ballots_dir: str, filename: str, ballot_type: Type[_T]) -> _T:
+    def _get_ballot(ballots_dir: str, filename: str, ballot_type: type[_T]) -> _T:
         full_file = join(ballots_dir, filename)
         echo(f"Importing {filename}")
         return from_file(ballot_type, full_file)

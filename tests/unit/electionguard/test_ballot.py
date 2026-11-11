@@ -8,7 +8,6 @@ from electionguard.manifest import (
 from electionguard.encrypt import contest_from
 from electionguard.utils import NullVoteException, OverVoteException, UnderVoteException
 
-
 NUMBER_ELECTED = 2
 
 

@@ -1,4 +1,4 @@
-from typing import Any, Tuple, Union
+from typing import Any
 from base64 import b16decode
 
 # pylint: disable=no-name-in-module
@@ -32,7 +32,7 @@ def bytes_to_hex(input: bytes) -> str:
 _zero = mpz(0)
 
 
-def _convert_to_element(data: Union[int, str]) -> Tuple[str, int]:
+def _convert_to_element(data: int | str) -> tuple[str, int]:
     """Convert element to consistent types"""
     if isinstance(data, str):
         integer = _hex_to_int(data)
@@ -48,9 +48,9 @@ class BigInteger(str):
 
     _value: mpz = _zero
 
-    def __new__(cls, data: Union[int, str]):  # type: ignore
-        (hex, integer) = _convert_to_element(data)
-        big_int = super(BigInteger, cls).__new__(cls, hex)
+    def __new__(cls, data: int | str):  # type: ignore
+        hex, integer = _convert_to_element(data)
+        big_int = super().__new__(cls, hex)
         big_int._value = mpz(integer)
         return big_int
 

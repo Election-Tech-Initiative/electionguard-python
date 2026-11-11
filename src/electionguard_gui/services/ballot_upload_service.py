@@ -1,6 +1,6 @@
 from datetime import datetime
 from time import sleep
-from typing import Callable
+from collections.abc import Callable
 from pymongo.database import Database
 from electionguard.ballot import SubmittedBallot
 from electionguard.serialize import from_raw
@@ -97,8 +97,7 @@ class BallotUploadService(ServiceBase):
             try:
                 ballot = self.get_submitted_ballot_with_retry(db, ballot_id)
                 ballots.append(ballot)
-            # pylint: disable=broad-except
-            except Exception as e:
+            except Exception as e:  # pylint: disable=broad-exception-caught
                 self._log.error(
                     f"Error deserializing ballot {ballot_id}. "
                     + "Skipping ballot, but this may cause Chaum Pederson errors later.",
@@ -143,7 +142,7 @@ class BallotUploadService(ServiceBase):
             raise Exception(f"Ballot {ballot_upload_id} not found")
         ballot_str = ballot_obj["file_contents"]
         # if ballot_str ends with a }
-        if not ballot_str[-1] == "}":
+        if ballot_str[-1] != "}":
             self._log.warn(f"ballot {ballot_upload_id} is missing a closing bracket")
             raise RetryException
         try:

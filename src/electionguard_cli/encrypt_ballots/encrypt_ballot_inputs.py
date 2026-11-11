@@ -1,4 +1,3 @@
-from typing import List
 from electionguard.ballot import PlaintextBallot
 from electionguard.election import CiphertextElectionContext
 from electionguard.encrypt import EncryptionDevice
@@ -16,7 +15,7 @@ class EncryptBallotInputs(CliElectionInputsBase):
         self,
         manifest: Manifest,
         context: CiphertextElectionContext,
-        plaintext_ballots: List[PlaintextBallot],
+        plaintext_ballots: list[PlaintextBallot],
     ):
         self.guardian_count = context.number_of_guardians
         self.quorum = context.quorum
@@ -24,7 +23,7 @@ class EncryptBallotInputs(CliElectionInputsBase):
         self.plaintext_ballots = plaintext_ballots
         self.context = context
 
-    plaintext_ballots: List[PlaintextBallot]
+    plaintext_ballots: list[PlaintextBallot]
     context: CiphertextElectionContext
-    encryption_devices: List[EncryptionDevice]
+    encryption_devices: list[EncryptionDevice]
     output_record: str

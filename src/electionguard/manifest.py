@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field, InitVar
 from datetime import datetime
 from enum import Enum, unique
-from typing import Dict, cast, List, Optional, Set, Any
+from typing import cast, Any
 
 from .election_object_base import ElectionObjectBase, OrderedObjectBase, list_eq
 from .group import ElementModQ
@@ -162,13 +162,13 @@ class InternationalizedText(CryptoHashable):
     See: https://developers.google.com/elections-data/reference/internationalized-text
     """
 
-    text: List[Language] = field(default_factory=lambda: [])
+    text: list[Language] = field(default_factory=lambda: [])
 
     # explicit `__init__` added as workaround for https://bugs.python.org/issue45081
     # can potentially be removed with future python version >3.9.7
     def __init__(
         self,
-        text: Optional[List[Language]] = None,
+        text: list[Language] | None = None,
     ):
         self.text = text if text else []
 
@@ -188,19 +188,19 @@ class ContactInformation(CryptoHashable):
     See: https://developers.google.com/elections-data/reference/contact-information
     """
 
-    address_line: Optional[List[str]] = field(default=None)
-    email: Optional[List[AnnotatedString]] = field(default=None)
-    phone: Optional[List[AnnotatedString]] = field(default=None)
-    name: Optional[str] = field(default=None)
+    address_line: list[str] | None = field(default=None)
+    email: list[AnnotatedString] | None = field(default=None)
+    phone: list[AnnotatedString] | None = field(default=None)
+    name: str | None = field(default=None)
 
     # explicit `__init__` added as workaround for https://bugs.python.org/issue45081
     # can potentially be removed with future python version >3.9.7
     def __init__(
         self,
-        address_line: Optional[List[str]] = None,
-        email: Optional[List[AnnotatedString]] = None,
-        phone: Optional[List[AnnotatedString]] = None,
-        name: Optional[str] = None,
+        address_line: list[str] | None = None,
+        email: list[AnnotatedString] | None = None,
+        phone: list[AnnotatedString] | None = None,
+        name: str | None = None,
     ):
         self.address_line = address_line
         self.email = email
@@ -225,7 +225,7 @@ class GeopoliticalUnit(ElectionObjectBase, CryptoHashable):
 
     name: str
     type: ReportingUnitType
-    contact_information: Optional[ContactInformation] = field(default=None)
+    contact_information: ContactInformation | None = field(default=None)
 
     def crypto_hash(self) -> ElementModQ:
         """
@@ -243,9 +243,9 @@ class BallotStyle(ElectionObjectBase, CryptoHashable):
     A BallotStyle works as a key to uniquely specify a set of contests. See also `ContestDescription`.
     """
 
-    geopolitical_unit_ids: Optional[List[str]] = field(default=None)
-    party_ids: Optional[List[str]] = field(default=None)
-    image_uri: Optional[str] = field(default=None)
+    geopolitical_unit_ids: list[str] | None = field(default=None)
+    party_ids: list[str] | None = field(default=None)
+    image_uri: str | None = field(default=None)
 
     def crypto_hash(self) -> ElementModQ:
         """
@@ -265,9 +265,9 @@ class Party(ElectionObjectBase, CryptoHashable):
     """
 
     name: InternationalizedText = field(default=InternationalizedText())
-    abbreviation: Optional[str] = field(default=None)
-    color: Optional[str] = field(default=None)
-    logo_uri: Optional[str] = field(default=None)
+    abbreviation: str | None = field(default=None)
+    color: str | None = field(default=None)
+    logo_uri: str | None = field(default=None)
 
     def get_party_id(self) -> str:
         """
@@ -302,9 +302,9 @@ class Candidate(ElectionObjectBase, CryptoHashable):
     """
 
     name: InternationalizedText = field(default=InternationalizedText())
-    party_id: Optional[str] = field(default=None)
-    image_uri: Optional[str] = field(default=None)
-    is_write_in: Optional[bool] = field(default=None)
+    party_id: str | None = field(default=None)
+    image_uri: str | None = field(default=None)
+    is_write_in: bool | None = field(default=None)
 
     def get_candidate_id(self) -> str:
         """
@@ -370,19 +370,19 @@ class ContestDescription(OrderedObjectBase, CryptoHashable):
     # Maximum number of votes/write-ins per voter in this contest. Used in cumulative voting
     # to indicate how many total votes a voter can spread around. In n-of-m elections, this will
     # be None.
-    votes_allowed: Optional[int]
+    votes_allowed: int | None
 
     # Name of the contest, not necessarily as it appears on the ballot.
     name: str
 
     # For associating a ballot selection for the contest, i.e., a candidate, a ballot measure.
-    ballot_selections: List[SelectionDescription] = field(default_factory=lambda: [])
+    ballot_selections: list[SelectionDescription] = field(default_factory=lambda: [])
 
     # Title of the contest as it appears on the ballot.
-    ballot_title: Optional[InternationalizedText] = field(default=None)
+    ballot_title: InternationalizedText | None = field(default=None)
 
     # Subtitle of the contest as it appears on the ballot.
-    ballot_subtitle: Optional[InternationalizedText] = field(default=None)
+    ballot_subtitle: InternationalizedText | None = field(default=None)
 
     def __eq__(self, other: Any) -> bool:
         return (
@@ -432,9 +432,9 @@ class ContestDescription(OrderedObjectBase, CryptoHashable):
         )
 
         # verify the candidate_ids, selection object_ids, and sequence_ids are unique
-        candidate_ids: Set[str] = set()
-        selection_ids: Set[str] = set()
-        sequence_ids: Set[int] = set()
+        candidate_ids: set[str] = set()
+        selection_ids: set[str] = set()
+        sequence_ids: set[int] = set()
         selection_count = 0
         expected_selection_count = len(self.ballot_selections)
 
@@ -501,7 +501,7 @@ class CandidateContestDescription(ContestDescription):
     this subclass is used purely for convenience
     """
 
-    primary_party_ids: List[str] = field(default_factory=lambda: [])
+    primary_party_ids: list[str] = field(default_factory=lambda: [])
 
 
 @dataclass(eq=True, unsafe_hash=True)
@@ -523,7 +523,7 @@ class ContestDescriptionWithPlaceholders(ContestDescription):
     become one. This allows the `ConstantChaumPedersenProof` to verify correctly for undervoted contests.)
     """
 
-    placeholder_selections: List[SelectionDescription] = field(
+    placeholder_selections: list[SelectionDescription] = field(
         default_factory=lambda: []
     )
 
@@ -545,7 +545,7 @@ class ContestDescriptionWithPlaceholders(ContestDescription):
         """
         return selection in self.placeholder_selections
 
-    def selection_for(self, selection_id: str) -> Optional[SelectionDescription]:
+    def selection_for(self, selection_id: str) -> SelectionDescription | None:
         """
         Gets the description for a particular id
         :param selection_id: Id of Selection
@@ -595,13 +595,13 @@ class Manifest(CryptoHashable):
     type: ElectionType
     start_date: datetime
     end_date: datetime
-    geopolitical_units: List[GeopoliticalUnit]
-    parties: List[Party]
-    candidates: List[Candidate]
-    contests: List[ContestDescription]
-    ballot_styles: List[BallotStyle]
-    name: Optional[InternationalizedText] = field(default=None)
-    contact_information: Optional[ContactInformation] = field(default=None)
+    geopolitical_units: list[GeopoliticalUnit]
+    parties: list[Party]
+    candidates: list[Candidate]
+    contests: list[ContestDescription]
+    ballot_styles: list[BallotStyle]
+    name: InternationalizedText | None = field(default=None)
+    contact_information: ContactInformation | None = field(default=None)
 
     # explicit `__init__` added as workaround for https://bugs.python.org/issue45081
     # can potentially be removed with future python version >3.9.7
@@ -612,13 +612,13 @@ class Manifest(CryptoHashable):
         type: ElectionType,
         start_date: datetime,
         end_date: datetime,
-        geopolitical_units: List[GeopoliticalUnit],
-        parties: List[Party],
-        candidates: List[Candidate],
-        contests: List[ContestDescription],
-        ballot_styles: List[BallotStyle],
-        name: Optional[InternationalizedText] = None,
-        contact_information: Optional[ContactInformation] = None,
+        geopolitical_units: list[GeopoliticalUnit],
+        parties: list[Party],
+        candidates: list[Candidate],
+        contests: list[ContestDescription],
+        ballot_styles: list[BallotStyle],
+        name: InternationalizedText | None = None,
+        contact_information: ContactInformation | None = None,
     ):
         self.election_scope_id = election_scope_id
         self.spec_version = spec_version
@@ -671,11 +671,11 @@ class Manifest(CryptoHashable):
         """
         Verifies the dataset to ensure it is well-formed
         """
-        gp_unit_ids: Set[str] = set()
-        ballot_style_ids: Set[str] = set()
-        party_ids: Set[str] = set()
-        candidate_ids: Set[str] = set()
-        contest_ids: Set[str] = set()
+        gp_unit_ids: set[str] = set()
+        ballot_style_ids: set[str] = set()
+        party_ids: set[str] = set()
+        candidate_ids: set[str] = set()
+        contest_ids: set[str] = set()
 
         # Validate GP Units
         for gp_unit in self.geopolitical_units:
@@ -733,7 +733,7 @@ class Manifest(CryptoHashable):
         contests_have_valid_electoral_district_id = True
         candidate_contests_have_valid_party_ids = True
 
-        contest_sequence_ids: Set[int] = set()
+        contest_sequence_ids: set[int] = set()
 
         for contest in self.contests:
 
@@ -814,28 +814,28 @@ class Manifest(CryptoHashable):
             return "Write-In"
         return get_i8n_value(candidate.name, lang, candidate.object_id)
 
-    def _get_candidate_names(self, lang: str) -> Dict[str, str]:
+    def _get_candidate_names(self, lang: str) -> dict[str, str]:
         return {
             candidate.object_id: self._get_candidate_name(candidate, lang)
             for candidate in self.candidates
         }
 
-    def _get_selections_with_candidate_id(self) -> Dict[str, str]:
-        selections: Dict[str, str] = {}
+    def _get_selections_with_candidate_id(self) -> dict[str, str]:
+        selections: dict[str, str] = {}
         for contest in self.contests:
             for selection in contest.ballot_selections:
                 selections.update({selection.object_id: selection.candidate_id})
         return selections
 
     def _replace_candidate_ids_with_names(
-        self, selections: Dict[str, str], candidates: Dict[str, str]
+        self, selections: dict[str, str], candidates: dict[str, str]
     ) -> None:
         for selection_id, candidate_id in selections.items():
             candidate_name = candidates.get(candidate_id)
             if candidate_name is not None:
                 selections.update({selection_id: candidate_name})
 
-    def get_selection_names(self, lang: str) -> Dict[str, str]:
+    def get_selection_names(self, lang: str) -> dict[str, str]:
         """
         Retrieves a dictionary whose keys are all selection id's and whose values are
         those selection's candidate names in the supplied language if available
@@ -845,7 +845,7 @@ class Manifest(CryptoHashable):
         self._replace_candidate_ids_with_names(selections, candidates)
         return selections
 
-    def get_contest_names(self) -> Dict[str, str]:
+    def get_contest_names(self) -> dict[str, str]:
         """
         Retrieves a dictionary whose keys are all contest id's and whose values are
         those contest's names
@@ -854,7 +854,7 @@ class Manifest(CryptoHashable):
         return {contest.object_id: contest.name for contest in self.contests}
 
     def get_name(self) -> str:
-        def get_first_value(text: Optional[InternationalizedText]) -> str:
+        def get_first_value(text: InternationalizedText | None) -> str:
             return "" if text is None else text.text[0].value
 
         return get_first_value(self.name)
@@ -870,11 +870,11 @@ class InternalManifest:
 
     manifest: InitVar[Manifest] = None
 
-    geopolitical_units: List[GeopoliticalUnit] = field(init=False)
+    geopolitical_units: list[GeopoliticalUnit] = field(init=False)
 
-    contests: List[ContestDescriptionWithPlaceholders] = field(init=False)
+    contests: list[ContestDescriptionWithPlaceholders] = field(init=False)
 
-    ballot_styles: List[BallotStyle] = field(init=False)
+    ballot_styles: list[BallotStyle] = field(init=False)
 
     manifest_hash: ElementModQ = field(init=False)
 
@@ -886,9 +886,7 @@ class InternalManifest:
             self, "contests", self._generate_contests_with_placeholders(manifest)
         )
 
-    def contest_for(
-        self, contest_id: str
-    ) -> Optional[ContestDescriptionWithPlaceholders]:
+    def contest_for(self, contest_id: str) -> ContestDescriptionWithPlaceholders | None:
         """
         Get contest by id
         :param contest_id: Contest id
@@ -913,7 +911,7 @@ class InternalManifest:
 
     def get_contests_for(
         self, ballot_style_id: str
-    ) -> List[ContestDescriptionWithPlaceholders]:
+    ) -> list[ContestDescriptionWithPlaceholders]:
         """
         Get contests for a ballot style
         :param ballot_style_id: ballot style id
@@ -922,8 +920,7 @@ class InternalManifest:
         style = self.get_ballot_style(ballot_style_id)
         if style.geopolitical_unit_ids is None:
             return []
-        # pylint: disable=unnecessary-comprehension
-        gp_unit_ids = [gp_unit_id for gp_unit_id in style.geopolitical_unit_ids]
+        gp_unit_ids = list(style.geopolitical_unit_ids)
         contests = list(
             filter(lambda i: i.electoral_district_id in gp_unit_ids, self.contests)
         )
@@ -932,12 +929,12 @@ class InternalManifest:
     @staticmethod
     def _generate_contests_with_placeholders(
         manifest: Manifest,
-    ) -> List[ContestDescriptionWithPlaceholders]:
+    ) -> list[ContestDescriptionWithPlaceholders]:
         """
         For each contest, append the `number_elected` number
         of placeholder selections to the end of the contest collection
         """
-        contests: List[ContestDescriptionWithPlaceholders] = []
+        contests: list[ContestDescriptionWithPlaceholders] = []
         for contest in manifest.contests:
             placeholder_selections = generate_placeholder_selections_from(
                 contest, contest.number_elected
@@ -952,7 +949,7 @@ class InternalManifest:
 
 
 def contest_description_with_placeholders_from(
-    description: ContestDescription, placeholders: List[SelectionDescription]
+    description: ContestDescription, placeholders: list[SelectionDescription]
 ) -> ContestDescriptionWithPlaceholders:
     """
     Generates a placeholder selection description
@@ -976,8 +973,8 @@ def contest_description_with_placeholders_from(
 
 
 def generate_placeholder_selection_from(
-    contest: ContestDescription, use_sequence_id: Optional[int] = None
-) -> Optional[SelectionDescription]:
+    contest: ContestDescription, use_sequence_id: int | None = None
+) -> SelectionDescription | None:
     """
     Generates a placeholder selection description that is unique so it can be hashed
 
@@ -1004,7 +1001,7 @@ def generate_placeholder_selection_from(
 
 def generate_placeholder_selections_from(
     contest: ContestDescription, count: int
-) -> List[SelectionDescription]:
+) -> list[SelectionDescription]:
     """
     Generates the specified number of placeholder selections in
     ascending sequence order from the max selection sequence orderf
@@ -1016,7 +1013,7 @@ def generate_placeholder_selections_from(
     max_sequence_order = max(
         selection.sequence_order for selection in contest.ballot_selections
     )
-    selections: List[SelectionDescription] = []
+    selections: list[SelectionDescription] = []
     for i in range(count):
         sequence_order = max_sequence_order + 1 + i
         selections.append(

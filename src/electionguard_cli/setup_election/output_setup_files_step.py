@@ -1,6 +1,5 @@
 from os import path
 from os.path import join
-from typing import Optional
 
 import click
 from electionguard.election import CiphertextElectionContext
@@ -26,7 +25,7 @@ class OutputSetupFilesStep(OutputStepBase):
         setup_inputs: SetupInputs,
         build_election_results: BuildElectionResults,
         package_dir: str,
-        keys_dir: Optional[str],
+        keys_dir: str | None,
     ) -> None:
         self.print_header("Generating Output")
         self._export_context(build_election_results.context, package_dir)

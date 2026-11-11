@@ -1,5 +1,4 @@
 from abc import ABC
-from typing import List
 from pymongo.database import Database
 from electionguard.ballot import SubmittedBallot
 from electionguard.election import CiphertextElectionContext
@@ -57,7 +56,7 @@ class DecryptionStageBase(ABC):
 def get_tally(
     manifest: Manifest,
     context: CiphertextElectionContext,
-    ballots: List[SubmittedBallot],
+    ballots: list[SubmittedBallot],
     should_validate: bool,
 ) -> CiphertextTally:
     internal_manifest = InternalManifest(manifest)

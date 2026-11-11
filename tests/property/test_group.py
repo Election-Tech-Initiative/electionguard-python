@@ -1,4 +1,4 @@
-from typing import Optional
+from unittest.mock import patch
 
 from hypothesis import given
 
@@ -27,6 +27,8 @@ from electionguard.group import (
     div_q,
     div_p,
     a_plus_bc_q,
+    negate_q,
+    rand_range_q,
 )
 from electionguard.utils import (
     flatmap_optional,
@@ -94,6 +96,13 @@ class TestModularArithmetic(BaseTestCase):
         as_int = a_minus_b_q(q, 1)
         as_elem = a_minus_b_q(q, ElementModQ(1))
         self.assertEqual(as_int, as_elem)
+
+    @given(elements_mod_q())
+    def test_negate_q(self, q: ElementModQ) -> None:
+        self.assertEqual(add_q(q, negate_q(q)), ZERO_MOD_Q)
+
+    def test_negate_q_of_zero(self) -> None:
+        self.assertEqual(negate_q(ZERO_MOD_Q), ZERO_MOD_Q)
 
     @given(elements_mod_q())
     def test_div_q(self, q: ElementModQ) -> None:
@@ -196,33 +205,61 @@ class TestModularArithmetic(BaseTestCase):
         self.assertEqual(None, int_to_q(oversize))
 
 
+class TestRandRangeQ(BaseTestCase):
+    """rand_range_q tests"""
+
+    def test_rejects_a_start_with_no_valid_values(self) -> None:
+        # a loop would draw forever here, so a draw fails the test instead of hanging
+        with patch(
+            "electionguard.group.randbelow", side_effect=AssertionError("drew a value")
+        ):
+            with self.assertRaises(ValueError):
+                rand_range_q(get_small_prime())
+
+    def test_last_value_below_q_needs_one_draw(self) -> None:
+        start = get_small_prime() - 1
+        # a second draw raises, so a loop fails the test instead of hanging
+        with patch("electionguard.group.randbelow", side_effect=[0]) as randbelow:
+            self.assertEqual(rand_range_q(start), ElementModQ(start))
+        randbelow.assert_called_once_with(1)
+
+    def test_start_of_zero_is_random(self) -> None:
+        with patch("electionguard.group.randbelow", return_value=5):
+            self.assertEqual(rand_range_q(0), ElementModQ(5))
+
+    def test_draw_is_offset_by_start(self) -> None:
+        with patch("electionguard.group.randbelow", return_value=3) as randbelow:
+            self.assertEqual(rand_range_q(2), ElementModQ(5))
+        randbelow.assert_called_once_with(get_small_prime() - 2)
+
+
 class TestOptionalFunctions(BaseTestCase):
     """Math Optional Functions tests"""
 
     def test_unwrap(self) -> None:
-        good: Optional[int] = 3
-        bad: Optional[int] = None
+        good: int | None = 3
+        bad: int | None = None
 
         self.assertEqual(get_optional(good), 3)
         self.assertRaises(Exception, get_optional, bad)
 
     def test_match(self) -> None:
-        good: Optional[int] = 3
-        bad: Optional[int] = None
+        good: int | None = 3
+        bad: int | None = None
 
         self.assertEqual(5, match_optional(good, lambda: 1, lambda x: x + 2))
         self.assertEqual(1, match_optional(bad, lambda: 1, lambda x: x + 2))
 
     def test_get_or_else(self) -> None:
-        good: Optional[int] = 3
-        bad: Optional[int] = None
+        good: int | None = 3
+        bad: int | None = None
 
         self.assertEqual(3, get_or_else_optional(good, 5))
         self.assertEqual(5, get_or_else_optional(bad, 5))
 
     def test_flatmap(self) -> None:
-        good: Optional[int] = 3
-        bad: Optional[int] = None
+        good: int | None = 3
+        bad: int | None = None
 
         self.assertEqual(5, get_optional(flatmap_optional(good, lambda x: x + 2)))
         self.assertIsNone(flatmap_optional(bad, lambda x: x + 2))

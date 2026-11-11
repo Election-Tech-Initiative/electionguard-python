@@ -352,6 +352,7 @@ from electionguard.proof import (
 )
 from electionguard.scheduler import (
     Scheduler,
+    use_scheduler,
 )
 from electionguard.schnorr import (
     SchnorrProof,
@@ -742,6 +743,7 @@ __all__ = [
     "to_raw",
     "to_ticks",
     "type",
+    "use_scheduler",
     "utils",
     "verify_election_partial_key_backup",
     "verify_election_partial_key_challenge",

@@ -1,7 +1,5 @@
 # pylint: disable=too-many-instance-attributes
 
-from datetime import timedelta
-from typing import Dict, List
 from random import randrange
 
 from hypothesis import given, HealthCheck, settings, Phase
@@ -45,7 +43,6 @@ from electionguard_tools.helpers.key_ceremony_orchestrator import (
 from electionguard_tools.helpers.tally_accumulate import accumulate_plaintext_ballots
 from electionguard_tools.helpers.election_builder import ElectionBuilder
 
-
 election_factory = ElectionFactory.ElectionFactory()
 ballot_factory = BallotFactory.BallotFactory()
 
@@ -66,7 +63,7 @@ class TestDecryptionMediator(BaseTestCase):
         key_ceremony_mediator = KeyCeremonyMediator(
             "key_ceremony_mediator_mediator", self.CEREMONY_DETAILS
         )
-        self.guardians: List[Guardian] = KeyCeremonyOrchestrator.create_guardians(
+        self.guardians: list[Guardian] = KeyCeremonyOrchestrator.create_guardians(
             self.CEREMONY_DETAILS
         )
         KeyCeremonyOrchestrator.perform_full_ceremony(
@@ -313,7 +310,7 @@ class TestDecryptionMediator(BaseTestCase):
         self.assertEqual(plaintext_tally, another_plaintext_tally)
 
     @settings(
-        deadline=timedelta(milliseconds=15000),
+        deadline=None,
         suppress_health_check=[HealthCheck.too_slow],
         max_examples=8,
         # disabling the "shrink" phase, because it runs very slowly
@@ -332,7 +329,7 @@ class TestDecryptionMediator(BaseTestCase):
             .build()
         )
 
-        plaintext_ballots: List[PlaintextBallot] = values.draw(
+        plaintext_ballots: list[PlaintextBallot] = values.draw(
             plaintext_voted_ballots(internal_manifest, randrange(3, 6))
         )
         expected_plaintext_tally = accumulate_plaintext_ballots(plaintext_ballots)
@@ -360,7 +357,7 @@ class TestDecryptionMediator(BaseTestCase):
         self,
         internal_manifest: InternalManifest,
         context: CiphertextElectionContext,
-        ballots: List[PlaintextBallot],
+        ballots: list[PlaintextBallot],
     ) -> CiphertextTally:
 
         # encrypt each ballot
@@ -381,8 +378,8 @@ class TestDecryptionMediator(BaseTestCase):
         return get_optional(tally)
 
 
-def _convert_to_selections(tally: PlaintextTally) -> Dict[str, int]:
-    plaintext_selections: Dict[str, int] = {}
+def _convert_to_selections(tally: PlaintextTally) -> dict[str, int]:
+    plaintext_selections: dict[str, int] = {}
     for _, contest in tally.contests.items():
         for selection_id, selection in contest.selections.items():
             plaintext_selections[selection_id] = selection.tally

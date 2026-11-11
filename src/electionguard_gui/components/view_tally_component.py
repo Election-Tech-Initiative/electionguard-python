@@ -1,5 +1,5 @@
 from typing import Any
-import eel
+import electionguard_eel as eel
 from electionguard_gui.eel_utils import eel_success
 from electionguard_gui.components.component_base import ComponentBase
 from electionguard_gui.services import (
@@ -41,6 +41,5 @@ class ViewTallyComponent(ComponentBase):
                 "report": tally_report,
             }
             return eel_success(result)
-        # pylint: disable=broad-except
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             return self.handle_error(e)

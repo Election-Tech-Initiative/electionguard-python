@@ -1,11 +1,11 @@
-from typing import List
+from unittest.mock import patch
 
 from hypothesis import given, assume
 from hypothesis.strategies import integers
 
 from tests.base_test_case import BaseTestCase
 
-from electionguard.group import ElementModQ
+from electionguard.group import ElementModQ, ONE_MOD_Q, TWO_MOD_Q, ZERO_MOD_Q
 from electionguard.nonces import Nonces
 from electionguard_tools.strategies.group import elements_mod_q
 
@@ -41,7 +41,7 @@ class TestNonces(BaseTestCase):
     def test_nonces_with_slices(self, seed: ElementModQ):
         n = Nonces(seed)
         count: int = 0
-        l: List[ElementModQ] = []
+        l: list[ElementModQ] = []
 
         for i in iter(n):
             count += 1
@@ -59,3 +59,16 @@ class TestNonces(BaseTestCase):
         self.assertRaises(TypeError, len, n)
         self.assertRaises(TypeError, lambda: n[1:])
         self.assertRaises(TypeError, lambda: n.get_with_headers(-1))
+
+    def test_nonces_skip_zero(self):
+        # a third draw raises, so a repeated zero or an extra hash fails the test
+        with patch(
+            "electionguard.nonces.hash_elems",
+            side_effect=[ZERO_MOD_Q, TWO_MOD_Q],
+        ):
+            self.assertEqual(Nonces(ONE_MOD_Q)[0], TWO_MOD_Q)
+
+    def test_nonces_are_never_zero_with_small_test_constants(self):
+        # with the 16 bit test Q, about 3 of these would hash to zero
+        nonces = Nonces(ONE_MOD_Q)
+        self.assertNotIn(ZERO_MOD_Q, nonces[0:200_000])

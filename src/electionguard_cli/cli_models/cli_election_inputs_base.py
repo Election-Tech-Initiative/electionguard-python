@@ -1,5 +1,4 @@
 from abc import ABC
-from typing import List
 from electionguard.guardian import Guardian
 from electionguard.manifest import Manifest
 
@@ -10,4 +9,4 @@ class CliElectionInputsBase(ABC):
     guardian_count: int
     quorum: int
     manifest: Manifest
-    guardians: List[Guardian]
+    guardians: list[Guardian]

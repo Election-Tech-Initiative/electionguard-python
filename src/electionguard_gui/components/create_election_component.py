@@ -1,7 +1,7 @@
 from os import path
 from shutil import make_archive, rmtree
 from typing import Any
-import eel
+import electionguard_eel as eel
 from electionguard.constants import get_constants
 from electionguard.guardian import Guardian
 from electionguard_cli.setup_election.output_setup_files_step import (
@@ -126,8 +126,7 @@ class CreateElectionComponent(ComponentBase):
                 url,
             )
             return eel_success(election_id)
-        # pylint: disable=broad-except
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             return self.handle_error(e)
 
     def _zip(self, dir_to_zip: str, zip_file_to_make: str) -> str:

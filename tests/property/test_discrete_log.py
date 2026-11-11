@@ -57,7 +57,7 @@ class TestDiscreteLogFunctions(BaseTestCase):
         exp_plaintext = g_pow_p(plaintext)
 
         # Act
-        (plaintext_again, returned_cache) = compute_discrete_log(exp_plaintext, cache)
+        plaintext_again, returned_cache = compute_discrete_log(exp_plaintext, cache)
 
         # Assert
         self.assertEqual(plaintext, plaintext_again)
@@ -67,7 +67,7 @@ class TestDiscreteLogFunctions(BaseTestCase):
         cache = {ONE_MOD_P: 0}
         plaintext = ONE_MOD_Q
         ciphertext = g_pow_p(plaintext)
-        (plaintext_again, returned_cache) = compute_discrete_log(ciphertext, cache)
+        plaintext_again, returned_cache = compute_discrete_log(ciphertext, cache)
 
         self.assertEqual(plaintext, plaintext_again)
         self.assertEqual(len(cache), len(returned_cache))
@@ -80,7 +80,7 @@ class TestDiscreteLogFunctions(BaseTestCase):
 
         # Act
         loop = asyncio.new_event_loop()
-        (plaintext_again, returned_cache) = loop.run_until_complete(
+        plaintext_again, returned_cache = loop.run_until_complete(
             compute_discrete_log_async(ciphertext, cache)
         )
         loop.close()
@@ -97,7 +97,7 @@ class TestDiscreteLogFunctions(BaseTestCase):
 
         # Act
         cache = precompute_discrete_log_cache(exponent)
-        (calculated_exponent, _returned_cache) = compute_discrete_log(element, cache)
+        calculated_exponent, _returned_cache = compute_discrete_log(element, cache)
 
         # Assert
         self.assertGreaterEqual(len(cache), minimum_cache_size)
@@ -115,9 +115,11 @@ class TestDiscreteLogClass(BaseTestCase):
         element = g_pow_p(exponent)
 
         # Act
-        DiscreteLog().set_lazy_evaluation(False)
-        DiscreteLog().precompute_cache(exponent)
-        calculated_exponent = DiscreteLog().discrete_log(element)
+        dlog = DiscreteLog.get_instance()
+        dlog.set_lazy_evaluation(False)
+        self.addCleanup(dlog.set_lazy_evaluation, True)
+        dlog.precompute_cache(exponent)
+        calculated_exponent = dlog.discrete_log(element)
 
         # Assert
         self.assertGreaterEqual(len(DiscreteLog().get_cache()), minimum_cache_size)

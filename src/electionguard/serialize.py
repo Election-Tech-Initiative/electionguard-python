@@ -3,7 +3,7 @@ from io import TextIOWrapper
 import json
 import os
 from pathlib import Path
-from typing import Any, List, Type, TypeVar, Union
+from typing import Any, TypeVar
 
 
 from dacite import Config, from_dict
@@ -19,7 +19,6 @@ from .group import ElementModP, ElementModQ
 from .manifest import ElectionType, ReportingUnitType, VoteVariationType, SpecVersion
 from .proof import ProofUsage
 from .utils import BYTE_ENCODING, ContestErrorType
-
 
 _T = TypeVar("_T")
 
@@ -48,7 +47,7 @@ def padded_encode(data: Any, size: DataSize = DataSize.Bytes_512) -> bytes:
 
 
 def padded_decode(
-    type_: Type[_T], padded_data: bytes, size: DataSize = DataSize.Bytes_512
+    type_: type[_T], padded_data: bytes, size: DataSize = DataSize.Bytes_512
 ) -> _T:
     return from_raw(type_, remove_padding(padded_data, size))
 
@@ -64,17 +63,17 @@ def construct_path(
     return os.path.join(target_path, target_file)
 
 
-def from_raw(type_: Type[_T], raw: Union[str, bytes]) -> _T:
+def from_raw(type_: type[_T], raw: str | bytes) -> _T:
     """Deserialize raw json string as type."""
 
     return from_dict(type_, json.loads(raw), _config)
 
 
-def from_list_raw(type_: Type[_T], raw: Union[str, bytes]) -> List[_T]:
+def from_list_raw(type_: type[_T], raw: str | bytes) -> list[_T]:
     """Deserialize raw json string as type."""
 
     data = json.loads(raw)
-    ls: List[_T] = []
+    ls: list[_T] = []
     for item in data:
         ls.append(from_dict(type_, item, _config))
     return ls
@@ -86,37 +85,37 @@ def to_raw(data: Any) -> str:
     return json.dumps(to_jsonable_python(data))
 
 
-def from_file_wrapper(type_: Type[_T], file: TextIOWrapper) -> _T:
+def from_file_wrapper(type_: type[_T], file: TextIOWrapper) -> _T:
     """Deserialize json file as type."""
 
     data = json.load(file)
     return from_dict(type_, data, _config)
 
 
-def from_file(type_: Type[_T], path: Union[str, Path]) -> _T:
+def from_file(type_: type[_T], path: str | Path) -> _T:
     """Deserialize json file as type."""
 
-    with open(path, "r", encoding=BYTE_ENCODING) as json_file:
+    with open(path, encoding=BYTE_ENCODING) as json_file:
         data = json.load(json_file)
     return from_dict(type_, data, _config)
 
 
-def from_list_in_file(type_: Type[_T], path: Union[str, Path]) -> List[_T]:
+def from_list_in_file(type_: type[_T], path: str | Path) -> list[_T]:
     """Deserialize json file that has an array of certain type."""
 
-    with open(path, "r", encoding=BYTE_ENCODING) as json_file:
+    with open(path, encoding=BYTE_ENCODING) as json_file:
         data = json.load(json_file)
-        ls: List[_T] = []
+        ls: list[_T] = []
         for item in data:
             ls.append(from_dict(type_, item, _config))
     return ls
 
 
-def from_list_in_file_wrapper(type_: Type[_T], file: TextIOWrapper) -> List[_T]:
+def from_list_in_file_wrapper(type_: type[_T], file: TextIOWrapper) -> list[_T]:
     """Deserialize json file that has an array of certain type."""
 
     data = json.load(file)
-    ls: List[_T] = []
+    ls: list[_T] = []
     for item in data:
         ls.append(from_dict(type_, item, _config))
     return ls

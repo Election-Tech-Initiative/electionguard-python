@@ -1,13 +1,14 @@
 # pylint: disable=too-many-ancestors
-from typing import Union, Sequence, List, overload
+from typing import overload
+from collections.abc import Sequence
 
-from electionguard.group import ElementModQ, ElementModPOrQ
+from electionguard.group import ElementModQ, ElementModPOrQ, ZERO_MOD_Q
 from electionguard.hash import hash_elems
 
 
 class Nonces(Sequence[ElementModQ]):
     """
-    Creates a sequence of random elements in [0,Q), seeded from an initial element in [0,Q).
+    Creates a sequence of random elements in [1,Q), seeded from an initial element in [0,Q).
     If you start with the same seed, you'll get exactly the same sequence. Optional string
     or ElementModPOrQ "headers" can be included alongside the seed both at construction time
     and when asking for the next nonce. This is useful when specifying what a nonce is
@@ -17,7 +18,7 @@ class Nonces(Sequence[ElementModQ]):
     and indexed. Asking for a nonce is constant time, regardless of the index.
     """
 
-    def __init__(self, seed: ElementModQ, *headers: Union[str, ElementModPOrQ]) -> None:
+    def __init__(self, seed: ElementModQ, *headers: str | ElementModPOrQ) -> None:
         if len(headers) > 0:
             self.__seed: ElementModQ = hash_elems(seed, *headers)
         else:
@@ -29,12 +30,10 @@ class Nonces(Sequence[ElementModQ]):
         pass
 
     @overload
-    def __getitem__(self, index: slice) -> List[ElementModQ]:
+    def __getitem__(self, index: slice) -> list[ElementModQ]:
         pass
 
-    def __getitem__(
-        self, index: Union[slice, int]
-    ) -> Union[ElementModQ, List[ElementModQ]]:
+    def __getitem__(self, index: slice | int) -> ElementModQ | list[ElementModQ]:
         if isinstance(index, int):
             return self.get_with_headers(index)
         if isinstance(index.stop, int):
@@ -56,4 +55,10 @@ class Nonces(Sequence[ElementModQ]):
         """
         if item < 0:
             raise TypeError("Nonces do not support negative indices.")
-        return hash_elems(self.__seed, item, *headers)
+        nonce = hash_elems(self.__seed, item, *headers)
+        # encryption rejects a zero nonce; every caller must derive the same replacement
+        attempt = 0
+        while nonce == ZERO_MOD_Q:
+            attempt += 1
+            nonce = hash_elems(self.__seed, item, *headers, "non-zero", attempt)
+        return nonce

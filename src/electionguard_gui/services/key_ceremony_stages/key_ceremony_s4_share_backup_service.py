@@ -1,4 +1,4 @@
-from typing import Any, List
+from typing import Any
 from pymongo.database import Database
 from electionguard_gui.models.key_ceremony_dto import KeyCeremonyDto
 from electionguard_gui.models.key_ceremony_states import KeyCeremonyStates
@@ -33,7 +33,7 @@ class KeyCeremonyS4ShareBackupService(KeyCeremonyStageBase):
         )
         self._key_ceremony_service.notify_changed(db, key_ceremony.id)
 
-    def share_backups(self, key_ceremony: KeyCeremonyDto) -> List[Any]:
+    def share_backups(self, key_ceremony: KeyCeremonyDto) -> list[Any]:
         mediator = make_mediator(key_ceremony)
         announce_guardians(key_ceremony, mediator)
         mediator.receive_backups(key_ceremony.get_backups())

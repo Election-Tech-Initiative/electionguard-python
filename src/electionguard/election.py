@@ -1,7 +1,6 @@
 """Context for election encryption."""
 
 from dataclasses import dataclass, field
-from typing import Dict, Optional
 
 from .constants import get_small_prime, get_large_prime, get_generator
 from .elgamal import ElGamalPublicKey
@@ -70,13 +69,13 @@ class CiphertextElectionContext:
     crypto_extended_base_hash: ElementModQ
     """The `extended base hash code (𝑄')` in specification"""
 
-    extended_data: Optional[Dict[str, str]]
+    extended_data: dict[str, str] | None
     """Data to allow extending the context for special cases."""
 
     configuration: Configuration = field(default_factory=Configuration)
     """Configuration for the election edge cases."""
 
-    def get_extended_data_field(self, field_name: str) -> Optional[str]:
+    def get_extended_data_field(self, field_name: str) -> str | None:
         """Returns the value for a field in the extended data or None if it isn't initialized."""
 
         if self.extended_data is None:
@@ -90,7 +89,7 @@ def make_ciphertext_election_context(
     elgamal_public_key: ElGamalPublicKey,
     commitment_hash: ElementModQ,
     manifest_hash: ElementModQ,
-    extended_data: Optional[Dict[str, str]] = None,
+    extended_data: dict[str, str] | None = None,
 ) -> CiphertextElectionContext:
     """
     Makes a CiphertextElectionContext object.

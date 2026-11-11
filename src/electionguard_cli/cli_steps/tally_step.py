@@ -1,4 +1,4 @@
-from typing import Iterable, List, Tuple
+from collections.abc import Iterable
 from electionguard.scheduler import Scheduler
 from electionguard.data_store import DataStore
 from electionguard.tally import CiphertextTally
@@ -15,8 +15,8 @@ class TallyStep(CliStepBase):
     def get_from_ballots(
         self,
         build_election_results: BuildElectionResults,
-        ballots: List[SubmittedBallot],
-    ) -> Tuple[CiphertextTally, List[SubmittedBallot]]:
+        ballots: list[SubmittedBallot],
+    ) -> tuple[CiphertextTally, list[SubmittedBallot]]:
         self.print_header("Creating Tally")
         tuble_ballots = [(None, b) for b in ballots]
         tally = self._get_tally(build_election_results, tuble_ballots)
@@ -27,7 +27,7 @@ class TallyStep(CliStepBase):
 
     def get_from_ballot_store(
         self, build_election_results: BuildElectionResults, ballot_store: DataStore
-    ) -> Tuple[CiphertextTally, List[SubmittedBallot]]:
+    ) -> tuple[CiphertextTally, list[SubmittedBallot]]:
         self.print_header("Creating Tally")
         ciphertext_tally = self._get_tally(build_election_results, ballot_store.items())
         spoiled_ballots = self._get_spoiled_ballots(ballot_store)
@@ -36,7 +36,7 @@ class TallyStep(CliStepBase):
     def _get_tally(
         self,
         build_election_results: BuildElectionResults,
-        ballots: Iterable[Tuple[None, SubmittedBallot]],
+        ballots: Iterable[tuple[None, SubmittedBallot]],
     ) -> CiphertextTally:
         tally = CiphertextTally(
             "election-results",
@@ -48,7 +48,7 @@ class TallyStep(CliStepBase):
         self.print_value("Ballots in tally", len(tally))
         return tally
 
-    def _get_spoiled_ballots(self, ballot_store: DataStore) -> List[SubmittedBallot]:
+    def _get_spoiled_ballots(self, ballot_store: DataStore) -> list[SubmittedBallot]:
         submitted_ballots = get_ballots(ballot_store, BallotBoxState.SPOILED)
         spoiled_ballots_list = list(submitted_ballots.values())
         self.print_value("Spoiled ballots", len(spoiled_ballots_list))

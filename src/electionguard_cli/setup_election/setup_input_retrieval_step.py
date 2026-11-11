@@ -1,5 +1,4 @@
 from io import TextIOWrapper
-from typing import Optional
 from electionguard.key_ceremony import CeremonyDetails
 from electionguard.manifest import Manifest
 from electionguard_tools.helpers.key_ceremony_orchestrator import (
@@ -18,7 +17,7 @@ class SetupInputRetrievalStep(InputRetrievalStepBase):
         guardian_count: int,
         quorum: int,
         manifest_file: TextIOWrapper,
-        verification_url: Optional[str],
+        verification_url: str | None,
     ) -> SetupInputs:
 
         self.print_header("Retrieving Inputs")

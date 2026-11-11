@@ -21,16 +21,15 @@ def ballot_is_valid_for_election(
     if not ballot_is_valid_for_style(ballot, internal_manifest):
         return False
 
-    if should_validate:
-        if not ballot.is_valid_encryption(
-            internal_manifest.manifest_hash,
-            context.elgamal_public_key,
-            context.crypto_extended_base_hash,
-        ):
-            log_warning(
-                f"ballot_is_valid_for_election: mismatching ballot encryption {ballot.object_id}"
-            )
-            return False
+    if should_validate and not ballot.is_valid_encryption(
+        internal_manifest.manifest_hash,
+        context.elgamal_public_key,
+        context.crypto_extended_base_hash,
+    ):
+        log_warning(
+            f"ballot_is_valid_for_election: mismatching ballot encryption {ballot.object_id}"
+        )
+        return False
 
     return True
 
@@ -46,10 +45,8 @@ def selection_is_valid_for_style(
     """
     if selection.description_hash != description.crypto_hash():
         log_warning(
-            (
-                f"ballot is not valid for style: mismatched selection description hash {selection.description_hash} "
-                f"for selection {description.object_id} hash {description.crypto_hash()}"
-            )
+            f"ballot is not valid for style: mismatched selection description hash {selection.description_hash} "
+            f"for selection {description.object_id} hash {description.crypto_hash()}"
         )
         return False
 
@@ -68,10 +65,8 @@ def contest_is_valid_for_style(
     # verify the hash matches
     if contest.description_hash != description.crypto_hash():
         log_warning(
-            (
-                f"ballot is not valid for style: mismatched description hash {contest.description_hash} "
-                f"for contest {description.object_id} hash {description.crypto_hash()}"
-            )
+            f"ballot is not valid for style: mismatched description hash {contest.description_hash} "
+            f"for contest {description.object_id} hash {description.crypto_hash()}"
         )
         return False
 

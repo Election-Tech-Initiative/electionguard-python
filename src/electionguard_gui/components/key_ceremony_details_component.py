@@ -1,7 +1,6 @@
 import traceback
-from typing import List
-import eel  # type: ignore[import-untyped]
 from pymongo.database import Database
+import electionguard_eel as eel
 from electionguard_gui.eel_utils import eel_fail, eel_success
 
 
@@ -35,7 +34,7 @@ class KeyCeremonyDetailsComponent(ComponentBase):
     _ceremony_state_service: KeyCeremonyStateService
     _db_watcher_service: DbWatcherService
     _key_ceremony_s1_join_service: KeyCeremonyS1JoinService
-    key_ceremony_watch_stages: List[KeyCeremonyStageBase]
+    key_ceremony_watch_stages: list[KeyCeremonyStageBase]
 
     def __init__(
         self,
@@ -82,7 +81,7 @@ class KeyCeremonyDetailsComponent(ComponentBase):
         except KeyboardInterrupt:
             self._log.debug("Keyboard interrupt, exiting watch database")
             self._db_watcher_service.stop_watching()
-        except Exception as e:  # pylint: disable=broad-except
+        except Exception as e:  # pylint: disable=broad-exception-caught
             self.handle_error(e)
             self._db_watcher_service.stop_watching()
             # we're in a fire-and-forget scenario, so no need to raise an exception or return anything
@@ -115,8 +114,7 @@ class KeyCeremonyDetailsComponent(ComponentBase):
             result = key_ceremony.to_dict()
             # pylint: disable=no-member
             eel.refresh_key_ceremony(eel_success(result))  # type: ignore[attr-defined]
-        # pylint: disable=broad-except
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             self._log.error("error on key ceremony changed", e)
             traceback.print_exc()
             # pylint: disable=no-member
@@ -127,8 +125,7 @@ class KeyCeremonyDetailsComponent(ComponentBase):
             db = self._db_service.get_db()
             key_ceremony = self.get_ceremony(db, key_ceremony_id)
             self._key_ceremony_s1_join_service.run(db, key_ceremony)
-        # pylint: disable=broad-except
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             self.handle_error(e)
 
     def get_ceremony(self, db: Database, id: str) -> KeyCeremonyDto:

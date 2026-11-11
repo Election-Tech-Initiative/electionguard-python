@@ -1,7 +1,7 @@
 import traceback
 from typing import Any
-import eel  # type: ignore[import-untyped]
 from pymongo.database import Database
+import electionguard_eel as eel
 from electionguard_gui.eel_utils import eel_fail, eel_success
 from electionguard_gui.components.component_base import ComponentBase
 from electionguard_gui.models.decryption_dto import DecryptionDto
@@ -52,7 +52,7 @@ class ViewDecryptionComponent(ComponentBase):
             self._db_watcher_service.watch_database(
                 db, decryption_id, self.on_decryption_changed
             )
-        except Exception as e:  # pylint: disable=broad-except
+        except Exception as e:  # pylint: disable=broad-exception-caught
             self.handle_error(e)
             self._db_watcher_service.stop_watching()
             # no need to raise exception or return anything, we're in fire-and-forget mode here
@@ -68,8 +68,7 @@ class ViewDecryptionComponent(ComponentBase):
             decryption = self._decryption_service.get(db, decryption_id)
             self.try_run_stage_2(db, decryption)
             refresh_decryption(eel_success())
-        # pylint: disable=broad-except
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             self._log.error("error in on decryption changed", e)
             traceback.print_exc()
             refresh_decryption(eel_fail(str(e)))
@@ -92,8 +91,7 @@ class ViewDecryptionComponent(ComponentBase):
                 if did_run:
                     decryption = self._decryption_service.get(db, decryption_id)
             return eel_success(decryption.to_dict())
-        # pylint: disable=broad-except
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             return self.handle_error(e)
 
     def join_decryption(self, decryption_id: str) -> dict[str, Any]:
@@ -102,8 +100,7 @@ class ViewDecryptionComponent(ComponentBase):
             decryption = self._decryption_service.get(db, decryption_id)
             self._decryption_s1_join_service.run(db, decryption)
             return eel_success(decryption.to_dict())
-        # pylint: disable=broad-except
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             return self.handle_error(e)
 
 

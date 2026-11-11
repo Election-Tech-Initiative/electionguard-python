@@ -1,4 +1,3 @@
-from typing import List
 from shutil import make_archive
 from os.path import splitext
 from tempfile import TemporaryDirectory
@@ -31,7 +30,7 @@ class ImportBallotsPublishStep(OutputStepBase):
         guardian_records = OutputStepBase._get_guardian_records(election_inputs)
         constants = get_constants()
 
-        encryption_devices: List[EncryptionDevice] = election_inputs.encryption_devices
+        encryption_devices: list[EncryptionDevice] = election_inputs.encryption_devices
 
         with TemporaryDirectory() as temp_dir:
             export_record(

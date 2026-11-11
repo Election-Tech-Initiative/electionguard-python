@@ -9,7 +9,7 @@ Refer to the ElectionGuard spec for any specifics.
 """
 
 from os import path
-from typing import Iterable
+from collections.abc import Iterable
 
 from electionguard.ballot import PlaintextBallot, CiphertextBallot, SubmittedBallot
 from electionguard.constants import ElectionConstants
@@ -20,7 +20,6 @@ from electionguard.encrypt import EncryptionDevice
 from electionguard.manifest import Manifest
 from electionguard.serialize import to_file
 from electionguard.tally import PlaintextTally, PublishedCiphertextTally
-
 
 # Public
 ELECTION_RECORD_DIR = "election_record"

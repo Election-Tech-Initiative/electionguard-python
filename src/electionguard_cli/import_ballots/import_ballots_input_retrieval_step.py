@@ -1,4 +1,3 @@
-from typing import List
 from io import TextIOWrapper
 from os import listdir
 from os.path import join
@@ -55,7 +54,7 @@ class ImportBallotsInputRetrievalStep(InputRetrievalStepBase):
 
     def _get_encryption_devices(
         self, encryption_device_file: str
-    ) -> List[EncryptionDevice]:
+    ) -> list[EncryptionDevice]:
         if encryption_device_file is None:
             return []
         encryption_device = from_file(EncryptionDevice, encryption_device_file)
@@ -66,7 +65,7 @@ class ImportBallotsInputRetrievalStep(InputRetrievalStepBase):
     @staticmethod
     def _get_guardians_from_keys(
         guardian_keys_dir: str, context: CiphertextElectionContext
-    ) -> List[Guardian]:
+    ) -> list[Guardian]:
 
         files = listdir(guardian_keys_dir)
         private_records = [

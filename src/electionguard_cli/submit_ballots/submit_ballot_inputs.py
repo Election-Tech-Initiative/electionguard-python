@@ -1,5 +1,3 @@
-from typing import List
-
 from electionguard.election import CiphertextElectionContext
 from electionguard.manifest import Manifest
 from electionguard.ballot import CiphertextBallot
@@ -16,8 +14,8 @@ class SubmitBallotInputs(CliElectionInputsBase):
         self,
         manifest: Manifest,
         context: CiphertextElectionContext,
-        cast_ballots: List[CiphertextBallot],
-        spoil_ballots: List[CiphertextBallot],
+        cast_ballots: list[CiphertextBallot],
+        spoil_ballots: list[CiphertextBallot],
     ):
         self.guardian_count = context.number_of_guardians
         self.quorum = context.quorum

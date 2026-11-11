@@ -1,5 +1,3 @@
-from typing import List, Optional
-
 from hypothesis import given
 from hypothesis.strategies import integers
 
@@ -87,8 +85,8 @@ class TestHash(BaseTestCase):
         self.assertEqual(hash_elems(["0", "0"]), hash_elems(["0", "0"]))
 
     def test_hash_null_equivalents(self):
-        null_list: Optional[List[str]] = None
-        empty_list: List[str] = []
+        null_list: list[str] | None = None
+        empty_list: list[str] = []
 
         self.assertEqual(hash_elems(null_list), hash_elems(empty_list))
         self.assertEqual(hash_elems(empty_list), hash_elems(None))

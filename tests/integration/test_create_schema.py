@@ -33,7 +33,7 @@ class TestCreateSchema(TestCase):
     def test_create_schema(self) -> None:
 
         to_file(
-            json.loads((get_schema(CiphertextElectionContext))),
+            json.loads(get_schema(CiphertextElectionContext)),
             construct_path("context_schema"),
             self.schema_dir,
         )

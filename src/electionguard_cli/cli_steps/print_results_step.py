@@ -1,4 +1,3 @@
-from typing import Dict
 from electionguard.manifest import Manifest
 from electionguard.type import BallotId
 from electionguard.tally import (
@@ -15,8 +14,8 @@ class PrintResultsStep(CliStepBase):
     def _print_tally(
         self,
         plaintext_tally: PlaintextTally,
-        contest_names: Dict[str, str],
-        selection_names: Dict[str, str],
+        contest_names: dict[str, str],
+        selection_names: dict[str, str],
     ) -> None:
         self.print_header("Decrypted tally")
         for tally_contest in plaintext_tally.contests.values():
@@ -29,9 +28,9 @@ class PrintResultsStep(CliStepBase):
 
     def _print_spoiled_ballots(
         self,
-        plaintext_spoiled_ballots: Dict[BallotId, PlaintextTally],
-        contest_names: Dict[str, str],
-        selection_names: Dict[str, str],
+        plaintext_spoiled_ballots: dict[BallotId, PlaintextTally],
+        contest_names: dict[str, str],
+        selection_names: dict[str, str],
     ) -> None:
         ballot_ids = plaintext_spoiled_ballots.keys()
         for ballot_id in ballot_ids:

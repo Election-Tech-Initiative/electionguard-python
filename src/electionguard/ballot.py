@@ -1,16 +1,13 @@
 from dataclasses import dataclass, field, replace
-from datetime import datetime, timezone
+from datetime import datetime, UTC
 from enum import Enum
 from functools import cached_property, reduce
 from typing import (
     Any,
-    Dict,
-    List,
-    Iterable,
-    Optional,
     Protocol,
     runtime_checkable,
 )
+from collections.abc import Iterable
 
 
 from .ballot_code import get_ballot_code
@@ -68,7 +65,7 @@ class PlaintextBallotSelection(ElectionObjectBase):
     is_placeholder_selection: bool = field(default=False)
     """Determines if this is a placeholder selection"""
 
-    write_in: Optional[str] = field(default=None)
+    write_in: str | None = field(default=None)
     """
     Write_in field exists to support the cleartext representation of a write-in candidate value.
     """
@@ -163,10 +160,10 @@ class CiphertextBallotSelection(
     is_placeholder_selection: bool = field(default=False)
     """Determines if this is a placeholder selection"""
 
-    nonce: Optional[ElementModQ] = field(default=None)
+    nonce: ElementModQ | None = field(default=None)
     """The nonce used to generate the encryption. Sensitive & should be treated as a secret"""
 
-    proof: Optional[DisjunctiveChaumPedersenProof] = field(default=None)
+    proof: DisjunctiveChaumPedersenProof | None = field(default=None)
     """The proof that demonstrates the selection is an encryption of 0 or 1, and was encrypted using the `nonce`"""
 
     def is_valid_encryption(
@@ -189,20 +186,16 @@ class CiphertextBallotSelection(
 
         if encryption_seed != self.description_hash:
             log_warning(
-                (
-                    f"mismatching selection hash: {self.object_id} expected({str(encryption_seed)}), "
-                    f"actual({str(self.description_hash)})"
-                )
+                f"mismatching selection hash: {self.object_id} expected({str(encryption_seed)}), "
+                f"actual({str(self.description_hash)})"
             )
             return False
 
         recalculated_crypto_hash = self.crypto_hash_with(encryption_seed)
         if self.crypto_hash != recalculated_crypto_hash:
             log_warning(
-                (
-                    f"mismatching crypto hash: {self.object_id} expected({str(recalculated_crypto_hash)}), "
-                    f"actual({str(self.crypto_hash)})"
-                )
+                f"mismatching crypto hash: {self.object_id} expected({str(recalculated_crypto_hash)}), "
+                f"actual({str(self.crypto_hash)})"
             )
             return False
 
@@ -246,9 +239,9 @@ def make_ciphertext_ballot_selection(
     proof_seed: ElementModQ,
     selection_representation: int,
     is_placeholder_selection: bool = False,
-    nonce: Optional[ElementModQ] = None,
-    crypto_hash: Optional[ElementModQ] = None,
-    proof: Optional[DisjunctiveChaumPedersenProof] = None,
+    nonce: ElementModQ | None = None,
+    crypto_hash: ElementModQ | None = None,
+    proof: DisjunctiveChaumPedersenProof | None = None,
 ) -> CiphertextBallotSelection:
     """
     Constructs a `CipherTextBallotSelection` object. Most of the parameters here match up to fields
@@ -301,13 +294,13 @@ class PlaintextBallotContest(ElectionObjectBase):
     while complete contests are passed into ElectionGuard when running encryption on an existing dataset.
     """
 
-    ballot_selections: List[PlaintextBallotSelection] = field(
+    ballot_selections: list[PlaintextBallotSelection] = field(
         default_factory=lambda: []
     )
     """Collection of ballot selections"""
 
     @cached_property
-    def selected_ids(self) -> List[SelectionId]:
+    def selected_ids(self) -> list[SelectionId]:
         return [
             selection.object_id
             for selection in self.ballot_selections
@@ -329,7 +322,7 @@ class PlaintextBallotContest(ElectionObjectBase):
         return reduce(lambda prev, next: prev + next.vote, self.ballot_selections, 0)
 
     @cached_property
-    def write_ins(self) -> Optional[Dict[SelectionId, str]]:
+    def write_ins(self) -> dict[SelectionId, str] | None:
         write_ins = {
             selection.object_id: selection.write_in
             for selection in self.ballot_selections
@@ -389,7 +382,7 @@ class PlaintextBallotContest(ElectionObjectBase):
         expected_object_id: str,
         expected_number_selections: int,
         expected_number_elected: int,
-        votes_allowed: Optional[int] = None,
+        votes_allowed: int | None = None,
     ) -> bool:
         """
         Given a PlaintextBallotContest returns true if the state is representative of the expected values.
@@ -399,19 +392,15 @@ class PlaintextBallotContest(ElectionObjectBase):
 
         if self.object_id != expected_object_id:
             log_warning(
-                (
-                    f"invalid object_id: expected({expected_object_id}) "
-                    f"actual({self.object_id})"
-                )
+                f"invalid object_id: expected({expected_object_id}) "
+                f"actual({self.object_id})"
             )
             return False
 
         if len(self.ballot_selections) > expected_number_selections:
             log_warning(
-                (
-                    f"invalid number_selections: expected({expected_number_selections}) "
-                    f"actual({len(self.ballot_selections)})"
-                )
+                f"invalid number_selections: expected({expected_number_selections}) "
+                f"actual({len(self.ballot_selections)})"
             )
             return False
 
@@ -478,7 +467,7 @@ class CiphertextBallotContest(OrderedObjectBase, CryptoHashCheckable):
     description_hash: ElementModQ
     """Hash from contestDescription"""
 
-    ballot_selections: List[CiphertextBallotSelection]
+    ballot_selections: list[CiphertextBallotSelection]
     """Collection of ballot selections"""
 
     ciphertext_accumulation: ElGamalCiphertext
@@ -487,16 +476,16 @@ class CiphertextBallotContest(OrderedObjectBase, CryptoHashCheckable):
     crypto_hash: ElementModQ
     """Hash of the encrypted values"""
 
-    nonce: Optional[ElementModQ] = None
+    nonce: ElementModQ | None = None
     """The nonce used to generate the encryption. Sensitive & should be treated as a secret"""
 
-    proof: Optional[ConstantChaumPedersenProof] = None
+    proof: ConstantChaumPedersenProof | None = None
     """
     The proof demonstrates the sum of the selections does not exceed the maximum
     available selections for the contest, and that the proof was generated with the nonce
     """
 
-    extended_data: Optional[HashedElGamalCiphertext] = field(default=None)
+    extended_data: HashedElGamalCiphertext | None = field(default=None)
     """encrypted representation of the extended_data field"""
 
     def __eq__(self, other: Any) -> bool:
@@ -513,7 +502,7 @@ class CiphertextBallotContest(OrderedObjectBase, CryptoHashCheckable):
     def __ne__(self, other: Any) -> bool:
         return not self.__eq__(other)
 
-    def aggregate_nonce(self) -> Optional[ElementModQ]:
+    def aggregate_nonce(self) -> ElementModQ | None:
         """
         :return: an aggregate nonce for the contest composed of the nonces of the selections
         """
@@ -561,20 +550,16 @@ class CiphertextBallotContest(OrderedObjectBase, CryptoHashCheckable):
         """
         if encryption_seed != self.description_hash:
             log_warning(
-                (
-                    f"mismatching contest hash: {self.object_id} expected({str(encryption_seed)}), "
-                    f"actual({str(self.description_hash)})"
-                )
+                f"mismatching contest hash: {self.object_id} expected({str(encryption_seed)}), "
+                f"actual({str(self.description_hash)})"
             )
             return False
 
         recalculated_crypto_hash = self.crypto_hash_with(encryption_seed)
         if self.crypto_hash != recalculated_crypto_hash:
             log_warning(
-                (
-                    f"mismatching crypto hash: {self.object_id} expected({str(recalculated_crypto_hash)}), "
-                    f"actual({str(self.crypto_hash)})"
-                )
+                f"mismatching crypto hash: {self.object_id} expected({str(recalculated_crypto_hash)}), "
+                f"actual({str(self.crypto_hash)})"
             )
             return False
 
@@ -602,14 +587,14 @@ class CiphertextBallotContest(OrderedObjectBase, CryptoHashCheckable):
 
 
 def _ciphertext_ballot_elgamal_accumulate(
-    ballot_selections: List[CiphertextBallotSelection],
+    ballot_selections: list[CiphertextBallotSelection],
 ) -> ElGamalCiphertext:
     return elgamal_add(*[selection.ciphertext for selection in ballot_selections])
 
 
 def _ciphertext_ballot_context_crypto_hash(
     object_id: str,
-    ballot_selections: List[CiphertextBallotSelection],
+    ballot_selections: list[CiphertextBallotSelection],
     encryption_seed: ElementModQ,
 ) -> ElementModQ:
     if len(ballot_selections) == 0:
@@ -626,9 +611,9 @@ def _ciphertext_ballot_context_crypto_hash(
 
 
 def _ciphertext_ballot_contest_aggregate_nonce(
-    object_id: str, ballot_selections: List[CiphertextBallotSelection]
-) -> Optional[ElementModQ]:
-    selection_nonces: List[ElementModQ] = []
+    object_id: str, ballot_selections: list[CiphertextBallotSelection]
+) -> ElementModQ | None:
+    selection_nonces: list[ElementModQ] = []
     for selection in ballot_selections:
         if selection.nonce is None:
             log_warning(
@@ -644,15 +629,15 @@ def make_ciphertext_ballot_contest(
     object_id: str,
     sequence_order: int,
     description_hash: ElementModQ,
-    ballot_selections: List[CiphertextBallotSelection],
+    ballot_selections: list[CiphertextBallotSelection],
     elgamal_public_key: ElGamalPublicKey,
     crypto_extended_base_hash: ElementModQ,
     proof_seed: ElementModQ,
     number_elected: int,
-    crypto_hash: Optional[ElementModQ] = None,
-    proof: Optional[ConstantChaumPedersenProof] = None,
-    nonce: Optional[ElementModQ] = None,
-    extended_data: Optional[HashedElGamalCiphertext] = None,
+    crypto_hash: ElementModQ | None = None,
+    proof: ConstantChaumPedersenProof | None = None,
+    nonce: ElementModQ | None = None,
+    extended_data: HashedElGamalCiphertext | None = None,
 ) -> CiphertextBallotContest:
     """
     Constructs a `CipherTextBallotContest` object. Most of the parameters here match up to fields
@@ -702,7 +687,7 @@ class PlaintextBallot(ElectionObjectBase):
     style_id: str
     """The `object_id` of the `BallotStyle` in the `Election` Manifest"""
 
-    contests: List[PlaintextBallotContest]
+    contests: list[PlaintextBallotContest]
     """The list of contests for this ballot"""
 
     def is_valid(self, expected_ballot_style_id: str) -> bool:
@@ -713,10 +698,8 @@ class PlaintextBallot(ElectionObjectBase):
         """
         if self.style_id != expected_ballot_style_id:
             log_warning(
-                (
-                    f"invalid ballot_style: for: {self.object_id} expected({expected_ballot_style_id}) "
-                    f"actual({self.style_id})"
-                )
+                f"invalid ballot_style: for: {self.object_id} expected({expected_ballot_style_id}) "
+                f"actual({self.style_id})"
             )
             return False
 
@@ -756,7 +739,7 @@ class CiphertextBallot(ElectionObjectBase, CryptoHashCheckable):
     code_seed: ElementModQ
     """Seed for ballot code"""
 
-    contests: List[CiphertextBallotContest]
+    contests: list[CiphertextBallotContest]
     """List of contests for this ballot"""
 
     code: ElementModQ
@@ -768,7 +751,7 @@ class CiphertextBallot(ElectionObjectBase, CryptoHashCheckable):
     crypto_hash: ElementModQ
     """The hash of the encrypted ballot representation"""
 
-    nonce: Optional[ElementModQ]
+    nonce: ElementModQ | None
     """The nonce used to encrypt this ballot. Sensitive & should be treated as a secret"""
 
     def __eq__(self, other: Any) -> bool:
@@ -798,7 +781,7 @@ class CiphertextBallot(ElectionObjectBase, CryptoHashCheckable):
         """
         return hash_elems(manifest_hash, object_id, nonce)
 
-    def hashed_ballot_nonce(self) -> Optional[ElementModQ]:
+    def hashed_ballot_nonce(self) -> ElementModQ | None:
         """
         :return: a hash value derived from the description hash, the object id, and the nonce value
                 suitable for deriving other nonce values on the ballot
@@ -848,25 +831,21 @@ class CiphertextBallot(ElectionObjectBase, CryptoHashCheckable):
 
         if encryption_seed != self.manifest_hash:
             log_warning(
-                (
-                    f"mismatching ballot hash: {self.object_id} expected({str(encryption_seed)}), "
-                    f"actual({str(self.manifest_hash)})"
-                )
+                f"mismatching ballot hash: {self.object_id} expected({str(encryption_seed)}), "
+                f"actual({str(self.manifest_hash)})"
             )
             return False
 
         recalculated_crypto_hash = self.crypto_hash_with(encryption_seed)
         if self.crypto_hash != recalculated_crypto_hash:
             log_warning(
-                (
-                    f"mismatching crypto hash: {self.object_id} expected({str(recalculated_crypto_hash)}), "
-                    f"actual({str(self.crypto_hash)})"
-                )
+                f"mismatching crypto hash: {self.object_id} expected({str(recalculated_crypto_hash)}), "
+                f"actual({str(self.crypto_hash)})"
             )
             return False
 
         # Check the proofs on the ballot
-        valid_proofs: List[bool] = []
+        valid_proofs: list[bool] = []
 
         for contest in self.contests:
             for selection in contest.ballot_selections:
@@ -936,11 +915,11 @@ def make_ciphertext_ballot(
     object_id: str,
     style_id: str,
     manifest_hash: ElementModQ,
-    code_seed: Optional[ElementModQ],
-    contests: List[CiphertextBallotContest],
-    nonce: Optional[ElementModQ] = None,
-    timestamp: Optional[int] = None,
-    ballot_code: Optional[ElementModQ] = None,
+    code_seed: ElementModQ | None,
+    contests: list[CiphertextBallotContest],
+    nonce: ElementModQ | None = None,
+    timestamp: int | None = None,
+    ballot_code: ElementModQ | None = None,
 ) -> CiphertextBallot:
     """
     Makes a `CiphertextBallot`, initially in the state where it's neither been cast nor spoiled.
@@ -982,7 +961,7 @@ def make_ciphertext_ballot(
 def create_ballot_hash(
     ballot_id: str,
     description_hash: ElementModQ,
-    contests: List[CiphertextBallotContest],
+    contests: list[CiphertextBallotContest],
 ) -> ElementModQ:
     """Create the hash of the ballot contests"""
 
@@ -994,10 +973,10 @@ def make_ciphertext_submitted_ballot(
     object_id: str,
     style_id: str,
     manifest_hash: ElementModQ,
-    code_seed: Optional[ElementModQ],
-    contests: List[CiphertextBallotContest],
-    ballot_code: Optional[ElementModQ],
-    timestamp: Optional[int] = None,
+    code_seed: ElementModQ | None,
+    contests: list[CiphertextBallotContest],
+    ballot_code: ElementModQ | None,
+    timestamp: int | None = None,
     state: BallotBoxState = BallotBoxState.UNKNOWN,
 ) -> SubmittedBallot:
     """
@@ -1018,14 +997,14 @@ def make_ciphertext_submitted_ballot(
     contest_hashes = [contest.crypto_hash for contest in sequence_order_sort(contests)]
     contest_hash = hash_elems(object_id, manifest_hash, *contest_hashes)
 
-    timestamp = to_ticks(datetime.now(timezone.utc)) if timestamp is None else timestamp
+    timestamp = to_ticks(datetime.now(UTC)) if timestamp is None else timestamp
     if code_seed is None:
         code_seed = manifest_hash
     if ballot_code is None:
         ballot_code = get_ballot_code(code_seed, timestamp, contest_hash)
 
     # copy the contests and selections, removing all nonces
-    new_contests: List[CiphertextBallotContest] = []
+    new_contests: list[CiphertextBallotContest] = []
     for contest in contests:
         new_selections = [
             replace(selection, nonce=None) for selection in contest.ballot_selections

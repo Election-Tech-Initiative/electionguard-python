@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any
 from datetime import datetime
 from electionguard.election import CiphertextElectionContext
 from electionguard.encrypt import EncryptionDevice
@@ -14,20 +14,20 @@ class ElectionDto:
     """Responsible for serializing to the front-end GUI and providing helper functions to Python."""
 
     id: str
-    election_name: Optional[str]
-    key_ceremony_id: Optional[str]
-    guardians: Optional[int]
-    quorum: Optional[int]
-    manifest: Optional[dict[str, Any]]
-    context: Optional[str]
-    constants: Optional[int]
-    guardian_records: Optional[str]
-    encryption_package_file: Optional[str]
-    election_url: Optional[str]
+    election_name: str | None
+    key_ceremony_id: str | None
+    guardians: int | None
+    quorum: int | None
+    manifest: dict[str, Any] | None
+    context: str | None
+    constants: int | None
+    guardian_records: str | None
+    encryption_package_file: str | None
+    election_url: str | None
     ballot_uploads: list[dict[str, Any]]
     decryptions: list[dict[str, Any]]
-    created_by: Optional[str]
-    created_at_utc: Optional[datetime]
+    created_by: str | None
+    created_at_utc: datetime | None
     created_at_str: str
 
     def __init__(self, election: dict[str, Any]):

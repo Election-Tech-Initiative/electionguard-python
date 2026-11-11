@@ -1,5 +1,3 @@
-from typing import List, Optional
-
 from .ballot import (
     CiphertextBallot,
     CiphertextBallotContest,
@@ -30,7 +28,7 @@ def decrypt_selection_with_secret(
     secret_key: ElGamalSecretKey,
     crypto_extended_base_hash: ElementModQ,
     suppress_validity_check: bool = False,
-) -> Optional[PlaintextBallotSelection]:
+) -> PlaintextBallotSelection | None:
     """
     Decrypt the specified `CiphertextBallotSelection` within the context of the specified selection.
 
@@ -64,9 +62,9 @@ def decrypt_selection_with_nonce(
     description: SelectionDescription,
     public_key: ElGamalPublicKey,
     crypto_extended_base_hash: ElementModQ,
-    nonce_seed: Optional[ElementModQ] = None,
+    nonce_seed: ElementModQ | None = None,
     suppress_validity_check: bool = False,
-) -> Optional[PlaintextBallotSelection]:
+) -> PlaintextBallotSelection | None:
     """
     Decrypt the specified `CiphertextBallotSelection` within the context of the specified selection.
 
@@ -122,7 +120,7 @@ def decrypt_contest_with_secret(
     crypto_extended_base_hash: ElementModQ,
     suppress_validity_check: bool = False,
     remove_placeholders: bool = True,
-) -> Optional[PlaintextBallotContest]:
+) -> PlaintextBallotContest | None:
     """
     Decrypt the specified `CiphertextBallotContest` within the context of the specified contest.
 
@@ -141,7 +139,7 @@ def decrypt_contest_with_secret(
         log_warning(f"contest: {contest.object_id} failed validity check")
         return None
 
-    plaintext_selections: List[PlaintextBallotSelection] = []
+    plaintext_selections: list[PlaintextBallotSelection] = []
     for selection in contest.ballot_selections:
         selection_description = description.selection_for(selection.object_id)
         plaintext_selection = decrypt_selection_with_secret(
@@ -172,10 +170,10 @@ def decrypt_contest_with_nonce(
     description: ContestDescriptionWithPlaceholders,
     public_key: ElGamalPublicKey,
     crypto_extended_base_hash: ElementModQ,
-    nonce_seed: Optional[ElementModQ] = None,
+    nonce_seed: ElementModQ | None = None,
     suppress_validity_check: bool = False,
     remove_placeholders: bool = True,
-) -> Optional[PlaintextBallotContest]:
+) -> PlaintextBallotContest | None:
     """
     Decrypt the specified `CiphertextBallotContest` within the context of the specified contest.
 
@@ -212,7 +210,7 @@ def decrypt_contest_with_nonce(
         )
         return None
 
-    plaintext_selections: List[PlaintextBallotSelection] = []
+    plaintext_selections: list[PlaintextBallotSelection] = []
     for selection in contest.ballot_selections:
         selection_description = description.selection_for(selection.object_id)
         plaintext_selection = decrypt_selection_with_nonce(
@@ -246,7 +244,7 @@ def decrypt_ballot_with_secret(
     secret_key: ElGamalSecretKey,
     suppress_validity_check: bool = False,
     remove_placeholders: bool = True,
-) -> Optional[PlaintextBallot]:
+) -> PlaintextBallot | None:
     """
     Decrypt the specified `CiphertextBallot` within the context of the specified election.
 
@@ -264,7 +262,7 @@ def decrypt_ballot_with_secret(
         log_warning(f"ballot: {ballot.object_id} failed validity check")
         return None
 
-    plaintext_contests: List[PlaintextBallotContest] = []
+    plaintext_contests: list[PlaintextBallotContest] = []
 
     for contest in ballot.contests:
         description = internal_manifest.contest_for(contest.object_id)
@@ -293,10 +291,10 @@ def decrypt_ballot_with_nonce(
     internal_manifest: InternalManifest,
     crypto_extended_base_hash: ElementModQ,
     public_key: ElGamalPublicKey,
-    nonce: Optional[ElementModQ] = None,
+    nonce: ElementModQ | None = None,
     suppress_validity_check: bool = False,
     remove_placeholders: bool = True,
-) -> Optional[PlaintextBallot]:
+) -> PlaintextBallot | None:
     """
     Decrypt the specified `CiphertextBallot` within the context of the specified election.
 
@@ -329,7 +327,7 @@ def decrypt_ballot_with_nonce(
         )
         return None
 
-    plaintext_contests: List[PlaintextBallotContest] = []
+    plaintext_contests: list[PlaintextBallotContest] = []
 
     for contest in ballot.contests:
         description = internal_manifest.contest_for(contest.object_id)

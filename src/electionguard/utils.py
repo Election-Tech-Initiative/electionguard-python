@@ -1,7 +1,8 @@
-from datetime import datetime, timezone
+from datetime import datetime, UTC
 from enum import Enum
 from re import sub
-from typing import Callable, List, Optional, TypeVar, Literal
+from typing import TypeVar, Literal
+from collections.abc import Callable
 from base64 import b16decode
 
 from .type import ContestId, SelectionId
@@ -31,7 +32,7 @@ class ContestException(Exception):
         self,
         contest_id: ContestId,
         type: ContestErrorType = ContestErrorType.Default,
-        override_message: Optional[str] = None,
+        override_message: str | None = None,
     ):
         self.type = type
         super().__init__(
@@ -42,9 +43,9 @@ class ContestException(Exception):
 class OverVoteException(ContestException):
     """Over vote on contest error."""
 
-    overvoted_ids: List[SelectionId]
+    overvoted_ids: list[SelectionId]
 
-    def __init__(self, contest_id: ContestId, overvoted_ids: List[SelectionId]):
+    def __init__(self, contest_id: ContestId, overvoted_ids: list[SelectionId]):
         self.overvoted_ids = overvoted_ids
         super().__init__(contest_id, ContestErrorType.OverVote)
 
@@ -63,7 +64,7 @@ class NullVoteException(ContestException):
         super().__init__(contest_id, ContestErrorType.NullVote)
 
 
-def get_optional(optional: Optional[_T]) -> _T:
+def get_optional(optional: _T | None) -> _T:
     """
     General-purpose unwrapping function to handle `Optional`.
     Raises an exception if it's actually `None`, otherwise
@@ -74,7 +75,7 @@ def get_optional(optional: Optional[_T]) -> _T:
 
 
 def match_optional(
-    optional: Optional[_T], none_func: Callable[[], _U], some_func: Callable[[_T], _U]
+    optional: _T | None, none_func: Callable[[], _U], some_func: Callable[[_T], _U]
 ) -> _U:
     """
     General-purpose pattern-matching function to handle `Optional`.
@@ -86,7 +87,7 @@ def match_optional(
     return some_func(optional)
 
 
-def get_or_else_optional(optional: Optional[_T], alt_value: _T) -> _T:
+def get_or_else_optional(optional: _T | None, alt_value: _T) -> _T:
     """
     General-purpose getter for `Optional`. If it's `None`, returns the `alt_value`.
     Otherwise, returns the contents of `optional`.
@@ -96,7 +97,7 @@ def get_or_else_optional(optional: Optional[_T], alt_value: _T) -> _T:
     return optional
 
 
-def get_or_else_optional_func(optional: Optional[_T], func: Callable[[], _T]) -> _T:
+def get_or_else_optional_func(optional: _T | None, func: Callable[[], _T]) -> _T:
     """
     General-purpose getter for `Optional`. If it's `None`, calls the lambda `func`
     and returns its value. Otherwise, returns the contents of `optional`.
@@ -106,9 +107,7 @@ def get_or_else_optional_func(optional: Optional[_T], func: Callable[[], _T]) ->
     return optional
 
 
-def flatmap_optional(
-    optional: Optional[_T], mapper: Callable[[_T], _U]
-) -> Optional[_U]:
+def flatmap_optional(optional: _T | None, mapper: Callable[[_T], _U]) -> _U | None:
     """
     General-purpose flatmapping on `Optional`. If it's `None`, returns `None` as well,
     otherwise returns the lambda applied to the contents.
@@ -137,7 +136,7 @@ def to_ticks(date_time: datetime) -> int:
     ticks = (
         date_time.timestamp()
         if date_time.tzinfo
-        else date_time.astimezone(timezone.utc).timestamp()
+        else date_time.astimezone(UTC).timestamp()
     )
     return int(ticks)
 
@@ -150,7 +149,7 @@ def to_iso_date_string(date_time: datetime) -> str:
     :return: number of ticks
     """
     utc_datetime = (
-        date_time.astimezone(timezone.utc).replace(microsecond=0)
+        date_time.astimezone(UTC).replace(microsecond=0)
         if date_time.tzinfo
         else date_time.replace(microsecond=0)
     )

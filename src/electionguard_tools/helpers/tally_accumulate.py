@@ -1,8 +1,7 @@
-from typing import List, Dict
 from electionguard.ballot import PlaintextBallot
 
 
-def accumulate_plaintext_ballots(ballots: List[PlaintextBallot]) -> Dict[str, int]:
+def accumulate_plaintext_ballots(ballots: list[PlaintextBallot]) -> dict[str, int]:
     """
     Internal helper function for testing: takes a list of plaintext ballots as input,
     digs into all of the individual selections and then accumulates them, using
@@ -13,7 +12,7 @@ def accumulate_plaintext_ballots(ballots: List[PlaintextBallot]) -> Dict[str, in
     :param ballots: a list of plaintext ballots
     :return: a dict from selection object_id's to integer totals
     """
-    tally: Dict[str, int] = {}
+    tally: dict[str, int] = {}
     for ballot in ballots:
         for contest in ballot.contests:
             for selection in contest.ballot_selections:

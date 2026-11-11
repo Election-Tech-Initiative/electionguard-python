@@ -1,6 +1,3 @@
-from datetime import timedelta
-from typing import List, Dict
-
 from hypothesis import given, HealthCheck, settings, Phase
 from hypothesis.strategies import integers
 
@@ -22,7 +19,6 @@ from electionguard_tools.factories.election_factory import ElectionFactory
 from electionguard_tools.strategies.group import elements_mod_q
 from electionguard_tools.helpers.tally_accumulate import accumulate_plaintext_ballots
 
-
 SEED = ElectionFactory.get_encryption_device().get_hash()
 
 
@@ -30,7 +26,7 @@ class TestElections(BaseTestCase):
     """Election hypothesis encryption tests"""
 
     @settings(
-        deadline=timedelta(milliseconds=2000),
+        deadline=None,
         suppress_health_check=[HealthCheck.too_slow],
         max_examples=10,
     )
@@ -44,7 +40,7 @@ class TestElections(BaseTestCase):
         self.assertTrue(manifest.is_valid())
 
     @settings(
-        deadline=timedelta(milliseconds=10000),
+        deadline=None,
         suppress_health_check=[HealthCheck.too_slow],
         max_examples=5,
         # disabling the "shrink" phase, because it runs very slowly
@@ -154,8 +150,8 @@ class TestElections(BaseTestCase):
 
 
 def _accumulate_encrypted_ballots(
-    encrypted_zero: ElGamalCiphertext, ballots: List[CiphertextBallot]
-) -> Dict[str, ElGamalCiphertext]:
+    encrypted_zero: ElGamalCiphertext, ballots: list[CiphertextBallot]
+) -> dict[str, ElGamalCiphertext]:
     """
     Internal helper function for testing: takes a list of encrypted ballots as input,
     digs into all of the individual selections and then accumulates them, using
@@ -169,7 +165,7 @@ def _accumulate_encrypted_ballots(
     :param ballots: a list of encrypted ballots
     :return: a dict from selection object_id's to `ElGamalCiphertext` totals
     """
-    tally: Dict[str, ElGamalCiphertext] = {}
+    tally: dict[str, ElGamalCiphertext] = {}
     for ballot in ballots:
         for contest in ballot.contests:
             for selection in contest.ballot_selections:

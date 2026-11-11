@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Dict, List
 
 
 from .ballot import (
@@ -31,8 +30,8 @@ class CompactPlaintextBallot:
 
     object_id: str
     style_id: str
-    selections: List[bool]
-    write_ins: Dict[int, str]
+    selections: list[bool]
+    write_ins: dict[int, str]
 
 
 @dataclass
@@ -120,7 +119,7 @@ def expand_compact_plaintext_ballot(
     )
 
 
-def _get_compact_selections(ballot: PlaintextBallot) -> List[bool]:
+def _get_compact_selections(ballot: PlaintextBallot) -> list[bool]:
     selections = []
     for contest in ballot.contests:
         for selection in contest.ballot_selections:
@@ -128,7 +127,7 @@ def _get_compact_selections(ballot: PlaintextBallot) -> List[bool]:
     return selections
 
 
-def _get_compact_write_ins(ballot: PlaintextBallot) -> Dict[int, str]:
+def _get_compact_write_ins(ballot: PlaintextBallot) -> dict[int, str]:
     write_ins = {}
     index = 0
     for contest in ballot.contests:
@@ -141,21 +140,21 @@ def _get_compact_write_ins(ballot: PlaintextBallot) -> Dict[int, str]:
 
 def _get_plaintext_contests(
     compact_ballot: CompactPlaintextBallot, internal_manifest: InternalManifest
-) -> List[PlaintextBallotContest]:
+) -> list[PlaintextBallotContest]:
     """Get ballot contests from compact plaintext ballot"""
     index = 0
     ballot_style_contests = _get_ballot_style_contests(
         compact_ballot.style_id, internal_manifest
     )
 
-    contests: List[PlaintextBallotContest] = []
+    contests: list[PlaintextBallotContest] = []
     for manifest_contest in sequence_order_sort(internal_manifest.contests):
         contest_in_style = (
             ballot_style_contests.get(manifest_contest.object_id) is not None
         )
 
         # Iterate through selections. If contest not in style, mark placeholder
-        selections: List[PlaintextBallotSelection] = []
+        selections: list[PlaintextBallotSelection] = []
         for selection in sequence_order_sort(manifest_contest.ballot_selections):
             selections.append(
                 PlaintextBallotSelection(
@@ -173,6 +172,6 @@ def _get_plaintext_contests(
 
 def _get_ballot_style_contests(
     ballot_style_id: str, internal_manifest: InternalManifest
-) -> Dict[str, ContestDescriptionWithPlaceholders]:
+) -> dict[str, ContestDescriptionWithPlaceholders]:
     ballot_style_contests = internal_manifest.get_contests_for(ballot_style_id)
     return {contest.object_id: contest for contest in ballot_style_contests}

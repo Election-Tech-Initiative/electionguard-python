@@ -75,7 +75,7 @@ def ImportBallotsCommand(
     build_election_results = (
         ImportBallotsElectionBuilderStep().build_election_with_context(election_inputs)
     )
-    (ciphertext_tally, spoiled_ballots) = TallyStep().get_from_ballots(
+    ciphertext_tally, spoiled_ballots = TallyStep().get_from_ballots(
         build_election_results, election_inputs.submitted_ballots
     )
     decrypt_results = DecryptStep().decrypt(

@@ -1,5 +1,4 @@
 from dataclasses import dataclass, field
-from typing import Dict, Optional
 
 from .ballot import (
     BallotBoxState,
@@ -23,7 +22,7 @@ class BallotBox:
     _encryption: CiphertextElectionContext = field()
     _store: DataStore = field(default_factory=lambda: DataStore())
 
-    def cast(self, ballot: CiphertextBallot) -> Optional[SubmittedBallot]:
+    def cast(self, ballot: CiphertextBallot) -> SubmittedBallot | None:
         """Cast a specific encrypted `CiphertextBallot`."""
         return submit_ballot_to_box(
             ballot,
@@ -33,7 +32,7 @@ class BallotBox:
             self._store,
         )
 
-    def spoil(self, ballot: CiphertextBallot) -> Optional[SubmittedBallot]:
+    def spoil(self, ballot: CiphertextBallot) -> SubmittedBallot | None:
         """Spoil a specific encrypted `CiphertextBallot`."""
         return submit_ballot_to_box(
             ballot,
@@ -50,7 +49,7 @@ def submit_ballot_to_box(
     internal_manifest: InternalManifest,
     context: CiphertextElectionContext,
     store: DataStore,
-) -> Optional[SubmittedBallot]:
+) -> SubmittedBallot | None:
     """
     Submit a ballot within the context of a specified election and against an existing data store
     Verified that the ballot is valid for the election `internal_manifest` and `context` and
@@ -78,8 +77,8 @@ def submit_ballot_to_box(
 
 
 def get_ballots(
-    store: DataStore, state: Optional[BallotBoxState]
-) -> Dict[BallotId, SubmittedBallot]:
+    store: DataStore, state: BallotBoxState | None
+) -> dict[BallotId, SubmittedBallot]:
     """Get ballots from the store optionally filtering on state."""
     return {
         ballot_id: ballot

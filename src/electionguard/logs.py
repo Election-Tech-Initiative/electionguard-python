@@ -2,7 +2,7 @@ import inspect
 import logging
 import os.path
 import sys
-from typing import Any, List, Tuple
+from typing import Any
 from logging.handlers import RotatingFileHandler
 
 from .singleton import Singleton
@@ -29,7 +29,7 @@ class ElectionGuardLog(Singleton):
         self.__logger.addHandler(self.__stream_handler)
 
     @staticmethod
-    def __get_call_info() -> Tuple[str, str, int]:
+    def __get_call_info() -> tuple[str, str, int]:
         stack = inspect.stack()
 
         # stack[0]: __get_call_info
@@ -68,7 +68,7 @@ class ElectionGuardLog(Singleton):
         """
         self.__logger.removeHandler(handler)
 
-    def handlers(self) -> List[logging.Handler]:
+    def handlers(self) -> list[logging.Handler]:
         """
         Returns all logging handlers
         """
@@ -149,7 +149,7 @@ def log_remove_handler(handler: logging.Handler) -> None:
     LOG.remove_handler(handler)
 
 
-def log_handlers() -> List[logging.Handler]:
+def log_handlers() -> list[logging.Handler]:
     """
     Returns all logger handlers
     """

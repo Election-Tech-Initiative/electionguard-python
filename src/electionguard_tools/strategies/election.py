@@ -1,7 +1,8 @@
 from copy import deepcopy
 from functools import reduce
 from random import Random
-from typing import Any, TypeVar, Callable, List, Optional, Tuple, Union
+from typing import Any, TypeVar
+from collections.abc import Callable
 
 from hypothesis.provisional import urls
 from hypothesis.strategies import (
@@ -49,7 +50,6 @@ from electionguard.manifest import (
 
 from electionguard_tools.strategies.elgamal import elgamal_keypairs
 from electionguard_tools.strategies.group import elements_mod_q_no_zero
-
 
 _T = TypeVar("_T")
 _DrawType = Callable[[SearchStrategy[_T]], _T]
@@ -276,7 +276,7 @@ def annotated_emails(draw: _DrawType) -> AnnotatedString:
 
 @composite
 def ballot_styles(
-    draw: _DrawType, parties: List[Party], geo_units: List[GeopoliticalUnit]
+    draw: _DrawType, parties: list[Party], geo_units: list[GeopoliticalUnit]
 ) -> BallotStyle:
     """
     Generates a `BallotStyle` object, which rolls up a list of parties and
@@ -302,7 +302,7 @@ def ballot_styles(
 
 
 @composite
-def party_lists(draw: _DrawType, num_parties: int) -> List[Party]:
+def party_lists(draw: _DrawType, num_parties: int) -> list[Party]:
     """
     Generates a `List[Party]` of the requested length.
     :param draw: Hidden argument, used by Hypothesis.
@@ -340,7 +340,7 @@ def geopolitical_units(draw: _DrawType) -> GeopoliticalUnit:
 
 
 @composite
-def candidates(draw: _DrawType, party_list: Optional[List[Party]]) -> Candidate:
+def candidates(draw: _DrawType, party_list: list[Party] | None) -> Candidate:
     """
     Generates a `Candidate` object, assigning it one of the parties from `party_list` at random,
     with a chance that there will be no party assigned at all.
@@ -380,11 +380,11 @@ def _candidate_to_selection_description(
 def candidate_contest_descriptions(
     draw: _DrawType,
     sequence_order: int,
-    party_list: List[Party],
-    geo_units: List[GeopoliticalUnit],
-    n: Optional[int] = None,
-    m: Optional[int] = None,
-) -> Tuple[List[Candidate], CandidateContestDescription]:
+    party_list: list[Party],
+    geo_units: list[GeopoliticalUnit],
+    n: int | None = None,
+    m: int | None = None,
+) -> tuple[list[Candidate], CandidateContestDescription]:
     """
     Generates a tuple: a `List[Candidate]` and a corresponding `CandidateContestDescription` for
     an n-of-m contest.
@@ -437,8 +437,8 @@ def candidate_contest_descriptions(
 def contest_descriptions_room_for_overvoting(
     draw: _DrawType,
     sequence_order: int,
-    party_list: List[Party],
-    geo_units: List[GeopoliticalUnit],
+    party_list: list[Party],
+    geo_units: list[GeopoliticalUnit],
 ) -> Any:
     """
     Similar to `contest_descriptions`, but guarantees that for the n-of-m contest that n < m,
@@ -464,8 +464,8 @@ def contest_descriptions_room_for_overvoting(
 
 @composite
 def referendum_contest_descriptions(
-    draw: _DrawType, sequence_order: int, geo_units: List[GeopoliticalUnit]
-) -> Tuple[List[Candidate], ReferendumContestDescription]:
+    draw: _DrawType, sequence_order: int, geo_units: list[GeopoliticalUnit]
+) -> tuple[list[Candidate], ReferendumContestDescription]:
     """
     Generates a tuple: a list of party-less candidates and a corresponding `ReferendumContestDescription`.
     :param draw: Hidden argument, used by Hypothesis.
@@ -503,8 +503,8 @@ def referendum_contest_descriptions(
 def contest_descriptions(
     draw: _DrawType,
     sequence_order: int,
-    party_list: List[Party],
-    geo_units: List[GeopoliticalUnit],
+    party_list: list[Party],
+    geo_units: list[GeopoliticalUnit],
 ) -> Any:
     """
     Generates either the result of `referendum_contest_descriptions` or `candidate_contest_descriptions`.
@@ -540,11 +540,11 @@ def election_descriptions(
     num_parties: int = draw(integers(1, max_num_parties))
 
     # keep this small so tests run faster
-    parties: List[Party] = draw(party_lists(num_parties))
+    parties: list[Party] = draw(party_lists(num_parties))
     num_contests: int = draw(integers(1, max_num_contests))
 
     # generate a collection candidates mapped to contest descriptions
-    candidate_contests: List[Tuple[List[Candidate], ContestDescription]] = [
+    candidate_contests: list[tuple[list[Candidate], ContestDescription]] = [
         draw(contest_descriptions(i, parties, geo_units)) for i in range(num_contests)
     ]
     assert len(candidate_contests) > 0
@@ -580,13 +580,13 @@ def election_descriptions(
 @composite
 def plaintext_voted_ballots(
     draw: _DrawType, internal_manifest: InternalManifest, count: int = 1
-) -> Union[Any, List[PlaintextBallot]]:
+) -> Any | list[PlaintextBallot]:
     """
     Given
     """
     if count == 1:
         return draw(plaintext_voted_ballot(internal_manifest))
-    ballots: List[PlaintextBallot] = []
+    ballots: list[PlaintextBallot] = []
     for _i in range(count):
         ballots.append(draw(plaintext_voted_ballot(internal_manifest)))
     return ballots
@@ -614,7 +614,7 @@ def plaintext_voted_ballot(
     contests = internal_manifest.get_contests_for(ballot_style.object_id)
     assert len(contests) > 0, "invalid ballot style with no contests in it"
 
-    voted_contests: List[PlaintextBallotContest] = []
+    voted_contests: list[PlaintextBallotContest] = []
     for contest in contests:
         assert contest.is_valid(), "every contest needs to be valid"
         n = contest.number_elected  # we need exactly this many 1's, and the rest 0's
@@ -642,7 +642,7 @@ def plaintext_voted_ballot(
     return PlaintextBallot(str(draw(uuids())), ballot_style.object_id, voted_contests)
 
 
-CiphertextElectionsTupleType = Tuple[ElementModQ, CiphertextElectionContext]
+CiphertextElectionsTupleType = tuple[ElementModQ, CiphertextElectionContext]
 
 
 @composite
@@ -676,10 +676,10 @@ def ciphertext_elections(
     return ciphertext_election_with_secret
 
 
-ElectionsAndBallotsTupleType = Tuple[
+ElectionsAndBallotsTupleType = tuple[
     Manifest,
     InternalManifest,
-    List[PlaintextBallot],
+    list[PlaintextBallot],
     ElementModQ,
     CiphertextElectionContext,
 ]

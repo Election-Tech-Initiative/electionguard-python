@@ -1,7 +1,7 @@
 import os
 from typing import Any
 from shutil import unpack_archive
-import eel
+import electionguard_eel as eel
 from electionguard_gui.eel_utils import eel_success
 from electionguard_gui.components.component_base import ComponentBase
 from electionguard_gui.services import ElectionService

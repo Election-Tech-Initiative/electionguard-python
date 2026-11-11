@@ -1,5 +1,4 @@
-from typing import Optional
-import eel
+import electionguard_eel as eel
 
 from electionguard_gui.services.configuration_service import ConfigurationService
 from electionguard_gui.services.service_base import ServiceBase
@@ -14,7 +13,7 @@ class AuthorizationService(ServiceBase):
         self._is_admin = config_service.get_is_admin()
 
     # todo: replace state based storage with configparser https://docs.python.org/3/library/configparser.html
-    user_id: Optional[str] = None
+    user_id: str | None = None
 
     def expose(self) -> None:
         eel.expose(self.get_user_id)
@@ -26,7 +25,7 @@ class AuthorizationService(ServiceBase):
             raise Exception("User must be logged in")
         return self.user_id
 
-    def get_user_id(self) -> Optional[str]:
+    def get_user_id(self) -> str | None:
         return self.user_id
 
     def set_user_id(self, user_id: str) -> None:

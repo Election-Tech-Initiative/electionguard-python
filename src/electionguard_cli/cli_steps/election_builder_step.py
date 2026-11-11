@@ -1,4 +1,3 @@
-from typing import Optional
 import click
 from electionguard.elgamal import ElGamalPublicKey
 from electionguard.group import ElementModQ
@@ -17,7 +16,7 @@ class ElectionBuilderStep(CliStepBase):
         election_inputs: CliElectionInputsBase,
         joint_public_key: ElGamalPublicKey,
         committment_hash: ElementModQ,
-        verification_url: Optional[str],
+        verification_url: str | None,
     ) -> BuildElectionResults:
         self.print_header("Building election")
 

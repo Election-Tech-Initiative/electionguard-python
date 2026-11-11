@@ -1,4 +1,3 @@
-from typing import List
 from electionguard.ballot import PlaintextBallot
 
 
@@ -7,8 +6,8 @@ class MarkResults:
 
     def __init__(
         self,
-        plaintext_ballots: List[PlaintextBallot],
+        plaintext_ballots: list[PlaintextBallot],
     ):
         self.plaintext_ballots = plaintext_ballots
 
-    plaintext_ballots: List[PlaintextBallot]
+    plaintext_ballots: list[PlaintextBallot]

@@ -1,14 +1,14 @@
 """Implementation of Hashing for Message Authentication Codes (HMAC)"""
 
 from hmac import digest
-from typing import Optional, Literal
+from typing import Literal
 
 _BYTE_LENGTH = 4
 _BYTE_ORDER: Literal["little", "big"] = "little"
 
 
 def get_hmac(
-    key: bytes, message: bytes, length: Optional[int] = None, start: int = 0
+    key: bytes, message: bytes, length: int | None = None, start: int = 0
 ) -> bytes:
     """
     Get a hash-based message authentication code(hmac) digest using

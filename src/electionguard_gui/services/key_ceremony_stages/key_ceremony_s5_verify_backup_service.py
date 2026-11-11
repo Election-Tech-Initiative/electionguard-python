@@ -1,4 +1,3 @@
-from typing import List
 from pymongo.database import Database
 from electionguard.key_ceremony import ElectionPartialKeyVerification
 from electionguard_gui.models.key_ceremony_dto import KeyCeremonyDto
@@ -33,7 +32,7 @@ class KeyCeremonyS5VerifyBackupService(KeyCeremonyStageBase):
             current_user_id, key_ceremony
         )
         self._guardian_service.load_other_keys(key_ceremony, current_user_id, guardian)
-        verifications: List[ElectionPartialKeyVerification] = []
+        verifications: list[ElectionPartialKeyVerification] = []
         for backup in shared_backups:
             self.log.debug(
                 f"verifying backup from {backup.owner_id} to {current_user_id}"

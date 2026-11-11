@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List, Type, TypeVar, Optional
+from typing import TypeVar
 
 from .serialize import padded_decode, padded_encode
 from .election_polynomial import (
@@ -46,12 +46,12 @@ class ElectionPublicKey:
     Note: This is the same as the first coefficient commitment
     """
 
-    coefficient_commitments: List[PublicCommitment]
+    coefficient_commitments: list[PublicCommitment]
     """
     The commitments for the coefficients in the secret polynomial
     """
 
-    coefficient_proofs: List[SchnorrProof]
+    coefficient_proofs: list[SchnorrProof]
     """
     The proofs for the coefficients in the secret polynomial
     """
@@ -162,8 +162,8 @@ class ElectionPartialKeyChallenge:
     designated_sequence_order: int
 
     value: ElementModQ
-    coefficient_commitments: List[PublicCommitment]
-    coefficient_proofs: List[SchnorrProof]
+    coefficient_commitments: list[PublicCommitment]
+    coefficient_proofs: list[SchnorrProof]
 
 
 _T = TypeVar("_T", bound="CoordinateData")
@@ -176,7 +176,7 @@ class CoordinateData:
     coordinate: ElementModQ
 
     @classmethod
-    def from_bytes(cls: Type[_T], data: bytes) -> _T:
+    def from_bytes(cls: type[_T], data: bytes) -> _T:
         return padded_decode(cls, data)
 
     def to_bytes(self) -> bytes:
@@ -187,7 +187,7 @@ def generate_election_key_pair(
     guardian_id: str,
     sequence_order: int,
     quorum: int,
-    nonce: Optional[ElementModQ] = None,
+    nonce: ElementModQ | None = None,
 ) -> ElectionKeyPair:
     """
     Generate election key pair, proof, and polynomial
@@ -321,7 +321,7 @@ def verify_election_partial_key_challenge(
 
 
 def combine_election_public_keys(
-    election_public_keys: List[ElectionPublicKey],
+    election_public_keys: list[ElectionPublicKey],
 ) -> ElectionJointKey:
     """
     Creates a joint election key from the public keys of all guardians

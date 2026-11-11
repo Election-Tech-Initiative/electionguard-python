@@ -1,4 +1,4 @@
-from typing import Any, List
+from typing import Any
 from datetime import datetime
 from electionguard import ElectionPartialKeyVerification
 from electionguard.group import ElementModP, ElementModQ
@@ -61,12 +61,12 @@ class KeyCeremonyDto:
     guardian_count: int
     key_ceremony_name: str
     quorum: int
-    guardians_joined: List[str]
-    other_keys: List[Any]
-    backups: List[Any]
-    shared_backups: List[Any]
-    verifications: List[Any]
-    keys: List[ElectionPublicKey]
+    guardians_joined: list[str]
+    other_keys: list[Any]
+    backups: list[Any]
+    shared_backups: list[Any]
+    verifications: list[Any]
+    keys: list[ElectionPublicKey]
     joint_key: Any
     created_by: str
     created_at_utc: datetime
@@ -96,14 +96,14 @@ class KeyCeremonyDto:
             ]
         )
 
-    def get_verifications(self) -> List[ElectionPartialKeyVerification]:
+    def get_verifications(self) -> list[ElectionPartialKeyVerification]:
         return [
             _dict_to_verification(verification) for verification in self.verifications
         ]
 
     def get_shared_backups_for_guardian(
         self, guardian_id: str
-    ) -> List[ElectionPartialKeyBackup]:
+    ) -> list[ElectionPartialKeyBackup]:
         shared_backup_wrapper = next(
             filter(
                 lambda backup: backup["owner_id"] == guardian_id, self.shared_backups
@@ -112,10 +112,10 @@ class KeyCeremonyDto:
         backups = shared_backup_wrapper["backups"]
         return [_dict_to_backup(backup) for backup in backups]
 
-    def get_backups(self) -> List[ElectionPartialKeyBackup]:
+    def get_backups(self) -> list[ElectionPartialKeyBackup]:
         return [_dict_to_backup(backup) for backup in self.backups]
 
-    def find_other_keys_for_user(self, user_id: str) -> List[ElectionPublicKey]:
+    def find_other_keys_for_user(self, user_id: str) -> list[ElectionPublicKey]:
         other_key_wrapper = next(
             filter(
                 lambda other_key: other_key["owner_id"] == user_id,

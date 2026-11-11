@@ -1,7 +1,7 @@
 import os
 from typing import Any
-from datetime import datetime, timezone
-import eel  # type: ignore[import-untyped]
+from datetime import datetime, UTC
+import electionguard_eel as eel
 from electionguard.encrypt import EncryptionDevice
 from electionguard.serialize import from_file, from_raw
 from electionguard.ballot import SubmittedBallot
@@ -44,7 +44,7 @@ class UploadBallotsComponent(ComponentBase):
             election = self._election_service.get(db, election_id)
             if election is None:
                 return eel_fail(f"Election {election_id} not found")
-            created_at = datetime.now(timezone.utc)
+            created_at = datetime.now(UTC)
             ballot_upload_id = self._ballot_upload_service.create(
                 db,
                 election_id,
@@ -60,8 +60,7 @@ class UploadBallotsComponent(ComponentBase):
                 created_at,
             )
             return eel_success(ballot_upload_id)
-        # pylint: disable=broad-except
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             return self.handle_error(e)
 
     def upload_ballot(
@@ -109,8 +108,7 @@ class UploadBallotsComponent(ComponentBase):
                     db, election_id, ballot_upload_id
                 )
             return eel_success({"is_duplicate": False})
-        # pylint: disable=broad-except
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             return self.handle_error(e)
 
     def is_wizard_supported(self) -> bool:
@@ -129,8 +127,7 @@ class UploadBallotsComponent(ComponentBase):
             ]
             first_candidate = next(iter(candidate_drives), None)
             return eel_success(first_candidate)
-        # pylint: disable=broad-except
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             return self.handle_error(e)
 
     def parse_drive(self, drive: str) -> dict[str, Any]:
@@ -193,8 +190,7 @@ class UploadBallotsComponent(ComponentBase):
             return eel_success(
                 {"ballot_count": ballot_count, "duplicate_count": duplicate_count}
             )
-        # pylint: disable=broad-except
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             return self.handle_error(e)
 
     def create_ballot_from_file(
@@ -205,7 +201,7 @@ class UploadBallotsComponent(ComponentBase):
         ballots_dir: str,
     ) -> dict[str, Any]:
         ballot_file_path = os.path.join(ballots_dir, ballot_file_name)
-        with open(ballot_file_path, "r", encoding="utf-8") as ballot_file:
+        with open(ballot_file_path, encoding="utf-8") as ballot_file:
             ballot_contents = ballot_file.read()
             return self.upload_ballot(
                 ballot_upload_id, election_id, ballot_file_name, ballot_contents
@@ -214,7 +210,7 @@ class UploadBallotsComponent(ComponentBase):
     def create_ballot_upload_from_file(
         self, election_id: str, device_file_name: str, device_file_path: str
     ) -> dict[str, Any]:
-        with open(device_file_path, "r", encoding="utf-8") as device_file:
+        with open(device_file_path, encoding="utf-8") as device_file:
             ballot_upload = self.create_ballot_upload(
                 election_id, device_file_name, device_file.read()
             )

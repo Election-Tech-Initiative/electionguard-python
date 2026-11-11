@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Dict, List, Optional
 
 from .elgamal import ElGamalKeyPair
 from .group import (
@@ -48,20 +47,20 @@ class ElectionPolynomial:
     be discovered by a quorum of n guardians corresponding to n coefficients.
     """
 
-    coefficients: List[Coefficient]
+    coefficients: list[Coefficient]
     """List of coefficient value, commitments and proofs"""
 
-    def get_commitments(self) -> List[PublicCommitment]:
+    def get_commitments(self) -> list[PublicCommitment]:
         """Access the list of public keys generated from secret coefficient"""
         return [coefficient.commitment for coefficient in self.coefficients]
 
-    def get_proofs(self) -> List[SchnorrProof]:
+    def get_proofs(self) -> list[SchnorrProof]:
         """Access the list of proof of possesion of the private key for the secret coefficient"""
         return [coefficient.proof for coefficient in self.coefficients]
 
 
 def generate_polynomial(
-    number_of_coefficients: int, nonce: Optional[ElementModQ] = None
+    number_of_coefficients: int, nonce: ElementModQ | None = None
 ) -> ElectionPolynomial:
     """
     Generates a polynomial for sharing election keys
@@ -70,7 +69,7 @@ def generate_polynomial(
     :param nonce: an optional nonce parameter that may be provided (useful for testing)
     :return: Polynomial used to share election keys
     """
-    coefficients: List[Coefficient] = []
+    coefficients: list[Coefficient] = []
 
     for i in range(number_of_coefficients):
         # Note: the nonce value is not safe. it is designed for testing only.
@@ -113,7 +112,7 @@ class LagrangeCoefficientsRecord:
     to be used in the public election record.
     """
 
-    coefficients: Dict[GuardianId, ElementModQ]
+    coefficients: dict[GuardianId, ElementModQ]
 
 
 # pylint: disable=unnecessary-comprehension
@@ -125,7 +124,7 @@ def compute_lagrange_coefficient(coordinate: int, *degrees: int) -> ElementModQ:
                     available Guardians' Sequence Orders
     """
 
-    numerator = mult_q(*[degree for degree in degrees])
+    numerator = mult_q(*degrees)
     denominator = mult_q(*[(degree - coordinate) for degree in degrees])
     result = div_q((numerator), (denominator))
     return result
@@ -134,7 +133,7 @@ def compute_lagrange_coefficient(coordinate: int, *degrees: int) -> ElementModQ:
 def verify_polynomial_coordinate(
     coordinate: ElementModQ,
     exponent_modifier: int,
-    commitments: List[PublicCommitment],
+    commitments: list[PublicCommitment],
 ) -> bool:
     """
     Verify a polynomial coordinate value is in fact on the polynomial's curve

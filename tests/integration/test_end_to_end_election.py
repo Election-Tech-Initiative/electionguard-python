@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from typing import Callable, Dict, List, Union
+from collections.abc import Callable
 from os import path, remove
 from shutil import rmtree, make_archive
 from random import randint
@@ -74,7 +74,6 @@ from electionguard_tools.factories.election_factory import (
 )
 from electionguard_tools.helpers.election_builder import ElectionBuilder
 
-
 devices_directory = path.join(ELECTION_RECORD_DIR, DEVICES_DIR)
 guardians_directory = path.join(ELECTION_RECORD_DIR, GUARDIANS_DIR)
 submitted_ballots_directory = path.join(ELECTION_RECORD_DIR, SUBMITTED_BALLOTS_DIR)
@@ -103,29 +102,29 @@ class TestEndToEndElection(BaseTestCase):
 
     # Step 1 - Key Ceremony
     mediator: KeyCeremonyMediator
-    guardians: List[Guardian] = []
+    guardians: list[Guardian] = []
 
     # Step 2 - Encrypt Votes
     device: EncryptionDevice
     encrypter: EncryptionMediator
-    plaintext_ballots: List[PlaintextBallot]
-    ciphertext_ballots: List[CiphertextBallot] = []
+    plaintext_ballots: list[PlaintextBallot]
+    ciphertext_ballots: list[CiphertextBallot] = []
 
     # Step 3 - Cast and Spoil
     ballot_store: DataStore[BallotId, SubmittedBallot]
     ballot_box: BallotBox
-    submitted_ballots: Dict[BallotId, SubmittedBallot]
+    submitted_ballots: dict[BallotId, SubmittedBallot]
 
     # Step 4 - Decrypt Tally
     ciphertext_tally: CiphertextTally
     plaintext_tally: PlaintextTally
-    plaintext_spoiled_ballots: Dict[str, PlaintextTally]
+    plaintext_spoiled_ballots: dict[str, PlaintextTally]
     decryption_mediator: DecryptionMediator
     lagrange_coefficients: LagrangeCoefficientsRecord
 
     # Step 5 - Publish
-    guardian_records: List[GuardianRecord] = []
-    private_guardian_records: List[PrivateGuardianRecord] = []
+    guardian_records: list[GuardianRecord] = []
+    private_guardian_records: list[PrivateGuardianRecord] = []
 
     def test_end_to_end_election(self) -> None:
         """
@@ -146,8 +145,7 @@ class TestEndToEndElection(BaseTestCase):
         # Load a pre-configured Election Description
         # TODO: replace with complex election
         self.manifest = ElectionFactory().get_simple_manifest_from_file()
-        print(
-            f"""
+        print(f"""
             {'-'*40}\n
             # Election Summary:
             # Scope: {self.manifest.election_scope_id}
@@ -157,8 +155,7 @@ class TestEndToEndElection(BaseTestCase):
             # Contests: {len(self.manifest.contests)}
             # Ballot Styles: {len(self.manifest.ballot_styles)}\n
             {'-'*40}\n
-            """
-        )
+            """)
         self._assert_message(
             Manifest.is_valid.__qualname__,
             "Verify that the input election meta-data is well-formed",
@@ -439,13 +436,11 @@ class TestEndToEndElection(BaseTestCase):
         """
         Compare the results to ensure the decryption was done correctly.
         """
-        print(
-            f"""
+        print(f"""
             {'-'*40}
             # Election Results:
 
-            """
-        )
+            """)
 
         # Create a representation of each contest's tally
         selection_ids = [
@@ -453,7 +448,7 @@ class TestEndToEndElection(BaseTestCase):
             for contest in self.manifest.contests
             for selection in contest.ballot_selections
         ]
-        expected_plaintext_tally: Dict[str, int] = {key: 0 for key in selection_ids}
+        expected_plaintext_tally: dict[str, int] = {key: 0 for key in selection_ids}
 
         # Tally the expected values from the loaded ballots
         for ballot in self.plaintext_ballots:
@@ -636,7 +631,7 @@ class TestEndToEndElection(BaseTestCase):
             self.assertEqualAsDicts(guardian_record, guardian_record_from_file)
 
     def _assert_message(
-        self, name: str, message: str, condition: Union[Callable, bool] = True
+        self, name: str, message: str, condition: Callable | bool = True
     ) -> None:
         if callable(condition):
             result = condition()

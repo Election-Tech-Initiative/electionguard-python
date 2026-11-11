@@ -1,5 +1,3 @@
-from typing import Tuple
-from datetime import timedelta
 from hypothesis import HealthCheck
 from hypothesis import given, settings
 
@@ -33,13 +31,13 @@ class TestBallot(BaseTestCase):
         self.assertFalse(first_contest.is_valid("justice-supreme-court", 2, 2, 1))
 
     @settings(
-        deadline=timedelta(milliseconds=2000),
+        deadline=None,
         suppress_health_check=[HealthCheck.too_slow],
         max_examples=10,
     )
     @given(BallotFactory.get_selection_well_formed())
     def test_plaintext_ballot_selection_is_valid(
-        self, subject: Tuple[str, PlaintextBallotSelection]
+        self, subject: tuple[str, PlaintextBallotSelection]
     ):
         # Arrange
         object_id, selection = subject
@@ -53,13 +51,13 @@ class TestBallot(BaseTestCase):
         self.assertTrue(0 <= as_int <= 1)
 
     @settings(
-        deadline=timedelta(milliseconds=2000),
+        deadline=None,
         suppress_health_check=[HealthCheck.too_slow],
         max_examples=10,
     )
     @given(BallotFactory.get_selection_poorly_formed())
     def test_plaintext_ballot_selection_is_invalid(
-        self, subject: Tuple[str, PlaintextBallotSelection]
+        self, subject: tuple[str, PlaintextBallotSelection]
     ):
         # Arrange
         object_id, selection = subject

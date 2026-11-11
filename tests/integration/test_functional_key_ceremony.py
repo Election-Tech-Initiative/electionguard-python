@@ -1,5 +1,3 @@
-from typing import Dict, List
-
 from tests.base_test_case import BaseTestCase
 
 from electionguard.key_ceremony import (
@@ -33,16 +31,16 @@ class TestKeyCeremony(BaseTestCase):
     QUORUM = 3
 
     # ROUND 1
-    election_key_pairs: Dict[str, ElectionKeyPair] = {}
-    guardian_keys: Dict[str, ElectionPublicKey] = {}
+    election_key_pairs: dict[str, ElectionKeyPair] = {}
+    guardian_keys: dict[str, ElectionPublicKey] = {}
 
     # ROUND 2
-    sent_backups: Dict[SENDER_ID, List[ElectionPartialKeyBackup]] = {}
-    received_backups: Dict[RECEIVER_ID, List[ElectionPartialKeyBackup]] = {}
+    sent_backups: dict[SENDER_ID, list[ElectionPartialKeyBackup]] = {}
+    received_backups: dict[RECEIVER_ID, list[ElectionPartialKeyBackup]] = {}
 
     # ROUND 3
-    sent_verifications: Dict[SENDER_ID, List[ElectionPartialKeyVerification]] = {}
-    received_verifications: Dict[RECEIVER_ID, List[ElectionPartialKeyVerification]] = {}
+    sent_verifications: dict[SENDER_ID, list[ElectionPartialKeyVerification]] = {}
+    received_verifications: dict[RECEIVER_ID, list[ElectionPartialKeyVerification]] = {}
 
     def test_key_ceremony(self) -> None:
         # Determine guardian id and sequence order
@@ -173,7 +171,7 @@ class TestKeyCeremony(BaseTestCase):
         for verification in verifications:
             self.assertTrue(verification.verified)
 
-    def _guardian_challenges(self, guardian_ids: List[GuardianId]) -> None:
+    def _guardian_challenges(self, guardian_ids: list[GuardianId]) -> None:
         key_owner_id = guardian_ids[0]
         original_verification = self.received_verifications[key_owner_id][0]
         failed_verification = ElectionPartialKeyVerification(

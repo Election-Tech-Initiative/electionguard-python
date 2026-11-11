@@ -1,5 +1,5 @@
-from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from datetime import datetime, UTC
+from typing import Any
 from bson import ObjectId
 from pymongo.database import Database
 from electionguard.decryption_share import DecryptionShare
@@ -58,7 +58,7 @@ class DecryptionService(ServiceBase):
             "ciphertext_tally": None,
             "completed_at": None,
             "created_by": self._auth_service.get_user_id(),
-            "created_at": datetime.now(timezone.utc),
+            "created_at": datetime.now(UTC),
         }
         self._log.trace(f"inserting decryption for: {election.id}")
         insert_result = db.decryptions.insert_one(decryption)
@@ -90,7 +90,7 @@ class DecryptionService(ServiceBase):
         )
         return decryption_count
 
-    def get_active(self, db: Database) -> List[DecryptionDto]:
+    def get_active(self, db: Database) -> list[DecryptionDto]:
         self._log.trace("getting all decryptions")
         decryption_cursor = db.decryptions.find(
             {
@@ -108,7 +108,7 @@ class DecryptionService(ServiceBase):
         decryption_id: str,
         guardian_id: str,
         decryption_share: DecryptionShare,
-        ballot_shares: Dict[BallotId, Optional[DecryptionShare]],
+        ballot_shares: dict[BallotId, DecryptionShare | None],
         guardian_key: ElectionPublicKey,
     ) -> None:
         decryption_share_raw = to_raw(decryption_share)
@@ -142,7 +142,7 @@ class DecryptionService(ServiceBase):
         db: Database,
         decryption_id: str,
         plaintext_tally: PlaintextTally,
-        plaintext_spoiled_ballots: Dict[BallotId, PlaintextTally],
+        plaintext_spoiled_ballots: dict[BallotId, PlaintextTally],
         lagrange_coefficients: LagrangeCoefficientsRecord,
         ciphertext_tally: PublishedCiphertextTally,
     ) -> None:
@@ -157,7 +157,7 @@ class DecryptionService(ServiceBase):
             {"_id": ObjectId(decryption_id)},
             {
                 "$set": {
-                    "completed_at": datetime.now(timezone.utc),
+                    "completed_at": datetime.now(UTC),
                     "plaintext_tally": to_raw(plaintext_tally),
                     "plaintext_spoiled_ballots": plaintext_spoiled_ballots_dict,
                     "lagrange_coefficients": to_raw(lagrange_coefficients),
@@ -167,7 +167,7 @@ class DecryptionService(ServiceBase):
         )
 
 
-def to_ballot_share_raw(ballot_share: Optional[DecryptionShare]) -> Optional[str]:
+def to_ballot_share_raw(ballot_share: DecryptionShare | None) -> str | None:
     if ballot_share is None:
         return None
     return to_raw(ballot_share)

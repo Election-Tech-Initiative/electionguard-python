@@ -1,7 +1,6 @@
 from os import path
 from subprocess import check_output
-from typing import Optional
-import eel
+import electionguard_eel as eel
 from electionguard_gui.services.eel_log_service import EelLogService
 from electionguard_gui.services.service_base import ServiceBase
 
@@ -17,7 +16,7 @@ class VersionService(ServiceBase):
     def expose(self) -> None:
         eel.expose(self.get_version)
 
-    def get_version(self) -> Optional[str]:
+    def get_version(self) -> str | None:
         if not path.exists(".git"):
             return None
         commit_hash = (

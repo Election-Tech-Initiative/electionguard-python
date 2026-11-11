@@ -1,7 +1,6 @@
 from os import environ
 from shutil import which
 from sys import exit
-from typing import Optional
 
 DB_PASSWORD_KEY = "EG_DB_PASSWORD"
 DB_HOST_KEY = "EG_DB_HOST"
@@ -15,7 +14,7 @@ class ConfigurationService:
     """Responsible for retrieving configuration values, generally from environment variables"""
 
     # 'chrome', 'electron', 'edge', 'custom', or 'none', see also https://github.com/ChrisKnott/Eel#app-options
-    def get_mode(self) -> Optional[str]:
+    def get_mode(self) -> str | None:
         mode = self._get_param_or_default(MODE_KEY, self._get_default_mode())
         return None if mode == "none" else mode
 

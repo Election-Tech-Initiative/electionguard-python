@@ -1,5 +1,4 @@
 from dataclasses import dataclass, field
-from typing import Dict, Optional, Tuple, Union
 
 from .chaum_pedersen import ChaumPedersenProof
 from .election_object_base import ElectionObjectBase
@@ -44,9 +43,9 @@ class CiphertextCompensatedDecryptionSelection(ElectionObjectBase):
     """
 
 
-ProofOrRecovery = Union[
-    ChaumPedersenProof, Dict[GuardianId, CiphertextCompensatedDecryptionSelection]
-]
+ProofOrRecovery = (
+    ChaumPedersenProof | dict[GuardianId, CiphertextCompensatedDecryptionSelection]
+)
 
 
 @dataclass
@@ -73,15 +72,15 @@ class CiphertextDecryptionSelection(ElectionObjectBase):
     The Share of the decryption of a selection. `M_i` in the spec
     """
 
-    proof: Optional[ChaumPedersenProof] = field(init=True, default=None)
+    proof: ChaumPedersenProof | None = field(init=True, default=None)
     """
     The Proof that the share was decrypted correctly, if the guardian
     was available for decryption
     """
 
-    recovered_parts: Optional[
-        Dict[GuardianId, CiphertextCompensatedDecryptionSelection]
-    ] = field(init=True, default=None)
+    recovered_parts: (
+        dict[GuardianId, CiphertextCompensatedDecryptionSelection] | None
+    ) = field(init=True, default=None)
     """
     the recovered parts of the decryption provided by available guardians,
     if the guardian was missing from decryption
@@ -104,19 +103,15 @@ class CiphertextDecryptionSelection(ElectionObjectBase):
         # verify we have a proof or recovered parts
         if self.proof is None and self.recovered_parts is None:
             log_warning(
-                (
-                    f"CiphertextDecryptionSelection is_valid failed for guardian: {self.guardian_id} "
-                    f"selection: {self.object_id} with missing data"
-                )
+                f"CiphertextDecryptionSelection is_valid failed for guardian: {self.guardian_id} "
+                f"selection: {self.object_id} with missing data"
             )
             return False
 
         if self.proof is not None and self.recovered_parts is not None:
             log_warning(
-                (
-                    f"CiphertextDecryptionSelection is_valid failed for guardian: {self.guardian_id} "
-                    f"selection: {self.object_id} cannot have proof and recovery"
-                )
+                f"CiphertextDecryptionSelection is_valid failed for guardian: {self.guardian_id} "
+                f"selection: {self.object_id} cannot have proof and recovery"
             )
             return False
 
@@ -127,10 +122,8 @@ class CiphertextDecryptionSelection(ElectionObjectBase):
             extended_base_hash,
         ):
             log_warning(
-                (
-                    f"CiphertextDecryptionSelection is_valid failed for guardian: {self.guardian_id} "
-                    f"selection: {self.object_id} with invalid proof"
-                )
+                f"CiphertextDecryptionSelection is_valid failed for guardian: {self.guardian_id} "
+                f"selection: {self.object_id} with invalid proof"
             )
             return False
 
@@ -147,10 +140,8 @@ class CiphertextDecryptionSelection(ElectionObjectBase):
                 ):
 
                     log_warning(
-                        (
-                            f"CiphertextDecryptionSelection is_valid failed for guardian: {self.guardian_id} "
-                            f"selection: {self.object_id} with invalid partial proof"
-                        )
+                        f"CiphertextDecryptionSelection is_valid failed for guardian: {self.guardian_id} "
+                        f"selection: {self.object_id} with invalid partial proof"
                     )
                     return False
 
@@ -207,7 +198,7 @@ class CiphertextDecryptionContest(ElectionObjectBase):
     The ContestDescription Hash
     """
 
-    selections: Dict[SelectionId, CiphertextDecryptionSelection]
+    selections: dict[SelectionId, CiphertextDecryptionSelection]
     """
     the collection of decryption shares for this contest's selections
     """
@@ -234,7 +225,7 @@ class CiphertextCompensatedDecryptionContest(ElectionObjectBase):
     The ContestDescription Hash
     """
 
-    selections: Dict[SelectionId, CiphertextCompensatedDecryptionSelection]
+    selections: dict[SelectionId, CiphertextCompensatedDecryptionSelection]
     """
     the collection of decryption shares for this contest's selections
     """
@@ -256,7 +247,7 @@ class DecryptionShare(ElectionObjectBase):
     The election public key for the guardian
     """
 
-    contests: Dict[ContestId, CiphertextDecryptionContest]
+    contests: dict[ContestId, CiphertextDecryptionContest]
     """
     The collection of all contests in the ballot
     """
@@ -284,7 +275,7 @@ class CompensatedDecryptionShare(ElectionObjectBase):
     The election public key for the guardian
     """
 
-    contests: Dict[ContestId, CiphertextCompensatedDecryptionContest]
+    contests: dict[ContestId, CiphertextCompensatedDecryptionContest]
     """
     The collection of all contests in the ballot
     """
@@ -292,12 +283,12 @@ class CompensatedDecryptionShare(ElectionObjectBase):
 
 def get_shares_for_selection(
     selection_id: str,
-    shares: Dict[GuardianId, DecryptionShare],
-) -> Dict[GuardianId, Tuple[ElementModP, CiphertextDecryptionSelection]]:
+    shares: dict[GuardianId, DecryptionShare],
+) -> dict[GuardianId, tuple[ElementModP, CiphertextDecryptionSelection]]:
     """
     Get all of the cast shares for a specific selection
     """
-    selections: Dict[GuardianId, Tuple[ElementModP, CiphertextDecryptionSelection]] = {}
+    selections: dict[GuardianId, tuple[ElementModP, CiphertextDecryptionSelection]] = {}
     for share in shares.values():
         for contest in share.contests.values():
             for selection in contest.selections.values():

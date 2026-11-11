@@ -1,5 +1,4 @@
 from io import TextIOWrapper
-from typing import Optional
 from electionguard.ballot import PlaintextBallot
 
 from electionguard.key_ceremony import CeremonyDetails
@@ -26,7 +25,7 @@ class E2eInputRetrievalStep(InputRetrievalStepBase):
         spoil_id: str,
         output_record: str,
         output_keys: str,
-        verification_url: Optional[str],
+        verification_url: str | None,
     ) -> E2eInputs:
         self.print_header("Retrieving Inputs")
         guardians = KeyCeremonyOrchestrator.create_guardians(

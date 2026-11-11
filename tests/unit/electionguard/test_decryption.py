@@ -2,7 +2,6 @@
 # pylint: disable=too-many-instance-attributes
 # pylint: disable=unnecessary-comprehension
 
-from typing import Dict, List
 from tests.base_test_case import BaseTestCase
 
 from electionguard.ballot import SubmittedBallot
@@ -50,7 +49,6 @@ from electionguard_tools.helpers.key_ceremony_orchestrator import (
 from electionguard_tools.helpers.tally_accumulate import accumulate_plaintext_ballots
 from electionguard_tools.helpers.election_builder import ElectionBuilder
 
-
 election_factory = ElectionFactory.ElectionFactory()
 ballot_factory = BallotFactory.BallotFactory()
 
@@ -68,7 +66,7 @@ class TestDecryption(BaseTestCase):
         self.key_ceremony_mediator = KeyCeremonyMediator(
             "key_ceremony_mediator_mediator", self.CEREMONY_DETAILS
         )
-        self.guardians: List[Guardian] = KeyCeremonyOrchestrator.create_guardians(
+        self.guardians: list[Guardian] = KeyCeremonyOrchestrator.create_guardians(
             self.CEREMONY_DETAILS
         )
         KeyCeremonyOrchestrator.perform_full_ceremony(
@@ -176,7 +174,7 @@ class TestDecryption(BaseTestCase):
         self.ciphertext_tally = tally_ballots(
             ballot_store, self.internal_manifest, self.context
         )
-        self.ciphertext_ballots: Dict[BallotId, SubmittedBallot] = get_ballots(
+        self.ciphertext_ballots: dict[BallotId, SubmittedBallot] = get_ballots(
             ballot_store, BallotBoxState.SPOILED
         )
 
@@ -290,10 +288,8 @@ class TestDecryption(BaseTestCase):
         )
 
         print(
-            (
-                f"lagrange: sequence_orders: ({available_guardian_1.sequence_order}, "
-                f"{available_guardian_2.sequence_order}, {missing_guardian.sequence_order})\n"
-            )
+            f"lagrange: sequence_orders: ({available_guardian_1.sequence_order}, "
+            f"{available_guardian_2.sequence_order}, {missing_guardian.sequence_order})\n"
         )
 
         print(lagrange_0)
@@ -471,7 +467,7 @@ class TestDecryption(BaseTestCase):
         tally = self.ciphertext_tally
 
         # Act
-        compensated_shares: Dict[GuardianId, CompensatedDecryptionShare] = {
+        compensated_shares: dict[GuardianId, CompensatedDecryptionShare] = {
             available_guardian.id: compute_compensated_decryption_share(
                 available_guardian.decrypt_backup(
                     missing_guardian_backups[available_guardian.id]
@@ -512,7 +508,7 @@ class TestDecryption(BaseTestCase):
         ballot = list(self.ciphertext_ballots.values())[0]
 
         # Act
-        compensated_ballot_shares: Dict[GuardianId, CompensatedDecryptionShare] = {}
+        compensated_ballot_shares: dict[GuardianId, CompensatedDecryptionShare] = {}
         for available_guardian in available_guardians:
             backup = available_guardian.decrypt_backup(
                 missing_guardian_backups[available_guardian.id]
@@ -559,7 +555,7 @@ class TestDecryption(BaseTestCase):
         ballot = self.ciphertext_ballots[self.fake_spoiled_ballot.object_id]
 
         # Act
-        compensated_shares: Dict[GuardianId, CompensatedDecryptionShare] = {
+        compensated_shares: dict[GuardianId, CompensatedDecryptionShare] = {
             available_guardian.id: get_optional(
                 compute_compensated_decryption_share_for_ballot(
                     available_guardian.decrypt_backup(

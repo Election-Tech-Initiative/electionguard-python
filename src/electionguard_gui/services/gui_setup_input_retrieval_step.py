@@ -1,4 +1,3 @@
-from typing import Optional
 from electionguard import Manifest
 from electionguard.guardian import Guardian
 from electionguard_cli import SetupInputs
@@ -13,7 +12,7 @@ class GuiSetupInputRetrievalStep(SetupInputRetrievalStep):
         guardian_count: int,
         quorum: int,
         guardians: list[Guardian],
-        verification_url: Optional[str],
+        verification_url: str | None,
         manifest_raw: str,
     ) -> SetupInputs:
 

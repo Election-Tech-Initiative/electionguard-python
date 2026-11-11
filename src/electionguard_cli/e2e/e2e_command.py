@@ -109,7 +109,7 @@ def E2eCommand(
     data_store = SubmitVotesStep().submit(
         election_inputs, build_election_results, encrypt_results
     )
-    (ciphertext_tally, spoiled_ballots) = TallyStep().get_from_ballot_store(
+    ciphertext_tally, spoiled_ballots = TallyStep().get_from_ballot_store(
         build_election_results, data_store
     )
     decrypt_results = DecryptStep().decrypt(

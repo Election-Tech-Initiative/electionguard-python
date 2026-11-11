@@ -1,7 +1,7 @@
 # pylint: disable=too-many-public-methods
 
 from dataclasses import dataclass
-from typing import Dict, List, Optional, TypeVar
+from typing import TypeVar
 
 from electionguard.utils import get_optional
 
@@ -58,13 +58,13 @@ class GuardianRecord:
     Guardian's election public key for encrypting election objects.
     """
 
-    election_commitments: List[PublicCommitment]
+    election_commitments: list[PublicCommitment]
     """
     Commitment for each coeffficient of the guardians secret polynomial.
     First commitment is and should be identical to election_public_key.
     """
 
-    election_proofs: List[SchnorrProof]
+    election_proofs: list[SchnorrProof]
     """
     Proofs for each commitment for each coeffficient of the guardians secret polynomial.
     First proof is the proof for the election_public_key.
@@ -98,16 +98,16 @@ class PrivateGuardianRecord:
     election_keys: ElectionKeyPair
     """Private election Key pair of this guardian"""
 
-    backups_to_share: Dict[GuardianId, ElectionPartialKeyBackup]
+    backups_to_share: dict[GuardianId, ElectionPartialKeyBackup]
     """This guardian's partial key backups that will be shared to other guardians"""
 
-    guardian_election_public_keys: Dict[GuardianId, ElectionPublicKey]
+    guardian_election_public_keys: dict[GuardianId, ElectionPublicKey]
     """Received election public keys that are shared with this guardian"""
 
-    guardian_election_partial_key_backups: Dict[GuardianId, ElectionPartialKeyBackup]
+    guardian_election_partial_key_backups: dict[GuardianId, ElectionPartialKeyBackup]
     """Received partial key backups that are shared with this guardian"""
 
-    guardian_election_partial_key_verifications: Dict[
+    guardian_election_partial_key_verifications: dict[
         GuardianId, ElectionPartialKeyVerification
     ]
     """Verifications of other guardian's backups"""
@@ -124,23 +124,23 @@ class Guardian:
     _election_keys: ElectionKeyPair
     ceremony_details: CeremonyDetails
 
-    _backups_to_share: Dict[GuardianId, ElectionPartialKeyBackup]
+    _backups_to_share: dict[GuardianId, ElectionPartialKeyBackup]
     """
     The collection of this guardian's partial key backups that will be shared to other guardians
     """
 
     # From Other Guardians
-    _guardian_election_public_keys: Dict[GuardianId, ElectionPublicKey]
+    _guardian_election_public_keys: dict[GuardianId, ElectionPublicKey]
     """
     The collection of other guardians' election public keys that are shared with this guardian
     """
 
-    _guardian_election_partial_key_backups: Dict[GuardianId, ElectionPartialKeyBackup]
+    _guardian_election_partial_key_backups: dict[GuardianId, ElectionPartialKeyBackup]
     """
     The collection of other guardians' partial key backups that are shared with this guardian
     """
 
-    _guardian_election_partial_key_verifications: Dict[
+    _guardian_election_partial_key_verifications: dict[
         GuardianId, ElectionPartialKeyVerification
     ]
     """
@@ -151,14 +151,12 @@ class Guardian:
         self,
         key_pair: ElectionKeyPair,
         ceremony_details: CeremonyDetails,
-        election_public_keys: Optional[Dict[GuardianId, ElectionPublicKey]] = None,
-        partial_key_backups: Optional[
-            Dict[GuardianId, ElectionPartialKeyBackup]
-        ] = None,
-        backups_to_share: Optional[Dict[GuardianId, ElectionPartialKeyBackup]] = None,
-        guardian_election_partial_key_verifications: Optional[
-            Dict[GuardianId, ElectionPartialKeyVerification]
-        ] = None,
+        election_public_keys: dict[GuardianId, ElectionPublicKey] | None = None,
+        partial_key_backups: dict[GuardianId, ElectionPartialKeyBackup] | None = None,
+        backups_to_share: dict[GuardianId, ElectionPartialKeyBackup] | None = None,
+        guardian_election_partial_key_verifications: (
+            dict[GuardianId, ElectionPartialKeyVerification] | None
+        ) = None,
     ) -> None:
         """
         Initialize a guardian with the specified arguments.
@@ -220,7 +218,7 @@ class Guardian:
         sequence_order: int,
         number_of_guardians: int,
         quorum: int,
-        nonce: Optional[ElementModQ] = None,
+        nonce: ElementModQ | None = None,
     ) -> "Guardian":
         """Creates a guardian with an `ElementModQ` value that will be used to generate
         the `ElectionKeyPair`. If no nonce provided, this will be generated automatically.
@@ -271,7 +269,7 @@ class Guardian:
         """
         self.ceremony_details = CeremonyDetails(number_of_guardians, quorum)
 
-    def decrypt_backup(self, backup: ElectionPartialKeyBackup) -> Optional[ElementModQ]:
+    def decrypt_backup(self, backup: ElectionPartialKeyBackup) -> ElementModQ | None:
         """
         Decrypts a compensated partial decryption of an elgamal encryption
         on behalf of a missing guardian.
@@ -330,7 +328,7 @@ class Guardian:
     # Election Partial Key Backup
     def share_election_partial_key_backup(
         self, designated_id: GuardianId
-    ) -> Optional[ElectionPartialKeyBackup]:
+    ) -> ElectionPartialKeyBackup | None:
         """
         Share election partial key backup with another guardian.
 
@@ -339,7 +337,7 @@ class Guardian:
         """
         return self._backups_to_share.get(designated_id)
 
-    def share_election_partial_key_backups(self) -> List[ElectionPartialKeyBackup]:
+    def share_election_partial_key_backups(self) -> list[ElectionPartialKeyBackup]:
         """
         Share all election partial key backups.
 
@@ -372,7 +370,7 @@ class Guardian:
     def verify_election_partial_key_backup(
         self,
         guardian_id: GuardianId,
-    ) -> Optional[ElectionPartialKeyVerification]:
+    ) -> ElectionPartialKeyVerification | None:
         """
         Verify election partial key backup value is in polynomial.
 
@@ -392,7 +390,7 @@ class Guardian:
 
     def publish_election_backup_challenge(
         self, guardian_id: GuardianId
-    ) -> Optional[ElectionPartialKeyChallenge]:
+    ) -> ElectionPartialKeyChallenge | None:
         """
         Publish election backup challenge of election partial key verification.
 
@@ -444,7 +442,7 @@ class Guardian:
         return True
 
     # Joint Key
-    def publish_joint_key(self) -> Optional[ElementModP]:
+    def publish_joint_key(self) -> ElementModP | None:
         """
         Create the joint election key from the public keys of all guardians.
 
@@ -455,21 +453,20 @@ class Guardian:
         if not self.all_election_partial_key_backups_verified():
             return None
 
-        public_keys = map(
-            lambda public_key: public_key.key,
-            self._guardian_election_public_keys.values(),
+        return elgamal_combine_public_keys(
+            public_key.key
+            for public_key in self._guardian_election_public_keys.values()
         )
-        return elgamal_combine_public_keys(public_keys)
 
     def share_other_guardian_key(
         self, guardian_id: GuardianId
-    ) -> Optional[ElectionPublicKey]:
+    ) -> ElectionPublicKey | None:
         """Share other guardians keys shared during key ceremony"""
         return self._guardian_election_public_keys.get(guardian_id)
 
     def compute_tally_share(
         self, tally: CiphertextTally, context: CiphertextElectionContext
-    ) -> Optional[DecryptionShare]:
+    ) -> DecryptionShare | None:
         """
         Compute the decryption share of tally.
 
@@ -484,8 +481,8 @@ class Guardian:
         )
 
     def compute_ballot_shares(
-        self, ballots: List[SubmittedBallot], context: CiphertextElectionContext
-    ) -> Dict[BallotId, Optional[DecryptionShare]]:
+        self, ballots: list[SubmittedBallot], context: CiphertextElectionContext
+    ) -> dict[BallotId, DecryptionShare | None]:
         """
         Compute the decryption shares of ballots.
 
@@ -508,7 +505,7 @@ class Guardian:
         missing_guardian_id: GuardianId,
         tally: CiphertextTally,
         context: CiphertextElectionContext,
-    ) -> Optional[CompensatedDecryptionShare]:
+    ) -> CompensatedDecryptionShare | None:
         """
         Compute the compensated decryption share of a tally for a missing guardian.
 
@@ -538,9 +535,9 @@ class Guardian:
     def compute_compensated_ballot_shares(
         self,
         missing_guardian_id: GuardianId,
-        ballots: List[SubmittedBallot],
+        ballots: list[SubmittedBallot],
         context: CiphertextElectionContext,
-    ) -> Dict[BallotId, Optional[CompensatedDecryptionShare]]:
+    ) -> dict[BallotId, CompensatedDecryptionShare | None]:
         """
         Compute the compensated decryption share of each ballots for a missing guardian.
 
@@ -549,7 +546,7 @@ class Guardian:
         :param context: Election context
         :return: Compensated decryption shares of ballots or None if failure
         """
-        shares: Dict[BallotId, Optional[CompensatedDecryptionShare]] = {
+        shares: dict[BallotId, CompensatedDecryptionShare | None] = {
             ballot.object_id: None for ballot in ballots
         }
         # Ensure missing guardian information available
@@ -579,8 +576,8 @@ _SHARE = TypeVar("_SHARE")
 
 
 def get_valid_ballot_shares(
-    ballot_shares: Dict[BallotId, Optional[_SHARE]],
-) -> Dict[BallotId, _SHARE]:
+    ballot_shares: dict[BallotId, _SHARE | None],
+) -> dict[BallotId, _SHARE]:
     """Get valid ballot shares."""
     filtered_shares = {}
     for ballot_id, ballot_share in ballot_shares.items():

@@ -1,15 +1,8 @@
 # pylint: disable=isinstance-second-argument-not-valid-type
 from abc import abstractmethod
-from collections.abc import Sequence
+from collections.abc import Iterable, Sequence
 from hashlib import sha256
-from typing import (
-    Iterable,
-    List,
-    Union,
-    Protocol,
-    runtime_checkable,
-    Sequence as TypedSequence,
-)
+from typing import Protocol, runtime_checkable
 
 from .constants import get_small_prime
 from .utils import BYTE_ENCODING, BYTE_ORDER
@@ -47,15 +40,12 @@ class CryptoHashCheckable(Protocol):
 
 
 # All the "atomic" types that we know how to hash.
-CryptoHashableT = Union[CryptoHashable, ElementModPOrQ, str, int, None]
+CryptoHashableT = CryptoHashable | ElementModPOrQ | str | int | None
 
 # "Compound" types that we know how to hash. Note that we're using Sequence, rather than List,
 # because Sequences are read-only, and thus safely covariant. All this really means is that
 # we promise never to mutate any list that you pass to hash_elems.
-CryptoHashableAll = Union[
-    TypedSequence[CryptoHashableT],
-    CryptoHashableT,
-]
+CryptoHashableAll = Sequence[CryptoHashableT] | CryptoHashableT
 
 
 def hash_elems(*a: CryptoHashableAll) -> ElementModQ:
@@ -90,7 +80,7 @@ def hash_elems(*a: CryptoHashableAll) -> ElementModQ:
             # feed in for both of these cases. "None" would be a Python-specific thing,
             # so we'll go with the more JSON-ish "null".
             hash_me = "null"
-        elif isinstance(x, (Sequence, List, Iterable)):
+        elif isinstance(x, (Sequence, list, Iterable)):
             # The simplest way to deal with lists, tuples, and such are to crunch them recursively.
             hash_me = hash_elems(*x).to_hex()
         else:

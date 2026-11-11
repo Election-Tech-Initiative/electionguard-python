@@ -1,4 +1,5 @@
-from typing import Any, TypeVar, Callable, List, Tuple, Optional
+from typing import Any, TypeVar
+from collections.abc import Callable
 import os
 from random import Random, randint
 import uuid
@@ -24,7 +25,6 @@ from electionguard.manifest import (
     InternalManifest,
 )
 from electionguard.serialize import from_file, from_list_in_file
-
 
 _T = TypeVar("_T")
 _DrawType = Callable[[SearchStrategy[_T]], _T]
@@ -97,7 +97,7 @@ class BallotFactory:
     def get_fake_ballot(
         self,
         internal_manifest: InternalManifest,
-        ballot_id: Optional[str] = None,
+        ballot_id: str | None = None,
         allow_null_votes: bool = False,
     ) -> PlaintextBallot:
         """
@@ -107,7 +107,7 @@ class BallotFactory:
         if ballot_id is None:
             ballot_id = "some-unique-ballot-id-123"
 
-        contests: List[PlaintextBallotContest] = []
+        contests: list[PlaintextBallotContest] = []
         for contest in internal_manifest.get_contests_for(
             internal_manifest.ballot_styles[0].object_id
         ):
@@ -127,11 +127,11 @@ class BallotFactory:
         self,
         internal_manifest: InternalManifest,
         number_of_ballots: int,
-        ballot_style_id: Optional[str] = None,
+        ballot_style_id: str | None = None,
         allow_null_votes: bool = False,
         allow_under_votes: bool = True,
-    ) -> List[PlaintextBallot]:
-        ballots: List[PlaintextBallot] = []
+    ) -> list[PlaintextBallot]:
+        ballots: list[PlaintextBallot] = []
         for _i in range(number_of_ballots):
             if ballot_style_id is not None:
                 ballot_style = internal_manifest.get_ballot_style(ballot_style_id)
@@ -141,7 +141,7 @@ class BallotFactory:
 
             ballot_id = f"ballot-{uuid.uuid1()}"
 
-            contests: List[PlaintextBallotContest] = []
+            contests: list[PlaintextBallotContest] = []
             for contest in internal_manifest.get_contests_for(ballot_style.object_id):
                 contests.append(
                     self.get_random_contest_from(
@@ -159,7 +159,7 @@ class BallotFactory:
     def get_simple_ballot_from_file(self) -> PlaintextBallot:
         return self._get_ballot_from_file(self.simple_ballot_filename)
 
-    def get_simple_ballots_from_file(self) -> List[PlaintextBallot]:
+    def get_simple_ballots_from_file(self) -> list[PlaintextBallot]:
         return self._get_ballots_from_file(self.simple_ballots_filename)
 
     @staticmethod
@@ -167,7 +167,7 @@ class BallotFactory:
         return from_file(PlaintextBallot, os.path.join(_data, filename))
 
     @staticmethod
-    def _get_ballots_from_file(filename: str) -> List[PlaintextBallot]:
+    def _get_ballots_from_file(filename: str) -> list[PlaintextBallot]:
         return from_list_in_file(PlaintextBallot, os.path.join(_data, filename))
 
 
@@ -179,12 +179,9 @@ def get_selection_well_formed(
     bools: Any = booleans(),
     txt: Any = text(),
     vote: Any = integers(0, 1),
-) -> Tuple[str, PlaintextBallotSelection]:
+) -> tuple[str, PlaintextBallotSelection]:
     use_none = draw(bools)
-    if use_none:
-        extended_data = None
-    else:
-        extended_data = draw(txt)
+    extended_data = None if use_none else draw(txt)
     object_id = f"selection-{draw(ids)}"
     return (
         object_id,
@@ -200,12 +197,9 @@ def get_selection_poorly_formed(
     bools: Any = booleans(),
     txt: Any = text(),
     vote: Any = integers(0, 1),
-) -> Tuple[str, PlaintextBallotSelection]:
+) -> tuple[str, PlaintextBallotSelection]:
     use_none = draw(bools)
-    if use_none:
-        extended_data = None
-    else:
-        extended_data = draw(txt)
+    extended_data = None if use_none else draw(txt)
     object_id = f"selection-{draw(ids)}"
     return (
         object_id,

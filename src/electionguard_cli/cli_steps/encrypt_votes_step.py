@@ -1,4 +1,3 @@
-from typing import List, Tuple
 import click
 
 from electionguard.encrypt import EncryptionDevice, EncryptionMediator
@@ -22,13 +21,13 @@ class EncryptVotesStep(CliStepBase):
 
     def encrypt(
         self,
-        ballots: List[PlaintextBallot],
+        ballots: list[PlaintextBallot],
         build_election_results: BuildElectionResults,
     ) -> EncryptResults:
         self.print_header("Encrypting Ballots")
         internal_manifest = build_election_results.internal_manifest
         context = build_election_results.context
-        (ciphertext_ballots, device) = self._encrypt_votes(
+        ciphertext_ballots, device = self._encrypt_votes(
             ballots, internal_manifest, context
         )
         return EncryptResults(device, ciphertext_ballots)
@@ -37,7 +36,7 @@ class EncryptVotesStep(CliStepBase):
         self,
         internal_manifest: InternalManifest,
         context: CiphertextElectionContext,
-    ) -> Tuple[EncryptionMediator, EncryptionDevice]:
+    ) -> tuple[EncryptionMediator, EncryptionDevice]:
         device = ElectionFactory.get_encryption_device()
         self.print_value("Device location", device.location)
         encrypter = EncryptionMediator(internal_manifest, context, device)
@@ -45,12 +44,12 @@ class EncryptVotesStep(CliStepBase):
 
     def _encrypt_votes(
         self,
-        plaintext_ballots: List[PlaintextBallot],
+        plaintext_ballots: list[PlaintextBallot],
         internal_manifest: InternalManifest,
         context: CiphertextElectionContext,
-    ) -> Tuple[List[CiphertextBallot], EncryptionDevice]:
+    ) -> tuple[list[CiphertextBallot], EncryptionDevice]:
         self.print_value("Ballots to encrypt", len(plaintext_ballots))
-        (encrypter, device) = self._get_encrypter(internal_manifest, context)
+        encrypter, device = self._get_encrypter(internal_manifest, context)
         encrypted_ballots = EncryptVotesStep._encrypt_ballots(
             plaintext_ballots, encrypter
         )
@@ -58,9 +57,9 @@ class EncryptVotesStep(CliStepBase):
 
     @staticmethod
     def _encrypt_ballots(
-        plaintext_ballots: List[PlaintextBallot], encrypter: EncryptionMediator
-    ) -> List[CiphertextBallot]:
-        ciphertext_ballots: List[CiphertextBallot] = []
+        plaintext_ballots: list[PlaintextBallot], encrypter: EncryptionMediator
+    ) -> list[CiphertextBallot]:
+        ciphertext_ballots: list[CiphertextBallot] = []
         for plaintext_ballot in plaintext_ballots:
             click.echo(f"Encrypting ballot: {plaintext_ballot.object_id}")
             encrypted_ballot = encrypter.encrypt(plaintext_ballot)

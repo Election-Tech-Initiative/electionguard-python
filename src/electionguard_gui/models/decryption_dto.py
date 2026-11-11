@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any
 from datetime import datetime
 from electionguard.decryption_share import DecryptionShare
 from electionguard.election_polynomial import LagrangeCoefficientsRecord
@@ -30,7 +30,7 @@ class GuardianDecryptionShare:
 
     guardian_id: str
     tally_share: DecryptionShare
-    ballot_shares: Dict[BallotId, Optional[DecryptionShare]]
+    ballot_shares: dict[BallotId, DecryptionShare | None]
     guardian_key: ElectionPublicKey
 
 
@@ -40,24 +40,24 @@ class DecryptionDto:
 
     decryption_id: str
     election_id: str
-    election_name: Optional[str]
+    election_name: str | None
     ballot_upload_count: int
     ballot_count: int
     guardians: int
     quorum: int
-    decryption_name: Optional[str]
-    key_ceremony_id: Optional[str]
+    decryption_name: str | None
+    key_ceremony_id: str | None
     guardians_joined: list[str]
-    can_join: Optional[bool]
+    can_join: bool | None
     decryption_shares: list[Any]
-    plaintext_tally: Optional[str]
+    plaintext_tally: str | None
     plaintext_spoiled_ballots: dict[str, str]
-    lagrange_coefficients: Optional[str]
-    ciphertext_tally: Optional[str]
-    completed_at_utc: Optional[datetime]
+    lagrange_coefficients: str | None
+    ciphertext_tally: str | None
+    completed_at_utc: datetime | None
     completed_at_str: str
-    created_by: Optional[str]
-    created_at_utc: Optional[datetime]
+    created_by: str | None
+    created_at_utc: datetime | None
     created_at_str: str
 
     def __init__(self, decryption: dict[str, Any]):

@@ -1,4 +1,3 @@
-from typing import List, Optional
 from electionguard.ballot import PlaintextBallot
 from electionguard.guardian import Guardian
 from electionguard.manifest import Manifest
@@ -15,13 +14,13 @@ class E2eInputs(CliElectionInputsBase):
         self,
         guardian_count: int,
         quorum: int,
-        guardians: List[Guardian],
+        guardians: list[Guardian],
         manifest: Manifest,
-        ballots: List[PlaintextBallot],
+        ballots: list[PlaintextBallot],
         spoil_id: str,
         output_record: str,
         output_keys: str,
-        verification_url: Optional[str],
+        verification_url: str | None,
     ):
         self.guardian_count = guardian_count
         self.quorum = quorum
@@ -33,8 +32,8 @@ class E2eInputs(CliElectionInputsBase):
         self.output_keys = output_keys
         self.verification_url = verification_url
 
-    ballots: List[PlaintextBallot]
+    ballots: list[PlaintextBallot]
     spoil_id: str
     output_record: str
     output_keys: str
-    verification_url: Optional[str]
+    verification_url: str | None

@@ -1,5 +1,5 @@
-from typing import Any, List
-from datetime import datetime, timezone
+from typing import Any
+from datetime import datetime, UTC
 from pymongo.database import Database
 from bson import ObjectId
 from electionguard.key_ceremony import (
@@ -55,7 +55,7 @@ class KeyCeremonyService(ServiceBase):
             "verifications": [],
             "joint_key": None,
             "created_by": self._auth_service.get_user_id(),
-            "created_at": datetime.now(timezone.utc),
+            "created_at": datetime.now(UTC),
             "completed_at": None,
         }
         inserted_id = db.key_ceremonies.insert_one(key_ceremony).inserted_id
@@ -99,7 +99,7 @@ class KeyCeremonyService(ServiceBase):
         self,
         db: Database,
         key_ceremony_id: str,
-        backups: List[ElectionPartialKeyBackup],
+        backups: list[ElectionPartialKeyBackup],
     ) -> None:
         backups_dict = [backup_to_dict(backup) for backup in backups]
         db.key_ceremonies.update_one(
@@ -111,7 +111,7 @@ class KeyCeremonyService(ServiceBase):
         self,
         db: Database,
         key_ceremony_id: str,
-        shared_backups: List[Any],
+        shared_backups: list[Any],
     ) -> None:
         db.key_ceremonies.update_one(
             {"_id": ObjectId(key_ceremony_id)},
@@ -122,7 +122,7 @@ class KeyCeremonyService(ServiceBase):
         self,
         db: Database,
         key_ceremony_id: str,
-        verifications: List[ElectionPartialKeyVerification],
+        verifications: list[ElectionPartialKeyVerification],
     ) -> None:
         verifications_dict = [
             verification_to_dict(verification) for verification in verifications
@@ -151,14 +151,14 @@ class KeyCeremonyService(ServiceBase):
     ) -> None:
         db.key_ceremonies.update_one(
             {"_id": ObjectId(key_ceremony_id)},
-            {"$set": {"completed_at": datetime.now(timezone.utc)}},
+            {"$set": {"completed_at": datetime.now(UTC)}},
         )
 
-    def get_completed(self, db: Database) -> List[KeyCeremonyDto]:
+    def get_completed(self, db: Database) -> list[KeyCeremonyDto]:
         key_ceremonies = db.key_ceremonies.find({"completed_at": {"$ne": None}})
         return [KeyCeremonyDto(key_ceremony) for key_ceremony in key_ceremonies]
 
-    def get_active(self, db: Database) -> List[KeyCeremonyDto]:
+    def get_active(self, db: Database) -> list[KeyCeremonyDto]:
         key_ceremonies = db.key_ceremonies.find({"completed_at": {"$eq": None}})
         return [KeyCeremonyDto(key_ceremony) for key_ceremony in key_ceremonies]
 

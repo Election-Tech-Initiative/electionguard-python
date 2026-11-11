@@ -1,5 +1,5 @@
 from typing import Any
-import eel  # type: ignore[import-untyped]
+import electionguard_eel as eel
 from electionguard_gui.eel_utils import eel_success
 
 from electionguard_gui.components.component_base import ComponentBase
@@ -57,7 +57,7 @@ class GuardianHomeComponent(ComponentBase):
         except KeyboardInterrupt:
             self._log.debug("Keyboard interrupt, exiting watch database")
             self._db_watcher_service.stop_watching()
-        except Exception as e:  # pylint: disable=broad-except
+        except Exception as e:  # pylint: disable=broad-exception-caught
             self.handle_error(e)
             self._db_watcher_service.stop_watching()
             # no need to raise exception or return anything, we're in fire-and-forget mode here

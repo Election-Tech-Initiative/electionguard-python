@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from timeit import default_timer as timer
-from typing import Dict, List, Tuple
 
 from statistics import mean, stdev
 
@@ -26,7 +25,7 @@ class BenchInput:
     s: ElementModQ
 
 
-def chaum_pedersen_bench(bi: BenchInput) -> Tuple[float, float]:
+def chaum_pedersen_bench(bi: BenchInput) -> tuple[float, float]:
     """
     Given an input (instance of the BenchInput tuple), constructs and validates
     a disjunctive Chaum-Pedersen proof, returning the time (in seconds) to do each operation.
@@ -52,11 +51,11 @@ def identity(x: int) -> int:
 if __name__ == "__main__":
     problem_sizes = (100, 500, 1000, 5000)
     rands = Nonces(ElementModQ(31337))
-    speedup: Dict[int, float] = {}
+    speedup: dict[int, float] = {}
 
     # warm up the pool to help get consistent measurements
     with Scheduler() as scheduler:
-        results: List[int] = scheduler.schedule(
+        results: list[int] = scheduler.schedule(
             identity, [list([x]) for x in range(1, 30000)]
         )
         assert results == list(range(1, 30000))
@@ -92,7 +91,7 @@ if __name__ == "__main__":
 
             # Run in parallel
             start_all_parallel = timer()
-            timing_data_parallel: List[Tuple[float, float]] = scheduler.schedule(
+            timing_data_parallel: list[tuple[float, float]] = scheduler.schedule(
                 chaum_pedersen_bench, [list([input]) for input in inputs]
             )
             end_all_parallel = timer()

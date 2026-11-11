@@ -1,4 +1,3 @@
-from typing import Optional
 from electionguard_tools.factories import BallotFactory
 
 from .cli_step_base import CliStepBase
@@ -12,7 +11,7 @@ class MarkBallotsStep(CliStepBase):
         self,
         build_election_results: BuildElectionResults,
         num_ballots: int,
-        ballot_style_id: Optional[str],
+        ballot_style_id: str | None,
     ) -> MarkResults:
         self.print_header("Marking Ballots")
         internal_manifest = build_election_results.internal_manifest

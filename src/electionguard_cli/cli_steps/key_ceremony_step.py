@@ -1,4 +1,3 @@
-from typing import List
 from electionguard.guardian import Guardian
 from electionguard.key_ceremony import (
     ElectionJointKey,
@@ -15,7 +14,7 @@ from .cli_step_base import CliStepBase
 class KeyCeremonyStep(CliStepBase):
     """Responsible for running a key ceremony and producing an elgamal public key given a list of guardians."""
 
-    def run_key_ceremony(self, guardians: List[Guardian]) -> ElectionJointKey:
+    def run_key_ceremony(self, guardians: list[Guardian]) -> ElectionJointKey:
         self.print_header("Performing key ceremony")
 
         mediator: KeyCeremonyMediator = KeyCeremonyMediator(

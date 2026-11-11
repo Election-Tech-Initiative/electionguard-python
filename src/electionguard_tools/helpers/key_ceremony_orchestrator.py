@@ -1,5 +1,3 @@
-from typing import List
-
 from electionguard.guardian import Guardian
 from electionguard.key_ceremony import CeremonyDetails, ElectionPartialKeyVerification
 from electionguard.key_ceremony_mediator import GuardianPair, KeyCeremonyMediator
@@ -10,7 +8,7 @@ class KeyCeremonyOrchestrator:
     """Helper to assist in the key ceremony particularly for testing"""
 
     @staticmethod
-    def create_guardians(ceremony_details: CeremonyDetails) -> List[Guardian]:
+    def create_guardians(ceremony_details: CeremonyDetails) -> list[Guardian]:
         return [
             Guardian.from_nonce(
                 str(i + 1),
@@ -23,7 +21,7 @@ class KeyCeremonyOrchestrator:
 
     @staticmethod
     def perform_full_ceremony(
-        guardians: List[Guardian], mediator: KeyCeremonyMediator
+        guardians: list[Guardian], mediator: KeyCeremonyMediator
     ) -> None:
         """Perform full key ceremony so joint election key is ready for publish"""
 
@@ -33,7 +31,7 @@ class KeyCeremonyOrchestrator:
 
     @staticmethod
     def perform_round_1(
-        guardians: List[Guardian], mediator: KeyCeremonyMediator
+        guardians: list[Guardian], mediator: KeyCeremonyMediator
     ) -> None:
         """Perform Round 1 including announcing guardians and sharing public keys"""
 
@@ -47,7 +45,7 @@ class KeyCeremonyOrchestrator:
 
     @staticmethod
     def perform_round_2(
-        guardians: List[Guardian], mediator: KeyCeremonyMediator
+        guardians: list[Guardian], mediator: KeyCeremonyMediator
     ) -> None:
         """Perform Round 2 including generating backups and sharing backups"""
 
@@ -62,7 +60,7 @@ class KeyCeremonyOrchestrator:
 
     @staticmethod
     def perform_round_3(
-        guardians: List[Guardian], mediator: KeyCeremonyMediator
+        guardians: list[Guardian], mediator: KeyCeremonyMediator
     ) -> None:
         """Perform Round 3 including verifying backups"""
 
@@ -81,7 +79,7 @@ class KeyCeremonyOrchestrator:
 
     @staticmethod
     def fail_round_3(
-        guardians: List[Guardian], mediator: KeyCeremonyMediator
+        guardians: list[Guardian], mediator: KeyCeremonyMediator
     ) -> GuardianPair:
         """Perform Round 3 including verifying backups but fail a single backup"""
 

@@ -1,18 +1,19 @@
-from typing import Any
+from typing import ClassVar, Self
 
 
 class Singleton:
     """A Singleton Class"""
 
-    __instance = None
+    _instances: ClassVar[dict[type, "Singleton"]] = {}
 
-    @staticmethod
-    def get_instance() -> Any:
+    @classmethod
+    def get_instance(cls) -> Self:
         """Get a static instance of the derived class."""
-        if Singleton.__instance is None:
-            Singleton()
-        return Singleton.__instance
+        if cls not in Singleton._instances:
+            cls()
+        instance = Singleton._instances[cls]
+        assert isinstance(instance, cls)
+        return instance
 
     def __init__(self) -> None:
-        if Singleton.__instance is None:
-            Singleton.__instance = self  # pylint: disable=unused-private-member
+        Singleton._instances.setdefault(type(self), self)

@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 from random import randint
 from shutil import rmtree
-from typing import List
 
 from electionguard.ballot import (
     BallotBoxState,
@@ -32,7 +31,6 @@ from electionguard_tools.helpers.export import (
     ELECTION_RECORD_DIR,
     PRIVATE_DATA_DIR,
 )
-
 
 DEFAULT_NUMBER_OF_BALLOTS = 5
 DEFAULT_SPOIL_RATE = 50
@@ -93,7 +91,7 @@ class ElectionSampleDataGenerator:
         )
 
         # Encrypt some ballots
-        ciphertext_ballots: List[CiphertextBallot] = []
+        ciphertext_ballots: list[CiphertextBallot] = []
         for plaintext_ballot in plaintext_ballots:
             ciphertext_ballots.append(
                 get_optional(self.encrypter.encrypt(plaintext_ballot))
@@ -105,7 +103,7 @@ class ElectionSampleDataGenerator:
         )
 
         # Randomly cast/spoil the ballots
-        submitted_ballots: List[SubmittedBallot] = []
+        submitted_ballots: list[SubmittedBallot] = []
         for ballot in ciphertext_ballots:
             if randint(0, 100) < spoil_rate:
                 submitted_ballots.append(get_optional(ballot_box.spoil(ballot)))

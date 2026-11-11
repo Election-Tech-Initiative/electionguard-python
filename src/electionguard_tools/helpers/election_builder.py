@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Dict, Optional, Tuple
 
 from electionguard.elgamal import ElGamalPublicKey
 
@@ -34,11 +33,11 @@ class ElectionBuilder:
 
     internal_manifest: InternalManifest = field(init=False)
 
-    election_key: Optional[ElGamalPublicKey] = field(default=None)
+    election_key: ElGamalPublicKey | None = field(default=None)
 
-    commitment_hash: Optional[ElementModQ] = field(default=None)
+    commitment_hash: ElementModQ | None = field(default=None)
 
-    extended_data: Optional[Dict[str, str]] = field(default=None)
+    extended_data: dict[str, str] | None = field(default=None)
 
     def __post_init__(self) -> None:
         self.internal_manifest = InternalManifest(self.manifest)
@@ -76,7 +75,7 @@ class ElectionBuilder:
 
     def build(
         self,
-    ) -> Optional[Tuple[InternalManifest, CiphertextElectionContext]]:
+    ) -> tuple[InternalManifest, CiphertextElectionContext] | None:
         """
         Build election
         :return: election manifest and context or none

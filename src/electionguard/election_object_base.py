@@ -1,7 +1,8 @@
 """Base objects to derive other election objects."""
 
 from dataclasses import dataclass
-from typing import List, Sequence, TypeVar
+from typing import TypeVar
+from collections.abc import Sequence
 
 
 @dataclass
@@ -27,7 +28,7 @@ class OrderedObjectBase(ElectionObjectBase):
 _Orderable_T = TypeVar("_Orderable_T", bound="OrderedObjectBase")
 
 
-def sequence_order_sort(unsorted: List[_Orderable_T]) -> List[_Orderable_T]:
+def sequence_order_sort(unsorted: list[_Orderable_T]) -> list[_Orderable_T]:
     """Sort by sequence order."""
     return sorted(unsorted, key=lambda item: item.sequence_order)
 

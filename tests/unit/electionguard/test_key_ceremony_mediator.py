@@ -1,4 +1,3 @@
-from typing import List
 from tests.base_test_case import BaseTestCase
 
 from electionguard.guardian import Guardian
@@ -23,7 +22,7 @@ class TestKeyCeremonyMediator(BaseTestCase):
 
     GUARDIAN_1: Guardian
     GUARDIAN_2: Guardian
-    GUARDIANS: List[Guardian] = []
+    GUARDIANS: list[Guardian] = []
 
     def setUp(self) -> None:
         super().setUp()

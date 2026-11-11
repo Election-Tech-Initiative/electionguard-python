@@ -1,5 +1,6 @@
 from dataclasses import dataclass
-from typing import Any, Iterable, Optional, Union
+from typing import Any
+from collections.abc import Iterable
 
 
 from .big_integer import bytes_to_hex
@@ -18,7 +19,7 @@ from .group import (
 )
 from .hash import hash_elems
 from .hmac import get_hmac
-from .logs import log_info, log_error
+from .logs import log_debug, log_error
 from .utils import get_optional
 
 ElGamalSecretKey = ElementModQ
@@ -61,7 +62,9 @@ class ElGamalCiphertext:
         :param product: The known product (blinding factor).
         :return: An exponentially encoded plaintext message.
         """
-        return DiscreteLog().discrete_log(mult_p(self.data, mult_inv_p(product)))
+        return DiscreteLog.get_instance().discrete_log(
+            mult_p(self.data, mult_inv_p(product))
+        )
 
     def decrypt(self, secret_key: ElGamalSecretKey) -> int:
         """
@@ -121,7 +124,7 @@ class HashedElGamalCiphertext:
 
     def decrypt(
         self, secret_key: ElGamalSecretKey, encryption_seed: ElementModQ
-    ) -> Union[bytes, None]:
+    ) -> bytes | None:
         """
         Decrypt an ElGamal ciphertext using a known ElGamal secret key.
 
@@ -133,7 +136,7 @@ class HashedElGamalCiphertext:
         session_key = hash_elems(self.pad, pow_p(self.pad, secret_key))
         data_bytes = to_padded_bytes(self.data)
 
-        (ciphertext_chunks, bit_length) = _get_chunks(data_bytes)
+        ciphertext_chunks, bit_length = _get_chunks(data_bytes)
         mac_key = get_hmac(
             session_key.to_hex_bytes(),
             encryption_seed.to_hex_bytes(),
@@ -158,7 +161,7 @@ class HashedElGamalCiphertext:
         return data
 
 
-def elgamal_keypair_from_secret(a: ElementModQ) -> Optional[ElGamalKeyPair]:
+def elgamal_keypair_from_secret(a: ElementModQ) -> ElGamalKeyPair | None:
     """
     Given an ElGamal secret key (typically, a random number in [2,Q)), returns
     an ElGamal keypair, consisting of the given secret key a and public key g^a.
@@ -192,7 +195,7 @@ def elgamal_combine_public_keys(keys: Iterable[ElGamalPublicKey]) -> ElGamalPubl
 
 def elgamal_encrypt(
     message: int, nonce: ElementModQ, public_key: ElGamalPublicKey
-) -> Optional[ElGamalCiphertext]:
+) -> ElGamalCiphertext | None:
     """
     Encrypts a set length message with a given random nonce and an ElGamal public key.
 
@@ -210,9 +213,9 @@ def elgamal_encrypt(
     pubkey_pow_n = pow_p(public_key, nonce)
     data = mult_p(gpowp_m, pubkey_pow_n)
 
-    log_info(f": publicKey: {public_key.to_hex()}")
-    log_info(f": pad: {pad.to_hex()}")
-    log_info(f": data: {data.to_hex()}")
+    log_debug(f": publicKey: {public_key.to_hex()}")
+    log_debug(f": pad: {pad.to_hex()}")
+    log_debug(f": data: {data.to_hex()}")
 
     return ElGamalCiphertext(pad, data)
 
@@ -237,7 +240,7 @@ def hashed_elgamal_encrypt(
 
     session_key = hash_elems(pad, pubkey_pow_n)
 
-    (message_chunks, bit_length) = _get_chunks(message)
+    message_chunks, bit_length = _get_chunks(message)
     data = b""
     for i, block in enumerate(message_chunks):
         data_key = get_hmac(
@@ -254,11 +257,11 @@ def hashed_elgamal_encrypt(
     to_mac = pad.to_hex_bytes() + data
     mac = get_hmac(mac_key, to_mac)
 
-    log_info(f": publicKey: {public_key.to_hex()}")
-    log_info(f": pad: {pad.to_hex()}")
-    log_info(f": data: {data!r}")
-    log_info(f": mac: {bytes_to_hex(mac)}")
-    log_info(f"to_mac {to_mac!r}")
+    log_debug(f": publicKey: {public_key.to_hex()}")
+    log_debug(f": pad: {pad.to_hex()}")
+    log_debug(f": data: {data!r}")
+    log_debug(f": mac: {bytes_to_hex(mac)}")
+    log_debug(f"to_mac {to_mac!r}")
 
     return HashedElGamalCiphertext(pad, bytes_to_hex(data), bytes_to_hex(mac))
 

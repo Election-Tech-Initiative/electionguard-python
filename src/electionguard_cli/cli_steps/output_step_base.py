@@ -1,7 +1,7 @@
-from typing import List, Any
+from typing import Any
 
 from electionguard import to_file
-from electionguard.guardian import Guardian, GuardianRecord
+from electionguard.guardian import Guardian, GuardianRecord, publish_guardian_record
 from electionguard_tools.helpers.export import GUARDIAN_PREFIX
 
 from .cli_step_base import CliStepBase
@@ -13,7 +13,7 @@ class OutputStepBase(CliStepBase):
 
     _COMPRESSION_FORMAT = "zip"
 
-    def _export_private_keys(self, output_keys: str, guardians: List[Guardian]) -> None:
+    def _export_private_keys(self, output_keys: str, guardians: list[Guardian]) -> None:
         if output_keys is None:
             return
 
@@ -32,8 +32,14 @@ class OutputStepBase(CliStepBase):
     @staticmethod
     def _get_guardian_records(
         election_inputs: CliElectionInputsBase,
-    ) -> List[GuardianRecord]:
-        return [guardian.publish() for guardian in election_inputs.guardians]
+    ) -> list[GuardianRecord]:
+        # verifiers need the records of missing guardians too, to check compensated decryptions
+        return [
+            publish_guardian_record(key)
+            for key in CliStepBase._get_all_guardian_keys(
+                election_inputs.guardians
+            ).values()
+        ]
 
     def _export_file(
         self,

@@ -6,7 +6,7 @@ made about timing or other side-channels.
 """
 
 from abc import ABC
-from typing import Final, Optional, Union
+from typing import Final
 from secrets import randbelow
 from sys import maxsize
 
@@ -20,12 +20,11 @@ from .constants import get_large_prime, get_small_prime, get_generator
 class BaseElement(BigInteger, ABC):
     """An element limited by mod T within [0, T) where T is determined by an upper_bound function."""
 
-    def __new__(cls, data: Union[int, str], check_within_bounds: bool = True):  # type: ignore
+    def __new__(cls, data: int | str, check_within_bounds: bool = True):  # type: ignore
         """Instantiate element mod T where element is an int or its hex representation."""
-        element = super(BaseElement, cls).__new__(cls, data)
-        if check_within_bounds:
-            if not 0 <= element.value < cls.get_upper_bound():
-                raise OverflowError
+        element = super().__new__(cls, data)
+        if check_within_bounds and not 0 <= element.value < cls.get_upper_bound():
+            raise OverflowError
         return element
 
     @classmethod
@@ -82,20 +81,20 @@ ZERO_MOD_P: Final[ElementModP] = ElementModP(0)
 ONE_MOD_P: Final[ElementModP] = ElementModP(1)
 TWO_MOD_P: Final[ElementModP] = ElementModP(2)
 
-ElementModPOrQ = Union[ElementModP, ElementModQ]
-ElementModPOrQorInt = Union[ElementModP, ElementModQ, int]
-ElementModQorInt = Union[ElementModQ, int]
-ElementModPorInt = Union[ElementModP, int]
+ElementModPOrQ = ElementModP | ElementModQ
+ElementModPOrQorInt = ElementModP | ElementModQ | int
+ElementModQorInt = ElementModQ | int
+ElementModPorInt = ElementModP | int
 
 
-def _get_mpz(input: Union[BaseElement, int]) -> mpz:
+def _get_mpz(input: BaseElement | int) -> mpz:
     """Get BaseElement or integer as mpz."""
     if isinstance(input, BaseElement):
         return input.value
     return mpz(input)
 
 
-def hex_to_q(input: str) -> Optional[ElementModQ]:
+def hex_to_q(input: str) -> ElementModQ | None:
     """
     Given a hex string representing bytes, returns an ElementModQ.
 
@@ -107,7 +106,7 @@ def hex_to_q(input: str) -> Optional[ElementModQ]:
         return None
 
 
-def int_to_q(input: int) -> Optional[ElementModQ]:
+def int_to_q(input: int) -> ElementModQ | None:
     """
     Given a Python integer, returns an ElementModQ.
 
@@ -119,7 +118,7 @@ def int_to_q(input: int) -> Optional[ElementModQ]:
         return None
 
 
-def hex_to_p(input: str) -> Optional[ElementModP]:
+def hex_to_p(input: str) -> ElementModP | None:
     """
     Given a hex string representing bytes, returns an ElementModP.
 
@@ -131,7 +130,7 @@ def hex_to_p(input: str) -> Optional[ElementModP]:
         return None
 
 
-def int_to_p(input: int) -> Optional[ElementModP]:
+def int_to_p(input: int) -> ElementModP | None:
     """
     Given a Python integer, returns an ElementModP.
 
@@ -176,7 +175,7 @@ def div_q(a: ElementModPOrQorInt, b: ElementModPOrQorInt) -> ElementModQ:
 def negate_q(a: ElementModQorInt) -> ElementModQ:
     """Compute (Q - a) mod q."""
     a = _get_mpz(a)
-    return ElementModQ(get_small_prime() - a)
+    return ElementModQ((get_small_prime() - a) % get_small_prime())
 
 
 def a_plus_bc_q(
@@ -275,8 +274,8 @@ def rand_range_q(start: ElementModQorInt) -> ElementModQ:
     :param start: Starting value of range
     :return: Random value between start and Q
     """
-    start = _get_mpz(start)
-    random = 0
-    while random < start:
-        random = randbelow(get_small_prime())
-    return ElementModQ(random)
+    start = max(_get_mpz(start), _get_mpz(0))
+    small_prime = _get_mpz(get_small_prime())
+    if start >= small_prime:
+        raise ValueError(f"start {start} leaves no values below Q")
+    return ElementModQ(start + randbelow(int(small_prime - start)))

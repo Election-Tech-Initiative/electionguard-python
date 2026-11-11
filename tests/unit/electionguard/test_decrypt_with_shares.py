@@ -2,7 +2,8 @@
 # pylint: disable=too-many-instance-attributes
 # pylint: disable=unnecessary-comprehension
 
-from typing import Dict, List, Tuple
+
+from unittest.mock import patch
 
 from tests.base_test_case import BaseTestCase
 
@@ -20,6 +21,10 @@ from electionguard.decryption import (
     reconstruct_decryption_share_for_ballot,
 )
 from electionguard.decryption_share import DecryptionShare
+from electionguard.discrete_log import (
+    DiscreteLogExponentError,
+    DiscreteLogNotFoundError,
+)
 from electionguard.encrypt import EncryptionMediator
 from electionguard.group import ElementModP
 from electionguard.guardian import Guardian
@@ -36,7 +41,6 @@ from electionguard_tools.helpers.key_ceremony_orchestrator import (
 )
 from electionguard_tools.helpers.tally_accumulate import accumulate_plaintext_ballots
 from electionguard_tools.helpers.election_builder import ElectionBuilder
-
 
 election_factory = ElectionFactory.ElectionFactory()
 ballot_factory = BallotFactory.BallotFactory()
@@ -55,7 +59,7 @@ class TestDecryptWithShares(BaseTestCase):
         self.key_ceremony_mediator = KeyCeremonyMediator(
             "key_ceremony_mediator_mediator", self.CEREMONY_DETAILS
         )
-        self.guardians: List[Guardian] = KeyCeremonyOrchestrator.create_guardians(
+        self.guardians: list[Guardian] = KeyCeremonyOrchestrator.create_guardians(
             self.CEREMONY_DETAILS
         )
         KeyCeremonyOrchestrator.perform_full_ceremony(
@@ -170,6 +174,29 @@ class TestDecryptWithShares(BaseTestCase):
             CeremonyDetails(self.NUMBER_OF_GUARDIANS, self.QUORUM)
         )
 
+    def test_decrypt_selection_returns_none_when_value_has_no_discrete_log(self):
+        # Arrange
+        first_contest = list(self.ciphertext_tally.contests.values())[0]
+        first_selection = list(first_contest.selections.values())[0]
+
+        for error in (DiscreteLogExponentError(2, 1), DiscreteLogNotFoundError(1)):
+            with self.subTest(error=type(error).__name__):
+                with patch(
+                    "electionguard.decrypt_with_shares.DiscreteLog.get_instance"
+                ) as get_instance:
+                    get_instance.return_value.discrete_log.side_effect = error
+
+                    # Act
+                    result = decrypt_selection_with_decryption_shares(
+                        first_selection,
+                        {},
+                        self.context.crypto_extended_base_hash,
+                        suppress_validity_check=True,
+                    )
+
+                # Assert
+                self.assertIsNone(result)
+
     def test_decrypt_selection_with_all_guardians_present(self):
         # Arrange
         available_guardians = self.guardians
@@ -182,7 +209,7 @@ class TestDecryptWithShares(BaseTestCase):
         print(first_selection.object_id)
 
         # precompute decryption shares for specific selection for the guardians
-        shares: Dict[GuardianId, Tuple[ElementModP, DecryptionShare]] = {
+        shares: dict[GuardianId, tuple[ElementModP, DecryptionShare]] = {
             guardian.id: (
                 guardian.share_key().key,
                 compute_decryption_share(

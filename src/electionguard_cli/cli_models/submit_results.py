@@ -1,4 +1,3 @@
-from typing import List
 from electionguard.ballot import SubmittedBallot
 
 
@@ -7,8 +6,8 @@ class SubmitResults:
 
     def __init__(
         self,
-        submitted_ballots: List[SubmittedBallot],
+        submitted_ballots: list[SubmittedBallot],
     ):
         self.submitted_ballots = submitted_ballots
 
-    submitted_ballots: List[SubmittedBallot]
+    submitted_ballots: list[SubmittedBallot]

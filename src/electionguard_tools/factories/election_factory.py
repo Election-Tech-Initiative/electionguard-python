@@ -3,7 +3,8 @@
 from datetime import datetime
 import os
 from dataclasses import dataclass
-from typing import Any, TypeVar, Callable, Optional, Tuple, List
+from typing import Any, TypeVar
+from collections.abc import Callable
 
 from hypothesis.strategies import (
     composite,
@@ -49,7 +50,6 @@ from electionguard_tools.helpers.key_ceremony_orchestrator import (
 )
 from electionguard_tools.helpers.election_builder import ElectionBuilder
 
-
 _T = TypeVar("_T")
 _DrawType = Callable[[SearchStrategy[_T]], _T]
 
@@ -67,14 +67,14 @@ class AllPublicElectionData:
     internal_manifest: InternalManifest
     context: CiphertextElectionContext
     constants: ElectionConstants
-    guardians: List[GuardianRecord]
+    guardians: list[GuardianRecord]
 
 
 @dataclass
 class AllPrivateElectionData:
     """All private data for election."""
 
-    guardians: List[Guardian]
+    guardians: list[Guardian]
 
 
 class ElectionFactory:
@@ -115,10 +115,10 @@ class ElectionFactory:
 
     def get_sample_manifest_with_encryption_context(
         self, sample_manifest: str
-    ) -> Tuple[AllPublicElectionData, AllPrivateElectionData]:
+    ) -> tuple[AllPublicElectionData, AllPrivateElectionData]:
         """Get hamilton manifest and context"""
-        guardians: List[Guardian] = []
-        guardian_records: List[GuardianRecord] = []
+        guardians: list[Guardian] = []
+        guardian_records: list[GuardianRecord] = []
 
         # Configure the election builder
         manifest = self.get_manifest_from_filename(f"manifest-{sample_manifest}.json")
@@ -234,7 +234,7 @@ class ElectionFactory:
     @staticmethod
     def get_fake_ciphertext_election(
         manifest: Manifest, elgamal_public_key: ElGamalPublicKey
-    ) -> Tuple[InternalManifest, CiphertextElectionContext]:
+    ) -> tuple[InternalManifest, CiphertextElectionContext]:
         """Get mock election."""
         builder = ElectionBuilder(number_of_guardians=1, quorum=1, manifest=manifest)
         builder.set_public_key(elgamal_public_key)
@@ -244,7 +244,7 @@ class ElectionFactory:
 
     # TODO: Move to ballot Factory?
     def get_fake_ballot(
-        self, manifest: Optional[Manifest] = None, ballot_id: Optional[str] = None
+        self, manifest: Manifest | None = None, ballot_id: str | None = None
     ) -> PlaintextBallot:
         """Get a single mock Ballot object that is manually constructed with default values."""
         if manifest is None:
@@ -281,10 +281,10 @@ def get_selection_description_well_formed(
     draw: _DrawType,
     ints: Any = integers(1, 20),
     email_addresses: Any = emails(),
-    candidate_id: Optional[str] = None,
-    sequence_order: Optional[int] = None,
+    candidate_id: str | None = None,
+    sequence_order: int | None = None,
     ids: Any = uuids(),
-) -> Tuple[str, SelectionDescription]:
+) -> tuple[str, SelectionDescription]:
     """Get mock well formed selection description."""
     if candidate_id is None:
         candidate_id = draw(email_addresses)
@@ -304,9 +304,9 @@ def get_contest_description_well_formed(
     txt: Any = text(),
     email_addresses: Any = emails(),
     selections: Any = get_selection_description_well_formed(),
-    sequence_order: Optional[int] = None,
-    electoral_district_id: Optional[str] = None,
-) -> Tuple[str, ContestDescription]:
+    sequence_order: int | None = None,
+    electoral_district_id: str | None = None,
+) -> tuple[str, ContestDescription]:
     """Get mock well formed selection contest."""
     object_id = f"{draw(email_addresses)}-contest"
 
@@ -323,11 +323,13 @@ def get_contest_description_well_formed(
     number_elected = min(first_int, second_int)
     votes_allowed = number_elected
 
-    selection_descriptions: List[SelectionDescription] = []
+    selection_descriptions: list[SelectionDescription] = []
     for i in range(max(first_int, second_int)):
-        selection: Tuple[str, SelectionDescription] = draw(selections)
+        selection: tuple[str, SelectionDescription] = draw(selections)
         _, selection_description = selection
         selection_description.sequence_order = i
+        # the emails drawn for candidates can repeat, and a contest needs unique ones
+        selection_description.candidate_id = f"{selection_description.candidate_id}-{i}"
         selection_descriptions.append(selection_description)
 
     contest_description = ContestDescription(

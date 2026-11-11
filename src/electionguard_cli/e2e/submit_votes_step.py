@@ -1,4 +1,3 @@
-from typing import List
 import click
 
 from electionguard.data_store import DataStore
@@ -39,7 +38,7 @@ class SubmitVotesStep(CliStepBase):
     def _cast_and_spoil(
         internal_manifest: InternalManifest,
         context: CiphertextElectionContext,
-        ciphertext_ballots: List[CiphertextBallot],
+        ciphertext_ballots: list[CiphertextBallot],
         e2e_inputs: E2eInputs,
     ) -> DataStore:
         ballot_store: DataStore = DataStore()

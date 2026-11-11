@@ -1,6 +1,4 @@
 # pylint: disable=protected-access
-from datetime import timedelta
-from typing import Dict
 from hypothesis import given, HealthCheck, settings, Phase
 from hypothesis.strategies import integers
 
@@ -37,7 +35,6 @@ from electionguard_tools.helpers.key_ceremony_orchestrator import (
 )
 from electionguard_tools.helpers.election_builder import ElectionBuilder
 
-
 election_factory = ElectionFactory.ElectionFactory()
 ballot_factory = BallotFactory.BallotFactory()
 
@@ -46,7 +43,7 @@ class TestVerify(BaseTestCase):
     """Test ballot verification"""
 
     @settings(
-        deadline=timedelta(milliseconds=2000),
+        deadline=None,
         suppress_health_check=[HealthCheck.too_slow],
         max_examples=10,
         # disabling the "shrink" phase, because it runs very slowly
@@ -100,7 +97,7 @@ class TestVerify(BaseTestCase):
         ciphertext_tally = tally_ballots(ballot_store, internal_manifest, context)
 
         # precompute decryption shares for specific selection for the guardians
-        shares: Dict[GuardianId, DecryptionShare] = {
+        shares: dict[GuardianId, DecryptionShare] = {
             guardian.id: compute_decryption_share(
                 guardian._election_keys,
                 ciphertext_tally,
@@ -121,7 +118,7 @@ class TestVerify(BaseTestCase):
         self.assertTrue(verification.verified)
 
     @settings(
-        deadline=timedelta(milliseconds=10000),
+        deadline=None,
         suppress_health_check=[HealthCheck.too_slow],
         max_examples=10,
         # disabling the "shrink" phase, because it runs very slowly

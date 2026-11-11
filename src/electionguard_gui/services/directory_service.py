@@ -1,6 +1,5 @@
 import os
 
-
 DOCKER_MOUNT_DIR = "/egui_mnt"
 
 

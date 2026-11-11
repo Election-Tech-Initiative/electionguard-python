@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, UTC
 
 from tests.base_test_case import BaseTestCase
 
@@ -10,7 +10,7 @@ class TestUtils(BaseTestCase):
 
     def test_conversion_to_ticks_from_utc(self):
         # Act
-        ticks = to_ticks(datetime.now(timezone.utc))
+        ticks = to_ticks(datetime.now(UTC))
 
         self.assertIsNotNone(ticks)
         self.assertGreater(ticks, 0)
@@ -26,7 +26,7 @@ class TestUtils(BaseTestCase):
         # Arrange
         now = datetime.now()
         now_with_tz = (now).astimezone()
-        now_utc_with_tz = now_with_tz.astimezone(timezone.utc)
+        now_utc_with_tz = now_with_tz.astimezone(UTC)
 
         # Act
         ticks_now = to_ticks(now)

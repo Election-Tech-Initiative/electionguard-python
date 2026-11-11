@@ -1,4 +1,3 @@
-from typing import List
 import click
 
 from electionguard.data_store import DataStore
@@ -15,8 +14,8 @@ class SubmitBallotsStep(CliStepBase):
     def submit(
         self,
         build_election_results: BuildElectionResults,
-        cast_ballots: List[CiphertextBallot],
-        spoil_ballots: List[CiphertextBallot],
+        cast_ballots: list[CiphertextBallot],
+        spoil_ballots: list[CiphertextBallot],
     ) -> SubmitResults:
         self.print_header("Submitting Ballots")
         internal_manifest = build_election_results.internal_manifest
